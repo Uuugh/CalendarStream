@@ -5,7 +5,27 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.2**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.3**
+
+## 0.1.3 — 2026-10-20
+
+The logins move into the app. Only `DB_PASSWORD.txt` stays on the server.
+
+### Added
+- **First visit:** CalendarStream asks you to create the status-page login. It first asks for a
+  **setup code** printed in the container log (`docker compose logs calendar_stream | grep "setup code"`),
+  so only someone with access to the server can claim a new install. The password is stored hashed.
+- **Settings (☰) → Status-page login:** change the user name and password (needs the current one).
+- **Setup:** boxes for your CCS+ **UID** and **Calendar Sync password**, with **Save & sync**. The
+  password is stored encrypted and never shown again. Setup opens by itself until they're entered.
+- Logins from the old secret files are imported once, if the old compose file still mounts them.
+
+### Changed
+- `docker-compose.yml` mounts only `DB_PASSWORD.txt`. `CCS_USER.txt`, `CCS_PASSWORD.txt`, `USER.txt`
+  and `PASSWORD.txt` are no longer used and can be deleted (after the import, if you want it).
+- `DB_PASSWORD` is also the key that encrypts the stored passwords (CCS+, Google), as it already was
+  for Google.
+- Messages about a rejected or missing CCS+ login point to Setup instead of the secret files.
 
 ## 0.1.2 — 2026-10-20
 

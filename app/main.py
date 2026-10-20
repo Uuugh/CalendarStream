@@ -24,6 +24,8 @@ from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, che
                       empty_feed, new_calendar, parse, render)
 from .config import DEFAULT_CALENDAR_URL, settings
 from .gsync import Google, GoogleError
+from .logins import LoginError, Logins
+from .secretbox import SecretBox
 from .store import Store, from_iso, iso
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -31,7 +33,9 @@ log = logging.getLogger("calendar_stream")
 logging.getLogger("httpx").setLevel(logging.WARNING)   # one line per Google request is too chatty
 TZ = ZoneInfo(settings.timezone)
 store = Store(settings.dsn)
-google = Google(store, settings.db_password, settings.timezone)
+box = SecretBox(settings.db_password)
+google = Google(store, box, settings.timezone)
+logins = Logins(store, box)
 MAX_AUTH_FAILURES = 2   # pause automatic downloads after this many rejected sign-ins (avoids account lockout)
 CSRF_TOKEN = secrets.token_urlsafe(24)   # forms on the status page must carry this
 
@@ -299,11 +303,10 @@ def apply_calendar(body: bytes, how: str) -> bool:
 async def run_once(manual: bool = False):
     if state.running:
         return
-    if not settings.configured:
+    if not logins.ccs_configured:
         state.status = "error"
-        state.message = ("Calendar Sync sign-in is missing: put your UID in CCS_USER.txt and the Calendar Sync "
-                         "password in CCS_PASSWORD.txt (in $MNT_DOCKER/.secrets), then restart.")
-        state.record("error", state.message)
+        state.message = ("Enter your CCS+ UID and Calendar Sync password in Status & setup → Setup "
+                         "to start downloading the schedule.")
         state.save()
         return
     if state.login_failures >= MAX_AUTH_FAILURES and not manual:
@@ -318,7 +321,8 @@ async def run_once(manual: bool = False):
     try:
         have_source = store.get_calendar("source") is not None
         cache = (store.get("http_cache") or {}) if have_source else {}
-        dl = await download(calendar_url(), settings.username, settings.password,
+        uid, password = logins.ccs()
+        dl = await download(calendar_url(), uid, password,
                             etag=cache.get("etag", ""), last_modified=cache.get("last_modified", ""))
         store.save_debug("response", json.dumps(dl.debug, indent=2).encode(), "application/json")
         state.last_auth, state.last_auth_ok, state.login_failures = now(), True, 0
@@ -379,6 +383,13 @@ async def lifespan(_app):
     await asyncio.to_thread(store.open)       # waits for the database container if needed
     settings.resolve_feed_token(store)
     state.load()
+    imported = logins.import_old(settings.username, settings.password, settings.gui_user, settings.gui_password)
+    if imported:
+        state.record("info", "Imported " + " and ".join(imported) + " from the old secret files. They're "
+                     "now kept in the database and changed on the status page; the files can be deleted.")
+    if not logins.has_page_login:
+        # First start: the status page asks for this code before the login can be created.
+        log.warning("First-time setup: open the status page and enter the setup code %s", logins.new_setup_code())
     # Re-apply current settings (calendar name, DEFAULT_EVENT_HOURS, edits) to the last download
     try:
         rebuild()
@@ -402,27 +413,36 @@ GUI_MAX_FAILURES, GUI_LOCKOUT = 5, timedelta(minutes=15)
 _gui_failures: dict[str, list] = {}   # client ip -> [failure count, locked-until]
 
 
-def gui_auth(request: Request, creds: HTTPBasicCredentials | None = Depends(basic)):
-    if not settings.gui_password:
-        return
-    ip = request.client.host if request.client else "?"
-    count, locked_until = _gui_failures.get(ip, [0, None])
+def _client_ip(request: Request) -> str:
+    return request.client.host if request.client else "?"
+
+
+def _check_lockout(ip: str):
+    locked_until = _gui_failures.get(ip, [0, None])[1]
     if locked_until and now() < locked_until:
-        raise HTTPException(429, "Too many failed logins. Try again later.")
+        raise HTTPException(429, "Too many failed attempts. Try again later.")
 
-    def same(a: str, b: str) -> bool:
-        return secrets.compare_digest(a.encode(), b.encode())
 
-    if creds and same(creds.username, settings.gui_user) and same(creds.password, settings.gui_password):
+def _count_failure(ip: str, what: str = "logins"):
+    count = _gui_failures.get(ip, [0, None])[0] + 1
+    locked = now() + GUI_LOCKOUT if count >= GUI_MAX_FAILURES else None
+    _gui_failures[ip] = [0 if locked else count, locked]
+    if locked:
+        state.record("warn", f"Status page locked for {ip} after {GUI_MAX_FAILURES} failed {what}")
+        raise HTTPException(429, "Too many failed attempts. Try again later.")
+
+
+def gui_auth(request: Request, creds: HTTPBasicCredentials | None = Depends(basic)):
+    """The status-page login (HTTP Basic). Before one exists, every page leads to the first-visit form."""
+    if not logins.has_page_login:
+        raise HTTPException(303, headers={"Location": "/welcome"})
+    ip = _client_ip(request)
+    _check_lockout(ip)
+    if creds and logins.check_page_login(creds.username, creds.password):
         _gui_failures.pop(ip, None)
         return
     if creds:   # a real attempt (not just the browser's first, credential-less request)
-        count += 1
-        locked = now() + GUI_LOCKOUT if count >= GUI_MAX_FAILURES else None
-        _gui_failures[ip] = [0 if locked else count, locked]
-        if locked:
-            state.record("warn", f"Status page locked for {ip} after {GUI_MAX_FAILURES} failed logins")
-            raise HTTPException(429, "Too many failed logins. Try again later.")
+        _count_failure(ip)
     raise HTTPException(401, headers={"WWW-Authenticate": 'Basic realm="CalendarStream"'})
 
 
@@ -571,10 +591,6 @@ def _parse_month(value: str | None) -> tuple[int, int]:
     return today.year, today.month
 
 
-def _mask(uid: str) -> str:
-    return uid[:2] + "•" * max(0, len(uid) - 4) + uid[-2:] if len(uid) > 4 else "•" * len(uid)
-
-
 # --- Routes ----------------------------------------------------------------------
 
 @app.get("/", dependencies=[Depends(gui_auth)])
@@ -592,9 +608,9 @@ def index(request: Request, month: str | None = None):
         "google": google_view(request), "open_menu": request.query_params.get("menu") == "google",
         "public": {"url": public_url(), "from_settings": bool(store.get("public_url")),
                    "env": settings.public_base_url},
+        "page_user": logins.page_user,
         "setup": {
-            "uid": _mask(settings.username) if settings.username else "",
-            "has_password": bool(settings.password),
+            "uid": logins.ccs()[0], "has_password": bool(logins.ccs()[1]), "configured": logins.ccs_configured,
             "url": url, "url_is_default": url == DEFAULT_CALENDAR_URL,
             "url_from_gui": bool(store.get("calendar_url")),
             "downloaded": store.get_calendar("source") is not None,
@@ -609,6 +625,76 @@ async def run_now(csrf: str = Form("")):
     if not state.running:
         asyncio.create_task(run_once(manual=True))
     return RedirectResponse("/", status_code=303)
+
+
+# --- Logins -----------------------------------------------------------------------
+
+@app.get("/welcome")
+def welcome(request: Request):
+    """First visit: create the status-page login (needs the setup code from the container log)."""
+    if logins.has_page_login:
+        return RedirectResponse("/", status_code=303)
+    return templates.TemplateResponse(request, "welcome.html", {
+        "csrf": CSRF_TOKEN, "theme": ui_theme(), "version": __version__, "error": ""})
+
+
+@app.post("/welcome")
+def create_login(request: Request, csrf: str = Form(""), code: str = Form(""), user: str = Form(""),
+                 password: str = Form(""), confirm: str = Form("")):
+    check_csrf(csrf)
+    if logins.has_page_login:
+        return RedirectResponse("/", status_code=303)
+    ip = _client_ip(request)
+    _check_lockout(ip)
+    error = ""
+    if not logins.check_setup_code(code):
+        _count_failure(ip, "setup codes")
+        error = "That setup code isn't right. It's in the container log (docker compose logs calendar_stream)."
+    else:
+        try:
+            logins.set_page_login(user, password, confirm)
+        except LoginError as e:
+            error = str(e)
+    if error:
+        return templates.TemplateResponse(request, "welcome.html", {
+            "csrf": CSRF_TOKEN, "theme": ui_theme(), "version": __version__, "error": error, "user": user},
+            status_code=400)
+    state.record("info", f"Status-page login created for \"{logins.page_user}\"")
+    return RedirectResponse("/", status_code=303)
+
+
+@app.post("/settings/login", dependencies=[Depends(gui_auth)])
+def change_login(request: Request, csrf: str = Form(""), current: str = Form(""), user: str = Form(""),
+                 password: str = Form(""), confirm: str = Form("")):
+    """Change the status-page user name and/or password (Settings menu). Needs the current password."""
+    check_csrf(csrf)
+    ip = _client_ip(request)
+    if not logins.check_page_login(logins.page_user, current):
+        _count_failure(ip)
+        raise HTTPException(400, "The current password isn't right.")
+    try:
+        logins.set_page_login(user or logins.page_user, password or current, confirm if password else None)
+    except LoginError as e:
+        raise HTTPException(400, str(e))
+    state.record("info", f"Status-page login changed (user \"{logins.page_user}\")")
+    # The browser still holds the old login; it will ask for the new one.
+    return RedirectResponse("/", status_code=303)
+
+
+@app.post("/setup/ccs", dependencies=[Depends(gui_auth)])
+async def set_ccs_login(csrf: str = Form(""), uid: str = Form(""), password: str = Form("")):
+    """Save the CCS+ UID and Calendar Sync password (Setup), then download straight away."""
+    check_csrf(csrf)
+    try:
+        logins.save_ccs(uid, password)
+    except LoginError as e:
+        raise HTTPException(400, str(e))
+    state.login_failures = 0
+    store.delete("http_cache")
+    state.record("info", "CCS+ UID and Calendar Sync password saved")
+    if not state.running:
+        asyncio.create_task(run_once(manual=True))
+    return RedirectResponse("/#setup", status_code=303)
 
 
 @app.post("/setup/interval", dependencies=[Depends(gui_auth)])

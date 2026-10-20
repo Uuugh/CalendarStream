@@ -1,5 +1,6 @@
 # CalendarStream: the app and its Postgres database.
-# Needs .env (only MNT_DOCKER is required) and five files in $MNT_DOCKER/.secrets (see the end).
+# Needs .env (only MNT_DOCKER is required) and $MNT_DOCKER/.secrets/DB_PASSWORD.txt (see the end).
+# Logins (CCS+ and the status page) are set on the status page.
 services:
   calendar_stream:
     # Built by GitHub Actions from https://github.com/Uuugh/CalendarStream
@@ -15,21 +16,12 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${GUID:-100}
       - TZ=${TZ:-America/Chicago}
-      # Logins come from the secret files below
-      - CCS_USERNAME_FILE=/run/secrets/CCS_USER
-      - CCS_PASSWORD_FILE=/run/secrets/CCS_PASSWORD
-      - GUI_USERNAME_FILE=/run/secrets/GUI_USER
-      - GUI_PASSWORD_FILE=/run/secrets/GUI_PASSWORD
       # All project data is stored in the database container below
       - DB_HOST=calendar_stream_db
       - DB_NAME=${DB_NAME:-calendar_stream}
       - DB_USER=${DB_USER:-ccs}
       - DB_PASSWORD_FILE=/run/secrets/DB_PASSWORD
     secrets:
-      - CCS_USER
-      - CCS_PASSWORD
-      - GUI_USER
-      - GUI_PASSWORD
       - DB_PASSWORD
     depends_on:
       calendar_stream_db:
@@ -56,15 +48,8 @@ services:
       start_period: 30s
     restart: ${RESTART:-unless-stopped}
 
-# One value per file (a trailing newline is fine). All five must exist.
+# The database password: one line, chosen by you (a trailing newline is fine). It's set when the
+# database is first created, and also protects the passwords CalendarStream stores.
 secrets:
-  CCS_USER:          # your United UID
-    file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/CCS_USER.txt
-  CCS_PASSWORD:      # the CCS+ Calendar Sync password (not your CCS login)
-    file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/CCS_PASSWORD.txt
-  GUI_USER:          # a user name you choose for the status page
-    file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/USER.txt
-  GUI_PASSWORD:      # a password you choose for the status page
-    file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/PASSWORD.txt
-  DB_PASSWORD:       # a password you choose for the database (used when it's first created)
+  DB_PASSWORD:
     file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/DB_PASSWORD.txt

@@ -19,6 +19,7 @@ if [ "$(id -u)" = "0" ]; then
         fi
         return 0
     }
+    # Only to import logins from the secret files used up to 0.1.2 (now set on the status page)
     load_secret CCS_USERNAME /run/secrets/CCS_USER
     load_secret CCS_PASSWORD /run/secrets/CCS_PASSWORD
     load_secret GUI_USERNAME /run/secrets/GUI_USER

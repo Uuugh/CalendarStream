@@ -23,9 +23,8 @@ from zoneinfo import ZoneInfo
 from urllib.parse import quote, urlencode
 
 import httpx
-from cryptography.fernet import Fernet, InvalidToken
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+from .secretbox import SecretBox
 
 log = logging.getLogger("calendar_stream.google")
 
@@ -38,7 +37,6 @@ SCOPES = ("openid", "email", SCOPE_CALENDAR)
 
 SIGN_IN_TTL = 15 * 60       # seconds a sign-in started here stays valid
 MAX_PENDING = 20            # sign-ins started but not finished, kept at most
-KDF_ROUNDS = 390_000        # PBKDF2-SHA256 rounds for the token key
 TIMEOUT = httpx.Timeout(20.0, connect=10.0)
 
 MAX_WRITES = 1500          # Google writes in one sync at most; the rest wait for the next one
@@ -171,14 +169,13 @@ CLIENT_ID_RE = re.compile(r"^[A-Za-z0-9_.-]{10,200}\.apps\.googleusercontent\.co
 
 
 class Google:
-    def __init__(self, store, key_secret: str, tz_name: str):
+    def __init__(self, store, box: SecretBox, tz_name: str):
         self.store = store
-        self._key_secret = key_secret
+        self.box = box
         self._client: tuple[str, str] | None = None              # (client ID, secret), read once
         self.tz_name = tz_name
         self._pending: dict[str, tuple[str, str, float]] = {}   # state -> (PKCE verifier, redirect URI, expiry)
         self._access: tuple[str, float] | None = None            # (access token, expiry)
-        self._keys: dict[bytes, Fernet] = {}                     # salt -> key (deriving one is slow on purpose)
         self._lock = asyncio.Lock()
 
     # --- What the status page shows ------------------------------------------------
@@ -275,28 +272,15 @@ class Google:
 
     # --- Encrypted values (the client secret and the refresh token) --------------------
 
-    def _fernet(self, salt: bytes) -> Fernet:
-        if not self._key_secret:
-            raise GoogleError("DB_PASSWORD is needed to store Google secrets securely.")
-        if salt not in self._keys:
-            if len(self._keys) >= 8:
-                self._keys.clear()
-            kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=KDF_ROUNDS)
-            self._keys[salt] = Fernet(base64.urlsafe_b64encode(kdf.derive(self._key_secret.encode())))
-        return self._keys[salt]
-
     def _seal(self, text: str) -> dict:
-        """Encrypt with a key derived from DB_PASSWORD and a fresh salt."""
-        salt = secrets.token_bytes(16)
-        return {"v": 1, "salt": _b64url(salt), "token": self._fernet(salt).encrypt(text.encode()).decode()}
+        return self.box.seal(text)
 
     def _unseal(self, sealed: dict, default: str | None = None) -> str:
         """Decrypt a value from _seal. If it can't be read (DB_PASSWORD changed), return `default`,
         or raise AccessRevoked when there is none."""
         try:
-            salt = base64.urlsafe_b64decode(sealed["salt"] + "=" * (-len(sealed["salt"]) % 4))
-            return self._fernet(salt).decrypt(sealed["token"].encode()).decode()
-        except (InvalidToken, KeyError, ValueError, TypeError):
+            return self.box.unseal(sealed)
+        except ValueError:
             if default is not None:
                 return default
             raise AccessRevoked("The saved Google sign-in can't be read (was DB_PASSWORD changed?). "

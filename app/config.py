@@ -38,8 +38,8 @@ DEFAULT_CALENDAR_URL = "https://ccsplus.ual.com/calendarsyncapi/api/Calendar/Get
 
 @dataclass
 class Settings:
-    # CCS+ Calendar Sync sign-in (HTTP Basic). Docker secrets CCS_USER / CCS_PASSWORD win over .env.
-    #   username = your UID;  password = the Calendar Sync password created in CCS+ (not your CCS login)
+    # Logins are entered on the status page and kept in the database (see logins.py). These four
+    # are only read to import logins from the secret files used up to 0.1.2.
     username: str = field(default_factory=lambda: _secret("CCS_USERNAME", "CCS_USER"))
     password: str = field(default_factory=lambda: _secret("CCS_PASSWORD", "CCS_PASSWORD", strip_all=False))
     # The link from CCS+ "Copy link". Can also be set on the status page (saved in the database,
@@ -60,7 +60,6 @@ class Settings:
 
     # Feed / GUI security
     feed_token: str = field(default_factory=lambda: _env("FEED_TOKEN"))
-    # Status-page login: Docker secrets GUI_USER / GUI_PASSWORD (USER.txt / PASSWORD.txt) take priority.
     gui_user: str = field(default_factory=lambda: _secret("GUI_USERNAME", "GUI_USER"))
     gui_password: str = field(default_factory=lambda: _secret("GUI_PASSWORD", "GUI_PASSWORD", strip_all=False))
     public_base_url: str = field(default_factory=_public_url)
@@ -73,9 +72,6 @@ class Settings:
     db_password: str = field(default_factory=lambda: _secret("DB_PASSWORD", "DB_PASSWORD", strip_all=False))
 
     def __post_init__(self):
-        self.gui_user = self.gui_user or "admin"
-        if not self.gui_password:
-            print("WARNING: no status-page password (GUI_PASSWORD secret / .env) - the status page is open to anyone who can reach it")
         raw = self.default_event_raw.replace(" ", "")
         if raw in ("allday", "all-day", "all_day", "fullday", "full-day", "day"):
             self.default_event_type = "allday"
@@ -103,10 +99,6 @@ class Settings:
         if not self.feed_token:
             self.feed_token = secrets.token_urlsafe(24)
             store.set("feed_token", self.feed_token)
-
-    @property
-    def configured(self) -> bool:
-        return bool(self.username and self.password)
 
 
 settings = Settings()

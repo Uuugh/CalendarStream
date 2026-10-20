@@ -29,38 +29,38 @@ Tunnel or Tailscale Funnel.
    database live) and `TZ`. Set `IMAGE_TAG=beta` to run the newest release instead of the stable
    one. Everything else is optional and explained in the file.
 
-2. **Create the five secret files** in `$MNT_DOCKER/.secrets`, one value per file. `printf`
-   writes the value without a trailing newline (one is fine too):
+2. **Create the database password file**, the only secret kept on the server. Choose any
+   password; `printf` writes it without a trailing newline (one is fine too):
    ```bash
    mkdir -p /mnt/SSD/docker/.secrets        # your MNT_DOCKER + /.secrets
-   cd /mnt/SSD/docker/.secrets
-   printf '%s' 'U123456'          > CCS_USER.txt       # your UID
-   printf '%s' 'calendar-sync-pw' > CCS_PASSWORD.txt   # your CCS+ Calendar Sync password
-   printf '%s' 'admin'            > USER.txt           # a status-page user name you choose
-   printf '%s' 'a-gui-password'   > PASSWORD.txt       # a status-page password you choose
-   printf '%s' 'a-db-password'    > DB_PASSWORD.txt    # a database password you choose
-   chmod 600 *.txt
+   printf '%s' 'a-db-password' > /mnt/SSD/docker/.secrets/DB_PASSWORD.txt
+   chmod 600 /mnt/SSD/docker/.secrets/DB_PASSWORD.txt
    ```
-   The Calendar Sync password is the one created in CCS+ for calendar syncing, not your CCS
-   login; the status page's **Setup** explains how to get it. All five must exist or
-   `docker compose up` stops with an error. The database password is set
-   the first time Postgres starts; changing the file later doesn't change it.
+   It's set when the database is first created (changing the file later doesn't change it), and
+   it's also the key that encrypts the passwords CalendarStream stores, so keep it safe.
 
 3. **Start it** (from `~/stacks/calendarstream`):
    ```bash
    docker compose up -d
    ```
-   The images are downloaded on the first start. `docker compose logs -f calendar_stream` shows
-   what the app is doing.
+   The images are downloaded on the first start.
 
-4. **Finish on the status page:** open `http://<server>:8080` and sign in with `USER.txt` /
-   `PASSWORD.txt`.
+4. **Create your login.** Open `http://<server>:8080`. The first visit asks for a **setup code**
+   and the user name and password you want for the status page. The code is in the container log:
+   ```bash
+   docker compose logs calendar_stream | grep "setup code"
+   ```
+   Only someone who can read the server's log can create the login. From then on the browser asks
+   for it; change it in **Settings (☰) → Status-page login**.
+
+5. **Finish on the status page:**
+   - **Status & setup → Setup:** enter your CCS+ **UID** and **Calendar Sync password** and press
+     **Save & sync**. Setup explains how to turn on Calendar Sync in CCS+ and create that password;
+     if your **Copy link** URL differs from the default, paste it too. The checklist turns green once
+     CCS+ accepts the sign-in and the schedule downloads.
    - **☰ → Public address:** enter your public `https://` address (or press **This page** if you
      opened it through that address) and **Save**. It's used for the feed and subscribe links and
      for Google sign-in.
-   - **Status & setup → Setup:** follow its steps to turn on Calendar Sync in CCS+; if your
-     **Copy link** URL differs from the default, paste it and press **Save & sync**. The checklist turns green once CCS+ accepts the sign-in and the
-     schedule downloads.
    - **Google Calendar** (choose one):
      - *Sync (recommended):* **☰ → Google Calendar**. Enter an OAuth client ID and secret (the menu
        has a step-by-step guide for getting them in Google Cloud), wait for the ✓, and press
@@ -75,21 +75,27 @@ pulls a newer image for the tag in `IMAGE_TAG` on every `up`.
 `$MNT_DOCKER/calendar_stream/postgres`. This erases everything saved: event edits, tags, settings,
 the Google connection and the feed link you may have shared.
 
-### How the secrets connect
+### Where the logins and secrets are kept
 
-| Host file | Secret | Passed to the app as |
+| What | Where | Stored as |
 |---|---|---|
-| `$MNT_DOCKER/.secrets/CCS_USER.txt` | `CCS_USER` | `CCS_USERNAME_FILE` → `CCS_USERNAME` |
-| `$MNT_DOCKER/.secrets/CCS_PASSWORD.txt` | `CCS_PASSWORD` | `CCS_PASSWORD_FILE` → `CCS_PASSWORD` |
-| `$MNT_DOCKER/.secrets/USER.txt` | `GUI_USER` | `GUI_USERNAME_FILE` → `GUI_USERNAME` |
-| `$MNT_DOCKER/.secrets/PASSWORD.txt` | `GUI_PASSWORD` | `GUI_PASSWORD_FILE` → `GUI_PASSWORD` |
-| `$MNT_DOCKER/.secrets/DB_PASSWORD.txt` | `DB_PASSWORD` | `DB_PASSWORD_FILE` → `DB_PASSWORD` (and Postgres' `POSTGRES_PASSWORD_FILE`) |
+| Database password | `$MNT_DOCKER/.secrets/DB_PASSWORD.txt` (Docker secret `DB_PASSWORD`) | The only file; read at startup |
+| Status-page login | Created on the first visit; **Settings → Status-page login** | Password hashed (scrypt) |
+| CCS+ UID and Calendar Sync password | **Setup** | Password encrypted |
+| Google OAuth client | **Settings → Google Calendar** | Secret encrypted |
+| Google sign-in | **Settings → Google Calendar → Connect** | Encrypted |
 
-The secret files override `CCS_USERNAME`, `CCS_PASSWORD`, `GUI_USERNAME` and `GUI_PASSWORD` if those
-are ever set in `.env` (they don't need to be). Root-only (`600`) files are fine: the container reads them at startup,
-before it drops to the `PUID`:`GUID` user (default `1000:100`). If a secret is missing, the
-container log names it. The status page locks out an address for 15 minutes after 5 wrong
-logins; the calendar feed and subscribe page aren't affected.
+Encrypted values use a key derived from `DB_PASSWORD`, which isn't stored in the database, so a
+copy of the database alone can't reveal them. If `DB_PASSWORD` changes, enter the CCS+ password
+and the Google client secret again and reconnect Google. A root-only (`600`) `DB_PASSWORD.txt` is
+fine: the container reads it at startup, before it drops to the `PUID`:`GUID` user (default
+`1000:100`). The status page locks out an address for 15 minutes after 5 wrong logins (or setup
+codes); the calendar feed and subscribe page aren't affected.
+
+**Upgrading from 0.1.2 or earlier:** start 0.1.3 once with your old `docker-compose.yml` (which
+still mounts `CCS_USER.txt`, `CCS_PASSWORD.txt`, `USER.txt` and `PASSWORD.txt`): it imports those
+logins into the database. Then `git pull` the new compose file, `docker compose up -d`, and delete
+the four old files. (Or skip that and enter the logins on the page.)
 
 ## How syncing works
 
@@ -116,7 +122,7 @@ logins; the calendar feed and subscribe page aren't affected.
 | Status | Meaning |
 |---|---|
 | Healthy | Last check succeeded (the message says whether anything changed) |
-| Sign-in rejected | HTTP 401: check `CCS_USER.txt` (UID) and `CCS_PASSWORD.txt` (Calendar Sync password) |
+| Sign-in rejected | HTTP 401: check the UID and Calendar Sync password in **Setup** |
 | Paused | After 2 rejected sign-ins in a row, automatic checks stop so your account isn't locked. Fix the files, restart or press **Sync now** |
 | Blocked | HTTP 403, e.g. from Akamai. The message includes the reference number |
 | Error | Network trouble, a timeout, or CCS+ answered with something that isn't a calendar |
@@ -291,7 +297,7 @@ Everything the app keeps is in the Postgres container `calendar_stream_db`, whos
 |---|---|
 | `calendar_files` | `source` (the calendar as downloaded) and `feed` (as served to Google) |
 | `events` | The current schedule, for the status page; replaced in one transaction per change |
-| `kv` | `feed_token`, `status`, `http_cache` (ETag), and what's set on the status page: `public_url`, `sync_interval`, `calendar_url`, `calendar_name`, `calendar_color`, `calendar_tags`, `ui_theme`, `ui_sections`; `google` (connected account, calendar and last sync), `google_client` (OAuth client; secret encrypted) and `google_token` (the encrypted Google sign-in) |
+| `kv` | `feed_token`, `status`, `http_cache` (ETag), and what's set on the status page: `page_login` (hashed), `ccs_login` (encrypted), `public_url`, `sync_interval`, `calendar_url`, `calendar_name`, `calendar_color`, `calendar_tags`, `ui_theme`, `ui_sections`; `google` (connected account, calendar and last sync), `google_client` (OAuth client; secret encrypted) and `google_token` (the encrypted Google sign-in) |
 | `google_events` | What was last written to Google for each event (to send only changes) |
 | `event_edits` | Your changes to United's events (re-applied after each download) |
 | `custom_events` | Events you added on the status page |
@@ -311,6 +317,8 @@ docker-compose.yml   the stack: app image + Postgres (no build needed)
 Dockerfile           how GitHub Actions builds the image
 entrypoint.sh        reads the Docker secrets as root, then drops to PUID:GUID
 app/main.py          web app, sync loop, month view, status/lockout logic
+app/logins.py        the CCS+ and status-page logins (kept in the database)
+app/secretbox.py     encryption and password hashing
 app/calsync.py       Calendar Sync download + feed processing
 app/gsync.py         Google Calendar sync (OAuth sign-in, encrypted secrets, writing the events)
 app/store.py         Postgres storage (tables are created automatically)

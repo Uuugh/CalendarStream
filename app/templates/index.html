@@ -183,6 +183,26 @@
       </button>
       <div class="menu" id="menu" role="dialog" aria-label="Settings" hidden>
         <div class="title">Settings</div>
+        <div class="mgroup" id="pagelogin">
+          <div class="mhead">Status-page login</div>
+          <details class="guide" style="margin-top:0">
+            <summary>Signed in as <b>{{ page_user }}</b> · change</summary>
+            <form method="post" action="/settings/login" class="clientform" autocomplete="off">
+              <input type="hidden" name="csrf" value="{{ csrf }}">
+              <label for="lcur">Current password</label>
+              <input type="password" id="lcur" name="current" required autocomplete="current-password">
+              <label for="luser">User name</label>
+              <input type="text" id="luser" name="user" value="{{ page_user }}" required maxlength="64" autocomplete="username" spellcheck="false">
+              <label for="lnew">New password <span class="muted">(leave empty to keep it)</span></label>
+              <input type="password" id="lnew" name="password" minlength="8" autocomplete="new-password">
+              <label for="lconf">New password again</label>
+              <input type="password" id="lconf" name="confirm" minlength="8" autocomplete="new-password">
+              <p class="mnote" style="margin:8px 0 0">Your browser will then ask for the new login.</p>
+              <div class="eactions"><button>Save</button></div>
+            </form>
+          </details>
+        </div>
+
         <div class="mgroup" id="public">
           <div class="mhead">Public address</div>
           <p class="mnote" style="margin-bottom:6px">The https:// address people use to reach this page, e.g.
@@ -462,13 +482,27 @@ Added here{% endif %}{% if e.description %}
         already added keep theirs (rename them in Google's settings). The colour is used by Apple Calendar and this page.</p>
     </div>
 
-    <div class="part section{% if sections.setup %} open{% endif %}" id="setup" data-section="setup">
+    {# Open by itself until the CCS+ login has been entered #}
+    {% set setup_open = sections.setup or not setup.configured %}
+    <div class="part section{% if setup_open %} open{% endif %}" id="setup" data-section="setup">
       <div class="shead">
-        <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.setup else 'false' }}" aria-controls="setup-body"><span class="h3">Setup: CCS+ Calendar Sync</span></button>
+        <button type="button" class="toggle" aria-expanded="{{ 'true' if setup_open else 'false' }}" aria-controls="setup-body"><span class="h3">Setup: CCS+ Calendar Sync</span></button>
         <span class="peek">{% if s.last_auth_ok == false %}Sign-in rejected{% elif setup.downloaded %}Schedule received · {{ s.event_count }} events{% else %}Not set up yet{% endif %}</span>
       </div>
-      <div class="sbody" id="setup-body"{% if not sections.setup %} hidden{% endif %}>
-      <form method="post" action="/setup/link">
+      <div class="sbody" id="setup-body"{% if not setup_open %} hidden{% endif %}>
+      <form method="post" action="/setup/ccs" class="ccsform" autocomplete="off">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <div class="k" style="margin-top:0">Your CCS+ <b>UID</b> and <b>Calendar Sync password</b> (the one created for calendar
+          syncing in CCS+, not your CCS login; see the steps below):</div>
+        <div class="feed">
+          <input name="uid" value="{{ setup.uid }}" required placeholder="UID, e.g. U123456" aria-label="UID" spellcheck="false" autocomplete="off" style="flex:0 1 180px">
+          <input name="password" type="password" {% if not setup.has_password %}required{% endif %} autocomplete="new-password"
+                 placeholder="{{ 'Saved (leave empty to keep it)' if setup.has_password else 'Calendar Sync password' }}" aria-label="Calendar Sync password">
+          <button>Save &amp; sync</button>
+        </div>
+      </form>
+
+      <form method="post" action="/setup/link" style="margin-top:12px">
         <input type="hidden" name="csrf" value="{{ csrf }}">
         <div class="k" style="margin-top:0">Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):</div>
         <div class="feed">
@@ -479,8 +513,8 @@ Added here{% endif %}{% if e.description %}
       </form>
 
       <ul class="checks" style="margin-top:14px">
-        <li class="{{ 'done' if setup.uid else 'fail' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code> <span class="muted">(from <code>CCS_USER.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_USER.txt</code>{% endif %}</li>
-        <li class="{{ 'done' if setup.has_password else 'fail' }}">Calendar Sync password {% if setup.has_password %}set <span class="muted">(from <code>CCS_PASSWORD.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_PASSWORD.txt</code>{% endif %}</li>
+        <li class="{{ 'done' if setup.uid else '' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code>{% else %}<span class="muted">not entered yet</span>{% endif %}</li>
+        <li class="{{ 'done' if setup.has_password else '' }}">Calendar Sync password {% if setup.has_password %}saved <span class="muted">(encrypted)</span>{% else %}<span class="muted">not entered yet</span>{% endif %}</li>
         <li class="done">Calendar Sync link {% if setup.url_from_gui %}<span class="muted">(set here)</span>{% elif setup.url_is_default %}<span class="muted">(default)</span>{% else %}<span class="muted">(from <code>.env</code>)</span>{% endif %}</li>
         <li class="{{ 'done' if s.last_auth_ok else ('fail' if s.last_auth_ok == false else '') }}">CCS+ accepted the sign-in{% if s.last_auth_ok == false %} — <b>rejected</b>; check the UID and Calendar Sync password{% endif %}</li>
         <li class="{{ 'done' if setup.downloaded else '' }}">Schedule received{% if setup.downloaded %} <span class="muted">({{ s.event_count }} events)</span>{% endif %}</li>
@@ -492,11 +526,11 @@ Added here{% endif %}{% if e.description %}
         <ol>
           <li>In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.</li>
           <li>Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.</li>
-          <li>Press <b>Copy link</b> and paste it in the box above.</li>
-          <li>On the server, put your <b>UID</b> in <code>$MNT_DOCKER/.secrets/CCS_USER.txt</code> and the <b>Calendar Sync password</b> in <code>$MNT_DOCKER/.secrets/CCS_PASSWORD.txt</code>, then restart the stack.</li>
-          <li>Press <b>Sync now</b>. The checklist above turns green when CCS+ accepts the sign-in and the schedule downloads.</li>
+          <li>Enter your <b>UID</b> and that <b>Calendar Sync password</b> in the boxes at the top and press <b>Save &amp; sync</b>.</li>
+          <li>Press <b>Copy link</b> in CCS+. If the link differs from the one in the second box, paste it there and press <b>Save &amp; sync</b>.</li>
+          <li>The checklist above turns green when CCS+ accepts the sign-in and the schedule downloads.</li>
         </ol>
-        <p class="muted" style="font-size:13px;margin:8px 0 0">The password is only ever read from the secret file; it's never shown or stored on this page.</p>
+        <p class="muted" style="font-size:13px;margin:8px 0 0">The password is stored encrypted and never shown again; leave its box empty to keep it.</p>
       </details>
       </div>
     </div>

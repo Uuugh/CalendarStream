@@ -174,8 +174,8 @@ async def download(url: str, username: str, password: str, etag: str = "", last_
     if status == 304:
         return Download(304, not_modified=True, etag=etag, last_modified=last_modified, debug=debug)
     if status == 401:
-        raise AuthError("CCS+ rejected the UID or Calendar Sync password (HTTP 401). Check CCS_USER.txt "
-                        "(your UID) and CCS_PASSWORD.txt (the Calendar Sync password, not your CCS login).")
+        raise AuthError("CCS+ rejected the UID or Calendar Sync password (HTTP 401). Check both in "
+                        "Status & setup → Setup (the Calendar Sync password, not your CCS login).")
     if status == 403:
         server = headers.get("server", "")
         ref = re.search(r"Reference\s*#?\s*([\w.]+)", _snippet(body, 1000))

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome · CalendarStream</title>
+{% include "_theme.html" %}
+<style>
+  * { box-sizing:border-box }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
+  main { max-width:480px; margin:0 auto; padding:40px 16px 48px }
+  h1 { font-size:22px; margin:0 0 4px } .ver { color:var(--muted); font-size:13px; font-weight:500; margin-left:4px }
+  .sub { color:var(--muted); margin:0 0 20px; font-size:14px }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px }
+  label { display:block; font-size:13px; font-weight:600; margin:14px 0 4px }
+  label:first-of-type { margin-top:0 }
+  input { width:100%; font:inherit; padding:9px 11px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  input[name=code] { font-family:ui-monospace,monospace; letter-spacing:.08em; text-transform:uppercase }
+  .hint { font-size:12.5px; color:var(--muted); margin:6px 0 0 }
+  code { font:12.5px ui-monospace,monospace; background:var(--soft); padding:1px 5px; border-radius:4px; overflow-wrap:anywhere }
+  button { margin-top:20px; width:100%; font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:8px; padding:10px 18px; cursor:pointer }
+  .err { background:var(--badbg); color:var(--bad); border-radius:8px; padding:10px 12px; font-size:14px; margin-bottom:16px }
+  ol { padding-left:20px; margin:0 0 18px; font-size:14px } li { margin:4px 0 }
+</style>
+</head>
+<body><main>
+  <h1>CalendarStream<span class="ver">v{{ version }}</span></h1>
+  <p class="sub">Welcome! First, create the login for this status page.</p>
+  <ol>
+    <li>Find the <b>setup code</b> in the container log, on the server:
+      <code>docker compose logs calendar_stream | grep "setup code"</code></li>
+    <li>Choose a user name and password. Your browser will ask for them from now on.</li>
+  </ol>
+  <form class="card" method="post" action="/welcome" autocomplete="off">
+    {% if error %}<div class="err">{{ error }}</div>{% endif %}
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label for="code">Setup code</label>
+    <input id="code" name="code" required placeholder="ABCD-1234" maxlength="12" autofocus spellcheck="false">
+    <p class="hint">A new code is made each time the container starts, until the login exists.</p>
+    <label for="user">User name</label>
+    <input id="user" name="user" required value="{{ user or '' }}" maxlength="64" autocomplete="username" spellcheck="false">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password">
+    <label for="confirm">Password again</label>
+    <input id="confirm" name="confirm" type="password" required minlength="8" autocomplete="new-password">
+    <p class="hint">At least 8 characters. It's stored hashed and can be changed later in Settings (☰).</p>
+    <button>Create login</button>
+  </form>
+</main></body>
+</html>
