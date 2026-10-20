@@ -1,6 +1,8 @@
 services:
   calendar_stream:
-    build: .
+    # Built by GitHub Actions from https://github.com/Uuugh/calendar_stream
+    # IMAGE_TAG: beta (newest release), latest (last stable release), or a version like 0.0.2
+    image: ghcr.io/uuugh/calendar_stream:${IMAGE_TAG:-latest}
     container_name: calendar_stream
     env_file: .env
     ports:
@@ -9,7 +11,8 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${GUID:-100}
       - TZ=${TZ:-America/Chicago}
-      # CCS login comes from the secrets below (these override CCS_USERNAME / CCS_PASSWORD in .env)
+      # CCS+ Calendar Sync sign-in from the secrets below: CCS_USER.txt = your UID,
+      # CCS_PASSWORD.txt = the Calendar Sync password (these override CCS_USERNAME / CCS_PASSWORD in .env)
       - CCS_USERNAME_FILE=/run/secrets/CCS_USER
       - CCS_PASSWORD_FILE=/run/secrets/CCS_PASSWORD
       # Status-page login comes from the secrets below (these override GUI_USERNAME / GUI_PASSWORD in .env)
@@ -29,7 +32,6 @@ services:
     depends_on:
       calendar_stream_db:
         condition: service_healthy
-    shm_size: "256mb"
     restart: ${RESTART:-unless-stopped}
 
   calendar_stream_db:

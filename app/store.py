@@ -1,5 +1,5 @@
-"""Postgres storage for everything the app keeps: settings/tokens, the saved login session,
-events, debug captures, the activity log and sync status.
+"""Postgres storage for everything the app keeps: settings/tokens, the downloaded calendar and
+the feed built from it, events, debug captures, the activity log and sync status.
 
 Tables are created automatically on startup.
 """
@@ -13,7 +13,7 @@ from datetime import datetime
 from psycopg.types.json import Jsonb
 from psycopg_pool import ConnectionPool
 
-from .parser import Event
+from .calsync import Event
 
 log = logging.getLogger("ccs.store")
 
@@ -32,6 +32,13 @@ CREATE TABLE IF NOT EXISTS events (
     location    text NOT NULL DEFAULT '',
     description text NOT NULL DEFAULT '',
     synced_at   timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS calendar_files (
+    name         text PRIMARY KEY,          -- 'source' (as downloaded) / 'feed' (served to Google)
+    content      bytea NOT NULL,
+    content_type text NOT NULL,
+    sha256       text NOT NULL DEFAULT '',
+    updated_at   timestamptz NOT NULL DEFAULT now()
 );
 CREATE TABLE IF NOT EXISTS debug_files (
     name         text PRIMARY KEY,
@@ -103,13 +110,27 @@ class Store:
 
     def load_events(self) -> list[Event]:
         with self.pool.connection() as c:
-            rows = c.execute('SELECT title, start, "end", all_day, location, description '
+            rows = c.execute('SELECT title, start, "end", all_day, location, description, uid '
                              "FROM events ORDER BY start").fetchall()
         return [Event(*r) for r in rows]
 
     def event_count(self) -> int:
         with self.pool.connection() as c:
             return c.execute("SELECT count(*) FROM events").fetchone()[0]
+
+    # --- calendar files (source download + feed) ---------------------------
+    def save_calendar(self, name: str, content: bytes, sha256: str = "", content_type: str = "text/calendar"):
+        with self.pool.connection() as c:
+            c.execute("""INSERT INTO calendar_files (name, content, content_type, sha256) VALUES (%s, %s, %s, %s)
+                         ON CONFLICT (name) DO UPDATE SET content = EXCLUDED.content, sha256 = EXCLUDED.sha256,
+                         content_type = EXCLUDED.content_type, updated_at = now()""",
+                      (name, content, content_type, sha256))
+
+    def get_calendar(self, name: str):
+        with self.pool.connection() as c:
+            row = c.execute("SELECT content, sha256, updated_at FROM calendar_files WHERE name = %s",
+                            (name,)).fetchone()
+        return (bytes(row[0]), row[1], row[2]) if row else None
 
     # --- debug captures ----------------------------------------------------
     def save_debug(self, name: str, content: bytes, content_type: str):

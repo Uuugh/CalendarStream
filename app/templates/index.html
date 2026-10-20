@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-{% if s.running %}<meta http-equiv="refresh" content="5">{% else %}<meta http-equiv="refresh" content="60">{% endif %}
+{% if s.running %}<meta http-equiv="refresh" content="4">{% endif %}
 <title>Calendar Stream</title>
 <style>
-  :root { --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec;
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec; --soft:#f2f4f7;
           --ok:#12805c; --okbg:#e6f6ef; --bad:#b42318; --badbg:#fdecea; --warn:#a15c07; --warnbg:#fef4e2;
-          --run:#1d4ed8; --runbg:#e8efff; --accent:#1d4ed8; }
+          --run:#1d4ed8; --runbg:#e8efff; --accent:#1d4ed8; --ev:#e8efff; --evtext:#1e3a8a; --allday:#e6f6ef; --alldaytext:#14532d; }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#0f1218; --card:#171b23; --text:#e6e8ec; --muted:#98a2b3; --line:#2a303b;
+    :root { --bg:#0f1218; --card:#171b23; --text:#e6e8ec; --muted:#98a2b3; --line:#2a303b; --soft:#1d222c;
             --okbg:#0f2a20; --ok:#4ade80; --badbg:#2d1414; --bad:#f87171; --warnbg:#2b2110; --warn:#fbbf24;
-            --runbg:#14203d; --run:#93b4ff; --accent:#93b4ff; }
+            --runbg:#14203d; --run:#93b4ff; --accent:#93b4ff; --ev:#1a2a4d; --evtext:#c7d7fe; --allday:#12301f; --alldaytext:#bbf7d0; }
   }
   * { box-sizing:border-box }
   body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
-  main { max-width:920px; margin:0 auto; padding:24px 16px 48px }
+  main { max-width:1040px; margin:0 auto; padding:24px 16px 48px }
   h1 { font-size:20px; margin:0 0 4px } h2 { font-size:15px; margin:0 0 12px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em }
-  .sub { color:var(--muted); margin:0 0 20px; font-size:13px; word-break:break-all }
+  .sub { color:var(--muted); margin:0 0 20px; font-size:13px; word-break:break-word }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px }
   .banner { display:flex; gap:14px; align-items:center; flex-wrap:wrap }
   .pill { font-weight:700; padding:4px 12px; border-radius:999px; font-size:13px; text-transform:uppercase; letter-spacing:.03em }
@@ -28,46 +28,102 @@
   .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px }
   .stat .k { color:var(--muted); font-size:12px } .stat .v { font-weight:600 }
   button { font:inherit; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:8px; padding:8px 16px; cursor:pointer }
-  @media (prefers-color-scheme: dark){ button{color:#0f1218} }
+  button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
+  @media (prefers-color-scheme: dark){ button{color:#0f1218} button.ghost{color:var(--accent)} }
   button:disabled { opacity:.5; cursor:default }
-  .feed { display:flex; gap:8px } .feed input { flex:1; min-width:0; font:13px ui-monospace,monospace; padding:8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .feed { display:flex; gap:8px; margin-top:4px } .feed input { flex:1; min-width:0; font:13px ui-monospace,monospace; padding:8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
   table { width:100%; border-collapse:collapse; font-size:13px } th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top }
   th { color:var(--muted); font-weight:600 }
   .lvl-error{color:var(--bad);font-weight:600} .lvl-warn{color:var(--warn);font-weight:600}
   a { color:var(--accent) } .muted{color:var(--muted)} .scroll{overflow-x:auto}
-  ol { margin:8px 0 0; padding-left:20px; font-size:14px }
+  ol { margin:8px 0 0; padding-left:20px; font-size:14px } ol li { margin:3px 0 }
   .actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px }
   .btn, .btn2 { font-weight:600; text-decoration:none; border-radius:8px; padding:9px 16px; font-size:14px }
   .btn { background:var(--accent); color:#fff } .btn2 { border:1px solid var(--line); color:var(--accent) }
   @media (prefers-color-scheme: dark){ .btn{color:#0f1218} }
-  .card > .k { color:var(--muted); font-size:12px; margin-top:10px }
-  .feed { margin-top:4px }
+  .card .k { color:var(--muted); font-size:12px; margin-top:10px }
   .warnline { background:var(--warnbg); color:var(--warn); border-radius:8px; padding:8px 12px; font-size:13px; margin:0 0 12px }
+
+  /* Setup */
+  .checks { list-style:none; padding:0; margin:0 0 12px; display:grid; gap:6px; font-size:14px }
+  .checks li::before { content:"○"; display:inline-block; width:1.4em; color:var(--muted) }
+  .checks li.done::before { content:"✓"; color:var(--ok); font-weight:700 }
+  .checks li.fail::before { content:"✗"; color:var(--bad); font-weight:700 }
+  details.howto summary { cursor:pointer; font-weight:600; font-size:14px }
+  code { font:12.5px ui-monospace,monospace; background:var(--soft); padding:1px 5px; border-radius:4px }
+
+  /* Month view */
+  .calhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px }
+  .calhead .title { font-size:18px; font-weight:700; min-width:150px }
+  .navbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border:1px solid var(--line);
+            border-radius:8px; text-decoration:none; color:var(--accent); font-size:18px; font-weight:700 }
+  .navbtn.wide { width:auto; padding:0 12px; font-size:14px }
+  .month { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); border-top:1px solid var(--line); border-left:1px solid var(--line); min-width:640px }
+  .dow { font-size:12px; font-weight:600; color:var(--muted); text-align:center; padding:6px 0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--soft) }
+  .day { min-height:96px; padding:4px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); font-size:12px; overflow:hidden }
+  .day.out { background:var(--soft) } .day.out .num { color:var(--muted); opacity:.7 }
+  .num { font-weight:600; font-size:12px; margin-bottom:2px; display:inline-block; min-width:22px; text-align:center; border-radius:999px }
+  .day.today .num { background:var(--accent); color:var(--card) }
+  .ev { margin:2px 0; border-radius:5px; background:var(--ev); color:var(--evtext) }
+  .ev.allday { background:var(--allday); color:var(--alldaytext) }
+  .ev summary { list-style:none; cursor:pointer; padding:1px 5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .ev summary::-webkit-details-marker { display:none }
+  .ev .t { font-variant-numeric:tabular-nums; opacity:.85; margin-right:4px }
+  .ev .body { padding:4px 6px 6px; font-size:12px; white-space:pre-wrap; word-break:break-word; border-top:1px solid var(--line) }
 </style>
 </head>
 <body><main>
   <h1>Calendar Stream <span class="muted" style="font-size:13px;font-weight:500">v{{ version }}</span></h1>
-  <p class="sub">{{ cfg.schedule_url }} · user {{ cfg.username or "(not set)" }} · every {{ cfg.interval_minutes }} min · items without an end time: {{ "all-day" if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours }}</p>
+  <p class="sub">CCS+ Calendar Sync · checks every {{ cfg.interval_minutes }} min · items without an end time: {{ "all-day" if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours }}{% if cfg.allday_24h %} · 24-hour events shown as all-day{% endif %}</p>
 
-  {% set cls = {"ok":"ok","running":"run","starting":"run","paused":"warn","mfa":"warn"}.get(s.status,"bad") %}
-  {% set label = {"ok":"Healthy","running":"Running…","starting":"Starting","paused":"Paused","mfa":"MFA needed","login_failed":"Login failed","error":"Error"}.get(s.status, s.status) %}
+  {% set cls = {"ok":"ok","running":"run","starting":"run","paused":"warn"}.get(s.status,"bad") %}
+  {% set label = {"ok":"Healthy","running":"Syncing…","starting":"Starting","paused":"Paused","auth_failed":"Sign-in rejected","blocked":"Blocked","error":"Error"}.get(s.status, s.status) %}
   <div class="card banner">
     <span class="pill {{ cls }}">{{ label }}</span>
     <div class="msg">{{ s.message or "—" }}</div>
-    <form method="post" action="/run"><button {% if s.running %}disabled{% endif %}>Run now</button></form>
+    <form method="post" action="/run"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running %}disabled{% endif %}>Sync now</button></form>
   </div>
 
   {% macro t(d) %}{{ d.strftime("%b %d, %H:%M") if d else "never" }}{% endmacro %}
   <div class="card grid">
-    <div class="stat"><div class="k">Last login</div><div class="v">
-      {% if s.last_login_ok is none %}<span class="muted">none this run</span>
-      {% elif s.last_login_ok %}<span style="color:var(--ok)">✓ success</span> · {{ t(s.last_login) }}
-      {% else %}<span style="color:var(--bad)">✗ failed</span> · {{ t(s.last_login) }}{% endif %}</div></div>
-    <div class="stat"><div class="k">Last successful sync</div><div class="v">{{ t(s.last_success) }}</div></div>
-    <div class="stat"><div class="k">Last attempt</div><div class="v">{{ t(s.last_attempt) }}</div></div>
-    <div class="stat"><div class="k">Next run</div><div class="v">{{ t(s.next_run) }}</div></div>
-    <div class="stat"><div class="k">Events in feed</div><div class="v">{{ s.event_count }}{% if s.source %} <span class="muted">({{ s.source }})</span>{% endif %}</div></div>
-    <div class="stat"><div class="k">Consecutive login failures</div><div class="v">{{ s.login_failures }}</div></div>
+    <div class="stat"><div class="k">Last sign-in</div><div class="v">
+      {% if s.last_auth_ok is none %}<span class="muted">not yet</span>
+      {% elif s.last_auth_ok %}<span style="color:var(--ok)">✓ accepted</span> · {{ t(s.last_auth) }}
+      {% else %}<span style="color:var(--bad)">✗ rejected</span> · {{ t(s.last_auth) }}{% endif %}</div></div>
+    <div class="stat"><div class="k">Last successful check</div><div class="v">{{ t(s.last_success) }}</div></div>
+    <div class="stat"><div class="k">Schedule last changed</div><div class="v">{{ t(s.last_change) }}</div></div>
+    <div class="stat"><div class="k">Next check</div><div class="v">{{ t(s.next_run) }}</div></div>
+    <div class="stat"><div class="k">Events in feed</div><div class="v">{{ s.event_count }}</div></div>
+    <div class="stat"><div class="k">Rejected sign-ins in a row</div><div class="v">{{ s.login_failures }}</div></div>
+  </div>
+
+  <div class="card">
+    <div class="calhead">
+      <a class="navbtn" href="?month={{ cal.prev }}" title="Previous month" aria-label="Previous month">‹</a>
+      <a class="navbtn" href="?month={{ cal.next }}" title="Next month" aria-label="Next month">›</a>
+      <a class="navbtn wide" href="/">Today</a>
+      <span class="title">{{ cal.title }}</span>
+      <span class="muted" style="font-size:13px">{{ cal.count }} event{{ "" if cal.count == 1 else "s" }} · times in {{ cfg.timezone }}</span>
+    </div>
+    <div class="scroll"><div class="month">
+      {% for d in ["Su","Mo","Tu","We","Th","Fr","Sa"] %}<div class="dow">{{ d }}</div>{% endfor %}
+      {% for week in cal.weeks %}{% for day in week %}
+      <div class="day{% if not day.in_month %} out{% endif %}{% if day.date == cal.today %} today{% endif %}">
+        <span class="num">{{ day.date.day }}</span>
+        {% for it in day["items"] %}
+        <details class="ev{% if it.e.all_day %} allday{% endif %}">
+          <summary title="{{ it.e.title }}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ it.e.title }}</summary>
+          <div class="body"><b>{{ it.e.title }}</b>
+{{ it.range }}{% if it.e.location %}
+📍 {{ it.e.location }}{% endif %}{% if it.e.description %}
+
+{{ it.e.description }}{% endif %}</div>
+        </details>
+        {% endfor %}
+      </div>
+      {% endfor %}{% endfor %}
+    </div></div>
+    <p class="muted" style="font-size:12px;margin:8px 0 0">This is the schedule exactly as it's sent to Google Calendar. Click an event for details.</p>
   </div>
 
   <div class="card">
@@ -85,11 +141,37 @@
     <p class="muted" style="font-size:13px;margin:8px 0 0">Google re-checks subscribed feeds on its own schedule (typically every several hours).</p>
   </div>
 
-  <div class="card">
-    <h2>Upcoming events</h2>
-    {% if events %}<div class="scroll"><table><tr><th>Start</th><th>End</th><th>Title</th><th>Location</th></tr>
-      {% for e in events %}<tr><td>{{ e.start[:16].replace("T"," ") }}</td><td>{{ e.end[:16].replace("T"," ") }}</td><td>{{ e.title }}</td><td>{{ e.location }}</td></tr>{% endfor %}
-    </table></div>{% else %}<p class="muted">No events yet.</p>{% endif %}
+  <div class="card" id="setup">
+    <h2>Setup: CCS+ Calendar Sync</h2>
+    <ul class="checks">
+      <li class="{{ 'done' if setup.uid else 'fail' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code> <span class="muted">(from <code>CCS_USER.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_USER.txt</code>{% endif %}</li>
+      <li class="{{ 'done' if setup.has_password else 'fail' }}">Calendar Sync password {% if setup.has_password %}set <span class="muted">(from <code>CCS_PASSWORD.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_PASSWORD.txt</code>{% endif %}</li>
+      <li class="done">Calendar Sync link {% if setup.url_from_gui %}<span class="muted">(set here)</span>{% elif setup.url_is_default %}<span class="muted">(default)</span>{% else %}<span class="muted">(from <code>.env</code>)</span>{% endif %}</li>
+      <li class="{{ 'done' if s.last_auth_ok else ('fail' if s.last_auth_ok == false else '') }}">CCS+ accepted the sign-in{% if s.last_auth_ok == false %} — <b>rejected</b>; check the UID and Calendar Sync password{% endif %}</li>
+      <li class="{{ 'done' if setup.downloaded else '' }}">Schedule downloaded{% if setup.downloaded %} <span class="muted">({{ s.event_count }} events)</span>{% endif %}</li>
+    </ul>
+
+    <form method="post" action="/setup/link">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="k">Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):</div>
+      <div class="feed">
+        <input name="url" type="url" required value="{{ setup.url }}" placeholder="https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar">
+        <button name="action" value="save">Save &amp; sync</button>
+        {% if setup.url_from_gui %}<button class="ghost" name="action" value="reset" formnovalidate>Reset</button>{% endif %}
+      </div>
+    </form>
+
+    <details class="howto" style="margin-top:14px" {% if not setup.downloaded %}open{% endif %}>
+      <summary>How to turn on Calendar Sync in CCS+</summary>
+      <ol>
+        <li>In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.</li>
+        <li>Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.</li>
+        <li>Press <b>Copy link</b> and paste it in the box above.</li>
+        <li>On the server, put your <b>UID</b> in <code>$MNT_DOCKER/.secrets/CCS_USER.txt</code> and the <b>Calendar Sync password</b> in <code>$MNT_DOCKER/.secrets/CCS_PASSWORD.txt</code>, then restart the stack.</li>
+        <li>Press <b>Sync now</b>. The checklist above turns green when CCS+ accepts the sign-in and the schedule downloads.</li>
+      </ol>
+      <p class="muted" style="font-size:13px;margin:8px 0 0">The password is only ever read from the secret file; it's never shown or stored on this page.</p>
+    </details>
   </div>
 
   <div class="card">
@@ -100,9 +182,9 @@
   </div>
 
   <div class="card">
-    <h2>Debug (last run)</h2>
-    {% if has_shot %}<a href="/debug/screenshot" target="_blank">Screenshot</a> · <a href="/debug/html" target="_blank">Page HTML</a> · <a href="/debug/json" target="_blank">Captured JSON</a>
-    {% else %}<p class="muted">Available after the first run.</p>{% endif %}
+    <h2>Debug (last download)</h2>
+    {% if has_response %}<a href="/debug/response" target="_blank">Response details</a>{% if has_source %} · <a href="/debug/source" target="_blank">Calendar file as downloaded</a>{% endif %}
+    {% else %}<p class="muted">Available after the first download.</p>{% endif %}
   </div>
 </main>
 <script>

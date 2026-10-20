@@ -25,9 +25,7 @@ if [ "$(id -u)" = "0" ]; then
     load_secret GUI_PASSWORD /run/secrets/GUI_PASSWORD
     load_secret DB_PASSWORD  /run/secrets/DB_PASSWORD
 
-    # Scratch home for the headless browser (nothing here needs to survive a restart)
-    export HOME=/tmp/ccs-home
-    mkdir -p "$HOME" && chown "$PUID:$PGID" "$HOME"
+    export HOME=/tmp
     exec setpriv --reuid="$PUID" --regid="$PGID" --clear-groups -- "$@"
 fi
 

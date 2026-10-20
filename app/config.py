@@ -33,27 +33,30 @@ def _public_url() -> str:
     return url
 
 
+DEFAULT_CALENDAR_URL = "https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar"
+
+
 @dataclass
 class Settings:
-    # CCS login
-    # Docker secrets (CCS_USER / CCS_PASSWORD) take priority over the plain .env values.
+    # CCS+ Calendar Sync sign-in (HTTP Basic). Docker secrets CCS_USER / CCS_PASSWORD win over .env.
+    #   username = your UID;  password = the Calendar Sync password created in CCS+ (not your CCS login)
     username: str = field(default_factory=lambda: _secret("CCS_USERNAME", "CCS_USER"))
     password: str = field(default_factory=lambda: _secret("CCS_PASSWORD", "CCS_PASSWORD", strip_all=False))
-    schedule_url: str = field(default_factory=lambda: _env("CCS_URL", "https://ccsplus.ual.com/schedule/"))
-
-    # Optional CSS selector overrides if the auto-detection misses the login form
-    user_selector: str = field(default_factory=lambda: _env("CCS_USER_SELECTOR"))
-    pass_selector: str = field(default_factory=lambda: _env("CCS_PASS_SELECTOR"))
-    submit_selector: str = field(default_factory=lambda: _env("CCS_SUBMIT_SELECTOR"))
+    # The link from CCS+ "Copy link". Can also be set on the status page (saved in the database,
+    # where it takes priority over this value).
+    calendar_url: str = field(default_factory=lambda: _env("CCS_CALENDAR_URL", DEFAULT_CALENDAR_URL))
 
     # Behaviour
-    interval_minutes: int = field(default_factory=lambda: int(_env("SCRAPE_INTERVAL_MINUTES", "60")))
+    interval_minutes: int = field(default_factory=lambda: max(15, int(_env("SYNC_INTERVAL_MINUTES",
+                                                                       _env("SCRAPE_INTERVAL_MINUTES", "60")))))
     timezone: str = field(default_factory=lambda: _env("TZ", "America/Chicago"))
     calendar_name: str = field(default_factory=lambda: _env("CALENDAR_NAME", "United CCS Schedule"))
     # Items with a start time but no end time: a number of hours, or "allday"
     default_event_raw: str = field(default_factory=lambda: _env("DEFAULT_EVENT_HOURS", "1").lower())
     default_event_type: str = "hours"
     default_event_hours: float = 1.0
+    # Timed events lasting exactly 24 h (or 48 h, 72 h…) are shown as all-day events
+    allday_24h: bool = field(default_factory=lambda: _env("ALLDAY_24H", "true").lower() not in ("0", "false", "no", "off"))
 
     # Feed / GUI security
     feed_token: str = field(default_factory=lambda: _env("FEED_TOKEN"))
