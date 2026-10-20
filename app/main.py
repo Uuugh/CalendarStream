@@ -59,6 +59,30 @@ def calendar_color() -> str:
     return color.lower() if COLOR_RE.match(color) else ""
 
 
+MAX_TAGS, MAX_TAG_LEN = 30, 40
+
+
+def calendar_tags() -> list[dict]:
+    """Tag colours set on the status page: [{"tag": "RDO", "color": "#rrggbb"}, …], in priority order.
+    Validated again on the way out because the colours are written into the page's CSS."""
+    tags = []
+    for t in store.get("calendar_tags") or []:
+        tag, color = str(t.get("tag", "")).strip(), str(t.get("color", ""))
+        if tag and COLOR_RE.match(color):
+            tags.append({"tag": tag[:MAX_TAG_LEN], "color": color.lower()})
+    return tags[:MAX_TAGS]
+
+
+def tag_matcher(tags: list[dict]):
+    """Return a function giving the colour of the first tag found as a whole word in a title
+    (ignoring case), or "" when none match. "RDO" matches "RDO" and "RDO." but not "VRDO"."""
+    rules = [(re.compile(r"(?<!\w)" + re.escape(t["tag"]) + r"(?!\w)", re.IGNORECASE), t["color"]) for t in tags]
+
+    def color_for(title: str) -> str:
+        return next((color for rx, color in rules if rx.search(title)), "")
+    return color_for
+
+
 # Collapsible sections on the status page, and whether each starts open. The open/closed state
 # is saved in the database so it's the same in every browser.
 SECTIONS = {"status": True, "activity": False}
@@ -338,8 +362,9 @@ def _span(e: Event) -> tuple[date, date, datetime | None, datetime | None]:
     return s.date(), last, s, t
 
 
-def month_view(events: list[Event], year: int, month: int) -> dict:
-    weeks = pycal.Calendar(firstweekday=6).monthdatescalendar(year, month)   # Sunday first, like CCS+
+def month_view(events: list[Event], year: int, month: int, tags: list[dict] | None = None) -> dict:
+    weeks = pycal.Calendar(firstweekday=6).monthdatescalendar(year, month)
+    color_for = tag_matcher(tags or [])   # Sunday first, like CCS+
     first_day, last_day = weeks[0][0], weeks[-1][-1]
     by_day: dict[date, list] = {}
     in_month = 0
@@ -361,7 +386,7 @@ def month_view(events: list[Event], year: int, month: int) -> dict:
                 when = f"→ {t:%H:%M}"
             else:
                 when = "cont."
-            by_day.setdefault(d, []).append({"e": e, "when": when, "first": d == d0,
+            by_day.setdefault(d, []).append({"e": e, "when": when, "first": d == d0, "tag_color": color_for(e.title),
                                              "multi": d0 != d1, "range": _range_text(e, s, t)})
             d += timedelta(days=1)
     prev_m = date(year, month, 1) - timedelta(days=1)
@@ -408,9 +433,9 @@ def index(request: Request, month: str | None = None):
     url = calendar_url()
     return templates.TemplateResponse(request, "index.html", {
         "s": state, "cfg": settings, "feed": feed_url(request), "links": subscribe_links(request),
-        "version": __version__, "history": history, "cal": month_view(events, year, mon),
+        "version": __version__, "history": history, "cal": month_view(events, year, mon, calendar_tags()),
         "csrf": CSRF_TOKEN, "name": calendar_name(), "name_from_gui": bool(store.get("calendar_name")),
-        "color": calendar_color(), "sections": section_state(), "theme": ui_theme(),
+        "color": calendar_color(), "tags": calendar_tags(), "sections": section_state(), "theme": ui_theme(),
         "setup": {
             "uid": _mask(settings.username) if settings.username else "",
             "has_password": bool(settings.password),
@@ -451,23 +476,41 @@ async def set_link(csrf: str = Form(""), url: str = Form(""), action: str = Form
 
 
 @app.post("/feed/name", dependencies=[Depends(gui_auth)])
-async def set_name(csrf: str = Form(""), name: str = Form(""), color: str = Form("")):
-    """Name (and optionally colour) the calendar. A blank name goes back to CALENDAR_NAME from .env.
-    `color` is only sent when it was changed on the page."""
+async def set_name(csrf: str = Form(""), name: str = Form(""), color: str = Form(""),
+                   color_default: str = Form(""), tag: list[str] = Form([]), tag_color: list[str] = Form([])):
+    """Save the calendar's name, colour and tag colours (the title editor of Status & setup).
+    A blank name goes back to CALENDAR_NAME from .env. `color` is only sent when it was changed on
+    the page; `color_default` clears it. Tag rows with no text are dropped."""
     check_csrf(csrf)
     name = " ".join(name.split())[:100]
     if name and name != settings.calendar_name:
         store.set("calendar_name", name)
     else:
         store.delete("calendar_name")
-    note = f"Calendar name set to \"{calendar_name()}\""
-    if color:
+    notes = [f"name \"{calendar_name()}\""]
+    if color_default:
+        store.delete("calendar_color")
+        notes.append("default colour")
+    elif color:
         if not COLOR_RE.match(color):
             raise HTTPException(400, "Choose the colour with the colour picker.")
         store.set("calendar_color", color.lower())
-        note += f", colour {color.lower()}"
+        notes.append(f"colour {color.lower()}")
+    tags = []
+    for t, c in zip(tag, tag_color):
+        t = " ".join(t.split())[:MAX_TAG_LEN]
+        if not t:
+            continue
+        if not COLOR_RE.match(c):
+            raise HTTPException(400, f"Choose a colour for the tag \"{t}\" with the colour picker.")
+        tags.append({"tag": t, "color": c.lower()})
+    if len(tags) > MAX_TAGS:
+        raise HTTPException(400, f"Up to {MAX_TAGS} tags can be used.")
+    if tags != calendar_tags():
+        store.set("calendar_tags", tags)
+        notes.append(f"{len(tags)} tag colour{'' if len(tags) == 1 else 's'}")
     rebuild()
-    state.record("info", note)
+    state.record("info", "Calendar settings saved: " + ", ".join(notes))
     return RedirectResponse("/", status_code=303)
 
 

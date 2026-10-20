@@ -63,9 +63,25 @@
   .section > .sbody[hidden] { display:none }
   .section .peek { font-size:13px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 }
   .section.open .peek { display:none }
-  .namebox { display:flex; gap:6px; align-items:center; flex:1; min-width:240px; max-width:560px; cursor:auto }
-  .namebox input[type=text] { flex:1; min-width:0; font:inherit; font-size:15px; font-weight:600; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
-  .namebox input[type=color] { width:38px; height:36px; padding:2px; border:1px solid var(--line); border-radius:8px; background:var(--bg); cursor:pointer }
+  /* Calendar title (read-only, in the calendar colour) and its editor */
+  .calname { font-size:18px; font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .calname.outlined { text-shadow:-1px -1px 0 var(--ol), 1px -1px 0 var(--ol), -1px 1px 0 var(--ol), 1px 1px 0 var(--ol) }
+  .linkbtn { background:none; border:0; padding:0; color:var(--accent); font:inherit; font-size:13px; font-weight:500; cursor:pointer }
+  .linkbtn:hover { text-decoration:underline }
+  .editor { border:1px solid var(--line); border-radius:10px; padding:14px; margin:0 0 16px; background:var(--soft); cursor:auto }
+  .editor[hidden] { display:none }
+  .editor .lbl { display:block; font-size:12px; color:var(--muted); font-weight:600; margin:10px 0 4px }
+  .editor .lbl:first-of-type { margin-top:0 }
+  .editor .row { display:flex; gap:8px; align-items:center }
+  .editor input[type=text] { flex:1; min-width:0; font:inherit; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--text) }
+  .editor input[name=name] { font-size:16px; font-weight:600 }
+  .editor input[type=color] { flex:0 0 auto; width:40px; height:36px; padding:2px; border:1px solid var(--line); border-radius:8px; background:var(--card); cursor:pointer }
+  .editor .small { padding:6px 12px; font-size:13px }
+  .editor .tagrows { display:grid; gap:6px }
+  .editor .tagrow .addtag, .editor .tagrow .deltag { flex:0 0 auto; width:36px; height:36px; padding:0; font-size:18px; line-height:1 }
+  .editor .tagrow:not(:last-child) .addtag { visibility:hidden }
+  .editor .hint { font-size:12px; color:var(--muted); margin:6px 0 0 }
+  .editor .eactions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px }
 
   /* Setup */
   .checks { list-style:none; padding:0; margin:0 0 12px; display:grid; gap:6px; font-size:14px }
@@ -103,8 +119,8 @@
   .legend { display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin:8px 0 0 }
   .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; background:var(--sw) }
   /* F1: the chosen calendar colour tints United's events (timed lighter, all-day stronger) */
-  .tinted .ev:not(.custom) { background:color-mix(in srgb, var(--cal) 18%, var(--card)); color:color-mix(in srgb, var(--cal) 70%, var(--text)) }
-  .tinted .ev.allday:not(.custom) { background:color-mix(in srgb, var(--cal) 34%, var(--card)) }
+  .ev.tint { background:color-mix(in srgb, var(--cal) 18%, var(--card)); color:color-mix(in srgb, var(--cal) 70%, var(--text)) }
+  .ev.tint.allday { background:color-mix(in srgb, var(--cal) 34%, var(--card)) }
 
   /* Activity log (F1.2–F1.4) */
   .statline { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:13px; margin:0 0 12px }
@@ -150,7 +166,7 @@
       <span class="title">{{ cal.title }}</span>
       <span class="muted" style="font-size:13px">{{ cal.count }} event{{ "" if cal.count == 1 else "s" }} · times in {{ cfg.timezone }}</span>
     </div>
-    <div class="scroll"><div class="month{% if color %} tinted{% endif %}"{% if color %} style="--cal:{{ color }}"{% endif %}>
+    <div class="scroll"><div class="month"{% if color %} style="--cal:{{ color }}"{% endif %}>
       {% for d in ["Su","Mo","Tu","We","Th","Fr","Sa"] %}<div class="dow">{{ d }}</div>{% endfor %}
       {% for week in cal.weeks %}{% for day in week %}
       <div class="day{% if not day.in_month %} out{% endif %}{% if day.date == cal.today %} today{% endif %}">
@@ -158,7 +174,7 @@
           <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="Add an event on {{ day.date.strftime('%b %-d') }}" aria-label="Add event">+</a></div>
         {% for it in day["items"] %}
         {% set e = it.e %}
-        <details class="ev{% if e.all_day %} allday{% endif %}{% if e.origin == 'custom' %} custom{% endif %}{% if e.hidden %} hidden{% endif %}">
+        <details class="ev{% if e.all_day %} allday{% endif %}{% if e.origin == 'custom' %} custom{% endif %}{% if e.hidden %} hidden{% endif %}{% if it.tag_color or (color and e.origin != 'custom') %} tint{% endif %}"{% if it.tag_color %} style="--cal:{{ it.tag_color }}"{% endif %}>
           <summary title="{{ e.title }}{% if e.hidden %} (hidden from Google){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if e.stale %}<span class="mark" title="United changed this since your edit">⚠</span>{% elif e.edited %}<span class="mark" title="Edited here">✎</span>{% endif %}</summary>
           <div class="body"><b>{{ e.title }}</b>
 {{ it.range }}{% if e.location %}
@@ -176,7 +192,7 @@ Added here{% endif %}{% if e.description %}
       {% endfor %}{% endfor %}
     </div></div>
     <div class="legend">
-      {% if color %}<span style="--sw:color-mix(in srgb, {{ color }} 18%, var(--card))">Timed</span><span style="--sw:color-mix(in srgb, {{ color }} 34%, var(--card))">All-day</span>{% else %}<span style="--sw:var(--ev)">Timed</span><span style="--sw:var(--allday)">All-day</span>{% endif %}<span style="--sw:var(--custom)">Added here</span>
+      {% if color %}<span style="--sw:color-mix(in srgb, {{ color }} 18%, var(--card))">Timed</span><span style="--sw:color-mix(in srgb, {{ color }} 34%, var(--card))">All-day</span>{% else %}<span style="--sw:var(--ev)">Timed</span><span style="--sw:var(--allday)">All-day</span>{% endif %}<span style="--sw:var(--custom)">Added here</span>{% for t in tags %}<span style="--sw:color-mix(in srgb, {{ t.color }} 34%, var(--card))">{{ t.tag }}</span>{% endfor %}
       <span style="--sw:transparent">✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google</span>
     </div>
     <p class="muted" style="font-size:12px;margin:6px 0 0">This is the schedule as it's sent to Google Calendar. Click an event for details or to edit it; use + on a day to add one. Changes here never affect CCS+.</p>
@@ -188,16 +204,45 @@ Added here{% endif %}{% if e.description %}
     <div class="shead">
       <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.status else 'false' }}" aria-controls="status-body"
               title="Show or hide status &amp; setup"><span class="sr">Status &amp; setup</span></button>
-      <form class="namebox" method="post" action="/feed/name">
-        <input type="hidden" name="csrf" value="{{ csrf }}">
-        <input type="text" name="name" value="{{ name }}" placeholder="Calendar Name" aria-label="Calendar Name" maxlength="100"
-               title="The calendar's name in Google Calendar">
-        <input type="color" id="colorpick" value="{{ color or '#1d4ed8' }}" aria-label="Calendar colour"
-               title="Calendar colour: used by Apple Calendar and this page. Google Calendar subscribers choose their own colour in Google.">
-        <button class="ghost">Save</button>
-      </form>
+      <span class="calname" id="calname"{% if color %} style="color:{{ color }}"{% endif %} title="The calendar's name in Google Calendar">{{ name }}</span>
+      <button type="button" class="linkbtn" id="editbtn" aria-expanded="false" aria-controls="editor">(edit)</button>
       <span class="pill {{ cls }} peek" style="flex:0 0 auto">{{ label }}</span><span class="peek">{{ s.message }}</span>
     </div>
+
+    {# Title editor: name, default colour and tag colours. Hidden until (edit) is pressed. #}
+    <form class="editor" id="editor" method="post" action="/feed/name" hidden>
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label class="lbl" for="calname-input">Calendar name</label>
+      <div class="row"><input type="text" id="calname-input" name="name" value="{{ name }}" placeholder="Calendar Name" maxlength="100"></div>
+
+      <label class="lbl" for="colorpick">Default colour</label>
+      <div class="row">
+        <input type="color" id="colorpick" value="{{ color or '#1d4ed8' }}" aria-label="Default colour">
+        <input type="hidden" name="color_default" id="colordefault" value="">
+        <button type="button" class="ghost small" id="colorreset">Default</button>
+        <span class="muted" id="colornote" style="font-size:13px">{{ "" if color else "Using the standard colours" }}</span>
+      </div>
+
+      <span class="lbl">Tag colours</span>
+      <div class="tagrows" id="tagrows">
+        {% for t in tags + [{"tag": "", "color": color or "#1d4ed8"}] %}
+        <div class="row tagrow">
+          <input type="text" name="tag" value="{{ t.tag }}" placeholder="Tag, e.g. RDO" maxlength="40" aria-label="Tag">
+          <input type="color" name="tag_color" value="{{ t.color }}" aria-label="Tag colour">
+          <button type="button" class="ghost deltag" title="Remove this tag" aria-label="Remove tag">×</button>
+          <button type="button" class="ghost addtag" title="Add a tag" aria-label="Add a tag">+</button>
+        </div>
+        {% endfor %}
+      </div>
+      <p class="hint">An event whose title contains a tag as a whole word (ignoring capitals) uses that tag's colour; the first
+        matching tag wins. Other events use the default colour. Colours show on this page; Apple Calendar uses the default
+        colour, and Google Calendar subscribers choose their own.</p>
+
+      <div class="eactions">
+        <button type="button" class="ghost" id="editcancel">Cancel</button>
+        <button>Save</button>
+      </div>
+    </form>
     <div class="sbody" id="status-body"{% if not sections.status %} hidden{% endif %}>
     <div class="banner">
       <span class="pill {{ cls }}">{{ label }}</span>
@@ -218,8 +263,8 @@ Added here{% endif %}{% if e.description %}
       <div class="k">Raw feed URL (for adding manually: Google Calendar → Other calendars → + → From URL):</div>
       <div class="feed"><input id="feed" readonly onclick="this.select()" value="{{ feed }}"><button type="button" onclick="copyField('feed', this)">Copy</button></div>
       <p class="muted" style="font-size:13px;margin:8px 0 0">Google re-checks subscribed feeds on its own schedule (typically every several hours).
-        The name at the top of this section is what Google shows for new subscriptions; calendars already added keep theirs
-        (rename them in Google's settings). The colour is used by Apple Calendar and this page; Google subscribers pick their own.</p>
+        The name at the top of this section (change it with <b>(edit)</b>) is what Google shows for new subscriptions; calendars
+        already added keep theirs (rename them in Google's settings). The colour is used by Apple Calendar and this page.</p>
     </div>
 
     <div class="part" id="setup">
@@ -355,16 +400,69 @@ document.querySelectorAll('.section[data-section]').forEach(function (sec) {
     savePref('/ui/section', { section: sec.dataset.section, open: open ? '1' : '0' });
   }
   head.addEventListener('click', function (e) {
-    if (e.target.closest('form')) return;   // typing in the name box or picking a colour doesn't toggle
+    if (e.target.closest('form, #editbtn')) return;   // the (edit) link and the editor don't toggle the section
     set(!sec.classList.contains('open'));
   });
 });
 
-// Calendar colour: only sent with Save when it was actually changed, so saving a new name
-// doesn't set a colour by accident.
+// Title editor: (edit) shows it; Cancel hides it again and undoes unsaved changes.
 (function () {
-  var pick = document.getElementById('colorpick');
-  if (pick) pick.addEventListener('input', function () { pick.name = 'color'; });
+  var btn = document.getElementById('editbtn'), form = document.getElementById('editor');
+  function show(open) {
+    form.hidden = !open;
+    btn.setAttribute('aria-expanded', String(open));
+    btn.textContent = open ? '(close)' : '(edit)';
+    if (open) document.getElementById('calname-input').focus();
+  }
+  btn.addEventListener('click', function () { show(form.hidden); });
+  document.getElementById('editcancel').addEventListener('click', function () { form.reset(); show(false); location.reload(); });
+
+  // Default colour: only sent when changed, so saving a new name doesn't set a colour by accident.
+  var pick = document.getElementById('colorpick'), def = document.getElementById('colordefault'),
+      note = document.getElementById('colornote');
+  pick.addEventListener('input', function () { pick.name = 'color'; def.value = ''; note.textContent = ''; });
+  document.getElementById('colorreset').addEventListener('click', function () {
+    pick.removeAttribute('name'); pick.value = '#1d4ed8'; def.value = '1';
+    note.textContent = 'Back to the standard colours when you save';
+  });
+
+  // Tag rows: + adds an empty row after the last one (CSS shows + only on the last row); × removes a
+  // row, or just clears it when it's the only one left.
+  var rows = document.getElementById('tagrows');
+  rows.addEventListener('click', function (e) {
+    var row = e.target.closest('.tagrow');
+    if (!row) return;
+    if (e.target.closest('.addtag')) {
+      var copy = row.cloneNode(true);
+      copy.querySelector('input[name=tag]').value = '';
+      rows.appendChild(copy);
+      copy.querySelector('input[name=tag]').focus();
+    } else if (e.target.closest('.deltag')) {
+      if (rows.children.length > 1) row.remove(); else row.querySelector('input[name=tag]').value = '';
+    }
+  });
+})();
+
+// Calendar title: when its colour is hard to read on this background, give it an outline in
+// whichever of black or white contrasts more. Re-checked when the theme changes.
+(function () {
+  var title = document.getElementById('calname');
+  function lum(rgb) {
+    var c = rgb.match(/\d+(\.\d+)?/g).slice(0, 3).map(function (v) {
+      v = v / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function contrast(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function check() {
+    var fg = getComputedStyle(title).color, bg = getComputedStyle(title.closest('.card')).backgroundColor;
+    var weak = contrast(fg, bg) < 3;
+    title.classList.toggle('outlined', weak);
+    if (weak) title.style.setProperty('--ol', lum(fg) > 0.18 ? '#000' : '#fff');
+  }
+  check();
+  new MutationObserver(check).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', check);
 })();
 </script>
 </body>

@@ -5,7 +5,23 @@ Versions are numbered `0.0.x` until a new minor version is decided. Every releas
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.8**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.9**
+
+## 0.0.9 — 2026-10-20
+
+### Added
+- **F1** Tag colours. In the Status & setup editor, each row has a tag, a colour, **×** to remove it
+  and **+** (on the last row) to add another. An event whose title contains a tag as a whole word
+  (ignoring capitals) uses that tag's colour in the month view, and the first matching tag wins.
+  Other events use the default colour. Tags also appear in the colour key.
+- **F1.3** A **Default** button next to the colour picker returns to the standard colours.
+
+### Changed
+- **F1.4** The Status & setup title now shows the calendar's name as text in the chosen colour,
+  outlined when that colour would be hard to read on the background. A small **(edit)** next to
+  it opens the editor (name, default colour, tag colours, **Save**).
+- **F1.1** **Save** is right-aligned in the editor, next to **Cancel**.
+- **F1.2** The name field stretches to fill the editor's width.
 
 ## 0.0.8 — 2026-10-20
 
