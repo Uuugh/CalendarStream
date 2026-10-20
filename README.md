@@ -32,7 +32,7 @@ a month view of the schedule, and setup help.
 3. **Get the stack files.** Only `docker-compose.yml` and `.env` are needed on the server; the
    app comes as a ready-made image. Cloning is the easiest way to keep the compose file current:
    ```bash
-   git clone https://github.com/Uuugh/calendar_stream.git ~/stacks/calendar_stream
+   git clone https://github.com/Uuugh/CalendarStream.git ~/stacks/calendar_stream
    cd ~/stacks/calendar_stream
    cp .env.default .env      # then fill in PUBLIC_URL (and check IMAGE_TAG)
    ```

@@ -4,7 +4,7 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=60 PIP_RETRIES=10 PIP_DISABLE_PIP_VERSION_CHECK=1
 
-LABEL org.opencontainers.image.source="https://github.com/Uuugh/calendar_stream" \
+LABEL org.opencontainers.image.source="https://github.com/Uuugh/CalendarStream" \
       org.opencontainers.image.description="Republishes a United CCS+ Calendar Sync schedule as a Google Calendar feed"
 
 # curl does the downloads from CCS+ (United's Akamai protection answers curl normally)
