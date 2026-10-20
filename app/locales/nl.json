@@ -217,7 +217,6 @@
   "Keep this page’s link private — anyone who has it can see the schedule. To stop sharing, the owner can change the feed token, which turns off the old links.": "Houd de link van deze pagina privé — wie hem heeft, kan de planning zien. Om te stoppen met delen kan de eigenaar het feed-token wijzigen; dan werken de oude links niet meer.",
   "Welcome": "Welkom",
   "Welcome! First, create the login for this status page.": "Welkom! Maak eerst de aanmelding voor deze statuspagina.",
-  "Find the <b>setup code</b> in the container log, on the server:": "Zoek de <b>instelcode</b> in het logboek van de container, op de server:",
   "Choose a user name and password. Your browser will ask for them from now on.": "Kies een gebruikersnaam en wachtwoord. Je browser vraagt er voortaan naar.",
   "Setup code": "Instelcode",
   "A new code is made each time the container starts, until the login exists.": "Elke keer dat de container start, wordt een nieuwe code gemaakt, tot de aanmelding bestaat.",
@@ -231,7 +230,6 @@
   "Contains": "Bevat",
   "Starts with": "Begint met",
   "Exact title": "Exacte titel",
-
   "The {how} calendar has no events. Keeping the previous feed ({n} events) in case this is a glitch.": "De agenda ({how}) bevat geen afspraken. De vorige feed ({n} afspraken) blijft behouden voor het geval dit een fout is.",
   "downloaded from CCS+": "gedownload uit CCS+",
   "uploaded by hand": "met de hand geüpload",
@@ -256,7 +254,6 @@
   "Status page locked for {ip} after {n} failed logins": "Statuspagina vergrendeld voor {ip} na {n} mislukte aanmeldingen",
   "Status page locked for {ip} after {n} failed setup codes": "Statuspagina vergrendeld voor {ip} na {n} foute instelcodes",
   "This form has expired. Reload the page and try again.": "Dit formulier is verlopen. Herlaad de pagina en probeer opnieuw.",
-  "That setup code isn't right. It's in the container log (docker compose logs calendar_stream).": "Die instelcode klopt niet. Ze staat in het logboek van de container (docker compose logs calendar_stream).",
   "Status-page login created for \"{user}\"": "Aanmelding voor de statuspagina gemaakt voor “{user}”",
   "The current password isn't right.": "Het huidige wachtwoord klopt niet.",
   "Status-page login changed (user \"{user}\")": "Aanmelding voor de statuspagina gewijzigd (gebruiker “{user}”)",
@@ -365,5 +362,8 @@
   "CCS+ answered, but not with a calendar file ({type}): {snippet}": "CCS+ antwoordde, maar niet met een agendabestand ({type}): {snippet}",
   "That file isn't a calendar (.ics) file: {snippet}": "Dat bestand is geen agendabestand (.ics): {snippet}",
   "it's empty": "het is leeg",
-  "The calendar file from CCS+ couldn't be read: {error}": "Het agendabestand uit CCS+ kon niet gelezen worden: {error}"
+  "The calendar file from CCS+ couldn't be read: {error}": "Het agendabestand uit CCS+ kon niet gelezen worden: {error}",
+  "That setup code isn't right. It's in the container log (docker compose logs | grep \"setup code\", in the folder with docker-compose.yml).": "Die instelcode klopt niet. Ze staat in het logboek van de container (docker compose logs | grep \"setup code\", in de map met docker-compose.yml).",
+  "Find the <b>setup code</b> in the container log: on the server, in the folder with docker-compose.yml, run": "Zoek de <b>instelcode</b> in het logboek van de container: voer op de server, in de map met docker-compose.yml, uit",
+  "Command": "Opdracht"
 }

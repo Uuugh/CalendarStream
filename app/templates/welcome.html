@@ -21,14 +21,20 @@
   button { margin-top:20px; width:100%; font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:8px; padding:10px 18px; cursor:pointer }
   .err { background:var(--badbg); color:var(--bad); border-radius:8px; padding:10px 12px; font-size:14px; margin-bottom:16px }
   ol { padding-left:20px; margin:0 0 18px; font-size:14px } li { margin:4px 0 }
+  .cmd { display:flex; gap:6px; margin:6px 0 2px }
+  .cmd input { flex:1; min-width:0; width:auto; font:12.5px ui-monospace,monospace; padding:7px 9px; background:var(--soft) }
+  button.copy { margin:0; width:auto; flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; padding:0 10px;
+                background:var(--card); color:var(--accent); border:1px solid var(--line); font-size:13px }
 </style>
 </head>
 <body><main>
   <h1>CalendarStream<span class="ver">v{{ version }}</span></h1>
   <p class="sub">{{ _('Welcome! First, create the login for this status page.') }}</p>
   <ol>
-    <li>{{ _('Find the <b>setup code</b> in the container log, on the server:') }}
-      <code>docker compose logs calendar_stream | grep "setup code"</code></li>
+    <li>{{ _('Find the <b>setup code</b> in the container log: on the server, in the folder with docker-compose.yml, run') }}
+      <div class="cmd"><input id="logcmd" readonly onclick="this.select()" value='docker compose logs | grep "setup code"'
+        aria-label="{{ _('Command') }}"><button type="button" class="copy" onclick="copyField('logcmd', this)"
+        title="{{ _('Copy') }}" aria-label="{{ _('Copy') }}"><svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 3.5V3a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 3v6A1.5 1.5 0 0 0 4 10.5h.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></div></li>
     <li>{{ _('Choose a user name and password. Your browser will ask for them from now on.') }}</li>
   </ol>
   <form class="card" method="post" action="/welcome" autocomplete="off">
@@ -46,5 +52,24 @@
     <p class="hint">{{ _('At least 8 characters. It’s stored hashed and can be changed later in Settings (☰).') }}</p>
     <button>{{ _('Create login') }}</button>
   </form>
-</main></body>
+</main>
+<script>
+var T = { copied: {{ _('Copied')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }} };
+// Copy the command. The Clipboard API needs HTTPS or localhost; on a plain-HTTP address (likely on a
+// first visit) fall back to selecting the text and execCommand.
+function copyField(id, btn) {
+  var el = document.getElementById(id), text = el.value, html = btn.innerHTML;
+  function done(msg) { btn.textContent = msg; setTimeout(function () { btn.innerHTML = html; }, 1800); }
+  function fallback() {
+    el.focus(); el.select(); el.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    done(ok ? T.copied : T.pressCtrlC);
+  }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(function () { done(T.copied); }, fallback);
+  } else { fallback(); }
+}
+</script>
+</body>
 </html>

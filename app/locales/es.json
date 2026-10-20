@@ -217,7 +217,6 @@
   "Keep this page’s link private — anyone who has it can see the schedule. To stop sharing, the owner can change the feed token, which turns off the old links.": "Mantén privado el enlace de esta página: quien lo tenga puede ver el horario. Para dejar de compartirlo, el propietario puede cambiar el token del feed, lo que desactiva los enlaces anteriores.",
   "Welcome": "Bienvenida",
   "Welcome! First, create the login for this status page.": "¡Bienvenido! Primero, crea el acceso a esta página de estado.",
-  "Find the <b>setup code</b> in the container log, on the server:": "Busca el <b>código de configuración</b> en el registro del contenedor, en el servidor:",
   "Choose a user name and password. Your browser will ask for them from now on.": "Elige un nombre de usuario y una contraseña. A partir de ahora tu navegador te los pedirá.",
   "Setup code": "Código de configuración",
   "A new code is made each time the container starts, until the login exists.": "Se crea un código nuevo cada vez que arranca el contenedor, hasta que exista el acceso.",
@@ -255,7 +254,6 @@
   "Status page locked for {ip} after {n} failed logins": "Página de estado bloqueada para {ip} tras {n} accesos fallidos",
   "Status page locked for {ip} after {n} failed setup codes": "Página de estado bloqueada para {ip} tras {n} códigos de configuración erróneos",
   "This form has expired. Reload the page and try again.": "Este formulario ha caducado. Recarga la página e inténtalo de nuevo.",
-  "That setup code isn't right. It's in the container log (docker compose logs calendar_stream).": "Ese código de configuración no es correcto. Está en el registro del contenedor (docker compose logs calendar_stream).",
   "Status-page login created for \"{user}\"": "Acceso a la página de estado creado para \"{user}\"",
   "The current password isn't right.": "La contraseña actual no es correcta.",
   "Status-page login changed (user \"{user}\")": "Acceso a la página de estado cambiado (usuario \"{user}\")",
@@ -364,5 +362,8 @@
   "That file isn't a calendar (.ics) file: {snippet}": "Ese archivo no es un archivo de calendario (.ics): {snippet}",
   "it's empty": "está vacío",
   "The calendar file from CCS+ couldn't be read: {error}": "No se pudo leer el archivo de calendario de CCS+: {error}",
-  "Google didn't confirm removing access (HTTP {code}); remove CalendarStream at myaccount.google.com/permissions": "Google no confirmó que se quitara el acceso (HTTP {code}); quita CalendarStream en myaccount.google.com/permissions"
+  "Google didn't confirm removing access (HTTP {code}); remove CalendarStream at myaccount.google.com/permissions": "Google no confirmó que se quitara el acceso (HTTP {code}); quita CalendarStream en myaccount.google.com/permissions",
+  "That setup code isn't right. It's in the container log (docker compose logs | grep \"setup code\", in the folder with docker-compose.yml).": "Ese código de configuración no es correcto. Está en el registro del contenedor (docker compose logs | grep \"setup code\", en la carpeta de docker-compose.yml).",
+  "Find the <b>setup code</b> in the container log: on the server, in the folder with docker-compose.yml, run": "Busca el <b>código de configuración</b> en el registro del contenedor: en el servidor, en la carpeta de docker-compose.yml, ejecuta",
+  "Command": "Comando"
 }

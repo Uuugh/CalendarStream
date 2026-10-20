@@ -687,7 +687,8 @@ def create_login(request: Request, csrf: str = Form(""), code: str = Form(""), u
     error = ""
     if not logins.check_setup_code(code):
         _count_failure(ip, "setup codes")
-        error = "That setup code isn't right. It's in the container log (docker compose logs calendar_stream)."
+        error = ("That setup code isn't right. It's in the container log (docker compose logs | grep "
+                 "\"setup code\", in the folder with docker-compose.yml).")
     else:
         try:
             logins.set_page_login(user, password, confirm)

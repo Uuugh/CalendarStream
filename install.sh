@@ -67,7 +67,7 @@ docker compose up -d
 # First install only: the status page asks for this code before you create your login.
 echo "Waiting for CalendarStream to start…"
 for _ in $(seq 30); do
-  code=$(docker compose logs calendar_stream 2>/dev/null | grep -o 'setup code [A-F0-9-]*' | tail -1 || true)
+  code=$(docker compose logs 2>/dev/null | grep -o 'setup code [A-F0-9-]*' | tail -1 || true)
   [ -n "$code" ] && break
   docker compose logs calendar_stream 2>/dev/null | grep -q 'Application startup complete' && break
   sleep 3

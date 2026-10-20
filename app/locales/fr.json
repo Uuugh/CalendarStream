@@ -217,7 +217,6 @@
   "Keep this page’s link private — anyone who has it can see the schedule. To stop sharing, the owner can change the feed token, which turns off the old links.": "Gardez le lien de cette page privé — toute personne qui l’a peut voir le planning. Pour arrêter le partage, le propriétaire peut changer le jeton du flux, ce qui désactive les anciens liens.",
   "Welcome": "Bienvenue",
   "Welcome! First, create the login for this status page.": "Bienvenue ! Commencez par créer l’accès à cette page d’état.",
-  "Find the <b>setup code</b> in the container log, on the server:": "Trouvez le <b>code de configuration</b> dans le journal du conteneur, sur le serveur :",
   "Choose a user name and password. Your browser will ask for them from now on.": "Choisissez un nom d’utilisateur et un mot de passe. Votre navigateur les demandera désormais.",
   "Setup code": "Code de configuration",
   "A new code is made each time the container starts, until the login exists.": "Un nouveau code est créé à chaque démarrage du conteneur, jusqu’à ce que l’accès existe.",
@@ -231,7 +230,6 @@
   "Contains": "Contient",
   "Starts with": "Commence par",
   "Exact title": "Titre exact",
-
   "The {how} calendar has no events. Keeping the previous feed ({n} events) in case this is a glitch.": "L’agenda {how} ne contient aucun événement. Le flux précédent ({n} événements) est conservé au cas où ce serait une erreur.",
   "downloaded from CCS+": "téléchargé de CCS+",
   "uploaded by hand": "envoyé à la main",
@@ -256,7 +254,6 @@
   "Status page locked for {ip} after {n} failed logins": "Page d’état bloquée pour {ip} après {n} connexions échouées",
   "Status page locked for {ip} after {n} failed setup codes": "Page d’état bloquée pour {ip} après {n} codes de configuration erronés",
   "This form has expired. Reload the page and try again.": "Ce formulaire a expiré. Rechargez la page et réessayez.",
-  "That setup code isn't right. It's in the container log (docker compose logs calendar_stream).": "Ce code de configuration est incorrect. Il se trouve dans le journal du conteneur (docker compose logs calendar_stream).",
   "Status-page login created for \"{user}\"": "Accès à la page d’état créé pour « {user} »",
   "The current password isn't right.": "Le mot de passe actuel est incorrect.",
   "Status-page login changed (user \"{user}\")": "Accès à la page d’état modifié (utilisateur « {user} »)",
@@ -365,5 +362,8 @@
   "CCS+ answered, but not with a calendar file ({type}): {snippet}": "CCS+ a répondu, mais pas avec un fichier d’agenda ({type}) : {snippet}",
   "That file isn't a calendar (.ics) file: {snippet}": "Ce fichier n’est pas un fichier d’agenda (.ics) : {snippet}",
   "it's empty": "il est vide",
-  "The calendar file from CCS+ couldn't be read: {error}": "Le fichier d’agenda de CCS+ est illisible : {error}"
+  "The calendar file from CCS+ couldn't be read: {error}": "Le fichier d’agenda de CCS+ est illisible : {error}",
+  "That setup code isn't right. It's in the container log (docker compose logs | grep \"setup code\", in the folder with docker-compose.yml).": "Ce code de configuration est incorrect. Il se trouve dans le journal du conteneur (docker compose logs | grep \"setup code\", dans le dossier de docker-compose.yml).",
+  "Find the <b>setup code</b> in the container log: on the server, in the folder with docker-compose.yml, run": "Trouvez le <b>code de configuration</b> dans le journal du conteneur : sur le serveur, dans le dossier de docker-compose.yml, lancez",
+  "Command": "Commande"
 }

@@ -5,7 +5,18 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.7**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.8**
+
+## 0.1.8 — 2026-10-20
+
+### Added
+- **F1** A copy button next to the setup-code command on the first-visit page.
+
+### Fixed
+- **I1** The setup-code command named the service (`calendar_stream`), which is easy to mistype as
+  `calendarstream` ("no such service"). It's now `docker compose logs | grep "setup code"`, run in
+  the folder with `docker-compose.yml`, which needs no service name. The "wrong setup code" message
+  says the same.
 
 ## 0.1.7 — 2026-10-20
 
