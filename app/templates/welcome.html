@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}>
+<html lang="{{ html_lang }}"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Welcome · CalendarStream</title>
+<title>{{ _('Welcome') }} · CalendarStream</title>
 {% include "_theme.html" %}
 <style>
   * { box-sizing:border-box }
@@ -25,26 +25,26 @@
 </head>
 <body><main>
   <h1>CalendarStream<span class="ver">v{{ version }}</span></h1>
-  <p class="sub">Welcome! First, create the login for this status page.</p>
+  <p class="sub">{{ _('Welcome! First, create the login for this status page.') }}</p>
   <ol>
-    <li>Find the <b>setup code</b> in the container log, on the server:
+    <li>{{ _('Find the <b>setup code</b> in the container log, on the server:') }}
       <code>docker compose logs calendar_stream | grep "setup code"</code></li>
-    <li>Choose a user name and password. Your browser will ask for them from now on.</li>
+    <li>{{ _('Choose a user name and password. Your browser will ask for them from now on.') }}</li>
   </ol>
   <form class="card" method="post" action="/welcome" autocomplete="off">
-    {% if error %}<div class="err">{{ error }}</div>{% endif %}
+    {% if error %}<div class="err">{{ msg(error) }}</div>{% endif %}
     <input type="hidden" name="csrf" value="{{ csrf }}">
-    <label for="code">Setup code</label>
+    <label for="code">{{ _('Setup code') }}</label>
     <input id="code" name="code" required placeholder="ABCD-1234" maxlength="12" autofocus spellcheck="false">
-    <p class="hint">A new code is made each time the container starts, until the login exists.</p>
-    <label for="user">User name</label>
+    <p class="hint">{{ _('A new code is made each time the container starts, until the login exists.') }}</p>
+    <label for="user">{{ _('User name') }}</label>
     <input id="user" name="user" required value="{{ user or '' }}" maxlength="64" autocomplete="username" spellcheck="false">
-    <label for="password">Password</label>
+    <label for="password">{{ _('Password') }}</label>
     <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password">
-    <label for="confirm">Password again</label>
+    <label for="confirm">{{ _('Password again') }}</label>
     <input id="confirm" name="confirm" type="password" required minlength="8" autocomplete="new-password">
-    <p class="hint">At least 8 characters. It's stored hashed and can be changed later in Settings (☰).</p>
-    <button>Create login</button>
+    <p class="hint">{{ _('At least 8 characters. It’s stored hashed and can be changed later in Settings (☰).') }}</p>
+    <button>{{ _('Create login') }}</button>
   </form>
 </main></body>
 </html>

@@ -15,11 +15,12 @@ from urllib.parse import quote, urlparse
 from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi.exception_handlers import http_exception_handler as default_http_error
 from fastapi.responses import RedirectResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 
-from . import __version__
+from . import __version__, i18n
 from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, check_calendar, download,
                       empty_feed, new_calendar, parse, render)
 from .config import DEFAULT_CALENDAR_URL, settings
@@ -116,6 +117,23 @@ SECTIONS = {"status": True, "setup": False, "activity": False}
 def section_state() -> dict:
     saved = store.get("ui_sections") or {}
     return {k: bool(saved.get(k, default)) for k, default in SECTIONS.items()}
+
+
+def lang_for(request: Request) -> str:
+    """The language chosen in the status page's language menu, else the browser's."""
+    return i18n.pick(store.get("ui_lang"), request.headers.get("accept-language", ""))
+
+
+def page(request: Request, name: str, context: dict, status_code: int = 200, lang: str | None = None):
+    """Render a page in the visitor's language. Templates get `_` (translate a page text),
+    `msg` (translate a message made in Python), `dates` and the language menu's details."""
+    lang = lang or lang_for(request)
+    return templates.TemplateResponse(request, name, {
+        **context, "lang": lang, "html_lang": i18n.HTML_LANG[lang], "langs": i18n.LANGS,
+        "lang_choice": store.get("ui_lang") if store.get("ui_lang") in i18n.LANGS else "auto",
+        "_": lambda text, **kw: i18n.tr(lang, text, **kw), "msg": lambda text: i18n.message(lang, text),
+        "dates": i18n.Dates(lang), "theme": ui_theme(), "version": __version__,
+    }, status_code=status_code)
 
 
 THEMES = ("system", "light", "dark")
@@ -312,7 +330,7 @@ async def run_once(manual: bool = False):
     if state.login_failures >= MAX_AUTH_FAILURES and not manual:
         state.status = "paused"
         state.message = (f"Automatic downloads paused after {state.login_failures} rejected sign-ins, to avoid "
-                         "locking your account. Fix the secret files and restart, or press 'Sync now'.")
+                         "locking your account. Check the UID and Calendar Sync password in Setup, then press Sync now.")
         state.save()
         return
 
@@ -404,6 +422,21 @@ async def lifespan(_app):
 
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, version=__version__)
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+
+
+@app.exception_handler(HTTPException)
+async def http_error(request: Request, exc: HTTPException):
+    """Show form errors as a small page in the visitor's language (the API keeps JSON). Sign-in
+    prompts (401) and redirects (303) pass through unchanged."""
+    wants_page = "text/html" in request.headers.get("accept", "") and not request.url.path.startswith("/api/")
+    if exc.status_code in (303, 401) or not wants_page:
+        return await default_http_error(request, exc)
+    try:
+        lang = lang_for(request)
+    except Exception:
+        lang = "en"
+    return page(request, "error.html", {"detail": exc.detail, "code": exc.status_code},
+                status_code=exc.status_code, lang=lang)
 basic = HTTPBasic(auto_error=False)
 
 
@@ -499,23 +532,23 @@ def google_redirect_uri(request: Request) -> str:
     return f"{base_url(request)}/google/callback"
 
 
-def _local_time(value: str | None) -> str:
-    """An ISO time as local "15:42" today, or "Mon Oct 19 15:42" on another day."""
+def _local_time(value: str | None, lang: str = "en") -> str:
+    """An ISO time as local "15:42" today, or "Oct 19, 15:42" on another day."""
     try:
         when = datetime.fromisoformat(value).astimezone(TZ)
     except (TypeError, ValueError):
         return ""
-    return f"{when:%H:%M}" if when.date() == now().date() else f"{when:%a %b %-d %H:%M}"
+    return i18n.Dates(lang).when(when, now().date())
 
 
-def google_view(request: Request) -> dict:
+def google_view(request: Request, lang: str = "en") -> dict:
     uri = google_redirect_uri(request)
     host = urlparse(uri).hostname or ""
     info = google.info()
     return {"configured": google.configured, "connected": google.connected, "info": info,
             "client_id": google.client_id, "has_secret": bool(google.client_secret),
-            "check": google.client_check(), "checked_at": _local_time(google.client_check().get("at")),
-            "running": google_job.running, "last_sync": _local_time(info.get("last_sync")),
+            "check": google.client_check(), "checked_at": _local_time(google.client_check().get("at"), lang),
+            "running": google_job.running, "last_sync": _local_time(info.get("last_sync"), lang),
             "redirect_uri": uri,
             # Google only sends sign-ins back to https:// addresses, or http:// on this computer.
             "redirect_ok": uri.startswith("https://") or host in ("localhost", "127.0.0.1")}
@@ -534,7 +567,10 @@ def _span(e: Event) -> tuple[date, date, datetime | None, datetime | None]:
     return s.date(), last, s, t
 
 
-def month_view(events: list[Event], year: int, month: int, tags: list[dict] | None = None) -> dict:
+def month_view(events: list[Event], year: int, month: int, tags: list[dict] | None = None,
+               lang: str = "en") -> dict:
+    dates = i18n.Dates(lang)
+    cont = str(i18n.tr(lang, "cont."))
     weeks = pycal.Calendar(firstweekday=6).monthdatescalendar(year, month)
     color_for = tag_matcher(tags or [])   # Sunday first, like CCS+
     first_day, last_day = weeks[0][0], weeks[-1][-1]
@@ -549,7 +585,7 @@ def month_view(events: list[Event], year: int, month: int, tags: list[dict] | No
         d = max(d0, first_day)
         while d <= min(d1, last_day):
             if s is None:
-                when = "" if d == d0 else "cont."
+                when = "" if d == d0 else cont
             elif d0 == d1:
                 when = f"{s:%H:%M}–{t:%H:%M}"
             elif d == d0:
@@ -557,27 +593,29 @@ def month_view(events: list[Event], year: int, month: int, tags: list[dict] | No
             elif d == d1:
                 when = f"→ {t:%H:%M}"
             else:
-                when = "cont."
+                when = cont
             by_day.setdefault(d, []).append({"e": e, "when": when, "first": d == d0, "tag_color": color_for(e.title),
-                                             "multi": d0 != d1, "range": _range_text(e, s, t)})
+                                             "multi": d0 != d1, "range": _range_text(e, s, t, lang)})
             d += timedelta(days=1)
     prev_m = date(year, month, 1) - timedelta(days=1)
     next_m = date(year, month, 28) + timedelta(days=5)
     return {
-        "title": date(year, month, 1).strftime("%B %Y"),
+        "title": dates.title(date(year, month, 1)), "dow": dates.dow,
         "weeks": [[{"date": d, "in_month": d.month == month, "items": by_day.get(d, [])} for d in w] for w in weeks],
         "prev": f"{prev_m:%Y-%m}", "next": f"{next_m.replace(day=1):%Y-%m}", "month": f"{year}-{month:02d}",
         "today": now().date(), "count": in_month,
     }
 
 
-def _range_text(e: Event, s, t) -> str:
+def _range_text(e: Event, s, t, lang: str = "en") -> str:
+    """When an event happens, e.g. "Mon Oct 5, 09:00–10:00" or "Mon Oct 5 – Wed Oct 7 (all day)"."""
+    day = i18n.Dates(lang).day
     if s is None:
         a, b = date.fromisoformat(e.start[:10]), date.fromisoformat(e.end[:10]) - timedelta(days=1)
-        return f"{a:%a %b %-d}" + ("" if a == b else f" – {b:%a %b %-d}") + " (all day)"
+        return day(a) + ("" if a == b else f" – {day(b)}") + " " + str(i18n.tr(lang, "(all day)"))
     if s.date() == t.date():
-        return f"{s:%a %b %-d}, {s:%H:%M}–{t:%H:%M}"
-    return f"{s:%a %b %-d %H:%M} – {t:%a %b %-d %H:%M}"
+        return f"{day(s.date())}, {s:%H:%M}–{t:%H:%M}"
+    return f"{day(s.date())} {s:%H:%M} – {day(t.date())} {t:%H:%M}"
 
 
 def _parse_month(value: str | None) -> tuple[int, int]:
@@ -599,13 +637,14 @@ def index(request: Request, month: str | None = None):
     year, mon = _parse_month(month)
     history = [{**h, "time": h["time"].astimezone(TZ)} for h in store.recent_log(100)]
     url = calendar_url()
-    return templates.TemplateResponse(request, "index.html", {
+    lang = lang_for(request)
+    return page(request, "index.html", {
         "s": state, "cfg": settings, "feed": feed_url(request), "links": subscribe_links(request),
-        "version": __version__, "history": history, "cal": month_view(events, year, mon, calendar_tags()),
+        "history": history, "cal": month_view(events, year, mon, calendar_tags(), lang),
         "csrf": CSRF_TOKEN, "name": calendar_name(), "name_from_gui": bool(store.get("calendar_name")),
         "color": calendar_color(), "tags": calendar_tags(), "tag_modes": TAG_MODES,
-        "sections": section_state(), "theme": ui_theme(), "interval": interval_minutes(),
-        "google": google_view(request), "open_menu": request.query_params.get("menu") == "google",
+        "sections": section_state(), "interval": interval_minutes(),
+        "google": google_view(request, lang), "open_menu": request.query_params.get("menu") == "google",
         "public": {"url": public_url(), "from_settings": bool(store.get("public_url")),
                    "env": settings.public_base_url},
         "page_user": logins.page_user,
@@ -616,7 +655,7 @@ def index(request: Request, month: str | None = None):
             "downloaded": store.get_calendar("source") is not None,
         },
         "has_source": store.has_debug("source"), "has_response": store.has_debug("response"),
-    })
+    }, lang=lang)
 
 
 @app.post("/run", dependencies=[Depends(gui_auth)])
@@ -634,8 +673,7 @@ def welcome(request: Request):
     """First visit: create the status-page login (needs the setup code from the container log)."""
     if logins.has_page_login:
         return RedirectResponse("/", status_code=303)
-    return templates.TemplateResponse(request, "welcome.html", {
-        "csrf": CSRF_TOKEN, "theme": ui_theme(), "version": __version__, "error": ""})
+    return page(request, "welcome.html", {"csrf": CSRF_TOKEN, "error": ""})
 
 
 @app.post("/welcome")
@@ -656,9 +694,7 @@ def create_login(request: Request, csrf: str = Form(""), code: str = Form(""), u
         except LoginError as e:
             error = str(e)
     if error:
-        return templates.TemplateResponse(request, "welcome.html", {
-            "csrf": CSRF_TOKEN, "theme": ui_theme(), "version": __version__, "error": error, "user": user},
-            status_code=400)
+        return page(request, "welcome.html", {"csrf": CSRF_TOKEN, "error": error, "user": user}, status_code=400)
     state.record("info", f"Status-page login created for \"{logins.page_user}\"")
     return RedirectResponse("/", status_code=303)
 
@@ -791,6 +827,19 @@ async def set_section(csrf: str = Form(""), section: str = Form(""), open_: str 
     return Response(status_code=204)
 
 
+@app.post("/ui/lang", dependencies=[Depends(gui_auth)])
+async def set_lang(csrf: str = Form(""), lang: str = Form("")):
+    """Remember the status page's language (the language menu sends this); "auto" follows the browser."""
+    check_csrf(csrf)
+    if lang == "auto":
+        store.delete("ui_lang")
+    elif lang in i18n.LANGS:
+        store.set("ui_lang", lang)
+    else:
+        raise HTTPException(400, "Unknown language.")
+    return Response(status_code=204)
+
+
 @app.post("/ui/theme", dependencies=[Depends(gui_auth)])
 async def set_theme(csrf: str = Form(""), theme: str = Form("")):
     """Remember the light / dark / system choice (the page sends this when it's changed)."""
@@ -845,12 +894,12 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         e.start = datetime.combine(day, datetime.min.time().replace(hour=9), TZ).isoformat()
         e.end = datetime.combine(day, datetime.min.time().replace(hour=10), TZ).isoformat()
     original = united_original(uid) if e.origin == "united" and uid else None
-    return templates.TemplateResponse(request, "event.html", {
+    lang = lang_for(request)
+    return page(request, "event.html", {
         "e": e, "f": _form_values(e), "is_new": not uid, "original": original,
-        "original_range": _range_text(original, *_span(original)[2:]) if original else "",
-        "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": settings.timezone, "version": __version__,
-        "theme": ui_theme(),
-    })
+        "original_range": _range_text(original, *_span(original)[2:], lang) if original else "",
+        "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": settings.timezone,
+    }, lang=lang)
 
 
 def _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description) -> dict:
@@ -1054,10 +1103,12 @@ def subscribe(request: Request, token: str):
     """Shareable page (no status-page login needed); the secret token in the URL is the access control."""
     if not secrets.compare_digest(token, settings.feed_token):
         raise HTTPException(404)
-    return templates.TemplateResponse(request, "subscribe.html", {
+    # Shared with other people: shown in each visitor's browser language.
+    lang = i18n.pick(None, request.headers.get("accept-language", ""))
+    return page(request, "subscribe.html", {
         "cfg": settings, "name": calendar_name(), "links": subscribe_links(request),
         "last_success": state.last_success, "event_count": state.event_count,
-    })
+    }, lang=lang)
 
 
 @app.get("/api/status", dependencies=[Depends(gui_auth)])

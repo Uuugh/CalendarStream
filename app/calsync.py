@@ -158,7 +158,7 @@ async def download(url: str, username: str, password: str, etag: str = "", last_
                               "(network, DNS or firewall problem on this server).")
         raise SourceError(f"Connected to {host}, but it sent no reply within {int(timeout)} seconds. "
                           "United's bot protection may be holding the request; "
-                          "use Setup > Upload Calendar.ics in the meantime.")
+                          "use Upload & publish under the health bar in the meantime.")
     if code in (6, 7):
         raise SourceError(f"Couldn't reach {host}: {err.decode().strip() or f'curl error {code}'}")
     if code != 0 and not status:

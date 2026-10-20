@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="{{ html_lang }}"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ _('Something went wrong') }} · CalendarStream</title>
+{% include "_theme.html" %}
+<style>
+  * { box-sizing:border-box }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
+  main { max-width:520px; margin:0 auto; padding:48px 16px }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:22px }
+  h1 { font-size:18px; margin:0 0 10px } p { margin:0 0 16px } a { color:var(--accent); font-weight:600 }
+</style>
+</head>
+<body><main>
+  {# A form was refused (e.g. a value that isn't allowed): say why, then go back to fix it. #}
+  <div class="card">
+    <h1>{{ _('That didn’t work') if code < 500 else _('Something went wrong') }}</h1>
+    <p>{{ msg(detail) }}</p>
+    <a href="javascript:history.back()">{{ _('← Go back') }}</a> · <a href="/">CalendarStream</a>
+  </div>
+</main></body>
+</html>

@@ -5,25 +5,36 @@
 set -euo pipefail
 REPO=https://raw.githubusercontent.com/Uuugh/CalendarStream/main
 
-# Where to install. If MNT_DOCKER is set (export MNT_DOCKER=/mnt/SSD/docker before running, or in
-# .env), the database and .secrets/ go there and the stack files in $MNT_DOCKER/calendarstream.
-# Otherwise you're asked for a folder and everything goes in it.
-if [ -n "${MNT_DOCKER:-}" ]; then
-  DIR="$MNT_DOCKER/calendarstream"
-else
-  read -rp "Install CalendarStream in [$HOME/stacks/calendarstream]: " DIR </dev/tty
-  DIR="${DIR:-$HOME/stacks/calendarstream}"
-fi
-DATA="${MNT_DOCKER:-$DIR}"
-mkdir -p "$DIR" "$DATA/.secrets"
+# 1. The stack folder: where docker-compose.yml and .env go (asked every time; press Enter to keep it).
+read -rp "Folder for docker-compose.yml and .env [$HOME/stacks/calendarstream]: " DIR </dev/tty
+DIR="${DIR:-$HOME/stacks/calendarstream}"
+DIR="$(realpath -m "${DIR/#\~/$HOME}")"
+mkdir -p "$DIR"
 cd "$DIR"
+
+# 2. The data folder (MNT_DOCKER): where CalendarStream keeps its config and data, the database
+#    (calendar_stream/postgres) and .secrets/. It's saved in .env, so it's only asked once; set it
+#    beforehand to skip the question (MNT_DOCKER=/mnt/SSD/docker bash install.sh).
+if [ -z "${MNT_DOCKER:-}" ] && [ -f .env ]; then
+  MNT_DOCKER="$(sed -n 's/^MNT_DOCKER=//p' .env | tail -1 | tr -d '"'"'")"
+fi
+if [ -z "${MNT_DOCKER:-}" ]; then
+  read -rp "Folder for CalendarStream's config and data (database, .secrets) [$DIR]: " MNT_DOCKER </dev/tty
+  MNT_DOCKER="${MNT_DOCKER:-$DIR}"
+fi
+MNT_DOCKER="$(realpath -m "${MNT_DOCKER/#\~/$HOME}")"
+DATA="$MNT_DOCKER"
+mkdir -p "$DATA/.secrets"
 
 # The only two files the server needs; the app itself is a ready-made image.
 # docker-compose.yml is always refreshed; an existing .env (your settings) is kept.
 curl -fsSL "$REPO/docker-compose.yml" -o docker-compose.yml
 [ -f .env ] || curl -fsSL "$REPO/.env.default" -o .env
-if [ -n "${MNT_DOCKER:-}" ]; then
+# Remember the data folder in .env, so docker compose (and the next run) use it.
+if grep -q '^#\{0,1\}MNT_DOCKER=' .env; then
   sed -i "s|^#\{0,1\}MNT_DOCKER=.*|MNT_DOCKER=$MNT_DOCKER|" .env
+else
+  printf '\nMNT_DOCKER=%s\n' "$MNT_DOCKER" >> .env
 fi
 
 # The database password, made once at random. It also encrypts the passwords CalendarStream
@@ -45,7 +56,7 @@ for _ in $(seq 30); do
 done
 ip=$(hostname -I 2>/dev/null | awk '{print $1}' || true)
 echo
-echo "CalendarStream is in $DIR"
+echo "CalendarStream: docker-compose.yml and .env in $DIR, config and data in $DATA"
 echo "Open http://${ip:-<this server>}:8080"
 if [ -n "$code" ]; then
   echo "New install: enter the ${code} there to create your login."

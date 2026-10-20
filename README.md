@@ -17,9 +17,12 @@ On a Linux server with Docker and Compose:
 bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/install.sh)
 ```
 
-[`install.sh`](install.sh) asks where to install (unless `MNT_DOCKER` is set), downloads
-`docker-compose.yml` and `.env`, creates a random database password, starts the stack and shows
-the **setup code**. Run it again at any time to update. Then open `http://<server>:8080`:
+[`install.sh`](install.sh) asks for two folders: one for `docker-compose.yml` and `.env`, and one
+for CalendarStream's config and data (the database and `.secrets/`, saved as `MNT_DOCKER`). It
+downloads the files, creates a random database password, starts the stack and shows the **setup
+code**. Run it again at any time to update: it refreshes `docker-compose.yml` but never overwrites
+an existing `.env` or the database password, so your settings are safe. Then open
+`http://<server>:8080`:
 
 1. **Create your login** with the setup code.
 2. **Status & setup → Setup:** enter your CCS+ UID and Calendar Sync password (Setup explains how to
@@ -75,7 +78,11 @@ logins or setup codes lock an address out for 15 minutes.
   word, contains, starts with or exact title. Below: the health bar, **Sync now**, the check
   interval, the upload, the feed links, and Setup.
 - **Activity log:** each check and what changed, plus the last download for debugging.
-- **☰ Settings:** status-page login, public address, Google Calendar. Light / Dark / System theme.
+- **☰ Settings:** status-page login, public address, Google Calendar.
+- **Language** (🌐, left of the Light / Dark / System theme switch): English, Español, Français,
+  Deutsch, Português and Vlaams, or Automatic (the browser's language). Everything on the page is
+  translated, including status messages and the activity log; event titles stay as United sends
+  them. The shareable subscribe page uses each visitor's browser language.
 - `GET /api/status` and `GET /healthz` for monitoring.
 
 ## Syncing straight to Google Calendar
@@ -117,7 +124,3 @@ docker exec -it calendar_stream_db psql -U ccs calendar_stream                  
 
 **Starting over:** `docker compose down`, then delete `calendar_stream/postgres`. This erases
 everything: edits, tags, settings, logins, the Google connection and the feed links.
-
-**Upgrading from 0.1.2 or earlier**, which kept logins in secret files: start 0.1.3 or later once
-with your old `docker-compose.yml` to import them, then switch to the new compose file and delete
-`CCS_USER.txt`, `CCS_PASSWORD.txt`, `USER.txt` and `PASSWORD.txt`. Or just enter the logins again.

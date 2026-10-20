@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}>
+<html lang="{{ html_lang }}"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{ "Add event" if is_new else "Edit event" }} · CalendarStream</title>
+<title>{{ _("Add event") if is_new else _("Edit event") }} · CalendarStream</title>
 {% include "_theme.html" %}
 <style>
   * { box-sizing:border-box }
@@ -29,18 +29,17 @@
 </style>
 </head>
 <body><main>
-  <h1>{{ "Add event" if is_new else ("Edit event" if e.origin == "custom" else "Edit United event") }}</h1>
-  <p class="sub"><a href="/?month={{ month }}#cal">← Back to CalendarStream</a> · times in {{ tz }}</p>
+  <h1>{{ _("Add event") if is_new else (_("Edit event") if e.origin == "custom" else _("Edit United event")) }}</h1>
+  <p class="sub"><a href="/?month={{ month }}#cal">{{ _('← Back to CalendarStream') }}</a> · {{ _('times in {tz}', tz=tz) }}</p>
 
   {% if original %}
     {% if e.stale %}
-    <div class="note warn"><b>United changed this event after you edited it.</b> Their current version is below.
-      Save to keep your edit, or use <b>Revert to United's version</b>.</div>
+    <div class="note warn">{{ _('<b>United changed this event after you edited it.</b> Their current version is below. Save to keep your edit, or use <b>Revert to United’s version</b>.') }}</div>
     {% endif %}
-    <div class="note"><b>United's version</b> (from CCS+){% if not e.edited %} — not edited yet{% endif %}<br>
+    <div class="note">{{ _('<b>United’s version</b> (from CCS+)') }}{% if not e.edited %} — {{ _('not edited yet') }}{% endif %}<br>
       <span class="orig">{{ original.title }} · {{ original_range }}{% if original.location %} · {{ original.location }}{% endif %}</span></div>
   {% elif e.origin == "custom" and not is_new %}
-    <div class="note">Added on this page. It appears only in CalendarStream and Google, not in CCS+.</div>
+    <div class="note">{{ _('Added on this page. It appears only in CalendarStream and Google, not in CCS+.') }}</div>
   {% endif %}
 
   <form class="card" method="post" action="/event/save">
@@ -48,34 +47,34 @@
     <input type="hidden" name="uid" value="{{ e.uid }}">
     <input type="hidden" name="month" value="{{ month }}">
 
-    <label for="title">Title</label>
+    <label for="title">{{ _('Title') }}</label>
     <input type="text" id="title" name="title" value="{{ e.title }}" required maxlength="200" {% if is_new %}autofocus{% endif %}>
 
-    <label class="inline" style="margin-top:14px"><input type="checkbox" id="all_day" name="all_day" value="1" {% if e.all_day %}checked{% endif %}> All-day</label>
+    <label class="inline" style="margin-top:14px"><input type="checkbox" id="all_day" name="all_day" value="1" {% if e.all_day %}checked{% endif %}> {{ _('All-day') }}</label>
 
     <div class="row">
-      <div><label for="start_date">Starts</label><input type="date" id="start_date" name="start_date" value="{{ f.start_date }}" required></div>
+      <div><label for="start_date">{{ _('Starts') }}</label><input type="date" id="start_date" name="start_date" value="{{ f.start_date }}" required></div>
       <div class="timed"><label for="start_time">&nbsp;</label><input type="time" id="start_time" name="start_time" value="{{ f.start_time }}"></div>
     </div>
     <div class="row">
-      <div><label for="end_date" id="end_label">Ends</label><input type="date" id="end_date" name="end_date" value="{{ f.end_date }}" required></div>
+      <div><label for="end_date" id="end_label">{{ _('Ends') }}</label><input type="date" id="end_date" name="end_date" value="{{ f.end_date }}" required></div>
       <div class="timed"><label for="end_time">&nbsp;</label><input type="time" id="end_time" name="end_time" value="{{ f.end_time }}"></div>
     </div>
 
-    <label for="location">Location</label>
+    <label for="location">{{ _('Location') }}</label>
     <input type="text" id="location" name="location" value="{{ e.location }}" maxlength="200">
 
-    <label for="description">Notes</label>
+    <label for="description">{{ _('Notes') }}</label>
     <textarea id="description" name="description" maxlength="4000">{{ e.description }}</textarea>
 
     {% if e.origin == "united" and not is_new %}
     <label class="inline" style="margin-top:14px"><input type="checkbox" name="hidden" value="1" {% if e.hidden %}checked{% endif %}>
-      Hide from Google Calendar <span class="muted">(stays visible here, struck through)</span></label>
+      {{ _('Hide from Google Calendar <span class="muted">(stays visible here, struck through)</span>') }}</label>
     {% endif %}
 
     <div class="actions">
-      <button>{{ "Add event" if is_new else "Save" }}</button>
-      <a href="/?month={{ month }}#cal">Cancel</a>
+      <button>{{ _("Add event") if is_new else _("Save") }}</button>
+      <a href="/?month={{ month }}#cal">{{ _('Cancel') }}</a>
     </div>
   </form>
 
@@ -84,23 +83,26 @@
     {% if e.origin == "united" and e.edited %}
     <form method="post" action="/event/revert"><input type="hidden" name="csrf" value="{{ csrf }}">
       <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">
-      <button class="ghost">Revert to United's version</button></form>
+      <button class="ghost">{{ _('Revert to United’s version') }}</button></form>
     {% elif e.origin == "custom" %}
-    <form method="post" action="/event/delete" onsubmit="return confirm('Delete this event?')"><input type="hidden" name="csrf" value="{{ csrf }}">
+    <form method="post" action="/event/delete" id="deleteform"><input type="hidden" name="csrf" value="{{ csrf }}">
       <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">
-      <button class="danger">Delete event</button></form>
+      <button class="danger">{{ _('Delete event') }}</button></form>
     {% endif %}
   </div>
-  <p class="muted" style="font-size:12px">Changes here only affect CalendarStream and the Google feed; CCS+ is never changed.{% if e.origin == "united" %} Your edit is kept when the schedule is downloaded again.{% endif %}</p>
+  <p class="muted" style="font-size:12px">{{ _('Changes here only affect CalendarStream and Google; CCS+ is never changed.') }}{% if e.origin == "united" %} {{ _('Your edit is kept when the schedule is downloaded again.') }}{% endif %}</p>
   {% endif %}
 </main>
 <script>
+var T = { lastDay: {{ _('Last day')|string|tojson }}, ends: {{ _('Ends')|string|tojson }}, del: {{ _('Delete this event?')|string|tojson }} };
+var delForm = document.getElementById('deleteform');
+if (delForm) delForm.addEventListener('submit', function (e) { if (!confirm(T.del)) e.preventDefault(); });
 // Show the time fields only for timed events; for all-day events the end date is the last day.
 (function () {
   var box = document.getElementById('all_day'), label = document.getElementById('end_label');
   function sync() {
     document.querySelectorAll('.timed').forEach(function (el) { el.hidden = box.checked; });
-    label.textContent = box.checked ? 'Last day' : 'Ends';
+    label.textContent = box.checked ? T.lastDay : T.ends;
   }
   box.addEventListener('change', sync); sync();
   var sd = document.getElementById('start_date'), ed = document.getElementById('end_date');

@@ -5,7 +5,33 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.4**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.5**
+
+## 0.1.5 — 2026-10-20
+
+### Added
+- **F1** **Languages:** English, Español, Français, Deutsch, Português (Brasil) and Vlaams. Choose
+  one with the new **globe** button, left of the theme switch, or **Automatic** to follow the
+  browser; the choice is saved in the database. Everything on screen is translated: every page,
+  menu, button, help text and guide, status messages, the activity log, error pages, and the
+  month and day names. Event titles stay as United sends them. The shareable subscribe page uses
+  each visitor's browser language.
+- Errors from forms (e.g. a check interval below 15 minutes) are shown as a small page in your
+  language with a **Go back** link, instead of raw JSON.
+
+### Changed
+- **F2.1** The installer's first question names what goes there: "Folder for docker-compose.yml
+  and .env".
+- **F2.2** The installer then asks for **CalendarStream's config and data folder** (the database
+  and `.secrets/`, saved in `.env` as `MNT_DOCKER`). It defaults to the first folder and is only
+  asked once.
+- README: running the installer again is safe: it never overwrites an existing `.env` or the
+  database password. The note about upgrading from 0.1.2 is gone.
+- Two messages that still pointed at the old secret files and the old upload location now point
+  at Setup and **Upload & publish**.
+
+### Fixed
+- On narrow screens the title could be squeezed under the header buttons; it now shortens neatly.
 
 ## 0.1.4 — 2026-10-20
 
