@@ -122,8 +122,9 @@ are saved in the database, so they're the same in every browser.
   **Tag colours**: an event whose title matches a tag uses that tag's colour on this page; the
   first matching tag wins. Each tag matches by *Whole word* (default: `RDO` matches "RDO." but not
   "VRDO"), *Contains*, *Starts with* or *Exact title*, and **Aa** makes it match capitals exactly.
-- **Setup** (inside Status & setup, closed at first): a box for the **Copy link** URL, a checklist for Calendar Sync (UID, password, link, sign-in accepted, schedule
-  received), a box for the **Copy link** URL, **Upload Calendar.ics**, and the CCS+ steps. A link saved here wins over
+- **Setup** (inside Status & setup, closed at first): a box for the **Copy link** URL, a checklist
+  for Calendar Sync (UID, password, link, sign-in accepted, schedule received), **Upload
+  Calendar.ics**, and the CCS+ steps. A link saved here wins over
   `CCS_CALENDAR_URL` in `.env`; **Reset** goes back to `.env`. The password is never shown.
 - **Activity log**: a one-line status (sign-in, last check, schedule changed, next check, events in
   the feed), then each check and what changed (e.g. "3 new, 1 removed") in a window five rows
