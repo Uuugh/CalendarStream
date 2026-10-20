@@ -10,6 +10,7 @@
   * { box-sizing:border-box }
   body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
   main { max-width:1040px; margin:0 auto; padding:16px 16px 48px }
+  .h3 { font-size:13px; margin:0; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em }
   h2, .h2 { font-size:15px; margin:0; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em }
   .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
   h3 { font-size:13px; margin:0 0 10px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em }
@@ -62,7 +63,7 @@
   .section.open > .shead { margin-bottom:14px }
   .section > .sbody[hidden] { display:none }
   .section .peek { font-size:13px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 }
-  .section.open .peek { display:none }
+  .section.open > .shead .peek { display:none }
   /* Calendar title (read-only, in the calendar colour) and its editor */
   .calname { font-size:18px; font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
   .calname.outlined { text-shadow:-1px -1px 0 var(--ol), 1px -1px 0 var(--ol), -1px 1px 0 var(--ol), 1px 1px 0 var(--ol) }
@@ -77,6 +78,10 @@
   .editor input[name=name] { font-size:16px; font-weight:600 }
   .editor input[type=color] { flex:0 0 auto; width:40px; height:36px; padding:2px; border:1px solid var(--line); border-radius:8px; background:var(--card); cursor:pointer }
   .editor .small { padding:6px 12px; font-size:13px }
+  .editor select { flex:0 0 auto; font:inherit; font-size:13px; height:36px; padding:0 6px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--text) }
+  .editor .casebtn { flex:0 0 auto; height:36px; padding:0 9px; font-size:13px; color:var(--muted) }
+  .editor .casebtn[aria-pressed="true"] { background:var(--accent); color:var(--onaccent); border-color:var(--accent) }
+  @media (max-width:600px) { .editor .tagrow { flex-wrap:wrap } .editor .tagrow input[name=tag] { flex-basis:100% } }
   .editor .tagrows { display:grid; gap:6px }
   .editor .tagrow .addtag, .editor .tagrow .deltag { flex:0 0 auto; width:36px; height:36px; padding:0; font-size:18px; line-height:1 }
   .editor .tagrow:not(:last-child) .addtag { visibility:hidden }
@@ -227,17 +232,23 @@ Added here{% endif %}{% if e.description %}
 
       <span class="lbl">Tag colours</span>
       <div class="tagrows" id="tagrows">
-        {% for t in tags + [{"tag": "", "color": color or "#1d4ed8"}] %}
+        {% for t in tags + [{"tag": "", "color": color or "#1d4ed8", "mode": "word", "case": false}] %}
         <div class="row tagrow">
           <input type="text" name="tag" value="{{ t.tag }}" placeholder="Tag, e.g. RDO" maxlength="40" aria-label="Tag">
+          <select name="tag_mode" aria-label="How to match" title="How the tag is matched against event titles">
+            {% for k, v in tag_modes.items() %}<option value="{{ k }}"{% if t.mode == k %} selected{% endif %}>{{ v }}</option>{% endfor %}
+          </select>
+          <input type="hidden" name="tag_case" value="{{ '1' if t.case else '' }}">
+          <button type="button" class="ghost casebtn" aria-pressed="{{ 'true' if t.case else 'false' }}" title="Match capitals exactly">Aa</button>
           <input type="color" name="tag_color" value="{{ t.color }}" aria-label="Tag colour">
           <button type="button" class="ghost deltag" title="Remove this tag" aria-label="Remove tag">×</button>
           <button type="button" class="ghost addtag" title="Add a tag" aria-label="Add a tag">+</button>
         </div>
         {% endfor %}
       </div>
-      <p class="hint">An event whose title contains a tag as a whole word (ignoring capitals) uses that tag's colour; the first
-        matching tag wins. Other events use the default colour. Colours show on this page; Apple Calendar uses the default
+      <p class="hint">Events whose title matches a tag use its colour; the first matching tag wins, and other events use the
+        default colour. <b>Whole word</b>: "RDO" matches "RDO." but not "VRDO". <b>Contains</b>: anywhere, even inside a word.
+        <b>Starts with</b>: the title begins with it. <b>Exact title</b>: the whole title. <b>Aa</b>: match capitals exactly. Colours show on this page; Apple Calendar uses the default
         colour, and Google Calendar subscribers choose their own.</p>
 
       <div class="eactions">
@@ -269,25 +280,29 @@ Added here{% endif %}{% if e.description %}
         already added keep theirs (rename them in Google's settings). The colour is used by Apple Calendar and this page.</p>
     </div>
 
-    <div class="part" id="setup">
-      <h3>Setup: CCS+ Calendar Sync</h3>
-      <ul class="checks">
-        <li class="{{ 'done' if setup.uid else 'fail' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code> <span class="muted">(from <code>CCS_USER.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_USER.txt</code>{% endif %}</li>
-        <li class="{{ 'done' if setup.has_password else 'fail' }}">Calendar Sync password {% if setup.has_password %}set <span class="muted">(from <code>CCS_PASSWORD.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_PASSWORD.txt</code>{% endif %}</li>
-        <li class="done">Calendar Sync link {% if setup.url_from_gui %}<span class="muted">(set here)</span>{% elif setup.url_is_default %}<span class="muted">(default)</span>{% else %}<span class="muted">(from <code>.env</code>)</span>{% endif %}</li>
-        <li class="{{ 'done' if s.last_auth_ok else ('fail' if s.last_auth_ok == false else '') }}">CCS+ accepted the sign-in{% if s.last_auth_ok == false %} — <b>rejected</b>; check the UID and Calendar Sync password{% endif %}</li>
-        <li class="{{ 'done' if setup.downloaded else '' }}">Schedule received{% if setup.downloaded %} <span class="muted">({{ s.event_count }} events)</span>{% endif %}</li>
-      </ul>
-
+    <div class="part section{% if sections.setup %} open{% endif %}" id="setup" data-section="setup">
+      <div class="shead">
+        <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.setup else 'false' }}" aria-controls="setup-body"><span class="h3">Setup: CCS+ Calendar Sync</span></button>
+        <span class="peek">{% if s.last_auth_ok == false %}Sign-in rejected{% elif setup.downloaded %}Schedule received · {{ s.event_count }} events{% else %}Not set up yet{% endif %}</span>
+      </div>
+      <div class="sbody" id="setup-body"{% if not sections.setup %} hidden{% endif %}>
       <form method="post" action="/setup/link">
         <input type="hidden" name="csrf" value="{{ csrf }}">
-        <div class="k">Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):</div>
+        <div class="k" style="margin-top:0">Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):</div>
         <div class="feed">
           <input name="url" type="url" required value="{{ setup.url }}" placeholder="https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar">
           <button name="action" value="save">Save &amp; sync</button>
           {% if setup.url_from_gui %}<button class="ghost" name="action" value="reset" formnovalidate>Reset</button>{% endif %}
         </div>
       </form>
+
+      <ul class="checks" style="margin-top:14px">
+        <li class="{{ 'done' if setup.uid else 'fail' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code> <span class="muted">(from <code>CCS_USER.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_USER.txt</code>{% endif %}</li>
+        <li class="{{ 'done' if setup.has_password else 'fail' }}">Calendar Sync password {% if setup.has_password %}set <span class="muted">(from <code>CCS_PASSWORD.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_PASSWORD.txt</code>{% endif %}</li>
+        <li class="done">Calendar Sync link {% if setup.url_from_gui %}<span class="muted">(set here)</span>{% elif setup.url_is_default %}<span class="muted">(default)</span>{% else %}<span class="muted">(from <code>.env</code>)</span>{% endif %}</li>
+        <li class="{{ 'done' if s.last_auth_ok else ('fail' if s.last_auth_ok == false else '') }}">CCS+ accepted the sign-in{% if s.last_auth_ok == false %} — <b>rejected</b>; check the UID and Calendar Sync password{% endif %}</li>
+        <li class="{{ 'done' if setup.downloaded else '' }}">Schedule received{% if setup.downloaded %} <span class="muted">({{ s.event_count }} events)</span>{% endif %}</li>
+      </ul>
 
       <form method="post" action="/setup/upload" enctype="multipart/form-data" style="margin-top:14px">
         <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -310,6 +325,7 @@ Added here{% endif %}{% if e.description %}
         </ol>
         <p class="muted" style="font-size:13px;margin:8px 0 0">The password is only ever read from the secret file; it's never shown or stored on this page.</p>
       </details>
+      </div>
     </div>
     </div>
   </section>
@@ -394,7 +410,8 @@ var CSRF = {{ csrf|tojson }};
 // Collapsible sections: clicking the header (outside its form) or the arrow opens or closes the
 // section, and the state is saved in the database.
 document.querySelectorAll('.section[data-section]').forEach(function (sec) {
-  var head = sec.querySelector('.shead'), toggle = head.querySelector('.toggle'), body = sec.querySelector('.sbody');
+  var head = sec.querySelector(':scope > .shead'), toggle = head.querySelector('.toggle'),
+      body = sec.querySelector(':scope > .sbody');
   function set(open) {
     sec.classList.toggle('open', open);
     body.hidden = !open;
@@ -437,8 +454,15 @@ document.querySelectorAll('.section[data-section]').forEach(function (sec) {
     if (e.target.closest('.addtag')) {
       var copy = row.cloneNode(true);
       copy.querySelector('input[name=tag]').value = '';
+      copy.querySelector('select[name=tag_mode]').value = 'word';
+      copy.querySelector('input[name=tag_case]').value = '';
+      copy.querySelector('.casebtn').setAttribute('aria-pressed', 'false');
       rows.appendChild(copy);
       copy.querySelector('input[name=tag]').focus();
+    } else if (e.target.closest('.casebtn')) {
+      var on = row.querySelector('input[name=tag_case]').value !== '1';
+      row.querySelector('input[name=tag_case]').value = on ? '1' : '';
+      e.target.closest('.casebtn').setAttribute('aria-pressed', String(on));
     } else if (e.target.closest('.deltag')) {
       if (rows.children.length > 1) row.remove(); else row.querySelector('input[name=tag]').value = '';
     }

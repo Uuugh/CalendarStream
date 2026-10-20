@@ -119,9 +119,10 @@ are saved in the database, so they're the same in every browser.
   calendars already subscribed keep their name, so rename those in Google. The default colour
   tints the month view and is offered to subscribers as `X-APPLE-CALENDAR-COLOR` (Apple Calendar
   uses it; Google subscribers pick their own); **Default** goes back to the standard colours.
-  **Tag colours**: an event whose title contains a tag as a whole word (e.g. `RDO`, not matching
-  "VRDO") uses that tag's colour on this page; the first matching tag wins.
-- **Setup**: checklist for Calendar Sync (UID, password, link, sign-in accepted, schedule
+  **Tag colours**: an event whose title matches a tag uses that tag's colour on this page; the
+  first matching tag wins. Each tag matches by *Whole word* (default: `RDO` matches "RDO." but not
+  "VRDO"), *Contains*, *Starts with* or *Exact title*, and **Aa** makes it match capitals exactly.
+- **Setup** (inside Status & setup, closed at first): a box for the **Copy link** URL, a checklist for Calendar Sync (UID, password, link, sign-in accepted, schedule
   received), a box for the **Copy link** URL, **Upload Calendar.ics**, and the CCS+ steps. A link saved here wins over
   `CCS_CALENDAR_URL` in `.env`; **Reset** goes back to `.env`. The password is never shown.
 - **Activity log**: a one-line status (sign-in, last check, schedule changed, next check, events in

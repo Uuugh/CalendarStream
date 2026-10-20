@@ -9,6 +9,7 @@ import re
 import secrets
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timedelta
+from itertools import zip_longest
 from pathlib import Path
 from urllib.parse import quote, urlparse
 from zoneinfo import ZoneInfo
@@ -61,22 +62,39 @@ def calendar_color() -> str:
 
 MAX_TAGS, MAX_TAG_LEN = 30, 40
 
+# How a tag is matched against an event title. "word" is the default.
+TAG_MODES = {
+    "word": "Whole word",      # "RDO" matches "RDO" and "RDO." but not "VRDO"
+    "contains": "Contains",    # "RDO" also matches "VRDO"
+    "starts": "Starts with",   # "UA" matches "UA 122 EWR-LHR" but not "TRV UA"
+    "exact": "Exact title",    # the whole title must be the tag
+}
+
 
 def calendar_tags() -> list[dict]:
-    """Tag colours set on the status page: [{"tag": "RDO", "color": "#rrggbb"}, …], in priority order.
+    """Tag colours set on the status page, in priority order:
+    [{"tag": "RDO", "color": "#rrggbb", "mode": "word", "case": False}, …].
     Validated again on the way out because the colours are written into the page's CSS."""
     tags = []
     for t in store.get("calendar_tags") or []:
         tag, color = str(t.get("tag", "")).strip(), str(t.get("color", ""))
+        mode = t.get("mode") if t.get("mode") in TAG_MODES else "word"
         if tag and COLOR_RE.match(color):
-            tags.append({"tag": tag[:MAX_TAG_LEN], "color": color.lower()})
+            tags.append({"tag": tag[:MAX_TAG_LEN], "color": color.lower(), "mode": mode, "case": bool(t.get("case"))})
     return tags[:MAX_TAGS]
 
 
+def _tag_pattern(t: dict) -> re.Pattern:
+    tag = re.escape(t["tag"])
+    pattern = {"word": r"(?<!\w)" + tag + r"(?!\w)", "contains": tag,
+               "starts": r"^\s*" + tag, "exact": r"^\s*" + tag + r"\s*$"}[t["mode"]]
+    return re.compile(pattern, 0 if t["case"] else re.IGNORECASE)
+
+
 def tag_matcher(tags: list[dict]):
-    """Return a function giving the colour of the first tag found as a whole word in a title
-    (ignoring case), or "" when none match. "RDO" matches "RDO" and "RDO." but not "VRDO"."""
-    rules = [(re.compile(r"(?<!\w)" + re.escape(t["tag"]) + r"(?!\w)", re.IGNORECASE), t["color"]) for t in tags]
+    """Return a function giving the colour of the first tag that matches an event title
+    (by each tag's mode and case setting), or "" when none match."""
+    rules = [(_tag_pattern(t), t["color"]) for t in tags]
 
     def color_for(title: str) -> str:
         return next((color for rx, color in rules if rx.search(title)), "")
@@ -85,7 +103,7 @@ def tag_matcher(tags: list[dict]):
 
 # Collapsible sections on the status page, and whether each starts open. The open/closed state
 # is saved in the database so it's the same in every browser.
-SECTIONS = {"status": True, "activity": False}
+SECTIONS = {"status": True, "setup": False, "activity": False}
 
 
 def section_state() -> dict:
@@ -435,7 +453,8 @@ def index(request: Request, month: str | None = None):
         "s": state, "cfg": settings, "feed": feed_url(request), "links": subscribe_links(request),
         "version": __version__, "history": history, "cal": month_view(events, year, mon, calendar_tags()),
         "csrf": CSRF_TOKEN, "name": calendar_name(), "name_from_gui": bool(store.get("calendar_name")),
-        "color": calendar_color(), "tags": calendar_tags(), "sections": section_state(), "theme": ui_theme(),
+        "color": calendar_color(), "tags": calendar_tags(), "tag_modes": TAG_MODES,
+        "sections": section_state(), "theme": ui_theme(),
         "setup": {
             "uid": _mask(settings.username) if settings.username else "",
             "has_password": bool(settings.password),
@@ -477,7 +496,8 @@ async def set_link(csrf: str = Form(""), url: str = Form(""), action: str = Form
 
 @app.post("/feed/name", dependencies=[Depends(gui_auth)])
 async def set_name(csrf: str = Form(""), name: str = Form(""), color: str = Form(""),
-                   color_default: str = Form(""), tag: list[str] = Form([]), tag_color: list[str] = Form([])):
+                   color_default: str = Form(""), tag: list[str] = Form([]), tag_color: list[str] = Form([]),
+                   tag_mode: list[str] = Form([]), tag_case: list[str] = Form([])):
     """Save the calendar's name, colour and tag colours (the title editor of Status & setup).
     A blank name goes back to CALENDAR_NAME from .env. `color` is only sent when it was changed on
     the page; `color_default` clears it. Tag rows with no text are dropped."""
@@ -497,13 +517,14 @@ async def set_name(csrf: str = Form(""), name: str = Form(""), color: str = Form
         store.set("calendar_color", color.lower())
         notes.append(f"colour {color.lower()}")
     tags = []
-    for t, c in zip(tag, tag_color):
+    # Each row sends one value per field (the case toggle is a hidden "1"/"" input), so they line up.
+    for t, c, m, cs in zip_longest(tag, tag_color, tag_mode, tag_case, fillvalue=""):
         t = " ".join(t.split())[:MAX_TAG_LEN]
         if not t:
             continue
         if not COLOR_RE.match(c):
             raise HTTPException(400, f"Choose a colour for the tag \"{t}\" with the colour picker.")
-        tags.append({"tag": t, "color": c.lower()})
+        tags.append({"tag": t, "color": c.lower(), "mode": m if m in TAG_MODES else "word", "case": cs == "1"})
     if len(tags) > MAX_TAGS:
         raise HTTPException(400, f"Up to {MAX_TAGS} tags can be used.")
     if tags != calendar_tags():

@@ -5,7 +5,20 @@ Versions are numbered `0.0.x` until a new minor version is decided. Every releas
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.10**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.11**
+
+## 0.0.11 — 2026-10-20
+
+### Added
+- **F1** Each tag row has a **match** setting: *Whole word* (default; "RDO" matches "RDO." but not
+  "VRDO"), *Contains* (anywhere, even inside a word), *Starts with*, or *Exact title*; and an **Aa**
+  button to match capitals exactly.
+
+### Changed
+- **F2.1** In **Setup: CCS+ Calendar Sync**, the box for the CCS+ **Copy link** URL comes first,
+  directly under the title.
+- **F2.2** Setup can be collapsed and starts closed, showing a one-line summary (e.g. "Schedule
+  received · 97 events"). Whether it's open is saved in the database like the other sections.
 
 ## 0.0.10 — 2026-10-20
 
