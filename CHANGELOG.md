@@ -5,7 +5,23 @@ Versions are numbered `0.0.x` until a new minor version is decided. Every releas
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.7**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.8**
+
+## 0.0.8 — 2026-10-20
+
+### Added
+- **F1** A colour picker next to **Save**. The colour tints United's events in the month view
+  (timed lighter, all-day stronger) and is added to the feed as `X-APPLE-CALENDAR-COLOR`, which
+  Apple Calendar uses. Google Calendar ignores feed colours, so Google subscribers choose their own.
+
+### Changed
+- **F2** The Activity log starts closed. Which sections are open is now saved in the database, so
+  it's the same in every browser and after signing in again.
+- The light / dark / system theme is also saved in the database, so every browser uses the same
+  theme. Pages are drawn in the chosen theme from the start (no flash of the other theme).
+- **F3** The calendar is now at the top of the page.
+- **F4** The calendar's name, colour and **Save** are now the title of the Status & setup section.
+  Clicking elsewhere in that title, or its arrow, opens or closes the section.
 
 ## 0.0.7 — 2026-10-20
 

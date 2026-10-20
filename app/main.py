@@ -5,6 +5,7 @@ import asyncio
 import calendar as pycal
 import json
 import logging
+import re
 import secrets
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timedelta
@@ -44,8 +45,37 @@ def calendar_url() -> str:
 
 
 def calendar_name() -> str:
-    """Name set on the status page (F1), else CALENDAR_NAME from .env."""
+    """Name set on the status page, else CALENDAR_NAME from .env."""
     return store.get("calendar_name") or settings.calendar_name
+
+
+COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def calendar_color() -> str:
+    """Colour set on the status page (#rrggbb), or "" for none. Validated again on the way out
+    because it is written into the page's CSS."""
+    color = store.get("calendar_color") or ""
+    return color.lower() if COLOR_RE.match(color) else ""
+
+
+# Collapsible sections on the status page, and whether each starts open. The open/closed state
+# is saved in the database so it's the same in every browser.
+SECTIONS = {"status": True, "activity": False}
+
+
+def section_state() -> dict:
+    saved = store.get("ui_sections") or {}
+    return {k: bool(saved.get(k, default)) for k, default in SECTIONS.items()}
+
+
+THEMES = ("system", "light", "dark")
+
+
+def ui_theme() -> str:
+    """Light / dark / system, saved in the database so every browser uses the same choice."""
+    theme = store.get("ui_theme")
+    return theme if theme in THEMES else "system"
 
 
 class State:
@@ -105,7 +135,8 @@ def publish(raw: bytes | None, sha: str | None = None) -> tuple[list[Event], lis
         cal, base, digest = parse(raw, settings.timezone, defaults())
     else:
         cal, base, digest = new_calendar(), [], ""
-    feed, events = render(cal, base, calendar_name(), settings.timezone, store.get_edits(), store.get_customs())
+    feed, events = render(cal, base, calendar_name(), settings.timezone, store.get_edits(), store.get_customs(),
+                          calendar_color())
     previous = store.load_events()
     if raw is not None:
         store.save_calendar("source", raw, sha or digest)
@@ -379,6 +410,7 @@ def index(request: Request, month: str | None = None):
         "s": state, "cfg": settings, "feed": feed_url(request), "links": subscribe_links(request),
         "version": __version__, "history": history, "cal": month_view(events, year, mon),
         "csrf": CSRF_TOKEN, "name": calendar_name(), "name_from_gui": bool(store.get("calendar_name")),
+        "color": calendar_color(), "sections": section_state(), "theme": ui_theme(),
         "setup": {
             "uid": _mask(settings.username) if settings.username else "",
             "has_password": bool(settings.password),
@@ -419,17 +451,46 @@ async def set_link(csrf: str = Form(""), url: str = Form(""), action: str = Form
 
 
 @app.post("/feed/name", dependencies=[Depends(gui_auth)])
-async def set_name(csrf: str = Form(""), name: str = Form("")):
-    """F1: name the calendar as Google shows it. Blank = back to CALENDAR_NAME from .env."""
+async def set_name(csrf: str = Form(""), name: str = Form(""), color: str = Form("")):
+    """Name (and optionally colour) the calendar. A blank name goes back to CALENDAR_NAME from .env.
+    `color` is only sent when it was changed on the page."""
     check_csrf(csrf)
     name = " ".join(name.split())[:100]
     if name and name != settings.calendar_name:
         store.set("calendar_name", name)
     else:
         store.delete("calendar_name")
+    note = f"Calendar name set to \"{calendar_name()}\""
+    if color:
+        if not COLOR_RE.match(color):
+            raise HTTPException(400, "Choose the colour with the colour picker.")
+        store.set("calendar_color", color.lower())
+        note += f", colour {color.lower()}"
     rebuild()
-    state.record("info", f"Calendar name set to \"{calendar_name()}\"")
-    return RedirectResponse("/#feedcard", status_code=303)
+    state.record("info", note)
+    return RedirectResponse("/", status_code=303)
+
+
+@app.post("/ui/section", dependencies=[Depends(gui_auth)])
+async def set_section(csrf: str = Form(""), section: str = Form(""), open_: str = Form("", alias="open")):
+    """Remember whether a status-page section is open (the page sends this when it's toggled)."""
+    check_csrf(csrf)
+    if section not in SECTIONS:
+        raise HTTPException(400, "Unknown section.")
+    saved = store.get("ui_sections") or {}
+    saved[section] = open_ == "1"
+    store.set("ui_sections", saved)
+    return Response(status_code=204)
+
+
+@app.post("/ui/theme", dependencies=[Depends(gui_auth)])
+async def set_theme(csrf: str = Form(""), theme: str = Form("")):
+    """Remember the light / dark / system choice (the page sends this when it's changed)."""
+    check_csrf(csrf)
+    if theme not in THEMES:
+        raise HTTPException(400, "Unknown theme.")
+    store.set("ui_theme", theme)
+    return Response(status_code=204)
 
 
 # --- F3: edit and add events --------------------------------------------------
@@ -480,6 +541,7 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         "e": e, "f": _form_values(e), "is_new": not uid, "original": original,
         "original_range": _range_text(original, *_span(original)[2:]) if original else "",
         "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": settings.timezone, "version": __version__,
+        "theme": ui_theme(),
     })
 
 

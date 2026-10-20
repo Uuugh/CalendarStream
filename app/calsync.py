@@ -312,14 +312,19 @@ def _write_fields(ev, e: Event, marker: str):
 
 
 def render(cal: Calendar, base: list[Event], name: str, tz_name: str,
-           edits: dict | None = None, customs: list[dict] | None = None) -> tuple[bytes, list[Event]]:
+           edits: dict | None = None, customs: list[dict] | None = None,
+           color: str = "") -> tuple[bytes, list[Event]]:
     """Apply edits, hides and added events to a parsed calendar.
-    Returns (feed bytes for Google, all events for the status page)."""
+    `color` (#rrggbb) is offered to subscribers as the calendar's colour; Apple Calendar uses it,
+    Google Calendar ignores it. Returns (feed bytes for Google, all events for the status page)."""
     from icalendar import Event as VEvent
 
     edits, customs = edits or {}, customs or []
-    for prop in ("X-WR-CALNAME", "X-WR-TIMEZONE", "REFRESH-INTERVAL", "X-PUBLISHED-TTL", "NAME"):
+    for prop in ("X-WR-CALNAME", "X-WR-TIMEZONE", "REFRESH-INTERVAL", "X-PUBLISHED-TTL", "NAME",
+                 "X-APPLE-CALENDAR-COLOR"):
         cal.pop(prop, None)
+    if color:
+        cal.add("x-apple-calendar-color", color.upper())
     cal.add("x-wr-calname", name)
     cal.add("name", name)
     cal.add("x-wr-timezone", tz_name)

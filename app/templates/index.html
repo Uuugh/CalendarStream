@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,7 +10,8 @@
   * { box-sizing:border-box }
   body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
   main { max-width:1040px; margin:0 auto; padding:16px 16px 48px }
-  h2 { font-size:15px; margin:0; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em }
+  h2, .h2 { font-size:15px; margin:0; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em }
+  .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
   h3 { font-size:13px; margin:0 0 10px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em }
   .sub { color:var(--muted); margin:0 0 16px; font-size:13px; word-break:break-word }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px }
@@ -52,14 +53,19 @@
   .menu[hidden] { display:none }
   .menu .title { font-weight:700; font-size:14px; margin-bottom:4px }
 
-  /* Collapsible sections (F5) */
-  details.section > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px; flex-wrap:wrap }
-  details.section > summary::-webkit-details-marker { display:none }
-  details.section > summary::before { content:"▸"; color:var(--muted); font-size:13px; transition:transform .15s }
-  details.section[open] > summary::before { transform:rotate(90deg) }
-  details.section[open] > summary { margin-bottom:14px }
-  details.section > summary .peek:not(.pill) { font-size:13px; color:var(--muted); font-weight:400; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 }
-  details.section[open] > summary .peek { display:none }
+  /* Collapsible sections: a header that toggles the body; open/closed is saved in the database */
+  .section > .shead { display:flex; align-items:center; gap:10px; flex-wrap:wrap; cursor:pointer }
+  .section > .shead .toggle { display:inline-flex; align-items:center; gap:8px; background:transparent; color:var(--muted);
+                              border:0; padding:0; font:inherit; cursor:pointer }
+  .section > .shead .toggle::before { content:"▸"; font-size:13px; transition:transform .15s }
+  .section.open > .shead .toggle::before { transform:rotate(90deg) }
+  .section.open > .shead { margin-bottom:14px }
+  .section > .sbody[hidden] { display:none }
+  .section .peek { font-size:13px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 }
+  .section.open .peek { display:none }
+  .namebox { display:flex; gap:6px; align-items:center; flex:1; min-width:240px; max-width:560px; cursor:auto }
+  .namebox input[type=text] { flex:1; min-width:0; font:inherit; font-size:15px; font-weight:600; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .namebox input[type=color] { width:38px; height:36px; padding:2px; border:1px solid var(--line); border-radius:8px; background:var(--bg); cursor:pointer }
 
   /* Setup */
   .checks { list-style:none; padding:0; margin:0 0 12px; display:grid; gap:6px; font-size:14px }
@@ -96,8 +102,9 @@
   @media (hover:none) { .add { visibility:visible; opacity:.6 } }
   .legend { display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin:8px 0 0 }
   .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; background:var(--sw) }
-  .namebox { display:flex; gap:6px; flex:1; min-width:240px }
-  .namebox input { flex:1; min-width:0; font:inherit; font-size:14px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  /* F1: the chosen calendar colour tints United's events (timed lighter, all-day stronger) */
+  .tinted .ev:not(.custom) { background:color-mix(in srgb, var(--cal) 18%, var(--card)); color:color-mix(in srgb, var(--cal) 70%, var(--text)) }
+  .tinted .ev.allday:not(.custom) { background:color-mix(in srgb, var(--cal) 34%, var(--card)) }
 
   /* Activity log (F1.2–F1.4) */
   .statline { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:13px; margin:0 0 12px }
@@ -135,10 +142,63 @@
   {% set cls = {"ok":"ok","running":"run","starting":"run","paused":"warn"}.get(s.status,"bad") %}
   {% set label = {"ok":"Healthy","running":"Syncing…","starting":"Starting","paused":"Paused","auth_failed":"Sign-in rejected","blocked":"Blocked","error":"Error"}.get(s.status, s.status) %}
 
-  {# F1.1: health bar, Google Calendar feed and setup, in one collapsible section #}
-  <details class="card section" id="status" data-section="status" open>
-    <summary><h2>Status &amp; setup</h2><span class="pill {{ cls }} peek">{{ label }}</span><span class="peek">{{ s.message }}</span></summary>
+  <div class="card" id="cal">
+    <div class="calhead">
+      <a class="navbtn" href="?month={{ cal.prev }}" title="Previous month" aria-label="Previous month">‹</a>
+      <a class="navbtn" href="?month={{ cal.next }}" title="Next month" aria-label="Next month">›</a>
+      <a class="navbtn wide" href="/">Today</a>
+      <span class="title">{{ cal.title }}</span>
+      <span class="muted" style="font-size:13px">{{ cal.count }} event{{ "" if cal.count == 1 else "s" }} · times in {{ cfg.timezone }}</span>
+    </div>
+    <div class="scroll"><div class="month{% if color %} tinted{% endif %}"{% if color %} style="--cal:{{ color }}"{% endif %}>
+      {% for d in ["Su","Mo","Tu","We","Th","Fr","Sa"] %}<div class="dow">{{ d }}</div>{% endfor %}
+      {% for week in cal.weeks %}{% for day in week %}
+      <div class="day{% if not day.in_month %} out{% endif %}{% if day.date == cal.today %} today{% endif %}">
+        <div class="dayhead"><span class="num">{{ day.date.day }}</span>
+          <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="Add an event on {{ day.date.strftime('%b %-d') }}" aria-label="Add event">+</a></div>
+        {% for it in day["items"] %}
+        {% set e = it.e %}
+        <details class="ev{% if e.all_day %} allday{% endif %}{% if e.origin == 'custom' %} custom{% endif %}{% if e.hidden %} hidden{% endif %}">
+          <summary title="{{ e.title }}{% if e.hidden %} (hidden from Google){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if e.stale %}<span class="mark" title="United changed this since your edit">⚠</span>{% elif e.edited %}<span class="mark" title="Edited here">✎</span>{% endif %}</summary>
+          <div class="body"><b>{{ e.title }}</b>
+{{ it.range }}{% if e.location %}
+📍 {{ e.location }}{% endif %}{% if e.hidden %}
+Hidden from Google Calendar{% endif %}{% if e.stale %}
+⚠ United changed this event after you edited it{% elif e.edited %}
+✎ Edited here{% elif e.origin == 'custom' %}
+Added here{% endif %}{% if e.description %}
 
+{{ e.description }}{% endif %}
+<a class="edit" href="/event?uid={{ e.uid|urlencode }}&month={{ cal.month }}">Edit</a></div>
+        </details>
+        {% endfor %}
+      </div>
+      {% endfor %}{% endfor %}
+    </div></div>
+    <div class="legend">
+      {% if color %}<span style="--sw:color-mix(in srgb, {{ color }} 18%, var(--card))">Timed</span><span style="--sw:color-mix(in srgb, {{ color }} 34%, var(--card))">All-day</span>{% else %}<span style="--sw:var(--ev)">Timed</span><span style="--sw:var(--allday)">All-day</span>{% endif %}<span style="--sw:var(--custom)">Added here</span>
+      <span style="--sw:transparent">✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google</span>
+    </div>
+    <p class="muted" style="font-size:12px;margin:6px 0 0">This is the schedule as it's sent to Google Calendar. Click an event for details or to edit it; use + on a day to add one. Changes here never affect CCS+.</p>
+  </div>
+
+  {# Status & setup: the header is the calendar's name, colour and Save; the body has the health bar,
+     the Google Calendar feed and setup. #}
+  <section class="card section{% if sections.status %} open{% endif %}" id="status" data-section="status" aria-label="Status &amp; setup">
+    <div class="shead">
+      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.status else 'false' }}" aria-controls="status-body"
+              title="Show or hide status &amp; setup"><span class="sr">Status &amp; setup</span></button>
+      <form class="namebox" method="post" action="/feed/name">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="text" name="name" value="{{ name }}" placeholder="Calendar Name" aria-label="Calendar Name" maxlength="100"
+               title="The calendar's name in Google Calendar">
+        <input type="color" id="colorpick" value="{{ color or '#1d4ed8' }}" aria-label="Calendar colour"
+               title="Calendar colour: used by Apple Calendar and this page. Google Calendar subscribers choose their own colour in Google.">
+        <button class="ghost">Save</button>
+      </form>
+      <span class="pill {{ cls }} peek" style="flex:0 0 auto">{{ label }}</span><span class="peek">{{ s.message }}</span>
+    </div>
+    <div class="sbody" id="status-body"{% if not sections.status %} hidden{% endif %}>
     <div class="banner">
       <span class="pill {{ cls }}">{{ label }}</span>
       <div class="msg">{{ s.message or "—" }}</div>
@@ -152,18 +212,14 @@
       <div class="actions">
         <a class="btn" href="{{ links.google }}" target="_blank" rel="noopener">Add to Google Calendar</a>
         <a class="btn2" href="{{ links.page }}" target="_blank">Open subscribe page</a>
-        <form class="namebox" method="post" action="/feed/name" title="The calendar's name in Google Calendar">
-          <input type="hidden" name="csrf" value="{{ csrf }}">
-          <input name="name" value="{{ name }}" placeholder="Calendar Name" aria-label="Calendar Name" maxlength="100">
-          <button class="ghost">Save</button>
-        </form>
       </div>
       <div class="k"><b>(Recommended)</b> Shareable subscribe page — send this to anyone who should see the schedule (no status-page login needed):</div>
       <div class="feed"><input id="page" readonly onclick="this.select()" value="{{ links.page }}"><button type="button" onclick="copyField('page', this)">Copy</button></div>
       <div class="k">Raw feed URL (for adding manually: Google Calendar → Other calendars → + → From URL):</div>
       <div class="feed"><input id="feed" readonly onclick="this.select()" value="{{ feed }}"><button type="button" onclick="copyField('feed', this)">Copy</button></div>
       <p class="muted" style="font-size:13px;margin:8px 0 0">Google re-checks subscribed feeds on its own schedule (typically every several hours).
-        The name is what Google shows for new subscriptions; calendars already added keep theirs (rename them in Google's settings).</p>
+        The name at the top of this section is what Google shows for new subscriptions; calendars already added keep theirs
+        (rename them in Google's settings). The colour is used by Apple Calendar and this page; Google subscribers pick their own.</p>
     </div>
 
     <div class="part" id="setup">
@@ -208,52 +264,17 @@
         <p class="muted" style="font-size:13px;margin:8px 0 0">The password is only ever read from the secret file; it's never shown or stored on this page.</p>
       </details>
     </div>
-  </details>
-
-  <div class="card" id="cal">
-    <div class="calhead">
-      <a class="navbtn" href="?month={{ cal.prev }}" title="Previous month" aria-label="Previous month">‹</a>
-      <a class="navbtn" href="?month={{ cal.next }}" title="Next month" aria-label="Next month">›</a>
-      <a class="navbtn wide" href="/">Today</a>
-      <span class="title">{{ cal.title }}</span>
-      <span class="muted" style="font-size:13px">{{ cal.count }} event{{ "" if cal.count == 1 else "s" }} · times in {{ cfg.timezone }}</span>
     </div>
-    <div class="scroll"><div class="month">
-      {% for d in ["Su","Mo","Tu","We","Th","Fr","Sa"] %}<div class="dow">{{ d }}</div>{% endfor %}
-      {% for week in cal.weeks %}{% for day in week %}
-      <div class="day{% if not day.in_month %} out{% endif %}{% if day.date == cal.today %} today{% endif %}">
-        <div class="dayhead"><span class="num">{{ day.date.day }}</span>
-          <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="Add an event on {{ day.date.strftime('%b %-d') }}" aria-label="Add event">+</a></div>
-        {% for it in day["items"] %}
-        {% set e = it.e %}
-        <details class="ev{% if e.all_day %} allday{% endif %}{% if e.origin == 'custom' %} custom{% endif %}{% if e.hidden %} hidden{% endif %}">
-          <summary title="{{ e.title }}{% if e.hidden %} (hidden from Google){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if e.stale %}<span class="mark" title="United changed this since your edit">⚠</span>{% elif e.edited %}<span class="mark" title="Edited here">✎</span>{% endif %}</summary>
-          <div class="body"><b>{{ e.title }}</b>
-{{ it.range }}{% if e.location %}
-📍 {{ e.location }}{% endif %}{% if e.hidden %}
-Hidden from Google Calendar{% endif %}{% if e.stale %}
-⚠ United changed this event after you edited it{% elif e.edited %}
-✎ Edited here{% elif e.origin == 'custom' %}
-Added here{% endif %}{% if e.description %}
-
-{{ e.description }}{% endif %}
-<a class="edit" href="/event?uid={{ e.uid|urlencode }}&month={{ cal.month }}">Edit</a></div>
-        </details>
-        {% endfor %}
-      </div>
-      {% endfor %}{% endfor %}
-    </div></div>
-    <div class="legend">
-      <span style="--sw:var(--ev)">Timed</span><span style="--sw:var(--allday)">All-day</span><span style="--sw:var(--custom)">Added here</span>
-      <span style="--sw:transparent">✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google</span>
-    </div>
-    <p class="muted" style="font-size:12px;margin:6px 0 0">This is the schedule as it's sent to Google Calendar. Click an event for details or to edit it; use + on a day to add one. Changes here never affect CCS+.</p>
-  </div>
+  </section>
 
   {% macro t(d) %}{{ ("never" if not d else (d.strftime("%H:%M") if d.date() == cal.today else d.strftime("%b %d, %H:%M"))) }}{% endmacro %}
   {# F1.2–F1.4: title first, then the status line, a 5-row scrolling log, and the debug links #}
-  <details class="card section" id="activity" data-section="activity" open>
-    <summary><h2>Activity log</h2>{% if history %}<span class="peek">Latest: {{ history[0].msg }}</span>{% endif %}</summary>
+  <section class="card section{% if sections.activity %} open{% endif %}" id="activity" data-section="activity">
+    <div class="shead">
+      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.activity else 'false' }}" aria-controls="activity-body"><span class="h2">Activity log</span></button>
+      {% if history %}<span class="peek">Latest: {{ history[0].msg }}</span>{% endif %}
+    </div>
+    <div class="sbody" id="activity-body"{% if not sections.activity %} hidden{% endif %}>
     <div class="statline">
       <span><span class="k">Sign-in</span> {% if s.last_auth_ok is none %}<span class="muted">not yet</span>{% elif s.last_auth_ok %}<b style="color:var(--ok)">✓ accepted</b> {{ t(s.last_auth) }}{% else %}<b style="color:var(--bad)">✗ rejected</b> {{ t(s.last_auth) }}{% endif %}</span>
       <span><span class="k">Last check</span> <b>{{ t(s.last_success) }}</b></span>
@@ -268,7 +289,8 @@ Added here{% endif %}{% if e.description %}
     <div class="debug"><span class="muted">Debug (last download):</span>
       {% if has_response %}<a href="/debug/response" target="_blank">Response details</a>{% if has_source %} · <a href="/debug/source" target="_blank">Last calendar file received</a>{% endif %}
       {% else %}<span class="muted">available after the first download.</span>{% endif %}</div>
-  </details>
+    </div>
+  </section>
 </main>
 <script>
 // Copy a field's text. Uses the Clipboard API on HTTPS/localhost, and falls back to
@@ -287,16 +309,15 @@ function copyField(id, btn) {
   } else { fallback(); }
 }
 
-// Per-browser preferences. Storage can be unavailable (private windows, blocked site data),
-// so every read and write is guarded and the page still works without it.
-function pref(key, value) {
-  try {
-    if (value === undefined) return localStorage.getItem('cs.' + key);
-    if (value === null) localStorage.removeItem('cs.' + key); else localStorage.setItem('cs.' + key, value);
-  } catch (e) { return null; }
+// Save a status-page preference in the database (so every browser and login matches).
+// Fire-and-forget: if it fails, the page still works and the choice just isn't remembered.
+function savePref(path, fields) {
+  var body = new URLSearchParams(Object.assign({ csrf: CSRF }, fields));
+  fetch(path, { method: 'POST', body: body, credentials: 'same-origin' }).catch(function () {});
 }
+var CSRF = {{ csrf|tojson }};
 
-// F4: light / dark / system theme. "system" removes the override so the browser setting applies.
+// Light / dark / system theme. "system" removes the override so the device setting applies.
 (function () {
   var buttons = document.querySelectorAll('[data-theme-choice]');
   function show(choice) {
@@ -305,15 +326,16 @@ function pref(key, value) {
   buttons.forEach(function (b) {
     b.addEventListener('click', function () {
       var choice = b.dataset.themeChoice;
-      if (choice === 'system') { document.documentElement.removeAttribute('data-theme'); pref('theme', null); }
-      else { document.documentElement.setAttribute('data-theme', choice); pref('theme', choice); }
+      if (choice === 'system') document.documentElement.removeAttribute('data-theme');
+      else document.documentElement.setAttribute('data-theme', choice);
       show(choice);
+      savePref('/ui/theme', { theme: choice });
     });
   });
-  show(document.documentElement.getAttribute('data-theme') || 'system');
+  show({{ theme|tojson }});
 })();
 
-// F3: settings menu (empty for now). Closes on outside click or Escape.
+// Settings menu (empty for now). Closes on outside click or Escape.
 (function () {
   var btn = document.getElementById('menubtn'), menu = document.getElementById('menu');
   function set(open) { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); }
@@ -322,12 +344,28 @@ function pref(key, value) {
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
 })();
 
-// F5: collapsible sections remember whether they were open or closed.
-document.querySelectorAll('details.section[data-section]').forEach(function (d) {
-  var saved = pref('section.' + d.dataset.section);
-  if (saved === 'closed') d.open = false;
-  d.addEventListener('toggle', function () { pref('section.' + d.dataset.section, d.open ? 'open' : 'closed'); });
+// Collapsible sections: clicking the header (outside its form) or the arrow opens or closes the
+// section, and the state is saved in the database.
+document.querySelectorAll('.section[data-section]').forEach(function (sec) {
+  var head = sec.querySelector('.shead'), toggle = head.querySelector('.toggle'), body = sec.querySelector('.sbody');
+  function set(open) {
+    sec.classList.toggle('open', open);
+    body.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    savePref('/ui/section', { section: sec.dataset.section, open: open ? '1' : '0' });
+  }
+  head.addEventListener('click', function (e) {
+    if (e.target.closest('form')) return;   // typing in the name box or picking a colour doesn't toggle
+    set(!sec.classList.contains('open'));
+  });
 });
+
+// Calendar colour: only sent with Save when it was actually changed, so saving a new name
+// doesn't set a colour by accident.
+(function () {
+  var pick = document.getElementById('colorpick');
+  if (pick) pick.addEventListener('input', function () { pick.name = 'color'; });
+})();
 </script>
 </body>
 </html>

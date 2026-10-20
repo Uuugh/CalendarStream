@@ -101,10 +101,10 @@ the feed is rebuilt from the last download straight away.
 ## The status page
 
 The title bar shows **CalendarStream** and its version, a **Light / System / Dark** theme switch,
-and a **Settings** menu (☰, empty for now). Below it are three sections, top to bottom: **Status &
-setup**, the month view, and the **Activity log**. Status & setup and the Activity log can be
-collapsed by clicking their titles; the theme and which sections are open are remembered in each
-browser.
+and a **Settings** menu (☰, empty for now). Below it, top to bottom: the month view, **Status &
+setup** (its title is the calendar's name, colour and **Save**), and the **Activity log** (closed at
+first). Click a section's title or arrow to open or close it. The theme and which sections are open
+are saved in the database, so they're the same in every browser.
 
 - **Month view**: the schedule exactly as it's sent to Google, with ‹ › to change months and
   **Today** to come back. Multi-day trips appear on every day they cover; click an event for
@@ -114,8 +114,10 @@ browser.
   download, so they survive syncs; ✎ marks an edited event and ⚠ one that United changed after
   your edit (open it to compare, then keep yours or **Revert to United's version**). Use **+** on
   a day to add your own event (purple). Edits never change anything in CCS+.
-- **Calendar name**: the box next to the feed buttons sets the name Google shows (overrides
-  `CALENDAR_NAME`). Calendars already subscribed keep their name; rename those in Google.
+- **Calendar name and colour**: the title of Status & setup. The name is what Google shows
+  (overrides `CALENDAR_NAME`); calendars already subscribed keep their name, so rename those in
+  Google. The colour tints the month view and is offered to subscribers as
+  `X-APPLE-CALENDAR-COLOR` (Apple Calendar uses it; Google subscribers pick their own colour).
 - **Setup**: checklist for Calendar Sync (UID, password, link, sign-in accepted, schedule
   received), a box for the **Copy link** URL, **Upload Calendar.ics**, and the CCS+ steps. A link saved here wins over
   `CCS_CALENDAR_URL` in `.env`; **Reset** goes back to `.env`. The password is never shown.
@@ -199,7 +201,7 @@ Everything the app keeps is in the Postgres container `calendar_stream_db`, whos
 |---|---|
 | `calendar_files` | `source` (the calendar as downloaded) and `feed` (as served to Google) |
 | `events` | The current schedule, for the status page; replaced in one transaction per change |
-| `kv` | `feed_token`, `status`, `calendar_url` / `calendar_name` (if set on the status page), `http_cache` (ETag) |
+| `kv` | `feed_token`, `status`, `http_cache` (ETag), and what's set on the status page: `calendar_url`, `calendar_name`, `calendar_color`, `ui_theme`, `ui_sections` |
 | `event_edits` | Your changes to United's events (re-applied after each download) |
 | `custom_events` | Events you added on the status page |
 | `debug_files` | The last response's details and download |

@@ -1,13 +1,7 @@
-{#- Shared colour tokens and theme handling for the app's pages.
-    Theme choice (light / dark / system) is stored per browser in localStorage under "cs.theme";
-    with no choice, or "system", the browser's own setting applies. The script runs before the
-    page paints so a saved choice never flashes the other theme. -#}
-<script>
-  try {
-    var t = localStorage.getItem('cs.theme');
-    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
-  } catch (e) { /* storage blocked: follow the system setting */ }
-</script>
+{#- Shared colour tokens for the app's pages.
+    The page's <html> element carries data-theme="light" or "dark" when one was chosen on the status
+    page (saved in the database, so every browser matches). Without it ("system"), the device's
+    own light/dark setting applies. -#}
 {%- set dark_tokens -%}
   --bg:#0f1218; --card:#171b23; --text:#e6e8ec; --muted:#98a2b3; --line:#2a303b; --soft:#1d222c;
   --ok:#4ade80; --okbg:#0f2a20; --bad:#f87171; --badbg:#2d1414; --warn:#fbbf24; --warnbg:#2b2110;
