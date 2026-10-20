@@ -17,10 +17,7 @@ What you need: a Linux server with Docker and Docker Compose, and (for Google) a
 address that reaches the server's port 8080, for example through a reverse proxy, Cloudflare
 Tunnel or Tailscale Funnel.
 
-1. **Turn on Calendar Sync in CCS+:** Settings → Schedule Settings → Calendar syncing. Enable it,
-   create a calendar password (just for Calendar Sync, not your CCS login), and press **Copy link**.
-
-2. **Get the stack files and make your `.env`.** Only `docker-compose.yml` and `.env` are needed
+1. **Get the stack files and make your `.env`.** Only `docker-compose.yml` and `.env` are needed
    on the server; the app comes as a ready-made image. Cloning keeps the compose file easy to update
    (`git pull`):
    ```bash
@@ -32,35 +29,37 @@ Tunnel or Tailscale Funnel.
    database live) and `TZ`. Set `IMAGE_TAG=beta` to run the newest release instead of the stable
    one. Everything else is optional and explained in the file.
 
-3. **Create the five secret files** in `$MNT_DOCKER/.secrets`, one value per file. `printf`
+2. **Create the five secret files** in `$MNT_DOCKER/.secrets`, one value per file. `printf`
    writes the value without a trailing newline (one is fine too):
    ```bash
    mkdir -p /mnt/SSD/docker/.secrets        # your MNT_DOCKER + /.secrets
    cd /mnt/SSD/docker/.secrets
    printf '%s' 'U123456'          > CCS_USER.txt       # your UID
-   printf '%s' 'calendar-sync-pw' > CCS_PASSWORD.txt   # the Calendar Sync password from step 1
+   printf '%s' 'calendar-sync-pw' > CCS_PASSWORD.txt   # your CCS+ Calendar Sync password
    printf '%s' 'admin'            > USER.txt           # a status-page user name you choose
    printf '%s' 'a-gui-password'   > PASSWORD.txt       # a status-page password you choose
    printf '%s' 'a-db-password'    > DB_PASSWORD.txt    # a database password you choose
    chmod 600 *.txt
    ```
-   All five must exist or `docker compose up` stops with an error. The database password is set
+   The Calendar Sync password is the one created in CCS+ for calendar syncing, not your CCS
+   login; the status page's **Setup** explains how to get it. All five must exist or
+   `docker compose up` stops with an error. The database password is set
    the first time Postgres starts; changing the file later doesn't change it.
 
-4. **Start it** (from `~/stacks/calendarstream`):
+3. **Start it** (from `~/stacks/calendarstream`):
    ```bash
    docker compose up -d
    ```
    The images are downloaded on the first start. `docker compose logs -f calendar_stream` shows
    what the app is doing.
 
-5. **Finish on the status page:** open `http://<server>:8080` and sign in with `USER.txt` /
+4. **Finish on the status page:** open `http://<server>:8080` and sign in with `USER.txt` /
    `PASSWORD.txt`.
    - **☰ → Public address:** enter your public `https://` address (or press **This page** if you
      opened it through that address) and **Save**. It's used for the feed and subscribe links and
      for Google sign-in.
-   - **Status & setup → Setup:** if your CCS+ **Copy link** URL differs from the default, paste it
-     and press **Save & sync**. The checklist turns green once CCS+ accepts the sign-in and the
+   - **Status & setup → Setup:** follow its steps to turn on Calendar Sync in CCS+; if your
+     **Copy link** URL differs from the default, paste it and press **Save & sync**. The checklist turns green once CCS+ accepts the sign-in and the
      schedule downloads.
    - **Google Calendar** (choose one):
      - *Sync (recommended):* **☰ → Google Calendar**. Enter an OAuth client ID and secret (the menu
