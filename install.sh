@@ -30,13 +30,13 @@ mkdir -p "$DATA/.secrets"
 #    being tested). Asked every time; press Enter to keep the current choice.
 CURRENT="$( [ -f .env ] && sed -n 's/^IMAGE_TAG=//p' .env | tail -1 | tr -d '"'"'" || true)"
 case "$CURRENT" in beta) DEFAULT=beta ;; ""|latest) DEFAULT=stable ;; *) DEFAULT="$CURRENT" ;; esac
-read -rp "Release to run, stable or beta [$DEFAULT]: " CHANNEL </dev/tty
+read -rp "Which release would you like to install, latest (stable) or beta [$DEFAULT]: " CHANNEL </dev/tty
 CHANNEL="$(printf '%s' "${CHANNEL:-$DEFAULT}" | tr '[:upper:]' '[:lower:]')"
 case "$CHANNEL" in
   stable|latest) IMAGE_TAG=latest ;;
   beta) IMAGE_TAG=beta ;;
   [0-9]*.[0-9]*.[0-9]*) IMAGE_TAG="$CHANNEL" ;;    # an exact version, e.g. 0.1.5
-  *) echo "Please answer stable or beta." >&2; exit 1 ;;
+  *) echo "Please answer latest (stable) or beta." >&2; exit 1 ;;
 esac
 
 # The only two files the server needs; the app itself is a ready-made image.

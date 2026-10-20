@@ -5,7 +5,13 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.6**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.7**
+
+## 0.1.7 — 2026-10-20
+
+### Changed
+- **R1** The installer's release question now reads "Which release would you like to install,
+  latest (stable) or beta [stable]:". Both `latest` and `stable` choose the stable release.
 
 ## 0.1.6 — 2026-10-20
 

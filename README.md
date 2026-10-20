@@ -27,7 +27,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/in
 
 1. the folder for `docker-compose.yml` and `.env` (`~/stacks/calendarstream`);
 2. the folder for CalendarStream's config and data, the database and `.secrets/` (the same folder);
-3. which release to run, `stable` or `beta` (`stable`).
+3. which release to install, `latest` (stable) or `beta` (`stable`).
 
 It then downloads `docker-compose.yml` and `.env`, creates a random database password, starts
 CalendarStream and prints its address and a **setup code**. Running it again updates
