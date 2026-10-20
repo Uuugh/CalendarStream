@@ -148,7 +148,7 @@
       <li class="{{ 'done' if setup.has_password else 'fail' }}">Calendar Sync password {% if setup.has_password %}set <span class="muted">(from <code>CCS_PASSWORD.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_PASSWORD.txt</code>{% endif %}</li>
       <li class="done">Calendar Sync link {% if setup.url_from_gui %}<span class="muted">(set here)</span>{% elif setup.url_is_default %}<span class="muted">(default)</span>{% else %}<span class="muted">(from <code>.env</code>)</span>{% endif %}</li>
       <li class="{{ 'done' if s.last_auth_ok else ('fail' if s.last_auth_ok == false else '') }}">CCS+ accepted the sign-in{% if s.last_auth_ok == false %} — <b>rejected</b>; check the UID and Calendar Sync password{% endif %}</li>
-      <li class="{{ 'done' if setup.downloaded else '' }}">Schedule downloaded{% if setup.downloaded %} <span class="muted">({{ s.event_count }} events)</span>{% endif %}</li>
+      <li class="{{ 'done' if setup.downloaded else '' }}">Schedule received{% if setup.downloaded %} <span class="muted">({{ s.event_count }} events)</span>{% endif %}</li>
     </ul>
 
     <form method="post" action="/setup/link">
@@ -158,6 +158,16 @@
         <input name="url" type="url" required value="{{ setup.url }}" placeholder="https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar">
         <button name="action" value="save">Save &amp; sync</button>
         {% if setup.url_from_gui %}<button class="ghost" name="action" value="reset" formnovalidate>Reset</button>{% endif %}
+      </div>
+    </form>
+
+    <form method="post" action="/setup/upload" enctype="multipart/form-data" style="margin-top:14px">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="k">Or upload <b>Calendar.ics</b> by hand: open the Calendar Sync link in your browser, sign in with your UID and
+        Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.</div>
+      <div class="feed">
+        <input name="file" type="file" accept=".ics,text/calendar" required>
+        <button>Upload &amp; publish</button>
       </div>
     </form>
 
@@ -183,7 +193,7 @@
 
   <div class="card">
     <h2>Debug (last download)</h2>
-    {% if has_response %}<a href="/debug/response" target="_blank">Response details</a>{% if has_source %} · <a href="/debug/source" target="_blank">Calendar file as downloaded</a>{% endif %}
+    {% if has_response %}<a href="/debug/response" target="_blank">Response details</a>{% if has_source %} · <a href="/debug/source" target="_blank">Last calendar file received</a>{% endif %}
     {% else %}<p class="muted">Available after the first download.</p>{% endif %}
   </div>
 </main>

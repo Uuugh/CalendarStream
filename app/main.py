@@ -12,13 +12,14 @@ from pathlib import Path
 from urllib.parse import quote, urlparse
 from zoneinfo import ZoneInfo
 
-from fastapi import Depends, FastAPI, Form, HTTPException, Request
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import RedirectResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 
 from . import __version__
-from .calsync import AuthError, BlockedError, Defaults, Event, SourceError, download, empty_feed, process
+from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, check_calendar, download,
+                      empty_feed, process)
 from .config import DEFAULT_CALENDAR_URL, settings
 from .store import Store, from_iso, iso
 
@@ -103,6 +104,32 @@ def publish(raw: bytes, sha: str | None = None) -> tuple[list[Event], list[Event
     return events, previous
 
 
+def apply_calendar(body: bytes, how: str) -> bool:
+    """Publish a calendar file (downloaded or uploaded). Returns False if it was rejected."""
+    old_source = store.get_calendar("source")
+    changed = not old_source or old_source[0] != body
+    _, preview, digest = process(body, settings.calendar_name, settings.timezone, defaults())
+    if not preview and store.event_count() > 0:
+        state.status = "error"
+        state.message = (f"The {how} calendar has no events. Keeping the previous feed "
+                         f"({state.event_count} events) in case this is a glitch.")
+        state.record("warn", state.message)
+        return False
+    events, previous = publish(body, digest)
+    state.status, state.last_success = "ok", now()
+    if changed:
+        state.last_change = now()
+        old_ids, new_ids = {e.uid for e in previous}, {e.uid for e in events}
+        added, removed = len(new_ids - old_ids), len(old_ids - new_ids)
+        detail = f"{added} new, {removed} removed" if previous else "first copy"
+        state.message = f"{how.capitalize()} {len(events)} events ({detail})"
+        state.record("info", f"Schedule {how}: {len(events)} events ({detail})")
+    else:
+        state.message = f"Up to date: {len(events)} events (no changes)"
+        state.record("info", f"Schedule {how}: no changes")
+    return True
+
+
 async def run_once(manual: bool = False):
     if state.running:
         return
@@ -132,35 +159,13 @@ async def run_once(manual: bool = False):
 
         if dl.not_modified:
             state.status, state.last_success = "ok", now()
-            state.message = f"Up to date: {state.event_count} events (no changes on CCS+)"
-            state.record("info", "Checked CCS+ Calendar Sync: no changes")
+            state.message = f"Up to date: {state.event_count} events (no changes)"
+            state.record("info", "Schedule downloaded from CCS+: no changes")
             return
 
         store.save_debug("source", dl.body, "text/calendar; charset=utf-8")
-        old_source = store.get_calendar("source")
-        changed = not old_source or old_source[0] != dl.body
-        feed_preview, events_preview, digest = process(dl.body, settings.calendar_name, settings.timezone,
-                                                       defaults())
-        if not events_preview and store.event_count() > 0:
-            state.status = "error"
-            state.message = ("CCS+ returned a calendar with no events. Keeping the previous feed "
-                             f"({state.event_count} events) in case this is a glitch.")
-            state.record("warn", state.message)
-            return
-
-        events, previous = publish(dl.body, digest)
-        store.set("http_cache", {"etag": dl.etag, "last_modified": dl.last_modified})
-        state.status, state.last_success = "ok", now()
-        if changed:
-            state.last_change = now()
-            old_ids, new_ids = {e.uid for e in previous}, {e.uid for e in events}
-            added, removed = len(new_ids - old_ids), len(old_ids - new_ids)
-            detail = f"{added} new, {removed} removed" if previous else "first download"
-            state.message = f"Downloaded {len(events)} events ({detail})"
-            state.record("info", f"Schedule updated from CCS+: {len(events)} events ({detail})")
-        else:
-            state.message = f"Up to date: {len(events)} events (no changes on CCS+)"
-            state.record("info", "Checked CCS+ Calendar Sync: no changes")
+        if apply_calendar(dl.body, "downloaded from CCS+"):
+            store.set("http_cache", {"etag": dl.etag, "last_modified": dl.last_modified})
 
     except AuthError as e:
         state.last_auth, state.last_auth_ok = now(), False
@@ -396,6 +401,30 @@ async def set_link(csrf: str = Form(""), url: str = Form(""), action: str = Form
     state.login_failures = 0
     if not state.running:
         asyncio.create_task(run_once(manual=True))
+    return RedirectResponse("/#setup", status_code=303)
+
+
+MAX_UPLOAD = 5 * 1024 * 1024
+
+
+@app.post("/setup/upload", dependencies=[Depends(gui_auth)])
+async def upload(csrf: str = Form(""), file: UploadFile = File(...)):
+    """Publish a Calendar.ics downloaded by hand from CCS+ (United's own Google Calendar procedure)."""
+    check_csrf(csrf)
+    body = await file.read(MAX_UPLOAD + 1)
+    if len(body) > MAX_UPLOAD:
+        raise HTTPException(413, "That file is too large for a schedule (over 5 MB).")
+    try:
+        check_calendar(body)
+        store.save_debug("source", body, "text/calendar; charset=utf-8")
+        store.delete("http_cache")   # the next automatic download fetches the full file again
+        state.last_attempt = now()
+        apply_calendar(body, "uploaded by hand")
+    except SourceError as e:
+        state.record("error", f"Upload rejected: {e}")
+        raise HTTPException(400, str(e))
+    finally:
+        state.save()
     return RedirectResponse("/#setup", status_code=303)
 
 

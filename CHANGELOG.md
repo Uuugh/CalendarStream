@@ -3,7 +3,20 @@
 Versions follow `0.0.x` until a new minor version is decided.
 The newest release is also tagged `beta`; the last stable release is tagged `latest`.
 
-## 0.0.2 — 2026-10-20 (beta)
+## 0.0.3 — 2026-10-20 (beta)
+
+Fixes from a real CCS+ Calendar Sync file, and a manual fallback.
+
+- Day codes (RDO, HDO, VRDO, VHDO…) are sent by CCS+ as a midnight start with no end; they
+  now become all-day events (previously 00:00–01:00)
+- Full reserve/sick days sent as 00:01–23:59:59 now count as 24-hour events and become all-day;
+  the "24 hours" rule allows up to 5 minutes either way (previously 1)
+- **Upload Calendar.ics** in Setup: publish a file downloaded by hand from the Calendar Sync link
+  (United's own Google Calendar procedure) when the automatic download can't get through
+- Timeout errors now say whether the connection failed or the server never replied
+- Event details on the status page no longer start with a blank line
+
+## 0.0.2 — 2026-10-20
 
 Switched from reading the CCS website to United's official **CCS+ Calendar Sync** download.
 

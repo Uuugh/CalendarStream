@@ -74,18 +74,27 @@ def _snippet(body: bytes, n: int = 300) -> str:
 
 
 async def download(url: str, username: str, password: str, etag: str = "", last_modified: str = "",
-                   timeout: float = 45.0) -> Download:
+                   timeout: float = 45.0, connect_timeout: float = 20.0) -> Download:
     headers = {"User-Agent": USER_AGENT, "Accept": "text/calendar, */*;q=0.5"}
     if etag:
         headers["If-None-Match"] = etag
     if last_modified:
         headers["If-Modified-Since"] = last_modified
 
+    host = httpx.URL(url).host
     try:
-        async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(timeout, connect=connect_timeout),
+                                     follow_redirects=True) as client:
             r = await client.get(url, auth=(username, password), headers=headers)
-    except httpx.TimeoutException:
-        raise SourceError(f"{httpx.URL(url).host} didn't answer within {int(timeout)} seconds.")
+    except httpx.ConnectTimeout:
+        raise SourceError(f"Couldn't connect to {host} within {int(connect_timeout)} seconds "
+                          "(network, DNS or firewall problem on this server).")
+    except httpx.ReadTimeout:
+        raise SourceError(f"Connected to {host}, but it sent no reply within {int(timeout)} seconds. "
+                          "United's bot protection may be holding requests from this app; "
+                          "use Setup > Upload Calendar.ics in the meantime.")
+    except httpx.TimeoutException as e:
+        raise SourceError(f"{host} timed out ({type(e).__name__}).")
     except httpx.HTTPError as e:
         raise SourceError(f"Couldn't connect to {httpx.URL(url).host}: {type(e).__name__}: {e}")
 
@@ -115,6 +124,12 @@ async def download(url: str, username: str, password: str, etag: str = "", last_
                     last_modified=r.headers.get("last-modified", ""), debug=debug)
 
 
+def check_calendar(body: bytes):
+    """Make sure an uploaded file is an iCalendar file."""
+    if b"BEGIN:VCALENDAR" not in body[:2000]:
+        raise SourceError("That file isn't a calendar (.ics) file: " + (_snippet(body, 120) or "it's empty"))
+
+
 # --- Processing ------------------------------------------------------------
 
 def _as_dt(value, tz: ZoneInfo):
@@ -124,15 +139,21 @@ def _as_dt(value, tz: ZoneInfo):
     return value
 
 
-def _set_all_day(ev, first: date, days: int, note: str):
-    """Rewrite a VEVENT as an all-day event covering `days` days from `first`, keeping a note."""
+# How close to a whole number of days an event must be to count as "24 hours".
+# CCS+ writes full reserve/sick days as 00:01–23:59:59, which is 1 min 1 s short.
+ALLDAY_TOLERANCE = timedelta(minutes=5)
+
+
+def _set_all_day(ev, first: date, days: int, note: str = ""):
+    """Rewrite a VEVENT as an all-day event covering `days` days from `first`, optionally keeping a note."""
     for prop in ("DTSTART", "DTEND", "DURATION"):
         ev.pop(prop, None)
     ev.add("dtstart", first)
     ev.add("dtend", first + timedelta(days=days))
-    desc = str(ev.get("DESCRIPTION", ""))
-    ev.pop("DESCRIPTION", None)
-    ev.add("description", f"{note}\n{desc}".strip())
+    if note:
+        desc = str(ev.get("DESCRIPTION", ""))
+        ev.pop("DESCRIPTION", None)
+        ev.add("description", f"{note}\n{desc}".strip())
     return first, first + timedelta(days=days)
 
 
@@ -162,8 +183,11 @@ def process(raw: bytes, name: str, tz_name: str, defaults: Defaults) -> tuple[by
             end = _as_dt(ev["DTEND"].dt, tz)
         elif "DURATION" in ev:
             end = start + ev["DURATION"].dt
+        elif isinstance(start, datetime) and start.astimezone(tz).time() == datetime.min.time():
+            # Starts at midnight with no end: CCS+ uses this for day codes (RDO, HDO, VRDO…) -> all-day
+            start, end = _set_all_day(ev, start.astimezone(tz).date(), 1)
         elif isinstance(start, datetime):
-            # A timed event with no end: apply DEFAULT_EVENT_HOURS
+            # Any other timed event with no end: apply DEFAULT_EVENT_HOURS
             if defaults.mode == "allday":
                 start, end = _set_all_day(ev, start.astimezone(tz).date(), 1,
                                           f"Start: {start.astimezone(tz):%H:%M}")
@@ -177,7 +201,7 @@ def process(raw: bytes, name: str, tz_name: str, defaults: Defaults) -> tuple[by
         if defaults.allday_24h and isinstance(start, datetime) and isinstance(end, datetime):
             dur = end - start
             days = round(dur / timedelta(days=1))
-            if days >= 1 and abs(dur - timedelta(days=days)) <= timedelta(minutes=1):
+            if days >= 1 and abs(dur - timedelta(days=days)) <= ALLDAY_TOLERANCE:
                 s_local, e_local = start.astimezone(tz), end.astimezone(tz)
                 start, end = _set_all_day(ev, s_local.date(), days,
                                           f"Original time: {s_local:%a %b %d %H:%M} – {e_local:%a %b %d %H:%M}")
@@ -189,7 +213,7 @@ def process(raw: bytes, name: str, tz_name: str, defaults: Defaults) -> tuple[by
             end=end.isoformat() if all_day else end.astimezone(tz).isoformat(),
             all_day=all_day,
             location=str(ev.get("LOCATION", "")),
-            description=str(ev.get("DESCRIPTION", ""))[:2000],
+            description=str(ev.get("DESCRIPTION", "")).strip()[:2000],
             uid=str(ev.get("UID", "")) or hashlib.sha1(f"{start}|{ev.get('SUMMARY')}".encode()).hexdigest(),
         ))
 

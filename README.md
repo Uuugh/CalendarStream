@@ -69,9 +69,12 @@ logins; the calendar feed and subscribe page aren't affected.
 - The calendar file is kept as United sends it: same event IDs, times, time zones and
   details. Calendar Stream only changes:
   - the calendar's name (`CALENDAR_NAME`) and refresh hints for subscribers;
-  - **events with no end time** → `DEFAULT_EVENT_HOURS` long, or all-day with `allday`;
-  - **events lasting exactly 24 hours** (or 48 h, 72 h…) → all-day events on the day(s) they
-    start, with the original times kept in the notes. Turn off with `ALLDAY_24H=false`.
+  - **events with no end time that start at midnight** → all-day. CCS+ sends day codes
+    (RDO, HDO, VRDO, VHDO…) this way;
+  - **other events with no end time** → `DEFAULT_EVENT_HOURS` long, or all-day with `allday`;
+  - **events lasting 24 hours** (or 48 h, 72 h…, within 5 minutes, so CCS+'s full days written
+    as 00:01–23:59:59 count) → all-day events on the day(s) they start, with the original times
+    kept in the notes. Turn off with `ALLDAY_24H=false`.
 - Event IDs come from CCS+, so a changed trip updates the existing Google event rather than
   adding a duplicate.
 - If a download fails, or CCS+ suddenly returns an empty calendar, the previous feed is kept,
@@ -83,7 +86,13 @@ logins; the calendar feed and subscribe page aren't affected.
 | Sign-in rejected | HTTP 401: check `CCS_USER.txt` (UID) and `CCS_PASSWORD.txt` (Calendar Sync password) |
 | Paused | After 2 rejected sign-ins in a row, automatic checks stop so your account isn't locked. Fix the files, restart or press **Sync now** |
 | Blocked | HTTP 403, e.g. from Akamai. The message includes the reference number |
-| Error | Network trouble, or CCS+ answered with something that isn't a calendar |
+| Error | Network trouble, a timeout, or CCS+ answered with something that isn't a calendar |
+
+**If the automatic download doesn't get through** (for example, United's bot protection holds
+the request), open the Calendar Sync link in your browser, sign in with your UID and Calendar
+Sync password, and upload the `Calendar.ics` it downloads in **Setup → Upload Calendar.ics**.
+The feed updates immediately. This is United's own procedure for Google Calendar; Calendar
+Stream just saves you the re-import.
 
 After changing `CALENDAR_NAME`, `DEFAULT_EVENT_HOURS` or `ALLDAY_24H`, restart the container;
 the feed is rebuilt from the last download straight away.
@@ -94,7 +103,7 @@ the feed is rebuilt from the last download straight away.
   **Today** to come back. Multi-day trips appear on every day they cover; click an event for
   its times, location and details. Green items are all-day events.
 - **Setup**: checklist for Calendar Sync (UID, password, link, sign-in accepted, schedule
-  downloaded), a box for the **Copy link** URL, and the CCS+ steps. A link saved here wins over
+  received), a box for the **Copy link** URL, **Upload Calendar.ics**, and the CCS+ steps. A link saved here wins over
   `CCS_CALENDAR_URL` in `.env`; **Reset** goes back to `.env`. The password is never shown.
 - **Activity log**: each check and what changed (e.g. "3 new, 1 removed"). Kept in the database.
 - **Debug**: the last response's details and the calendar file exactly as downloaded.
