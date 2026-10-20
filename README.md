@@ -166,16 +166,21 @@ git pull                                   # newest docker-compose.yml / .env.de
 docker compose up -d                       # pulls the newest image for IMAGE_TAG, then recreates if it changed
 ```
 
-Releases are made by the **Release** GitHub Action: pushing a new `VERSION` to `main` tags it,
-moves `beta`, and builds and pushes the image (amd64 and arm64). To mark a version stable,
-open the repository's **Actions** tab → **Release** → **Run workflow** and enter the version
-(e.g. `0.0.3`); that moves `latest` for both git and the image.
+Releases are made by the **Release** GitHub Action:
+
+- A new `VERSION` on `main` tags it, moves `beta`, builds and pushes the image (amd64 and arm64),
+  and publishes a GitHub Release (pre-release) with that version's `CHANGELOG.md` notes.
+- A new `STABLE` on `main` marks that version stable: `latest` moves for both git and the image,
+  and its GitHub Release becomes the latest one. You can also do this from the repository's
+  **Actions** tab → **Release** → **Run workflow** with the version (e.g. `0.0.6`).
+
+`CHANGELOG.md` lists what was added, changed, fixed and removed in each version.
 
 If `docker compose pull` asks you to log in, the image package is private: on GitHub open
 your profile → **Packages** → `calendar_stream` → **Package settings** → change visibility to
 **Public** (or run `docker login ghcr.io` with a token that has `read:packages`).
 
-`CHANGELOG.md` lists what changed in each version; the status page shows the running version.
+The status page shows the running version.
 
 ## Where data is stored
 
@@ -209,6 +214,7 @@ app/calsync.py       Calendar Sync download + feed processing
 app/store.py         Postgres storage (tables are created automatically)
 app/templates/       status page, event editor and subscribe page
 VERSION              current version (0.0.x); see CHANGELOG.md
+STABLE               the version marked stable (tagged latest)
 ```
 
 ## Notes

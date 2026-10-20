@@ -1,18 +1,20 @@
 # Releases for Calendar Stream
-#  - Push to main that changes VERSION -> git tag v<VERSION>, moves git tag "beta",
-#    builds the image and pushes ghcr.io/<owner>/calendar_stream:<VERSION> and :beta
-#  - Run manually (Actions -> Release -> Run workflow) with a version -> marks it stable:
-#    moves git tag "latest" and points ghcr.io/<owner>/calendar_stream:latest at that version
+#  - VERSION changes on main  -> git tag v<VERSION>, move "beta", build and push
+#                                ghcr.io/<owner>/calendar_stream:<VERSION> and :beta,
+#                                GitHub Release (pre-release) with the version's CHANGELOG notes
+#  - STABLE changes on main   -> mark that version stable: move "latest" (git tag and image) and
+#                                make its GitHub Release the latest, non-pre-release one
+#  - Run manually (Actions -> Release -> Run workflow) with a version -> same as a STABLE change
 name: Release
 
 on:
   push:
     branches: [main]
-    paths: [VERSION, .github/workflows/release.yml]
+    paths: [VERSION, STABLE, .github/workflows/release.yml]
   workflow_dispatch:
     inputs:
       stable_version:
-        description: "Version to mark as stable / latest (e.g. 0.0.3)"
+        description: "Version to mark as stable / latest (e.g. 0.0.6)"
         required: true
 
 permissions:
@@ -24,26 +26,61 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  beta:
-    if: github.event_name == 'push'
+  detect:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.d.outputs.version }}
+      version_changed: ${{ steps.d.outputs.version_changed }}
+      stable: ${{ steps.d.outputs.stable }}
+      stable_changed: ${{ steps.d.outputs.stable_changed }}
+      image: ${{ steps.d.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: d
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          INPUT_STABLE: ${{ inputs.stable_version }}
+        run: |
+          set -euo pipefail
+          check() { [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "'$1' is not x.y.z"; exit 1; }; }
+          VERSION="$(tr -d '[:space:]' < VERSION)"; check "$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT" = workflow_dispatch ]; then
+            STABLE="${INPUT_STABLE#v}"; check "$STABLE"
+            echo "version_changed=false" >> "$GITHUB_OUTPUT"
+            echo "stable=$STABLE" >> "$GITHUB_OUTPUT"; echo "stable_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            CHANGED="$(git diff --name-only "$BEFORE" "$GITHUB_SHA")"
+          else
+            CHANGED="$(git ls-files)"
+          fi
+          echo "$CHANGED" | grep -qx 'VERSION' && echo "version_changed=true" >> "$GITHUB_OUTPUT" || echo "version_changed=false" >> "$GITHUB_OUTPUT"
+          if [ -f STABLE ] && echo "$CHANGED" | grep -qx 'STABLE'; then
+            STABLE="$(tr -d '[:space:]' < STABLE)"; check "$STABLE"
+            echo "stable=$STABLE" >> "$GITHUB_OUTPUT"; echo "stable_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "stable_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  beta:
+    needs: detect
+    if: needs.detect.outputs.version_changed == 'true'
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.detect.outputs.version }}
+      IMAGE: ${{ needs.detect.outputs.image }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Read version
-        id: v
-        run: |
-          set -euo pipefail
-          VERSION="$(tr -d '[:space:]' < VERSION)"
-          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "VERSION '$VERSION' is not x.y.z"; exit 1; }
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
-
       - name: Tag v<VERSION> and move beta
-        env:
-          VERSION: ${{ steps.v.outputs.version }}
         run: |
           set -euo pipefail
           git config user.name  "github-actions[bot]"
@@ -73,22 +110,37 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ steps.v.outputs.image }}:${{ steps.v.outputs.version }}
-            ${{ steps.v.outputs.image }}:beta
+            ${{ env.IMAGE }}:${{ env.VERSION }}
+            ${{ env.IMAGE }}:beta
           labels: |
-            org.opencontainers.image.version=${{ steps.v.outputs.version }}
+            org.opencontainers.image.version=${{ env.VERSION }}
             org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Summary
+      - name: GitHub Release (pre-release) with the CHANGELOG notes
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Released **${{ steps.v.outputs.version }}** (beta)" >> "$GITHUB_STEP_SUMMARY"
-          echo "Image: \`${{ steps.v.outputs.image }}:${{ steps.v.outputs.version }}\` and \`:beta\`" >> "$GITHUB_STEP_SUMMARY"
+          set -euo pipefail
+          awk -v h="## $VERSION " 'index($0,h)==1{p=1;next} /^## /{p=0} p' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "See CHANGELOG.md." > notes.md
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release edit "v$VERSION" --notes-file notes.md
+          else
+            gh release create "v$VERSION" --verify-tag --title "Calendar Stream $VERSION" \
+              --notes-file notes.md --prerelease
+          fi
+          echo "Released **$VERSION** (beta): \`$IMAGE:$VERSION\`, \`:beta\`" >> "$GITHUB_STEP_SUMMARY"
 
   latest:
-    if: github.event_name == 'workflow_dispatch'
+    needs: [detect, beta]
+    # Runs after beta when both files changed in one push; beta being skipped is fine.
+    if: always() && needs.detect.result == 'success' && needs.detect.outputs.stable_changed == 'true' && needs.beta.result != 'failure'
     runs-on: ubuntu-latest
+    env:
+      STABLE: ${{ needs.detect.outputs.stable }}
+      IMAGE: ${{ needs.detect.outputs.image }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -101,15 +153,20 @@ jobs:
       - uses: docker/setup-buildx-action@v3
       - name: Mark version stable (latest)
         env:
-          STABLE: ${{ inputs.stable_version }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          STABLE="${STABLE#v}"
-          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
           git fetch --tags --force
           git rev-parse -q --verify "refs/tags/v$STABLE" >/dev/null || { echo "Tag v$STABLE doesn't exist"; exit 1; }
           docker buildx imagetools inspect "$IMAGE:$STABLE" >/dev/null || { echo "Image $IMAGE:$STABLE doesn't exist"; exit 1; }
           git tag -f latest "v$STABLE^{commit}"
           git push -f origin refs/tags/latest
           docker buildx imagetools create -t "$IMAGE:latest" "$IMAGE:$STABLE"
-          echo "latest -> **$STABLE** (git tag and image)" >> "$GITHUB_STEP_SUMMARY"
+          awk -v h="## $STABLE " 'index($0,h)==1{p=1;next} /^## /{p=0} p' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "See CHANGELOG.md." > notes.md
+          if gh release view "v$STABLE" >/dev/null 2>&1; then
+            gh release edit "v$STABLE" --notes-file notes.md --prerelease=false --latest
+          else
+            gh release create "v$STABLE" --verify-tag --title "Calendar Stream $STABLE" --notes-file notes.md --latest
+          fi
+          echo "latest -> **$STABLE** (git tag, image and GitHub Release)" >> "$GITHUB_STEP_SUMMARY"
