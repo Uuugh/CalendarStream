@@ -1,9 +1,11 @@
+# CalendarStream: the app and its Postgres database.
+# Needs .env (only MNT_DOCKER is required) and five files in $MNT_DOCKER/.secrets (see the end).
 services:
   calendar_stream:
     # Built by GitHub Actions from https://github.com/Uuugh/CalendarStream
-    # IMAGE_TAG: beta (newest release), latest (last stable release), or a version like 0.0.2
+    # IMAGE_TAG: latest (stable), beta (newest) or an exact version such as 0.1.2
     image: ghcr.io/uuugh/calendarstream:${IMAGE_TAG:-latest}
-    # Check GitHub for a newer image on every "up" / recreate, so moving tags (beta, latest) update
+    # Check for a newer image on every "up", so the moving tags (latest, beta) update
     pull_policy: always
     container_name: calendar_stream
     env_file: .env
@@ -13,14 +15,12 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${GUID:-100}
       - TZ=${TZ:-America/Chicago}
-      # CCS+ Calendar Sync sign-in from the secrets below: CCS_USER.txt = your UID,
-      # CCS_PASSWORD.txt = the Calendar Sync password (these override CCS_USERNAME / CCS_PASSWORD in .env)
+      # Logins come from the secret files below
       - CCS_USERNAME_FILE=/run/secrets/CCS_USER
       - CCS_PASSWORD_FILE=/run/secrets/CCS_PASSWORD
-      # Status-page login comes from the secrets below (these override GUI_USERNAME / GUI_PASSWORD in .env)
       - GUI_USERNAME_FILE=/run/secrets/GUI_USER
       - GUI_PASSWORD_FILE=/run/secrets/GUI_PASSWORD
-      # All project data is stored in the Postgres container below
+      # All project data is stored in the database container below
       - DB_HOST=calendar_stream_db
       - DB_NAME=${DB_NAME:-calendar_stream}
       - DB_USER=${DB_USER:-ccs}
@@ -56,15 +56,15 @@ services:
       start_period: 30s
     restart: ${RESTART:-unless-stopped}
 
-# Logins, kept out of .env. Each file holds just the value (a trailing newline is fine).
+# One value per file (a trailing newline is fine). All five must exist.
 secrets:
-  CCS_USER:
+  CCS_USER:          # your United UID
     file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/CCS_USER.txt
-  CCS_PASSWORD:
+  CCS_PASSWORD:      # the CCS+ Calendar Sync password (not your CCS login)
     file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/CCS_PASSWORD.txt
-  GUI_USER:
+  GUI_USER:          # a user name you choose for the status page
     file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/USER.txt
-  GUI_PASSWORD:
+  GUI_PASSWORD:      # a password you choose for the status page
     file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/PASSWORD.txt
-  DB_PASSWORD:
+  DB_PASSWORD:       # a password you choose for the database (used when it's first created)
     file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/DB_PASSWORD.txt
