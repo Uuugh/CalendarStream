@@ -4,7 +4,8 @@ Keeps a Google Calendar in sync with your United Airlines CCS+ schedule.
 
 United Airlines' CCS+ doesn't keep a Google Calendar up to date automatically. United offers an
 official **Calendar Sync** download (`Calendar.ics`), protected by your UID and a Calendar Sync
-password, which has to be downloaded and re-imported into Google Calendar by hand.
+password. Apple Calendar can subscribe to it directly, but Google Calendar can't send the password,
+so for Google the file has to be downloaded and re-imported by hand.
 
 CalendarStream automates this: it downloads the official `.ics` file on a timer and either
 
