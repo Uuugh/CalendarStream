@@ -6,43 +6,75 @@ CCS+ has an official **Calendar Sync** download (`Calendar.ics`), protected by y
 a Calendar Sync password. Apple Calendar can subscribe to it directly, but Google Calendar
 can't send a username and password, so United's guide has you download and re-import the
 file by hand every time. CalendarStream does that for you: it downloads the file on a timer
-and republishes it as a feed Google Calendar subscribes to. A status page shows sync results,
-a month view of the schedule, and setup help.
+and either writes it straight into a Google calendar of its own (Google Calendar sync, with tag
+colours, updated within minutes) or republishes it as a feed that Google Calendar, Apple Calendar
+and others subscribe to. A status page shows sync results, a month view where you can edit
+events, and setup help.
 
 ## Quick start
 
-1. **Turn on Calendar Sync in CCS+:** Settings → Schedule Settings → Calendar syncing.
-   Enable it, create a calendar password (just for Calendar Sync, not your CCS login), and
-   press **Copy link**.
-2. **Create the secret files** in `$MNT_DOCKER/.secrets` (just the value in each; a trailing
-   newline is fine):
+What you need: a Linux server with Docker and Docker Compose, and (for Google) a public `https://`
+address that reaches the server's port 8080, for example through a reverse proxy, Cloudflare
+Tunnel or Tailscale Funnel.
 
-   | File | Contents |
-   |---|---|
-   | `CCS_USER.txt` | Your UID |
-   | `CCS_PASSWORD.txt` | The **Calendar Sync** password from step 1 |
-   | `USER.txt` / `PASSWORD.txt` | A login you choose for the status page |
-   | `DB_PASSWORD.txt` | A password you choose for the database |
+1. **Turn on Calendar Sync in CCS+:** Settings → Schedule Settings → Calendar syncing. Enable it,
+   create a calendar password (just for Calendar Sync, not your CCS login), and press **Copy link**.
 
+2. **Get the stack files and make your `.env`.** Only `docker-compose.yml` and `.env` are needed
+   on the server; the app comes as a ready-made image. Cloning keeps the compose file easy to update
+   (`git pull`):
    ```bash
-   sudo chmod 600 "$MNT_DOCKER/.secrets/"*.txt
+   git clone https://github.com/Uuugh/CalendarStream.git ~/stacks/calendarstream
+   cd ~/stacks/calendarstream
+   cp .env.default .env
    ```
-   All five must exist or `docker compose up` stops with an error. The database password is
-   set the first time Postgres starts; changing the file later doesn't change it.
-3. **Get the stack files.** Only `docker-compose.yml` and `.env` are needed on the server; the
-   app comes as a ready-made image. Cloning is the easiest way to keep the compose file current:
+   Open `.env` and check `MNT_DOCKER` (the only required setting: where the secrets and the
+   database live) and `TZ`. Set `IMAGE_TAG=beta` to run the newest release instead of the stable
+   one. Everything else is optional and explained in the file.
+
+3. **Create the five secret files** in `$MNT_DOCKER/.secrets`, one value per file. `printf`
+   writes the value without a trailing newline (one is fine too):
    ```bash
-   git clone https://github.com/Uuugh/CalendarStream.git ~/stacks/calendar_stream
-   cd ~/stacks/calendar_stream
-   cp .env.default .env      # then check MNT_DOCKER, TZ and IMAGE_TAG
+   mkdir -p /mnt/SSD/docker/.secrets        # your MNT_DOCKER + /.secrets
+   cd /mnt/SSD/docker/.secrets
+   printf '%s' 'U123456'          > CCS_USER.txt       # your UID
+   printf '%s' 'calendar-sync-pw' > CCS_PASSWORD.txt   # the Calendar Sync password from step 1
+   printf '%s' 'admin'            > USER.txt           # a status-page user name you choose
+   printf '%s' 'a-gui-password'   > PASSWORD.txt       # a status-page password you choose
+   printf '%s' 'a-db-password'    > DB_PASSWORD.txt    # a database password you choose
+   chmod 600 *.txt
    ```
-4. **Start it:**
+   All five must exist or `docker compose up` stops with an error. The database password is set
+   the first time Postgres starts; changing the file later doesn't change it.
+
+4. **Start it** (from `~/stacks/calendarstream`):
    ```bash
-   docker compose pull && docker compose up -d
+   docker compose up -d
    ```
-5. Open `http://<server>:8080`. If your **Copy link** URL differs from the default, paste it
-   in **Setup** and press **Save & sync**. The Setup checklist turns green once CCS+ accepts
-   the sign-in and the schedule downloads.
+   The images are downloaded on the first start. `docker compose logs -f calendar_stream` shows
+   what the app is doing.
+
+5. **Finish on the status page:** open `http://<server>:8080` and sign in with `USER.txt` /
+   `PASSWORD.txt`.
+   - **☰ → Public address:** enter your public `https://` address (or press **This page** if you
+     opened it through that address) and **Save**. It's used for the feed and subscribe links and
+     for Google sign-in.
+   - **Status & setup → Setup:** if your CCS+ **Copy link** URL differs from the default, paste it
+     and press **Save & sync**. The checklist turns green once CCS+ accepts the sign-in and the
+     schedule downloads.
+   - **Google Calendar** (choose one):
+     - *Sync (recommended):* **☰ → Google Calendar**. Enter an OAuth client ID and secret (the menu
+       has a step-by-step guide for getting them in Google Cloud), wait for the ✓, and press
+       **Connect Google Calendar**. See [Syncing straight to Google Calendar](#syncing-straight-to-google-calendar-beta).
+     - *Subscribe to the feed:* **Add to Google Calendar** in Status & setup. Google refreshes it
+       only every 8–24 hours and shows no tag colours.
+
+**Updating:** `cd ~/stacks/calendarstream && git pull && docker compose up -d`. The compose file
+pulls a newer image for the tag in `IMAGE_TAG` on every `up`.
+
+**Starting over:** stop the stack (`docker compose down`) and delete
+`$MNT_DOCKER/calendar_stream/postgres`. This erases everything saved: event edits, tags, settings,
+the Google connection and the feed link you may have shared.
 
 ### How the secrets connect
 
@@ -54,8 +86,8 @@ a month view of the schedule, and setup help.
 | `$MNT_DOCKER/.secrets/PASSWORD.txt` | `GUI_PASSWORD` | `GUI_PASSWORD_FILE` → `GUI_PASSWORD` |
 | `$MNT_DOCKER/.secrets/DB_PASSWORD.txt` | `DB_PASSWORD` | `DB_PASSWORD_FILE` → `DB_PASSWORD` (and Postgres' `POSTGRES_PASSWORD_FILE`) |
 
-Leave `CCS_USERNAME`, `CCS_PASSWORD`, `GUI_USERNAME` and `GUI_PASSWORD` blank in `.env`; the
-secrets override them. Root-only (`600`) files are fine: the container reads them at startup,
+The secret files override `CCS_USERNAME`, `CCS_PASSWORD`, `GUI_USERNAME` and `GUI_PASSWORD` if those
+are ever set in `.env` (they don't need to be). Root-only (`600`) files are fine: the container reads them at startup,
 before it drops to the `PUID`:`GUID` user (default `1000:100`). If a secret is missing, the
 container log names it. The status page locks out an address for 15 minutes after 5 wrong
 logins; the calendar feed and subscribe page aren't affected.
@@ -230,7 +262,7 @@ image `ghcr.io/uuugh/calendarstream:<version>` (called `calendar_stream` up to 0
 Choose which one the server runs with `IMAGE_TAG` in `.env` (`beta`, `latest`, or a version).
 `latest` exists only once a version has been marked stable. To update:
 ```bash
-cd ~/stacks/calendar_stream
+cd ~/stacks/calendarstream
 git pull                                   # newest docker-compose.yml / .env.default
 docker compose up -d                       # pulls the newest image for IMAGE_TAG, then recreates if it changed
 ```
