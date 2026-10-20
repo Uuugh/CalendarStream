@@ -17,7 +17,7 @@ A status page shows the schedule, lets you edit events, and walks you through se
 
 ## Quick start
 
-On a Linux server with Docker and Compose, run:
+On a Linux server with Docker, run:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/install.sh)
