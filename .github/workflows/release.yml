@@ -61,7 +61,7 @@ jobs:
             CHANGED="$(git ls-files)"
           fi
           echo "$CHANGED" | grep -qx 'VERSION' && echo "version_changed=true" >> "$GITHUB_OUTPUT" || echo "version_changed=false" >> "$GITHUB_OUTPUT"
-          if [ -f STABLE ] && echo "$CHANGED" | grep -qx 'STABLE'; then
+          if [ -f STABLE ] && echo "$CHANGED" | grep -qxE 'STABLE|\.github/workflows/release\.yml'; then
             STABLE="$(tr -d '[:space:]' < STABLE)"; check "$STABLE"
             echo "stable=$STABLE" >> "$GITHUB_OUTPUT"; echo "stable_changed=true" >> "$GITHUB_OUTPUT"
           else
@@ -151,22 +151,38 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-buildx-action@v3
-      - name: Mark version stable (latest)
+      - name: Check the version's tag and image exist
+        run: |
+          set -uo pipefail
+          git fetch --tags --force 2>&1 || { echo "::error::git fetch --tags failed"; exit 1; }
+          git rev-parse -q --verify "refs/tags/v$STABLE" >/dev/null \
+            || { echo "::error::Tag v$STABLE doesn't exist"; exit 1; }
+          if ! out=$(docker buildx imagetools inspect "$IMAGE:$STABLE" 2>&1); then
+            echo "::error::Image $IMAGE:$STABLE not found: $(echo "$out" | tail -3 | tr '\n' ' ')"; exit 1
+          fi
+      - name: Move the latest git tag
+        run: |
+          set -uo pipefail
+          git tag -f latest "v$STABLE^{commit}"
+          if ! out=$(git push -f origin refs/tags/latest 2>&1); then
+            echo "::error::git push latest failed: $(echo "$out" | tail -3 | tr '\n' ' ')"; exit 1
+          fi
+      - name: Point the latest image at the version
+        run: |
+          set -uo pipefail
+          if ! out=$(docker buildx imagetools create -t "$IMAGE:latest" "$IMAGE:$STABLE" 2>&1); then
+            echo "::error::imagetools create failed: $(echo "$out" | tail -3 | tr '\n' ' ')"; exit 1
+          fi
+      - name: Make its GitHub Release the latest
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
-          git fetch --tags --force
-          git rev-parse -q --verify "refs/tags/v$STABLE" >/dev/null || { echo "Tag v$STABLE doesn't exist"; exit 1; }
-          docker buildx imagetools inspect "$IMAGE:$STABLE" >/dev/null || { echo "Image $IMAGE:$STABLE doesn't exist"; exit 1; }
-          git tag -f latest "v$STABLE^{commit}"
-          git push -f origin refs/tags/latest
-          docker buildx imagetools create -t "$IMAGE:latest" "$IMAGE:$STABLE"
+          set -uo pipefail
           awk -v h="## $STABLE " 'index($0,h)==1{p=1;next} /^## /{p=0} p' CHANGELOG.md > notes.md
           [ -s notes.md ] || echo "See CHANGELOG.md." > notes.md
           if gh release view "v$STABLE" >/dev/null 2>&1; then
-            gh release edit "v$STABLE" --notes-file notes.md --prerelease=false --latest
+            out=$(gh release edit "v$STABLE" --notes-file notes.md --prerelease=false --latest 2>&1)
           else
-            gh release create "v$STABLE" --verify-tag --title "Calendar Stream $STABLE" --notes-file notes.md --latest
-          fi
+            out=$(gh release create "v$STABLE" --verify-tag --title "Calendar Stream $STABLE" --notes-file notes.md --latest 2>&1)
+          fi || { echo "::error::GitHub Release failed: $(echo "$out" | tail -3 | tr '\n' ' ')"; exit 1; }
           echo "latest -> **$STABLE** (git tag, image and GitHub Release)" >> "$GITHUB_STEP_SUMMARY"
