@@ -151,12 +151,12 @@ links stop working and existing subscribers stop getting updates.
 ## Versions and releases
 
 Versions are numbered `0.0.x`. Every release gets a git tag (`v0.0.1`, `v0.0.2`, …), an image
-`ghcr.io/uuugh/calendar_stream:0.0.x`, and two moving tags on both:
+`ghcr.io/uuugh/calendar_stream:0.0.x`, and a GitHub Release with its notes. Two moving image tags:
 
-| Tag | Points to |
+| Image tag | Points to |
 |---|---|
-| `beta` | The newest release |
-| `latest` | The last release marked stable |
+| `beta` | The newest release (also a git tag) |
+| `latest` | The last release marked stable (in `STABLE`; its GitHub Release is marked **Latest**) |
 
 Choose which one the server runs with `IMAGE_TAG` in `.env` (`beta`, `latest`, or a version).
 `latest` exists only once a version has been marked stable. To update:
@@ -170,8 +170,8 @@ Releases are made by the **Release** GitHub Action:
 
 - A new `VERSION` on `main` tags it, moves `beta`, builds and pushes the image (amd64 and arm64),
   and publishes a GitHub Release (pre-release) with that version's `CHANGELOG.md` notes.
-- A new `STABLE` on `main` marks that version stable: `latest` moves for both git and the image,
-  and its GitHub Release becomes the latest one. You can also do this from the repository's
+- A new `STABLE` on `main` marks that version stable: the `latest` image points at it, and its
+  GitHub Release becomes the latest one. (There's no `latest` git tag; `STABLE` records it.) You can also do this from the repository's
   **Actions** tab → **Release** → **Run workflow** with the version (e.g. `0.0.6`).
 
 `CHANGELOG.md` lists what was added, changed, fixed and removed in each version.

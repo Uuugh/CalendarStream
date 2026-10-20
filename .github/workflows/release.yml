@@ -2,8 +2,10 @@
 #  - VERSION changes on main  -> git tag v<VERSION>, move "beta", build and push
 #                                ghcr.io/<owner>/calendar_stream:<VERSION> and :beta,
 #                                GitHub Release (pre-release) with the version's CHANGELOG notes
-#  - STABLE changes on main   -> mark that version stable: move "latest" (git tag and image) and
-#                                make its GitHub Release the latest, non-pre-release one
+#  - STABLE changes on main   -> mark that version stable: point the "latest" image at it and make
+#                                its GitHub Release the latest, non-pre-release one
+#                                (no "latest" git tag: GitHub won't let the workflow token create one
+#                                on an older commit, and the server uses the image, not a checkout)
 #  - Run manually (Actions -> Release -> Run workflow) with a version -> same as a STABLE change
 name: Release
 
@@ -160,13 +162,6 @@ jobs:
           if ! out=$(docker buildx imagetools inspect "$IMAGE:$STABLE" 2>&1); then
             echo "::error::Image $IMAGE:$STABLE not found: $(echo "$out" | tail -3 | tr '\n' ' ')"; exit 1
           fi
-      - name: Move the latest git tag
-        run: |
-          set -uo pipefail
-          git tag -f latest "v$STABLE^{commit}"
-          if ! out=$(git push -f origin refs/tags/latest 2>&1); then
-            echo "::error::git push latest failed: $(echo "$out" | tail -3 | tr '\n' ' ')"; exit 1
-          fi
       - name: Point the latest image at the version
         run: |
           set -uo pipefail
@@ -185,4 +180,17 @@ jobs:
           else
             out=$(gh release create "v$STABLE" --verify-tag --title "Calendar Stream $STABLE" --notes-file notes.md --latest 2>&1)
           fi || { echo "::error::GitHub Release failed: $(echo "$out" | tail -3 | tr '\n' ' ')"; exit 1; }
-          echo "latest -> **$STABLE** (git tag, image and GitHub Release)" >> "$GITHUB_STEP_SUMMARY"
+          echo "latest -> **$STABLE** (image and GitHub Release)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish GitHub Releases for older versions that don't have one
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          for tag in $(git tag -l 'v*.*.*' --sort=version:refname); do
+            v="${tag#v}"
+            gh release view "$tag" >/dev/null 2>&1 && continue
+            awk -v h="## $v " 'index($0,h)==1{p=1;next} /^## /{p=0} p' CHANGELOG.md > notes.md
+            [ -s notes.md ] || continue
+            gh release create "$tag" --verify-tag --title "Calendar Stream $v" --notes-file notes.md \
+              --prerelease --latest=false || echo "::warning::Couldn't create a release for $tag"
+          done

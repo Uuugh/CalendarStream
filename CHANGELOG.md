@@ -1,8 +1,8 @@
 # Changelog
 
 Versions are numbered `0.0.x` until a new minor version is decided. Every release is tagged
-`v0.0.x`; the newest is also tagged `beta`, and the last one marked stable is tagged `latest`
-(set by the `STABLE` file). Each version lists what was **added**, **changed**, **fixed** and
+`v0.0.x`; the newest is also tagged `beta`. The last one marked stable (in the `STABLE` file) is
+the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
 **Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.6**
