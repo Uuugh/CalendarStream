@@ -3,6 +3,8 @@ services:
     # Built by GitHub Actions from https://github.com/Uuugh/calendar_stream
     # IMAGE_TAG: beta (newest release), latest (last stable release), or a version like 0.0.2
     image: ghcr.io/uuugh/calendar_stream:${IMAGE_TAG:-latest}
+    # Check GitHub for a newer image on every "up" / recreate, so moving tags (beta, latest) update
+    pull_policy: always
     container_name: calendar_stream
     env_file: .env
     ports:

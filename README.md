@@ -155,7 +155,7 @@ Choose which one the server runs with `IMAGE_TAG` in `.env` (`beta`, `latest`, o
 ```bash
 cd ~/stacks/calendar_stream
 git pull                                   # newest docker-compose.yml / .env.default
-docker compose pull && docker compose up -d
+docker compose up -d                       # pulls the newest image for IMAGE_TAG, then recreates if it changed
 ```
 
 Releases are made by the **Release** GitHub Action: pushing a new `VERSION` to `main` tags it,

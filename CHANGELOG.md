@@ -3,7 +3,13 @@
 Versions follow `0.0.x` until a new minor version is decided.
 The newest release is also tagged `beta`; the last stable release is tagged `latest`.
 
-## 0.0.3 — 2026-10-20 (beta)
+## 0.0.4 — 2026-10-20 (beta)
+
+- `docker-compose.yml`: `pull_policy: always` on the app, so `docker compose up -d` (including
+  `--force-recreate`) checks for a newer image first. Moving tags like `beta` now update without a
+  separate `docker compose pull`
+
+## 0.0.3 — 2026-10-20
 
 Fixes from a real CCS+ Calendar Sync file, and a manual fallback.
 
