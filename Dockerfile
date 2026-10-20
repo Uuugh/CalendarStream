@@ -7,6 +7,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
 LABEL org.opencontainers.image.source="https://github.com/Uuugh/calendar_stream" \
       org.opencontainers.image.description="Republishes a United CCS+ Calendar Sync schedule as a Google Calendar feed"
 
+# curl does the downloads from CCS+ (United's Akamai protection answers curl normally)
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt

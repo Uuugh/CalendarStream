@@ -3,7 +3,15 @@
 Versions follow `0.0.x` until a new minor version is decided.
 The newest release is also tagged `beta`; the last stable release is tagged `latest`.
 
-## 0.0.4 — 2026-10-20 (beta)
+## 0.0.5 — 2026-10-20 (beta)
+
+- Downloads from CCS+ now use **curl**. United's Akamai protection held requests from Python's HTTP
+  library (no reply for 60 s, or an immediate 403) but answers curl normally. curl identifies itself
+  as curl; the UID and Calendar Sync password are passed to it privately, never on a command line
+- `curl` added to the image; `httpx` removed
+- Status message capitalisation ("Downloaded from CCS+: 97 events …")
+
+## 0.0.4 — 2026-10-20
 
 - `docker-compose.yml`: `pull_policy: always` on the app, so `docker compose up -d` (including
   `--force-recreate`) checks for a newer image first. Moving tags like `beta` now update without a

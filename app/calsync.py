@@ -14,12 +14,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-import httpx
 from icalendar import Calendar
-
-from . import __version__
-
-USER_AGENT = f"calendar_stream/{__version__} (iCalendar subscription client)"
 
 
 # --- Results / errors ------------------------------------------------------
@@ -66,6 +61,20 @@ class Defaults:
 
 
 # --- Download --------------------------------------------------------------
+#
+# Downloads use the curl program. United's Akamai protection answers curl normally, but holds
+# or refuses requests from Python HTTP libraries. curl identifies itself as curl.
+
+import asyncio
+import json as _json
+import os
+import shutil
+import tempfile
+from urllib.parse import urlparse
+
+CURL = shutil.which("curl") or "curl"
+_curl_version = ""
+
 
 def _snippet(body: bytes, n: int = 300) -> str:
     text = re.sub(r"<[^>]+>", " ", body[:4000].decode("utf-8", "replace"))
@@ -73,55 +82,102 @@ def _snippet(body: bytes, n: int = 300) -> str:
     return re.sub(r"\s+", " ", text).strip()[:n]
 
 
-async def download(url: str, username: str, password: str, etag: str = "", last_modified: str = "",
-                   timeout: float = 45.0, connect_timeout: float = 20.0) -> Download:
-    headers = {"User-Agent": USER_AGENT, "Accept": "text/calendar, */*;q=0.5"}
-    if etag:
-        headers["If-None-Match"] = etag
-    if last_modified:
-        headers["If-Modified-Since"] = last_modified
+def _q(value: str) -> str:
+    """Quote a value for a curl config file."""
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "").replace("\r", "") + '"'
 
-    host = httpx.URL(url).host
-    try:
-        async with httpx.AsyncClient(timeout=httpx.Timeout(timeout, connect=connect_timeout),
-                                     follow_redirects=True) as client:
-            r = await client.get(url, auth=(username, password), headers=headers)
-    except httpx.ConnectTimeout:
-        raise SourceError(f"Couldn't connect to {host} within {int(connect_timeout)} seconds "
-                          "(network, DNS or firewall problem on this server).")
-    except httpx.ReadTimeout:
+
+def _parse_headers(raw: str) -> dict:
+    """Headers of the final response (curl writes one block per redirect)."""
+    blocks = [b for b in re.split(r"\r?\n\r?\n", raw.strip()) if b.strip()]
+    headers: dict[str, str] = {}
+    for line in (blocks[-1].splitlines()[1:] if blocks else []):
+        if ":" in line:
+            k, v = line.split(":", 1)
+            headers[k.strip().lower()] = v.strip()
+    return headers
+
+
+async def curl_version() -> str:
+    global _curl_version
+    if not _curl_version:
+        try:
+            proc = await asyncio.create_subprocess_exec(CURL, "--version", stdout=asyncio.subprocess.PIPE)
+            out, _ = await proc.communicate()
+            _curl_version = out.decode().split(" (")[0].strip() or "curl"
+        except FileNotFoundError:
+            _curl_version = "curl not installed"
+    return _curl_version
+
+
+async def download(url: str, username: str, password: str, etag: str = "", last_modified: str = "",
+                   timeout: float = 60.0, connect_timeout: float = 20.0) -> Download:
+    host = urlparse(url).hostname or url
+    with tempfile.TemporaryDirectory(prefix="calsync-") as tmp:
+        body_path, head_path = os.path.join(tmp, "body"), os.path.join(tmp, "headers")
+        # Credentials go to curl on stdin (a config file), never on the command line.
+        config = [f"url = {_q(url)}", f"user = {_q(f'{username}:{password}')}",
+                  f'header = {_q("Accept: text/calendar, */*;q=0.5")}']
+        if etag:
+            config.append(f"header = {_q('If-None-Match: ' + etag)}")
+        if last_modified:
+            config.append(f"header = {_q('If-Modified-Since: ' + last_modified)}")
+        args = [CURL, "--silent", "--show-error", "--location", "--config", "-",
+                "--connect-timeout", str(int(connect_timeout)), "--max-time", str(int(timeout)),
+                "--output", body_path, "--dump-header", head_path, "--write-out", "%{json}"]
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *args, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE)
+        except FileNotFoundError:
+            raise SourceError("curl isn't installed in this container (it's needed to download from CCS+).")
+        out, err = await proc.communicate(("\n".join(config) + "\n").encode())
+        try:
+            info = _json.loads(out.decode() or "{}")
+        except ValueError:
+            info = {}
+        body = open(body_path, "rb").read() if os.path.exists(body_path) else b""
+        headers = _parse_headers(open(head_path, encoding="latin-1").read()) if os.path.exists(head_path) else {}
+
+    code = proc.returncode
+    status = int(info.get("http_code") or info.get("response_code") or 0)
+    connected = float(info.get("time_connect") or 0) > 0
+    if code == 28:
+        if not connected:
+            raise SourceError(f"Couldn't connect to {host} within {int(connect_timeout)} seconds "
+                              "(network, DNS or firewall problem on this server).")
         raise SourceError(f"Connected to {host}, but it sent no reply within {int(timeout)} seconds. "
-                          "United's bot protection may be holding requests from this app; "
+                          "United's bot protection may be holding the request; "
                           "use Setup > Upload Calendar.ics in the meantime.")
-    except httpx.TimeoutException as e:
-        raise SourceError(f"{host} timed out ({type(e).__name__}).")
-    except httpx.HTTPError as e:
-        raise SourceError(f"Couldn't connect to {httpx.URL(url).host}: {type(e).__name__}: {e}")
+    if code in (6, 7):
+        raise SourceError(f"Couldn't reach {host}: {err.decode().strip() or f'curl error {code}'}")
+    if code != 0 and not status:
+        raise SourceError(f"Download from {host} failed: {err.decode().strip() or f'curl error {code}'}")
 
     keep = ("content-type", "content-length", "content-disposition", "etag", "last-modified",
             "server", "date", "cache-control", "www-authenticate")
     debug = {
-        "url": str(r.url), "status": r.status_code, "elapsed_s": round(r.elapsed.total_seconds(), 2),
-        "bytes": len(r.content), "user_agent": USER_AGENT,
-        "headers": {k: v for k, v in r.headers.items() if k.lower() in keep},
+        "url": info.get("url_effective", url), "status": status,
+        "elapsed_s": round(float(info.get("time_total") or 0), 2), "bytes": len(body),
+        "client": await curl_version(), "headers": {k: v for k, v in headers.items() if k in keep},
     }
-    if r.status_code == 304:
+    if status == 304:
         return Download(304, not_modified=True, etag=etag, last_modified=last_modified, debug=debug)
-    if r.status_code == 401:
+    if status == 401:
         raise AuthError("CCS+ rejected the UID or Calendar Sync password (HTTP 401). Check CCS_USER.txt "
                         "(your UID) and CCS_PASSWORD.txt (the Calendar Sync password, not your CCS login).")
-    if r.status_code == 403:
-        server = r.headers.get("server", "")
-        ref = re.search(r"Reference\s*#?\s*([\w.]+)", _snippet(r.content, 1000))
+    if status == 403:
+        server = headers.get("server", "")
+        ref = re.search(r"Reference\s*#?\s*([\w.]+)", _snippet(body, 1000))
         who = "Akamai (United's bot protection)" if "akamai" in server.lower() else (server or "the server")
         raise BlockedError(f"Access denied by {who}, HTTP 403" + (f", reference {ref[1]}" if ref else "") + ".")
-    if r.status_code >= 400:
-        raise SourceError(f"CCS+ answered HTTP {r.status_code}: {_snippet(r.content, 160) or 'no details'}")
-    if b"BEGIN:VCALENDAR" not in r.content[:2000]:
+    if status >= 400:
+        raise SourceError(f"CCS+ answered HTTP {status}: {_snippet(body, 160) or 'no details'}")
+    if b"BEGIN:VCALENDAR" not in body[:2000]:
         raise SourceError("CCS+ answered, but not with a calendar file "
-                          f"({r.headers.get('content-type', 'unknown type')}): {_snippet(r.content, 160)}")
-    return Download(r.status_code, body=r.content, etag=r.headers.get("etag", ""),
-                    last_modified=r.headers.get("last-modified", ""), debug=debug)
+                          f"({headers.get('content-type', 'unknown type')}): {_snippet(body, 160)}")
+    return Download(status, body=body, etag=headers.get("etag", ""),
+                    last_modified=headers.get("last-modified", ""), debug=debug)
 
 
 def check_calendar(body: bytes):

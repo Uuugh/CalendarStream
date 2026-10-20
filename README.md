@@ -64,8 +64,9 @@ logins; the calendar feed and subscribe page aren't affected.
 
 - Every `SYNC_INTERVAL_MINUTES` (default 60, minimum 15) the app requests the Calendar Sync
   link with your UID and Calendar Sync password, the same way an Apple Calendar subscription
-  does. It identifies itself honestly as `calendar_stream/<version>` and sends `If-None-Match`
-  so unchanged schedules cost almost nothing.
+  does. The download is done with `curl` (United's Akamai protection answers curl but holds
+  requests from Python's HTTP libraries), which identifies itself as curl. It sends
+  `If-None-Match`, so unchanged schedules cost almost nothing.
 - The calendar file is kept as United sends it: same event IDs, times, time zones and
   details. Calendar Stream only changes:
   - the calendar's name (`CALENDAR_NAME`) and refresh hints for subscribers;

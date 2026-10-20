@@ -122,7 +122,7 @@ def apply_calendar(body: bytes, how: str) -> bool:
         old_ids, new_ids = {e.uid for e in previous}, {e.uid for e in events}
         added, removed = len(new_ids - old_ids), len(old_ids - new_ids)
         detail = f"{added} new, {removed} removed" if previous else "first copy"
-        state.message = f"{how.capitalize()} {len(events)} events ({detail})"
+        state.message = f"{how[:1].upper()}{how[1:]}: {len(events)} events ({detail})"
         state.record("info", f"Schedule {how}: {len(events)} events ({detail})")
     else:
         state.message = f"Up to date: {len(events)} events (no changes)"
