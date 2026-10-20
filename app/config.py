@@ -41,6 +41,11 @@ class Settings:
     password: str = field(default_factory=lambda: _secret("CCS_PASSWORD", "CCS_PASSWORD", strip_all=False))
     schedule_url: str = field(default_factory=lambda: _env("CCS_URL", "https://ccsplus.ual.com/schedule/"))
 
+    # Click the schedule page's own "Refresh" link before reading it (true/false + selectors)
+    refresh_enabled: bool = field(default_factory=lambda: _env("CCS_REFRESH", "true").lower() not in ("0", "false", "no", "off"))
+    refresh_selector: str = field(default_factory=lambda: _env("CCS_REFRESH_SELECTOR", "a.refresh__link"))
+    refresh_status_selector: str = field(default_factory=lambda: _env("CCS_REFRESH_STATUS_SELECTOR", ".last-refreshed-text"))
+
     # Optional CSS selector overrides if the auto-detection misses the login form
     user_selector: str = field(default_factory=lambda: _env("CCS_USER_SELECTOR"))
     pass_selector: str = field(default_factory=lambda: _env("CCS_PASS_SELECTOR"))

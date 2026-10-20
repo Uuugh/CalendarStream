@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import json
 import logging
+import re
+import time
 from dataclasses import dataclass, field
 from urllib.parse import urlparse
 
@@ -40,10 +42,10 @@ class SiteUnreachable(Exception):
     pass
 
 
-async def _settle(page: Page, idle_ms: int = 8000):
+async def _settle(page: Page, idle_ms: int = 2500):
     """Wait for the page to finish loading. Pages that keep polling the server never go fully
     quiet ("networkidle"), so that wait is best-effort and never fails the run."""
-    for state, ms in (("load", 20000), ("networkidle", idle_ms)):
+    for state, ms in (("load", 15000), ("networkidle", idle_ms)):
         try:
             await page.wait_for_load_state(state, timeout=ms)
         except PWTimeout:
@@ -74,6 +76,9 @@ class ScrapeResult:
     html: str = ""
     json_payloads: list = field(default_factory=list)
     final_url: str = ""
+    refreshed: bool = False
+    refresh_note: str = ""      # e.g. "46 minutes ago -> a few seconds ago"
+    timings: dict = field(default_factory=dict)
 
 
 async def _first_visible(page: Page, selectors: list[str]):
@@ -159,6 +164,50 @@ async def _wait_for_login_or_page(page: Page, schedule_host: str, max_s: int = 2
     return await _on_login_page(page)
 
 
+FRESH_HINTS = re.compile(r"just now|few seconds|seconds? ago|\b0 minutes?\b|\b1 minute ago|\bnow\b", re.I)
+
+
+async def _status_text(page: Page, selector: str) -> str:
+    try:
+        loc = page.locator(selector).first
+        return (await loc.inner_text(timeout=1000)).strip() if await loc.count() else ""
+    except Exception:
+        return ""
+
+
+async def _refresh_schedule(page: Page, cfg: Settings, result: ScrapeResult) -> list:
+    """Click CCS's own Refresh link so the schedule is current, then wait for
+    "Last refreshed" to update. Returns the JSON captured before the click, as a fallback."""
+    link = page.locator(cfg.refresh_selector).first
+    try:
+        await link.wait_for(state="visible", timeout=20000)   # the Angular app renders it late
+    except PWTimeout:
+        result.refresh_note = "Refresh button not found; the schedule may be out of date"
+        return []
+
+    before = await _status_text(page, cfg.refresh_status_selector)
+    pre_click = result.json_payloads[:]
+    result.json_payloads.clear()          # from here on, keep only data loaded by the refresh
+    await link.click()
+
+    after = before
+    for _ in range(90):                   # up to ~45 s for CCS to finish refreshing
+        await page.wait_for_timeout(500)
+        after = await _status_text(page, cfg.refresh_status_selector)
+        if after and after != before and FRESH_HINTS.search(after):
+            break
+    await _settle(page)
+    await page.wait_for_timeout(1000)     # late XHRs after the refresh
+
+    short = lambda t: re.sub(r"^\s*Last refreshed:\s*", "", t or "?", flags=re.I)
+    if after != before:
+        result.refreshed = True
+        result.refresh_note = f"{short(before)} -> {short(after)}"
+    else:
+        result.refresh_note = f"clicked Refresh but 'Last refreshed' didn't change ({short(before)})"
+    return pre_click
+
+
 async def scrape(cfg: Settings, store) -> ScrapeResult:
     result = ScrapeResult()
     schedule_host = urlparse(cfg.schedule_url).hostname
@@ -182,8 +231,15 @@ async def scrape(cfg: Settings, store) -> ScrapeResult:
                 pass
         page.on("response", on_response)
 
+        t0 = t = time.monotonic()
+
+        def lap(name):
+            nonlocal t
+            now = time.monotonic(); result.timings[name] = round(now - t, 1); t = now
+
         try:
             await _goto(page, cfg.schedule_url)
+            lap("load")
 
             if await _wait_for_login_or_page(page, schedule_host):
                 log.info("Login form detected; signing in")
@@ -195,11 +251,18 @@ async def scrape(cfg: Settings, store) -> ScrapeResult:
                     raise LoginError("Redirected back to the login page after signing in.", "failed")
             else:
                 result.used_saved_session = True
+            lap("login")
 
-            await page.wait_for_timeout(2000)  # let late XHRs settle
+            await page.wait_for_timeout(1500)  # let late XHRs settle
+            if cfg.refresh_enabled:
+                pre_click = await _refresh_schedule(page, cfg, result)
+                if not result.json_payloads:   # refresh didn't load new data; use what we had
+                    result.json_payloads.extend(pre_click)
+                lap("refresh")
             result.html = await page.content()
             result.final_url = page.url
             store.set("session", await context.storage_state())
+            result.timings["total"] = round(time.monotonic() - t0, 1)
         finally:
             try:
                 store.save_debug("html", (await page.content()).encode(), "text/plain; charset=utf-8")
