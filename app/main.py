@@ -12,14 +12,14 @@ from pathlib import Path
 from urllib.parse import quote, urlparse
 from zoneinfo import ZoneInfo
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import RedirectResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 
 from . import __version__
 from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, check_calendar, download,
-                      empty_feed, process)
+                      empty_feed, new_calendar, parse, render)
 from .config import DEFAULT_CALENDAR_URL, settings
 from .store import Store, from_iso, iso
 
@@ -41,6 +41,11 @@ def defaults() -> Defaults:
 
 def calendar_url() -> str:
     return store.get("calendar_url") or settings.calendar_url
+
+
+def calendar_name() -> str:
+    """Name set on the status page (F1), else CALENDAR_NAME from .env."""
+    return store.get("calendar_name") or settings.calendar_name
 
 
 class State:
@@ -93,22 +98,34 @@ class State:
 state = State()
 
 
-def publish(raw: bytes, sha: str | None = None) -> tuple[list[Event], list[Event]]:
-    """Process a downloaded calendar and store it. Returns (new events, previous events)."""
-    feed, events, digest = process(raw, settings.calendar_name, settings.timezone, defaults())
+def publish(raw: bytes | None, sha: str | None = None) -> tuple[list[Event], list[Event]]:
+    """Build the feed from a CCS+ calendar (or none yet) plus the edits and added events made here,
+    and store it. Returns (all events now, events before)."""
+    if raw is not None:
+        cal, base, digest = parse(raw, settings.timezone, defaults())
+    else:
+        cal, base, digest = new_calendar(), [], ""
+    feed, events = render(cal, base, calendar_name(), settings.timezone, store.get_edits(), store.get_customs())
     previous = store.load_events()
-    store.save_calendar("source", raw, sha or digest)
+    if raw is not None:
+        store.save_calendar("source", raw, sha or digest)
     store.save_calendar("feed", feed, sha or digest)
     store.replace_events(events)
-    state.event_count = len(events)
+    state.event_count = sum(1 for e in events if not e.hidden)
     return events, previous
+
+
+def rebuild():
+    """Rebuild the feed from the last CCS+ calendar, e.g. after an edit or a rename."""
+    source = store.get_calendar("source")
+    publish(source[0] if source else None, source[1] if source else None)
 
 
 def apply_calendar(body: bytes, how: str) -> bool:
     """Publish a calendar file (downloaded or uploaded). Returns False if it was rejected."""
     old_source = store.get_calendar("source")
     changed = not old_source or old_source[0] != body
-    _, preview, digest = process(body, settings.calendar_name, settings.timezone, defaults())
+    _, preview, digest = parse(body, settings.timezone, defaults())
     if not preview and store.event_count() > 0:
         state.status = "error"
         state.message = (f"The {how} calendar has no events. Keeping the previous feed "
@@ -122,10 +139,10 @@ def apply_calendar(body: bytes, how: str) -> bool:
         old_ids, new_ids = {e.uid for e in previous}, {e.uid for e in events}
         added, removed = len(new_ids - old_ids), len(old_ids - new_ids)
         detail = f"{added} new, {removed} removed" if previous else "first copy"
-        state.message = f"{how[:1].upper()}{how[1:]}: {len(events)} events ({detail})"
-        state.record("info", f"Schedule {how}: {len(events)} events ({detail})")
+        state.message = f"{how[:1].upper()}{how[1:]}: {state.event_count} events in feed ({detail})"
+        state.record("info", f"Schedule {how}: {state.event_count} events in feed ({detail})")
     else:
-        state.message = f"Up to date: {len(events)} events (no changes)"
+        state.message = f"Up to date: {state.event_count} events in feed (no changes)"
         state.record("info", f"Schedule {how}: no changes")
     return True
 
@@ -159,7 +176,7 @@ async def run_once(manual: bool = False):
 
         if dl.not_modified:
             state.status, state.last_success = "ok", now()
-            state.message = f"Up to date: {state.event_count} events (no changes)"
+            state.message = f"Up to date: {state.event_count} events in feed (no changes)"
             state.record("info", "Schedule downloaded from CCS+: no changes")
             return
 
@@ -202,14 +219,11 @@ async def lifespan(_app):
     await asyncio.to_thread(store.open)       # waits for the database container if needed
     settings.resolve_feed_token(store)
     state.load()
-    # Re-apply current settings (calendar name, DEFAULT_EVENT_HOURS) to the last download
-    source = store.get_calendar("source")
-    if source:
-        try:
-            publish(source[0], source[1])
-        except Exception as e:
-            log.error("Couldn't rebuild the feed from the stored download: %s", e)
-    state.event_count = store.event_count()
+    # Re-apply current settings (calendar name, DEFAULT_EVENT_HOURS, edits) to the last download
+    try:
+        rebuild()
+    except Exception as e:
+        log.error("Couldn't rebuild the feed from the stored download: %s", e)
     task = asyncio.create_task(loop())
     yield
     task.cancel()
@@ -270,8 +284,8 @@ def subscribe_links(request: Request) -> dict:
     feed = feed_url(request)
     return {
         "feed": feed,
-        # Opens Google Calendar's "add this calendar?" prompt with the feed pre-filled.
-        "google": "https://calendar.google.com/calendar/r?cid=" + quote(feed, safe=""),
+        # Opens Google Calendar's "add this calendar?" prompt. Google expects the feed as webcal://.
+        "google": "https://calendar.google.com/calendar/r?cid=" + quote("webcal://" + feed.split("://", 1)[1], safe=""),
         # webcal:// hands the feed to Apple Calendar / Outlook / the phone's default calendar app.
         "webcal": "webcal://" + feed.split("://", 1)[1],
         "page": f"{base_url(request)}/subscribe/{settings.feed_token}",
@@ -324,7 +338,7 @@ def month_view(events: list[Event], year: int, month: int) -> dict:
     return {
         "title": date(year, month, 1).strftime("%B %Y"),
         "weeks": [[{"date": d, "in_month": d.month == month, "items": by_day.get(d, [])} for d in w] for w in weeks],
-        "prev": f"{prev_m:%Y-%m}", "next": f"{next_m.replace(day=1):%Y-%m}",
+        "prev": f"{prev_m:%Y-%m}", "next": f"{next_m.replace(day=1):%Y-%m}", "month": f"{year}-{month:02d}",
         "today": now().date(), "count": in_month,
     }
 
@@ -364,7 +378,7 @@ def index(request: Request, month: str | None = None):
     return templates.TemplateResponse(request, "index.html", {
         "s": state, "cfg": settings, "feed": feed_url(request), "links": subscribe_links(request),
         "version": __version__, "history": history, "cal": month_view(events, year, mon),
-        "csrf": CSRF_TOKEN,
+        "csrf": CSRF_TOKEN, "name": calendar_name(), "name_from_gui": bool(store.get("calendar_name")),
         "setup": {
             "uid": _mask(settings.username) if settings.username else "",
             "has_password": bool(settings.password),
@@ -404,6 +418,138 @@ async def set_link(csrf: str = Form(""), url: str = Form(""), action: str = Form
     return RedirectResponse("/#setup", status_code=303)
 
 
+@app.post("/feed/name", dependencies=[Depends(gui_auth)])
+async def set_name(csrf: str = Form(""), name: str = Form("")):
+    """F1: name the calendar as Google shows it. Blank = back to CALENDAR_NAME from .env."""
+    check_csrf(csrf)
+    name = " ".join(name.split())[:100]
+    if name and name != settings.calendar_name:
+        store.set("calendar_name", name)
+    else:
+        store.delete("calendar_name")
+    rebuild()
+    state.record("info", f"Calendar name set to \"{calendar_name()}\"")
+    return RedirectResponse("/#feedcard", status_code=303)
+
+
+# --- F3: edit and add events --------------------------------------------------
+
+def _back(month: str | None) -> str:
+    y, m = _parse_month(month)
+    return f"/?month={y}-{m:02d}#cal"
+
+
+def united_original(uid: str) -> Event | None:
+    """United's own version of an event, from the last CCS+ calendar."""
+    source = store.get_calendar("source")
+    if not source:
+        return None
+    _, base, _ = parse(source[0], settings.timezone, defaults())
+    return next((e for e in base if e.uid == uid), None)
+
+
+def _form_values(e: Event) -> dict:
+    """Split an event into the date/time fields the edit form uses (end date shown inclusive)."""
+    if e.all_day:
+        first = date.fromisoformat(e.start[:10])
+        last = max(first, date.fromisoformat(e.end[:10]) - timedelta(days=1))
+        return {"start_date": first.isoformat(), "start_time": "09:00",
+                "end_date": last.isoformat(), "end_time": "10:00"}
+    s_, t_ = datetime.fromisoformat(e.start).astimezone(TZ), datetime.fromisoformat(e.end).astimezone(TZ)
+    return {"start_date": f"{s_:%Y-%m-%d}", "start_time": f"{s_:%H:%M}",
+            "end_date": f"{t_:%Y-%m-%d}", "end_time": f"{t_:%H:%M}"}
+
+
+@app.get("/event", dependencies=[Depends(gui_auth)])
+def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="date"), month: str | None = None):
+    if uid:
+        e = store.get_event(uid)
+        if not e:
+            raise HTTPException(404, "That event isn't in the current schedule any more.")
+    else:   # new event on a given day
+        try:
+            day = date.fromisoformat(date_)
+        except ValueError:
+            day = now().date()
+        e = Event(title="", start=day.isoformat(), end=(day + timedelta(days=1)).isoformat(), all_day=False,
+                  origin="custom")
+        e.start = datetime.combine(day, datetime.min.time().replace(hour=9), TZ).isoformat()
+        e.end = datetime.combine(day, datetime.min.time().replace(hour=10), TZ).isoformat()
+    original = united_original(uid) if e.origin == "united" and uid else None
+    return templates.TemplateResponse(request, "event.html", {
+        "e": e, "f": _form_values(e), "is_new": not uid, "original": original,
+        "original_range": _range_text(original, *_span(original)[2:]) if original else "",
+        "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": settings.timezone, "version": __version__,
+    })
+
+
+def _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description) -> dict:
+    title = " ".join((title or "").split())
+    if not title:
+        raise HTTPException(400, "The event needs a title.")
+    try:
+        sd, ed = date.fromisoformat(start_date), date.fromisoformat(end_date or start_date)
+        if all_day:
+            if ed < sd:
+                raise HTTPException(400, "The last day is before the first day.")
+            start, end = sd.isoformat(), (ed + timedelta(days=1)).isoformat()
+        else:
+            s_ = datetime.combine(sd, datetime.strptime(start_time or "00:00", "%H:%M").time(), TZ)
+            t_ = datetime.combine(ed, datetime.strptime(end_time or "00:00", "%H:%M").time(), TZ)
+            if t_ <= s_:
+                raise HTTPException(400, "The end has to be after the start.")
+            start, end = s_.isoformat(), t_.isoformat()
+    except ValueError:
+        raise HTTPException(400, "Check the dates and times.")
+    return {"title": title[:200], "start": start, "end": end, "all_day": bool(all_day),
+            "location": (location or "").strip()[:200], "description": (description or "").strip()[:4000]}
+
+
+@app.post("/event/save", dependencies=[Depends(gui_auth)])
+async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = Form(""), title: str = Form(""),
+                     all_day: str = Form(""), start_date: str = Form(""), start_time: str = Form(""),
+                     end_date: str = Form(""), end_time: str = Form(""), location: str = Form(""),
+                     description: str = Form(""), hidden: str = Form("")):
+    check_csrf(csrf)
+    data = _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description)
+    current = store.get_event(uid) if uid else None
+    if current and current.origin == "united":
+        original = united_original(uid)
+        if not original:
+            raise HTTPException(404, "That event isn't in the current schedule any more.")
+        store.set_edit(uid, {**data, "hidden": bool(hidden), "base": original.fingerprint()})
+        state.record("info", f"Edited \"{original.title}\" ({original.start[:10]})"
+                     + (" and hid it from Google" if hidden else ""))
+    else:
+        new_uid = uid if current else f"cs-{secrets.token_hex(8)}@calendar_stream"
+        store.set_custom(new_uid, data)
+        state.record("info", f"{'Updated' if current else 'Added'} \"{data['title']}\" ({data['start'][:10]})")
+    rebuild()
+    state.save()
+    return RedirectResponse(_back(month or data["start"][:7]), status_code=303)
+
+
+@app.post("/event/revert", dependencies=[Depends(gui_auth)])
+async def revert_event(csrf: str = Form(""), uid: str = Form(""), month: str = Form("")):
+    check_csrf(csrf)
+    store.delete_edit(uid)
+    rebuild()
+    state.record("info", "Reverted an event to United's version")
+    return RedirectResponse(_back(month), status_code=303)
+
+
+@app.post("/event/delete", dependencies=[Depends(gui_auth)])
+async def delete_event(csrf: str = Form(""), uid: str = Form(""), month: str = Form("")):
+    check_csrf(csrf)
+    e = store.get_event(uid)
+    if not e or e.origin != "custom":
+        raise HTTPException(400, "Only events added here can be deleted. Hide United's events instead.")
+    store.delete_custom(uid)
+    rebuild()
+    state.record("info", f"Deleted \"{e.title}\" ({e.start[:10]})")
+    return RedirectResponse(_back(month), status_code=303)
+
+
 MAX_UPLOAD = 5 * 1024 * 1024
 
 
@@ -434,7 +580,7 @@ def subscribe(request: Request, token: str):
     if not secrets.compare_digest(token, settings.feed_token):
         raise HTTPException(404)
     return templates.TemplateResponse(request, "subscribe.html", {
-        "cfg": settings, "links": subscribe_links(request),
+        "cfg": settings, "name": calendar_name(), "links": subscribe_links(request),
         "last_success": state.last_success, "event_count": state.event_count,
     })
 
@@ -464,7 +610,7 @@ def calendar(token: str):
     if not secrets.compare_digest(token, settings.feed_token):
         raise HTTPException(404)
     found = store.get_calendar("feed")
-    ics = found[0] if found else empty_feed(settings.calendar_name, settings.timezone)
+    ics = found[0] if found else empty_feed(calendar_name(), settings.timezone)
     return Response(ics, media_type="text/calendar; charset=utf-8", headers={"Cache-Control": "no-cache"})
 
 

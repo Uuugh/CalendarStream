@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ "Add event" if is_new else "Edit event" }} · Calendar Stream</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec; --soft:#f2f4f7;
+          --accent:#1d4ed8; --warn:#a15c07; --warnbg:#fef4e2; --bad:#b42318; --badbg:#fdecea; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f1218; --card:#171b23; --text:#e6e8ec; --muted:#98a2b3; --line:#2a303b; --soft:#1d222c;
+            --accent:#93b4ff; --warn:#fbbf24; --warnbg:#2b2110; --bad:#f87171; --badbg:#2d1414; }
+  }
+  * { box-sizing:border-box }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
+  main { max-width:620px; margin:0 auto; padding:24px 16px 48px }
+  h1 { font-size:20px; margin:0 0 4px } .sub { color:var(--muted); font-size:13px; margin:0 0 18px }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px }
+  label { display:block; font-size:13px; font-weight:600; margin:12px 0 4px }
+  label.inline { display:flex; align-items:center; gap:8px; font-weight:500; font-size:14px }
+  input[type=text], input[type=date], input[type=time], textarea {
+    width:100%; font:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  textarea { min-height:110px; resize:vertical }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:10px }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; align-items:center }
+  button { font:inherit; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:8px; padding:9px 18px; cursor:pointer }
+  @media (prefers-color-scheme: dark){ button{color:#0f1218} }
+  button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
+  button.danger { background:transparent; color:var(--bad); border:1px solid var(--line) }
+  a { color:var(--accent) } .muted { color:var(--muted) }
+  .note { border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:14px; background:var(--soft) }
+  .note.warn { background:var(--warnbg); color:var(--warn) }
+  .orig { white-space:pre-wrap; font-size:13px }
+  .timed[hidden] { display:none }
+</style>
+</head>
+<body><main>
+  <h1>{{ "Add event" if is_new else ("Edit event" if e.origin == "custom" else "Edit United event") }}</h1>
+  <p class="sub"><a href="/?month={{ month }}#cal">← Back to the calendar</a> · times in {{ tz }}</p>
+
+  {% if original %}
+    {% if e.stale %}
+    <div class="note warn"><b>United changed this event after you edited it.</b> Their current version is below.
+      Save to keep your edit, or use <b>Revert to United's version</b>.</div>
+    {% endif %}
+    <div class="note"><b>United's version</b> (from CCS+){% if not e.edited %} — not edited yet{% endif %}<br>
+      <span class="orig">{{ original.title }} · {{ original_range }}{% if original.location %} · {{ original.location }}{% endif %}</span></div>
+  {% elif e.origin == "custom" and not is_new %}
+    <div class="note">Added on this page. It appears only in Calendar Stream and Google, not in CCS+.</div>
+  {% endif %}
+
+  <form class="card" method="post" action="/event/save">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input type="hidden" name="uid" value="{{ e.uid }}">
+    <input type="hidden" name="month" value="{{ month }}">
+
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" value="{{ e.title }}" required maxlength="200" {% if is_new %}autofocus{% endif %}>
+
+    <label class="inline" style="margin-top:14px"><input type="checkbox" id="all_day" name="all_day" value="1" {% if e.all_day %}checked{% endif %}> All-day</label>
+
+    <div class="row">
+      <div><label for="start_date">Starts</label><input type="date" id="start_date" name="start_date" value="{{ f.start_date }}" required></div>
+      <div class="timed"><label for="start_time">&nbsp;</label><input type="time" id="start_time" name="start_time" value="{{ f.start_time }}"></div>
+    </div>
+    <div class="row">
+      <div><label for="end_date" id="end_label">Ends</label><input type="date" id="end_date" name="end_date" value="{{ f.end_date }}" required></div>
+      <div class="timed"><label for="end_time">&nbsp;</label><input type="time" id="end_time" name="end_time" value="{{ f.end_time }}"></div>
+    </div>
+
+    <label for="location">Location</label>
+    <input type="text" id="location" name="location" value="{{ e.location }}" maxlength="200">
+
+    <label for="description">Notes</label>
+    <textarea id="description" name="description" maxlength="4000">{{ e.description }}</textarea>
+
+    {% if e.origin == "united" and not is_new %}
+    <label class="inline" style="margin-top:14px"><input type="checkbox" name="hidden" value="1" {% if e.hidden %}checked{% endif %}>
+      Hide from Google Calendar <span class="muted">(stays visible here, struck through)</span></label>
+    {% endif %}
+
+    <div class="actions">
+      <button>{{ "Add event" if is_new else "Save" }}</button>
+      <a href="/?month={{ month }}#cal">Cancel</a>
+    </div>
+  </form>
+
+  {% if not is_new %}
+  <div class="actions">
+    {% if e.origin == "united" and e.edited %}
+    <form method="post" action="/event/revert"><input type="hidden" name="csrf" value="{{ csrf }}">
+      <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">
+      <button class="ghost">Revert to United's version</button></form>
+    {% elif e.origin == "custom" %}
+    <form method="post" action="/event/delete" onsubmit="return confirm('Delete this event?')"><input type="hidden" name="csrf" value="{{ csrf }}">
+      <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">
+      <button class="danger">Delete event</button></form>
+    {% endif %}
+  </div>
+  <p class="muted" style="font-size:12px">Changes here only affect Calendar Stream and the Google feed; CCS+ is never changed.{% if e.origin == "united" %} Your edit is kept when the schedule is downloaded again.{% endif %}</p>
+  {% endif %}
+</main>
+<script>
+// Show the time fields only for timed events; for all-day events the end date is the last day.
+(function () {
+  var box = document.getElementById('all_day'), label = document.getElementById('end_label');
+  function sync() {
+    document.querySelectorAll('.timed').forEach(function (el) { el.hidden = box.checked; });
+    label.textContent = box.checked ? 'Last day' : 'Ends';
+  }
+  box.addEventListener('change', sync); sync();
+  var sd = document.getElementById('start_date'), ed = document.getElementById('end_date');
+  sd.addEventListener('change', function () { if (ed.value < sd.value) ed.value = sd.value; });
+})();
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Subscribe · {{ cfg.calendar_name }}</title>
+<title>Subscribe · {{ name }}</title>
 <style>
   :root { --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec; --accent:#1a73e8; --warnbg:#fef4e2; --warn:#a15c07; }
   @media (prefers-color-scheme: dark) {
@@ -30,7 +30,7 @@
 </style>
 </head>
 <body><main>
-  <h1>{{ cfg.calendar_name }}</h1>
+  <h1>{{ name }}</h1>
   <p class="sub">A live calendar feed of this United CCS schedule.
     {% if last_success %}Last updated {{ last_success.strftime("%b %d at %H:%M") }} · {{ event_count }} events.{% endif %}</p>
 

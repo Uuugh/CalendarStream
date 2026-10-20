@@ -3,7 +3,23 @@
 Versions follow `0.0.x` until a new minor version is decided.
 The newest release is also tagged `beta`; the last stable release is tagged `latest`.
 
-## 0.0.5 — 2026-10-20 (beta)
+## 0.0.6 — 2026-10-20 (beta)
+
+- **F1** Calendar name box in the Google Calendar feed section (saved in the database; overrides
+  `CALENDAR_NAME`). Used for the feed and the subscribe page
+- **F2** "(Recommended)" before the shareable subscribe page link
+- **F3** Edit and add events in the month view:
+  - click an event → **Edit**: title, all-day, start/end, location, notes; **Hide from Google Calendar**
+  - edits to United events are re-applied after every download; ✎ marks edited events, ⚠ marks
+    events United changed after your edit; **Revert to United's version** undoes an edit
+  - **+** on a day adds your own event (shown in purple); added events can be edited or deleted
+  - nothing is ever changed in CCS+
+- **F4** Sign-in / last check / schedule changed / next check / events condensed into one line at
+  the top of the Activity log card (times shown without the date when they're today)
+- **Add to Google Calendar** passes the feed as `webcal://`, the format Google's add prompt expects
+- Status messages count events in the feed (hidden events excluded)
+
+## 0.0.5 — 2026-10-20
 
 - Downloads from CCS+ now use **curl**. United's Akamai protection held requests from Python's HTTP
   library (no reply for 60 s, or an immediate 403) but answers curl normally. curl identifies itself

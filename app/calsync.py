@@ -44,12 +44,21 @@ class Download:
 @dataclass
 class Event:
     title: str
-    start: str            # ISO datetime in the display time zone, or ISO date for all-day
+    start: str            # ISO datetime in the display time zone, or ISO date for all-day (end exclusive)
     end: str
     all_day: bool = False
     location: str = ""
     description: str = ""
     uid: str = ""
+    origin: str = "united"   # "united" (from CCS+) or "custom" (added on the status page)
+    edited: bool = False     # a United event changed on the status page
+    stale: bool = False      # United changed this event after it was edited here
+    hidden: bool = False     # left out of the Google feed
+
+    def fingerprint(self) -> str:
+        """Identifies United's version of an event, to notice when it changes after an edit."""
+        key = "|".join([self.title, self.start, self.end, str(self.all_day), self.location, self.description])
+        return hashlib.sha1(key.encode()).hexdigest()
 
 
 @dataclass
@@ -213,22 +222,13 @@ def _set_all_day(ev, first: date, days: int, note: str = ""):
     return first, first + timedelta(days=days)
 
 
-def process(raw: bytes, name: str, tz_name: str, defaults: Defaults) -> tuple[bytes, list[Event], str]:
-    """Return (feed bytes for Google, events for the status page, content hash)."""
+def parse(raw: bytes, tz_name: str, defaults: Defaults):
+    """Read a CCS+ calendar and normalise its events. Returns (Calendar, United's events, content hash)."""
     tz = ZoneInfo(tz_name)
     try:
         cal = Calendar.from_ical(raw)
     except Exception as e:
         raise SourceError(f"The calendar file from CCS+ couldn't be read: {e}")
-
-    # Calendar-level properties for subscribers
-    for prop in ("X-WR-CALNAME", "X-WR-TIMEZONE", "REFRESH-INTERVAL", "X-PUBLISHED-TTL", "NAME"):
-        cal.pop(prop, None)
-    cal.add("x-wr-calname", name)
-    cal.add("name", name)
-    cal.add("x-wr-timezone", tz_name)
-    cal.add("refresh-interval;value=duration", "PT1H")
-    cal.add("x-published-ttl", "PT1H")
 
     events: list[Event] = []
     for ev in cal.walk("VEVENT"):
@@ -274,8 +274,102 @@ def process(raw: bytes, name: str, tz_name: str, defaults: Defaults) -> tuple[by
         ))
 
     events.sort(key=lambda e: e.start)
-    feed = cal.to_ical()
-    return feed, events, hashlib.sha256(raw).hexdigest()
+    return cal, events, hashlib.sha256(raw).hexdigest()
+
+
+def new_calendar() -> Calendar:
+    cal = Calendar()
+    cal.add("prodid", "-//calendar_stream//EN")
+    cal.add("version", "2.0")
+    return cal
+
+
+def _utc(iso: str) -> datetime:
+    return datetime.fromisoformat(iso).astimezone(ZoneInfo("UTC"))
+
+
+def _write_times(ev, e: Event):
+    for prop in ("DTSTART", "DTEND", "DURATION"):
+        ev.pop(prop, None)
+    if e.all_day:
+        ev.add("dtstart", date.fromisoformat(e.start[:10]))
+        ev.add("dtend", date.fromisoformat(e.end[:10]))
+    else:   # UTC keeps the feed valid whatever time zones the file defines
+        ev.add("dtstart", _utc(e.start))
+        ev.add("dtend", _utc(e.end))
+
+
+def _write_fields(ev, e: Event, marker: str):
+    for prop in ("SUMMARY", "LOCATION", "DESCRIPTION", "X-ALT-DESC", "X-CALENDAR-STREAM"):
+        ev.pop(prop, None)
+    ev.add("summary", e.title)
+    _write_times(ev, e)
+    if e.location:
+        ev.add("location", e.location)
+    if e.description:
+        ev.add("description", e.description)
+    ev.add("x-calendar-stream", marker)
+
+
+def render(cal: Calendar, base: list[Event], name: str, tz_name: str,
+           edits: dict | None = None, customs: list[dict] | None = None) -> tuple[bytes, list[Event]]:
+    """Apply edits, hides and added events to a parsed calendar.
+    Returns (feed bytes for Google, all events for the status page)."""
+    from icalendar import Event as VEvent
+
+    edits, customs = edits or {}, customs or []
+    for prop in ("X-WR-CALNAME", "X-WR-TIMEZONE", "REFRESH-INTERVAL", "X-PUBLISHED-TTL", "NAME"):
+        cal.pop(prop, None)
+    cal.add("x-wr-calname", name)
+    cal.add("name", name)
+    cal.add("x-wr-timezone", tz_name)
+    cal.add("refresh-interval;value=duration", "PT1H")
+    cal.add("x-published-ttl", "PT1H")
+
+    by_uid = {e.uid: e for e in base}
+    final: list[Event] = []
+    for ev in list(cal.subcomponents):
+        if ev.name != "VEVENT":
+            continue
+        uid = str(ev.get("UID", ""))
+        original = by_uid.get(uid)
+        if original is None:
+            continue
+        ed = edits.get(uid)
+        if not ed:
+            final.append(original)
+            continue
+        e = Event(title=ed["title"], start=ed["start"], end=ed["end"], all_day=bool(ed["all_day"]),
+                  location=ed.get("location", ""), description=ed.get("description", ""), uid=uid,
+                  origin="united", edited=True, stale=ed.get("base") != original.fingerprint(),
+                  hidden=bool(ed.get("hidden")))
+        if e.hidden:
+            cal.subcomponents.remove(ev)
+        else:
+            _write_fields(ev, e, "edited")
+        final.append(e)
+
+    stamp = datetime.now(ZoneInfo("UTC"))
+    for c in customs:
+        e = Event(title=c["title"], start=c["start"], end=c["end"], all_day=bool(c["all_day"]),
+                  location=c.get("location", ""), description=c.get("description", ""), uid=c["uid"],
+                  origin="custom")
+        ev = VEvent()
+        ev.add("uid", e.uid)
+        ev.add("dtstamp", stamp)
+        _write_fields(ev, e, "added")
+        cal.add_component(ev)
+        final.append(e)
+
+    final.sort(key=lambda e: e.start)
+    return cal.to_ical(), final
+
+
+def process(raw: bytes, name: str, tz_name: str, defaults: Defaults) -> tuple[bytes, list[Event], str]:
+    """Parse + render with no edits (used to check a new download)."""
+    cal, events, digest = parse(raw, tz_name, defaults)
+    feed, final = render(cal, events, name, tz_name)
+    return feed, final, digest
 
 
 def empty_feed(name: str, tz_name: str) -> bytes:

@@ -103,6 +103,13 @@ the feed is rebuilt from the last download straight away.
 - **Month view**: the schedule exactly as it's sent to Google, with ‹ › to change months and
   **Today** to come back. Multi-day trips appear on every day they cover; click an event for
   its times, location and details. Green items are all-day events.
+- **Editing**: click an event → **Edit** to change its title, times, location or notes, or to
+  hide it from Google. Edits to United's events are stored separately and re-applied after every
+  download, so they survive syncs; ✎ marks an edited event and ⚠ one that United changed after
+  your edit (open it to compare, then keep yours or **Revert to United's version**). Use **+** on
+  a day to add your own event (purple). Edits never change anything in CCS+.
+- **Calendar name**: the box next to the feed buttons sets the name Google shows (overrides
+  `CALENDAR_NAME`). Calendars already subscribed keep their name; rename those in Google.
 - **Setup**: checklist for Calendar Sync (UID, password, link, sign-in accepted, schedule
   received), a box for the **Copy link** URL, **Upload Calendar.ics**, and the CCS+ steps. A link saved here wins over
   `CCS_CALENDAR_URL` in `.env`; **Reset** goes back to `.env`. The password is never shown.
@@ -179,7 +186,9 @@ Everything the app keeps is in the Postgres container `calendar_stream_db`, whos
 |---|---|
 | `calendar_files` | `source` (the calendar as downloaded) and `feed` (as served to Google) |
 | `events` | The current schedule, for the status page; replaced in one transaction per change |
-| `kv` | `feed_token`, `status`, `calendar_url` (if set on the status page), `http_cache` (ETag) |
+| `kv` | `feed_token`, `status`, `calendar_url` / `calendar_name` (if set on the status page), `http_cache` (ETag) |
+| `event_edits` | Your changes to United's events (re-applied after each download) |
+| `custom_events` | Events you added on the status page |
 | `debug_files` | The last response's details and download |
 | `activity_log` | The status page's log (last 1,000 entries) |
 
@@ -198,7 +207,7 @@ entrypoint.sh        reads the Docker secrets as root, then drops to PUID:GUID
 app/main.py          web app, sync loop, month view, status/lockout logic
 app/calsync.py       Calendar Sync download + feed processing
 app/store.py         Postgres storage (tables are created automatically)
-app/templates/       status page and subscribe page
+app/templates/       status page, event editor and subscribe page
 VERSION              current version (0.0.x); see CHANGELOG.md
 ```
 

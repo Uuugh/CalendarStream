@@ -8,11 +8,11 @@
 <style>
   :root { --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec; --soft:#f2f4f7;
           --ok:#12805c; --okbg:#e6f6ef; --bad:#b42318; --badbg:#fdecea; --warn:#a15c07; --warnbg:#fef4e2;
-          --run:#1d4ed8; --runbg:#e8efff; --accent:#1d4ed8; --ev:#e8efff; --evtext:#1e3a8a; --allday:#e6f6ef; --alldaytext:#14532d; }
+          --run:#1d4ed8; --runbg:#e8efff; --accent:#1d4ed8; --ev:#e8efff; --evtext:#1e3a8a; --allday:#e6f6ef; --alldaytext:#14532d; --custom:#f3e8ff; --customtext:#5b21b6; }
   @media (prefers-color-scheme: dark) {
     :root { --bg:#0f1218; --card:#171b23; --text:#e6e8ec; --muted:#98a2b3; --line:#2a303b; --soft:#1d222c;
             --okbg:#0f2a20; --ok:#4ade80; --badbg:#2d1414; --bad:#f87171; --warnbg:#2b2110; --warn:#fbbf24;
-            --runbg:#14203d; --run:#93b4ff; --accent:#93b4ff; --ev:#1a2a4d; --evtext:#c7d7fe; --allday:#12301f; --alldaytext:#bbf7d0; }
+            --runbg:#14203d; --run:#93b4ff; --accent:#93b4ff; --ev:#1a2a4d; --evtext:#c7d7fe; --allday:#12301f; --alldaytext:#bbf7d0; --custom:#2e1a47; --customtext:#e9d5ff; }
   }
   * { box-sizing:border-box }
   body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
@@ -70,6 +70,20 @@
   .ev summary::-webkit-details-marker { display:none }
   .ev .t { font-variant-numeric:tabular-nums; opacity:.85; margin-right:4px }
   .ev .body { padding:4px 6px 6px; font-size:12px; white-space:pre-wrap; word-break:break-word; border-top:1px solid var(--line) }
+  .ev.custom { background:var(--custom); color:var(--customtext) }
+  .ev.hidden summary { text-decoration:line-through; opacity:.55 }
+  .ev .mark { margin-left:3px; font-size:11px }
+  .ev .edit { display:inline-block; margin-top:6px; font-weight:600 }
+  .dayhead { display:flex; align-items:center; justify-content:space-between }
+  .add { visibility:hidden; text-decoration:none; font-weight:700; font-size:15px; line-height:1; padding:0 4px; border-radius:4px; color:var(--accent) }
+  .day:hover .add, .add:focus { visibility:visible } .add:hover { background:var(--soft) }
+  @media (hover:none) { .add { visibility:visible; opacity:.6 } }
+  .legend { display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin:8px 0 0 }
+  .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; background:var(--sw) }
+  .namebox { display:flex; gap:6px; flex:1; min-width:240px }
+  .namebox input { flex:1; min-width:0; font:inherit; font-size:14px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .statline { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:13px; margin:0 0 14px; padding-bottom:12px; border-bottom:1px solid var(--line) }
+  .statline .k { color:var(--muted) } .statline b { font-weight:600 }
 </style>
 </head>
 <body><main>
@@ -84,20 +98,7 @@
     <form method="post" action="/run"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running %}disabled{% endif %}>Sync now</button></form>
   </div>
 
-  {% macro t(d) %}{{ d.strftime("%b %d, %H:%M") if d else "never" }}{% endmacro %}
-  <div class="card grid">
-    <div class="stat"><div class="k">Last sign-in</div><div class="v">
-      {% if s.last_auth_ok is none %}<span class="muted">not yet</span>
-      {% elif s.last_auth_ok %}<span style="color:var(--ok)">✓ accepted</span> · {{ t(s.last_auth) }}
-      {% else %}<span style="color:var(--bad)">✗ rejected</span> · {{ t(s.last_auth) }}{% endif %}</div></div>
-    <div class="stat"><div class="k">Last successful check</div><div class="v">{{ t(s.last_success) }}</div></div>
-    <div class="stat"><div class="k">Schedule last changed</div><div class="v">{{ t(s.last_change) }}</div></div>
-    <div class="stat"><div class="k">Next check</div><div class="v">{{ t(s.next_run) }}</div></div>
-    <div class="stat"><div class="k">Events in feed</div><div class="v">{{ s.event_count }}</div></div>
-    <div class="stat"><div class="k">Rejected sign-ins in a row</div><div class="v">{{ s.login_failures }}</div></div>
-  </div>
-
-  <div class="card">
+  <div class="card" id="cal">
     <div class="calhead">
       <a class="navbtn" href="?month={{ cal.prev }}" title="Previous month" aria-label="Previous month">‹</a>
       <a class="navbtn" href="?month={{ cal.next }}" title="Next month" aria-label="Next month">›</a>
@@ -109,36 +110,53 @@
       {% for d in ["Su","Mo","Tu","We","Th","Fr","Sa"] %}<div class="dow">{{ d }}</div>{% endfor %}
       {% for week in cal.weeks %}{% for day in week %}
       <div class="day{% if not day.in_month %} out{% endif %}{% if day.date == cal.today %} today{% endif %}">
-        <span class="num">{{ day.date.day }}</span>
+        <div class="dayhead"><span class="num">{{ day.date.day }}</span>
+          <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="Add an event on {{ day.date.strftime('%b %-d') }}" aria-label="Add event">+</a></div>
         {% for it in day["items"] %}
-        <details class="ev{% if it.e.all_day %} allday{% endif %}">
-          <summary title="{{ it.e.title }}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ it.e.title }}</summary>
-          <div class="body"><b>{{ it.e.title }}</b>
-{{ it.range }}{% if it.e.location %}
-📍 {{ it.e.location }}{% endif %}{% if it.e.description %}
+        {% set e = it.e %}
+        <details class="ev{% if e.all_day %} allday{% endif %}{% if e.origin == 'custom' %} custom{% endif %}{% if e.hidden %} hidden{% endif %}">
+          <summary title="{{ e.title }}{% if e.hidden %} (hidden from Google){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if e.stale %}<span class="mark" title="United changed this since your edit">⚠</span>{% elif e.edited %}<span class="mark" title="Edited here">✎</span>{% endif %}</summary>
+          <div class="body"><b>{{ e.title }}</b>
+{{ it.range }}{% if e.location %}
+📍 {{ e.location }}{% endif %}{% if e.hidden %}
+Hidden from Google Calendar{% endif %}{% if e.stale %}
+⚠ United changed this event after you edited it{% elif e.edited %}
+✎ Edited here{% elif e.origin == 'custom' %}
+Added here{% endif %}{% if e.description %}
 
-{{ it.e.description }}{% endif %}</div>
+{{ e.description }}{% endif %}
+<a class="edit" href="/event?uid={{ e.uid|urlencode }}&month={{ cal.month }}">Edit</a></div>
         </details>
         {% endfor %}
       </div>
       {% endfor %}{% endfor %}
     </div></div>
-    <p class="muted" style="font-size:12px;margin:8px 0 0">This is the schedule exactly as it's sent to Google Calendar. Click an event for details.</p>
+    <div class="legend">
+      <span style="--sw:var(--ev)">Timed</span><span style="--sw:var(--allday)">All-day</span><span style="--sw:var(--custom)">Added here</span>
+      <span style="--sw:transparent">✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google</span>
+    </div>
+    <p class="muted" style="font-size:12px;margin:6px 0 0">This is the schedule as it's sent to Google Calendar. Click an event for details or to edit it; use + on a day to add one. Changes here never affect CCS+.</p>
   </div>
 
-  <div class="card">
+  <div class="card" id="feedcard">
     <h2>Google Calendar feed</h2>
     {% if not links.is_public %}<p class="warnline">⚠ This isn't a public HTTPS address yet, so Google can't load the feed.
       Set <code>PUBLIC_URL</code> in <code>.env</code> (see README).</p>{% endif %}
     <div class="actions">
       <a class="btn" href="{{ links.google }}" target="_blank" rel="noopener">Add to Google Calendar</a>
       <a class="btn2" href="{{ links.page }}" target="_blank">Open subscribe page</a>
+      <form class="namebox" method="post" action="/feed/name" title="The calendar's name in Google Calendar">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input name="name" value="{{ name }}" placeholder="Calendar Name" aria-label="Calendar Name" maxlength="100">
+        <button class="ghost">Save</button>
+      </form>
     </div>
-    <div class="k">Shareable subscribe page — send this to anyone who should see the schedule (no status-page login needed):</div>
+    <div class="k"><b>(Recommended)</b> Shareable subscribe page — send this to anyone who should see the schedule (no status-page login needed):</div>
     <div class="feed"><input id="page" readonly onclick="this.select()" value="{{ links.page }}"><button type="button" onclick="copyField('page', this)">Copy</button></div>
     <div class="k">Raw feed URL (for adding manually: Google Calendar → Other calendars → + → From URL):</div>
     <div class="feed"><input id="feed" readonly onclick="this.select()" value="{{ feed }}"><button type="button" onclick="copyField('feed', this)">Copy</button></div>
-    <p class="muted" style="font-size:13px;margin:8px 0 0">Google re-checks subscribed feeds on its own schedule (typically every several hours).</p>
+    <p class="muted" style="font-size:13px;margin:8px 0 0">Google re-checks subscribed feeds on its own schedule (typically every several hours).
+      The name is what Google shows for new subscriptions; calendars already added keep theirs (rename them in Google's settings).</p>
   </div>
 
   <div class="card" id="setup">
@@ -184,7 +202,16 @@
     </details>
   </div>
 
+  {% macro t(d) %}{{ ("never" if not d else (d.strftime("%H:%M") if d.date() == cal.today else d.strftime("%b %d, %H:%M"))) }}{% endmacro %}
   <div class="card">
+    <div class="statline">
+      <span><span class="k">Sign-in</span> {% if s.last_auth_ok is none %}<span class="muted">not yet</span>{% elif s.last_auth_ok %}<b style="color:var(--ok)">✓ accepted</b> {{ t(s.last_auth) }}{% else %}<b style="color:var(--bad)">✗ rejected</b> {{ t(s.last_auth) }}{% endif %}</span>
+      <span><span class="k">Last check</span> <b>{{ t(s.last_success) }}</b></span>
+      <span><span class="k">Schedule changed</span> <b>{{ t(s.last_change) }}</b></span>
+      <span><span class="k">Next check</span> <b>{{ t(s.next_run) }}</b></span>
+      <span><b>{{ s.event_count }}</b> <span class="k">events in feed</span></span>
+      {% if s.login_failures %}<span style="color:var(--bad)"><b>{{ s.login_failures }}</b> rejected sign-ins in a row</span>{% endif %}
+    </div>
     <h2>Activity log</h2>
     {% if history %}<div class="scroll"><table><tr><th style="width:130px">Time</th><th>Event</th></tr>
       {% for h in history %}<tr><td>{{ h.time.strftime("%b %d %H:%M:%S") }}</td><td class="lvl-{{ h.level }}">{{ h.msg }}</td></tr>{% endfor %}

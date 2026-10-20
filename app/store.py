@@ -46,6 +46,22 @@ CREATE TABLE IF NOT EXISTS debug_files (
     content_type text NOT NULL,
     updated_at   timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE events ADD COLUMN IF NOT EXISTS origin text NOT NULL DEFAULT 'united';
+ALTER TABLE events ADD COLUMN IF NOT EXISTS edited boolean NOT NULL DEFAULT false;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS stale  boolean NOT NULL DEFAULT false;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS hidden boolean NOT NULL DEFAULT false;
+-- Changes made on the status page; re-applied on top of every download from CCS+
+CREATE TABLE IF NOT EXISTS event_edits (
+    uid        text PRIMARY KEY,            -- United's event UID
+    data       jsonb NOT NULL,              -- title, start, end, all_day, location, description, hidden, base
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS custom_events (
+    uid        text PRIMARY KEY,
+    data       jsonb NOT NULL,              -- title, start, end, all_day, location, description
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
 CREATE TABLE IF NOT EXISTS activity_log (
     id    bigserial PRIMARY KEY,
     time  timestamptz NOT NULL DEFAULT now(),
@@ -104,15 +120,53 @@ class Store:
                 c.execute("DELETE FROM events")
                 with c.cursor() as cur:
                     cur.executemany(
-                        'INSERT INTO events (uid, title, start, "end", all_day, location, description) '
-                        "VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT (uid) DO NOTHING",
-                        [(e.uid, e.title, e.start, e.end, e.all_day, e.location, e.description) for e in events])
+                        'INSERT INTO events (uid, title, start, "end", all_day, location, description, '
+                        "origin, edited, stale, hidden) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+                        "ON CONFLICT (uid) DO NOTHING",
+                        [(e.uid, e.title, e.start, e.end, e.all_day, e.location, e.description,
+                          e.origin, e.edited, e.stale, e.hidden) for e in events])
 
     def load_events(self) -> list[Event]:
         with self.pool.connection() as c:
-            rows = c.execute('SELECT title, start, "end", all_day, location, description, uid '
-                             "FROM events ORDER BY start").fetchall()
+            rows = c.execute('SELECT title, start, "end", all_day, location, description, uid, '
+                             "origin, edited, stale, hidden FROM events ORDER BY start").fetchall()
         return [Event(*r) for r in rows]
+
+    def get_event(self, uid: str) -> Event | None:
+        with self.pool.connection() as c:
+            r = c.execute('SELECT title, start, "end", all_day, location, description, uid, '
+                          "origin, edited, stale, hidden FROM events WHERE uid = %s", (uid,)).fetchone()
+        return Event(*r) if r else None
+
+    # --- edits and added events ---------------------------------------------
+    def get_edits(self) -> dict:
+        with self.pool.connection() as c:
+            return {uid: data for uid, data in c.execute("SELECT uid, data FROM event_edits").fetchall()}
+
+    def set_edit(self, uid: str, data: dict):
+        with self.pool.connection() as c:
+            c.execute("""INSERT INTO event_edits (uid, data) VALUES (%s, %s)
+                         ON CONFLICT (uid) DO UPDATE SET data = EXCLUDED.data, updated_at = now()""",
+                      (uid, Jsonb(data)))
+
+    def delete_edit(self, uid: str):
+        with self.pool.connection() as c:
+            c.execute("DELETE FROM event_edits WHERE uid = %s", (uid,))
+
+    def get_customs(self) -> list[dict]:
+        with self.pool.connection() as c:
+            rows = c.execute("SELECT uid, data FROM custom_events ORDER BY created_at").fetchall()
+        return [{**data, "uid": uid} for uid, data in rows]
+
+    def set_custom(self, uid: str, data: dict):
+        with self.pool.connection() as c:
+            c.execute("""INSERT INTO custom_events (uid, data) VALUES (%s, %s)
+                         ON CONFLICT (uid) DO UPDATE SET data = EXCLUDED.data, updated_at = now()""",
+                      (uid, Jsonb(data)))
+
+    def delete_custom(self, uid: str):
+        with self.pool.connection() as c:
+            c.execute("DELETE FROM custom_events WHERE uid = %s", (uid,))
 
     def event_count(self) -> int:
         with self.pool.connection() as c:
