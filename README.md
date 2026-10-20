@@ -146,6 +146,10 @@ two moving tags:
 | `beta` | The newest release |
 | `latest` | The last release marked stable (set by hand when a version is declared stable) |
 
+Tags are made by the **Release tags** GitHub Action: pushing a new `VERSION` to `main` creates
+`v0.0.x` and moves `beta`. To mark a version stable, open the repository's **Actions** tab →
+**Release tags** → **Run workflow**, enter the version (e.g. `0.0.3`), and it moves `latest`.
+
 `CHANGELOG.md` lists what changed in each version; the status page shows the running version.
 
 To run a particular channel on the server (moving tags need `--force` to update):
