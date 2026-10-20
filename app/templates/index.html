@@ -49,10 +49,20 @@
   .iconbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:32px; padding:0;
              background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:8px }
   .menuwrap { position:relative }
-  .menu { position:absolute; right:0; top:calc(100% + 6px); min-width:220px; z-index:10; background:var(--card);
+  .menu { position:absolute; right:0; top:calc(100% + 6px); width:min(360px, calc(100vw - 32px)); z-index:10; background:var(--card);
           border:1px solid var(--line); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.18); padding:12px 14px }
   .menu[hidden] { display:none }
   .menu .title { font-weight:700; font-size:14px; margin-bottom:4px }
+  .menu .mgroup { border-top:1px solid var(--line); margin-top:8px; padding-top:10px; font-size:13px }
+  .menu .mgroup p { margin:0 0 8px }
+  .menu .mhead { display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px; margin-bottom:6px }
+  .menu .pill { font-size:11px; padding:2px 8px }
+  .menu .merr { background:var(--badbg); color:var(--bad); border-radius:8px; padding:6px 10px }
+  .menu .mnote { color:var(--muted); font-size:12px }
+  .menu code { word-break:break-all }
+  .menu label { display:flex; align-items:center; gap:6px; margin:0 0 8px }
+  .menu .feed input { font-size:12px; padding:6px }
+  .menu .feed button { padding:6px 10px; font-size:13px }
 
   /* Collapsible sections: a header that toggles the body; open/closed is saved in the database */
   .section > .shead { display:flex; align-items:center; gap:10px; flex-wrap:wrap; cursor:pointer }
@@ -149,12 +159,47 @@
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/></svg></button>
     </div>
     <div class="menuwrap">
-      <button type="button" class="iconbtn" id="menubtn" aria-haspopup="true" aria-expanded="false" aria-controls="menu" title="Settings">
+      <button type="button" class="iconbtn" id="menubtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="menu" title="Settings">
         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       </button>
-      <div class="menu" id="menu" role="menu" hidden>
+      <div class="menu" id="menu" role="dialog" aria-label="Settings" hidden>
         <div class="title">Settings</div>
-        <div class="muted" style="font-size:13px">Nothing here yet.</div>
+        {% set g = google %}
+        <div class="mgroup" id="google">
+          <div class="mhead">Google Calendar
+            {% if g.connected %}<span class="pill ok">Connected</span>{% endif %}</div>
+          {% if g.info.last_error %}<p class="merr">{{ g.info.last_error }}</p>{% endif %}
+          {% if g.connected %}
+            <p>Connected as <b>{{ g.info.email or "your Google account" }}</b>, to the calendar
+              <b>{{ g.info.calendar_name or name }}</b>.</p>
+            <p class="mnote">Events aren't copied to it yet: that comes in the next beta.</p>
+            <form method="post" action="/google/disconnect"
+                  onsubmit="return confirm('Disconnect Google Calendar?')">
+              <input type="hidden" name="csrf" value="{{ csrf }}">
+              <label><input type="checkbox" name="delete" value="1"> Also delete this calendar in Google</label>
+              <button class="ghost">Disconnect</button>
+            </form>
+          {% else %}
+            <p>Copy the schedule into a calendar of its own in your Google account, updated within
+              minutes. CalendarStream can only see and change calendars it created.</p>
+            {% if not g.configured %}
+              <p>To set it up, save your Google OAuth client's ID and secret in
+                <code>GOOGLE_CLIENT_ID.txt</code> and <code>GOOGLE_CLIENT_SECRET.txt</code>
+                (in <code>$MNT_DOCKER/.secrets</code>) and restart.</p>
+            {% elif not g.redirect_ok %}
+              <p class="merr">Set <code>PUBLIC_URL</code> in .env to this page's https:// address, then
+                restart: Google only returns to https:// addresses.</p>
+            {% else %}
+              <form method="post" action="/google/connect">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <button>Connect Google Calendar</button>
+              </form>
+            {% endif %}
+            <p class="mnote" style="margin:10px 0 4px">The OAuth client's authorised redirect URI:</p>
+            <div class="feed"><input id="gredirect" readonly onclick="this.select()" value="{{ g.redirect_uri }}">
+              <button type="button" onclick="copyField('gredirect', this)">Copy</button></div>
+          {% endif %}
+        </div>
       </div>
     </div>
   </header>
@@ -398,10 +443,14 @@ var CSRF = {{ csrf|tojson }};
   show({{ theme|tojson }});
 })();
 
-// Settings menu (empty for now). Closes on outside click or Escape.
+// Settings menu. Closes on outside click or Escape. Opens by itself after a Google sign-in.
 (function () {
   var btn = document.getElementById('menubtn'), menu = document.getElementById('menu');
   function set(open) { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); }
+  if ({{ open_menu|tojson }}) {
+    set(true);
+    history.replaceState(null, '', location.pathname);   // a reload shouldn't open it again
+  }
   btn.addEventListener('click', function (e) { e.stopPropagation(); set(menu.hidden); });
   document.addEventListener('click', function (e) { if (!menu.hidden && !menu.contains(e.target)) set(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });

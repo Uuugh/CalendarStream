@@ -25,12 +25,18 @@ services:
       - DB_NAME=${DB_NAME:-calendar_stream}
       - DB_USER=${DB_USER:-ccs}
       - DB_PASSWORD_FILE=/run/secrets/DB_PASSWORD
+      # Google Calendar sync (optional): the OAuth client from Google Cloud. Leave both files empty
+      # to skip it; the .ics feed works either way.
+      - GOOGLE_CLIENT_ID_FILE=/run/secrets/GOOGLE_CLIENT_ID
+      - GOOGLE_CLIENT_SECRET_FILE=/run/secrets/GOOGLE_CLIENT_SECRET
     secrets:
       - CCS_USER
       - CCS_PASSWORD
       - GUI_USER
       - GUI_PASSWORD
       - DB_PASSWORD
+      - GOOGLE_CLIENT_ID
+      - GOOGLE_CLIENT_SECRET
     depends_on:
       calendar_stream_db:
         condition: service_healthy
@@ -57,6 +63,7 @@ services:
     restart: ${RESTART:-unless-stopped}
 
 # Logins, kept out of .env. Each file holds just the value (a trailing newline is fine).
+# Every file must exist; the two GOOGLE_ files may be empty.
 secrets:
   CCS_USER:
     file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/CCS_USER.txt
@@ -68,3 +75,7 @@ secrets:
     file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/PASSWORD.txt
   DB_PASSWORD:
     file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/DB_PASSWORD.txt
+  GOOGLE_CLIENT_ID:
+    file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/GOOGLE_CLIENT_ID.txt
+  GOOGLE_CLIENT_SECRET:
+    file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/GOOGLE_CLIENT_SECRET.txt

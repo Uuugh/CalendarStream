@@ -23,12 +23,16 @@ from . import __version__
 from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, check_calendar, download,
                       empty_feed, new_calendar, parse, render)
 from .config import DEFAULT_CALENDAR_URL, settings
+from .gsync import Google, GoogleError
 from .store import Store, from_iso, iso
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("calendar_stream")
+logging.getLogger("httpx").setLevel(logging.WARNING)   # one line per Google request is too chatty
 TZ = ZoneInfo(settings.timezone)
 store = Store(settings.dsn)
+google = Google(store, settings.google_client_id, settings.google_client_secret, settings.db_password,
+                settings.timezone)
 MAX_AUTH_FAILURES = 2   # pause automatic downloads after this many rejected sign-ins (avoids account lockout)
 CSRF_TOKEN = secrets.token_urlsafe(24)   # forms on the status page must carry this
 
@@ -367,6 +371,21 @@ def subscribe_links(request: Request) -> dict:
     }
 
 
+def google_redirect_uri(request: Request) -> str:
+    """Where Google sends the browser back after sign-in. It must be listed exactly like this among
+    the OAuth client's authorised redirect URIs in Google Cloud."""
+    return f"{base_url(request)}/google/callback"
+
+
+def google_view(request: Request) -> dict:
+    uri = google_redirect_uri(request)
+    host = urlparse(uri).hostname or ""
+    return {"configured": google.configured, "connected": google.connected, "info": google.info(),
+            "redirect_uri": uri,
+            # Google only sends sign-ins back to https:// addresses, or http:// on this computer.
+            "redirect_ok": uri.startswith("https://") or host in ("localhost", "127.0.0.1")}
+
+
 # --- Month view ----------------------------------------------------------------
 
 def _span(e: Event) -> tuple[date, date, datetime | None, datetime | None]:
@@ -455,6 +474,7 @@ def index(request: Request, month: str | None = None):
         "csrf": CSRF_TOKEN, "name": calendar_name(), "name_from_gui": bool(store.get("calendar_name")),
         "color": calendar_color(), "tags": calendar_tags(), "tag_modes": TAG_MODES,
         "sections": section_state(), "theme": ui_theme(),
+        "google": google_view(request), "open_menu": request.query_params.get("menu") == "google",
         "setup": {
             "uid": _mask(settings.username) if settings.username else "",
             "has_password": bool(settings.password),
@@ -698,6 +718,51 @@ async def upload(csrf: str = Form(""), file: UploadFile = File(...)):
     finally:
         state.save()
     return RedirectResponse("/#setup", status_code=303)
+
+
+# --- Google Calendar connection ---------------------------------------------------
+
+@app.post("/google/connect", dependencies=[Depends(gui_auth)])
+async def google_connect(request: Request, csrf: str = Form("")):
+    """Send the browser to Google's consent page."""
+    check_csrf(csrf)
+    view = google_view(request)
+    if not view["configured"]:
+        raise HTTPException(400, "Add GOOGLE_CLIENT_ID.txt and GOOGLE_CLIENT_SECRET.txt to the secrets first.")
+    if not view["redirect_ok"]:
+        raise HTTPException(400, "Set PUBLIC_URL in .env to this page's https:// address first.")
+    return RedirectResponse(google.sign_in_url(view["redirect_uri"]), status_code=303)
+
+
+@app.get("/google/callback", dependencies=[Depends(gui_auth)])
+async def google_callback(state_: str = Query("", alias="state"), code: str = "", error: str = ""):
+    """Google sends the browser back here after the consent page, with a one-time code."""
+    try:
+        if error or not code:
+            raise GoogleError("Google sign-in was cancelled." if error in ("access_denied", "")
+                              else f"Google sign-in failed: {error[:80]}.")
+        info = await google.finish_sign_in(state_, code, calendar_name())
+        how = "created" if info.get("created") else "found again"
+        state.record("info", f"Google Calendar connected as {info.get('email') or 'your account'}; "
+                             f"calendar \"{info.get('calendar_name', '')}\" {how}")
+    except GoogleError as e:
+        google.record_error(str(e))
+        state.record("error", f"Google: {e}")
+    return RedirectResponse("/?menu=google", status_code=303)
+
+
+@app.post("/google/disconnect", dependencies=[Depends(gui_auth)])
+async def google_disconnect(csrf: str = Form(""), delete: str = Form("")):
+    """Stop syncing: optionally delete CalendarStream's calendar, then remove its access in Google."""
+    check_csrf(csrf)
+    if not google.connected:
+        return RedirectResponse("/?menu=google", status_code=303)
+    email = google.info().get("email") or "your account"
+    notes = await google.disconnect(delete_calendar=delete == "1")
+    what = "and its calendar deleted" if delete == "1" and not any("calendar" in n for n in notes) else ""
+    state.record("warn" if notes else "info", f"Google Calendar disconnected ({email}) {what}".strip()
+                 + ("; " + "; ".join(notes) if notes else ""))
+    return RedirectResponse("/?menu=google", status_code=303)
 
 
 @app.get("/subscribe/{token}")

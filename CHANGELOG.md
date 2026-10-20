@@ -5,7 +5,26 @@ Versions are numbered `0.0.x` until a new minor version is decided. Every releas
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.11**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.12**
+
+## 0.0.12 — 2026-10-20
+
+First beta of **Google Calendar sync** (planned for 0.1.0): connecting a Google account. Events
+are copied in the next beta.
+
+### Added
+- **Settings (☰) → Google Calendar**: **Connect** signs in to Google and creates a calendar of
+  CalendarStream's own, named like the feed; the menu then shows the connected account and
+  calendar. **Disconnect** removes CalendarStream's access in Google, and can also delete the
+  calendar. Connecting the same account again reuses the calendar.
+- CalendarStream asks Google only for calendars it creates (`calendar.app.created`) and your
+  e-mail address. The sign-in is stored encrypted with a key derived from `DB_PASSWORD`.
+- Secrets `GOOGLE_CLIENT_ID.txt` and `GOOGLE_CLIENT_SECRET.txt` for the Google OAuth client, with
+  set-up steps in the README. The menu shows the redirect URI to give Google.
+
+### Changed
+- `docker-compose.yml` mounts the two new secrets. **Create both files before recreating the
+  stack**, even empty: Docker won't start a stack with a missing secret file.
 
 ## 0.0.11 — 2026-10-20
 
