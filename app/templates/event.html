@@ -3,14 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{ "Add event" if is_new else "Edit event" }} · Calendar Stream</title>
+<title>{{ "Add event" if is_new else "Edit event" }} · CalendarStream</title>
+{% include "_theme.html" %}
 <style>
-  :root { --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec; --soft:#f2f4f7;
-          --accent:#1d4ed8; --warn:#a15c07; --warnbg:#fef4e2; --bad:#b42318; --badbg:#fdecea; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#0f1218; --card:#171b23; --text:#e6e8ec; --muted:#98a2b3; --line:#2a303b; --soft:#1d222c;
-            --accent:#93b4ff; --warn:#fbbf24; --warnbg:#2b2110; --bad:#f87171; --badbg:#2d1414; }
-  }
   * { box-sizing:border-box }
   body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
   main { max-width:620px; margin:0 auto; padding:24px 16px 48px }
@@ -23,8 +18,7 @@
   textarea { min-height:110px; resize:vertical }
   .row { display:grid; grid-template-columns:1fr 1fr; gap:10px }
   .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; align-items:center }
-  button { font:inherit; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:8px; padding:9px 18px; cursor:pointer }
-  @media (prefers-color-scheme: dark){ button{color:#0f1218} }
+  button { font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:8px; padding:9px 18px; cursor:pointer }
   button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
   button.danger { background:transparent; color:var(--bad); border:1px solid var(--line) }
   a { color:var(--accent) } .muted { color:var(--muted) }
@@ -36,7 +30,7 @@
 </head>
 <body><main>
   <h1>{{ "Add event" if is_new else ("Edit event" if e.origin == "custom" else "Edit United event") }}</h1>
-  <p class="sub"><a href="/?month={{ month }}#cal">← Back to the calendar</a> · times in {{ tz }}</p>
+  <p class="sub"><a href="/?month={{ month }}#cal">← Back to CalendarStream</a> · times in {{ tz }}</p>
 
   {% if original %}
     {% if e.stale %}
@@ -46,7 +40,7 @@
     <div class="note"><b>United's version</b> (from CCS+){% if not e.edited %} — not edited yet{% endif %}<br>
       <span class="orig">{{ original.title }} · {{ original_range }}{% if original.location %} · {{ original.location }}{% endif %}</span></div>
   {% elif e.origin == "custom" and not is_new %}
-    <div class="note">Added on this page. It appears only in Calendar Stream and Google, not in CCS+.</div>
+    <div class="note">Added on this page. It appears only in CalendarStream and Google, not in CCS+.</div>
   {% endif %}
 
   <form class="card" method="post" action="/event/save">
@@ -97,7 +91,7 @@
       <button class="danger">Delete event</button></form>
     {% endif %}
   </div>
-  <p class="muted" style="font-size:12px">Changes here only affect Calendar Stream and the Google feed; CCS+ is never changed.{% if e.origin == "united" %} Your edit is kept when the schedule is downloaded again.{% endif %}</p>
+  <p class="muted" style="font-size:12px">Changes here only affect CalendarStream and the Google feed; CCS+ is never changed.{% if e.origin == "united" %} Your edit is kept when the schedule is downloaded again.{% endif %}</p>
   {% endif %}
 </main>
 <script>

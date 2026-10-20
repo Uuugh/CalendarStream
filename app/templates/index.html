@@ -4,45 +4,62 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {% if s.running %}<meta http-equiv="refresh" content="4">{% endif %}
-<title>Calendar Stream</title>
+<title>CalendarStream</title>
+{% include "_theme.html" %}
 <style>
-  :root { --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec; --soft:#f2f4f7;
-          --ok:#12805c; --okbg:#e6f6ef; --bad:#b42318; --badbg:#fdecea; --warn:#a15c07; --warnbg:#fef4e2;
-          --run:#1d4ed8; --runbg:#e8efff; --accent:#1d4ed8; --ev:#e8efff; --evtext:#1e3a8a; --allday:#e6f6ef; --alldaytext:#14532d; --custom:#f3e8ff; --customtext:#5b21b6; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#0f1218; --card:#171b23; --text:#e6e8ec; --muted:#98a2b3; --line:#2a303b; --soft:#1d222c;
-            --okbg:#0f2a20; --ok:#4ade80; --badbg:#2d1414; --bad:#f87171; --warnbg:#2b2110; --warn:#fbbf24;
-            --runbg:#14203d; --run:#93b4ff; --accent:#93b4ff; --ev:#1a2a4d; --evtext:#c7d7fe; --allday:#12301f; --alldaytext:#bbf7d0; --custom:#2e1a47; --customtext:#e9d5ff; }
-  }
   * { box-sizing:border-box }
   body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
-  main { max-width:1040px; margin:0 auto; padding:24px 16px 48px }
-  h1 { font-size:20px; margin:0 0 4px } h2 { font-size:15px; margin:0 0 12px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em }
-  .sub { color:var(--muted); margin:0 0 20px; font-size:13px; word-break:break-word }
+  main { max-width:1040px; margin:0 auto; padding:16px 16px 48px }
+  h2 { font-size:15px; margin:0; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em }
+  h3 { font-size:13px; margin:0 0 10px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em }
+  .sub { color:var(--muted); margin:0 0 16px; font-size:13px; word-break:break-word }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px }
+  .part { border-top:1px solid var(--line); margin-top:16px; padding-top:16px }
   .banner { display:flex; gap:14px; align-items:center; flex-wrap:wrap }
   .pill { font-weight:700; padding:4px 12px; border-radius:999px; font-size:13px; text-transform:uppercase; letter-spacing:.03em }
   .ok{background:var(--okbg);color:var(--ok)} .bad{background:var(--badbg);color:var(--bad)}
   .warn{background:var(--warnbg);color:var(--warn)} .run{background:var(--runbg);color:var(--run)}
   .msg { flex:1; min-width:200px }
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px }
-  .stat .k { color:var(--muted); font-size:12px } .stat .v { font-weight:600 }
-  button { font:inherit; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:8px; padding:8px 16px; cursor:pointer }
+  button { font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:8px; padding:8px 16px; cursor:pointer }
   button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
-  @media (prefers-color-scheme: dark){ button{color:#0f1218} button.ghost{color:var(--accent)} }
   button:disabled { opacity:.5; cursor:default }
   .feed { display:flex; gap:8px; margin-top:4px } .feed input { flex:1; min-width:0; font:13px ui-monospace,monospace; padding:8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
-  table { width:100%; border-collapse:collapse; font-size:13px } th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top }
+  table { width:100%; border-collapse:collapse; font-size:13px } th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; line-height:18px }
   th { color:var(--muted); font-weight:600 }
   .lvl-error{color:var(--bad);font-weight:600} .lvl-warn{color:var(--warn);font-weight:600}
   a { color:var(--accent) } .muted{color:var(--muted)} .scroll{overflow-x:auto}
   ol { margin:8px 0 0; padding-left:20px; font-size:14px } ol li { margin:3px 0 }
   .actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px }
   .btn, .btn2 { font-weight:600; text-decoration:none; border-radius:8px; padding:9px 16px; font-size:14px }
-  .btn { background:var(--accent); color:#fff } .btn2 { border:1px solid var(--line); color:var(--accent) }
-  @media (prefers-color-scheme: dark){ .btn{color:#0f1218} }
+  .btn { background:var(--accent); color:var(--onaccent) } .btn2 { border:1px solid var(--line); color:var(--accent) }
   .card .k { color:var(--muted); font-size:12px; margin-top:10px }
   .warnline { background:var(--warnbg); color:var(--warn); border-radius:8px; padding:8px 12px; font-size:13px; margin:0 0 12px }
+  code { font:12.5px ui-monospace,monospace; background:var(--soft); padding:1px 5px; border-radius:4px }
+
+  /* Title bar (F2–F4) */
+  .topbar { display:flex; align-items:center; gap:10px; margin-bottom:4px }
+  .topbar h1 { font-size:20px; margin:0; flex:1; min-width:0 }
+  .topbar .ver { color:var(--muted); font-size:13px; font-weight:500; margin-left:4px }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--card) }
+  .seg button { display:inline-flex; align-items:center; background:transparent; color:var(--muted); border:0; border-radius:0; padding:7px 9px; line-height:1 }
+  .seg button + button { border-left:1px solid var(--line) }
+  .seg button[aria-pressed="true"] { background:var(--soft); color:var(--accent) }
+  .iconbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:32px; padding:0;
+             background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:8px }
+  .menuwrap { position:relative }
+  .menu { position:absolute; right:0; top:calc(100% + 6px); min-width:220px; z-index:10; background:var(--card);
+          border:1px solid var(--line); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.18); padding:12px 14px }
+  .menu[hidden] { display:none }
+  .menu .title { font-weight:700; font-size:14px; margin-bottom:4px }
+
+  /* Collapsible sections (F5) */
+  details.section > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px; flex-wrap:wrap }
+  details.section > summary::-webkit-details-marker { display:none }
+  details.section > summary::before { content:"▸"; color:var(--muted); font-size:13px; transition:transform .15s }
+  details.section[open] > summary::before { transform:rotate(90deg) }
+  details.section[open] > summary { margin-bottom:14px }
+  details.section > summary .peek:not(.pill) { font-size:13px; color:var(--muted); font-weight:400; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 }
+  details.section[open] > summary .peek { display:none }
 
   /* Setup */
   .checks { list-style:none; padding:0; margin:0 0 12px; display:grid; gap:6px; font-size:14px }
@@ -50,7 +67,6 @@
   .checks li.done::before { content:"✓"; color:var(--ok); font-weight:700 }
   .checks li.fail::before { content:"✗"; color:var(--bad); font-weight:700 }
   details.howto summary { cursor:pointer; font-weight:600; font-size:14px }
-  code { font:12.5px ui-monospace,monospace; background:var(--soft); padding:1px 5px; border-radius:4px }
 
   /* Month view */
   .calhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px }
@@ -82,21 +98,117 @@
   .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; background:var(--sw) }
   .namebox { display:flex; gap:6px; flex:1; min-width:240px }
   .namebox input { flex:1; min-width:0; font:inherit; font-size:14px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
-  .statline { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:13px; margin:0 0 14px; padding-bottom:12px; border-bottom:1px solid var(--line) }
+
+  /* Activity log (F1.2–F1.4) */
+  .statline { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:13px; margin:0 0 12px }
   .statline .k { color:var(--muted) } .statline b { font-weight:600 }
+  /* Five rows tall: each row is 18px text + 12px padding + 1px border; plus the header row */
+  .logwin { max-height:calc(31px * 6); overflow-y:auto; border:1px solid var(--line); border-radius:8px }
+  .logwin th { position:sticky; top:0; background:var(--card) }
+  .logwin tr:last-child td { border-bottom:0 }
+  .debug { font-size:13px; margin-top:12px }
 </style>
 </head>
 <body><main>
-  <h1>Calendar Stream <span class="muted" style="font-size:13px;font-weight:500">v{{ version }}</span></h1>
+  <header class="topbar">
+    <h1>CalendarStream<span class="ver">v{{ version }}</span></h1>
+    <div class="seg" role="group" aria-label="Colour theme">
+      <button type="button" data-theme-choice="light" title="Light" aria-label="Light theme">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+      <button type="button" data-theme-choice="system" title="Match system" aria-label="Match system theme">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 2a6 6 0 0 0 0 12z" fill="currentColor"/></svg></button>
+      <button type="button" data-theme-choice="dark" title="Dark" aria-label="Dark theme">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/></svg></button>
+    </div>
+    <div class="menuwrap">
+      <button type="button" class="iconbtn" id="menubtn" aria-haspopup="true" aria-expanded="false" aria-controls="menu" title="Settings">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <div class="menu" id="menu" role="menu" hidden>
+        <div class="title">Settings</div>
+        <div class="muted" style="font-size:13px">Nothing here yet.</div>
+      </div>
+    </div>
+  </header>
   <p class="sub">CCS+ Calendar Sync · checks every {{ cfg.interval_minutes }} min · items without an end time: {{ "all-day" if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours }}{% if cfg.allday_24h %} · 24-hour events shown as all-day{% endif %}</p>
 
   {% set cls = {"ok":"ok","running":"run","starting":"run","paused":"warn"}.get(s.status,"bad") %}
   {% set label = {"ok":"Healthy","running":"Syncing…","starting":"Starting","paused":"Paused","auth_failed":"Sign-in rejected","blocked":"Blocked","error":"Error"}.get(s.status, s.status) %}
-  <div class="card banner">
-    <span class="pill {{ cls }}">{{ label }}</span>
-    <div class="msg">{{ s.message or "—" }}</div>
-    <form method="post" action="/run"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running %}disabled{% endif %}>Sync now</button></form>
-  </div>
+
+  {# F1.1: health bar, Google Calendar feed and setup, in one collapsible section #}
+  <details class="card section" id="status" data-section="status" open>
+    <summary><h2>Status &amp; setup</h2><span class="pill {{ cls }} peek">{{ label }}</span><span class="peek">{{ s.message }}</span></summary>
+
+    <div class="banner">
+      <span class="pill {{ cls }}">{{ label }}</span>
+      <div class="msg">{{ s.message or "—" }}</div>
+      <form method="post" action="/run"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running %}disabled{% endif %}>Sync now</button></form>
+    </div>
+
+    <div class="part" id="feedcard">
+      <h3>Google Calendar feed</h3>
+      {% if not links.is_public %}<p class="warnline">⚠ This isn't a public HTTPS address yet, so Google can't load the feed.
+        Set <code>PUBLIC_URL</code> in <code>.env</code> (see README).</p>{% endif %}
+      <div class="actions">
+        <a class="btn" href="{{ links.google }}" target="_blank" rel="noopener">Add to Google Calendar</a>
+        <a class="btn2" href="{{ links.page }}" target="_blank">Open subscribe page</a>
+        <form class="namebox" method="post" action="/feed/name" title="The calendar's name in Google Calendar">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <input name="name" value="{{ name }}" placeholder="Calendar Name" aria-label="Calendar Name" maxlength="100">
+          <button class="ghost">Save</button>
+        </form>
+      </div>
+      <div class="k"><b>(Recommended)</b> Shareable subscribe page — send this to anyone who should see the schedule (no status-page login needed):</div>
+      <div class="feed"><input id="page" readonly onclick="this.select()" value="{{ links.page }}"><button type="button" onclick="copyField('page', this)">Copy</button></div>
+      <div class="k">Raw feed URL (for adding manually: Google Calendar → Other calendars → + → From URL):</div>
+      <div class="feed"><input id="feed" readonly onclick="this.select()" value="{{ feed }}"><button type="button" onclick="copyField('feed', this)">Copy</button></div>
+      <p class="muted" style="font-size:13px;margin:8px 0 0">Google re-checks subscribed feeds on its own schedule (typically every several hours).
+        The name is what Google shows for new subscriptions; calendars already added keep theirs (rename them in Google's settings).</p>
+    </div>
+
+    <div class="part" id="setup">
+      <h3>Setup: CCS+ Calendar Sync</h3>
+      <ul class="checks">
+        <li class="{{ 'done' if setup.uid else 'fail' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code> <span class="muted">(from <code>CCS_USER.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_USER.txt</code>{% endif %}</li>
+        <li class="{{ 'done' if setup.has_password else 'fail' }}">Calendar Sync password {% if setup.has_password %}set <span class="muted">(from <code>CCS_PASSWORD.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_PASSWORD.txt</code>{% endif %}</li>
+        <li class="done">Calendar Sync link {% if setup.url_from_gui %}<span class="muted">(set here)</span>{% elif setup.url_is_default %}<span class="muted">(default)</span>{% else %}<span class="muted">(from <code>.env</code>)</span>{% endif %}</li>
+        <li class="{{ 'done' if s.last_auth_ok else ('fail' if s.last_auth_ok == false else '') }}">CCS+ accepted the sign-in{% if s.last_auth_ok == false %} — <b>rejected</b>; check the UID and Calendar Sync password{% endif %}</li>
+        <li class="{{ 'done' if setup.downloaded else '' }}">Schedule received{% if setup.downloaded %} <span class="muted">({{ s.event_count }} events)</span>{% endif %}</li>
+      </ul>
+
+      <form method="post" action="/setup/link">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <div class="k">Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):</div>
+        <div class="feed">
+          <input name="url" type="url" required value="{{ setup.url }}" placeholder="https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar">
+          <button name="action" value="save">Save &amp; sync</button>
+          {% if setup.url_from_gui %}<button class="ghost" name="action" value="reset" formnovalidate>Reset</button>{% endif %}
+        </div>
+      </form>
+
+      <form method="post" action="/setup/upload" enctype="multipart/form-data" style="margin-top:14px">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <div class="k">Or upload <b>Calendar.ics</b> by hand: open the Calendar Sync link in your browser, sign in with your UID and
+          Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.</div>
+        <div class="feed">
+          <input name="file" type="file" accept=".ics,text/calendar" required>
+          <button>Upload &amp; publish</button>
+        </div>
+      </form>
+
+      <details class="howto" style="margin-top:14px" {% if not setup.downloaded %}open{% endif %}>
+        <summary>How to turn on Calendar Sync in CCS+</summary>
+        <ol>
+          <li>In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.</li>
+          <li>Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.</li>
+          <li>Press <b>Copy link</b> and paste it in the box above.</li>
+          <li>On the server, put your <b>UID</b> in <code>$MNT_DOCKER/.secrets/CCS_USER.txt</code> and the <b>Calendar Sync password</b> in <code>$MNT_DOCKER/.secrets/CCS_PASSWORD.txt</code>, then restart the stack.</li>
+          <li>Press <b>Sync now</b>. The checklist above turns green when CCS+ accepts the sign-in and the schedule downloads.</li>
+        </ol>
+        <p class="muted" style="font-size:13px;margin:8px 0 0">The password is only ever read from the secret file; it's never shown or stored on this page.</p>
+      </details>
+    </div>
+  </details>
 
   <div class="card" id="cal">
     <div class="calhead">
@@ -138,72 +250,10 @@ Added here{% endif %}{% if e.description %}
     <p class="muted" style="font-size:12px;margin:6px 0 0">This is the schedule as it's sent to Google Calendar. Click an event for details or to edit it; use + on a day to add one. Changes here never affect CCS+.</p>
   </div>
 
-  <div class="card" id="feedcard">
-    <h2>Google Calendar feed</h2>
-    {% if not links.is_public %}<p class="warnline">⚠ This isn't a public HTTPS address yet, so Google can't load the feed.
-      Set <code>PUBLIC_URL</code> in <code>.env</code> (see README).</p>{% endif %}
-    <div class="actions">
-      <a class="btn" href="{{ links.google }}" target="_blank" rel="noopener">Add to Google Calendar</a>
-      <a class="btn2" href="{{ links.page }}" target="_blank">Open subscribe page</a>
-      <form class="namebox" method="post" action="/feed/name" title="The calendar's name in Google Calendar">
-        <input type="hidden" name="csrf" value="{{ csrf }}">
-        <input name="name" value="{{ name }}" placeholder="Calendar Name" aria-label="Calendar Name" maxlength="100">
-        <button class="ghost">Save</button>
-      </form>
-    </div>
-    <div class="k"><b>(Recommended)</b> Shareable subscribe page — send this to anyone who should see the schedule (no status-page login needed):</div>
-    <div class="feed"><input id="page" readonly onclick="this.select()" value="{{ links.page }}"><button type="button" onclick="copyField('page', this)">Copy</button></div>
-    <div class="k">Raw feed URL (for adding manually: Google Calendar → Other calendars → + → From URL):</div>
-    <div class="feed"><input id="feed" readonly onclick="this.select()" value="{{ feed }}"><button type="button" onclick="copyField('feed', this)">Copy</button></div>
-    <p class="muted" style="font-size:13px;margin:8px 0 0">Google re-checks subscribed feeds on its own schedule (typically every several hours).
-      The name is what Google shows for new subscriptions; calendars already added keep theirs (rename them in Google's settings).</p>
-  </div>
-
-  <div class="card" id="setup">
-    <h2>Setup: CCS+ Calendar Sync</h2>
-    <ul class="checks">
-      <li class="{{ 'done' if setup.uid else 'fail' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code> <span class="muted">(from <code>CCS_USER.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_USER.txt</code>{% endif %}</li>
-      <li class="{{ 'done' if setup.has_password else 'fail' }}">Calendar Sync password {% if setup.has_password %}set <span class="muted">(from <code>CCS_PASSWORD.txt</code>)</span>{% else %}missing — put it in <code>$MNT_DOCKER/.secrets/CCS_PASSWORD.txt</code>{% endif %}</li>
-      <li class="done">Calendar Sync link {% if setup.url_from_gui %}<span class="muted">(set here)</span>{% elif setup.url_is_default %}<span class="muted">(default)</span>{% else %}<span class="muted">(from <code>.env</code>)</span>{% endif %}</li>
-      <li class="{{ 'done' if s.last_auth_ok else ('fail' if s.last_auth_ok == false else '') }}">CCS+ accepted the sign-in{% if s.last_auth_ok == false %} — <b>rejected</b>; check the UID and Calendar Sync password{% endif %}</li>
-      <li class="{{ 'done' if setup.downloaded else '' }}">Schedule received{% if setup.downloaded %} <span class="muted">({{ s.event_count }} events)</span>{% endif %}</li>
-    </ul>
-
-    <form method="post" action="/setup/link">
-      <input type="hidden" name="csrf" value="{{ csrf }}">
-      <div class="k">Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):</div>
-      <div class="feed">
-        <input name="url" type="url" required value="{{ setup.url }}" placeholder="https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar">
-        <button name="action" value="save">Save &amp; sync</button>
-        {% if setup.url_from_gui %}<button class="ghost" name="action" value="reset" formnovalidate>Reset</button>{% endif %}
-      </div>
-    </form>
-
-    <form method="post" action="/setup/upload" enctype="multipart/form-data" style="margin-top:14px">
-      <input type="hidden" name="csrf" value="{{ csrf }}">
-      <div class="k">Or upload <b>Calendar.ics</b> by hand: open the Calendar Sync link in your browser, sign in with your UID and
-        Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.</div>
-      <div class="feed">
-        <input name="file" type="file" accept=".ics,text/calendar" required>
-        <button>Upload &amp; publish</button>
-      </div>
-    </form>
-
-    <details class="howto" style="margin-top:14px" {% if not setup.downloaded %}open{% endif %}>
-      <summary>How to turn on Calendar Sync in CCS+</summary>
-      <ol>
-        <li>In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.</li>
-        <li>Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.</li>
-        <li>Press <b>Copy link</b> and paste it in the box above.</li>
-        <li>On the server, put your <b>UID</b> in <code>$MNT_DOCKER/.secrets/CCS_USER.txt</code> and the <b>Calendar Sync password</b> in <code>$MNT_DOCKER/.secrets/CCS_PASSWORD.txt</code>, then restart the stack.</li>
-        <li>Press <b>Sync now</b>. The checklist above turns green when CCS+ accepts the sign-in and the schedule downloads.</li>
-      </ol>
-      <p class="muted" style="font-size:13px;margin:8px 0 0">The password is only ever read from the secret file; it's never shown or stored on this page.</p>
-    </details>
-  </div>
-
   {% macro t(d) %}{{ ("never" if not d else (d.strftime("%H:%M") if d.date() == cal.today else d.strftime("%b %d, %H:%M"))) }}{% endmacro %}
-  <div class="card">
+  {# F1.2–F1.4: title first, then the status line, a 5-row scrolling log, and the debug links #}
+  <details class="card section" id="activity" data-section="activity" open>
+    <summary><h2>Activity log</h2>{% if history %}<span class="peek">Latest: {{ history[0].msg }}</span>{% endif %}</summary>
     <div class="statline">
       <span><span class="k">Sign-in</span> {% if s.last_auth_ok is none %}<span class="muted">not yet</span>{% elif s.last_auth_ok %}<b style="color:var(--ok)">✓ accepted</b> {{ t(s.last_auth) }}{% else %}<b style="color:var(--bad)">✗ rejected</b> {{ t(s.last_auth) }}{% endif %}</span>
       <span><span class="k">Last check</span> <b>{{ t(s.last_success) }}</b></span>
@@ -212,17 +262,13 @@ Added here{% endif %}{% if e.description %}
       <span><b>{{ s.event_count }}</b> <span class="k">events in feed</span></span>
       {% if s.login_failures %}<span style="color:var(--bad)"><b>{{ s.login_failures }}</b> rejected sign-ins in a row</span>{% endif %}
     </div>
-    <h2>Activity log</h2>
-    {% if history %}<div class="scroll"><table><tr><th style="width:130px">Time</th><th>Event</th></tr>
+    {% if history %}<div class="logwin"><table><thead><tr><th style="width:140px">Time</th><th>Event</th></tr></thead><tbody>
       {% for h in history %}<tr><td>{{ h.time.strftime("%b %d %H:%M:%S") }}</td><td class="lvl-{{ h.level }}">{{ h.msg }}</td></tr>{% endfor %}
-    </table></div>{% else %}<p class="muted">Nothing yet.</p>{% endif %}
-  </div>
-
-  <div class="card">
-    <h2>Debug (last download)</h2>
-    {% if has_response %}<a href="/debug/response" target="_blank">Response details</a>{% if has_source %} · <a href="/debug/source" target="_blank">Last calendar file received</a>{% endif %}
-    {% else %}<p class="muted">Available after the first download.</p>{% endif %}
-  </div>
+    </tbody></table></div>{% else %}<p class="muted">Nothing yet.</p>{% endif %}
+    <div class="debug"><span class="muted">Debug (last download):</span>
+      {% if has_response %}<a href="/debug/response" target="_blank">Response details</a>{% if has_source %} · <a href="/debug/source" target="_blank">Last calendar file received</a>{% endif %}
+      {% else %}<span class="muted">available after the first download.</span>{% endif %}</div>
+  </details>
 </main>
 <script>
 // Copy a field's text. Uses the Clipboard API on HTTPS/localhost, and falls back to
@@ -240,6 +286,48 @@ function copyField(id, btn) {
     navigator.clipboard.writeText(text).then(function () { done(); }, fallback);
   } else { fallback(); }
 }
+
+// Per-browser preferences. Storage can be unavailable (private windows, blocked site data),
+// so every read and write is guarded and the page still works without it.
+function pref(key, value) {
+  try {
+    if (value === undefined) return localStorage.getItem('cs.' + key);
+    if (value === null) localStorage.removeItem('cs.' + key); else localStorage.setItem('cs.' + key, value);
+  } catch (e) { return null; }
+}
+
+// F4: light / dark / system theme. "system" removes the override so the browser setting applies.
+(function () {
+  var buttons = document.querySelectorAll('[data-theme-choice]');
+  function show(choice) {
+    buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.themeChoice === choice)); });
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var choice = b.dataset.themeChoice;
+      if (choice === 'system') { document.documentElement.removeAttribute('data-theme'); pref('theme', null); }
+      else { document.documentElement.setAttribute('data-theme', choice); pref('theme', choice); }
+      show(choice);
+    });
+  });
+  show(document.documentElement.getAttribute('data-theme') || 'system');
+})();
+
+// F3: settings menu (empty for now). Closes on outside click or Escape.
+(function () {
+  var btn = document.getElementById('menubtn'), menu = document.getElementById('menu');
+  function set(open) { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); }
+  btn.addEventListener('click', function (e) { e.stopPropagation(); set(menu.hidden); });
+  document.addEventListener('click', function (e) { if (!menu.hidden && !menu.contains(e.target)) set(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
+})();
+
+// F5: collapsible sections remember whether they were open or closed.
+document.querySelectorAll('details.section[data-section]').forEach(function (d) {
+  var saved = pref('section.' + d.dataset.section);
+  if (saved === 'closed') d.open = false;
+  d.addEventListener('toggle', function () { pref('section.' + d.dataset.section, d.open ? 'open' : 'closed'); });
+});
 </script>
 </body>
 </html>

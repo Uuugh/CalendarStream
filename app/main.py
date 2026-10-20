@@ -262,7 +262,7 @@ def gui_auth(request: Request, creds: HTTPBasicCredentials | None = Depends(basi
         if locked:
             state.record("warn", f"Status page locked for {ip} after {GUI_MAX_FAILURES} failed logins")
             raise HTTPException(429, "Too many failed logins. Try again later.")
-    raise HTTPException(401, headers={"WWW-Authenticate": 'Basic realm="Calendar Stream"'})
+    raise HTTPException(401, headers={"WWW-Authenticate": 'Basic realm="CalendarStream"'})
 
 
 def check_csrf(token: str):

@@ -1,11 +1,11 @@
-# Calendar Stream
+# CalendarStream
 
 Keeps a Google Calendar in sync with your United CCS+ schedule.
 
 CCS+ has an official **Calendar Sync** download (`Calendar.ics`), protected by your UID and
 a Calendar Sync password. Apple Calendar can subscribe to it directly, but Google Calendar
 can't send a username and password, so United's guide has you download and re-import the
-file by hand every time. Calendar Stream does that for you: it downloads the file on a timer
+file by hand every time. CalendarStream does that for you: it downloads the file on a timer
 and republishes it as a feed Google Calendar subscribes to. A status page shows sync results,
 a month view of the schedule, and setup help.
 
@@ -68,7 +68,7 @@ logins; the calendar feed and subscribe page aren't affected.
   requests from Python's HTTP libraries), which identifies itself as curl. It sends
   `If-None-Match`, so unchanged schedules cost almost nothing.
 - The calendar file is kept as United sends it: same event IDs, times, time zones and
-  details. Calendar Stream only changes:
+  details. CalendarStream only changes:
   - the calendar's name (`CALENDAR_NAME`) and refresh hints for subscribers;
   - **events with no end time that start at midnight** → all-day. CCS+ sends day codes
     (RDO, HDO, VRDO, VHDO…) this way;
@@ -100,6 +100,12 @@ the feed is rebuilt from the last download straight away.
 
 ## The status page
 
+The title bar shows **CalendarStream** and its version, a **Light / System / Dark** theme switch,
+and a **Settings** menu (☰, empty for now). Below it are three sections, top to bottom: **Status &
+setup**, the month view, and the **Activity log**. Status & setup and the Activity log can be
+collapsed by clicking their titles; the theme and which sections are open are remembered in each
+browser.
+
 - **Month view**: the schedule exactly as it's sent to Google, with ‹ › to change months and
   **Today** to come back. Multi-day trips appear on every day they cover; click an event for
   its times, location and details. Green items are all-day events.
@@ -113,8 +119,10 @@ the feed is rebuilt from the last download straight away.
 - **Setup**: checklist for Calendar Sync (UID, password, link, sign-in accepted, schedule
   received), a box for the **Copy link** URL, **Upload Calendar.ics**, and the CCS+ steps. A link saved here wins over
   `CCS_CALENDAR_URL` in `.env`; **Reset** goes back to `.env`. The password is never shown.
-- **Activity log**: each check and what changed (e.g. "3 new, 1 removed"). Kept in the database.
-- **Debug**: the last response's details and the calendar file exactly as downloaded.
+- **Activity log**: a one-line status (sign-in, last check, schedule changed, next check, events in
+  the feed), then each check and what changed (e.g. "3 new, 1 removed") in a window five rows
+  tall that scrolls. Kept in the database. Below it, **Debug** links show the last response's
+  details and the calendar file exactly as received.
 - `GET /api/status` (JSON) and `GET /healthz` for monitoring.
 
 ## Adding it to Google Calendar

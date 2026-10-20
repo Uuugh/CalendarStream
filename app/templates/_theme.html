@@ -1,0 +1,28 @@
+{#- Shared colour tokens and theme handling for the app's pages.
+    Theme choice (light / dark / system) is stored per browser in localStorage under "cs.theme";
+    with no choice, or "system", the browser's own setting applies. The script runs before the
+    page paints so a saved choice never flashes the other theme. -#}
+<script>
+  try {
+    var t = localStorage.getItem('cs.theme');
+    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+  } catch (e) { /* storage blocked: follow the system setting */ }
+</script>
+{%- set dark_tokens -%}
+  --bg:#0f1218; --card:#171b23; --text:#e6e8ec; --muted:#98a2b3; --line:#2a303b; --soft:#1d222c;
+  --ok:#4ade80; --okbg:#0f2a20; --bad:#f87171; --badbg:#2d1414; --warn:#fbbf24; --warnbg:#2b2110;
+  --run:#93b4ff; --runbg:#14203d; --accent:#93b4ff; --onaccent:#0f1218;
+  --ev:#1a2a4d; --evtext:#c7d7fe; --allday:#12301f; --alldaytext:#bbf7d0; --custom:#2e1a47; --customtext:#e9d5ff;
+  color-scheme:dark;
+{%- endset %}
+<style>
+  :root {
+    --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec; --soft:#f2f4f7;
+    --ok:#12805c; --okbg:#e6f6ef; --bad:#b42318; --badbg:#fdecea; --warn:#a15c07; --warnbg:#fef4e2;
+    --run:#1d4ed8; --runbg:#e8efff; --accent:#1d4ed8; --onaccent:#fff;
+    --ev:#e8efff; --evtext:#1e3a8a; --allday:#e6f6ef; --alldaytext:#14532d; --custom:#f3e8ff; --customtext:#5b21b6;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { {{ dark_tokens }} } }
+  :root[data-theme="dark"] { {{ dark_tokens }} }
+</style>

@@ -5,7 +5,26 @@ Versions are numbered `0.0.x` until a new minor version is decided. Every releas
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.6**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.7**
+
+## 0.0.7 — 2026-10-20
+
+### Added
+- **F3** A **Settings** menu (☰) at the right of the title bar. It's empty for now.
+- **F4** A **Light / System / Dark** theme switch just left of the Settings menu. The choice is
+  remembered in this browser; **System** follows the device's setting. The event editor uses it too.
+- **F5** Every section except the calendar can be collapsed by clicking its title. Each browser
+  remembers which sections are open. A collapsed section still shows a summary: the status and
+  latest message, or the latest activity-log entry.
+
+### Changed
+- **F1** The dashboard is reorganised:
+  - **F1.1** The health bar, the Google Calendar feed and **Setup: CCS+ Calendar Sync** are now
+    one section, **Status & setup**, in that order.
+  - **F1.2** The activity log scrolls inside a window five rows tall.
+  - **F1.3** The debug links (last download) are inside the Activity log section, below the log.
+  - **F1.4** The Activity log title is at the top of its section, above the status line.
+- **F2** The app is now called **CalendarStream** (one word).
 
 ## 0.0.6 — 2026-10-20
 

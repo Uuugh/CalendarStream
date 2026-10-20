@@ -1,4 +1,4 @@
-# Releases for Calendar Stream
+# Releases for CalendarStream
 #  - VERSION changes on main  -> git tag v<VERSION>, move "beta", build and push
 #                                ghcr.io/<owner>/calendar_stream:<VERSION> and :beta,
 #                                GitHub Release (pre-release) with the version's CHANGELOG notes
@@ -91,7 +91,7 @@ jobs:
           if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
             echo "v$VERSION already exists; leaving it."
           else
-            git tag -a "v$VERSION" -m "Calendar Stream $VERSION"
+            git tag -a "v$VERSION" -m "CalendarStream $VERSION"
             git push origin "refs/tags/v$VERSION"
           fi
           git tag -f beta "v$VERSION^{commit}"
@@ -130,7 +130,7 @@ jobs:
           if gh release view "v$VERSION" >/dev/null 2>&1; then
             gh release edit "v$VERSION" --notes-file notes.md
           else
-            gh release create "v$VERSION" --verify-tag --title "Calendar Stream $VERSION" \
+            gh release create "v$VERSION" --verify-tag --title "CalendarStream $VERSION" \
               --notes-file notes.md --prerelease
           fi
           echo "Released **$VERSION** (beta): \`$IMAGE:$VERSION\`, \`:beta\`" >> "$GITHUB_STEP_SUMMARY"
@@ -178,7 +178,7 @@ jobs:
           if gh release view "v$STABLE" >/dev/null 2>&1; then
             out=$(gh release edit "v$STABLE" --notes-file notes.md --prerelease=false --latest 2>&1)
           else
-            out=$(gh release create "v$STABLE" --verify-tag --title "Calendar Stream $STABLE" --notes-file notes.md --latest 2>&1)
+            out=$(gh release create "v$STABLE" --verify-tag --title "CalendarStream $STABLE" --notes-file notes.md --latest 2>&1)
           fi || { echo "::error::GitHub Release failed: $(echo "$out" | tail -3 | tr '\n' ' ')"; exit 1; }
           echo "latest -> **$STABLE** (image and GitHub Release)" >> "$GITHUB_STEP_SUMMARY"
       - name: Publish GitHub Releases for older versions that don't have one
@@ -191,6 +191,6 @@ jobs:
             gh release view "$tag" >/dev/null 2>&1 && continue
             awk -v h="## $v " 'index($0,h)==1{p=1;next} /^## /{p=0} p' CHANGELOG.md > notes.md
             [ -s notes.md ] || continue
-            gh release create "$tag" --verify-tag --title "Calendar Stream $v" --notes-file notes.md \
+            gh release create "$tag" --verify-tag --title "CalendarStream $v" --notes-file notes.md \
               --prerelease --latest=false || echo "::warning::Couldn't create a release for $tag"
           done

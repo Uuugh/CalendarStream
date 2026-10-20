@@ -1,4 +1,4 @@
-"""Calendar Stream."""
+"""CalendarStream."""
 from pathlib import Path
 
 try:
