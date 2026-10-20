@@ -23,13 +23,11 @@ a month view of the schedule, and setup help.
    | `CCS_PASSWORD.txt` | The **Calendar Sync** password from step 1 |
    | `USER.txt` / `PASSWORD.txt` | A login you choose for the status page |
    | `DB_PASSWORD.txt` | A password you choose for the database |
-   | `GOOGLE_CLIENT_ID.txt` / `GOOGLE_CLIENT_SECRET.txt` | Your Google OAuth client ([Google Calendar sync](#syncing-straight-to-google-calendar-beta)); leave both **empty** to skip it |
 
    ```bash
    sudo chmod 600 "$MNT_DOCKER/.secrets/"*.txt
    ```
-   All seven must exist (the two Google files may be empty) or `docker compose up` stops with
-   an error. The database password is
+   All five must exist or `docker compose up` stops with an error. The database password is
    set the first time Postgres starts; changing the file later doesn't change it.
 3. **Get the stack files.** Only `docker-compose.yml` and `.env` are needed on the server; the
    app comes as a ready-made image. Cloning is the easiest way to keep the compose file current:
@@ -55,8 +53,6 @@ a month view of the schedule, and setup help.
 | `$MNT_DOCKER/.secrets/USER.txt` | `GUI_USER` | `GUI_USERNAME_FILE` → `GUI_USERNAME` |
 | `$MNT_DOCKER/.secrets/PASSWORD.txt` | `GUI_PASSWORD` | `GUI_PASSWORD_FILE` → `GUI_PASSWORD` |
 | `$MNT_DOCKER/.secrets/DB_PASSWORD.txt` | `DB_PASSWORD` | `DB_PASSWORD_FILE` → `DB_PASSWORD` (and Postgres' `POSTGRES_PASSWORD_FILE`) |
-| `$MNT_DOCKER/.secrets/GOOGLE_CLIENT_ID.txt` | `GOOGLE_CLIENT_ID` | `GOOGLE_CLIENT_ID_FILE` → `GOOGLE_CLIENT_ID` |
-| `$MNT_DOCKER/.secrets/GOOGLE_CLIENT_SECRET.txt` | `GOOGLE_CLIENT_SECRET` | `GOOGLE_CLIENT_SECRET_FILE` → `GOOGLE_CLIENT_SECRET` |
 
 Leave `CCS_USERNAME`, `CCS_PASSWORD`, `GUI_USERNAME` and `GUI_PASSWORD` blank in `.env`; the
 secrets override them. Root-only (`600`) files are fine: the container reads them at startup,
@@ -175,34 +171,43 @@ Google account, through Google's Calendar API: updates within minutes and tag co
 It asks only for permission to manage **calendars it created** (`calendar.app.created`) and to see
 your e-mail address; it can't see or change your other calendars.
 
-**So far (0.0.12):** connecting and disconnecting, and creating the calendar. Events are copied
-from the next beta.
+**What it does:**
+- Copies every event from the first day of the current month onward (older ones are left alone),
+  with the edits, hides and added events made on the status page, and without reminders.
+  CCS+'s "free" items (days off, reserve…) are shown as *free*, the rest as *busy*.
+- **Tag colours** become Google event colours: each tag uses the nearest of Google's 11 colours
+  (Tomato, Flamingo, Tangerine, Banana, Sage, Basil, Peacock, Blueberry, Lavender, Grape, Graphite).
+  Events with no tag take the calendar's colour, which you choose in Google.
+- The calendar's **name** follows the name set on the status page.
+- Changes go to Google within seconds of a download, upload or edit. Once a day (and with **Sync
+  now**) it also checks Google's copy and puts back anything changed or deleted there; events you
+  add to that calendar yourself are left alone. If the calendar is deleted in Google, a new one is
+  made.
 
-**One-time setup in Google Cloud** (console.cloud.google.com). An OAuth client you already have
-works if it matches these steps:
+**Setting it up.** Everything happens in **Settings (☰) → Google Calendar**, which has a
+step-by-step guide with links:
 
-1. Pick or create a project, and enable the **Google Calendar API** (APIs & Services → Library).
-2. **OAuth consent screen** (Google Auth Platform → Branding / Audience / Data access): user type
-   *External*; app name "CalendarStream"; your e-mail as the support and developer contact; on
-   *Data access* add the scopes `openid`, `.../auth/userinfo.email` and
-   `.../auth/calendar.app.created`.
-3. **Publish the app** (*Audience* → **Publish app**, status *In production*). In *Testing* mode
-   Google ends the sign-in after 7 days. An unverified personal app works in production: Google
-   shows an "unverified app" warning when you connect (choose *Advanced* → *Go to CalendarStream*).
-4. **Clients → Create client → Web application**. Under *Authorised redirect URIs* add the address
-   shown in CalendarStream's Settings menu: `https://<your PUBLIC_URL>/google/callback`.
-5. Save the **Client ID** in `GOOGLE_CLIENT_ID.txt` and the **Client secret** in
-   `GOOGLE_CLIENT_SECRET.txt` (in `$MNT_DOCKER/.secrets`), then `docker compose up -d`.
+1. In Google Cloud (free), create an **OAuth client** for CalendarStream: a project, the Google
+   Calendar API turned on, the consent screen (scopes `openid`, `userinfo.email` and
+   `calendar.app.created`) **published**, and a *Web application* client whose authorised
+   redirect URI is the one the menu shows (`https://<your PUBLIC_URL>/google/callback`).
+2. Paste its **Client ID** and **Client secret** into the menu and press **Save**. The secret is
+   stored encrypted and never shown again.
+3. Press **Connect Google Calendar** and allow access. Google warns that it "hasn't verified this
+   app" because it's your own: choose **Advanced → Go to CalendarStream**.
 
-Then **☰ → Connect Google Calendar**, sign in and allow access. CalendarStream creates a calendar
-named like the feed. **Disconnect** removes CalendarStream's access in Google; tick *Also delete
-this calendar in Google* to remove the calendar too (otherwise reconnecting the same account
-reuses it).
+One OAuth client serves the whole install: everyone who connects uses it with their own Google
+account (up to 100 people while the app is unverified). To change the client, disconnect first.
+**Disconnect** removes CalendarStream's access in Google; tick *Also delete this calendar in
+Google* to remove the calendar too (otherwise connecting the same account again reuses it). If you
+also subscribed to the `.ics` feed in Google, remove that calendar there, or you'll see everything
+twice.
 
 `PUBLIC_URL` must be the page's public `https://` address, because Google only sends the sign-in
-back to https addresses (or `localhost`). The sign-in (a refresh token) is stored in the database
-encrypted with a key derived from `DB_PASSWORD`, so a copy of the database alone can't reach your
-Google account; if `DB_PASSWORD` changes, connect again.
+back to https addresses (or `localhost`). The client secret and the sign-in (a refresh token) are
+stored in the database encrypted with a key derived from `DB_PASSWORD`, so a copy of the database
+alone can't reach your Google account. If `DB_PASSWORD` changes, enter the secret and connect
+again.
 
 ## Versions and releases
 
@@ -247,7 +252,8 @@ Everything the app keeps is in the Postgres container `calendar_stream_db`, whos
 |---|---|
 | `calendar_files` | `source` (the calendar as downloaded) and `feed` (as served to Google) |
 | `events` | The current schedule, for the status page; replaced in one transaction per change |
-| `kv` | `feed_token`, `status`, `http_cache` (ETag), and what's set on the status page: `calendar_url`, `calendar_name`, `calendar_color`, `calendar_tags`, `ui_theme`, `ui_sections`; `google` (connected account and calendar) and `google_token` (the encrypted Google sign-in) |
+| `kv` | `feed_token`, `status`, `http_cache` (ETag), and what's set on the status page: `calendar_url`, `calendar_name`, `calendar_color`, `calendar_tags`, `ui_theme`, `ui_sections`; `google` (connected account, calendar and last sync), `google_client` (OAuth client; secret encrypted) and `google_token` (the encrypted Google sign-in) |
+| `google_events` | What was last written to Google for each event (to send only changes) |
 | `event_edits` | Your changes to United's events (re-applied after each download) |
 | `custom_events` | Events you added on the status page |
 | `debug_files` | The last response's details and download |
@@ -267,7 +273,7 @@ Dockerfile           how GitHub Actions builds the image
 entrypoint.sh        reads the Docker secrets as root, then drops to PUID:GUID
 app/main.py          web app, sync loop, month view, status/lockout logic
 app/calsync.py       Calendar Sync download + feed processing
-app/gsync.py         Google Calendar connection (OAuth sign-in, encrypted token, its calendar)
+app/gsync.py         Google Calendar sync (OAuth sign-in, encrypted secrets, writing the events)
 app/store.py         Postgres storage (tables are created automatically)
 app/templates/       status page, event editor and subscribe page
 VERSION              current version (0.0.x); see CHANGELOG.md

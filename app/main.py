@@ -31,8 +31,7 @@ log = logging.getLogger("calendar_stream")
 logging.getLogger("httpx").setLevel(logging.WARNING)   # one line per Google request is too chatty
 TZ = ZoneInfo(settings.timezone)
 store = Store(settings.dsn)
-google = Google(store, settings.google_client_id, settings.google_client_secret, settings.db_password,
-                settings.timezone)
+google = Google(store, settings.db_password, settings.timezone)
 MAX_AUTH_FAILURES = 2   # pause automatic downloads after this many rejected sign-ins (avoids account lockout)
 CSRF_TOKEN = secrets.token_urlsafe(24)   # forms on the status page must carry this
 
@@ -174,6 +173,78 @@ class State:
 state = State()
 
 
+# --- Google Calendar sync --------------------------------------------------------
+
+GOOGLE_FULL_CHECK = timedelta(hours=24)    # how often Google's copy is checked and repaired
+GOOGLE_RETRY = timedelta(minutes=15)       # wait after a failed sync before trying again
+
+
+class GoogleJob:
+    """The background Google sync: woken whenever the published schedule changes."""
+    def __init__(self):
+        self.wake = asyncio.Event()
+        self.full = True                   # the first sync after startup checks everything
+        self.running = False
+        self.lock = asyncio.Lock()         # one sync (or disconnect) at a time
+
+
+google_job = GoogleJob()
+
+
+def request_google_sync(full: bool = False):
+    google_job.full = google_job.full or full
+    google_job.wake.set()
+
+
+def sync_window_start() -> date:
+    """Decision 5: events from the first day of the current month onward are synced."""
+    return now().date().replace(day=1)
+
+
+async def google_sync_once(full: bool) -> bool:
+    """Run one sync. Returns False if it failed."""
+    async with google_job.lock:
+        if not (google.configured and google.connected):
+            return True
+        google_job.running = True
+        try:
+            result = await google.sync(store.load_events(), calendar_name(), tag_matcher(calendar_tags()),
+                                       sync_window_start(), full)
+            if result.changed or result.notes:
+                state.record("info", f"Google: {result.summary()}"
+                             + ("; " + "; ".join(result.notes) if result.notes else ""))
+            return True
+        except GoogleError as e:
+            message = str(e)
+        except Exception as e:      # keep the loop alive whatever happens
+            message = f"Google sync failed: {type(e).__name__}: {e}"
+        finally:
+            google_job.running = False
+        if message != google.info().get("last_error"):   # log each new problem once
+            state.record("error", f"Google: {message}")
+        google.record_error(message)
+        return False
+
+
+async def google_loop():
+    next_full = now()
+    while True:
+        google_job.wake.clear()
+        full = google_job.full or now() >= next_full
+        google_job.full = False
+        ok = await google_sync_once(full)
+        if ok and full:
+            next_full = now() + GOOGLE_FULL_CHECK
+        wait = next_full - now()
+        if not ok:
+            wait = min(wait, GOOGLE_RETRY)
+        try:
+            await asyncio.wait_for(google_job.wake.wait(), timeout=max(60, wait.total_seconds()))
+            await asyncio.sleep(2)   # let a burst of changes (e.g. several edits) settle first
+        except asyncio.TimeoutError:
+            pass
+
+
 def publish(raw: bytes | None, sha: str | None = None) -> tuple[list[Event], list[Event]]:
     """Build the feed from a CCS+ calendar (or none yet) plus the edits and added events made here,
     and store it. Returns (all events now, events before)."""
@@ -189,6 +260,7 @@ def publish(raw: bytes | None, sha: str | None = None) -> tuple[list[Event], lis
     store.save_calendar("feed", feed, sha or digest)
     store.replace_events(events)
     state.event_count = sum(1 for e in events if not e.hidden)
+    request_google_sync()
     return events, previous
 
 
@@ -301,9 +373,10 @@ async def lifespan(_app):
         rebuild()
     except Exception as e:
         log.error("Couldn't rebuild the feed from the stored download: %s", e)
-    task = asyncio.create_task(loop())
+    tasks = [asyncio.create_task(loop()), asyncio.create_task(google_loop())]
     yield
-    task.cancel()
+    for task in tasks:
+        task.cancel()
     store.close()
 
 
@@ -377,10 +450,22 @@ def google_redirect_uri(request: Request) -> str:
     return f"{base_url(request)}/google/callback"
 
 
+def _local_time(value: str | None) -> str:
+    """An ISO time as local "15:42" today, or "Mon Oct 19 15:42" on another day."""
+    try:
+        when = datetime.fromisoformat(value).astimezone(TZ)
+    except (TypeError, ValueError):
+        return ""
+    return f"{when:%H:%M}" if when.date() == now().date() else f"{when:%a %b %-d %H:%M}"
+
+
 def google_view(request: Request) -> dict:
     uri = google_redirect_uri(request)
     host = urlparse(uri).hostname or ""
-    return {"configured": google.configured, "connected": google.connected, "info": google.info(),
+    info = google.info()
+    return {"configured": google.configured, "connected": google.connected, "info": info,
+            "client_id": google.client_id, "has_secret": bool(google.client_secret),
+            "running": google_job.running, "last_sync": _local_time(info.get("last_sync")),
             "redirect_uri": uri,
             # Google only sends sign-ins back to https:// addresses, or http:// on this computer.
             "redirect_ok": uri.startswith("https://") or host in ("localhost", "127.0.0.1")}
@@ -722,13 +807,34 @@ async def upload(csrf: str = Form(""), file: UploadFile = File(...)):
 
 # --- Google Calendar connection ---------------------------------------------------
 
+@app.post("/google/client", dependencies=[Depends(gui_auth)])
+async def google_client(csrf: str = Form(""), client_id: str = Form(""), client_secret: str = Form(""),
+                        action: str = Form("save")):
+    """Save or remove the Google OAuth client (Settings menu). The secret is stored encrypted and
+    never shown again. It can't change while connected: the sign-in belongs to that client."""
+    check_csrf(csrf)
+    if google.connected:
+        raise HTTPException(400, "Disconnect Google Calendar before changing the OAuth client.")
+    if action == "remove":
+        google.clear_client()
+        state.record("info", "Google OAuth client removed")
+    else:
+        try:
+            google.save_client(client_id, client_secret)
+        except GoogleError as e:
+            raise HTTPException(400, str(e))
+        google.record_error("")
+        state.record("info", f"Google OAuth client saved ({google.client_id.split('.')[0][:12]}…)")
+    return RedirectResponse("/?menu=google", status_code=303)
+
+
 @app.post("/google/connect", dependencies=[Depends(gui_auth)])
 async def google_connect(request: Request, csrf: str = Form("")):
     """Send the browser to Google's consent page."""
     check_csrf(csrf)
     view = google_view(request)
     if not view["configured"]:
-        raise HTTPException(400, "Add GOOGLE_CLIENT_ID.txt and GOOGLE_CLIENT_SECRET.txt to the secrets first.")
+        raise HTTPException(400, "Save the Google OAuth client ID and secret first.")
     if not view["redirect_ok"]:
         raise HTTPException(400, "Set PUBLIC_URL in .env to this page's https:// address first.")
     return RedirectResponse(google.sign_in_url(view["redirect_uri"]), status_code=303)
@@ -745,6 +851,7 @@ async def google_callback(state_: str = Query("", alias="state"), code: str = ""
         how = "created" if info.get("created") else "found again"
         state.record("info", f"Google Calendar connected as {info.get('email') or 'your account'}; "
                              f"calendar \"{info.get('calendar_name', '')}\" {how}")
+        request_google_sync(full=True)
     except GoogleError as e:
         google.record_error(str(e))
         state.record("error", f"Google: {e}")
@@ -758,10 +865,22 @@ async def google_disconnect(csrf: str = Form(""), delete: str = Form("")):
     if not google.connected:
         return RedirectResponse("/?menu=google", status_code=303)
     email = google.info().get("email") or "your account"
-    notes = await google.disconnect(delete_calendar=delete == "1")
+    async with google_job.lock:      # not in the middle of a sync
+        notes = await google.disconnect(delete_calendar=delete == "1")
+    if delete == "1":
+        store.google_forget()
     what = "and its calendar deleted" if delete == "1" and not any("calendar" in n for n in notes) else ""
     state.record("warn" if notes else "info", f"Google Calendar disconnected ({email}) {what}".strip()
                  + ("; " + "; ".join(notes) if notes else ""))
+    return RedirectResponse("/?menu=google", status_code=303)
+
+
+@app.post("/google/sync", dependencies=[Depends(gui_auth)])
+async def google_sync_now(csrf: str = Form("")):
+    """Sync now, checking Google's copy too (repairs events changed or deleted in Google)."""
+    check_csrf(csrf)
+    request_google_sync(full=True)
+    await asyncio.sleep(0.5)
     return RedirectResponse("/?menu=google", status_code=303)
 
 

@@ -5,7 +5,34 @@ Versions are numbered `0.0.x` until a new minor version is decided. Every releas
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.12**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.13**
+
+## 0.0.13 — 2026-10-20
+
+Second beta of **Google Calendar sync** (planned for 0.1.0): the events are copied.
+
+### Added
+- **Event sync to Google.** Once connected, CalendarStream writes the schedule into its Google
+  calendar and keeps it in step: within seconds of a download, upload or edit, sending only what
+  changed. Covered: events from the first day of the current month onward (older ones are left
+  alone in Google), edits, hidden events (removed from Google) and added events. No reminders.
+  CCS+'s "free" items stay *free* in Google, the rest *busy*.
+- **Tag colours in Google:** each tag uses the nearest Google event colour (Tomato, Basil, Peacock
+  and so on). Events with no tag take the calendar's colour.
+- **F2 (from 0.0.10):** renaming the calendar on the status page renames it in Google too.
+- A daily check, and **Sync now** in the menu, compare Google's copy with the schedule and put back
+  events changed or deleted there (events you added to that calendar yourself are kept). A calendar
+  deleted in Google is made again.
+- The menu shows the last sync and its result; the Activity log's status line shows Google's state,
+  and the log records each sync that changed something (e.g. "Google: 3 added, 1 updated").
+- **The Google OAuth client is entered in Settings (☰) → Google Calendar** (Client ID and Client
+  secret), with a step-by-step guide for getting them in Google Cloud. The secret is stored
+  encrypted with a key derived from `DB_PASSWORD` and never shown again. One client serves the
+  whole app.
+
+### Removed
+- The `GOOGLE_CLIENT_ID.txt` and `GOOGLE_CLIENT_SECRET.txt` secrets from 0.0.12, and their lines in
+  `docker-compose.yml` (now the same as in 0.0.11). Those files can be deleted.
 
 ## 0.0.12 — 2026-10-20
 

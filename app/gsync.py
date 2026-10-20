@@ -14,9 +14,12 @@ import base64
 import hashlib
 import json
 import logging
+import re
 import secrets
 import time
-from datetime import datetime, timezone
+from dataclasses import dataclass, field
+from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from urllib.parse import quote, urlencode
 
 import httpx
@@ -38,6 +41,18 @@ MAX_PENDING = 20            # sign-ins started but not finished, kept at most
 KDF_ROUNDS = 390_000        # PBKDF2-SHA256 rounds for the token key
 TIMEOUT = httpx.Timeout(20.0, connect=10.0)
 
+MAX_WRITES = 1500          # Google writes in one sync at most; the rest wait for the next one
+SYNC_NOTE = "Synced by CalendarStream"
+MARKER = "calendarstream"   # private extended property on every event CalendarStream writes
+
+# Google Calendar's event colours, as its apps show them: colorId -> (name, hex).
+GOOGLE_COLORS = {
+    "11": ("Tomato", "#d50000"), "4": ("Flamingo", "#e67c73"), "6": ("Tangerine", "#f4511e"),
+    "5": ("Banana", "#f6bf26"), "2": ("Sage", "#33b679"), "10": ("Basil", "#0b8043"),
+    "7": ("Peacock", "#039be5"), "9": ("Blueberry", "#3f51b5"), "1": ("Lavender", "#7986cb"),
+    "3": ("Grape", "#8e24aa"), "8": ("Graphite", "#616161"),
+}
+
 CALENDAR_DESCRIPTION = ("Your United CCS+ schedule, kept up to date by CalendarStream. "
                         "Changes made here may be overwritten at the next sync.")
 
@@ -48,6 +63,94 @@ class GoogleError(Exception):
 
 class AccessRevoked(GoogleError):
     """Google no longer accepts the stored sign-in (revoked, expired or the password changed)."""
+
+
+class Conflict(GoogleError):
+    """Google already has an event with that ID."""
+
+
+class CalendarMissing(GoogleError):
+    """CalendarStream's calendar was deleted in Google."""
+
+
+def _rgb(hex_color: str) -> tuple[int, int, int]:
+    return tuple(int(hex_color[i:i + 2], 16) for i in (1, 3, 5))
+
+
+def nearest_color_id(hex_color: str) -> str:
+    """The Google event colour closest to a #rrggbb colour."""
+    r, g, b = _rgb(hex_color)
+    return min(GOOGLE_COLORS, key=lambda cid: sum((x - y) ** 2 for x, y in zip((r, g, b), _rgb(GOOGLE_COLORS[cid][1]))))
+
+
+def event_id(uid: str) -> str:
+    """A stable Google event ID for a CalendarStream UID. Google allows only the letters a–v and
+    digits (base32hex), 5–1024 long; a hash of the UID fits and never collides in practice."""
+    return base64.b32hexencode(hashlib.sha256(uid.encode()).digest()).decode().rstrip("=").lower()
+
+
+def event_body(e, tz_name: str, color_id: str = "") -> dict:
+    """The Google event for a CalendarStream event (calsync.Event)."""
+    if e.all_day:
+        start, end = {"date": e.start[:10]}, {"date": e.end[:10]}
+    else:
+        start, end = {"dateTime": e.start, "timeZone": tz_name}, {"dateTime": e.end, "timeZone": tz_name}
+    body = {
+        "id": event_id(e.uid),
+        "status": "confirmed",
+        "summary": e.title,
+        "location": e.location,
+        "description": (e.description + "\n\n" if e.description else "") + SYNC_NOTE,
+        "start": start, "end": end,
+        "transparency": "transparent" if e.free else "opaque",
+        "reminders": {"useDefault": False, "overrides": []},     # decision 3: no reminders
+        "extendedProperties": {"private": {MARKER: "1", "uid": e.uid[:900]}},
+    }
+    if color_id:
+        body["colorId"] = color_id
+    return body
+
+
+def _hash(body: dict) -> str:
+    return hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
+
+
+def in_window(e, first_day: date, tz: ZoneInfo) -> bool:
+    """Whether an event ends after the start of the sync window (decision 5: from the first day of
+    the current month). Older events are left alone in Google."""
+    if e.all_day:
+        return e.end[:10] > first_day.isoformat()
+    return datetime.fromisoformat(e.end) > datetime.combine(first_day, datetime.min.time(), tz)
+
+
+def _ends_in_window(ends: str, first_day: date, tz: ZoneInfo) -> bool:
+    if len(ends) == 10:
+        return ends > first_day.isoformat()
+    return datetime.fromisoformat(ends) > datetime.combine(first_day, datetime.min.time(), tz)
+
+
+@dataclass
+class SyncResult:
+    added: int = 0
+    updated: int = 0
+    removed: int = 0
+    repaired: int = 0
+    unchanged: int = 0
+    renamed: bool = False
+    more: bool = False            # stopped at MAX_WRITES; the rest goes in the next sync
+    notes: list[str] = field(default_factory=list)
+
+    @property
+    def changed(self) -> bool:
+        return bool(self.added or self.updated or self.removed or self.repaired or self.renamed)
+
+    def summary(self) -> str:
+        parts = [f"{n} {w}" for n, w in ((self.added, "added"), (self.updated, "updated"),
+                                       (self.removed, "removed"), (self.repaired, "repaired")) if n]
+        if self.renamed:
+            parts.append("calendar renamed")
+        text = ", ".join(parts) or "no changes"
+        return text + (" (more at the next sync)" if self.more else "")
 
 
 def _b64url(data: bytes) -> str:
@@ -64,11 +167,14 @@ def _id_token_claims(id_token: str) -> dict:
         return {}
 
 
+CLIENT_ID_RE = re.compile(r"^[A-Za-z0-9_.-]{10,200}\.apps\.googleusercontent\.com$")
+
+
 class Google:
-    def __init__(self, store, client_id: str, client_secret: str, key_secret: str, tz_name: str):
+    def __init__(self, store, key_secret: str, tz_name: str):
         self.store = store
-        self.client_id, self.client_secret = client_id, client_secret
         self._key_secret = key_secret
+        self._client: tuple[str, str] | None = None              # (client ID, secret), read once
         self.tz_name = tz_name
         self._pending: dict[str, tuple[str, str, float]] = {}   # state -> (PKCE verifier, redirect URI, expiry)
         self._access: tuple[str, float] | None = None            # (access token, expiry)
@@ -77,10 +183,48 @@ class Google:
 
     # --- What the status page shows ------------------------------------------------
 
+    # --- The OAuth client (entered in the Settings menu) -------------------------------
+
+    def client(self) -> tuple[str, str]:
+        """The OAuth client ID and secret saved in the Settings menu, or ("", "")."""
+        if self._client is None:
+            saved = self.store.get("google_client") or {}
+            secret = self._unseal(saved["secret"], "") if saved.get("secret") else ""
+            self._client = (saved.get("id", ""), secret)
+        return self._client
+
+    @property
+    def client_id(self) -> str:
+        return self.client()[0]
+
+    @property
+    def client_secret(self) -> str:
+        return self.client()[1]
+
     @property
     def configured(self) -> bool:
-        """The OAuth client ID and secret are present (Docker secrets)."""
-        return bool(self.client_id and self.client_secret)
+        return all(self.client())
+
+    def save_client(self, client_id: str, client_secret: str):
+        """Save the OAuth client. A blank secret keeps the one already saved (the menu never shows it)."""
+        client_id, client_secret = client_id.strip(), client_secret.strip()
+        if not CLIENT_ID_RE.match(client_id):
+            raise GoogleError("That doesn't look like a Google OAuth client ID "
+                              "(it ends in .apps.googleusercontent.com).")
+        if not client_secret:
+            client_secret = self.client_secret
+            if not client_secret:
+                raise GoogleError("Enter the client secret too.")
+        if len(client_secret) > 200 or any(ch.isspace() for ch in client_secret):
+            raise GoogleError("That doesn't look like a client secret.")
+        self.store.set("google_client", {"id": client_id, "secret": self._seal(client_secret)})
+        self._client = None
+        self._access = None
+
+    def clear_client(self):
+        self.store.delete("google_client")
+        self._client = None
+        self._access = None
 
     def info(self) -> dict:
         """Saved connection details: email, calendar_id, calendar_name, connected_at, last_error."""
@@ -95,31 +239,43 @@ class Google:
     def connected(self) -> bool:
         return self.store.get("google_token") is not None
 
-    # --- The encrypted refresh token ---------------------------------------------------
+    # --- Encrypted values (the client secret and the refresh token) --------------------
 
     def _fernet(self, salt: bytes) -> Fernet:
         if not self._key_secret:
-            raise GoogleError("DB_PASSWORD is needed to store the Google sign-in securely.")
+            raise GoogleError("DB_PASSWORD is needed to store Google secrets securely.")
         if salt not in self._keys:
+            if len(self._keys) >= 8:
+                self._keys.clear()
             kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=KDF_ROUNDS)
-            self._keys = {salt: Fernet(base64.urlsafe_b64encode(kdf.derive(self._key_secret.encode())))}
+            self._keys[salt] = Fernet(base64.urlsafe_b64encode(kdf.derive(self._key_secret.encode())))
         return self._keys[salt]
 
-    def _save_refresh_token(self, token: str):
+    def _seal(self, text: str) -> dict:
+        """Encrypt with a key derived from DB_PASSWORD and a fresh salt."""
         salt = secrets.token_bytes(16)
-        sealed = self._fernet(salt).encrypt(token.encode()).decode()
-        self.store.set("google_token", {"v": 1, "salt": _b64url(salt), "token": sealed})
+        return {"v": 1, "salt": _b64url(salt), "token": self._fernet(salt).encrypt(text.encode()).decode()}
+
+    def _unseal(self, sealed: dict, default: str | None = None) -> str:
+        """Decrypt a value from _seal. If it can't be read (DB_PASSWORD changed), return `default`,
+        or raise AccessRevoked when there is none."""
+        try:
+            salt = base64.urlsafe_b64decode(sealed["salt"] + "=" * (-len(sealed["salt"]) % 4))
+            return self._fernet(salt).decrypt(sealed["token"].encode()).decode()
+        except (InvalidToken, KeyError, ValueError, TypeError):
+            if default is not None:
+                return default
+            raise AccessRevoked("The saved Google sign-in can't be read (was DB_PASSWORD changed?). "
+                                "Disconnect and connect again.")
+
+    def _save_refresh_token(self, token: str):
+        self.store.set("google_token", self._seal(token))
 
     def _refresh_token(self) -> str:
         saved = self.store.get("google_token")
         if not saved:
             raise GoogleError("Google Calendar isn't connected.")
-        try:
-            salt = base64.urlsafe_b64decode(saved["salt"] + "=" * (-len(saved["salt"]) % 4))
-            return self._fernet(salt).decrypt(saved["token"].encode()).decode()
-        except (InvalidToken, KeyError, ValueError):
-            raise AccessRevoked("The saved Google sign-in can't be read (was DB_PASSWORD changed?). "
-                                "Disconnect and connect again.")
+        return self._unseal(saved)
 
     # --- Signing in ------------------------------------------------------------------------
 
@@ -194,8 +350,8 @@ class Google:
             raise AccessRevoked("Google no longer accepts CalendarStream's sign-in (access removed, or the app "
                                 "is still in Testing mode, which expires it after 7 days). Connect again.")
         if error in ("invalid_client", "unauthorized_client"):
-            raise GoogleError("Google rejected the OAuth client: check GOOGLE_CLIENT_ID.txt and "
-                              "GOOGLE_CLIENT_SECRET.txt.")
+            raise GoogleError("Google rejected the OAuth client: check the client ID and secret in "
+                              "Settings → Google Calendar.")
         if error == "redirect_uri_mismatch":
             raise GoogleError("Google says the redirect URI isn't one of the client's authorised redirect URIs.")
         raise GoogleError(f"Google sign-in failed: {error}.")
@@ -234,6 +390,8 @@ class Google:
             if r.status_code in (404, 410) and ok_missing:
                 return None
             reason = _error_reason(r)
+            if r.status_code == 409:
+                raise Conflict(f"Google Calendar: {reason or 'conflict'}")
             if r.status_code == 401 and attempt == 0:
                 self._access = None              # expired early: get a new access token once
                 continue
@@ -296,6 +454,136 @@ class Google:
 
     def record_error(self, message: str):
         self._update_info(last_error=message)
+
+    # --- Keeping the events in step -------------------------------------------------------
+
+    async def sync(self, events: list, name: str, color_for, first_day: date, full: bool = False) -> SyncResult:
+        """Write the schedule to CalendarStream's calendar in Google.
+
+        `events` are the published events (calsync.Event); hidden ones are left out. `color_for(title)`
+        gives a tag's #rrggbb colour or "". Only events ending after `first_day` are written; older
+        ones are left as they are. Normally only events that changed since the last sync are sent;
+        with `full`, Google's copy is also checked and anything changed or deleted there is repaired."""
+        tz = ZoneInfo(self.tz_name)
+        result = SyncResult()
+        info = self.info()
+        calendar_id = info.get("calendar_id")
+        if not calendar_id or info.get("synced_calendar") != calendar_id:
+            full = True                       # a new calendar: nothing in it is known yet
+        if full:
+            calendar_id = await self.ensure_calendar(name, calendar_id)
+            if self.info().get("synced_calendar") != calendar_id:
+                self.store.google_forget()
+                self._update_info(synced_calendar=calendar_id)
+        try:
+            return await self._sync(calendar_id, events, name, color_for, first_day, tz, full, result)
+        except CalendarMissing:
+            # Deleted in Google since the last check: make a new one and write everything again.
+            self._update_info(calendar_id=None, synced_calendar=None)
+            calendar_id = await self.ensure_calendar(name)
+            self.store.google_forget()
+            self._update_info(synced_calendar=calendar_id)
+            result = SyncResult(notes=["the calendar was missing in Google, so a new one was made"])
+            return await self._sync(calendar_id, events, name, color_for, first_day, tz, True, result)
+
+    async def _sync(self, calendar_id, events, name, color_for, first_day, tz, full, result) -> SyncResult:
+        cal = f"/calendars/{_quote(calendar_id)}"
+        if self.info().get("calendar_name") != name:          # F2: keep the name in step
+            if await self.api("PATCH", cal, body={"summary": name}, ok_missing=True) is None:
+                raise CalendarMissing()
+            self._update_info(calendar_name=name)
+            result.renamed = True
+
+        wanted = {e.uid: e for e in events if not e.hidden and in_window(e, first_day, tz)}
+        rows = self.store.google_rows()
+        remote = await self._list_events(cal, first_day, tz) if full else None
+        writes = 0
+
+        for uid, e in wanted.items():
+            color = color_for(e.title)
+            body = event_body(e, self.tz_name, nearest_color_id(color) if color else "")
+            digest, gid, row = _hash(body), body["id"], rows.get(uid)
+            same = row and row["hash"] == digest
+            if same and (remote is None or not _needs_repair(remote.get(gid), row["synced_at"])):
+                result.unchanged += 1
+                continue
+            if writes >= MAX_WRITES:
+                result.more = True
+                continue
+            await self._put_event(cal, gid, body, known=bool(row) or bool(remote and gid in remote))
+            if same:
+                result.repaired += 1
+            elif row:
+                result.updated += 1
+            else:
+                result.added += 1
+            self.store.google_saved(uid, gid, digest, e.end)
+            writes += 1
+
+        wanted_ids = {event_id(uid) for uid in wanted}
+        for uid, row in rows.items():
+            if uid in wanted:
+                continue
+            if _ends_in_window(row["ends"], first_day, tz) and writes < MAX_WRITES:
+                await self.api("DELETE", f"{cal}/events/{row['google_id']}", ok_missing=True)
+                result.removed += 1
+                writes += 1
+            elif writes >= MAX_WRITES:
+                result.more = True
+                continue
+            self.store.google_forget(uid)       # past events: left in Google, no longer tracked
+
+        if remote:   # events CalendarStream wrote that it no longer knows about (e.g. a lost database)
+            for gid, ev in remote.items():
+                if gid not in wanted_ids and ev.get("status") != "cancelled" and writes < MAX_WRITES:
+                    await self.api("DELETE", f"{cal}/events/{gid}", ok_missing=True)
+                    result.removed += 1
+                    writes += 1
+
+        self._update_info(last_sync=datetime.now(timezone.utc).isoformat(), last_result=result.summary(),
+                          events=len(wanted), last_error=None)
+        return result
+
+    async def _list_events(self, cal: str, first_day: date, tz: ZoneInfo) -> dict[str, dict]:
+        """CalendarStream's events in Google that end after first_day (deleted ones included)."""
+        found, page = {}, None
+        start = datetime.combine(first_day, datetime.min.time(), tz).isoformat()
+        while True:
+            params = {"timeMin": start, "showDeleted": "true", "maxResults": "2500",
+                      "privateExtendedProperty": f"{MARKER}=1"}
+            if page:
+                params["pageToken"] = page
+            data = await self.api("GET", f"{cal}/events", params=params, ok_missing=True)
+            if data is None:
+                raise CalendarMissing()
+            for ev in data.get("items", []):
+                found[ev["id"]] = ev
+            page = data.get("nextPageToken")
+            if not page:
+                return found
+
+    async def _put_event(self, cal: str, gid: str, body: dict, known: bool):
+        """Create or replace one event. Its ID is fixed, so this never makes duplicates: Google answers
+        409 to a second insert (including for a deleted event, which a replace brings back)."""
+        if known:
+            if await self.api("PUT", f"{cal}/events/{gid}", body=body, ok_missing=True) is not None:
+                return
+        try:
+            if await self.api("POST", f"{cal}/events", body=body, ok_missing=True) is None:
+                raise CalendarMissing()
+        except Conflict:
+            await self.api("PUT", f"{cal}/events/{gid}", body=body)
+
+
+def _needs_repair(remote: dict | None, synced_at) -> bool:
+    """Whether Google's copy was deleted or changed by hand after CalendarStream last wrote it."""
+    if remote is None or remote.get("status") == "cancelled":
+        return True
+    try:
+        updated = datetime.fromisoformat(remote["updated"].replace("Z", "+00:00"))
+    except (KeyError, ValueError):
+        return False
+    return updated > synced_at + timedelta(seconds=30)
 
 
 def _error_reason(r: httpx.Response) -> str:

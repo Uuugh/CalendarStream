@@ -49,7 +49,7 @@
   .iconbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:32px; padding:0;
              background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:8px }
   .menuwrap { position:relative }
-  .menu { position:absolute; right:0; top:calc(100% + 6px); width:min(360px, calc(100vw - 32px)); z-index:10; background:var(--card);
+  .menu { position:absolute; right:0; top:calc(100% + 6px); width:min(420px, calc(100vw - 32px)); z-index:10; background:var(--card);
           border:1px solid var(--line); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.18); padding:12px 14px }
   .menu[hidden] { display:none }
   .menu .title { font-weight:700; font-size:14px; margin-bottom:4px }
@@ -59,10 +59,20 @@
   .menu .pill { font-size:11px; padding:2px 8px }
   .menu .merr { background:var(--badbg); color:var(--bad); border-radius:8px; padding:6px 10px }
   .menu .mnote { color:var(--muted); font-size:12px }
-  .menu code { word-break:break-all }
+  .menu code { overflow-wrap:anywhere }
   .menu label { display:flex; align-items:center; gap:6px; margin:0 0 8px }
   .menu .feed input { font-size:12px; padding:6px }
   .menu .feed button { padding:6px 10px; font-size:13px }
+  .menu { max-height:calc(100vh - 80px); overflow-y:auto }
+  .menu .ok-line { color:var(--ok); font-weight:600 }
+  .menu details.guide { border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin:8px 0 0; background:var(--soft) }
+  .menu details.guide summary { cursor:pointer; font-weight:600 }
+  .menu details.guide ol { font-size:13px; padding-left:18px; margin:8px 0 }
+  .menu details.guide li { margin:0 0 8px }
+  .menu .clientform label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin:8px 0 3px }
+  .menu .clientform input { width:100%; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line);
+                            border-radius:8px; background:var(--card); color:var(--text) }
+  .menu .eactions { display:flex; justify-content:flex-end; gap:8px; margin-top:10px }
 
   /* Collapsible sections: a header that toggles the body; open/closed is saved in the database */
   .section > .shead { display:flex; align-items:center; gap:10px; flex-wrap:wrap; cursor:pointer }
@@ -172,7 +182,19 @@
           {% if g.connected %}
             <p>Connected as <b>{{ g.info.email or "your Google account" }}</b>, to the calendar
               <b>{{ g.info.calendar_name or name }}</b>.</p>
-            <p class="mnote">Events aren't copied to it yet: that comes in the next beta.</p>
+            <p>{% if g.running %}<b>Syncing…</b>
+              {% elif g.last_sync %}Last synced <b>{{ g.last_sync }}</b> · {{ g.info.events or 0 }} events
+                · {{ g.info.last_result }}
+              {% else %}Not synced yet.{% endif %}</p>
+            <form method="post" action="/google/sync" style="margin:0 0 10px">
+              <input type="hidden" name="csrf" value="{{ csrf }}">
+              <button class="ghost">Sync now</button>
+            </form>
+            <p class="mnote">Events from the start of this month on are copied, without reminders.
+              Events changed in Google are put back at the next full check (daily, or <b>Sync now</b>).
+              If you also subscribed to the feed in Google, remove that calendar there, or you'll see
+              everything twice.</p>
+            <p class="mnote">OAuth client: <code>{{ g.client_id.split(".")[0][:24] }}…</code> (disconnect to change it)</p>
             <form method="post" action="/google/disconnect"
                   onsubmit="return confirm('Disconnect Google Calendar?')">
               <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -182,22 +204,81 @@
           {% else %}
             <p>Copy the schedule into a calendar of its own in your Google account, updated within
               minutes. CalendarStream can only see and change calendars it created.</p>
-            {% if not g.configured %}
-              <p>To set it up, save your Google OAuth client's ID and secret in
-                <code>GOOGLE_CLIENT_ID.txt</code> and <code>GOOGLE_CLIENT_SECRET.txt</code>
-                (in <code>$MNT_DOCKER/.secrets</code>) and restart.</p>
-            {% elif not g.redirect_ok %}
-              <p class="merr">Set <code>PUBLIC_URL</code> in .env to this page's https:// address, then
-                restart: Google only returns to https:// addresses.</p>
-            {% else %}
-              <form method="post" action="/google/connect">
+            {% if not g.redirect_ok %}
+              <p class="merr">First set <code>PUBLIC_URL</code> in .env to this page's https:// address
+                and restart: Google only sends you back to https:// addresses.</p>
+            {% endif %}
+
+            {% if g.configured %}
+              <p class="ok-line">✓ Google OAuth client saved.</p>
+              {% if g.redirect_ok %}
+              <form method="post" action="/google/connect" style="margin:0 0 10px">
                 <input type="hidden" name="csrf" value="{{ csrf }}">
                 <button>Connect Google Calendar</button>
               </form>
+              <p class="mnote">Google may say <i>"Google hasn't verified this app"</i>: that's expected
+                for your own app. Click <b>Advanced</b> → <b>Go to CalendarStream</b>, tick the calendar
+                box and press <b>Continue</b>.</p>
+              {% endif %}
+            {% else %}
+              <p><b>Step 1 of 2:</b> CalendarStream needs its own "OAuth client" from Google: a client ID
+                and a client secret. It's free and takes about 10 minutes; the guide below walks you
+                through it.</p>
             {% endif %}
-            <p class="mnote" style="margin:10px 0 4px">The OAuth client's authorised redirect URI:</p>
-            <div class="feed"><input id="gredirect" readonly onclick="this.select()" value="{{ g.redirect_uri }}">
-              <button type="button" onclick="copyField('gredirect', this)">Copy</button></div>
+
+            <details class="guide"{% if not g.configured %} open{% endif %}>
+              <summary>{{ "Change the OAuth client" if g.configured else "Get a client ID and secret (step by step)" }}</summary>
+              <ol>
+                <li><b>Open Google Cloud</b> and sign in with your Google account:
+                  <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">create a project</a>.
+                  Name it <code>CalendarStream</code> and press <b>Create</b>. Make sure it's selected
+                  (top left) in the next steps.</li>
+                <li><b>Turn on the Calendar API:</b> open
+                  <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" rel="noopener">Google Calendar API</a>
+                  and press <b>Enable</b>.</li>
+                <li><b>Describe the app:</b> open
+                  <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a>
+                  → <b>Get started</b>. App name <code>CalendarStream</code>, your e-mail as support
+                  e-mail → Next → Audience <b>External</b> → Next → your e-mail again → agree →
+                  <b>Create</b>.</li>
+                <li><b>Allow calendar access:</b> on
+                  <a href="https://console.cloud.google.com/auth/scopes" target="_blank" rel="noopener">Data access</a>
+                  press <b>Add or remove scopes</b>. Tick <code>openid</code> and
+                  <code>…/auth/userinfo.email</code>, then under <b>Manually add scopes</b> paste:
+                  <div class="feed" style="margin:6px 0"><input id="gscope" readonly onclick="this.select()" value="https://www.googleapis.com/auth/calendar.app.created">
+                    <button type="button" onclick="copyField('gscope', this)">Copy</button></div>
+                  Press <b>Add to table</b> → <b>Update</b> → <b>Save</b>.</li>
+                <li><b>Publish it</b> so the sign-in lasts: on
+                  <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a>
+                  press <b>Publish app</b> → <b>Confirm</b>. (In "Testing", Google signs you out every
+                  7 days.) No review is needed for your own use.</li>
+                <li><b>Make the client:</b> on
+                  <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a>
+                  press <b>Create client</b>. Application type <b>Web application</b>, name
+                  <code>CalendarStream</code>. Under <b>Authorised redirect URIs</b> press
+                  <b>Add URI</b> and paste exactly:
+                  <div class="feed" style="margin:6px 0"><input id="gredirect" readonly onclick="this.select()" value="{{ g.redirect_uri }}">
+                    <button type="button" onclick="copyField('gredirect', this)">Copy</button></div>
+                  Then press <b>Create</b>.</li>
+                <li><b>Copy the two values</b> Google shows (<b>Client ID</b> and <b>Client secret</b>)
+                  into the boxes below and press <b>Save</b>. Keep the secret private: don't send it to
+                  anyone or paste it into a chat.</li>
+              </ol>
+              <form method="post" action="/google/client" class="clientform" autocomplete="off">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <label for="gcid">Client ID</label>
+                <input type="text" id="gcid" name="client_id" value="{{ g.client_id }}" spellcheck="false"
+                       placeholder="1234…apps.googleusercontent.com" required>
+                <label for="gcsecret">Client secret</label>
+                <input type="password" id="gcsecret" name="client_secret" spellcheck="false" autocomplete="new-password"
+                       placeholder="{{ 'Saved (leave empty to keep it)' if g.has_secret else 'GOCSPX-…' }}"
+                       {% if not g.has_secret %}required{% endif %}>
+                <div class="eactions">
+                  {% if g.configured %}<button class="ghost" name="action" value="remove" formnovalidate>Remove</button>{% endif %}
+                  <button name="action" value="save">Save</button>
+                </div>
+              </form>
+            </details>
           {% endif %}
         </div>
       </div>
@@ -389,6 +470,7 @@ Added here{% endif %}{% if e.description %}
       <span><span class="k">Schedule changed</span> <b>{{ t(s.last_change) }}</b></span>
       <span><span class="k">Next check</span> <b>{{ t(s.next_run) }}</b></span>
       <span><b>{{ s.event_count }}</b> <span class="k">events in feed</span></span>
+      {% if google.connected %}<span><span class="k">Google</span> {% if google.info.last_error %}<b style="color:var(--bad)">✗ error</b>{% elif google.running %}<b>syncing…</b>{% elif google.last_sync %}<b>{{ google.last_sync }}</b>{% else %}<span class="muted">not yet</span>{% endif %}</span>{% endif %}
       {% if s.login_failures %}<span style="color:var(--bad)"><b>{{ s.login_failures }}</b> rejected sign-ins in a row</span>{% endif %}
     </div>
     {% if history %}<div class="logwin"><table><thead><tr><th style="width:140px">Time</th><th>Event</th></tr></thead><tbody>

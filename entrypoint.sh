@@ -24,8 +24,6 @@ if [ "$(id -u)" = "0" ]; then
     load_secret GUI_USERNAME /run/secrets/GUI_USER
     load_secret GUI_PASSWORD /run/secrets/GUI_PASSWORD
     load_secret DB_PASSWORD  /run/secrets/DB_PASSWORD
-    load_secret GOOGLE_CLIENT_ID     /run/secrets/GOOGLE_CLIENT_ID
-    load_secret GOOGLE_CLIENT_SECRET /run/secrets/GOOGLE_CLIENT_SECRET
 
     export HOME=/tmp
     exec setpriv --reuid="$PUID" --regid="$PGID" --clear-groups -- "$@"

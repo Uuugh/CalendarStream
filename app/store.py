@@ -50,6 +50,15 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS origin text NOT NULL DEFAULT 'united
 ALTER TABLE events ADD COLUMN IF NOT EXISTS edited boolean NOT NULL DEFAULT false;
 ALTER TABLE events ADD COLUMN IF NOT EXISTS stale  boolean NOT NULL DEFAULT false;
 ALTER TABLE events ADD COLUMN IF NOT EXISTS hidden boolean NOT NULL DEFAULT false;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS free   boolean NOT NULL DEFAULT false;
+-- What was last written to Google Calendar for each event (see gsync.py)
+CREATE TABLE IF NOT EXISTS google_events (
+    uid        text PRIMARY KEY,            -- CalendarStream / CCS+ event UID
+    google_id  text NOT NULL,               -- the Google event ID (derived from the UID)
+    hash       text NOT NULL,               -- hash of what was sent, to notice changes
+    ends       text NOT NULL,               -- the event's end, so past events are left alone
+    synced_at  timestamptz NOT NULL DEFAULT now()
+);
 -- Changes made on the status page; re-applied on top of every download from CCS+
 CREATE TABLE IF NOT EXISTS event_edits (
     uid        text PRIMARY KEY,            -- United's event UID
@@ -121,21 +130,21 @@ class Store:
                 with c.cursor() as cur:
                     cur.executemany(
                         'INSERT INTO events (uid, title, start, "end", all_day, location, description, '
-                        "origin, edited, stale, hidden) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+                        "origin, edited, stale, hidden, free) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
                         "ON CONFLICT (uid) DO NOTHING",
                         [(e.uid, e.title, e.start, e.end, e.all_day, e.location, e.description,
-                          e.origin, e.edited, e.stale, e.hidden) for e in events])
+                          e.origin, e.edited, e.stale, e.hidden, e.free) for e in events])
 
     def load_events(self) -> list[Event]:
         with self.pool.connection() as c:
             rows = c.execute('SELECT title, start, "end", all_day, location, description, uid, '
-                             "origin, edited, stale, hidden FROM events ORDER BY start").fetchall()
+                             "origin, edited, stale, hidden, free FROM events ORDER BY start").fetchall()
         return [Event(*r) for r in rows]
 
     def get_event(self, uid: str) -> Event | None:
         with self.pool.connection() as c:
             r = c.execute('SELECT title, start, "end", all_day, location, description, uid, '
-                          "origin, edited, stale, hidden FROM events WHERE uid = %s", (uid,)).fetchone()
+                          "origin, edited, stale, hidden, free FROM events WHERE uid = %s", (uid,)).fetchone()
         return Event(*r) if r else None
 
     # --- edits and added events ---------------------------------------------
@@ -204,6 +213,28 @@ class Store:
             return c.execute("SELECT 1 FROM debug_files WHERE name = %s", (name,)).fetchone() is not None
 
     # --- activity log ------------------------------------------------------
+    # --- Google Calendar sync state ---
+
+    def google_rows(self) -> dict[str, dict]:
+        """uid -> {google_id, hash, ends, synced_at} for events last written to Google."""
+        with self.pool.connection() as c:
+            rows = c.execute("SELECT uid, google_id, hash, ends, synced_at FROM google_events").fetchall()
+        return {r[0]: {"google_id": r[1], "hash": r[2], "ends": r[3], "synced_at": r[4]} for r in rows}
+
+    def google_saved(self, uid: str, google_id: str, hash_: str, ends: str):
+        with self.pool.connection() as c:
+            c.execute("INSERT INTO google_events (uid, google_id, hash, ends) VALUES (%s, %s, %s, %s) "
+                      "ON CONFLICT (uid) DO UPDATE SET google_id = EXCLUDED.google_id, hash = EXCLUDED.hash, "
+                      "ends = EXCLUDED.ends, synced_at = now()", (uid, google_id, hash_, ends))
+
+    def google_forget(self, uid: str | None = None):
+        """Forget one event's Google state, or all of it (uid=None)."""
+        with self.pool.connection() as c:
+            if uid is None:
+                c.execute("DELETE FROM google_events")
+            else:
+                c.execute("DELETE FROM google_events WHERE uid = %s", (uid,))
+
     def add_log(self, level: str, msg: str):
         with self.pool.connection() as c:
             c.execute("INSERT INTO activity_log (level, msg) VALUES (%s, %s)", (level, msg))

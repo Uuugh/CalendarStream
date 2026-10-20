@@ -72,11 +72,6 @@ class Settings:
     db_user: str = field(default_factory=lambda: _env("DB_USER", "ccs"))
     db_password: str = field(default_factory=lambda: _secret("DB_PASSWORD", "DB_PASSWORD", strip_all=False))
 
-    # Google Calendar sync (optional): the OAuth client from Google Cloud, as Docker secrets
-    # GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET (GOOGLE_CLIENT_ID.txt / GOOGLE_CLIENT_SECRET.txt).
-    google_client_id: str = field(default_factory=lambda: _secret("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_ID"))
-    google_client_secret: str = field(default_factory=lambda: _secret("GOOGLE_CLIENT_SECRET", "GOOGLE_CLIENT_SECRET"))
-
     def __post_init__(self):
         self.gui_user = self.gui_user or "admin"
         if not self.gui_password:

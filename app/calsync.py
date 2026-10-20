@@ -54,6 +54,7 @@ class Event:
     edited: bool = False     # a United event changed on the status page
     stale: bool = False      # United changed this event after it was edited here
     hidden: bool = False     # left out of the Google feed
+    free: bool = False       # shown as "free" rather than "busy" (CCS+ sends most items as TRANSP:TRANSPARENT)
 
     def fingerprint(self) -> str:
         """Identifies United's version of an event, to notice when it changes after an edit."""
@@ -271,6 +272,7 @@ def parse(raw: bytes, tz_name: str, defaults: Defaults):
             location=str(ev.get("LOCATION", "")),
             description=str(ev.get("DESCRIPTION", "")).strip()[:2000],
             uid=str(ev.get("UID", "")) or hashlib.sha1(f"{start}|{ev.get('SUMMARY')}".encode()).hexdigest(),
+            free=str(ev.get("TRANSP", "")).upper() == "TRANSPARENT",
         ))
 
     events.sort(key=lambda e: e.start)
@@ -347,7 +349,7 @@ def render(cal: Calendar, base: list[Event], name: str, tz_name: str,
         e = Event(title=ed["title"], start=ed["start"], end=ed["end"], all_day=bool(ed["all_day"]),
                   location=ed.get("location", ""), description=ed.get("description", ""), uid=uid,
                   origin="united", edited=True, stale=ed.get("base") != original.fingerprint(),
-                  hidden=bool(ed.get("hidden")))
+                  hidden=bool(ed.get("hidden")), free=original.free)
         if e.hidden:
             cal.subcomponents.remove(ev)
         else:
