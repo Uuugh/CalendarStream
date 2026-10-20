@@ -5,7 +5,17 @@ Versions are numbered `0.0.x` until a new minor version is decided. Every releas
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.9**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.10**
+
+## 0.0.10 — 2026-10-20
+
+### Added
+- A reminder under the calendar name in the editor: Google only reads the name when the calendar is
+  first added, so a calendar already in Google Calendar has to be renamed there too (with the steps).
+
+### Not done
+- **F2** (rename the calendar in Google automatically) is skipped for now. It would need CalendarStream
+  to connect to a Google account through the Google Calendar API.
 
 ## 0.0.9 — 2026-10-20
 

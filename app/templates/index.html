@@ -214,6 +214,8 @@ Added here{% endif %}{% if e.description %}
       <input type="hidden" name="csrf" value="{{ csrf }}">
       <label class="lbl" for="calname-input">Calendar name</label>
       <div class="row"><input type="text" id="calname-input" name="name" value="{{ name }}" placeholder="Calendar Name" maxlength="100"></div>
+      <p class="hint">Google only reads the name when the calendar is first added. If it's already in your Google Calendar,
+        rename it there too: hover over it under <b>Other calendars</b> → ⋮ → <b>Settings</b> → <b>Name</b>.</p>
 
       <label class="lbl" for="colorpick">Default colour</label>
       <div class="row">
