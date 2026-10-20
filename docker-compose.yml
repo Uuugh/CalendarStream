@@ -1,0 +1,66 @@
+services:
+  calendar_stream:
+    build: .
+    container_name: calendar_stream
+    env_file: .env
+    ports:
+      - "8080:8080"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${GUID:-100}
+      - TZ=${TZ:-America/Chicago}
+      # CCS login comes from the secrets below (these override CCS_USERNAME / CCS_PASSWORD in .env)
+      - CCS_USERNAME_FILE=/run/secrets/CCS_USER
+      - CCS_PASSWORD_FILE=/run/secrets/CCS_PASSWORD
+      # Status-page login comes from the secrets below (these override GUI_USERNAME / GUI_PASSWORD in .env)
+      - GUI_USERNAME_FILE=/run/secrets/GUI_USER
+      - GUI_PASSWORD_FILE=/run/secrets/GUI_PASSWORD
+      # All project data is stored in the Postgres container below
+      - DB_HOST=calendar_stream_db
+      - DB_NAME=${DB_NAME:-calendar_stream}
+      - DB_USER=${DB_USER:-ccs}
+      - DB_PASSWORD_FILE=/run/secrets/DB_PASSWORD
+    secrets:
+      - CCS_USER
+      - CCS_PASSWORD
+      - GUI_USER
+      - GUI_PASSWORD
+      - DB_PASSWORD
+    depends_on:
+      calendar_stream_db:
+        condition: service_healthy
+    shm_size: "256mb"
+    restart: ${RESTART:-unless-stopped}
+
+  calendar_stream_db:
+    image: postgres:18-alpine
+    container_name: calendar_stream_db
+    environment:
+      - POSTGRES_DB=${DB_NAME:-calendar_stream}
+      - POSTGRES_USER=${DB_USER:-ccs}
+      - POSTGRES_PASSWORD_FILE=/run/secrets/DB_PASSWORD
+      - TZ=${TZ:-America/Chicago}
+    volumes:
+      - ${MNT_DOCKER:?Set MNT_DOCKER in .env}/calendar_stream/postgres:/var/lib/postgresql
+    secrets:
+      - DB_PASSWORD
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    restart: ${RESTART:-unless-stopped}
+
+# Logins, kept out of .env. Each file holds just the value (a trailing newline is fine).
+secrets:
+  CCS_USER:
+    file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/CCS_USER.txt
+  CCS_PASSWORD:
+    file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/CCS_PASSWORD.txt
+  GUI_USER:
+    file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/USER.txt
+  GUI_PASSWORD:
+    file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/PASSWORD.txt
+  DB_PASSWORD:
+    file: ${MNT_DOCKER:?Set MNT_DOCKER in .env}/.secrets/DB_PASSWORD.txt

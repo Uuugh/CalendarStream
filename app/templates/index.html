@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{% if s.running %}<meta http-equiv="refresh" content="5">{% else %}<meta http-equiv="refresh" content="60">{% endif %}
+<title>Calendar Stream</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec;
+          --ok:#12805c; --okbg:#e6f6ef; --bad:#b42318; --badbg:#fdecea; --warn:#a15c07; --warnbg:#fef4e2;
+          --run:#1d4ed8; --runbg:#e8efff; --accent:#1d4ed8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f1218; --card:#171b23; --text:#e6e8ec; --muted:#98a2b3; --line:#2a303b;
+            --okbg:#0f2a20; --ok:#4ade80; --badbg:#2d1414; --bad:#f87171; --warnbg:#2b2110; --warn:#fbbf24;
+            --runbg:#14203d; --run:#93b4ff; --accent:#93b4ff; }
+  }
+  * { box-sizing:border-box }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
+  main { max-width:920px; margin:0 auto; padding:24px 16px 48px }
+  h1 { font-size:20px; margin:0 0 4px } h2 { font-size:15px; margin:0 0 12px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em }
+  .sub { color:var(--muted); margin:0 0 20px; font-size:13px; word-break:break-all }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px }
+  .banner { display:flex; gap:14px; align-items:center; flex-wrap:wrap }
+  .pill { font-weight:700; padding:4px 12px; border-radius:999px; font-size:13px; text-transform:uppercase; letter-spacing:.03em }
+  .ok{background:var(--okbg);color:var(--ok)} .bad{background:var(--badbg);color:var(--bad)}
+  .warn{background:var(--warnbg);color:var(--warn)} .run{background:var(--runbg);color:var(--run)}
+  .msg { flex:1; min-width:200px }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px }
+  .stat .k { color:var(--muted); font-size:12px } .stat .v { font-weight:600 }
+  button { font:inherit; font-weight:600; background:var(--accent); color:#fff; border:0; border-radius:8px; padding:8px 16px; cursor:pointer }
+  @media (prefers-color-scheme: dark){ button{color:#0f1218} }
+  button:disabled { opacity:.5; cursor:default }
+  .feed { display:flex; gap:8px } .feed input { flex:1; min-width:0; font:13px ui-monospace,monospace; padding:8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  table { width:100%; border-collapse:collapse; font-size:13px } th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top }
+  th { color:var(--muted); font-weight:600 }
+  .lvl-error{color:var(--bad);font-weight:600} .lvl-warn{color:var(--warn);font-weight:600}
+  a { color:var(--accent) } .muted{color:var(--muted)} .scroll{overflow-x:auto}
+  ol { margin:8px 0 0; padding-left:20px; font-size:14px }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px }
+  .btn, .btn2 { font-weight:600; text-decoration:none; border-radius:8px; padding:9px 16px; font-size:14px }
+  .btn { background:var(--accent); color:#fff } .btn2 { border:1px solid var(--line); color:var(--accent) }
+  @media (prefers-color-scheme: dark){ .btn{color:#0f1218} }
+  .card > .k { color:var(--muted); font-size:12px; margin-top:10px }
+  .feed { margin-top:4px }
+  .warnline { background:var(--warnbg); color:var(--warn); border-radius:8px; padding:8px 12px; font-size:13px; margin:0 0 12px }
+</style>
+</head>
+<body><main>
+  <h1>Calendar Stream <span class="muted" style="font-size:13px;font-weight:500">v{{ version }}</span></h1>
+  <p class="sub">{{ cfg.schedule_url }} · user {{ cfg.username or "(not set)" }} · every {{ cfg.interval_minutes }} min · items without an end time: {{ "all-day" if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours }}</p>
+
+  {% set cls = {"ok":"ok","running":"run","starting":"run","paused":"warn","mfa":"warn"}.get(s.status,"bad") %}
+  {% set label = {"ok":"Healthy","running":"Running…","starting":"Starting","paused":"Paused","mfa":"MFA needed","login_failed":"Login failed","error":"Error"}.get(s.status, s.status) %}
+  <div class="card banner">
+    <span class="pill {{ cls }}">{{ label }}</span>
+    <div class="msg">{{ s.message or "—" }}</div>
+    <form method="post" action="/run"><button {% if s.running %}disabled{% endif %}>Run now</button></form>
+  </div>
+
+  {% macro t(d) %}{{ d.strftime("%b %d, %H:%M") if d else "never" }}{% endmacro %}
+  <div class="card grid">
+    <div class="stat"><div class="k">Last login</div><div class="v">
+      {% if s.last_login_ok is none %}<span class="muted">none this run</span>
+      {% elif s.last_login_ok %}<span style="color:var(--ok)">✓ success</span> · {{ t(s.last_login) }}
+      {% else %}<span style="color:var(--bad)">✗ failed</span> · {{ t(s.last_login) }}{% endif %}</div></div>
+    <div class="stat"><div class="k">Last successful sync</div><div class="v">{{ t(s.last_success) }}</div></div>
+    <div class="stat"><div class="k">Last attempt</div><div class="v">{{ t(s.last_attempt) }}</div></div>
+    <div class="stat"><div class="k">Next run</div><div class="v">{{ t(s.next_run) }}</div></div>
+    <div class="stat"><div class="k">Events in feed</div><div class="v">{{ s.event_count }}{% if s.source %} <span class="muted">({{ s.source }})</span>{% endif %}</div></div>
+    <div class="stat"><div class="k">Consecutive login failures</div><div class="v">{{ s.login_failures }}</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Google Calendar feed</h2>
+    {% if not links.is_public %}<p class="warnline">⚠ This isn't a public HTTPS address yet, so Google can't load the feed.
+      Set <code>PUBLIC_URL</code> in <code>.env</code> (see README).</p>{% endif %}
+    <div class="actions">
+      <a class="btn" href="{{ links.google }}" target="_blank" rel="noopener">Add to Google Calendar</a>
+      <a class="btn2" href="{{ links.page }}" target="_blank">Open subscribe page</a>
+    </div>
+    <div class="k">Shareable subscribe page — send this to anyone who should see the schedule (no status-page login needed):</div>
+    <div class="feed"><input id="page" readonly onclick="this.select()" value="{{ links.page }}"><button type="button" onclick="copyField('page', this)">Copy</button></div>
+    <div class="k">Raw feed URL (for adding manually: Google Calendar → Other calendars → + → From URL):</div>
+    <div class="feed"><input id="feed" readonly onclick="this.select()" value="{{ feed }}"><button type="button" onclick="copyField('feed', this)">Copy</button></div>
+    <p class="muted" style="font-size:13px;margin:8px 0 0">Google re-checks subscribed feeds on its own schedule (typically every several hours).</p>
+  </div>
+
+  <div class="card">
+    <h2>Upcoming events</h2>
+    {% if events %}<div class="scroll"><table><tr><th>Start</th><th>End</th><th>Title</th><th>Location</th></tr>
+      {% for e in events %}<tr><td>{{ e.start[:16].replace("T"," ") }}</td><td>{{ e.end[:16].replace("T"," ") }}</td><td>{{ e.title }}</td><td>{{ e.location }}</td></tr>{% endfor %}
+    </table></div>{% else %}<p class="muted">No events yet.</p>{% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Activity log</h2>
+    {% if history %}<div class="scroll"><table><tr><th style="width:130px">Time</th><th>Event</th></tr>
+      {% for h in history %}<tr><td>{{ h.time.strftime("%b %d %H:%M:%S") }}</td><td class="lvl-{{ h.level }}">{{ h.msg }}</td></tr>{% endfor %}
+    </table></div>{% else %}<p class="muted">Nothing yet.</p>{% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Debug (last run)</h2>
+    {% if has_shot %}<a href="/debug/screenshot" target="_blank">Screenshot</a> · <a href="/debug/html" target="_blank">Page HTML</a> · <a href="/debug/json" target="_blank">Captured JSON</a>
+    {% else %}<p class="muted">Available after the first run.</p>{% endif %}
+  </div>
+</main>
+<script>
+// Copy a field's text. Uses the Clipboard API on HTTPS/localhost, and falls back to
+// select + execCommand on plain-HTTP pages (e.g. http://192.168.x.x:8080) where it's blocked.
+function copyField(id, btn) {
+  var el = document.getElementById(id), text = el.value, label = btn.textContent;
+  function done(msg) { btn.textContent = msg || 'Copied'; setTimeout(function () { btn.textContent = label; }, 1800); }
+  function fallback() {
+    el.focus(); el.select(); el.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    done(ok ? 'Copied' : 'Press Ctrl+C');   // text stays selected if the browser refused
+  }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(function () { done(); }, fallback);
+  } else { fallback(); }
+}
+</script>
+</body>
+</html>

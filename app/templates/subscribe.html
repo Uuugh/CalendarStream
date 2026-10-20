@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Subscribe · {{ cfg.calendar_name }}</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec; --accent:#1a73e8; --warnbg:#fef4e2; --warn:#a15c07; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f1218; --card:#171b23; --text:#e6e8ec; --muted:#98a2b3; --line:#2a303b; --accent:#8ab4f8; --warnbg:#2b2110; --warn:#fbbf24; }
+  }
+  * { box-sizing:border-box }
+  body { margin:0; font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
+  main { max-width:640px; margin:0 auto; padding:32px 16px 48px }
+  h1 { font-size:22px; margin:0 0 4px } h2 { font-size:16px; margin:0 0 10px }
+  .sub { color:var(--muted); margin:0 0 24px; font-size:14px }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px }
+  .cta { display:block; text-align:center; background:var(--accent); color:#fff; text-decoration:none; font-weight:600;
+         font-size:16px; padding:14px; border-radius:10px }
+  @media (prefers-color-scheme: dark){ .cta{color:#0f1218} }
+  .alt { display:block; text-align:center; margin-top:10px; color:var(--accent); font-size:14px }
+  .feed { display:flex; gap:8px; margin:10px 0 4px }
+  .feed input { flex:1; min-width:0; font:13px ui-monospace,monospace; padding:9px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  button { font:inherit; font-weight:600; background:var(--card); color:var(--accent); border:1px solid var(--line); border-radius:8px; padding:8px 14px; cursor:pointer }
+  ol { margin:0; padding-left:22px } li { margin:4px 0 }
+  .note { font-size:13px; color:var(--muted) }
+  .warn { background:var(--warnbg); color:var(--warn); border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:16px }
+  details summary { cursor:pointer; font-weight:600 }
+</style>
+</head>
+<body><main>
+  <h1>{{ cfg.calendar_name }}</h1>
+  <p class="sub">A live calendar feed of this United CCS schedule.
+    {% if last_success %}Last updated {{ last_success.strftime("%b %d at %H:%M") }} · {{ event_count }} events.{% endif %}</p>
+
+  {% if not links.is_public %}
+  <div class="warn">This link isn't on a public HTTPS address yet, so Google won't be able to load it.
+    Set <code>PUBLIC_URL</code> in <code>.env</code> to the public address (see README).</div>
+  {% endif %}
+
+  <div class="card">
+    <h2>Add to Google Calendar</h2>
+    <a class="cta" href="{{ links.google }}" target="_blank" rel="noopener">Add to Google Calendar</a>
+    <a class="alt" href="{{ links.webcal }}">Or open in Apple Calendar / Outlook</a>
+  </div>
+
+  <div class="card">
+    <h2>Step by step</h2>
+    <ol>
+      <li>Click <b>Add to Google Calendar</b> above. Sign in to the Google account you want it on if asked.</li>
+      <li>Google asks <i>"Add this calendar?"</i> — click <b>Add</b>.</li>
+      <li>The schedule appears under <b>Other calendars</b> on the left. Change its color or name there if you like.</li>
+      <li><b>On your phone:</b> it appears in the Google Calendar app automatically. If it doesn't, open the app's
+        <b>Settings</b>, tap the calendar's name, and turn on <b>Sync</b>.</li>
+    </ol>
+    <p class="note">Google refreshes subscribed calendars on its own schedule, usually every few hours, so recent
+      changes can take a while to show up. Always confirm against CCS before acting on a change.</p>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>Button didn't work? Add it manually</summary>
+      <ol style="margin-top:10px">
+        <li>Copy this link:
+          <div class="feed"><input id="feed" readonly onclick="this.select()" value="{{ links.feed }}">
+            <button type="button" onclick="copyField('feed', this)">Copy</button></div></li>
+        <li>On a computer, go to <a href="https://calendar.google.com" target="_blank" rel="noopener">calendar.google.com</a>
+          (this can't be done in the phone app).</li>
+        <li>On the left, next to <b>Other calendars</b>, click <b>+</b> → <b>From URL</b>.</li>
+        <li>Paste the link and click <b>Add calendar</b>.</li>
+      </ol>
+    </details>
+  </div>
+
+  <p class="note">Keep this page's link private — anyone who has it can see the schedule. To stop sharing,
+    the owner can change the feed token, which turns off the old links.</p>
+</main>
+<script>
+// Copy a field's text. Uses the Clipboard API on HTTPS/localhost, and falls back to
+// select + execCommand on plain-HTTP pages (e.g. http://192.168.x.x:8080) where it's blocked.
+function copyField(id, btn) {
+  var el = document.getElementById(id), text = el.value, label = btn.textContent;
+  function done(msg) { btn.textContent = msg || 'Copied'; setTimeout(function () { btn.textContent = label; }, 1800); }
+  function fallback() {
+    el.focus(); el.select(); el.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    done(ok ? 'Copied' : 'Press Ctrl+C');   // text stays selected if the browser refused
+  }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(function () { done(); }, fallback);
+  } else { fallback(); }
+}
+</script>
+</body>
+</html>
