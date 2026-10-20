@@ -5,7 +5,18 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.5**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.6**
+
+## 0.1.6 — 2026-10-20
+
+### Added
+- **F1** The installer asks which release to run: **stable** (the default) or **beta**. Pressing
+  Enter on a later run keeps the current choice; it's saved in `.env` as `IMAGE_TAG`.
+
+### Changed
+- **R1.1** New README introduction, explaining why CalendarStream exists and its two ways of
+  getting the schedule into Google.
+- The README's Quick start lists the installer's three questions and defaults exactly, and stays short.
 
 ## 0.1.5 — 2026-10-20
 

@@ -26,16 +26,34 @@ MNT_DOCKER="$(realpath -m "${MNT_DOCKER/#\~/$HOME}")"
 DATA="$MNT_DOCKER"
 mkdir -p "$DATA/.secrets"
 
+# 3. Which release to run: stable (the "latest" image, the default) or beta (the newest, still
+#    being tested). Asked every time; press Enter to keep the current choice.
+CURRENT="$( [ -f .env ] && sed -n 's/^IMAGE_TAG=//p' .env | tail -1 | tr -d '"'"'" || true)"
+case "$CURRENT" in beta) DEFAULT=beta ;; ""|latest) DEFAULT=stable ;; *) DEFAULT="$CURRENT" ;; esac
+read -rp "Release to run, stable or beta [$DEFAULT]: " CHANNEL </dev/tty
+CHANNEL="$(printf '%s' "${CHANNEL:-$DEFAULT}" | tr '[:upper:]' '[:lower:]')"
+case "$CHANNEL" in
+  stable|latest) IMAGE_TAG=latest ;;
+  beta) IMAGE_TAG=beta ;;
+  [0-9]*.[0-9]*.[0-9]*) IMAGE_TAG="$CHANNEL" ;;    # an exact version, e.g. 0.1.5
+  *) echo "Please answer stable or beta." >&2; exit 1 ;;
+esac
+
 # The only two files the server needs; the app itself is a ready-made image.
 # docker-compose.yml is always refreshed; an existing .env (your settings) is kept.
 curl -fsSL "$REPO/docker-compose.yml" -o docker-compose.yml
 [ -f .env ] || curl -fsSL "$REPO/.env.default" -o .env
-# Remember the data folder in .env, so docker compose (and the next run) use it.
-if grep -q '^#\{0,1\}MNT_DOCKER=' .env; then
-  sed -i "s|^#\{0,1\}MNT_DOCKER=.*|MNT_DOCKER=$MNT_DOCKER|" .env
-else
-  printf '\nMNT_DOCKER=%s\n' "$MNT_DOCKER" >> .env
-fi
+# Remember the answers in .env, so docker compose (and the next run) use them. Only these two
+# lines are changed; the rest of an existing .env is left as it is.
+set_env() {   # $1 = name, $2 = value
+  if grep -q "^#\{0,1\}$1=" .env; then
+    sed -i "s|^#\{0,1\}$1=.*|$1=$2|" .env
+  else
+    printf '\n%s=%s\n' "$1" "$2" >> .env
+  fi
+}
+set_env MNT_DOCKER "$MNT_DOCKER"
+set_env IMAGE_TAG "$IMAGE_TAG"
 
 # The database password, made once at random. It also encrypts the passwords CalendarStream
 # stores (CCS+, Google): keep this file, back it up, and don't change it.
@@ -43,7 +61,7 @@ if [ ! -s "$DATA/.secrets/DB_PASSWORD.txt" ]; then
   (umask 077; head -c 32 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32 > "$DATA/.secrets/DB_PASSWORD.txt")
 fi
 
-# Start it, or update it to the newest image for IMAGE_TAG in .env (latest = stable, beta = newest).
+# Start it, or update it to the newest image of the chosen release.
 docker compose up -d
 
 # First install only: the status page asks for this code before you create your login.
@@ -56,7 +74,7 @@ for _ in $(seq 30); do
 done
 ip=$(hostname -I 2>/dev/null | awk '{print $1}' || true)
 echo
-echo "CalendarStream: docker-compose.yml and .env in $DIR, config and data in $DATA"
+echo "CalendarStream ($([ "$IMAGE_TAG" = latest ] && echo stable || echo "$IMAGE_TAG")): docker-compose.yml and .env in $DIR, config and data in $DATA"
 echo "Open http://${ip:-<this server>}:8080"
 if [ -n "$code" ]; then
   echo "New install: enter the ${code} there to create your login."

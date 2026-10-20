@@ -1,36 +1,43 @@
 # CalendarStream
 
-Keeps a Google Calendar in sync with your United CCS+ schedule.
+Keeps a Google Calendar in sync with your United Airlines CCS+ schedule.
 
-CCS+ offers an official **Calendar Sync** download (`Calendar.ics`), protected by your UID and a
-Calendar Sync password. Google Calendar can't send a password, so United's guide has you download
-and re-import the file by hand. CalendarStream downloads it on a timer and either writes it into a
-Google calendar of its own (updated within minutes, with tag colours) or republishes it as a feed
-that Google, Apple Calendar and others can subscribe to. A status page shows the schedule, lets you
-edit events, and walks you through setup.
+United Airlines' CCS+ doesn't keep a Google Calendar up to date automatically. United offers an
+official **Calendar Sync** download (`Calendar.ics`), protected by your UID and a Calendar Sync
+password, which has to be downloaded and re-imported into Google Calendar by hand.
+
+CalendarStream automates this: it downloads the official `.ics` file on a timer and either
+
+1. writes it into a Google calendar of its own (updated within minutes, with tag colors), or
+2. republishes it as a feed that Google, Apple Calendar and others can subscribe to.
+
+A status page shows the schedule, lets you edit events, and walks you through setup.
 
 ## Quick start
 
-On a Linux server with Docker and Compose:
+On a Linux server with Docker and Compose, run:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/install.sh)
 ```
 
-[`install.sh`](install.sh) asks for two folders: one for `docker-compose.yml` and `.env`, and one
-for CalendarStream's config and data (the database and `.secrets/`, saved as `MNT_DOCKER`). It
-downloads the files, creates a random database password, starts the stack and shows the **setup
-code**. Run it again at any time to update: it refreshes `docker-compose.yml` but never overwrites
-an existing `.env` or the database password, so your settings are safe. Then open
-`http://<server>:8080`:
+[`install.sh`](install.sh) asks three questions (press Enter for the default):
+
+1. the folder for `docker-compose.yml` and `.env` (`~/stacks/calendarstream`);
+2. the folder for CalendarStream's config and data, the database and `.secrets/` (the same folder);
+3. which release to run, `stable` or `beta` (`stable`).
+
+It then downloads `docker-compose.yml` and `.env`, creates a random database password, starts
+CalendarStream and prints its address and a **setup code**. Running it again updates
+CalendarStream; your `.env` (apart from those answers) and the database password are kept.
+
+Then open the address it printed:
 
 1. **Create your login** with the setup code.
-2. **Status & setup → Setup:** enter your CCS+ UID and Calendar Sync password (Setup explains how to
-   turn on Calendar Sync in CCS+).
-3. **☰ → Public address:** your public `https://` address, for example through a reverse proxy,
-   Cloudflare Tunnel or Tailscale Funnel. Needed for Google and for sharing the feed.
-4. **Google Calendar:** either **☰ → Google Calendar** to sync (recommended; see below), or **Add to
-   Google Calendar** to subscribe to the feed (Google refreshes it every 8–24 hours, without colours).
+2. **Status & setup → Setup:** enter your CCS+ UID and Calendar Sync password.
+3. **☰ → Public address:** your public `https://` address (needed for Google and for sharing).
+4. **☰ → Google Calendar:** connect it (recommended), or use **Add to Google Calendar** to
+   subscribe to the feed instead.
 
 ## Settings
 
@@ -39,9 +46,9 @@ explained in [`.env.default`](.env.default):
 
 | Setting | Default | Notes |
 |---|---|---|
-| `MNT_DOCKER` | the install folder | Where the database (`calendar_stream/postgres`) and `.secrets/` live |
+| `MNT_DOCKER` | the stack folder | Where the database (`calendar_stream/postgres`) and `.secrets/` live; the installer asks |
 | `TZ` | `America/Chicago` | Time zone the schedule is shown in |
-| `IMAGE_TAG` | `latest` | `latest` (stable), `beta` (newest) or a version, e.g. `0.1.3` |
+| `IMAGE_TAG` | `latest` | `latest` (stable), `beta` (newest) or a version, e.g. `0.1.6`; the installer asks |
 | `PUID` / `GUID`, `RESTART` | `1000` / `100`, `unless-stopped` | |
 | `PUBLIC_URL` | — | Overridden by ☰ → Public address |
 | `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440; overridden by the box under the health bar |
