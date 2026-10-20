@@ -10,8 +10,8 @@ Google Calendar by hand.
 CalendarStream automates this process by downloading the official `.ics` file on a timer and
 either:
 
-1. writing it into a Google calendar of its own (updated within minutes, with tag colors), or
-2. republishing it as a feed that Google, Apple Calendar and others can subscribe to.
+1. writes it into a Google calendar of its own (updated within minutes, with tag colors), or
+2. republishes it as a feed that Google, Apple Calendar and others can subscribe to.
 
 A status page shows the schedule, lets you edit events, and walks you through setup.
 
