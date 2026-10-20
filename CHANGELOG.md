@@ -5,7 +5,21 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.3**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.4**
+
+## 0.1.4 — 2026-10-20
+
+### Added
+- **`install.sh`**: installs or updates CalendarStream with one command
+  (`bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/install.sh)`). It
+  downloads `docker-compose.yml` and `.env` (keeping an existing `.env`), creates a random database
+  password once, starts the stack and shows the setup code.
+
+### Changed
+- **F1** `MNT_DOCKER` is optional. Without it, the installer asks for an installation folder, and the
+  database and `.secrets/` live next to `docker-compose.yml`. Set it in `.env` (or before running the
+  installer) to keep them elsewhere, e.g. `/mnt/SSD/docker`.
+- The README is about a third as long, with a one-command quick start and a table of settings.
 
 ## 0.1.3 — 2026-10-20
 
