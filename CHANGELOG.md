@@ -5,7 +5,15 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.0**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.1**
+
+## 0.1.1 — 2026-10-20
+
+### Changed
+- The image is now **`ghcr.io/uuugh/calendarstream`** (was `ghcr.io/uuugh/calendar_stream`), to match
+  the repository's new name, `Uuugh/CalendarStream`. Every earlier version, `beta` and `latest` were
+  copied to the new name, so any tag can be pulled from it. Update `docker-compose.yml` (`git pull`);
+  the old name gets no new releases.
 
 ## 0.1.0 — 2026-10-20
 

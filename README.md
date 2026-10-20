@@ -219,7 +219,7 @@ again.
 
 Versions are numbered `0.y.z` (0.1.0 is the first minor version; fixes and features go into
 `0.1.x` until the next minor version is decided). Every release gets a git tag (`v0.1.0`, …), an
-image `ghcr.io/uuugh/calendar_stream:<version>`, and a GitHub Release with its notes. Two moving image tags:
+image `ghcr.io/uuugh/calendarstream:<version>` (called `calendar_stream` up to 0.1.0), and a GitHub Release with its notes. Two moving image tags:
 
 | Image tag | Points to |
 |---|---|
