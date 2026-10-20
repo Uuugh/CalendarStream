@@ -73,6 +73,9 @@
   .menu .clientform input { width:100%; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line);
                             border-radius:8px; background:var(--card); color:var(--text) }
   .menu .eactions { display:flex; justify-content:flex-end; gap:8px; margin-top:10px }
+  .menu .check { margin:8px 0 0; font-weight:600 }
+  .menu .check.good { color:var(--ok) } .menu .check.bad { color:var(--bad) } .menu .check.unknown { color:var(--warn) }
+  .menu .check .muted { font-weight:400 }
 
   /* Collapsible sections: a header that toggles the body; open/closed is saved in the database */
   .section > .shead { display:flex; align-items:center; gap:10px; flex-wrap:wrap; cursor:pointer }
@@ -155,6 +158,12 @@
   .logwin th { position:sticky; top:0; background:var(--card) }
   .logwin tr:last-child td { border-bottom:0 }
   .debug { font-size:13px; margin-top:12px }
+  /* Under the health bar: check interval and manual upload, kept small */
+  .syncline, .uploadline { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:12.5px; color:var(--muted); margin:10px 0 0 }
+  .syncline input[type=number] { width:64px; font:inherit; padding:2px 6px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--text) }
+  .uploadline { margin-top:6px }
+  .uploadline input[type=file] { font-size:12px; max-width:230px }
+  button.tiny { padding:2px 10px; font-size:12px; border-radius:6px }
 </style>
 </head>
 <body><main>
@@ -163,10 +172,10 @@
     <div class="seg" role="group" aria-label="Colour theme">
       <button type="button" data-theme-choice="light" title="Light" aria-label="Light theme">
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
-      <button type="button" data-theme-choice="system" title="Match system" aria-label="Match system theme">
-        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 2a6 6 0 0 0 0 12z" fill="currentColor"/></svg></button>
       <button type="button" data-theme-choice="dark" title="Dark" aria-label="Dark theme">
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/></svg></button>
+      <button type="button" data-theme-choice="system" title="Match system" aria-label="Match system theme">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 2a6 6 0 0 0 0 12z" fill="currentColor"/></svg></button>
     </div>
     <div class="menuwrap">
       <button type="button" class="iconbtn" id="menubtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="menu" title="Settings">
@@ -209,25 +218,47 @@
                 and restart: Google only sends you back to https:// addresses.</p>
             {% endif %}
 
-            {% if g.configured %}
-              <p class="ok-line">✓ Google OAuth client saved.</p>
-              {% if g.redirect_ok %}
-              <form method="post" action="/google/connect" style="margin:0 0 10px">
+            {% if not g.configured %}
+              <p><b>Step 1 of 2:</b> CalendarStream needs its own "OAuth client" from Google: a client ID
+                and a client secret. It's free and takes about 10 minutes: open the step-by-step guide
+                below the boxes.</p>
+            {% endif %}
+            <form method="post" action="/google/client" class="clientform" autocomplete="off">
+              <input type="hidden" name="csrf" value="{{ csrf }}">
+              <label for="gcid">Client ID</label>
+              <input type="text" id="gcid" name="client_id" value="{{ g.client_id }}" spellcheck="false"
+                     placeholder="1234…apps.googleusercontent.com" required>
+              <label for="gcsecret">Client secret</label>
+              <input type="password" id="gcsecret" name="client_secret" spellcheck="false" autocomplete="new-password"
+                     placeholder="{{ 'Saved (leave empty to keep it)' if g.has_secret else 'GOCSPX-…' }}"
+                     {% if not g.has_secret %}required{% endif %}>
+              {% if g.configured %}
+                {% set ck = g.check %}
+                <p class="check {{ 'good' if ck.ok else ('bad' if ck.ok == false else 'unknown') }}">
+                  {% if ck.ok %}✓{% elif ck.ok == false %}✗{% else %}?{% endif %}
+                  {{ (ck.message or "Not checked yet") }}{% if g.checked_at %} <span class="muted">({{ g.checked_at }})</span>{% endif %}{% if ck.ok == false %}. Check both values and save again.{% endif %}
+                </p>
+              {% endif %}
+              <div class="eactions">
+                {% if g.configured %}
+                  <button class="ghost" name="action" value="remove" formnovalidate>Remove</button>
+                  <button class="ghost" name="action" value="check" formnovalidate>Check again</button>
+                {% endif %}
+                <button name="action" value="save">Save</button>
+              </div>
+            </form>
+            {% if g.configured and g.redirect_ok %}
+              <form method="post" action="/google/connect" style="margin:12px 0 8px">
                 <input type="hidden" name="csrf" value="{{ csrf }}">
-                <button>Connect Google Calendar</button>
+                <button{% if g.check.ok == false %} disabled title="Google rejected the client: fix it first"{% endif %}>Connect Google Calendar</button>
               </form>
               <p class="mnote">Google may say <i>"Google hasn't verified this app"</i>: that's expected
                 for your own app. Click <b>Advanced</b> → <b>Go to CalendarStream</b>, tick the calendar
                 box and press <b>Continue</b>.</p>
-              {% endif %}
-            {% else %}
-              <p><b>Step 1 of 2:</b> CalendarStream needs its own "OAuth client" from Google: a client ID
-                and a client secret. It's free and takes about 10 minutes; the guide below walks you
-                through it.</p>
             {% endif %}
 
-            <details class="guide"{% if not g.configured %} open{% endif %}>
-              <summary>{{ "Change the OAuth client" if g.configured else "Get a client ID and secret (step by step)" }}</summary>
+            <details class="guide">
+              <summary>How to get a client ID and secret (step by step)</summary>
               <ol>
                 <li><b>Open Google Cloud</b> and sign in with your Google account:
                   <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">create a project</a>.
@@ -261,30 +292,16 @@
                     <button type="button" onclick="copyField('gredirect', this)">Copy</button></div>
                   Then press <b>Create</b>.</li>
                 <li><b>Copy the two values</b> Google shows (<b>Client ID</b> and <b>Client secret</b>)
-                  into the boxes below and press <b>Save</b>. Keep the secret private: don't send it to
+                  into the boxes above and press <b>Save</b>. CalendarStream checks them with Google
+                  straight away. Keep the secret private: don't send it to
                   anyone or paste it into a chat.</li>
               </ol>
-              <form method="post" action="/google/client" class="clientform" autocomplete="off">
-                <input type="hidden" name="csrf" value="{{ csrf }}">
-                <label for="gcid">Client ID</label>
-                <input type="text" id="gcid" name="client_id" value="{{ g.client_id }}" spellcheck="false"
-                       placeholder="1234…apps.googleusercontent.com" required>
-                <label for="gcsecret">Client secret</label>
-                <input type="password" id="gcsecret" name="client_secret" spellcheck="false" autocomplete="new-password"
-                       placeholder="{{ 'Saved (leave empty to keep it)' if g.has_secret else 'GOCSPX-…' }}"
-                       {% if not g.has_secret %}required{% endif %}>
-                <div class="eactions">
-                  {% if g.configured %}<button class="ghost" name="action" value="remove" formnovalidate>Remove</button>{% endif %}
-                  <button name="action" value="save">Save</button>
-                </div>
-              </form>
             </details>
           {% endif %}
         </div>
       </div>
     </div>
   </header>
-  <p class="sub">CCS+ Calendar Sync · checks every {{ cfg.interval_minutes }} min · items without an end time: {{ "all-day" if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours }}{% if cfg.allday_24h %} · 24-hour events shown as all-day{% endif %}</p>
 
   {% set cls = {"ok":"ok","running":"run","starting":"run","paused":"warn"}.get(s.status,"bad") %}
   {% set label = {"ok":"Healthy","running":"Syncing…","starting":"Starting","paused":"Paused","auth_failed":"Sign-in rejected","blocked":"Blocked","error":"Error"}.get(s.status, s.status) %}
@@ -389,6 +406,25 @@ Added here{% endif %}{% if e.description %}
       <form method="post" action="/run"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running %}disabled{% endif %}>Sync now</button></form>
     </div>
 
+    {# How the schedule is fetched; the check interval can be changed here. #}
+    <form class="syncline" method="post" action="/setup/interval">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <span>CCS+ Calendar Sync · checks every
+        <input type="number" name="minutes" value="{{ interval }}" min="15" max="1440" step="5" required
+               aria-label="Minutes between checks" title="Minutes between checks (15–1440)"> min
+        <button class="ghost tiny" title="Save the check interval">Save</button></span>
+      <span>· items without an end time: {{ "all-day" if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours }}{% if cfg.allday_24h %} · 24-hour events shown as all-day{% endif %}</span>
+    </form>
+
+    {# Manual upload, for when the automatic download can't get through. #}
+    <form class="uploadline" method="post" action="/setup/upload" enctype="multipart/form-data">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <span class="lbl" title="Open the Calendar Sync link in your browser, sign in with your UID and Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.">Or upload <b>Calendar.ics</b> by hand
+        <span class="muted">(from the Calendar Sync link, signed in with your UID and Calendar Sync password)</span>:</span>
+      <input name="file" type="file" accept=".ics,text/calendar" required aria-label="Calendar.ics file">
+      <button class="ghost tiny">Upload &amp; publish</button>
+    </form>
+
     <div class="part" id="feedcard">
       <h3>Google Calendar feed</h3>
       {% if not links.is_public %}<p class="warnline">⚠ This isn't a public HTTPS address yet, so Google can't load the feed.
@@ -430,15 +466,6 @@ Added here{% endif %}{% if e.description %}
         <li class="{{ 'done' if setup.downloaded else '' }}">Schedule received{% if setup.downloaded %} <span class="muted">({{ s.event_count }} events)</span>{% endif %}</li>
       </ul>
 
-      <form method="post" action="/setup/upload" enctype="multipart/form-data" style="margin-top:14px">
-        <input type="hidden" name="csrf" value="{{ csrf }}">
-        <div class="k">Or upload <b>Calendar.ics</b> by hand: open the Calendar Sync link in your browser, sign in with your UID and
-          Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.</div>
-        <div class="feed">
-          <input name="file" type="file" accept=".ics,text/calendar" required>
-          <button>Upload &amp; publish</button>
-        </div>
-      </form>
 
       <details class="howto" style="margin-top:14px" {% if not setup.downloaded %}open{% endif %}>
         <summary>How to turn on Calendar Sync in CCS+</summary>

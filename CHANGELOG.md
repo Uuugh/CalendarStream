@@ -1,11 +1,35 @@
 # Changelog
 
-Versions are numbered `0.0.x` until a new minor version is decided. Every release is tagged
-`v0.0.x`; the newest is also tagged `beta`. The last one marked stable (in the `STABLE` file) is
+Versions are numbered `0.y.z`; the minor version (`y`) only changes when it's decided (0.1.0 was the
+first). Every release is tagged `v<version>`; the newest is also tagged `beta`. The last one marked stable (in the `STABLE` file) is
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.0.13**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.0**
+
+## 0.1.0 — 2026-10-20
+
+First minor version: **Google Calendar sync** (0.0.12 and 0.0.13), plus the items below. A beta
+until it passes the stable reviews and your approval.
+
+### Added
+- **F2.1.1** The check interval can be changed on the status page: type the minutes (15–1,440) and
+  press **Save**. It's saved in the database (overriding `SYNC_INTERVAL_MINUTES`), and the next
+  check moves to match.
+- **F3.2** CalendarStream checks the Google client ID and secret with Google when they're saved,
+  and shows ✓ accepted, ✗ rejected (unknown client ID or wrong secret) or ? (Google couldn't be
+  reached). **Check again** repeats it. **Connect** is disabled while Google rejects them.
+
+### Changed
+- **F1** The theme switch is in the order Light, Dark, System.
+- **F2.1** The line "CCS+ Calendar Sync · checks every … · items without an end time …" moved from
+  under the title to just below the health bar.
+- **F2.2** **Upload Calendar.ics** moved out of Setup to just below that line, in a smaller, more
+  compact row (the full explanation is in its tooltip).
+- **F3.1** In Settings → Google Calendar, the Client ID and Client secret boxes come first; the
+  step-by-step guide is below them and starts closed.
+- The release workflow keeps the image name `ghcr.io/uuugh/calendar_stream` even if the GitHub
+  repository is renamed, so `docker-compose.yml` and the `latest`/`beta` tags keep working.
 
 ## 0.0.13 — 2026-10-20
 

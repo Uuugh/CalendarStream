@@ -62,7 +62,8 @@ logins; the calendar feed and subscribe page aren't affected.
 
 ## How syncing works
 
-- Every `SYNC_INTERVAL_MINUTES` (default 60, minimum 15) the app requests the Calendar Sync
+- Every few minutes (60 by default; change it under the health bar on the status page, between 15
+  and 1,440, or with `SYNC_INTERVAL_MINUTES`) the app requests the Calendar Sync
   link with your UID and Calendar Sync password, the same way an Apple Calendar subscription
   does. The download is done with `curl` (United's Akamai protection answers curl but holds
   requests from Python's HTTP libraries), which identifies itself as curl. It sends
@@ -91,7 +92,8 @@ logins; the calendar feed and subscribe page aren't affected.
 
 **If the automatic download doesn't get through** (for example, United's bot protection holds
 the request), open the Calendar Sync link in your browser, sign in with your UID and Calendar
-Sync password, and upload the `Calendar.ics` it downloads in **Setup → Upload Calendar.ics**.
+Sync password, and upload the `Calendar.ics` it downloads with **Upload & publish** (under the
+health bar).
 The feed updates immediately. This is United's own procedure for Google Calendar; Calendar
 Stream just saves you the re-import.
 
@@ -100,7 +102,7 @@ the feed is rebuilt from the last download straight away.
 
 ## The status page
 
-The title bar shows **CalendarStream** and its version, a **Light / System / Dark** theme switch,
+The title bar shows **CalendarStream** and its version, a **Light / Dark / System** theme switch,
 and a **Settings** menu (☰) with the Google Calendar connection. Below it, top to bottom: the month view, **Status &
 setup** (its title is the calendar's name, colour and **Save**), and the **Activity log** (closed at
 first). Click a section's title or arrow to open or close it. The theme and which sections are open
@@ -122,9 +124,11 @@ are saved in the database, so they're the same in every browser.
   **Tag colours**: an event whose title matches a tag uses that tag's colour on this page; the
   first matching tag wins. Each tag matches by *Whole word* (default: `RDO` matches "RDO." but not
   "VRDO"), *Contains*, *Starts with* or *Exact title*, and **Aa** makes it match capitals exactly.
+- **Health bar** (top of Status & setup): the status, **Sync now**, then a small line with how
+  often CCS+ is checked (type a number of minutes and press **Save**; the next check moves to match)
+  and how items without an end time are treated, and a compact **Upload Calendar.ics** row.
 - **Setup** (inside Status & setup, closed at first): a box for the **Copy link** URL, a checklist
-  for Calendar Sync (UID, password, link, sign-in accepted, schedule received), **Upload
-  Calendar.ics**, and the CCS+ steps. A link saved here wins over
+  for Calendar Sync (UID, password, link, sign-in accepted, schedule received), and the CCS+ steps. A link saved here wins over
   `CCS_CALENDAR_URL` in `.env`; **Reset** goes back to `.env`. The password is never shown.
 - **Activity log**: a one-line status (sign-in, last check, schedule changed, next check, events in
   the feed), then each check and what changed (e.g. "3 new, 1 removed") in a window five rows
@@ -192,7 +196,9 @@ step-by-step guide with links:
    `calendar.app.created`) **published**, and a *Web application* client whose authorised
    redirect URI is the one the menu shows (`https://<your PUBLIC_URL>/google/callback`).
 2. Paste its **Client ID** and **Client secret** into the menu and press **Save**. The secret is
-   stored encrypted and never shown again.
+   stored encrypted and never shown again. CalendarStream asks Google straight away whether it
+   accepts them and shows ✓ (accepted), ✗ (wrong ID or secret) or ? (couldn't check);
+   **Check again** repeats it. The redirect URI and consent screen are checked when you connect.
 3. Press **Connect Google Calendar** and allow access. Google warns that it "hasn't verified this
    app" because it's your own: choose **Advanced → Go to CalendarStream**.
 
@@ -211,8 +217,9 @@ again.
 
 ## Versions and releases
 
-Versions are numbered `0.0.x`. Every release gets a git tag (`v0.0.1`, `v0.0.2`, …), an image
-`ghcr.io/uuugh/calendar_stream:0.0.x`, and a GitHub Release with its notes. Two moving image tags:
+Versions are numbered `0.y.z` (0.1.0 is the first minor version; fixes and features go into
+`0.1.x` until the next minor version is decided). Every release gets a git tag (`v0.1.0`, …), an
+image `ghcr.io/uuugh/calendar_stream:<version>`, and a GitHub Release with its notes. Two moving image tags:
 
 | Image tag | Points to |
 |---|---|
@@ -252,7 +259,7 @@ Everything the app keeps is in the Postgres container `calendar_stream_db`, whos
 |---|---|
 | `calendar_files` | `source` (the calendar as downloaded) and `feed` (as served to Google) |
 | `events` | The current schedule, for the status page; replaced in one transaction per change |
-| `kv` | `feed_token`, `status`, `http_cache` (ETag), and what's set on the status page: `calendar_url`, `calendar_name`, `calendar_color`, `calendar_tags`, `ui_theme`, `ui_sections`; `google` (connected account, calendar and last sync), `google_client` (OAuth client; secret encrypted) and `google_token` (the encrypted Google sign-in) |
+| `kv` | `feed_token`, `status`, `http_cache` (ETag), and what's set on the status page: `sync_interval`, `calendar_url`, `calendar_name`, `calendar_color`, `calendar_tags`, `ui_theme`, `ui_sections`; `google` (connected account, calendar and last sync), `google_client` (OAuth client; secret encrypted) and `google_token` (the encrypted Google sign-in) |
 | `google_events` | What was last written to Google for each event (to send only changes) |
 | `event_edits` | Your changes to United's events (re-applied after each download) |
 | `custom_events` | Events you added on the status page |
@@ -276,7 +283,7 @@ app/calsync.py       Calendar Sync download + feed processing
 app/gsync.py         Google Calendar sync (OAuth sign-in, encrypted secrets, writing the events)
 app/store.py         Postgres storage (tables are created automatically)
 app/templates/       status page, event editor and subscribe page
-VERSION              current version (0.0.x); see CHANGELOG.md
+VERSION              current version (e.g. 0.1.0); see CHANGELOG.md
 STABLE               the version marked stable (tagged latest)
 ```
 

@@ -352,15 +352,26 @@ async def run_once(manual: bool = False):
         state.save()
 
 
+MIN_INTERVAL, MAX_INTERVAL = 15, 24 * 60   # minutes between automatic downloads
+
+
+def interval_minutes() -> int:
+    """How often to download from CCS+: set on the status page, else SYNC_INTERVAL_MINUTES."""
+    saved = store.get("sync_interval")
+    return saved if isinstance(saved, int) and MIN_INTERVAL <= saved <= MAX_INTERVAL else settings.interval_minutes
+
+
 async def loop():
     while True:
         await run_once()
-        state.next_run = now() + timedelta(minutes=settings.interval_minutes)
-        state.wake.clear()
-        try:
-            await asyncio.wait_for(state.wake.wait(), timeout=settings.interval_minutes * 60)
-        except asyncio.TimeoutError:
-            pass
+        state.next_run = now() + timedelta(minutes=interval_minutes())
+        # Sleep until the next check. state.wake means the interval changed: work out the time again.
+        while (remaining := (state.next_run - now()).total_seconds()) > 0:
+            state.wake.clear()
+            try:
+                await asyncio.wait_for(state.wake.wait(), timeout=remaining)
+            except asyncio.TimeoutError:
+                break
 
 
 @asynccontextmanager
@@ -465,6 +476,7 @@ def google_view(request: Request) -> dict:
     info = google.info()
     return {"configured": google.configured, "connected": google.connected, "info": info,
             "client_id": google.client_id, "has_secret": bool(google.client_secret),
+            "check": google.client_check(), "checked_at": _local_time(google.client_check().get("at")),
             "running": google_job.running, "last_sync": _local_time(info.get("last_sync")),
             "redirect_uri": uri,
             # Google only sends sign-ins back to https:// addresses, or http:// on this computer.
@@ -558,7 +570,7 @@ def index(request: Request, month: str | None = None):
         "version": __version__, "history": history, "cal": month_view(events, year, mon, calendar_tags()),
         "csrf": CSRF_TOKEN, "name": calendar_name(), "name_from_gui": bool(store.get("calendar_name")),
         "color": calendar_color(), "tags": calendar_tags(), "tag_modes": TAG_MODES,
-        "sections": section_state(), "theme": ui_theme(),
+        "sections": section_state(), "theme": ui_theme(), "interval": interval_minutes(),
         "google": google_view(request), "open_menu": request.query_params.get("menu") == "google",
         "setup": {
             "uid": _mask(settings.username) if settings.username else "",
@@ -576,6 +588,27 @@ async def run_now(csrf: str = Form("")):
     check_csrf(csrf)
     if not state.running:
         asyncio.create_task(run_once(manual=True))
+    return RedirectResponse("/", status_code=303)
+
+
+@app.post("/setup/interval", dependencies=[Depends(gui_auth)])
+async def set_interval(csrf: str = Form(""), minutes: str = Form("")):
+    """Change how often the schedule is downloaded from CCS+ (saved in the database)."""
+    check_csrf(csrf)
+    try:
+        value = int(minutes)
+    except ValueError:
+        raise HTTPException(400, "Enter a number of minutes.")
+    if not MIN_INTERVAL <= value <= MAX_INTERVAL:
+        raise HTTPException(400, f"Choose between {MIN_INTERVAL} and {MAX_INTERVAL} minutes.")
+    if value == settings.interval_minutes:
+        store.delete("sync_interval")
+    else:
+        store.set("sync_interval", value)
+    # The next check counts from the last one (or now, if that time has already passed).
+    state.next_run = max(now(), (state.last_attempt or now()) + timedelta(minutes=value))
+    state.wake.set()
+    state.record("info", f"Checks every {value} min from now on")
     return RedirectResponse("/", status_code=303)
 
 
@@ -808,8 +841,8 @@ async def upload(csrf: str = Form(""), file: UploadFile = File(...)):
 # --- Google Calendar connection ---------------------------------------------------
 
 @app.post("/google/client", dependencies=[Depends(gui_auth)])
-async def google_client(csrf: str = Form(""), client_id: str = Form(""), client_secret: str = Form(""),
-                        action: str = Form("save")):
+async def google_client(request: Request, csrf: str = Form(""), client_id: str = Form(""),
+                        client_secret: str = Form(""), action: str = Form("save")):
     """Save or remove the Google OAuth client (Settings menu). The secret is stored encrypted and
     never shown again. It can't change while connected: the sign-in belongs to that client."""
     check_csrf(csrf)
@@ -818,13 +851,18 @@ async def google_client(csrf: str = Form(""), client_id: str = Form(""), client_
     if action == "remove":
         google.clear_client()
         state.record("info", "Google OAuth client removed")
+    elif action == "check":
+        if google.configured:
+            await google.check_client(google_redirect_uri(request))
     else:
         try:
             google.save_client(client_id, client_secret)
         except GoogleError as e:
             raise HTTPException(400, str(e))
         google.record_error("")
-        state.record("info", f"Google OAuth client saved ({google.client_id.split('.')[0][:12]}…)")
+        check = await google.check_client(google_redirect_uri(request))
+        state.record("info" if check["ok"] else "warn",
+                     f"Google OAuth client saved ({google.client_id.split('.')[0][:12]}…): {check['message']}")
     return RedirectResponse("/?menu=google", status_code=303)
 
 

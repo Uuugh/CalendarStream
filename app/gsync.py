@@ -221,6 +221,40 @@ class Google:
         self._client = None
         self._access = None
 
+    def client_check(self) -> dict:
+        """The last check of the saved client: {"ok": True/False/None, "message", "at"}."""
+        return (self.store.get("google_client") or {}).get("check") or {}
+
+    def _save_check(self, ok: bool | None, message: str):
+        saved = self.store.get("google_client")
+        if saved:
+            saved["check"] = {"ok": ok, "message": message, "at": datetime.now(timezone.utc).isoformat()}
+            self.store.set("google_client", saved)
+
+    async def check_client(self, redirect_uri: str) -> dict:
+        """Ask Google whether it accepts the saved client ID and secret, without signing anyone in:
+        swap a made-up code. Google answers "invalid_grant" (bad code) only once the client ID and
+        secret are right, and "invalid_client" when either is wrong. The redirect URI and consent
+        screen are only checked when someone connects."""
+        try:
+            async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+                r = await client.post(TOKEN_URL, data={
+                    "grant_type": "authorization_code", "code": "calendarstream-check",
+                    "redirect_uri": redirect_uri, "client_id": self.client_id, "client_secret": self.client_secret})
+            body = r.json() if r.content else {}
+        except (httpx.HTTPError, ValueError) as e:
+            self._save_check(None, f"couldn't reach Google to check it ({type(e).__name__})")
+            return self.client_check()
+        error, detail = body.get("error", ""), str(body.get("error_description", "")).lower()
+        if error in ("invalid_grant", "redirect_uri_mismatch"):
+            self._save_check(True, "Google accepted the client ID and secret")
+        elif error in ("invalid_client", "unauthorized_client"):
+            self._save_check(False, "Google doesn't know this client ID" if "not found" in detail
+                             else "Google rejected the client secret")
+        else:
+            self._save_check(None, f"Google gave an unexpected answer ({error or r.status_code})")
+        return self.client_check()
+
     def clear_client(self):
         self.store.delete("google_client")
         self._client = None
@@ -327,6 +361,7 @@ class Google:
             previous = {}
             self.store.set("google", {})
         self._save_refresh_token(refresh)
+        self._save_check(True, "Google accepted the client ID and secret")
         self._access = (tokens["access_token"], time.monotonic() + int(tokens.get("expires_in", 3600)) - 60)
         self._update_info(email=email, connected_at=datetime.now(timezone.utc).isoformat(), last_error=None)
         await self.ensure_calendar(calendar_name, previous.get("calendar_id"))
