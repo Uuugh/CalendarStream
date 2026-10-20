@@ -183,6 +183,26 @@
       </button>
       <div class="menu" id="menu" role="dialog" aria-label="Settings" hidden>
         <div class="title">Settings</div>
+        <div class="mgroup" id="public">
+          <div class="mhead">Public address</div>
+          <p class="mnote" style="margin-bottom:6px">The https:// address people use to reach this page, e.g.
+            <code>https://cal.example.com</code>. Used for the feed and subscribe links and for Google sign-in.
+            {% if public.from_settings %}Set here{% if public.env %} (overrides <code>PUBLIC_URL</code> in .env){% endif %}.
+            {% elif public.env %}From <code>PUBLIC_URL</code> in .env; saving here overrides it.
+            {% else %}Not set yet.{% endif %}</p>
+          <form method="post" action="/settings/public-url" class="clientform">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <div class="feed"><input type="text" id="publicurl" name="url" value="{{ public.url }}" spellcheck="false"
+                     placeholder="https://cal.example.com" aria-label="Public address">
+              <button type="button" class="ghost" id="usethis" title="Fill in the address this page is open at">This page</button></div>
+            <div class="eactions">
+              {% if public.from_settings %}<button class="ghost" name="action" value="reset" formnovalidate
+                title="Go back to PUBLIC_URL in .env">Reset</button>{% endif %}
+              <button name="action" value="save">Save</button>
+            </div>
+          </form>
+        </div>
+
         {% set g = google %}
         <div class="mgroup" id="google">
           <div class="mhead">Google Calendar
@@ -214,8 +234,8 @@
             <p>Copy the schedule into a calendar of its own in your Google account, updated within
               minutes. CalendarStream can only see and change calendars it created.</p>
             {% if not g.redirect_ok %}
-              <p class="merr">First set <code>PUBLIC_URL</code> in .env to this page's https:// address
-                and restart: Google only sends you back to https:// addresses.</p>
+              <p class="merr">First set the <b>Public address</b> above to this page's https:// address:
+                Google only sends you back to https:// addresses.</p>
             {% endif %}
 
             {% if not g.configured %}
@@ -428,7 +448,7 @@ Added here{% endif %}{% if e.description %}
     <div class="part" id="feedcard">
       <h3>Google Calendar feed</h3>
       {% if not links.is_public %}<p class="warnline">⚠ This isn't a public HTTPS address yet, so Google can't load the feed.
-        Set <code>PUBLIC_URL</code> in <code>.env</code> (see README).</p>{% endif %}
+        Set the <b>Public address</b> in Settings (☰).</p>{% endif %}
       <div class="actions">
         <a class="btn" href="{{ links.google }}" target="_blank" rel="noopener">Add to Google Calendar</a>
         <a class="btn2" href="{{ links.page }}" target="_blank">Open subscribe page</a>
@@ -551,6 +571,11 @@ var CSRF = {{ csrf|tojson }};
   });
   show({{ theme|tojson }});
 })();
+
+// "This page" fills the public address with the address this page is open at.
+document.getElementById('usethis').addEventListener('click', function () {
+  document.getElementById('publicurl').value = location.origin;
+});
 
 // Settings menu. Closes on outside click or Escape. Opens by itself after a Google sign-in.
 (function () {

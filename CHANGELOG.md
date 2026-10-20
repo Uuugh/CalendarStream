@@ -5,7 +5,21 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.1**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.2**
+
+## 0.1.2 — 2026-10-20
+
+### Added
+- **Settings (☰) → Public address**: the https:// address people use to reach the status page,
+  used for the feed and subscribe links and Google's sign-in redirect. It overrides `PUBLIC_URL`
+  in `.env`, which is now optional; **Reset** goes back to `.env`, and **This page** fills in the
+  address the page is open at. "cal.example.com" is completed to "https://cal.example.com".
+
+### Changed
+- `.env.default` is shorter and clearer: only `MNT_DOCKER` is required, and every other setting is
+  marked `# optional` with its default and what overrides it. The unused shared-host folders and the
+  `CCS_*`/`GUI_*` login lines (the secret files replace them) are gone.
+- Warnings about a missing public address point to Settings instead of `.env`.
 
 ## 0.1.1 — 2026-10-20
 

@@ -34,7 +34,7 @@ a month view of the schedule, and setup help.
    ```bash
    git clone https://github.com/Uuugh/CalendarStream.git ~/stacks/calendar_stream
    cd ~/stacks/calendar_stream
-   cp .env.default .env      # then fill in PUBLIC_URL (and check IMAGE_TAG)
+   cp .env.default .env      # then check MNT_DOCKER, TZ and IMAGE_TAG
    ```
 4. **Start it:**
    ```bash
@@ -157,7 +157,8 @@ Either way:
    - **Tailscale Funnel** (`tailscale funnel 8080`)
    - A reverse proxy (Caddy/Traefik/nginx) on a server you already run.
 
-   Set `PUBLIC_URL` in `.env` to that public HTTPS address (e.g. `https://cal.example.com`).
+   Enter that public HTTPS address (e.g. `https://cal.example.com`) in **Settings (☰) → Public
+   address** (or set `PUBLIC_URL` in `.env`; the Settings value wins, and **Reset** goes back to `.env`).
    The feed and subscribe links then use it, and the "not a public address" warning goes away.
 2. Google re-polls subscribed calendars on its own schedule (often every 8–24 hours),
    regardless of how often this container checks CCS+.
@@ -194,7 +195,7 @@ step-by-step guide with links:
 1. In Google Cloud (free), create an **OAuth client** for CalendarStream: a project, the Google
    Calendar API turned on, the consent screen (scopes `openid`, `userinfo.email` and
    `calendar.app.created`) **published**, and a *Web application* client whose authorised
-   redirect URI is the one the menu shows (`https://<your PUBLIC_URL>/google/callback`).
+   redirect URI is the one the menu shows (`https://<your public address>/google/callback`).
 2. Paste its **Client ID** and **Client secret** into the menu and press **Save**. The secret is
    stored encrypted and never shown again. CalendarStream asks Google straight away whether it
    accepts them and shows ✓ (accepted), ✗ (wrong ID or secret) or ? (couldn't check);
@@ -209,7 +210,7 @@ Google* to remove the calendar too (otherwise connecting the same account again 
 also subscribed to the `.ics` feed in Google, remove that calendar there, or you'll see everything
 twice.
 
-`PUBLIC_URL` must be the page's public `https://` address, because Google only sends the sign-in
+The public address (Settings → Public address, or `PUBLIC_URL`) must be the page's `https://` address, because Google only sends the sign-in
 back to https addresses (or `localhost`). The client secret and the sign-in (a refresh token) are
 stored in the database encrypted with a key derived from `DB_PASSWORD`, so a copy of the database
 alone can't reach your Google account. If `DB_PASSWORD` changes, enter the secret and connect
@@ -259,7 +260,7 @@ Everything the app keeps is in the Postgres container `calendar_stream_db`, whos
 |---|---|
 | `calendar_files` | `source` (the calendar as downloaded) and `feed` (as served to Google) |
 | `events` | The current schedule, for the status page; replaced in one transaction per change |
-| `kv` | `feed_token`, `status`, `http_cache` (ETag), and what's set on the status page: `sync_interval`, `calendar_url`, `calendar_name`, `calendar_color`, `calendar_tags`, `ui_theme`, `ui_sections`; `google` (connected account, calendar and last sync), `google_client` (OAuth client; secret encrypted) and `google_token` (the encrypted Google sign-in) |
+| `kv` | `feed_token`, `status`, `http_cache` (ETag), and what's set on the status page: `public_url`, `sync_interval`, `calendar_url`, `calendar_name`, `calendar_color`, `calendar_tags`, `ui_theme`, `ui_sections`; `google` (connected account, calendar and last sync), `google_client` (OAuth client; secret encrypted) and `google_token` (the encrypted Google sign-in) |
 | `google_events` | What was last written to Google for each event (to send only changes) |
 | `event_edits` | Your changes to United's events (re-applied after each download) |
 | `custom_events` | Events you added on the status page |

@@ -433,8 +433,26 @@ def check_csrf(token: str):
 
 # --- Links ---------------------------------------------------------------------
 
+def public_url() -> str:
+    """The public address: set in Settings (wins), else PUBLIC_URL in .env, else ""."""
+    return store.get("public_url") or settings.public_base_url
+
+
+def normalise_public_url(value: str) -> str:
+    """Tidy an address typed in Settings: add https:// when there's no scheme, drop a trailing
+    slash. Raises ValueError for anything that isn't a plain http(s) address."""
+    value = value.strip().rstrip("/")
+    if value and "://" not in value:
+        value = "https://" + value
+    parsed = urlparse(value)
+    if (parsed.scheme not in ("http", "https") or not parsed.hostname or parsed.query or parsed.fragment
+            or parsed.username or parsed.password or any(c.isspace() for c in value) or len(value) > 300):
+        raise ValueError(value)
+    return value
+
+
 def base_url(request: Request) -> str:
-    return settings.public_base_url or str(request.base_url).rstrip("/")
+    return public_url() or str(request.base_url).rstrip("/")
 
 
 def feed_url(request: Request) -> str:
@@ -572,6 +590,8 @@ def index(request: Request, month: str | None = None):
         "color": calendar_color(), "tags": calendar_tags(), "tag_modes": TAG_MODES,
         "sections": section_state(), "theme": ui_theme(), "interval": interval_minutes(),
         "google": google_view(request), "open_menu": request.query_params.get("menu") == "google",
+        "public": {"url": public_url(), "from_settings": bool(store.get("public_url")),
+                   "env": settings.public_base_url},
         "setup": {
             "uid": _mask(settings.username) if settings.username else "",
             "has_password": bool(settings.password),
@@ -840,6 +860,27 @@ async def upload(csrf: str = Form(""), file: UploadFile = File(...)):
 
 # --- Google Calendar connection ---------------------------------------------------
 
+@app.post("/settings/public-url", dependencies=[Depends(gui_auth)])
+async def set_public_url(csrf: str = Form(""), url: str = Form(""), action: str = Form("save")):
+    """Save the public address (Settings menu). It wins over PUBLIC_URL in .env; Reset goes back
+    to .env. It's used for the feed and subscribe links and Google's sign-in redirect."""
+    check_csrf(csrf)
+    if action == "reset" or not url.strip():
+        store.delete("public_url")
+        state.record("info", f"Public address reset to .env ({settings.public_base_url or 'not set'})")
+    else:
+        try:
+            value = normalise_public_url(url)
+        except ValueError:
+            raise HTTPException(400, "Enter the address people use to reach this page, e.g. https://cal.example.com")
+        if value == settings.public_base_url:
+            store.delete("public_url")
+        else:
+            store.set("public_url", value)
+        state.record("info", f"Public address set to {value}")
+    return RedirectResponse("/?menu=google", status_code=303)
+
+
 @app.post("/google/client", dependencies=[Depends(gui_auth)])
 async def google_client(request: Request, csrf: str = Form(""), client_id: str = Form(""),
                         client_secret: str = Form(""), action: str = Form("save")):
@@ -874,7 +915,7 @@ async def google_connect(request: Request, csrf: str = Form("")):
     if not view["configured"]:
         raise HTTPException(400, "Save the Google OAuth client ID and secret first.")
     if not view["redirect_ok"]:
-        raise HTTPException(400, "Set PUBLIC_URL in .env to this page's https:// address first.")
+        raise HTTPException(400, "Set the public address (Settings → Public address) to this page's https:// address first.")
     return RedirectResponse(google.sign_in_url(view["redirect_uri"]), status_code=303)
 
 
