@@ -163,7 +163,7 @@ async def download(url: str, username: str, password: str, etag: str = "", last_
                           "United's bot protection may be holding the request; "
                           "use Upload & publish in the CCS+ Calendar Sync box in the meantime.")
     if code == 1:
-        raise SourceError("The Calendar Sync link must start with https:// (CalendarStream only downloads over https).")
+        raise SourceError("The Calendar Sync link must start with https://, and may only redirect to https:// addresses (CalendarStream only downloads over https).")
     if code == 47:
         raise SourceError(f"{host} redirected too many times; check the Calendar Sync link.")
     if code == 63:

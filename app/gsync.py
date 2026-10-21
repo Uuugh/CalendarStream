@@ -222,10 +222,13 @@ class Google:
         """The last check of the saved client: {"ok": True/False/None, "message", "at"}."""
         return (self.store.get("google_client") or {}).get("check") or {}
 
-    def _save_check(self, ok: bool | None, message: str):
+    def _save_check(self, ok: bool | None, message: str, redirect_uri: str = "", redirect_ok: bool | None = None):
+        """Remember a check: `ok` is about the ID and secret; `redirect_ok` about `redirect_uri` (the
+        address the check used), False when Google doesn't list it."""
         saved = self.store.get("google_client")
         if saved:
-            saved["check"] = {"ok": ok, "message": message, "at": datetime.now(timezone.utc).isoformat()}
+            saved["check"] = {"ok": ok, "message": message, "at": datetime.now(timezone.utc).isoformat(),
+                              "redirect_uri": redirect_uri, "redirect_ok": redirect_ok}
             self.store.set("google_client", saved)
 
     async def check_client(self, redirect_uri: str) -> dict:
@@ -245,9 +248,9 @@ class Google:
         error, detail = body.get("error", ""), str(body.get("error_description", "")).lower()
         if error == "redirect_uri_mismatch":
             # The ID and secret are right, but Connect would fail: the redirect URI isn't listed.
-            self._save_check(False, f"Google doesn't list {redirect_uri} under Authorised redirect URIs; add it to the client in Google Cloud")
+            self._save_check(True, "Google accepted the client ID and secret", redirect_uri, False)
         elif error == "invalid_grant":
-            self._save_check(True, "Google accepted the client ID and secret")
+            self._save_check(True, "Google accepted the client ID and secret", redirect_uri, True)
         elif error in ("invalid_client", "unauthorized_client"):
             self._save_check(False, "Google doesn't know this client ID" if "not found" in detail
                              else "Google rejected the client secret")

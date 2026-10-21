@@ -21,10 +21,11 @@ absolute() {   # ~ and relative paths -> absolute (portable: macOS has no "realp
 env_value() {   # $1 = file, $2 = name: the value in a .env file, without quotes
   [ -f "$1" ] && sed -n "s/^$2=//p" "$1" | tail -1 | tr -d '"'"'" || true
 }
-this_ip() {
-  hostname -I 2>/dev/null | awk '{print $1}' ||
-    ipconfig getifaddr en0 2>/dev/null ||      # macOS
-    true
+this_ip() {   # this computer's address on the network (Linux, then macOS)
+  local ip
+  ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
+  [ -n "$ip" ] || ip="$(ipconfig getifaddr en0 2>/dev/null || true)"
+  printf '%s' "$ip"
 }
 
 # Where an earlier install is: the current folder if it holds CalendarStream, else the usual place.
@@ -63,7 +64,7 @@ mkdir -p "$MNT_DOCKER/.secrets"
 #    "-" clears an earlier answer.
 IP="$(this_ip)"
 CURRENT_URL="$(env_value .env PUBLIC_URL)"
-case "$CURRENT_URL" in http://[0-9]*) CURRENT_URL="" ;; esac   # the old default (http://<IP>:8080) isn't a public address
+case "$CURRENT_URL" in http://[0-9]*:8080|http://localhost:8080) CURRENT_URL="" ;; esac   # old defaults (http://<IP or localhost>:8080) aren't public addresses
 PUBLIC_URL="$(ask "Public https:// address, if you have one (Enter to skip; may be set later in Settings)" "${CURRENT_URL}")"
 [ "$PUBLIC_URL" = "-" ] && PUBLIC_URL=""
 

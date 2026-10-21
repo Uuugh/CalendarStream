@@ -37,10 +37,12 @@ def normalise_public_url(value: str) -> str:
     if not value:
         return ""
     if "://" not in value:
+        if ":/" in value:                 # e.g. "http:/example.com", a typo
+            raise ValueError(value)
         value = "https://" + value
     parsed = urlparse(value)
     scheme = parsed.scheme.lower()
-    if (scheme not in ("http", "https") or not parsed.hostname or parsed.query or parsed.fragment
+    if (scheme not in ("http", "https") or not parsed.hostname or parsed.params or parsed.query or parsed.fragment
             or parsed.username or parsed.password or any(c.isspace() for c in value) or len(value) > 300):
         raise ValueError(value)
     try:
@@ -60,10 +62,10 @@ def _public_url() -> str:
         url = normalise_public_url(_env("PUBLIC_URL") or _env("PUBLIC_BASE_URL"))
     except ValueError:
         return ""   # an unusable value is ignored (Settings → Public address can set it)
-    # Installers up to 0.1.19 wrote http://<this computer's IP>:8080 here by default. That isn't a
-    # public address and would override the one the page is opened at (breaking Google sign-in), so
-    # it counts as not set.
-    if re.match(r"^http://\d+\.\d+\.\d+\.\d+(:\d+)?$", url):
+    # Installers up to 0.1.19 wrote http://<this computer's IP, or localhost>:8080 here by default.
+    # That isn't a public address and would override the one the page is opened at (breaking Google
+    # sign-in), so it counts as not set.
+    if re.match(r"^http://(\d+\.\d+\.\d+\.\d+|localhost):8080$", url):
         return ""
     return url
 

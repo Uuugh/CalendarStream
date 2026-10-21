@@ -55,6 +55,7 @@ explained in [`.env.default`](.env.default):
 | `IMAGE_TAG` | `latest` | `latest` (stable), `beta` (newest) or a version, e.g. `0.1.6`; the installer asks |
 | `PUID` / `GUID`, `RESTART` | `1000` / `100`, `unless-stopped` | |
 | `PUBLIC_URL` | — | Overridden by ☰ → Public address |
+| `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Behind a reverse proxy: its address or network (e.g. `172.18.0.0/16`), so visitors' addresses and https are seen |
 | `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440; overridden by “Check for changes every” in the CCS+ Calendar Sync box |
 | `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in the CCS+ Calendar Sync help and (edit) |
 | `DEFAULT_EVENT_HOURS` | `1` | Hours for items with no end time, or `allday` |

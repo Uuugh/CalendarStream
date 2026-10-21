@@ -493,11 +493,8 @@ async def update_loop():
     while True:
         try:
             if updates.due(datetime.now(timezone.utc)):
-                logged = updates.info().get("logged")      # the version already announced in the log
                 found = await updates.check()
-                found["logged"] = logged
-                store.set("update_check", found)
-                if updates.available() and found.get("newest") != logged:
+                if updates.available() and found.get("newest") != found.get("logged"):
                     state.record("info", f"Update available: CalendarStream {found['newest']} "
                                          "(run the installer again to update)")
                     store.set("update_check", {**found, "logged": found["newest"]})
@@ -571,6 +568,8 @@ basic = HTTPBasic(auto_error=False)
 
 GUI_MAX_FAILURES, GUI_LOCKOUT = 5, timedelta(minutes=15)
 _gui_failures: dict[str, list] = {}   # client ip -> [failure count, locked-until]
+_global_failures: list[datetime] = []  # every recent failure, from any address
+GLOBAL_MAX_FAILURES = 50               # in GUI_LOCKOUT, from all addresses together: then everyone waits
 
 
 def _client_ip(request: Request) -> str:
@@ -581,12 +580,19 @@ def _check_lockout(ip: str):
     locked_until = _gui_failures.get(ip, [0, None])[1]
     if locked_until and now() < locked_until:
         raise HTTPException(429, "Too many failed attempts. Try again later.")
+    # A limit for all addresses together, so guessing from many (made-up) addresses doesn't help.
+    cutoff = now() - GUI_LOCKOUT
+    while _global_failures and _global_failures[0] < cutoff:
+        _global_failures.pop(0)
+    if len(_global_failures) >= GLOBAL_MAX_FAILURES:
+        raise HTTPException(429, "Too many failed attempts. Try again later.")
 
 
 def _count_failure(ip: str, what: str = "logins"):
-    if len(_gui_failures) > 10_000:      # bounded: forget the oldest entries
-        for key in list(_gui_failures)[:5_000]:
+    if len(_gui_failures) > 10_000:      # bounded: forget addresses that aren't locked out first
+        for key in [k for k, (_, until) in _gui_failures.items() if not until or until < now()][:5_000]:
             _gui_failures.pop(key, None)
+    _global_failures.append(now())
     count = _gui_failures.get(ip, [0, None])[0] + 1
     locked = now() + GUI_LOCKOUT if count >= GUI_MAX_FAILURES else None
     _gui_failures[ip] = [0 if locked else count, locked]
@@ -718,11 +724,15 @@ def google_view(request: Request, lang: str = "en") -> dict:
     return {"configured": google.configured, "connected": google.connected, "info": info,
             "client_id": google.client_id, "has_secret": bool(google.client_secret),
             "check": google.client_check(), "checked_at": _local_time(google.client_check().get("at"), lang),
+            # Google said it doesn't list this page's redirect URI (only counts for the address checked)
+            "redirect_missing": google.client_check().get("redirect_ok") is False
+                                and google.client_check().get("redirect_uri") == uri,
             "running": google_job.running, "last_sync": _local_time(info.get("last_sync"), lang),
             "redirect_uri": uri, "watch": _watch_view(lang),
-            # Google only sends sign-ins back to https:// addresses with a domain name (not a bare IP),
+            # Google only sends sign-ins back to https:// addresses with a public domain name (not a bare IP or .local),
             # or to http://localhost on this computer.
-            "redirect_ok": (uri.startswith("https://") and not _is_ip(host)) or host in ("localhost", "127.0.0.1")}
+            "redirect_ok": (uri.startswith("https://") and not _is_ip(host) and not host.endswith(".local"))
+                           or host in ("localhost", "127.0.0.1")}
 
 
 # --- Month view ----------------------------------------------------------------

@@ -5,7 +5,8 @@ newest version, "latest" (stable) and exact versions (e.g. 0.1.9) follow the las
 stable install is never told about a beta. The newest version of each channel is read from the
 repository's VERSION (beta) and STABLE (stable) files; only this install's version is sent (in the
 User-Agent).
-Saved in kv "update_check": {"checked": iso, "newest": "0.1.19", "channel": "beta", "error": "..."}.
+Saved in kv "update_check": {"checked": iso, "newest": "0.1.19", "channel": "beta", "error": "...",
+"logged": the version last announced in the activity log}.
 """
 from __future__ import annotations
 
@@ -68,7 +69,8 @@ class Updates:
     async def check(self) -> dict:
         """Read the newest version of this install's channel and save it."""
         name = "VERSION" if channel() == "beta" else "STABLE"
-        result = {"checked": datetime.now(timezone.utc).isoformat(), "channel": channel()}
+        result = {"checked": datetime.now(timezone.utc).isoformat(), "channel": channel(),
+                  "logged": self.info().get("logged")}      # the version already announced in the log
         try:
             async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
                 r = await client.get(RAW + name, headers={"User-Agent": f"CalendarStream/{__version__}"})

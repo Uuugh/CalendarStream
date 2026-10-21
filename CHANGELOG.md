@@ -6,7 +6,28 @@ the `latest` image and the GitHub Release marked **Latest**. Each version lists 
 **removed**. Labels refer to that release's request list: F = feature request, I = issue,
 # = review item, R = README; numbers start again with each release.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.20**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.21**
+
+## 0.1.21 — 2026-10-21
+
+Deploy review, second round.
+
+### Security
+- Forwarded headers (the visitor's address and https) are only believed from this computer unless
+  `FORWARDED_ALLOW_IPS` names your reverse proxy (see `.env.default`); behind a proxy, set it and the
+  Public address. A limit across all addresses (50 failed logins in 15 minutes) stops guessing from
+  many made-up addresses, and addresses that are locked out are never forgotten early.
+
+### Fixed
+- When Google doesn't list the redirect URI, the Google box keeps **✓ Validated** (the ID and secret
+  are right) and shows a separate red line with the exact address to add, a **Check again** button,
+  and Connect waits; the result only counts for the address that was checked.
+- The old installer default `http://localhost:8080` (macOS) also counts as not set; the installer
+  finds this computer's address on macOS.
+- **Check now** no longer makes the log announce the same update again.
+- An https link that redirects to http gets an accurate message.
+- The public address refuses typos such as `http:/example.com` and `…;params`; `.local` addresses
+  aren't offered to Google.
 
 ## 0.1.20 — 2026-10-21
 
@@ -27,9 +48,9 @@ Deploy review fixes (programming, commenting, security).
 - The Public address text no longer runs under the "This page" button in Settings.
 
 ### Security
-- The login lockout can't be dodged with a made-up `X-Forwarded-For`: forwarded headers are only
-  trusted from proxies on private networks (`FORWARDED_ALLOW_IPS` to narrow it), and the failure
-  list is bounded.
+- The login lockout can't be dodged with a made-up `X-Forwarded-For` as easily: forwarded headers
+  were limited to proxies on private networks (0.1.21 tightens this further), and the failure list
+  is bounded.
 - The first-visit page has its own form token, the status page's token is renewed whenever the
   login is created or changed, and form posts from other websites are refused.
 - Pages can't be framed, and send `nosniff` and `no-referrer`; `/healthz` no longer shows database
