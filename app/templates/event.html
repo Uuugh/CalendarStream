@@ -21,6 +21,9 @@
   button { font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:8px; padding:9px 18px; cursor:pointer }
   button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
   button.danger { background:transparent; color:var(--bad); border:1px solid var(--line) }
+  .iconbtn { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; padding:0; border:1px solid var(--line);
+             border-radius:8px; background:transparent; color:var(--muted); cursor:pointer }
+  .iconbtn:hover { color:var(--accent); background:var(--soft) } .iconbtn.del:hover { color:var(--bad) }
   a { color:var(--accent) } .muted { color:var(--muted) }
   .note { border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:14px; background:var(--soft) }
   .note.warn { background:var(--warnbg); color:var(--warn) }
@@ -61,7 +64,7 @@
 </select>
 {%- endmacro %}
 <main>
-  <h1>{{ _("Add event") if is_new else (_("Edit event") if e.origin == "custom" or src_type != "ccs" else _("Edit United event")) }}</h1>
+  <h1>{{ (_("Duplicate event") if is_copy else _("Add event")) if is_new else (_("Edit event") if e.origin == "custom" or src_type != "ccs" else _("Edit United event")) }}</h1>
   <p class="sub"><a href="/?month={{ month }}#cal">{{ _('← Back to CalendarStream') }}</a> · {{ _('times in {tz}', tz=tz) }}</p>
 
   {% if original %}
@@ -83,8 +86,8 @@
     {% if is_new %}
       {% if sources|length > 1 %}
       <label for="source">{{ _('Calendar') }}</label>
-      <select id="source" name="source" class="zone">{% for x in sources %}<option value="{{ x.id }}">{{ x.name }}</option>{% endfor %}</select>
-      {% else %}<input type="hidden" name="source" value="{{ sources[0].id if sources else '' }}">{% endif %}
+      <select id="source" name="source" class="zone">{% for x in sources %}<option value="{{ x.id }}"{% if x.id == e.source %} selected{% endif %}>{{ x.name }}</option>{% endfor %}</select>
+      {% else %}<input type="hidden" name="source" value="{{ e.source if e.source in sources|map(attribute='id') else (sources[0].id if sources else '') }}">{% endif %}
       {% if templates %}
       <label for="template">{{ _('Start from a template') }}</label>
       <select id="template" class="zone">
@@ -142,6 +145,11 @@
           {% for n, h in colors %}<label title="{{ n }}"><input type="radio" name="color" value="{{ h }}" data-c="{{ h }}" data-name="{{ n }}" {% if e.color == h %}checked{% endif %}><span class="sw" style="--c:{{ h }}"></span></label>{% endfor %}
         </div>
       </details>
+      {% if not is_new %}
+      {# Duplicate and delete, next to the color #}
+      <a class="iconbtn" href="/event?copy={{ e.uid|urlencode }}&month={{ month }}" title="{{ _('Duplicate') }}" aria-label="{{ _('Duplicate') }}">{{ copy_icon }}</a>
+      {% if e.origin != "rule" and not e.hidden %}<button type="submit" form="deleteform" class="iconbtn del" title="{{ _('Delete') }}" aria-label="{{ _('Delete') }}">{{ trash }}</button>{% endif %}
+      {% endif %}
       <span class="grow"></span>
       <a class="ghostbtn" href="/?month={{ month }}#cal">{{ _('Cancel') }}</a>
       <button>{{ _("Add event") if is_new else _("Save") }}</button>
@@ -154,17 +162,15 @@
     <form method="post" action="/event/revert"><input type="hidden" name="csrf" value="{{ csrf }}">
       <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">
       <button class="ghost">{{ _('Revert to United’s version') if src_type == "ccs" else _('Revert to the feed’s version') }}</button></form>
-    {% elif e.origin == "custom" %}
-    <form method="post" action="/event/delete" id="deleteform"><input type="hidden" name="csrf" value="{{ csrf }}">
-      <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">
-      <button class="danger">{{ _('Delete event') }}</button></form>
     {% endif %}
+    <form method="post" action="/event/delete" id="deleteform" hidden><input type="hidden" name="csrf" value="{{ csrf }}">
+      <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}"></form>
   </div>
   <p class="muted" style="font-size:12px">{{ _('Changes here only affect CalendarStream and Google; CCS+ is never changed.') }}{% if e.origin == "united" %} {{ _('Your edit is kept when the schedule is downloaded again.') }}{% endif %}</p>
   {% endif %}
 </main>
 <script>
-var T = { lastDay: {{ _('Last day')|string|tojson }}, ends: {{ _('Ends')|string|tojson }}, del: {{ _('Delete this event?')|string|tojson }},
+var T = { lastDay: {{ _('Last day')|string|tojson }}, ends: {{ _('Ends')|string|tojson }}, del: {{ (_('Delete this event?') if e.origin == "custom" else _('Delete this event from your destinations? Its source would send it again, so it’s hidden instead (Edit → untick Hide to bring it back).'))|string|tojson }},
           badTime: {{ _('Type a time like 9:30, 9:30pm or 21:30.')|string|tojson }}, zone: {{ _('Time zone')|string|tojson }},
           startZone: {{ _('Start time zone')|string|tojson }} };
 var delForm = document.getElementById('deleteform');

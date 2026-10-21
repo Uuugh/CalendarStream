@@ -53,10 +53,8 @@ GOOGLE_COLORS = {
 
 WATCH_TTL = 7 * 24 * 3600   # seconds a push-notification channel lasts (Google's default and usual limit)
 
-CALENDAR_DESCRIPTION = ("Your United CCS+ schedule, kept up to date by CalendarStream. "
+CALENDAR_DESCRIPTION = ("Kept up to date by CalendarStream. "
                         "Changes made here may be overwritten at the next sync.")
-FEED_DESCRIPTION = ("A calendar feed, kept up to date by CalendarStream. "
-                    "Changes made here may be overwritten at the next sync.")
 CAL_KEYS = ("calendar_id", "calendar_name", "synced_calendar", "created", "last_sync", "events")
 
 
@@ -279,9 +277,10 @@ class Google:
         source's calendar (see cal_info)."""
         return self.store.get("google") or {}
 
-    # Each calendar source has a calendar of its own in Google: {calendar_id, calendar_name,
-    # synced_calendar, created, last_sync, events}. CCS+ ("ccs") keeps its details at the top level
-    # of "google" (where versions before 0.2 kept them); other sources under "calendars".
+    # Each Google destination has a calendar of its own in Google: {calendar_id, calendar_name,
+    # synced_calendar, created, last_sync, events}, under "calendars" by the destination's ID. (Before
+    # 0.2 the one calendar's details were at the top level of "google", under the key "ccs" here;
+    # rekey() moves them.)
 
     def cal_info(self, sid: str) -> dict:
         info = self.info()
@@ -300,10 +299,37 @@ class Google:
         info["calendars"] = cals
         self.store.set("google", info)
 
+    def rekey(self, old: str, new: str):
+        """Give a calendar (its details, tracked events and notifications) a new key: used when the
+        calendars of 0.2.0 (one per source) and before become destinations."""
+        info = self.cal_info(old)
+        if not info:
+            return
+        self._update_cal(new, **info)
+        if old == "ccs":
+            whole = self.info()
+            for k in CAL_KEYS:
+                if k not in ("last_sync",):
+                    whole.pop(k, None)
+            self.store.set("google", whole)
+        else:
+            whole = self.info()
+            (whole.get("calendars") or {}).pop(old, None)
+            self.store.set("google", whole)
+        self.store.google_rekey(old, new)
+        watch = self.store.get(self._watch_key(old))
+        if watch:
+            self.store.set(self._watch_key(new), watch)
+            self.store.delete(self._watch_key(old))
+
     def calendar_sids(self) -> list[str]:
-        """Sources that have (or had) a calendar in Google."""
+        """Calendars CalendarStream has (or had) in Google, by key."""
         info = self.info()
         return (["ccs"] if info.get("calendar_id") else []) + list((info.get("calendars") or {}).keys())
+
+    def forget_calendar(self, sid: str):
+        """Stop managing a calendar (its destination was removed); it stays in Google."""
+        self._forget_cal(sid)
 
     def _forget_cal(self, sid: str):
         if sid == "ccs":
@@ -490,12 +516,12 @@ class Google:
                 return calendar_id
         made = await self.api("POST", "/calendars", body={
             "summary": name, "timeZone": self.tz_name,
-            "description": CALENDAR_DESCRIPTION if sid == "ccs" else FEED_DESCRIPTION})
+            "description": CALENDAR_DESCRIPTION})
         self._update_cal(sid, calendar_id=made["id"], calendar_name=made.get("summary", name), created=True)
         return made["id"]
 
     async def delete_calendar(self, sid: str) -> str:
-        """Delete a removed source's calendar in Google (if connected) and forget it. Returns a note
+        """Delete a destination's calendar in Google (if connected) and forget it. Returns a note
         when Google couldn't be reached ("" otherwise)."""
         note = ""
         calendar_id = self.cal_info(sid).get("calendar_id")
@@ -634,10 +660,10 @@ class Google:
     # --- Keeping the events in step -------------------------------------------------------
 
     async def sync(self, sid: str, events: list, name: str, color_for, first_day: date, full: bool = False) -> SyncResult:
-        """Write one source's events to its calendar in Google.
+        """Write a destination's events (from its sources) to its calendar in Google.
 
-        `events` are the published events (calsync.Event); hidden ones are left out. `color_for(title)`
-        gives a tag's #rrggbb color or "". Only events ending after `first_day` are written; older
+        `events` are the published events (calsync.Event); hidden ones are left out. `color_for(event)`
+        gives its #rrggbb color (its own, a rule's or its source's) or "". Only events ending after `first_day` are written; older
         ones are left as they are. Normally only events that changed since the last sync are sent;
         with `full`, Google's copy is also checked and anything changed or deleted there is repaired."""
         tz = ZoneInfo(self.tz_name)
@@ -676,7 +702,7 @@ class Google:
         writes = 0
 
         for uid, e in wanted.items():
-            color = e.color or color_for(e.title)   # a color chosen for the event wins over tags
+            color = color_for(e)
             body = event_body(e, self.tz_name, nearest_color_id(color) if color else "")
             digest, gid, row = _hash(body), body["id"], rows.get(uid)
             same = row and row["hash"] == digest
@@ -707,7 +733,7 @@ class Google:
             elif writes >= MAX_WRITES:
                 result.more = True
                 continue
-            self.store.google_forget(uid)       # past events: left in Google, no longer tracked
+            self.store.google_forget(uid, sid)  # past events: left in Google, no longer tracked
 
         if remote:   # events CalendarStream wrote that it no longer knows about (e.g. a lost database)
             for gid, ev in remote.items():

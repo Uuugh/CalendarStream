@@ -60,7 +60,15 @@ CREATE TABLE IF NOT EXISTS google_events (
     ends       text NOT NULL,               -- the event's end, so past events are left alone
     synced_at  timestamptz NOT NULL DEFAULT now()
 );
-ALTER TABLE google_events ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'ccs';  -- one Google calendar per source
+ALTER TABLE google_events ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'ccs';  -- which Google calendar (destination ID)
+-- 0.2.1: an event can be in several Google calendars, so the key is the event and the calendar
+DO $$ BEGIN
+  IF (SELECT count(*) FROM information_schema.key_column_usage
+      WHERE table_name = 'google_events' AND constraint_name = 'google_events_pkey') = 1 THEN
+    ALTER TABLE google_events DROP CONSTRAINT google_events_pkey;
+    ALTER TABLE google_events ADD PRIMARY KEY (uid, source);
+  END IF;
+END $$;
 -- Changes made on the status page; re-applied on top of every download from CCS+
 CREATE TABLE IF NOT EXISTS event_edits (
     uid        text PRIMARY KEY,            -- United's event UID
@@ -234,7 +242,7 @@ class Store:
     # --- Google Calendar sync state ---
 
     def google_rows(self, source: str = "ccs") -> dict[str, dict]:
-        """uid -> {google_id, hash, ends, synced_at} for a source's events last written to Google."""
+        """uid -> {google_id, hash, ends, synced_at} for the events last written to one Google calendar."""
         with self.pool.connection() as c:
             rows = c.execute("SELECT uid, google_id, hash, ends, synced_at FROM google_events WHERE source = %s",
                              (source,)).fetchall()
@@ -243,13 +251,20 @@ class Store:
     def google_saved(self, uid: str, google_id: str, hash_: str, ends: str, source: str = "ccs"):
         with self.pool.connection() as c:
             c.execute("INSERT INTO google_events (uid, google_id, hash, ends, source) VALUES (%s, %s, %s, %s, %s) "
-                      "ON CONFLICT (uid) DO UPDATE SET google_id = EXCLUDED.google_id, hash = EXCLUDED.hash, "
-                      "ends = EXCLUDED.ends, source = EXCLUDED.source, synced_at = now()", (uid, google_id, hash_, ends, source))
+                      "ON CONFLICT (uid, source) DO UPDATE SET google_id = EXCLUDED.google_id, hash = EXCLUDED.hash, "
+                      "ends = EXCLUDED.ends, synced_at = now()", (uid, google_id, hash_, ends, source))
+
+    def google_rekey(self, old: str, new: str):
+        with self.pool.connection() as c:
+            c.execute("UPDATE google_events SET source = %s WHERE source = %s", (new, old))
 
     def google_forget(self, uid: str | None = None, source: str | None = None):
-        """Forget one event's Google state, a source's, or all of it (no arguments)."""
+        """Forget one event's Google state (in one calendar, when `source` is given), a calendar's, or
+        all of it (no arguments). `source` is the Google calendar's key (its destination's ID)."""
         with self.pool.connection() as c:
-            if uid is not None:
+            if uid is not None and source is not None:
+                c.execute("DELETE FROM google_events WHERE uid = %s AND source = %s", (uid, source))
+            elif uid is not None:
                 c.execute("DELETE FROM google_events WHERE uid = %s", (uid,))
             elif source is not None:
                 c.execute("DELETE FROM google_events WHERE source = %s", (source,))

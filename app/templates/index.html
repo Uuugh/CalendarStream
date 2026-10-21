@@ -102,8 +102,8 @@
   .calhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px }
   .calhead .title { font-size:18px; font-weight:700; min-width:150px }
   .monthwrap { position:relative }
-  .tzpick select { font:inherit; font-size:13px; color:var(--text); background:transparent; border:1px solid transparent; border-radius:6px; padding:1px 2px; max-width:190px; cursor:pointer }
-  .tzpick select:hover, .tzpick select:focus { border-color:var(--line); background:var(--soft) }
+  select.tzpick { font:inherit; font-size:13px; color:var(--text); background:transparent; border:1px solid var(--line); border-radius:8px; height:28px; padding:0 4px; max-width:200px; cursor:pointer }
+  select.tzpick:hover, select.tzpick:focus { background:var(--soft) }
   .calhead button.title { background:transparent; color:var(--text); border:0; padding:4px 6px; border-radius:8px; cursor:pointer; text-align:left; font-family:inherit }
   .calhead button.title:hover, .calhead button.title[aria-expanded=true] { background:var(--soft) }
   .calhead .caret { font-size:12px; color:var(--muted) }
@@ -117,7 +117,22 @@
   .monthpick .months button { background:transparent; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:7px 0; font-size:13px; font-weight:500; cursor:pointer }
   .monthpick .months button:hover { background:var(--soft) }
   .monthpick .months button.on { background:var(--accent); color:var(--onaccent); border-color:var(--accent); font-weight:700 }
-  .clockswitch { margin-left:auto; display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); font-weight:600 }
+  .calright { margin-left:auto; display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end }
+  .viewseg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden }
+  .viewseg button { height:28px; padding:0 10px; border:0; border-radius:0; background:transparent; color:var(--muted); font-size:12.5px; font-weight:600 }
+  .viewseg button + button { border-left:1px solid var(--line) }
+  .viewseg button[aria-pressed="true"] { background:var(--accent); color:var(--onaccent) }
+  .weekgrid .day { min-height:220px } .weekgrid .ev summary { white-space:normal }
+  .agenda { border-top:1px solid var(--line) }
+  .aday { display:grid; grid-template-columns:150px 1fr; gap:12px; padding:8px 4px; border-bottom:1px solid var(--line); font-size:13px }
+  .aday .adate { font-weight:600; display:flex; align-items:baseline; gap:6px }
+  .aday.today .num { background:var(--accent); color:var(--card) }
+  .aday .add { margin-left:auto }
+  .aday:hover .add { visibility:visible }
+  .aitems .ev summary { white-space:normal; padding:3px 8px }
+  .aitems p { margin:3px 0 }
+  @media (max-width:600px) { .aday { grid-template-columns:1fr; gap:4px } .calright { margin-left:0; justify-content:flex-start } }
+  .clockswitch { display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); font-weight:600 }
   .clockswitch button { position:relative; width:38px; height:22px; border-radius:11px; border:1px solid var(--line); background:var(--soft); padding:0; cursor:pointer }
   .clockswitch button span { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--muted); transition:left .15s, background .15s }
   .clockswitch button[aria-checked=true] { background:var(--accent); border-color:var(--accent) }
@@ -140,7 +155,13 @@
   .ev.custom { background:var(--custom); color:var(--customtext) }
   .ev.hidden summary { text-decoration:line-through; opacity:.55 }
   .ev .mark { margin-left:3px; font-size:11px }
-  .ev .edit { display:inline-block; margin-top:6px; font-weight:600 }
+  .ev .edit { display:inline-block; font-weight:600 }
+  .ev .evtools { display:flex; align-items:center; gap:4px; margin-top:6px; white-space:normal }
+  .ev .evtools .edit { margin-right:auto }
+  .ev .evtools form { margin:0; display:inline }
+  .ev .evicon { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; padding:0; border:0; border-radius:6px;
+                background:transparent; color:var(--muted); cursor:pointer }
+  .ev .evicon:hover { background:var(--soft); color:var(--accent) } .ev .evdel .evicon:hover { color:var(--bad) }
   .dayhead { display:flex; align-items:center; justify-content:space-between }
   .add { visibility:hidden; text-decoration:none; font-weight:700; font-size:15px; line-height:1; padding:0 4px; border-radius:4px; color:var(--accent) }
   .day:hover .add, .add:focus { visibility:visible } .add:hover { background:var(--soft) }
@@ -322,7 +343,11 @@
   .feed { display:flex; gap:6px } .feed input { flex:1; min-width:0; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
   button.danger { color:var(--bad) }
   .removeform { margin-top:12px }
-  .removeform p { flex:1 1 240px }
+  .removeform p, .removeform label { flex:1 1 240px }
+  .srcpicks { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:4px; font-size:14px }
+  .srcpick { display:inline-flex; align-items:center; gap:6px; cursor:pointer }
+  .destform .pair label.fld { flex:0 1 320px }
+  .addmenu input.solo { width:100%; font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
   .rules .boxhead, #templates .boxhead { margin-bottom:6px }
   .rulerow[data-action="color"] .act.event, .rulerow[data-action="event"] .act.color { display:none }
   .act { display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap }
@@ -454,45 +479,8 @@
   {% set cls = {"ok":"ok","running":"run","starting":"run","paused":"warn","setup":"warn"}.get(s.status,"bad") %}
   {% set label = {"ok":_("Healthy"),"running":_("Syncing…"),"starting":_("Starting"),"paused":_("Paused"),"setup":_("Setup needed"),"auth_failed":_("Sign-in rejected"),"blocked":_("Blocked"),"error":_("Error")}.get(s.status, s.status) %}
 
-  <div class="card" id="cal">
-    <div class="calhead">
-      <a class="navbtn" href="?month={{ cal.prev }}" title="{{ _('Previous month') }}" aria-label="{{ _('Previous month') }}">‹</a>
-      <a class="navbtn" href="?month={{ cal.next }}" title="{{ _('Next month') }}" aria-label="{{ _('Next month') }}">›</a>
-      <a class="navbtn wide" href="/">{{ _('Today') }}</a>
-      {# The month and year open a picker, to jump straight to any month. #}
-      <div class="monthwrap">
-        <button type="button" class="title" id="monthbtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="monthpick"
-                title="{{ _('Jump to a month') }}">{{ cal.title }} <span class="caret">▾</span></button>
-        <div class="monthpick" id="monthpick" role="dialog" aria-label="{{ _('Jump to a month') }}" hidden data-month="{{ cal.month }}">
-          <div class="yearrow">
-            <button type="button" class="navbtn" data-year="-1" aria-label="{{ _('Previous year') }}">‹</button>
-            <b id="pickyear">{{ cal.month[:4] }}</b>
-            <button type="button" class="navbtn" data-year="1" aria-label="{{ _('Next year') }}">›</button>
-          </div>
-          <div class="months">{% for i in range(12) %}<button type="button" data-m="{{ '%02d' % (i + 1) }}">{{ dates.mon[i] }}</button>{% endfor %}</div>
-        </div>
-      </div>
-      <span class="muted" style="font-size:13px">{{ (_('1 event') if cal.count == 1 else _('{n} events', n=cal.count)) }} ·
-        {# The time zone the calendar is shown in, here only (not the feed or Google). #}
-        <label class="tzpick">{{ _('times in') }}
-          <select id="tzpick" title="{{ _('Show the calendar in another time zone (only on this page; the feed and Google are unchanged)') }}">
-            <optgroup label="{{ _('Common') }}">{% for z in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
-            <optgroup label="{{ _('All time zones') }}">{% for z in zones if z not in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
-          </select></label></span>
-      {# 12h / 24h switch: the only place the time format is set. #}
-      <div class="clockswitch" title="{{ _('Time format') }}">
-        <span>12h</span>
-        <button type="button" role="switch" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') }}"><span></span></button>
-        <span>24h</span>
-      </div>
-    </div>
-    <div class="scroll"><div class="month">
-      {% for d in cal.dow %}<div class="dow">{{ d }}</div>{% endfor %}
-      {% for week in cal.weeks %}{% for day in week %}
-      <div class="day{% if not day.in_month %} out{% endif %}{% if day.date == cal.today %} today{% endif %}" data-add="/event?date={{ day.date.isoformat() }}&amp;month={{ cal.month }}" title="{{ _('Click an empty spot to add an event on {day}', day=dates.day(day.date)) }}">
-        <div class="dayhead"><span class="num">{{ day.date.day }}</span>
-          <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">+</a></div>
-        {% for it in day["items"] %}
+  {# One event on the calendar: its title line, and its details (with Edit, Duplicate and Delete) when clicked. #}
+  {% macro evitem(it) -%}
         {% set e = it.e %}
         {% set tc = it.tag_color or (it.src_color if e.origin == 'united' else '') %}
         <details class="ev{% if e.all_day %} allday{% endif %}{% if e.origin in ('custom', 'rule') %} custom{% endif %}{% if e.hidden %} hidden{% endif %}{% if tc %} tint{% endif %}"{% if tc %} style="--cal:{{ tc }}"{% endif %}>
@@ -508,12 +496,69 @@
 {{ src_names.get(e.source, '') }}{% endif %}{% if e.description %}
 
 {{ e.description }}{% endif %}
-{% if e.origin != 'rule' %}<a class="edit" href="/event?uid={{ e.uid|urlencode }}&month={{ cal.month }}">{{ _('Edit') }}</a>{% endif %}</div>
+<span class="evtools">{% if e.origin != 'rule' %}<a class="edit" href="/event?uid={{ e.uid|urlencode }}&month={{ cal.month }}">{{ _('Edit') }}</a>{% endif %}<a class="evicon" href="/event?copy={{ e.uid|urlencode }}&month={{ cal.month }}" title="{{ _('Duplicate') }}" aria-label="{{ _('Duplicate') }}">{{ copy_icon }}</a>{% if e.origin != 'rule' and not e.hidden %}<form method="post" action="/event/delete" class="evdel" data-confirm="{{ _('Delete this event?') if e.origin == 'custom' else _('Delete this event from your destinations? Its source would send it again, so it’s hidden instead (Edit → untick Hide to bring it back).') }}"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ cal.month }}"><button class="evicon" title="{{ _('Delete') }}" aria-label="{{ _('Delete') }}">{{ trash }}</button></form>{% endif %}</span></div>
         </details>
-        {% endfor %}
+  {%- endmacro %}
+
+  <div class="card" id="cal">
+    {% set step = {"month": (_('Previous month'), _('Next month')), "week": (_('Previous week'), _('Next week')), "day": (_('Previous day'), _('Next day')), "list": (_('Previous month'), _('Next month'))}[cal.view] %}
+    <div class="calhead">
+      <a class="navbtn" href="?date={{ cal.prev }}" title="{{ step[0] }}" aria-label="{{ step[0] }}">‹</a>
+      <a class="navbtn" href="?date={{ cal.next }}" title="{{ step[1] }}" aria-label="{{ step[1] }}">›</a>
+      <a class="navbtn wide" href="/">{{ _('Today') }}</a>
+      {# The title opens a picker, to jump straight to any month. #}
+      <div class="monthwrap">
+        <button type="button" class="title" id="monthbtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="monthpick"
+                title="{{ _('Jump to a month') }}">{{ cal.title }} <span class="caret">▾</span></button>
+        <div class="monthpick" id="monthpick" role="dialog" aria-label="{{ _('Jump to a month') }}" hidden data-month="{{ cal.month }}">
+          <div class="yearrow">
+            <button type="button" class="navbtn" data-year="-1" aria-label="{{ _('Previous year') }}">‹</button>
+            <b id="pickyear">{{ cal.month[:4] }}</b>
+            <button type="button" class="navbtn" data-year="1" aria-label="{{ _('Next year') }}">›</button>
+          </div>
+          <div class="months">{% for i in range(12) %}<button type="button" data-m="{{ '%02d' % (i + 1) }}">{{ dates.mon[i] }}</button>{% endfor %}</div>
+        </div>
+      </div>
+      {# On the right: the time zone (this page only), the view, and the 12h / 24h switch. #}
+      <div class="calright">
+        <select id="tzpick" class="tzpick" aria-label="{{ _('Time zone') }}" title="{{ _('Show the calendar in another time zone (only on this page; the feed and Google are unchanged)') }}">
+          <optgroup label="{{ _('Common') }}">{% for z in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
+          <optgroup label="{{ _('All time zones') }}">{% for z in zones if z not in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
+        </select>
+        <div class="viewseg" role="group" aria-label="{{ _('View') }}">
+          {% for v, label in (("month", _('Month')), ("week", _('Week')), ("day", _('Day')), ("list", _('List'))) %}<button type="button" data-view="{{ v }}" aria-pressed="{{ 'true' if cal.view == v else 'false' }}">{{ label }}</button>{% endfor %}
+        </div>
+        {# 12h / 24h switch: the only place the time format is set. #}
+        <div class="clockswitch" title="{{ _('Time format') }}">
+          <span>12h</span>
+          <button type="button" role="switch" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') }}"><span></span></button>
+          <span>24h</span>
+        </div>
+      </div>
+    </div>
+    {% if cal.view in ("month", "week") %}
+    <div class="scroll"><div class="month{% if cal.view == 'week' %} weekgrid{% endif %}">
+      {% for d in cal.dow %}<div class="dow">{{ d }}</div>{% endfor %}
+      {% for week in cal.weeks %}{% for day in week %}
+      <div class="day{% if not day.in_month and cal.view == 'month' %} out{% endif %}{% if day.date == cal.today %} today{% endif %}" data-add="/event?date={{ day.date.isoformat() }}&amp;month={{ cal.month }}" title="{{ _('Click an empty spot to add an event on {day}', day=dates.day(day.date)) }}">
+        <div class="dayhead"><span class="num">{{ day.date.day }}</span>
+          <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">+</a></div>
+        {% for it in day["items"] %}{{ evitem(it) }}{% endfor %}
       </div>
       {% endfor %}{% endfor %}
     </div></div>
+    {% else %}
+    {# Day and list: one row per day with events (the day view shows its day even when empty). #}
+    <div class="agenda">
+      {% for day in cal.days %}
+      <div class="aday{% if day.date == cal.today %} today{% endif %}">
+        <div class="adate"><span class="num">{{ day.date.day }}</span> {{ dates.day(day.date) }}
+          <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">+</a></div>
+        <div class="aitems">{% for it in day["items"] %}{{ evitem(it) }}{% else %}<p class="muted">{{ _('No events.') }}</p>{% endfor %}</div>
+      </div>
+      {% else %}<p class="muted">{{ _('No events this month.') }}</p>{% endfor %}
+    </div>
+    {% endif %}
     <div class="legend">
       {% if srcs|length > 1 %}{% for x in srcs %}<span style="--sw:{{ ('color-mix(in srgb, ' ~ x.color ~ ' 34%, var(--card))') if x.color else 'var(--allday)' }}">{{ x.name }}</span>{% endfor %}
       {% elif srcs and srcs[0].color %}<span style="--sw:color-mix(in srgb, {{ srcs[0].color }} 18%, var(--card))">{{ _('Timed') }}</span><span style="--sw:color-mix(in srgb, {{ srcs[0].color }} 34%, var(--card))">{{ _('All-day') }}</span>{% else %}<span style="--sw:var(--ev)">{{ _('Timed') }}</span><span style="--sw:var(--allday)">{{ _('All-day') }}</span>{% endif %}<span style="--sw:var(--custom)">{{ _('Added here') }}</span>{% for x in srcs %}{% for t in x.rules if t.action == 'color' %}<span style="--sw:color-mix(in srgb, {{ t.color }} 34%, var(--card))">{{ t.tag }}</span>{% endfor %}{% endfor %}
@@ -525,7 +570,6 @@
   {# Calendar Sources and Calendar Destinations (0.2). Every box shares one pattern: a header with the
      title and a one-line subtitle on the left and a status chip on the right, then its fields, then its
      help folded at the bottom. + in a card's corner adds a source or destination; a new install has none. #}
-  {% set trash %}<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>{% endset %}
   {% set status_labels = {"ok":_("Healthy"),"running":_("Syncing…"),"starting":_("Starting"),"paused":_("Paused"),"setup":_("Setup needed"),"auth_failed":_("Sign-in rejected"),"blocked":_("Blocked"),"error":_("Error")} %}
 
   <section class="card" id="sources" aria-labelledby="sourcestitle">
@@ -576,9 +620,9 @@
       {# Name and color, hidden until (edit) is pressed. #}
       <form class="editor nameeditor" id="ed-{{ x.id }}" method="post" action="/feed/name" hidden>
         <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
-        <label class="lbl" for="name-{{ x.id }}">{{ _('Calendar name') }}</label>
-        <div class="row"><input type="text" id="name-{{ x.id }}" name="name" value="{{ x.name }}" placeholder="{{ _('Calendar name') }}" maxlength="100"></div>
-        <p class="hint">{% if google.connected %}{{ _('Autosync renames your Google calendar within a minute of saving.') }}{% else %}{{ _('Google only reads the name when the calendar is first added. If it’s already in your Google Calendar, rename it there too: hover over it under <b>Other calendars</b> → ⋮ → <b>Settings</b> → <b>Name</b>.') }}{% endif %}</p>
+        <label class="lbl" for="name-{{ x.id }}">{{ _('Source name') }}</label>
+        <div class="row"><input type="text" id="name-{{ x.id }}" name="name" value="{{ x.name }}" placeholder="{{ _('Source name') }}" maxlength="100"></div>
+        <p class="hint">{{ _('The source’s name on this page. Each destination has its own name, which is what Google and other calendar apps show.') }}</p>
         <label class="lbl">{{ _('Default color') }}</label>
         <div class="row">
           <input type="color" class="colorpick" value="{{ x.color or '#1d4ed8' }}" aria-label="{{ _('Default color') }}" data-name="color">
@@ -719,7 +763,6 @@
   <section class="card" id="destinations" aria-labelledby="deststitle">
     <div class="cardhead">
       <h2 class="bigtitle" id="deststitle">{{ _('Calendar Destinations') }}</h2>
-      {% if dests|length < 2 %}
       <div class="addwrap">
         <button type="button" class="ghost plus" aria-haspopup="dialog" aria-expanded="false" aria-controls="adddest"
                 title="{{ _('Add a destination') }}" aria-label="{{ _('Add a destination') }}">+</button>
@@ -727,7 +770,7 @@
           <input type="hidden" name="csrf" value="{{ csrf }}">
           <div class="title">{{ _('Add a destination') }}</div>
           {% if not public.url %}
-          {# The first destination asks for the public address (F6.2). #}
+          {# The first destination asks for the public address. #}
           <div class="pubask">
             <label class="lbl" for="pubask">{{ _('First, this page’s public address') }}</label>
             <div class="inbox">
@@ -737,28 +780,28 @@
             <p class="mnote">{{ _('The https:// address people (and Google) use to reach this page, e.g. <code>https://cal.example.com</code>. You can change it later in ☰ Settings.') }}</p>
           </div>
           {% endif %}
-          {% if "google" not in dests %}
-          <div class="opt"><div><b>{{ _('Google Calendar Autosync') }}</b>
-            <div class="subtitle">{{ _('Recommended: a calendar of its own in your Google account for each source, updated within minutes, with rule colors.') }}</div></div>
+          <label class="lbl" for="destname">{{ _('Name') }}</label>
+          <input type="text" id="destname" name="name" class="solo" value="{{ default_dest_name }}" maxlength="100">
+          <div class="opt"><div><b>{{ _('Google calendar') }}</b>
+            <div class="subtitle">{{ _('Recommended: a calendar of its own in your Google account, updated within minutes, in your sources’ colors.') }}</div></div>
             <button name="type" value="google">{{ _('Add') }}</button></div>
-          {% endif %}
-          {% if "feed" not in dests %}
           <div class="opt"><div><b>{{ _('Calendar feed') }}</b>
-            <div class="subtitle">{{ _('A link for each source that Google, Apple Calendar and others can subscribe to, and a page to share it.') }}</div></div>
+            <div class="subtitle">{{ _('A link that Google, Apple Calendar and others can subscribe to, and a page to share it.') }}</div></div>
             <button name="type" value="feed">{{ _('Add') }}</button></div>
-          {% endif %}
+          <p class="mnote">{{ _('It gets every source to start with; choose which in its box.') }}</p>
         </form>
       </div>
-      {% endif %}
     </div>
-    {% if not dests %}<p class="empty">{{ _('No destinations yet. Press <b>+</b> to send your calendars to Google Calendar, or to get feed links for any calendar app.') }}</p>{% endif %}
+    {% if not dests %}<p class="empty">{{ _('No destinations yet. Press <b>+</b> to send your calendars to a Google calendar, or to get a feed link for any calendar app.') }}</p>{% endif %}
 
+    {# The Google account: one sign-in for every Google calendar below. #}
     {% set g = google %}
-    {% if "google" in dests %}
+    {% set gdests = dests|selectattr("type", "equalto", "google")|list %}
+    {% if gdests or g.configured or g.connected %}
     {% set gvalid = g.configured and g.check.ok %}
     <div class="box" id="dest-google">
-      <div class="boxhead"><div><div class="boxtitle">{{ _('Google Calendar Autosync') }}</div>
-        <div class="subtitle">{{ _('Recommended: a calendar of its own in your Google account for each source, updated within minutes, with rule colors.') }}</div></div>
+      <div class="boxhead"><div><div class="boxtitle">{{ _('Google account') }}</div>
+        <div class="subtitle">{{ _('One sign-in for every Google calendar below.') }}</div></div>
         {% if g.connected and g.info.last_error %}<span class="chip bad">{{ _('Sync problem') }}</span>
         {% elif g.connected %}<span class="chip good">{{ _('Connected') }}</span>
         {% elif gvalid %}<span class="chip warn">{{ _('Ready to connect') }}</span>
@@ -776,56 +819,80 @@
       {% else %}
         {{ m.google_client(g, "f") }}
       {% endif %}
-      <form method="post" action="/destinations/remove" class="removeform btnrow" data-confirm="{{ _('Remove Google Calendar Autosync? CalendarStream disconnects from Google; its calendars there stay unless you ticked “Also delete”.') }}">
-        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="google">
-        <p></p><button class="ghost danger" title="{{ _('Remove this destination') }}">{{ trash }} {{ _('Remove') }}</button>
-      </form>
     </div>
     {% endif %}
 
-    {% if "feed" in dests %}
-    <div class="box" id="dest-feed">
-      <div class="boxhead"><div><div class="boxtitle">{{ _('Calendar feed') }}</div>
-        <div class="subtitle">{{ _('A link for each source that Google, Apple Calendar and others can subscribe to, and a page to share it.') }}</div></div>
-        {% if srcs and srcs|selectattr("reads.google")|list %}<span class="chip good">{{ _('Google reads the feed') }}</span>{% endif %}</div>
-      {% if srcs and not srcs[0].links.is_public %}<p class="warnline">{{ _('⚠ This isn’t a public HTTPS address yet, so Google can’t load the feed. Set the <b>Public address</b> in Settings (☰).') }}</p>{% endif %}
-      {% if not srcs %}<p class="mnote">{{ _('Add a calendar source to get its feed link.') }}</p>{% endif %}
-      {% for x in srcs %}
-      <div class="subbox">
-        <div class="boxtitle"><span class="swatch" style="--c:{{ x.color or 'var(--accent)' }}" aria-hidden="true"></span> {{ x.name }}</div>
-        <div class="k">{{ _('Raw feed URL (Google Calendar → Other calendars → + → From URL):') }}</div>
-        {{ m.copyfield("feed-" ~ x.id, x.feed) }}
-        <div class="btnrow">
-          <p class="mnote">{{ _('<b>Add to Google Calendar</b> subscribes your signed-in Google account to this feed, in one click. Google re-reads it on its own schedule (up to 12 hours), keeps the first name it saw and shows no rule colors.') }}</p>
-          <a class="btn" href="{{ x.links.google }}" target="_blank" rel="noopener">{{ _('Add to Google Calendar') }}</a>
+    {% for d in dests %}
+    {% set feed = d.type == "feed" %}
+    <div class="box dest" id="dest-{{ d.id }}">
+      <div class="boxhead"><div><div class="srctitle"><span class="srcname">{{ d.name }}</span>
+          <span class="srctype">{{ _('Calendar feed') if feed else _('Google calendar') }}</span></div>
+        <div class="subtitle">{% if feed %}{{ _('A link that Google, Apple Calendar and others can subscribe to, and a page to share it.') }}{% else %}{{ _('A calendar of its own in your Google account, updated within minutes, in your sources’ colors.') }}{% endif %}</div></div>
+        {% if feed %}{% if d.reads.google %}<span class="chip good">{{ _('Read by Google') }}</span>{% else %}<span class="chip warn">{{ _('Not read yet') }}</span>{% endif %}
+        {% elif not g.connected %}<span class="chip warn">{{ _('Not connected') }}</span>
+        {% elif g.info.last_error %}<span class="chip bad">{{ _('Sync problem') }}</span>
+        {% elif d.cal.calendar_id %}<span class="chip good">{{ _('In Google') }}</span>
+        {% else %}<span class="chip run">{{ _('Starting') }}</span>{% endif %}</div>
+
+      {# Its name and which sources it gets #}
+      <form method="post" action="/destinations/update" class="clientform destform">
+        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
+        <div class="pair">
+          <label class="fld"><span>{{ _('Name') }}</span><input name="name" value="{{ d.name }}" maxlength="100" required></label>
         </div>
-        {% if x.reads.google %}<p class="statusline"><span class="chip good">{{ _('Read by Google') }}</span> {{ _('Google Calendar last read this feed {when}.', when=x.reads.google) }}</p>
-        {% else %}<div class="statusline"><span class="chip warn">{{ _('Not read yet') }}</span> {{ _('Google Calendar hasn’t read this feed yet.') }}
+        <div class="k">{{ _('Sources') }}</div>
+        <div class="srcpicks">
+          {% for x in srcs %}<label class="srcpick"><input type="checkbox" name="sources" value="{{ x.id }}"{% if x.id in d.sources %} checked{% endif %}>
+            <span class="swatch" style="--c:{{ x.color or 'var(--accent)' }}" aria-hidden="true"></span> {{ x.name }}</label>{% endfor %}
+          {% if not srcs %}<span class="mnote">{{ _('Add a calendar source first.') }}</span>{% endif %}
+        </div>
+        <div class="btnrow">
+          <p class="mnote">{% if feed %}{{ _('Each event keeps its source’s colors and rules.') }}{% else %}{{ _('Each event keeps its source’s colors and rules. Renaming renames the calendar in Google.') }}{% endif %}</p>
+          <button class="ghost">{{ _('Save') }}</button>
+        </div>
+      </form>
+
+      {% if feed %}
+      <div class="subbox">
+        <div class="k" style="margin-top:0">{{ _('Raw feed URL (Google Calendar → Other calendars → + → From URL):') }}</div>
+        {{ m.copyfield("feed-" ~ d.id, d.feed) }}
+        <div class="btnrow">
+          <p class="mnote">{{ _('<b>Add to Google Calendar</b> subscribes your signed-in Google account to this feed, in one click. Google re-reads it on its own schedule (up to 12 hours), keeps the first name it saw and shows no colors.') }}</p>
+          <a class="btn" href="{{ d.links.google }}" target="_blank" rel="noopener">{{ _('Add to Google Calendar') }}</a>
+        </div>
+        {% if not d.links.is_public %}<p class="warnline">{{ _('⚠ This isn’t a public HTTPS address yet, so Google can’t load the feed. Set the <b>Public address</b> in Settings (☰).') }}</p>{% endif %}
+        {% if d.reads.google %}<p class="statusline">{{ _('Google Calendar last read this feed {when}.', when=d.reads.google) }}</p>
+        {% else %}<div class="statusline">{{ _('Google Calendar hasn’t read this feed yet.') }}
           <details class="guide inline"><summary>{{ _('What to check') }}</summary><p>{{ _('Until Google reads it, the subscription shows under its web address and without events. If that lasts more than a few hours, open the raw feed URL in a private browser window: it must download without a login, and nothing in front of CalendarStream (a proxy, or Cloudflare’s bot protection) may block Google.') }}</p></details></div>{% endif %}
         <div class="btnrow">
           <p class="mnote">{{ _('<b>Share it:</b> a subscribe page for anyone who should see this calendar (no status-page login needed), with one-click buttons for Google and Apple Calendar.') }}</p>
-          <a class="btn2" href="{{ x.links.page }}" target="_blank">{{ _('Open subscribe page') }}</a>
+          <a class="btn2" href="{{ d.links.page }}" target="_blank">{{ _('Open subscribe page') }}</a>
         </div>
-        {# F8: reuse the links from before a reinstall, or from a source that was removed by mistake. #}
+        {# Reuse the links from before a reinstall, or from a feed removed by mistake. #}
         <details class="guide">
           <summary>{{ _('Stream name (to reuse old links)') }}</summary>
           <form method="post" action="/feed/stream" class="clientform">
-            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
             <div class="pair">
-              <label class="fld"><span>{{ _('Stream name') }}</span><input name="stream" value="{{ x.stream }}" required spellcheck="false" autocomplete="off"></label>
+              <label class="fld"><span>{{ _('Stream name') }}</span><input name="stream" value="{{ d.token }}" required spellcheck="false" autocomplete="off"></label>
               <button class="ghost">{{ _('Save') }}</button>
             </div>
           </form>
-          <p class="mnote">{{ _('The secret part of this calendar’s feed and subscribe links. Reinstalled CalendarStream, or removed this calendar by mistake? Enter the old stream name, or paste a whole old link, and existing subscriptions work again. Links with the current name stop working.') }}</p>
+          <p class="mnote">{{ _('The secret part of this feed’s links. Reinstalled CalendarStream, or removed this feed by mistake? Enter the old stream name, or paste a whole old link, and existing subscriptions work again. Links with the current name stop working.') }}</p>
         </details>
       </div>
-      {% endfor %}
-      <form method="post" action="/destinations/remove" class="removeform btnrow" data-confirm="{{ _('Remove the calendar feed? Every feed link and subscribe page stops working.') }}">
-        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="feed">
-        <p></p><button class="ghost danger" title="{{ _('Remove this destination') }}">{{ trash }} {{ _('Remove') }}</button>
+      {% else %}
+      <p class="mnote">{% if d.cal.calendar_id %}{{ _('In Google as <b>{name}</b>', name=d.cal.calendar_name or d.name) }}{% if d.last_sync %} · {{ _('{n} events', n=d.cal.events or 0) }} · {{ _('last synced {when}', when=d.last_sync) }}{% endif %}
+        {% elif g.connected %}{{ _('The calendar is made at the next sync.') }}{% else %}{{ _('Made in Google once the Google account above is connected.') }}{% endif %}</p>
+      {% endif %}
+
+      <form method="post" action="/destinations/remove" class="removeform btnrow" data-confirm="{{ (_('Remove the feed {name}? Its links and subscribe page stop working.', name=d.name) if feed else _('Remove the Google calendar {name}? It stays in Google unless you ticked “Also delete it in Google”.', name=d.name)) }}">
+        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
+        {% if not feed %}<label class="mnote" style="margin:0"><input type="checkbox" name="delete" value="1"> {{ _('Also delete it in Google') }}</label>{% else %}<p></p>{% endif %}
+        <button class="ghost danger" title="{{ _('Remove this destination') }}">{{ trash }} {{ _('Remove') }}</button>
       </form>
     </div>
-    {% endif %}
+    {% endfor %}
   </section>
 
   {% macro t(d) %}{{ dates.when(d, cal.today) if d else _('never') }}{% endmacro %}
@@ -921,6 +988,13 @@ document.querySelectorAll('.filebtn input[type=file]').forEach(function (input) 
   });
 })();
 
+// The calendar's view: month, week, day or list (saved, then the page is drawn again).
+document.querySelectorAll('.viewseg [data-view]').forEach(function (b) {
+  b.addEventListener('click', function () {
+    savePref('/ui/view', { view: b.dataset.view }, function () { location.reload(); });
+  });
+});
+
 // The calendar's time zone (this page only).
 (function () {
   var sel = document.getElementById('tzpick');
@@ -941,7 +1015,7 @@ document.querySelectorAll('.filebtn input[type=file]').forEach(function (input) 
   box.addEventListener('click', function (e) {
     var y = e.target.closest('[data-year]'), m = e.target.closest('[data-m]');
     if (y) { year += +y.dataset.year; draw(); }
-    if (m) location.href = '?month=' + year + '-' + m.dataset.m;
+    if (m) location.href = '?date=' + year + '-' + m.dataset.m + '-01';
   });
   document.addEventListener('click', function (e) { if (!box.hidden && !e.target.closest('.monthwrap')) set(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
@@ -1100,8 +1174,8 @@ document.querySelectorAll('.addwrap').forEach(function (w) {
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
 });
 
-// Removing a source or destination asks first.
-document.querySelectorAll('form.removeform').forEach(function (f) {
+// Removing a source, destination or event asks first.
+document.querySelectorAll('form[data-confirm]').forEach(function (f) {
   f.addEventListener('submit', function (e) { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
 });
 
@@ -1114,7 +1188,7 @@ document.querySelectorAll('[data-fill]').forEach(function (b) {
 // corner). Clicking an empty part of a day adds an event on that day (or, while an event is open,
 // just closes it).
 (function () {
-  var month = document.querySelector('.month');
+  var month = document.querySelector('.month, .agenda');
   if (!month) return;
   function openOnes() { return Array.prototype.filter.call(month.querySelectorAll('details.ev[open]'),
                                                            function (d) { return !d.classList.contains('pinned'); }); }

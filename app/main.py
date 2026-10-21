@@ -21,10 +21,11 @@ from fastapi.exception_handlers import http_exception_handler as default_http_er
 from fastapi.responses import RedirectResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
+from markupsafe import Markup
 
 from . import __version__, i18n
 from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, apply_changes, build_feed,
-                      check_calendar, download, empty_feed, new_calendar, parse, parse_feed, render)
+                      check_calendar, download, new_calendar, parse, parse_feed, render)
 from .config import DEFAULT_CALENDAR_URL, normalise_public_url, settings
 from .gsync import GOOGLE_COLORS, Google, GoogleError
 from .logins import LoginError, Logins
@@ -57,15 +58,20 @@ def defaults() -> Defaults:
 # --- Calendar sources and destinations ------------------------------------------------
 #
 # A source is where events come from: United's CCS+ Calendar Sync (ID "ccs", at most one) or any
-# .ics feed link (type "ics", IDs such as "f3a9c1"). Each source has its own name, color, rules,
-# check interval, status, events, feed link and Google calendar. CCS+ keeps the database keys used
-# before 0.2 ("calendar_name", "status"…); a feed source's keys are the same plus ":<id>" (skey).
-# Destinations are where the events go: "google" (Google Calendar Autosync) and "feed" (feed links
-# and subscribe pages). A new install starts with neither; + adds them.
+# .ics feed link (type "ics", IDs such as "f3a9c1"). Each source has its own name, color (the
+# default color of its events), rules, check interval, status and events. CCS+ keeps the database
+# keys used before 0.2 ("calendar_name", "status"…); a feed source's keys are the same plus ":<id>" (skey).
+#
+# A destination is where events go, independently of the sources: a Google calendar (Autosync) or a
+# calendar feed (a link and a subscribe page). There can be several of each; each has its own name
+# and the list of sources whose events it gets, with each source's colors and rules. Saved in kv
+# "destinations": [{"id": "d1a2b3c", "type": "google" | "feed", "name", "sources": [IDs], "token"}],
+# "token" being a feed's stream name. A new install starts with no sources and no destinations.
 
 SOURCE_TYPES = ("ccs", "ics")
-DESTINATION_TYPES = ("google", "feed")
+DESTINATION_TYPES = {"google": "Google calendar", "feed": "Calendar feed"}
 SID_RE = re.compile(r"^(ccs|f[0-9a-f]{6})$")
+DID_RE = re.compile(r"^d[0-9a-f]{6}$")
 
 
 def skey(sid: str, base: str) -> str:
@@ -86,8 +92,34 @@ def source_ids() -> list[str]:
     return [x["id"] for x in sources()]
 
 
-def destinations() -> list[str]:
-    return [d for d in (store.get("destinations") or []) if d in DESTINATION_TYPES]
+def destinations(kind: str | None = None) -> list[dict]:
+    """The destinations (or those of one type), in the order they were added. Sources that were
+    removed are left out of their lists."""
+    ids = source_ids()
+    found = []
+    for d in store.get("destinations") or []:
+        if not isinstance(d, dict) or not DID_RE.match(str(d.get("id", ""))) or d.get("type") not in DESTINATION_TYPES:
+            continue
+        if kind and d["type"] != kind:
+            continue
+        found.append({"id": d["id"], "type": d["type"], "name": " ".join(str(d.get("name") or "").split())[:100] or "CalendarStream",
+                      "sources": [x for x in d.get("sources") or [] if x in ids], "token": str(d.get("token") or "")})
+    return found
+
+
+def destination(did: str) -> dict | None:
+    return next((d for d in destinations() if d["id"] == did), None)
+
+
+def save_destinations(found: list[dict]):
+    store.set("destinations", [{k: d[k] for k in ("id", "type", "name", "sources", "token")} for d in found])
+
+
+def new_did() -> str:
+    taken = {d["id"] for d in destinations()}
+    while (did := "d" + secrets.token_hex(3)) in taken:
+        pass
+    return did
 
 
 def migrate_sources():
@@ -98,6 +130,38 @@ def migrate_sources():
     had = logins.ccs_configured or store.get_calendar("source") is not None or store.event_count() > 0
     store.set("sources", [{"id": "ccs", "type": "ccs"}] if had else [])
     store.set("destinations", (["feed"] if had else []) + (["google"] if google.configured else []))
+
+
+def migrate_destinations():
+    """0.2.0 kept destinations as two switches ("feed", "google") with a feed link and a Google
+    calendar for each source. Each becomes a destination of its own with that one source, keeping
+    its stream name (so existing links work) and its Google calendar."""
+    raw = store.get("destinations") or []
+    if not any(isinstance(d, str) for d in raw):
+        return
+    ids = source_ids()
+    found = [d for d in destinations()]
+    if "feed" in raw:
+        for sid in ids:
+            did = new_did()
+            token = settings.feed_token if sid == "ccs" else (store.get(f"feed_token:{sid}") or secrets.token_urlsafe(24))
+            found.append({"id": did, "type": "feed", "name": calendar_name(sid), "sources": [sid], "token": token})
+            reads = store.get(skey(sid, "feed_reads"))
+            if reads:
+                store.set(f"feed_reads:{did}", reads)
+            save_destinations(found)
+    if "google" in raw:
+        keys = [k for k in google.calendar_sids() if k in ids]
+        for k in keys:
+            did = new_did()
+            google.rekey(k, did)
+            found.append({"id": did, "type": "google", "name": google.cal_info(did).get("calendar_name") or calendar_name(k),
+                          "sources": [k], "token": ""})
+            save_destinations(found)
+        if not keys:     # Autosync was set up but had no calendar yet
+            found.append({"id": new_did(), "type": "google", "name": calendar_name(ids[0]) if ids else "CalendarStream",
+                          "sources": ids[:1], "token": ""})
+    save_destinations(found)
 
 
 def calendar_url() -> str:
@@ -434,14 +498,14 @@ def notify_address() -> str:
 
 
 async def ensure_watch(sid: str):
-    """Keep Google's change notifications ("webhooks") running for a source's calendar: start
+    """Keep Google's change notifications ("webhooks") running for a destination's calendar: start
     them, move them to a new public address, renew them before they run out. If Google refuses,
     Autosync carries on as before (daily check) and asks again later."""
     address = notify_address()
     if not address or not google.connected or not google.watch_due(sid, address, now(), WATCH_RENEW, WATCH_RETRY):
         return
     before = google.watch_info(sid)
-    had = bool(before.get("id")) or any(google.watch_info(x).get("id") for x in source_ids() if x != sid)
+    had = bool(before.get("id")) or any(google.watch_info(d["id"]).get("id") for d in destinations("google") if d["id"] != sid)
     try:
         await google.start_watch(sid, address)
         if not had:
@@ -449,6 +513,20 @@ async def ensure_watch(sid: str):
     except GoogleError as e:
         if str(e) != before.get("error"):     # say so once, not at every retry
             state.record("warn", f"Google: instant updates aren't available ({e}); changes made in Google are checked daily instead")
+
+
+def dest_events(d: dict) -> list[Event]:
+    """A destination's events: those of its sources."""
+    return sorted((e for sid in d["sources"] for e in store.load_events(sid)), key=lambda e: e.start)
+
+
+def event_colorer():
+    """A function giving an event's color: its own, else its source's first matching color rule,
+    else its source's color ("" for none)."""
+    matchers = {sid: tag_matcher(calendar_tags(sid)) for sid in source_ids()}
+    colors = {sid: calendar_color(sid) for sid in source_ids()}
+    nobody = lambda title: ""
+    return lambda e: e.color or matchers.get(e.source, nobody)(e.title) or colors.get(e.source, "")
 
 
 def sync_window_start() -> date:
@@ -459,19 +537,19 @@ def sync_window_start() -> date:
 async def google_sync_once(full: bool) -> bool:
     """Run one sync. Returns False if it failed."""
     async with google_job.lock:
-        if not (google.configured and google.connected and "google" in destinations()):
+        dests = destinations("google")
+        if not (google.configured and google.connected and dests):
             return True
         google_job.running = True
         try:
-            ids = source_ids()
-            for sid in ids:
-                result = await google.sync(sid, store.load_events(sid), calendar_name(sid),
-                                           tag_matcher(calendar_tags(sid)), sync_window_start(), full)
+            color_for = event_colorer()
+            for d in dests:
+                result = await google.sync(d["id"], dest_events(d), d["name"], color_for, sync_window_start(), full)
                 if result.changed or result.notes:
-                    who = "Google" if len(ids) == 1 else f"Google, {calendar_name(sid)}"
+                    who = "Google" if len(dests) == 1 else f"Google, {d['name']}"
                     state.record("info", f"{who}: {result.summary()}"
                                  + ("; " + "; ".join(result.notes) if result.notes else ""))
-                await ensure_watch(sid)
+                await ensure_watch(d["id"])
             return True
         except GoogleError as e:
             message = str(e)
@@ -761,6 +839,7 @@ async def lifespan(_app):
     state.load()
     import_public_url()
     migrate_sources()
+    migrate_destinations()
     imported = logins.import_old(settings.username, settings.password, settings.gui_user, settings.gui_password)
     if imported:
         state.record("info", "Imported " + " and ".join(imported) + " from the old secret files. They're "
@@ -906,44 +985,30 @@ def renew_csrf():
 # when it last came shows whether Google can reach the feed at all: until it has, Google shows the
 # subscription under its web address and without events.
 
-def note_feed_read(user_agent: str, sid: str = "ccs"):
+def note_feed_read(user_agent: str, did: str):
     kind = "google" if "google" in user_agent.lower() else "other"
-    reads = store.get(skey(sid, "feed_reads")) or {}
+    reads = store.get(f"feed_reads:{did}") or {}
     last = from_iso(reads.get(kind))
     if last is None or now() - last > timedelta(minutes=1):     # don't write on every fetch
         reads[kind] = iso(now())
-        store.set(skey(sid, "feed_reads"), reads)
+        store.set(f"feed_reads:{did}", reads)
 
 
-def feed_reads(lang: str, sid: str = "ccs") -> dict:
-    reads = store.get(skey(sid, "feed_reads")) or {}
+def feed_reads(lang: str, did: str) -> dict:
+    reads = store.get(f"feed_reads:{did}") or {}
     return {k: _local_time(reads.get(k), lang) for k in ("google", "other")}
 
 
-# --- Stream names: the secret part of each source's feed links -------------------------------
+# --- Stream names: the secret part of each feed's links ---------------------------------------
 
 STREAM_RE = re.compile(r"^[A-Za-z0-9_-]{16,128}$")
 
 
-def feed_token(sid: str = "ccs") -> str:
-    """A source's stream name. CCS+ uses FEED_TOKEN (or the one made once); a feed source gets its
-    own when it's added."""
-    if sid == "ccs":
-        return settings.feed_token
-    token = store.get(f"feed_token:{sid}")
-    if not token:
-        token = secrets.token_urlsafe(24)
-        store.set(f"feed_token:{sid}", token)
-    return token
-
-
-def sid_for_token(token: str) -> str | None:
-    """The source whose feed links use this stream name, while the feed destination is on."""
-    if "feed" not in destinations():
-        return None
-    for sid in source_ids():
-        if secrets.compare_digest(token.encode(), feed_token(sid).encode()):
-            return sid
+def dest_for_token(token: str) -> dict | None:
+    """The feed destination whose links use this stream name."""
+    for d in destinations("feed"):
+        if d["token"] and secrets.compare_digest(token.encode(), d["token"].encode()):
+            return d
     return None
 
 
@@ -975,19 +1040,19 @@ def base_url(request: Request) -> str:
     return public_url() or str(request.base_url).rstrip("/")
 
 
-def feed_url(request: Request, sid: str = "ccs") -> str:
-    return f"{base_url(request)}/calendar/{feed_token(sid)}.ics"
+def feed_url(request: Request, token: str) -> str:
+    return f"{base_url(request)}/calendar/{token}.ics"
 
 
-def subscribe_links(request: Request, sid: str = "ccs") -> dict:
-    feed = feed_url(request, sid)
+def subscribe_links(request: Request, token: str) -> dict:
+    feed = feed_url(request, token)
     return {
         "feed": feed,
         # Opens Google Calendar's "add this calendar?" prompt. Google expects the feed as webcal://.
         "google": "https://calendar.google.com/calendar/r?cid=" + quote("webcal://" + feed.split("://", 1)[1], safe=""),
         # webcal:// hands the feed to Apple Calendar / Outlook / the phone's default calendar app.
         "webcal": "webcal://" + feed.split("://", 1)[1],
-        "page": f"{base_url(request)}/subscribe/{feed_token(sid)}",
+        "page": f"{base_url(request)}/subscribe/{token}",
         "is_public": feed.startswith("https://") and not any(
             h in feed for h in ("localhost", "127.0.0.1", "testserver")),
     }
@@ -1013,7 +1078,7 @@ def _watch_view(lang: str) -> dict:
     notice) or why not."""
     if not notify_address():
         return {"on": False, "why": "needs a public https:// address (☰ → Public address)"}
-    watches = [google.watch_info(sid) for sid in source_ids()]
+    watches = [google.watch_info(d["id"]) for d in destinations("google")]
     for w in watches:
         if w.get("error") and w.get("address") == notify_address():
             return {"on": False, "why": w["error"]}
@@ -1053,9 +1118,9 @@ def google_view(request: Request, lang: str = "en") -> dict:
                                 and google.client_check().get("redirect_uri") == uri,
             "running": google_job.running, "last_sync": _local_time(info.get("last_sync"), lang),
             "redirect_uri": uri, "watch": _watch_view(lang), "host_mismatch": _host_mismatch(request),
-            "admin_email": admin_email(), "on": "google" in destinations(),
-            "calendars": [{"sid": sid, "name": calendar_name(sid), **google.cal_info(sid)} for sid in source_ids()],
-            "events": sum(int(google.cal_info(sid).get("events") or 0) for sid in source_ids()),
+            "admin_email": admin_email(), "on": bool(destinations("google")),
+            "calendars": [{"did": d["id"], "name": d["name"], **google.cal_info(d["id"])} for d in destinations("google")],
+            "events": sum(int(google.cal_info(d["id"]).get("events") or 0) for d in destinations("google")),
             # Google only sends sign-ins back to https:// addresses with a public domain name (not a bare IP or .local),
             # or to http://localhost on this computer.
             "redirect_ok": (uri.startswith("https://") and not _is_ip(host) and not host.endswith(".local"))
@@ -1076,24 +1141,51 @@ def _span(e: Event, tz: ZoneInfo | None = None) -> tuple[date, date, datetime | 
     return s.date(), last, s, t
 
 
-def month_view(events: list[Event], year: int, month: int, lang: str = "en") -> dict:
+VIEWS = ("month", "week", "day", "list")
+
+
+def ui_view() -> str:
+    """The calendar's view on the status page: month, week, day or list (agenda)."""
+    view = store.get("ui_view")
+    return view if view in VIEWS else "month"
+
+
+def cal_view(events: list[Event], view: str, ref: date, lang: str = "en") -> dict:
+    """The calendar around `ref`: a month grid, one week, one day, or a list of a month's days
+    with events. ‹ › move by a month, week or day."""
     tz = display_tz()
     dates = dates_for(lang)
     hm = dates.clock
     cont = str(i18n.tr(lang, "cont."))
-    weeks = pycal.Calendar(firstweekday=6).monthdatescalendar(year, month)   # Sunday first, like CCS+
+    month_first = ref.replace(day=1)
+    month_last = ref.replace(day=pycal.monthrange(ref.year, ref.month)[1])
+    if view == "week":
+        first_day = ref - timedelta(days=(ref.weekday() + 1) % 7)       # Sunday first, like CCS+
+        last_day = first_day + timedelta(days=6)
+        prev, nxt = ref - timedelta(days=7), ref + timedelta(days=7)
+        title = f"{dates.day(first_day)} – {dates.day(last_day)}, {last_day.year}"
+    elif view == "day":
+        first_day = last_day = ref
+        prev, nxt = ref - timedelta(days=1), ref + timedelta(days=1)
+        title = f"{dates.day(ref)}, {ref.year}"
+    else:       # month grid or list: the month's weeks / days
+        weeks = pycal.Calendar(firstweekday=6).monthdatescalendar(ref.year, ref.month)
+        first_day, last_day = (weeks[0][0], weeks[-1][-1]) if view == "month" else (month_first, month_last)
+        prev = month_first - timedelta(days=1)
+        nxt = month_last + timedelta(days=1)
+        title = dates.title(ref)
     matchers = {sid: tag_matcher(calendar_tags(sid)) for sid in source_ids()}
     colors = {sid: calendar_color(sid) for sid in source_ids()}
     nobody = lambda title: ""
-    first_day, last_day = weeks[0][0], weeks[-1][-1]
     by_day: dict[date, list] = {}
-    in_month = 0
+    count = 0
+    span_first, span_last = (month_first, month_last) if view in ("month", "list") else (first_day, last_day)
     for e in events:
         d0, d1, s, t = _span(e, tz)
         if d1 < first_day or d0 > last_day:
             continue
-        if d1 >= date(year, month, 1) and d0 <= date(year, month, pycal.monthrange(year, month)[1]):
-            in_month += 1
+        if d1 >= span_first and d0 <= span_last:
+            count += 1
         d = max(d0, first_day)
         while d <= min(d1, last_day):
             if s is None:
@@ -1111,14 +1203,20 @@ def month_view(events: list[Event], year: int, month: int, lang: str = "en") -> 
                                              "src_color": colors.get(e.source, ""),
                                              "multi": d0 != d1, "range": _range_text(e, s, t, lang)})
             d += timedelta(days=1)
-    prev_m = date(year, month, 1) - timedelta(days=1)
-    next_m = date(year, month, 28) + timedelta(days=5)
+    days = [first_day + timedelta(days=i) for i in range((last_day - first_day).days + 1)]
+    cell = lambda d: {"date": d, "in_month": d.month == ref.month, "items": by_day.get(d, [])}
     return {
-        "title": dates.title(date(year, month, 1)), "dow": dates.dow,
-        "weeks": [[{"date": d, "in_month": d.month == month, "items": by_day.get(d, [])} for d in w] for w in weeks],
-        "prev": f"{prev_m:%Y-%m}", "next": f"{next_m.replace(day=1):%Y-%m}", "month": f"{year}-{month:02d}",
-        "today": now().astimezone(tz).date(), "count": in_month,
+        "view": view, "title": title, "dow": dates.dow, "ref": ref.isoformat(),
+        "weeks": [[cell(d) for d in days[i:i + 7]] for i in range(0, len(days), 7)] if view in ("month", "week") else [],
+        "days": [cell(d) for d in days if view == "day" or by_day.get(d)] if view in ("day", "list") else [],
+        "prev": prev.isoformat(), "next": nxt.isoformat(), "month": f"{ref:%Y-%m}",
+        "today": now().astimezone(tz).date(), "count": count,
     }
+
+
+def month_view(events: list[Event], year: int, month: int, lang: str = "en") -> dict:
+    """The month grid (kept for callers from before the other views)."""
+    return cal_view(events, "month", date(year, month, 1), lang)
 
 
 def _range_text(e: Event, s, t, lang: str = "en") -> str:
@@ -1152,8 +1250,7 @@ def source_view(request: Request, sid: str, lang: str, sections: dict) -> dict:
     url = source_url(sid)
     view = {"id": sid, "type": (source(sid) or {}).get("type", "ccs"), "name": calendar_name(sid),
             "color": calendar_color(sid), "s": S, "rules": calendar_tags(sid), "interval": interval_minutes(sid),
-            "url": url, "host": urlparse(url).hostname or url, "feed": feed_url(request, sid),
-            "links": subscribe_links(request, sid), "reads": feed_reads(lang, sid), "stream": feed_token(sid),
+            "url": url, "host": urlparse(url).hostname or url,
             "open": sections.get(f"src:{sid}", True) or S.status not in ("ok", "running", "starting"),
             "downloaded": store.get_calendar(skey(sid, "source")) is not None,
             "has_debug": store.has_debug(skey(sid, "source"))}
@@ -1165,17 +1262,47 @@ def source_view(request: Request, sid: str, lang: str, sections: dict) -> dict:
     return view
 
 
+def dest_view(request: Request, d: dict, lang: str) -> dict:
+    """One destination's box on the status page."""
+    view = {**d, "names": [calendar_name(x) for x in d["sources"]]}
+    if d["type"] == "feed":
+        view.update(feed=feed_url(request, d["token"]), links=subscribe_links(request, d["token"]),
+                    reads=feed_reads(lang, d["id"]))
+    else:
+        cal = google.cal_info(d["id"])
+        view.update(cal=cal, last_sync=_local_time(cal.get("last_sync"), lang))
+    return view
+
+
+def _parse_day(value: str | None, month: str | None) -> date:
+    """The day the calendar is around: ?date=YYYY-MM-DD, else the first of ?month=YYYY-MM, else today
+    (in the display time zone); today's day when only the month is today's."""
+    try:
+        d = date.fromisoformat(value or "")
+        if 2000 <= d.year <= 2100:
+            return d
+    except ValueError:
+        pass
+    today = now().astimezone(display_tz()).date()
+    if month:
+        y, m = _parse_month(month)
+        return today if (y, m) == (today.year, today.month) else date(y, m, 1)
+    return today
+
+
 @app.get("/", dependencies=[Depends(gui_auth)])
-def index(request: Request, month: str | None = None):
+def index(request: Request, month: str | None = None, date_: str | None = Query(None, alias="date")):
     events = store.load_events()
-    year, mon = _parse_month(month)
+    ref = _parse_day(date_, month)
     history = [{**h, "time": h["time"].astimezone(TZ)} for h in store.recent_log(100)]
     lang = lang_for(request)
     sections = section_state()
     srcs = [source_view(request, sid, lang, sections) for sid in source_ids()]
     return page(request, "index.html", {
-        "s": state, "cfg": settings, "history": history, "cal": month_view(events, year, mon, lang),
-        "csrf": CSRF_TOKEN, "name": calendar_name(), "srcs": srcs, "dests": destinations(),
+        "s": state, "cfg": settings, "history": history, "cal": cal_view(events, ui_view(), ref, lang), "views": VIEWS,
+        "csrf": CSRF_TOKEN, "name": calendar_name(), "srcs": srcs,
+        "dests": [dest_view(request, d, lang) for d in destinations()], "dest_types": DESTINATION_TYPES,
+        "default_dest_name": calendar_name(source_ids()[0]) if source_ids() else "CalendarStream",
         "src_names": {x["id"]: x["name"] for x in srcs},
         "has_ccs": "ccs" in source_ids(), "templates": event_templates(), "tag_modes": TAG_MODES,
         "rule_actions": RULE_ACTIONS, "rule_when": RULE_WHEN, "event_colors": GOOGLE_COLORS.values(),
@@ -1184,7 +1311,7 @@ def index(request: Request, month: str | None = None):
         # The first destination offers this page's address as the public one, if it's https:// (an
         # http://<IP>:8080 address would break Google sign-in, as the old installer default did).
         "public": {"url": public_url(), "here": (lambda u: u if u.startswith("https://") else "")(str(request.base_url).rstrip("/"))},
-        "page_user": logins.page_user, "admin_email": admin_email(),
+        "page_user": logins.page_user, "admin_email": admin_email(), "trash": TRASH_ICON, "copy_icon": COPY_ICON,
     }, lang=lang)
 
 
@@ -1245,6 +1372,8 @@ async def add_source(csrf: str = Form(""), type_: str = Form("", alias="type"), 
         raise HTTPException(400, "Unknown kind of calendar source.")
     store.set("sources", found)
     state.record("info", f"Calendar source added: {calendar_name(sid)}")
+    if len(source_ids()) == 1:     # the first source goes into the destinations made before it
+        save_destinations([{**d, "sources": [sid]} for d in destinations()])
     rebuild(sid)
     start_source(sid)
     return RedirectResponse(f"/#src-{sid}", status_code=303)
@@ -1252,15 +1381,15 @@ async def add_source(csrf: str = Form(""), type_: str = Form("", alias="type"), 
 
 @app.post("/sources/remove", dependencies=[Depends(gui_auth)])
 async def remove_source(csrf: str = Form(""), sid: str = Form("")):
-    """Remove a source: its checks stop, its events, edits and feed link go, and its calendar in
-    Google is deleted. CCS+'s UID and Calendar Sync password are forgotten too."""
+    """Remove a source: its checks stop, its events and edits go, and it's taken off every
+    destination's list (their calendars stay). CCS+'s UID and Calendar Sync password are forgotten too."""
     check_csrf(csrf)
     sid = _sid(sid)
     name = calendar_name(sid)
     stop_source(sid)
     store.set("sources", [x for x in sources() if x["id"] != sid])
-    async with google_job.lock:
-        note = await google.delete_calendar(sid)
+    save_destinations([{**d, "sources": [x for x in d["sources"] if x != sid]} for d in destinations()])
+    note = ""
     store.forget_source(sid)
     for base in ("calendar_name", "calendar_color", "calendar_tags", "sync_interval", "http_cache", "status", "feed_reads"):
         store.delete(skey(sid, base))
@@ -1269,7 +1398,6 @@ async def remove_source(csrf: str = Form(""), sid: str = Form("")):
         store.delete("calendar_url")
         state.__init__("ccs")
     else:
-        store.delete(f"feed_token:{sid}")
         states.pop(sid, None)
     state.record("warn" if note else "info", f"Calendar source removed: {name}" + (f" ({note})" if note else ""))
     return RedirectResponse("/#sources", status_code=303)
@@ -1292,9 +1420,11 @@ async def set_source_url(csrf: str = Form(""), sid: str = Form(""), url: str = F
 
 
 @app.post("/destinations/add", dependencies=[Depends(gui_auth)])
-async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="type"), public: str = Form("")):
-    """Calendar Destinations → +: Google Calendar Autosync, or feed links. The first one asks for the
-    public address (it can be changed later in ☰ Settings)."""
+async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="type"), name: str = Form(""),
+                          public: str = Form("")):
+    """Calendar Destinations → +: a Google calendar, or a calendar feed, getting every source's events
+    to start with (the list can be changed in its box). The first one asks for the public address
+    (it can be changed later in ☰ Settings)."""
     check_csrf(csrf)
     if type_ not in DESTINATION_TYPES:
         raise HTTPException(400, "Unknown kind of destination.")
@@ -1305,47 +1435,83 @@ async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="typ
             raise HTTPException(400, "Enter the address people use to reach this page, e.g. https://cal.example.com")
         state.record("info", f"Public address set to {public_url()}")
     found = destinations()
-    if type_ not in found:
-        store.set("destinations", found + [type_])
-        state.record("info", "Destination added: " + {"google": "Google Calendar Autosync", "feed": "feed links"}[type_])
+    if len(found) >= 20:
+        raise HTTPException(400, "Up to 20 destinations can be added.")
+    name = " ".join(name.split())[:100] or (calendar_name(source_ids()[0]) if source_ids() else "CalendarStream")
+    did = new_did()
+    found.append({"id": did, "type": type_, "name": name, "sources": source_ids(),
+                  "token": secrets.token_urlsafe(24) if type_ == "feed" else ""})
+    save_destinations(found)
+    state.record("info", f"Destination added: {DESTINATION_TYPES[type_]} \"{name}\"")
+    if type_ == "google":
         request_google_sync(full=True)
-    return RedirectResponse(f"/#dest-{type_}", status_code=303)
+    return RedirectResponse(f"/#dest-{did}", status_code=303)
+
+
+def _did(did: str) -> dict:
+    d = destination(did)
+    if not d:
+        raise HTTPException(400, "That destination doesn't exist (any more).")
+    return d
+
+
+@app.post("/destinations/update", dependencies=[Depends(gui_auth)])
+async def update_destination(csrf: str = Form(""), did: str = Form(""), name: str = Form(""),
+                             sources_: list[str] = Form([], alias="sources")):
+    """A destination's name and the sources it gets."""
+    check_csrf(csrf)
+    d = _did(did)
+    d["name"] = " ".join(name.split())[:100] or d["name"]
+    d["sources"] = [x for x in source_ids() if x in sources_]
+    save_destinations([d if x["id"] == did else x for x in destinations()])
+    state.record("info", f"Destination \"{d['name']}\": " + (", ".join(calendar_name(x) for x in d["sources"]) or "no sources"))
+    if d["type"] == "google":
+        request_google_sync(full=True)
+    return RedirectResponse(f"/#dest-{did}", status_code=303)
 
 
 @app.post("/destinations/remove", dependencies=[Depends(gui_auth)])
-async def remove_destination(csrf: str = Form(""), type_: str = Form("", alias="type"), delete: str = Form("")):
-    """Remove a destination. Google: disconnects (optionally deleting its calendars; the OAuth client is
-    kept). Feed: the feed links and subscribe pages stop working."""
+async def remove_destination(csrf: str = Form(""), did: str = Form(""), delete: str = Form("")):
+    """Remove a destination. A Google calendar is deleted in Google only when asked; a feed's links
+    and subscribe page stop working."""
     check_csrf(csrf)
-    if type_ == "google" and google.connected:
-        await google_disconnect(csrf=csrf, delete=delete)
-    store.set("destinations", [d for d in destinations() if d != type_])
-    state.record("info", "Destination removed: " + {"google": "Google Calendar Autosync", "feed": "feed links"}.get(type_, type_))
+    d = _did(did)
+    note = ""
+    if d["type"] == "google":
+        async with google_job.lock:
+            if delete == "1":
+                note = await google.delete_calendar(did)
+            else:
+                if google.connected:
+                    await google.stop_watch([did])
+                google.forget_calendar(did)
+    else:
+        store.delete(f"feed_reads:{did}")
+    save_destinations([x for x in destinations() if x["id"] != did])
+    what = " and its calendar in Google deleted" if d["type"] == "google" and delete == "1" and not note else ""
+    state.record("warn" if note else "info", f"Destination removed: \"{d['name']}\"{what}" + (f" ({note})" if note else ""))
     return RedirectResponse("/#destinations", status_code=303)
 
 
 @app.post("/feed/stream", dependencies=[Depends(gui_auth)])
-async def set_stream(csrf: str = Form(""), sid: str = Form(""), stream: str = Form("")):
-    """Set a source's stream name by hand, e.g. the one from before a reinstall, so old feed links and
+async def set_stream(csrf: str = Form(""), did: str = Form(""), stream: str = Form("")):
+    """Set a feed's stream name by hand, e.g. the one from before a reinstall, so old feed links and
     subscriptions work again. A whole old link can be pasted; its stream name is taken from it."""
     check_csrf(csrf)
-    sid = _sid(sid)
+    d = _did(did)
+    if d["type"] != "feed":
+        raise HTTPException(400, "Only calendar feeds have a stream name.")
     value = stream.strip()
     m = re.search(r"/(?:calendar|subscribe)/([A-Za-z0-9_-]+?)(?:\.ics)?/?$", value)
     if m:
         value = m.group(1)
     if not STREAM_RE.match(value):
         raise HTTPException(400, "A stream name is 16 to 128 letters, digits, - or _ (or paste a whole old feed link).")
-    if any(feed_token(x) == value for x in source_ids() if x != sid):
-        raise HTTPException(400, "Another calendar source already uses that stream name.")
-    if sid == "ccs":
-        store.set("feed_token", value)
-        store.set("feed_token_manual", True)
-        settings.feed_token = value
-    else:
-        store.set(f"feed_token:{sid}", value)
-    state.record("info", f"Stream name of {calendar_name(sid)} changed; links with the old name no longer work")
-    return RedirectResponse("/#dest-feed", status_code=303)
+    if any(x["token"] == value for x in destinations("feed") if x["id"] != did):
+        raise HTTPException(400, "Another feed already uses that stream name.")
+    save_destinations([{**x, "token": value} if x["id"] == did else x for x in destinations()])
+    state.record("info", f"Stream name of \"{d['name']}\" changed; links with the old name no longer work")
+    return RedirectResponse(f"/#dest-{did}", status_code=303)
 
 
 # --- Logins -----------------------------------------------------------------------
@@ -1641,6 +1807,16 @@ async def set_clock(csrf: str = Form(""), clock: str = Form("")):
     return Response(status_code=204)
 
 
+@app.post("/ui/view", dependencies=[Depends(gui_auth)])
+async def set_view(csrf: str = Form(""), view: str = Form("")):
+    """Remember the calendar's view (month, week, day or list), chosen above the calendar."""
+    check_csrf(csrf)
+    if view not in VIEWS:
+        raise HTTPException(400, "Unknown view.")
+    store.set("ui_view", view)
+    return Response(status_code=204)
+
+
 @app.post("/ui/tz", dependencies=[Depends(gui_auth)])
 async def set_display_tz(csrf: str = Form(""), tz: str = Form("")):
     """The time zone the calendar is shown in here; "" goes back to TZ from .env."""
@@ -1720,9 +1896,20 @@ def _saved_zones(uid: str) -> tuple[str, str]:
 
 
 @app.get("/event", dependencies=[Depends(gui_auth)])
-def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="date"), month: str | None = None):
-    """The event page: edit an event (uid), or add one on `date`."""
-    if uid:
+def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="date"), month: str | None = None,
+               copy: str = ""):
+    """The event page: edit an event (uid), add one on `date`, or add a copy of one (`copy`)."""
+    if copy:
+        found = store.get_event(copy)
+        if not found:
+            raise HTTPException(404, "That event isn't in the current schedule any more.")
+        if not source_ids():
+            raise HTTPException(400, "Add a calendar source first (Calendar Sources → +).")
+        e = Event(title=found.title, start=found.start, end=found.end, all_day=found.all_day, location=found.location,
+                  description=found.description, origin="custom", color=found.color,
+                  source=found.source if found.source in source_ids() else source_ids()[0])
+        uid = ""
+    elif uid:
         e = store.get_event(uid)
         if not e:
             raise HTTPException(404, "That event isn't in the current schedule any more.")
@@ -1750,6 +1937,7 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         "is_new": not uid, "original": original,
         "colors": GOOGLE_COLORS.values(), "auto_color": tag_color or calendar_color(e.source) or "",
         "sources": [{"id": sid, "name": calendar_name(sid), "type": (source(sid) or {}).get("type")} for sid in source_ids()],
+        "is_copy": bool(copy), "trash": TRASH_ICON, "copy_icon": COPY_ICON,
         "src_type": (source(e.source) or {}).get("type", "ccs"), "src_name": calendar_name(e.source),
         "templates": [{**t, "length": show_duration(t["minutes"])} for t in event_templates()],
         "original_range": _range_text(original, *_span(original)[2:], lang) if original else "",
@@ -1758,6 +1946,10 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
 
 
 EVENT_COLORS = {hex_ for _, hex_ in GOOGLE_COLORS.values()}   # Google's 11 event colors
+
+# Icons for the event tools (Bootstrap Icons, MIT): a bin to delete, two sheets to duplicate.
+TRASH_ICON = Markup('<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>')
+COPY_ICON = Markup('<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/></svg>')
 
 
 CLOCK_RE = re.compile(r"^\s*(\d{1,2})(?:[:.h]?(\d{2}))?\s*(?:([ap])\.?\s*m?\.?)?\s*$", re.I)
@@ -1861,13 +2053,28 @@ async def revert_event(csrf: str = Form(""), uid: str = Form(""), month: str = F
 
 @app.post("/event/delete", dependencies=[Depends(gui_auth)])
 async def delete_event(csrf: str = Form(""), uid: str = Form(""), month: str = Form("")):
+    """Delete an event (the bin on an event). One added here is deleted; a source's own event would
+    come back with the next download, so it's hidden from every destination instead (Edit → untick
+    Hide brings it back)."""
     check_csrf(csrf)
     e = store.get_event(uid)
-    if not e or e.origin != "custom":
-        raise HTTPException(400, "Only events added here can be deleted. Hide United's events instead.")
-    store.delete_custom(uid)
+    if not e:
+        raise HTTPException(404, "That event isn't in the current schedule any more.")
+    if e.origin == "rule":
+        raise HTTPException(400, "This event is made by a rule; change the rule or its event template instead.")
+    if e.origin == "custom":
+        store.delete_custom(uid)
+        state.record("info", f"Deleted \"{e.title}\" ({e.start[:10]})")
+    else:
+        original = united_original(uid, e.source)
+        if not original:
+            raise HTTPException(404, "That event isn't in the current schedule any more.")
+        edit = store.get_edits().get(uid) or {
+            "title": e.title, "start": e.start, "end": e.end, "all_day": e.all_day, "location": e.location,
+            "description": e.description, "color": e.color, "base": original.fingerprint()}
+        store.set_edit(uid, {**edit, "hidden": True})
+        state.record("info", f"Hid \"{e.title}\" ({e.start[:10]}) from the destinations")
     rebuild(e.source)
-    state.record("info", f"Deleted \"{e.title}\" ({e.start[:10]})")
     return RedirectResponse(_back(month), status_code=303)
 
 
@@ -1994,15 +2201,13 @@ async def google_callback(state_: str = Query("", alias="state"), code: str = ""
         async with google_job.lock:      # no sync may start while the calendars are being found or made
             info = await google.finish_sign_in(state_, code)
             found = []
-            for sid in source_ids():     # each source's calendar: the one from before, or a new one
-                await google.ensure_calendar(sid, calendar_name(sid))
-                cal = google.cal_info(sid)
+            for d in destinations("google"):     # each Google destination's calendar: the one from before, or a new one
+                await google.ensure_calendar(d["id"], d["name"])
+                cal = google.cal_info(d["id"])
                 found.append(f"calendar \"{cal.get('calendar_name', '')}\" "
                              + ("created" if cal.get("created") else "found again"))
         state.record("info", f"Google Calendar connected as {info.get('email') or 'your account'}"
                      + "".join("; " + f for f in found))
-        if "google" not in destinations():
-            store.set("destinations", destinations() + ["google"])
         request_google_sync(full=True)
     except GoogleError as e:
         google.record_error(str(e))
@@ -2018,7 +2223,7 @@ async def google_disconnect(csrf: str = Form(""), delete: str = Form("")):
         return RedirectResponse("/#dest-google", status_code=303)
     email = google.info().get("email") or "your account"
     async with google_job.lock:      # not in the middle of a sync
-        await google.stop_watch(sorted(set(source_ids()) | set(google.calendar_sids())))
+        await google.stop_watch(sorted({d["id"] for d in destinations("google")} | set(google.calendar_sids())))
         notes = await google.disconnect(delete_calendar=delete == "1")
     if delete == "1":
         store.google_forget()
@@ -2034,7 +2239,7 @@ async def google_notify(request: Request):
     Checked by the channel ID and the secret token CalendarStream gave Google; it carries no
     details, so it just starts a check that puts back events changed or deleted in Google."""
     channel = request.headers.get("x-goog-channel-id", "")
-    sid = google.notice_from(channel, request.headers.get("x-goog-channel-token", ""), source_ids())
+    sid = google.notice_from(channel, request.headers.get("x-goog-channel-token", ""), [d["id"] for d in destinations("google")])
     if sid:
         if request.headers.get("x-goog-resource-state") != "sync":   # "sync" only confirms the channel
             google.noticed(sid)
@@ -2054,14 +2259,16 @@ async def google_sync_now(csrf: str = Form("")):
 @app.get("/subscribe/{token}")
 def subscribe(request: Request, token: str):
     """Shareable page (no status-page login needed); the secret token in the URL is the access control."""
-    sid = sid_for_token(token)
-    if not sid:
+    d = dest_for_token(token)
+    if not d:
         raise HTTPException(404)
     # Shared with other people: shown in each visitor's browser language.
     lang = i18n.pick(None, request.headers.get("accept-language", ""))
+    checked = [st(x).last_success for x in d["sources"] if st(x).last_success]
     return page(request, "subscribe.html", {
-        "cfg": settings, "name": calendar_name(sid), "links": subscribe_links(request, sid),
-        "last_success": st(sid).last_success, "event_count": st(sid).event_count,
+        "cfg": settings, "name": d["name"], "links": subscribe_links(request, d["token"]),
+        "last_success": max(checked) if checked else None,
+        "event_count": sum(1 for e in dest_events(d) if not e.hidden),
     }, lang=lang)
 
 
@@ -2083,7 +2290,8 @@ def api_status():
             "last_attempt": fmt(first.last_attempt), "last_success": fmt(first.last_success),
             "last_change": fmt(first.last_change), "last_auth": fmt(first.last_auth),
             "last_auth_ok": first.last_auth_ok, "next_run": fmt(first.next_run), "events": first.event_count,
-            "sources": found, "destinations": destinations()}
+            "sources": found,
+            "destinations": [{k: d[k] for k in ("id", "type", "name", "sources")} for d in destinations()]}
 
 
 @app.get("/debug/{name}", dependencies=[Depends(gui_auth)])
@@ -2102,12 +2310,12 @@ def debug_file(name: str):
 @app.get("/calendar/{token}.ics")
 def calendar(token: str, request: Request):
     """The published .ics feed. The token in the address is the only protection (it's secret)."""
-    sid = sid_for_token(token)
-    if not sid:
+    d = dest_for_token(token)
+    if not d:
         raise HTTPException(404)
-    note_feed_read(request.headers.get("user-agent", ""), sid)
-    found = store.get_calendar(skey(sid, "feed"))
-    ics = found[0] if found else empty_feed(calendar_name(sid), settings.timezone)
+    note_feed_read(request.headers.get("user-agent", ""), d["id"])
+    color = calendar_color(d["sources"][0]) if len(d["sources"]) == 1 else ""
+    ics = build_feed(dest_events(d), d["name"], settings.timezone, color)
     return Response(ics, media_type="text/calendar; charset=utf-8", headers={"Cache-Control": "no-cache"})
 
 

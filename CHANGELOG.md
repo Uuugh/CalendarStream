@@ -6,7 +6,27 @@ the `latest` image and the GitHub Release marked **Latest**. Each version lists 
 **removed**. Labels refer to that release's request list: F = feature request, I = issue,
 # = review item, R = README; numbers start again with each release.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.0**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.1**
+
+## 0.2.1 — 2026-10-21
+
+### Changed
+- **F1** Destinations are independent of sources (0.2.0 made a Google calendar and a feed for each
+  source). There can be several Google calendars and several feeds; each has its own name and
+  ticks the sources it gets, and every event keeps its source's colors and rules. One **Google
+  account** box signs in for all the Google calendars. Removing a source takes it off every list;
+  removing a Google destination keeps its calendar in Google unless "Also delete it in Google" is
+  ticked. Installs from 0.2.0 and before keep their feed links and Google calendar.
+- **F3.2** No more "33 events · times in" above the calendar.
+- **F3.3** The calendar's time zone moved to the right: time zone, view, 12h / 24h.
+
+### Added
+- **F2.1** **Duplicate** and **Delete** icons at the bottom of an event's details and on the event
+  page. Delete removes an event added here; a source's own event is hidden instead (its source
+  would send it again).
+- **F3.1** **Month / Week / Day / List** views, left of the 12h / 24h switch.
+- **F4** The **PolyForm Noncommercial License 1.0.0** (`LICENSE.md`): free for non-commercial use, with
+  credit to the author; see the README.
 
 ## 0.2.0 — 2026-10-21
 
