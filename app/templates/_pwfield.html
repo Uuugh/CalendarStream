@@ -1,0 +1,97 @@
+{# Password boxes (included by index.html and welcome.html): every password box gets an eye button
+   to show what's being typed, and boxes marked data-strength get a strength bar along their bottom
+   edge. Nothing is sent anywhere: the strength is estimated in the browser as you type. #}
+<style>
+  .pw { position:relative; display:block; width:100% }
+  .pw > input { width:100%; padding-right:36px !important }
+  .pw button.eye { position:absolute; top:50%; right:4px; transform:translateY(-50%); margin:0; width:28px; height:28px;
+                   min-height:0; padding:0; display:inline-flex; align-items:center; justify-content:center;
+                   background:transparent; border:0; border-radius:6px; color:var(--muted); cursor:pointer; box-shadow:none }
+  .pw button.eye:hover, .pw button.eye:focus-visible { color:var(--text); background:var(--soft) }
+  .pw button.eye svg { display:block }
+  .pw .eye .off { display:none } .pw .eye[aria-pressed="true"] .on { display:none } .pw .eye[aria-pressed="true"] .off { display:block }
+  /* The bar sits inside the box, along its bottom edge, and only shows once something is typed. */
+  .pw .pwbar { position:absolute; left:1px; right:1px; bottom:1px; height:3px; border-radius:0 0 7px 7px; overflow:hidden;
+               pointer-events:none; opacity:0; transition:opacity .15s }
+  .pw.typed .pwbar { opacity:1 }
+  .pw .pwbar i { display:block; height:100%; width:0; background:var(--bad); transition:width .2s, background .2s }
+  .pw .pwbar[data-level="0"] i { width:10%; background:var(--bad) }
+  .pw .pwbar[data-level="1"] i { width:25%; background:var(--bad) }
+  .pw .pwbar[data-level="2"] i { width:50%; background:var(--warn) }
+  .pw .pwbar[data-level="3"] i { width:75%; background:var(--accent) }
+  .pw .pwbar[data-level="4"] i { width:100%; background:var(--ok) }
+  .pw .pwsay { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
+</style>
+<script>
+(function () {
+  var T = { show: {{ _('Show password')|string|tojson }}, hide: {{ _('Hide password')|string|tojson }},
+            strength: {{ _('Password strength: {level}')|string|tojson }},
+            levels: [{{ _('Too short')|string|tojson }}, {{ _('Weak')|string|tojson }}, {{ _('Fair')|string|tojson }},
+                     {{ _('Good')|string|tojson }}, {{ _('Strong')|string|tojson }}] };
+  var EYE = '<svg class="on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'
+          + '<svg class="off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.9 17.9A10.4 10.4 0 0 1 12 19c-7 0-11-7-11-7a19 19 0 0 1 5.1-5.9M9.9 5.2A9.6 9.6 0 0 1 12 5c7 0 11 7 11 7a19 19 0 0 1-2.2 3.2M14.1 14.1a3 3 0 1 1-4.2-4.2"/><path d="M1 1l22 22"/></svg>';
+  var COMMON = /^(password|passw0rd|qwerty|qwertz|azerty|letmein|welcome|admin|united|calendar|iloveyou|abc123|monkey|dragon|football|baseball|sunshine|princess|starwars|trustno1|111111|123123|000000|654321|123456789?|1234567890|12345678)$/i;
+
+  // A rough estimate (0 = too short … 4 = strong): the length and kinds of characters used, less
+  // for repeats, runs like "abcd" / "1234" and well-known passwords.
+  function level(pw, min) {
+    if (!pw) return 0;
+    if (pw.length < min) return 0;
+    var pool = 0;
+    if (/[a-z]/.test(pw)) pool += 26;
+    if (/[A-Z]/.test(pw)) pool += 26;
+    if (/[0-9]/.test(pw)) pool += 10;
+    if (/[^A-Za-z0-9]/.test(pw)) pool += 33;
+    var chars = pw.length, i, runs = 0;
+    for (i = 1; i < pw.length; i++) {
+      var a = pw.charCodeAt(i - 1), b = pw.charCodeAt(i);
+      if (a === b || b - a === 1 || a - b === 1) runs++;      // "aa", "ab", "ba"
+    }
+    chars -= runs * 0.75;
+    var bits = Math.max(0, chars) * Math.log2(Math.max(pool, 2));
+    if (COMMON.test(pw.replace(/[0-9!.]+$/, '')) || COMMON.test(pw)) bits = Math.min(bits, 20);
+    if (/^[A-Za-z][a-z]+[0-9]{1,4}[!.?]?$/.test(pw)) bits = Math.min(bits, 45);   // "Summer2026": a word and a number
+    return bits < 35 ? 1 : bits < 50 ? 2 : bits < 70 ? 3 : 4;
+  }
+
+  document.querySelectorAll('input[type=password]').forEach(function (input, n) {
+    var wrap = document.createElement('span');
+    wrap.className = 'pw';
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+
+    var eye = document.createElement('button');
+    eye.type = 'button'; eye.className = 'eye'; eye.innerHTML = EYE;
+    eye.setAttribute('aria-pressed', 'false'); eye.setAttribute('aria-label', T.show); eye.title = T.show;
+    eye.addEventListener('click', function (ev) {
+      ev.preventDefault();                       // inside a <label>: don't also focus/submit anything
+      var showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      eye.setAttribute('aria-pressed', String(!showing));
+      eye.setAttribute('aria-label', showing ? T.show : T.hide); eye.title = showing ? T.show : T.hide;
+      input.focus();
+    });
+    wrap.appendChild(eye);
+    // Hide what was typed again before the form is sent, so the browser offers to save it as a password.
+    if (input.form) input.form.addEventListener('submit', function () { input.type = 'password'; });
+
+    if (!input.hasAttribute('data-strength')) return;
+    var min = parseInt(input.getAttribute('minlength') || '1', 10);
+    var bar = document.createElement('span');
+    bar.className = 'pwbar'; bar.setAttribute('aria-hidden', 'true'); bar.innerHTML = '<i></i>';
+    var say = document.createElement('span');
+    say.className = 'pwsay'; say.id = 'pwsay' + n; say.setAttribute('aria-live', 'polite');
+    wrap.appendChild(bar); wrap.appendChild(say);
+    input.setAttribute('aria-describedby', ((input.getAttribute('aria-describedby') || '') + ' ' + say.id).trim());
+    function update() {
+      var v = input.value, l = level(v, min), text = T.strength.replace('{level}', T.levels[l]);
+      wrap.classList.toggle('typed', v.length > 0);
+      bar.setAttribute('data-level', String(l));
+      wrap.title = v ? text : '';
+      say.textContent = v ? text : '';
+    }
+    input.addEventListener('input', update);
+    update();
+  });
+})();
+</script>

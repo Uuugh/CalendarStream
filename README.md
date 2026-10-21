@@ -43,13 +43,11 @@ use the feed instead.
 bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/install.sh)
 ```
 
-[`install.sh`](install.sh) asks four questions (press Enter for the default):
+[`install.sh`](install.sh) asks three questions (press Enter for the default):
 
 1. which release to install, `latest` (stable) or `beta` (`stable`);
 2. the folder for `docker-compose.yml` and `.env` (`~/stacks/calendarstream`);
-3. the folder for CalendarStream's config and data, the database and `.secrets/` (the same folder);
-4. the public `https://` address, typed exactly as you'll open it, e.g. `https://cal.example.com`
-   (Enter to skip; it can be set later in ☰ Settings).
+3. the folder for CalendarStream's config and data, the database and `.secrets/` (the same folder).
 
 It then downloads `docker-compose.yml` and `.env`, creates a random database password, starts
 CalendarStream and prints its address and a **setup code**. Running it again updates
@@ -77,7 +75,6 @@ explained in [`.env.default`](.env.default):
 | `TZ` | `America/Chicago` | Time zone the schedule is shown in |
 | `IMAGE_TAG` | `latest` | `latest` (stable), `beta` (newest) or a version, e.g. `0.1.6`; the installer asks |
 | `PUID` / `GUID`, `RESTART` | `1000` / `100`, `unless-stopped` | |
-| `PUBLIC_URL` | — | Overridden by ☰ → Public address |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Behind a reverse proxy: its address or network (e.g. `172.18.0.0/16`), so visitors' addresses and https are seen |
 | `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440; overridden by “Check for changes every” in the CCS+ Calendar Sync box |
 | `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in the CCS+ Calendar Sync help and (edit) |

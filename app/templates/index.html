@@ -170,6 +170,11 @@
   form .pair label.fld { flex:1 1 150px; display:flex; flex-direction:column; align-items:stretch; text-align:left; gap:3px; margin:0; font-size:12px; font-weight:600; color:var(--muted) }
   form .pair label.fld input { width:100%; min-width:0; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
   form .pair > button { flex:0 0 auto; margin-left:auto }
+  form .pair.inline { align-items:center; flex-wrap:nowrap }
+  form .pair.inline .rowlabel { flex:1 1 auto; font-size:13px; font-weight:600; white-space:nowrap }
+  form .pair.inline select { flex:0 0 auto; font:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  form .pair.inline > button { margin-left:0 }
+  form .pair > input.solo { flex:1 1 180px; min-width:0; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
   /* The Settings menu is narrow: smaller boxes so the button or ✓ stays on the same line. */
   .menu form .pair { flex-wrap:nowrap } .menu form .pair label.fld, .menu .inbox { flex:1 1 0; min-width:0 }
   .menu form .pair > button, .menu .okmark { padding-left:10px; padding-right:10px }
@@ -328,7 +333,7 @@
               <label class="fld" for="luser"><span>{{ _('User name') }}</span>
                 <input type="text" id="luser" name="user" value="{{ page_user }}" required maxlength="64" autocomplete="username" spellcheck="false"></label>
               <label class="fld" for="lnew"><span>{{ _('Password') }}</span>
-                <input type="password" id="lnew" name="password" minlength="8" autocomplete="new-password" placeholder="{{ _('Type a new one to change it') }}"></label>
+                <input type="password" id="lnew" name="password" minlength="8" data-strength autocomplete="new-password" placeholder="{{ _('Type a new one to change it') }}"></label>
               {{ m.okbutton(true, _('Signed in'), _('Save')) }}
             </div>
             <div class="pair more" hidden>
@@ -351,36 +356,48 @@
                 <input type="text" id="publicurl" name="url" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
                 <button type="button" class="inboxbtn" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
               </div>
-              {% if public.from_settings %}<button class="ghost" name="action" value="reset" formnovalidate
-                title="{{ _('Go back to PUBLIC_URL in .env') }}">{{ _('Reset') }}</button>{% endif %}
               <button name="action" value="save">{{ _('Save') }}</button>
             </div>
           </form>
           <p class="mnote" style="margin:6px 0 0">{{ _('The https:// address people use to reach this page, e.g. <code>https://cal.example.com</code>. Used for the feed and subscribe links and for Google sign-in.') }}
-            {% if public.from_settings %}{{ _('Set here (overrides <code>PUBLIC_URL</code> in .env).') if public.env else _('Set here.') }}
-            {% elif public.env %}{{ _('From <code>PUBLIC_URL</code> in .env; saving here overrides it.') }}
-            {% else %}{{ _('Not set yet.') }}{% endif %}</p>
+            {% if not public.url %}{{ _('Not set yet.') }}{% endif %}</p>
+        </div>
+
+        {# The administrator's e-mail: used in the Google setup guide (support / contact e-mail, test user). #}
+        <div class="mgroup" id="admin">
+          <div class="mhead">{{ _('Admin e-mail') }}</div>
+          <form method="post" action="/settings/admin-email" class="clientform">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <div class="pair">
+              <input type="email" class="solo" id="adminemail" name="email" value="{{ admin_email }}" maxlength="254" spellcheck="false"
+                     autocomplete="email" placeholder="you@gmail.com" aria-label="{{ _('Admin e-mail') }}">
+              <button>{{ _('Save') }}</button>
+            </div>
+          </form>
+          <p class="mnote" style="margin:6px 0 0">{{ _('The administrator’s address. The Google Calendar Autosync guide uses it as the support and contact e-mail and the test user, so use the Gmail account you’ll connect with.') }}
+            {% if not admin_email %}{{ _('Not set yet.') }}{% endif %}</p>
         </div>
 
         {# Check for updates: how often, for this install's channel (beta or stable) only. #}
         <div class="mgroup" id="updates">
           <div class="mhead">{{ _('Updates') }}</div>
+          {# "Subscribed to beta versions (Up to date). Next check at 10:19." above the frequency and Check now. #}
+          <p class="mnote" style="margin:0 0 6px">
+            {{ _('Subscribed to beta versions') if update.channel == 'beta' else _('Subscribed to stable versions') }}
+            ({% if update.available %}<b>{{ _('version {v} available', v=update.available) }}</b>{% elif update.info.newest %}{{ _('Up to date') }}{% else %}{{ _('not checked yet') }}{% endif %}).
+            {% if update.next %}{{ _('Next check at {when}.', when=update.next) }}{% else %}{{ _('Automatic checks are off.') }}{% endif %}
+            {% if update.available %}{{ _('Run the installer again to update.') }}{% endif %}
+            {% if update.info.error %}<span class="bad">{{ msg(update.info.error) }}</span>{% endif %}</p>
           <form method="post" action="/settings/updates" class="clientform">
             <input type="hidden" name="csrf" value="{{ csrf }}">
-            <div class="pair">
-              <label class="fld" for="updfreq"><span>{{ _('Check for updates') }}</span>
-                <select id="updfreq" name="frequency" onchange="this.form.submit()">
-                  {% for f in update.frequencies %}<option value="{{ f }}"{% if f == update.frequency %} selected{% endif %}>{{ {"hourly": _('Hourly'), "weekly": _('Weekly'), "monthly": _('Monthly'), "never": _('Never')}[f] }}</option>{% endfor %}
-                </select></label>
+            <div class="pair inline">
+              <label for="updfreq" class="rowlabel">{{ _('Check for updates') }}</label>
+              <select id="updfreq" name="frequency" onchange="this.form.submit()">
+                {% for f in update.frequencies %}<option value="{{ f }}"{% if f == update.frequency %} selected{% endif %}>{{ {"hourly": _('Hourly'), "weekly": _('Weekly'), "monthly": _('Monthly'), "never": _('Never')}[f] }}</option>{% endfor %}
+              </select>
               <button class="ghost" name="action" value="check">{{ _('Check now') }}</button>
             </div>
           </form>
-          <p class="mnote" style="margin:6px 0 0">
-            {{ _('This install follows <b>{channel}</b>.', channel=(_('beta (the newest versions)') if update.channel == 'beta' else _('stable (latest)'))) }}
-            {% if update.available %}<b>{{ _('Version {v} is available.', v=update.available) }}</b> {{ _('Run the installer again to update.') }}
-            {% elif update.info.newest %}{{ _('Up to date.') }}{% endif %}
-            {% if update.info.error %}<span class="bad">{{ msg(update.info.error) }}</span>{% endif %}
-            {% if update.checked %}<span class="muted">{{ _('Last checked {when}.', when=update.checked) }}</span>{% endif %}</p>
         </div>
       </div>
     </div>
@@ -962,5 +979,6 @@ document.querySelectorAll('.section[data-section]').forEach(function (sec) {
   if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', check);
 })();
 </script>
+{% include "_pwfield.html" %}
 </body>
 </html>

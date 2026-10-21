@@ -6,7 +6,24 @@ the `latest` image and the GitHub Release marked **Latest**. Each version lists 
 **removed**. Labels refer to that release's request list: F = feature request, I = issue,
 # = review item, R = README; numbers start again with each release.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.23**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.24**
+
+## 0.1.24 — 2026-10-21
+
+### Added
+- **F1** ☰ Settings → **Admin e-mail**: the administrator's address. The Google Calendar Autosync
+  guide fills it in as the support and contact e-mail and as the test user.
+- **F2.1** Every password box has an eye button to show what's being typed.
+- **F2.2** Password boxes where you choose a password (status-page login, first visit, CCS+
+  Calendar Sync password) show a strength bar along their bottom edge as you type (estimated in
+  the browser; nothing is sent).
+
+### Changed
+- **F3.1** The public address is set only in ☰ Settings. `PUBLIC_URL` is gone from `.env` and the
+  installer (which now asks three questions); an existing `PUBLIC_URL` is moved into Settings once,
+  after which it can be deleted from `.env`.
+- **F3.2** ☰ Settings → Updates reads, e.g., "Subscribed to beta versions (Up to date). Next check at
+  10:19.", above **Check for updates** · Weekly · **Check now** on one line.
 
 ## 0.1.23 — 2026-10-21
 

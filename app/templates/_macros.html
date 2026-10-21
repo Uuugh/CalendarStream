@@ -30,7 +30,7 @@
     <label class="fld"><span>UID</span>
       <input name="uid" value="{{ setup.uid }}" required placeholder="{{ _('UID, e.g. U123456') }}" spellcheck="false" autocomplete="off"></label>
     <label class="fld"><span>{{ _('Calendar Sync password') }}</span>
-      <input name="password" type="password" {% if not setup.has_password %}required{% endif %} autocomplete="new-password"
+      <input name="password" type="password" data-strength {% if not setup.has_password %}required{% endif %} autocomplete="new-password"
              placeholder="{{ _('Saved (leave empty to keep it)') if setup.has_password else '' }}"></label>
     {{ okbutton(valid, _('Validated'), _('Save & sync'), _('Validated: CCS+ sign-in')) }}
   </div>
@@ -91,6 +91,8 @@
   <p class="merr">{{ _('First set the <b>Public address</b> in Settings (☰) to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>
 {% endif %}
 {# The guide, in the order Google needs it: everything (including Publish / test users) before Connect. #}
+{# The admin e-mail (☰ Settings) fills in the e-mail fields; without one, "yours" and a pointer to Settings. #}
+{% set email = ('<code>'|safe ~ g.admin_email ~ '</code>'|safe) if g.admin_email else _('yours (set ☰ Settings → <b>Admin e-mail</b> to see it here)') %}
 <details class="guide">
   <summary>{{ _('How to get a client ID and secret (step by step)') }}</summary>
   <p class="mnote" style="margin-top:8px">{{ _('<b>Before you start:</b> ☰ Settings → <b>Public address</b> must match, letter for letter, the address in your browser’s address bar right now. Google sends you back there.') }}</p>
@@ -99,13 +101,14 @@
       <br><span class="muted">{{ _('✓ The project menu at the top left of Google Cloud now shows “CalendarStream”. Every link below opens the project shown there; if it shows another one, click it and choose CalendarStream.') }}</span></li>
     <li>{{ _('<b>Turn on the Calendar API.</b> Open <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" rel="noopener">Google Calendar API</a> › <b>Enable</b>.') }}
       <br><span class="muted">{{ _('✓ You now see “API Enabled”.') }}</span></li>
-    <li>{{ _('<b>Set up the sign-in screen.</b> Open <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> › <b>Get started</b> (if you see a dashboard instead, this is already done). App name: <code>CalendarStream</code>, support e-mail: yours › <b>Next</b> › Audience: <b>External</b> › <b>Next</b> › contact e-mail: yours › <b>Next</b> › agree › <b>Create</b>. Don’t upload a logo: that makes Google review the app.') }}
+    <li>{{ _('<b>Set up the sign-in screen.</b> Open <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> › <b>Get started</b> (if you see a dashboard instead, this is already done). App name: <code>CalendarStream</code>, support e-mail: {email} › <b>Next</b> › Audience: <b>External</b> › <b>Next</b> › contact e-mail: {email} › <b>Next</b> › agree › <b>Create</b>. Don’t upload a logo: that makes Google review the app.', email=email) }}
       <br><span class="muted">{{ _('✓ The menu on the left now shows Branding, Audience, Clients and Data access.') }}</span></li>
     <li>{{ _('<b>Allow calendar access.</b> Open <a href="https://console.cloud.google.com/auth/scopes" target="_blank" rel="noopener">Data access</a> › <b>Add or remove scopes</b> › under “Manually add scopes”, paste') }}
       {{ copyfield(p ~ "scope", "https://www.googleapis.com/auth/calendar.app.created") }}
       {{ _('› <b>Add to table</b> › <b>Update</b> › <b>Save</b>.') }}</li>
     <li>{{ _('<b>Let yourself sign in. Do this now, or Connect fails with “403 access_denied”.</b> Open <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a> › <b>Publish app</b> › <b>Confirm</b>.') }}
-      <br><span class="muted">{{ _('Can’t publish (the button is greyed out)? On the same page, under <b>Test users</b>, press <b>+ Add users</b>, enter the Gmail address you’ll connect with, and press <b>Save</b>. In Testing, Google makes you press Connect again every 7 days.') }}</span></li>
+      <br><span class="muted">{% if g.admin_email %}{{ _('Can’t publish (the button is greyed out)? On the same page, under <b>Test users</b>, press <b>+ Add users</b>, enter {email} (or the Gmail address you’ll connect with, if different), and press <b>Save</b>. In Testing, Google makes you press Connect again every 7 days.', email=email) }}
+        {%- else %}{{ _('Can’t publish (the button is greyed out)? On the same page, under <b>Test users</b>, press <b>+ Add users</b>, enter the Gmail address you’ll connect with, and press <b>Save</b>. In Testing, Google makes you press Connect again every 7 days.') }}{% endif %}</span></li>
     <li>{{ _('<b>Create the client.</b> Open <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a> › <b>Create client</b> › Application type: <b>Web application</b> › Name: <code>CalendarStream</code>. Leave <b>Authorized JavaScript origins</b> empty; under <b>Authorized redirect URIs</b> press <b>+ Add URI</b> and paste this (use the copy button, don’t type it):') }}
       {% if g.redirect_ok %}{{ copyfield(p ~ "redirect", g.redirect_uri) }}
       {{ _('› <b>Create</b>.') }}{% else %}<p class="merr">{{ _('First set the <b>Public address</b> in Settings (☰) to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>{% endif %}</li>

@@ -140,7 +140,8 @@ def page(request: Request, name: str, context: dict, status_code: int = 200, lan
         "dates": dates_for(lang), "theme": ui_theme(), "clock": ui_clock(),
         "update": {"available": updates.available(), "channel": release_channel(), "frequency": updates.frequency(),
                    "frequencies": list(FREQUENCIES), "info": updates.info(), "releases": RELEASES,
-                   "checked": _local_time(updates.info().get("checked"), lang)}, "version": __version__,
+                   "checked": _local_time(updates.info().get("checked"), lang),
+                   "next": _local_time(iso(updates.next_check(datetime.now(timezone.utc))), lang)}, "version": __version__,
     }, status_code=status_code)
 
 
@@ -509,6 +510,7 @@ async def lifespan(_app):
     await asyncio.to_thread(store.open)       # waits for the database container if needed
     settings.resolve_feed_token(store)
     state.load()
+    import_public_url()
     imported = logins.import_old(settings.username, settings.password, settings.gui_user, settings.gui_password)
     if imported:
         state.record("info", "Imported " + " and ".join(imported) + " from the old secret files. They're "
@@ -667,13 +669,25 @@ def feed_reads(lang: str) -> dict:
 # --- Links ---------------------------------------------------------------------
 
 def public_url() -> str:
-    """The public address: set in Settings (wins), else PUBLIC_URL in .env, else "" (then links use
-    the address the page was opened at). Always in normalise_public_url's form."""
+    """The public address (☰ Settings), or "" (then links use the address the page was opened at).
+    Always in normalise_public_url's form."""
     saved = store.get("public_url") or ""
     try:
-        return normalise_public_url(saved) if saved else settings.public_base_url
+        return normalise_public_url(saved) if saved else ""
     except ValueError:
-        return settings.public_base_url
+        return ""
+
+
+def import_public_url():
+    """PUBLIC_URL used to be set in .env. Copy it into Settings once, so .env no longer needs it
+    (an address cleared in Settings later isn't brought back)."""
+    if store.get("public_url_imported"):
+        return
+    if settings.public_base_url and not store.get("public_url"):
+        store.set("public_url", settings.public_base_url)
+        state.record("info", f"Public address {settings.public_base_url} moved from .env to ☰ Settings "
+                             "(PUBLIC_URL can be deleted from .env)")
+    store.set("public_url_imported", True)
 
 
 def base_url(request: Request) -> str:
@@ -755,6 +769,7 @@ def google_view(request: Request, lang: str = "en") -> dict:
                                 and google.client_check().get("redirect_uri") == uri,
             "running": google_job.running, "last_sync": _local_time(info.get("last_sync"), lang),
             "redirect_uri": uri, "watch": _watch_view(lang), "host_mismatch": _host_mismatch(request),
+            "admin_email": admin_email(),
             # Google only sends sign-ins back to https:// addresses with a public domain name (not a bare IP or .local),
             # or to http://localhost on this computer.
             "redirect_ok": (uri.startswith("https://") and not _is_ip(host) and not host.endswith(".local"))
@@ -857,9 +872,8 @@ def index(request: Request, month: str | None = None):
         "sections": section_state(), "interval": interval_minutes(),
         "zone": display_zone(), "zones": ALL_ZONES, "common_zones": COMMON_ZONES, "reads": feed_reads(lang),
         "google": google_view(request, lang), "open_menu": request.query_params.get("menu") == "settings",
-        "public": {"url": public_url(), "from_settings": bool(store.get("public_url")),
-                   "env": settings.public_base_url},
-        "page_user": logins.page_user,
+        "public": {"url": public_url()},
+        "page_user": logins.page_user, "admin_email": admin_email(),
         "setup": {
             "uid": logins.ccs()[0], "has_password": bool(logins.ccs()[1]), "configured": logins.ccs_configured,
             "url": url, "url_is_default": url == DEFAULT_CALENDAR_URL,
@@ -1339,23 +1353,47 @@ async def upload(csrf: str = Form(""), file: UploadFile = File(...)):
 
 @app.post("/settings/public-url", dependencies=[Depends(gui_auth)])
 async def set_public_url(csrf: str = Form(""), url: str = Form(""), action: str = Form("save")):
-    """Save the public address (Settings menu). It wins over PUBLIC_URL in .env; Reset goes back
-    to .env. It's used for the feed and subscribe links and Google's sign-in redirect."""
+    """Save the public address (Settings menu); empty removes it. It's used for the feed and subscribe
+    links and Google's sign-in redirect."""
     check_csrf(csrf)
-    if action == "reset" or not url.strip():
+    if not url.strip():
         store.delete("public_url")
-        state.record("info", f"Public address reset to .env ({settings.public_base_url or 'not set'})")
+        state.record("info", "Public address removed")
     else:
         try:
             value = normalise_public_url(url)
         except ValueError:
             raise HTTPException(400, "Enter the address people use to reach this page, e.g. https://cal.example.com")
-        if value == settings.public_base_url:
-            store.delete("public_url")
-        else:
-            store.set("public_url", value)
+        store.set("public_url", value)
         state.record("info", f"Public address set to {value}")
     return RedirectResponse("/#feedcard", status_code=303)
+
+
+# --- Admin e-mail (Settings) -------------------------------------------------------
+
+EMAIL_RE = re.compile(r"^[^@\s<>\"']{1,64}@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$")
+
+
+def admin_email() -> str:
+    """The administrator's e-mail address (☰ Settings), or "". Shown in the Google setup guide as
+    the support / contact e-mail and the test user. Checked again on the way out (it goes into the page)."""
+    email = str(store.get("admin_email") or "")
+    return email if EMAIL_RE.match(email) and len(email) <= 254 else ""
+
+
+@app.post("/settings/admin-email", dependencies=[Depends(gui_auth)])
+async def set_admin_email(csrf: str = Form(""), email: str = Form("")):
+    check_csrf(csrf)
+    email = email.strip()
+    if not email:
+        store.delete("admin_email")
+        state.record("info", "Admin e-mail removed")
+    elif not EMAIL_RE.match(email) or len(email) > 254:
+        raise HTTPException(400, "That doesn't look like an e-mail address.")
+    else:
+        store.set("admin_email", email)
+        state.record("info", f"Admin e-mail set to {email}")
+    return RedirectResponse("/?menu=settings#admin", status_code=303)
 
 
 # --- Google Calendar connection ---------------------------------------------------

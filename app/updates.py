@@ -66,6 +66,16 @@ class Updates:
         checked = self.info().get("checked")
         return not checked or now - datetime.fromisoformat(checked) >= every
 
+    def next_check(self, now: datetime) -> datetime | None:
+        """When the next automatic check is due (now, if it's overdue), or None when they're off.
+        The background loop looks once an hour, so it can come up to an hour later."""
+        every = FREQUENCIES[self.frequency()]
+        if every is None:
+            return None
+        checked = self.info().get("checked")
+        due = datetime.fromisoformat(checked) + every if checked else now
+        return max(due, now)
+
     async def check(self) -> dict:
         """Read the newest version of this install's channel and save it."""
         name = "VERSION" if channel() == "beta" else "STABLE"

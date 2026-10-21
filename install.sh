@@ -58,15 +58,9 @@ CURRENT_DATA="${MNT_DOCKER:-$(env_value .env MNT_DOCKER)}"
 MNT_DOCKER="$(absolute "$(ask "Folder for CalendarStream's config and data (database, .secrets)" "${CURRENT_DATA:-$DIR}")")"
 mkdir -p "$MNT_DOCKER/.secrets"
 
-# 4. The public address: the https:// address people (and Google) reach the status page at, e.g.
-#    https://cal.example.com. Leave it empty if you don't have one yet: the page then uses the address
-#    it's opened at, and it can be set later in ☰ Settings → Public address (which takes priority).
-#    "-" clears an earlier answer.
 IP="$(this_ip)"
-CURRENT_URL="$(env_value .env PUBLIC_URL)"
-case "$CURRENT_URL" in http://[0-9]*:8080|http://localhost:8080) CURRENT_URL="" ;; esac   # old defaults (http://<IP or localhost>:8080) aren't public addresses
-PUBLIC_URL="$(ask "Public https:// address, exactly as you type it in the browser (e.g. https://cal.example.com; Google uses it). Enter to skip" "${CURRENT_URL}")"
-[ "$PUBLIC_URL" = "-" ] && PUBLIC_URL=""
+# (The public address used to be asked here and written to .env as PUBLIC_URL. It's now set on the
+# status page, ☰ Settings → Public address; an existing PUBLIC_URL is moved there once.)
 
 # The only two files the server needs; the app itself is a ready-made image.
 # docker-compose.yml is always refreshed; an existing .env (your settings) is kept, apart from the
@@ -84,7 +78,6 @@ set_env() {   # $1 = name, $2 = value ("sed -i.bak" works with both GNU and macO
 }
 set_env IMAGE_TAG "$IMAGE_TAG"
 set_env MNT_DOCKER "$MNT_DOCKER"
-set_env PUBLIC_URL "$PUBLIC_URL"
 
 # The database password, made once at random. It also encrypts the passwords CalendarStream
 # stores (CCS+, Google): keep this file, back it up, and don't change it.
@@ -106,7 +99,7 @@ for _ in $(seq 30); do
 done
 echo
 echo "CalendarStream ($([ "$IMAGE_TAG" = latest ] && echo stable || echo "$IMAGE_TAG")): docker-compose.yml and .env in $DIR, config and data in $MNT_DOCKER"
-echo "Open ${PUBLIC_URL:-http://${IP:-localhost}:8080}"
+echo "Open http://${IP:-localhost}:8080 (or your public https:// address)"
 if [ -n "$code" ]; then
   echo "New install: enter the ${code} there to create your login."
 fi

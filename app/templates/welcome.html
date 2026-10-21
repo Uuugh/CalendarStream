@@ -46,7 +46,7 @@
     <label for="user">{{ _('User name') }}</label>
     <input id="user" name="user" required value="{{ user or '' }}" maxlength="64" autocomplete="username" spellcheck="false">
     <label for="password">{{ _('Password') }}</label>
-    <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password">
+    <input id="password" name="password" type="password" required minlength="8" data-strength autocomplete="new-password">
     <label for="confirm">{{ _('Password again') }}</label>
     <input id="confirm" name="confirm" type="password" required minlength="8" autocomplete="new-password">
     <p class="hint">{{ _('At least 8 characters. It’s stored hashed and can be changed later in Settings (☰).') }}</p>
@@ -71,5 +71,6 @@ function copyField(id, btn) {
   } else { fallback(); }
 }
 </script>
+{% include "_pwfield.html" %}
 </body>
 </html>
