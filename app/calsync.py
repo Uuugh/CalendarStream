@@ -133,7 +133,9 @@ async def download(url: str, username: str, password: str, etag: str = "", last_
             config.append(f"header = {_q('If-None-Match: ' + etag)}")
         if last_modified:
             config.append(f"header = {_q('If-Modified-Since: ' + last_modified)}")
+        # https only (also after redirects), at most 5 redirects and 5 MB, like a hand upload
         args = [CURL, "--silent", "--show-error", "--location", "--config", "-",
+                "--proto", "=https", "--proto-redir", "=https", "--max-redirs", "5", "--max-filesize", str(5 * 1024 * 1024),
                 "--connect-timeout", str(int(connect_timeout)), "--max-time", str(int(timeout)),
                 "--output", body_path, "--dump-header", head_path, "--write-out", "%{json}"]
         try:
@@ -159,7 +161,13 @@ async def download(url: str, username: str, password: str, etag: str = "", last_
                               "(network, DNS or firewall problem on this server).")
         raise SourceError(f"Connected to {host}, but it sent no reply within {int(timeout)} seconds. "
                           "United's bot protection may be holding the request; "
-                          "use Upload & publish under the health bar in the meantime.")
+                          "use Upload & publish in the CCS+ Calendar Sync box in the meantime.")
+    if code == 1:
+        raise SourceError("The Calendar Sync link must start with https:// (CalendarStream only downloads over https).")
+    if code == 47:
+        raise SourceError(f"{host} redirected too many times; check the Calendar Sync link.")
+    if code == 63:
+        raise SourceError(f"{host} sent more than 5 MB, which is too large for a schedule.")
     if code in (6, 7):
         raise SourceError(f"Couldn't reach {host}: {err.decode().strip() or f'curl error {code}'}")
     if code != 0 and not status:
@@ -176,7 +184,7 @@ async def download(url: str, username: str, password: str, etag: str = "", last_
         return Download(304, not_modified=True, etag=etag, last_modified=last_modified, debug=debug)
     if status == 401:
         raise AuthError("CCS+ rejected the UID or Calendar Sync password (HTTP 401). Check both in "
-                        "Status & setup → Setup (the Calendar Sync password, not your CCS login).")
+                        "the CCS+ Calendar Sync box (the Calendar Sync password, not your CCS login).")
     if status == 403:
         server = headers.get("server", "")
         ref = re.search(r"Reference\s*#?\s*([\w.]+)", _snippet(body, 1000))
@@ -373,13 +381,6 @@ def render(cal: Calendar, base: list[Event], name: str, tz_name: str,
     return cal.to_ical(), final
 
 
-def process(raw: bytes, name: str, tz_name: str, defaults: Defaults) -> tuple[bytes, list[Event], str]:
-    """Parse + render with no edits (used to check a new download)."""
-    cal, events, digest = parse(raw, tz_name, defaults)
-    feed, final = render(cal, events, name, tz_name)
-    return feed, final, digest
-
-
 def empty_feed(name: str, tz_name: str) -> bytes:
     cal = Calendar()
     cal.add("prodid", "-//calendar_stream//EN")
@@ -388,7 +389,3 @@ def empty_feed(name: str, tz_name: str) -> bytes:
     cal.add("x-wr-timezone", tz_name)
     cal.add("refresh-interval;value=duration", "PT1H")
     return cal.to_ical()
-
-
-def today_iso(tz_name: str) -> str:
-    return date.today().isoformat() if not tz_name else datetime.now(ZoneInfo(tz_name)).date().isoformat()

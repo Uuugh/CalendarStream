@@ -1,4 +1,4 @@
-{# Pieces used in more than one place on the status page. Import with context, so `_` and `csrf`
+{# Pieces of the status page, kept here to keep index.html short. Import with context, so `_` and `csrf`
    are available: {% import "_macros.html" as m with context %} #}
 
 {# A copy button showing the "copy" icon from Bootstrap Icons (MIT licence). #}
@@ -19,7 +19,7 @@
 {%- endmacro %}
 
 {# The CCS+ Calendar Sync login: UID and password, with whether CCS+ accepted them.
-   `back` says where to return after saving ("menu" reopens the Settings menu). #}
+   `back` is unused (kept so older pages still post). #}
 {% macro ccs_login(setup, s, back="") -%}
 {% set valid = setup.configured and s.last_auth_ok %}
 <form method="post" action="/setup/ccs" class="ccsform watch" autocomplete="off">
@@ -42,7 +42,7 @@
 {%- endmacro %}
 
 {# The Google OAuth client for Autosync: client ID and secret, the check result, Connect, and
-   the step-by-step guide (closed). `p` prefixes element IDs, as this appears twice on the page. #}
+   the step-by-step guide (closed). `p` prefixes element IDs. #}
 {% macro google_client(g, p, back="", desc="") -%}
 {# Like the CCS+ login: the two boxes side by side, then "✓ Validated" once Google accepted them, or
    Save when they're missing, being edited or were rejected. `desc` (optional) goes under the boxes. #}
@@ -94,8 +94,8 @@
       {{ copyfield(p ~ "scope", "https://www.googleapis.com/auth/calendar.app.created") }}
       {{ _('› <b>Add to table</b> › <b>Update</b> › <b>Save</b>.') }}</li>
     <li>{{ _('<b>Create the OAuth client ID:</b> <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a> › <b>Create client</b> › Application type: <b>Web application</b> › Name: <code>CalendarStream</code> › Authorised redirect URIs: <b>Add URI</b> › paste exactly:') }}
-      {{ copyfield(p ~ "redirect", g.redirect_uri) }}
-      {{ _('› <b>Create</b>.') }}</li>
+      {% if g.redirect_ok %}{{ copyfield(p ~ "redirect", g.redirect_uri) }}
+      {{ _('› <b>Create</b>.') }}{% else %}<p class="merr">{{ _('First set the <b>Public address</b> in Settings (☰) to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>{% endif %}</li>
     <li>{{ _('<b>Copy the Client ID and Client secret</b> Google shows into the boxes above › <b>Save</b>. Keep the secret private.') }}</li>
     <li>{{ _('<b>Publish it</b> so the sign-in lasts: <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a> › <b>Publish app</b> › <b>Confirm</b>.') }}
       <br><span class="muted">{{ _('If Google won’t publish it, leave it in Testing: on the same page, Test users › <b>Add users</b> › your Gmail address › <b>Save</b>. Google then asks you to Connect again every 7 days.') }}</span></li>

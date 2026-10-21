@@ -2,7 +2,7 @@
 # CalendarStream: install it, or update an existing install (safe to run again).
 #   bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/install.sh)
 # Needs Docker with Compose. Works on Linux, on macOS (Docker Desktop) and on Windows inside WSL.
-# If your user isn't allowed to run docker, run it with sudo.
+# If your user isn't allowed to run docker, use: sudo bash -c "$(curl -fsSL <the URL above>)"
 # Every question shows its default in [brackets]; press Enter to keep it. On a later run the
 # defaults are your current settings, so pressing Enter all the way just updates CalendarStream.
 set -euo pipefail
@@ -57,20 +57,26 @@ CURRENT_DATA="${MNT_DOCKER:-$(env_value .env MNT_DOCKER)}"
 MNT_DOCKER="$(absolute "$(ask "Folder for CalendarStream's config and data (database, .secrets)" "${CURRENT_DATA:-$DIR}")")"
 mkdir -p "$MNT_DOCKER/.secrets"
 
-# 4. The public address: how people (and Google) reach the status page. It can also be set later in
-#    the status page's Settings (☰ → Public address), which then takes priority.
+# 4. The public address: the https:// address people (and Google) reach the status page at, e.g.
+#    https://cal.example.com. Leave it empty if you don't have one yet: the page then uses the address
+#    it's opened at, and it can be set later in ☰ Settings → Public address (which takes priority).
+#    "-" clears an earlier answer.
 IP="$(this_ip)"
 CURRENT_URL="$(env_value .env PUBLIC_URL)"
-PUBLIC_URL="$(ask "Public address (may be entered later in Settings)" "${CURRENT_URL:-http://${IP:-localhost}:8080}")"
+case "$CURRENT_URL" in http://[0-9]*) CURRENT_URL="" ;; esac   # the old default (http://<IP>:8080) isn't a public address
+PUBLIC_URL="$(ask "Public https:// address, if you have one (Enter to skip; may be set later in Settings)" "${CURRENT_URL}")"
+[ "$PUBLIC_URL" = "-" ] && PUBLIC_URL=""
 
 # The only two files the server needs; the app itself is a ready-made image.
 # docker-compose.yml is always refreshed; an existing .env (your settings) is kept, apart from the
 # answers above, which are written into it.
 curl -fsSL "$REPO/docker-compose.yml" -o docker-compose.yml
 [ -f .env ] || curl -fsSL "$REPO/.env.default" -o .env
+chmod 600 .env   # it can hold secrets (e.g. FEED_TOKEN)
 set_env() {   # $1 = name, $2 = value ("sed -i.bak" works with both GNU and macOS sed)
+  local v; v="$(printf '%s' "$2" | sed 's/[\\|&]/\\&/g')"   # escape \ | & for the replacement
   if grep -q "^#\{0,1\}$1=" .env; then
-    sed -i.bak "s|^#\{0,1\}$1=.*|$1=$2|" .env && rm -f .env.bak
+    sed -i.bak "s|^#\{0,1\}$1=.*|$1=$v|" .env && rm -f .env.bak
   else
     printf '\n%s=%s\n' "$1" "$2" >> .env
   fi
@@ -99,7 +105,7 @@ for _ in $(seq 30); do
 done
 echo
 echo "CalendarStream ($([ "$IMAGE_TAG" = latest ] && echo stable || echo "$IMAGE_TAG")): docker-compose.yml and .env in $DIR, config and data in $MNT_DOCKER"
-echo "Open http://${IP:-localhost}:8080"
+echo "Open ${PUBLIC_URL:-http://${IP:-localhost}:8080}"
 if [ -n "$code" ]; then
   echo "New install: enter the ${code} there to create your login."
 fi

@@ -1,4 +1,5 @@
-"""Web app: status page, month view, .ics feed, and the background Calendar Sync loop."""
+"""Web app: status page, month view, .ics feed, and the background loops (CCS+ downloads,
+Google sync, update checks)."""
 from __future__ import annotations
 
 import asyncio
@@ -23,7 +24,7 @@ from fastapi.templating import Jinja2Templates
 from . import __version__, i18n
 from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, check_calendar, download,
                       empty_feed, new_calendar, parse, render)
-from .config import DEFAULT_CALENDAR_URL, settings
+from .config import DEFAULT_CALENDAR_URL, normalise_public_url, settings
 from .gsync import GOOGLE_COLORS, Google, GoogleError
 from .logins import LoginError, Logins
 from .secretbox import SecretBox
@@ -40,7 +41,8 @@ google = Google(store, box, settings.timezone)
 logins = Logins(store, box)
 updates = Updates(store)
 MAX_AUTH_FAILURES = 2   # pause automatic downloads after this many rejected sign-ins (avoids account lockout)
-CSRF_TOKEN = secrets.token_urlsafe(24)   # forms on the status page must carry this
+CSRF_TOKEN = secrets.token_urlsafe(24)     # forms on the status page must carry this; renewed when the login changes
+WELCOME_TOKEN = secrets.token_urlsafe(24)  # the first-visit page's own token (shown before any login exists)
 
 
 def now():
@@ -113,7 +115,7 @@ def tag_matcher(tags: list[dict]):
 
 # Collapsible sections on the status page, and whether each starts open. The open/closed state
 # is saved in the database so it's the same in every browser.
-SECTIONS = {"status": True, "setup": False, "activity": False}
+SECTIONS = {"status": True, "activity": False}
 
 
 def section_state() -> dict:
@@ -151,7 +153,7 @@ def ui_clock() -> str:
     return clock if clock in CLOCKS else "auto"
 
 
-# F2.2: the time zone the status page's calendar is shown in. It only changes how the calendar looks
+# The time zone the status page's calendar is shown in. It only changes how the calendar looks
 # here; the feed, Google and the server's own clock (TZ in .env) are unaffected.
 ALL_ZONES = sorted(z for z in available_timezones() if "/" in z and not z.startswith(("Etc/", "SystemV/", "posix/", "right/")))
 COMMON_ZONES = ["America/New_York", "America/Chicago", "America/Denver", "America/Phoenix", "America/Los_Angeles",
@@ -324,7 +326,11 @@ async def google_loop():
         google_job.wake.clear()
         full = google_job.full or now() >= next_full
         google_job.full = False
-        ok = await google_sync_once(full)
+        try:
+            ok = await google_sync_once(full)
+        except Exception as e:      # e.g. the database restarting: keep the loop alive, retry later
+            log.error("Google sync failed: %s", e)
+            ok = False
         if ok and full:
             next_full = now() + GOOGLE_FULL_CHECK
         wait = next_full - now()
@@ -400,7 +406,7 @@ async def run_once(manual: bool = False):
     if state.login_failures >= MAX_AUTH_FAILURES and not manual:
         state.status = "paused"
         state.message = (f"Automatic downloads paused after {state.login_failures} rejected sign-ins, to avoid "
-                         "locking your account. Check the UID and Calendar Sync password in Setup, then press Sync now.")
+                         "locking your account. Check the UID and Calendar Sync password in the CCS+ Calendar Sync box, then press Sync now.")
         state.save()
         return
 
@@ -455,8 +461,12 @@ def interval_minutes() -> int:
 
 async def loop():
     while True:
-        await run_once()
-        state.next_run = now() + timedelta(minutes=interval_minutes())
+        try:
+            await run_once()
+            state.next_run = now() + timedelta(minutes=interval_minutes())
+        except Exception as e:      # e.g. the database restarting: keep the loop alive, try again soon
+            log.error("Scheduled check failed: %s", e)
+            state.next_run = now() + timedelta(minutes=5)
         # Sleep until the next check. state.wake means the interval changed: work out the time again.
         while (remaining := (state.next_run - now()).total_seconds()) > 0:
             state.wake.clear()
@@ -466,14 +476,28 @@ async def loop():
                 break
 
 
+_background: set[asyncio.Task] = set()
+
+
+def background(coro):
+    """Start a task without waiting for it, keeping a reference so it isn't garbage-collected."""
+    task = asyncio.create_task(coro)
+    _background.add(task)
+    task.add_done_callback(_background.discard)
+    return task
+
+
 async def update_loop():
     """Settings → Check for updates: look for a newer version of this install's channel when due."""
     await asyncio.sleep(30)
     while True:
         try:
             if updates.due(datetime.now(timezone.utc)):
+                logged = updates.info().get("logged")      # the version already announced in the log
                 found = await updates.check()
-                if updates.available() and found.get("newest") != found.get("logged"):
+                found["logged"] = logged
+                store.set("update_check", found)
+                if updates.available() and found.get("newest") != logged:
                     state.record("info", f"Update available: CalendarStream {found['newest']} "
                                          "(run the installer again to update)")
                     store.set("update_check", {**found, "logged": found["newest"]})
@@ -503,10 +527,27 @@ async def lifespan(_app):
     yield
     for task in tasks:
         task.cancel()
+    await asyncio.gather(*tasks, return_exceptions=True)
     store.close()
 
 
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, version=__version__)
+
+
+@app.middleware("http")
+async def protect(request: Request, call_next):
+    """Refuse form posts sent from other websites (the browser marks them Sec-Fetch-Site: cross-site),
+    except Google's change notifications, and add headers that stop the pages being framed or
+    leaking their address."""
+    if (request.method == "POST" and request.headers.get("sec-fetch-site") == "cross-site"
+            and request.url.path != "/google/notify"):
+        return Response("Cross-site requests aren't accepted.", status_code=403)
+    response = await call_next(request)
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Content-Security-Policy", "frame-ancestors 'none'")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    return response
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
 
@@ -543,6 +584,9 @@ def _check_lockout(ip: str):
 
 
 def _count_failure(ip: str, what: str = "logins"):
+    if len(_gui_failures) > 10_000:      # bounded: forget the oldest entries
+        for key in list(_gui_failures)[:5_000]:
+            _gui_failures.pop(key, None)
     count = _gui_failures.get(ip, [0, None])[0] + 1
     locked = now() + GUI_LOCKOUT if count >= GUI_MAX_FAILURES else None
     _gui_failures[ip] = [0 if locked else count, locked]
@@ -565,9 +609,16 @@ def gui_auth(request: Request, creds: HTTPBasicCredentials | None = Depends(basi
     raise HTTPException(401, headers={"WWW-Authenticate": 'Basic realm="CalendarStream"'})
 
 
-def check_csrf(token: str):
-    if not secrets.compare_digest(token or "", CSRF_TOKEN):
+def check_csrf(token: str, expected: str | None = None):
+    if not secrets.compare_digest((token or "").encode(), (expected or CSRF_TOKEN).encode()):
         raise HTTPException(400, "This form has expired. Reload the page and try again.")
+
+
+def renew_csrf():
+    """A new form token, e.g. after the login changed, so a token seen before (such as on the
+    first-visit page) can't be used against the new login."""
+    global CSRF_TOKEN
+    CSRF_TOKEN = secrets.token_urlsafe(24)
 
 
 # --- Who reads the feed --------------------------------------------------------------------
@@ -593,21 +644,13 @@ def feed_reads(lang: str) -> dict:
 # --- Links ---------------------------------------------------------------------
 
 def public_url() -> str:
-    """The public address: set in Settings (wins), else PUBLIC_URL in .env, else ""."""
-    return store.get("public_url") or settings.public_base_url
-
-
-def normalise_public_url(value: str) -> str:
-    """Tidy an address typed in Settings: add https:// when there's no scheme, drop a trailing
-    slash. Raises ValueError for anything that isn't a plain http(s) address."""
-    value = value.strip().rstrip("/")
-    if value and "://" not in value:
-        value = "https://" + value
-    parsed = urlparse(value)
-    if (parsed.scheme not in ("http", "https") or not parsed.hostname or parsed.query or parsed.fragment
-            or parsed.username or parsed.password or any(c.isspace() for c in value) or len(value) > 300):
-        raise ValueError(value)
-    return value
+    """The public address: set in Settings (wins), else PUBLIC_URL in .env, else "" (then links use
+    the address the page was opened at). Always in normalise_public_url's form."""
+    saved = store.get("public_url") or ""
+    try:
+        return normalise_public_url(saved) if saved else settings.public_base_url
+    except ValueError:
+        return settings.public_base_url
 
 
 def base_url(request: Request) -> str:
@@ -659,6 +702,15 @@ def _watch_view(lang: str) -> dict:
     return {"on": False, "why": "starts with the next sync"}
 
 
+def _is_ip(host: str) -> bool:
+    import ipaddress
+    try:
+        ipaddress.ip_address(host.strip("[]"))
+        return True
+    except ValueError:
+        return False
+
+
 def google_view(request: Request, lang: str = "en") -> dict:
     uri = google_redirect_uri(request)
     host = urlparse(uri).hostname or ""
@@ -668,8 +720,9 @@ def google_view(request: Request, lang: str = "en") -> dict:
             "check": google.client_check(), "checked_at": _local_time(google.client_check().get("at"), lang),
             "running": google_job.running, "last_sync": _local_time(info.get("last_sync"), lang),
             "redirect_uri": uri, "watch": _watch_view(lang),
-            # Google only sends sign-ins back to https:// addresses, or http:// on this computer.
-            "redirect_ok": uri.startswith("https://") or host in ("localhost", "127.0.0.1")}
+            # Google only sends sign-ins back to https:// addresses with a domain name (not a bare IP),
+            # or to http://localhost on this computer.
+            "redirect_ok": (uri.startswith("https://") and not _is_ip(host)) or host in ("localhost", "127.0.0.1")}
 
 
 # --- Month view ----------------------------------------------------------------
@@ -692,8 +745,8 @@ def month_view(events: list[Event], year: int, month: int, tags: list[dict] | No
     dates = dates_for(lang)
     hm = dates.clock
     cont = str(i18n.tr(lang, "cont."))
-    weeks = pycal.Calendar(firstweekday=6).monthdatescalendar(year, month)
-    color_for = tag_matcher(tags or [])   # Sunday first, like CCS+
+    weeks = pycal.Calendar(firstweekday=6).monthdatescalendar(year, month)   # Sunday first, like CCS+
+    color_for = tag_matcher(tags or [])
     first_day, last_day = weeks[0][0], weeks[-1][-1]
     by_day: dict[date, list] = {}
     in_month = 0
@@ -783,9 +836,10 @@ def index(request: Request, month: str | None = None):
 
 @app.post("/run", dependencies=[Depends(gui_auth)])
 async def run_now(csrf: str = Form("")):
+    """Sync now: download from CCS+ straight away, even while automatic checks are paused."""
     check_csrf(csrf)
     if not state.running:
-        asyncio.create_task(run_once(manual=True))
+        background(run_once(manual=True))
     return RedirectResponse("/", status_code=303)
 
 
@@ -796,13 +850,13 @@ def welcome(request: Request):
     """First visit: create the status-page login (needs the setup code from the container log)."""
     if logins.has_page_login:
         return RedirectResponse("/", status_code=303)
-    return page(request, "welcome.html", {"csrf": CSRF_TOKEN, "error": ""})
+    return page(request, "welcome.html", {"csrf": WELCOME_TOKEN, "error": ""})
 
 
 @app.post("/welcome")
 def create_login(request: Request, csrf: str = Form(""), code: str = Form(""), user: str = Form(""),
                  password: str = Form(""), confirm: str = Form("")):
-    check_csrf(csrf)
+    check_csrf(csrf, WELCOME_TOKEN)
     if logins.has_page_login:
         return RedirectResponse("/", status_code=303)
     ip = _client_ip(request)
@@ -818,7 +872,8 @@ def create_login(request: Request, csrf: str = Form(""), code: str = Form(""), u
         except LoginError as e:
             error = str(e)
     if error:
-        return page(request, "welcome.html", {"csrf": CSRF_TOKEN, "error": error, "user": user}, status_code=400)
+        return page(request, "welcome.html", {"csrf": WELCOME_TOKEN, "error": error, "user": user}, status_code=400)
+    renew_csrf()
     state.record("info", f"Status-page login created for \"{logins.page_user}\"")
     return RedirectResponse("/", status_code=303)
 
@@ -836,6 +891,7 @@ def change_login(request: Request, csrf: str = Form(""), current: str = Form("")
         logins.set_page_login(user or logins.page_user, password or current, confirm if password else None)
     except LoginError as e:
         raise HTTPException(400, str(e))
+    renew_csrf()
     state.record("info", f"Status-page login changed (user \"{logins.page_user}\")")
     # The browser still holds the old login; it will ask for the new one.
     return RedirectResponse("/", status_code=303)
@@ -849,7 +905,7 @@ def _back_to(back: str, anchor: str) -> str:
 
 @app.post("/setup/ccs", dependencies=[Depends(gui_auth)])
 async def set_ccs_login(csrf: str = Form(""), uid: str = Form(""), password: str = Form(""), back: str = Form("")):
-    """Save the CCS+ UID and Calendar Sync password (Setup), then download straight away."""
+    """Save the CCS+ UID and Calendar Sync password (CCS+ Calendar Sync box), then download straight away."""
     check_csrf(csrf)
     try:
         logins.save_ccs(uid, password)
@@ -859,7 +915,7 @@ async def set_ccs_login(csrf: str = Form(""), uid: str = Form(""), password: str
     store.delete("http_cache")
     state.record("info", "CCS+ UID and Calendar Sync password saved")
     if not state.running:
-        asyncio.create_task(run_once(manual=True))
+        background(run_once(manual=True))
         await asyncio.sleep(1.5)   # usually long enough to show whether CCS+ accepted it
     return RedirectResponse(_back_to(back, "setup"), status_code=303)
 
@@ -887,6 +943,7 @@ async def set_interval(csrf: str = Form(""), minutes: str = Form("")):
 
 @app.post("/setup/link", dependencies=[Depends(gui_auth)])
 async def set_link(csrf: str = Form(""), url: str = Form(""), action: str = Form("save")):
+    """Save the Calendar Sync link (action=reset goes back to the default), then download."""
     check_csrf(csrf)
     if action == "reset":
         store.delete("calendar_url")
@@ -901,7 +958,7 @@ async def set_link(csrf: str = Form(""), url: str = Form(""), action: str = Form
         state.record("info", f"Calendar Sync link set to {parsed.netloc}{parsed.path}")
     state.login_failures = 0
     if not state.running:
-        asyncio.create_task(run_once(manual=True))
+        background(run_once(manual=True))
     return RedirectResponse("/#setup", status_code=303)
 
 
@@ -956,7 +1013,7 @@ def _save_tags(tag: list[str], tag_color: list[str], tag_mode: list[str], tag_ca
 @app.post("/feed/tags", dependencies=[Depends(gui_auth)])
 async def set_tags(csrf: str = Form(""), tag: list[str] = Form([]), tag_color: list[str] = Form([]),
                    tag_mode: list[str] = Form([]), tag_case: list[str] = Form([])):
-    """Save the tag colors (the Tag Colors block under the health bar). Rows with no text are dropped."""
+    """Save the tag colors (the Tag Colors box in Status & setup). Rows with no text are dropped."""
     check_csrf(csrf)
     notes = _save_tags(tag, tag_color, tag_mode, tag_case)
     if notes:
@@ -992,7 +1049,7 @@ async def set_lang(csrf: str = Form(""), lang: str = Form("")):
 
 @app.post("/ui/clock", dependencies=[Depends(gui_auth)])
 async def set_clock(csrf: str = Form(""), clock: str = Form("")):
-    """Remember 12-hour / 24-hour times (Settings → Time format); "auto" follows the language."""
+    """Remember 12-hour / 24-hour times (the 12h / 24h switch above the calendar); "auto" follows the language."""
     check_csrf(csrf)
     if clock not in CLOCKS:
         raise HTTPException(400, "Unknown time format.")
@@ -1005,7 +1062,7 @@ async def set_clock(csrf: str = Form(""), clock: str = Form("")):
 
 @app.post("/ui/tz", dependencies=[Depends(gui_auth)])
 async def set_display_tz(csrf: str = Form(""), tz: str = Form("")):
-    """F2.2: the time zone the calendar is shown in here; "" goes back to TZ from .env."""
+    """The time zone the calendar is shown in here; "" goes back to TZ from .env."""
     check_csrf(csrf)
     if not tz or tz == settings.timezone:
         store.delete("ui_tz")
@@ -1040,7 +1097,7 @@ async def set_theme(csrf: str = Form(""), theme: str = Form("")):
     return Response(status_code=204)
 
 
-# --- F3: edit and add events --------------------------------------------------
+# --- Edit and add events --------------------------------------------------
 
 def _back(month: str | None) -> str:
     y, m = _parse_month(month)
@@ -1083,6 +1140,7 @@ def _saved_zones(uid: str) -> tuple[str, str]:
 
 @app.get("/event", dependencies=[Depends(gui_auth)])
 def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="date"), month: str | None = None):
+    """The event page: edit an event (uid), or add one on `date`."""
     if uid:
         e = store.get_event(uid)
         if not e:
@@ -1173,6 +1231,8 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
                      end_date: str = Form(""), end_time: str = Form(""), location: str = Form(""),
                      description: str = Form(""), hidden: str = Form(""), color: str = Form(""),
                      start_tz: str = Form(""), end_tz: str = Form(""), end_tz_differs: str = Form("")):
+    """Save the event page: an edit of a United event, or an added event. end_tz is only used when
+    "The end is in a different time zone" is ticked."""
     check_csrf(csrf)
     end_tz = end_tz if end_tz_differs else start_tz      # one time zone for both unless asked otherwise
     data = _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description,
@@ -1239,7 +1299,7 @@ async def upload(csrf: str = Form(""), file: UploadFile = File(...)):
     return RedirectResponse("/#setup", status_code=303)
 
 
-# --- Google Calendar connection ---------------------------------------------------
+# --- Public address (Settings) ---------------------------------------------------
 
 @app.post("/settings/public-url", dependencies=[Depends(gui_auth)])
 async def set_public_url(csrf: str = Form(""), url: str = Form(""), action: str = Form("save")):
@@ -1262,10 +1322,12 @@ async def set_public_url(csrf: str = Form(""), url: str = Form(""), action: str 
     return RedirectResponse("/#feedcard", status_code=303)
 
 
+# --- Google Calendar connection ---------------------------------------------------
+
 @app.post("/google/client", dependencies=[Depends(gui_auth)])
 async def google_client(request: Request, csrf: str = Form(""), client_id: str = Form(""),
                         client_secret: str = Form(""), action: str = Form("save"), back: str = Form("")):
-    """Save or remove the Google OAuth client (Settings menu). The secret is stored encrypted and
+    """Save or remove the Google OAuth client (Google Calendar Autosync box). The secret is stored encrypted and
     never shown again. It can't change while connected: the sign-in belongs to that client."""
     check_csrf(csrf)
     if google.connected:
@@ -1307,7 +1369,8 @@ async def google_callback(state_: str = Query("", alias="state"), code: str = ""
         if error or not code:
             raise GoogleError("Google sign-in was cancelled." if error in ("access_denied", "")
                               else f"Google sign-in failed: {error[:80]}.")
-        info = await google.finish_sign_in(state_, code, calendar_name())
+        async with google_job.lock:      # no sync may start while the calendar is being found or made
+            info = await google.finish_sign_in(state_, code, calendar_name())
         how = "created" if info.get("created") else "found again"
         state.record("info", f"Google Calendar connected as {info.get('email') or 'your account'}; "
                              f"calendar \"{info.get('calendar_name', '')}\" {how}")
@@ -1361,7 +1424,7 @@ async def google_sync_now(csrf: str = Form("")):
 @app.get("/subscribe/{token}")
 def subscribe(request: Request, token: str):
     """Shareable page (no status-page login needed); the secret token in the URL is the access control."""
-    if not secrets.compare_digest(token, settings.feed_token):
+    if not secrets.compare_digest(token.encode(), settings.feed_token.encode()):
         raise HTTPException(404)
     # Shared with other people: shown in each visitor's browser language.
     lang = i18n.pick(None, request.headers.get("accept-language", ""))
@@ -1373,6 +1436,7 @@ def subscribe(request: Request, token: str):
 
 @app.get("/api/status", dependencies=[Depends(gui_auth)])
 def api_status():
+    """Machine-readable status for monitoring (status-page login)."""
     fmt = lambda d: d.isoformat() if d else None
     return {"version": __version__, "status": state.status, "message": state.message, "running": state.running,
             "last_attempt": fmt(state.last_attempt), "last_success": fmt(state.last_success),
@@ -1382,6 +1446,7 @@ def api_status():
 
 @app.get("/debug/{name}", dependencies=[Depends(gui_auth)])
 def debug_file(name: str):
+    """The last download's response details or calendar file, for debugging (status-page login)."""
     found = store.get_debug(name) if name in ("source", "response") else None
     if not found:
         raise HTTPException(404)
@@ -1393,7 +1458,8 @@ def debug_file(name: str):
 
 @app.get("/calendar/{token}.ics")
 def calendar(token: str, request: Request):
-    if not secrets.compare_digest(token, settings.feed_token):
+    """The published .ics feed. The token in the address is the only protection (it's secret)."""
+    if not secrets.compare_digest(token.encode(), settings.feed_token.encode()):
         raise HTTPException(404)
     note_feed_read(request.headers.get("user-agent", ""))
     found = store.get_calendar("feed")
@@ -1406,5 +1472,6 @@ def health():
     try:
         store.event_count()
     except Exception as e:
-        raise HTTPException(503, f"database unavailable: {e}")
+        log.warning("Health check: database unavailable: %s", e)
+        raise HTTPException(503, "database unavailable")
     return {"ok": True}

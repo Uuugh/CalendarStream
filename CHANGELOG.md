@@ -3,9 +3,44 @@
 Versions are numbered `0.y.z`; the minor version (`y`) only changes when it's decided (0.1.0 was the
 first). Every release is tagged `v<version>`; the newest is also tagged `beta`. The last one marked stable (in the `STABLE` file) is
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
-**removed**. Feature requests are labelled F1, F2, …
+**removed**. Labels refer to that release's request list: F = feature request, I = issue,
+# = review item, R = README; numbers start again with each release.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.19**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.20**
+
+## 0.1.20 — 2026-10-21
+
+Deploy review fixes (programming, commenting, security).
+
+### Fixed
+- **Google sign-in (`redirect_uri_mismatch`):** the installer's default public address was
+  `http://<this computer's IP>:8080`, which then replaced the address the page is opened at, so the
+  redirect URI didn't match what's registered in Google Cloud. The installer now leaves it empty
+  (Enter skips it, "-" clears it), and that old default in `.env` counts as not set.
+- The client check now says when Google doesn't list the redirect URI (with the exact address to
+  add) instead of showing ✓, and Connect stays off until it's fixed. The guide only shows a redirect
+  URI Google can accept (https with a domain name).
+- The public address is tidied the same way everywhere: lower-case scheme and host, default ports
+  and a trailing slash dropped.
+- The background loops (CCS+, Google) survive a database restart; finishing a Google sign-in can no
+  longer race a sync (no duplicate calendars); "Update available" is logged once, not at every check.
+- The Public address text no longer runs under the "This page" button in Settings.
+
+### Security
+- The login lockout can't be dodged with a made-up `X-Forwarded-For`: forwarded headers are only
+  trusted from proxies on private networks (`FORWARDED_ALLOW_IPS` to narrow it), and the failure
+  list is bounded.
+- The first-visit page has its own form token, the status page's token is renewed whenever the
+  login is created or changed, and form posts from other websites are refused.
+- Pages can't be framed, and send `nosniff` and `no-referrer`; `/healthz` no longer shows database
+  details; non-ASCII tokens no longer cause errors.
+- Downloads from CCS+ are https only (also after redirects), at most 5 redirects and 5 MB.
+- The installer makes `.env` readable by you only and stores answers with `|` or `&` safely; the
+  release workflow gives each job only the permissions it needs.
+
+### Changed
+- Comments, docstrings, README and `.env.default` brought up to date; unused CSS, scripts and code
+  removed.
 
 ## 0.1.19 — 2026-10-21
 

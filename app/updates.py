@@ -3,7 +3,8 @@
 The release channel comes from IMAGE_TAG in .env (the installer writes it): "beta" follows the
 newest version, "latest" (stable) and exact versions (e.g. 0.1.9) follow the last stable one, so a
 stable install is never told about a beta. The newest version of each channel is read from the
-repository's VERSION (beta) and STABLE (stable) files; nothing about this install is sent.
+repository's VERSION (beta) and STABLE (stable) files; only this install's version is sent (in the
+User-Agent).
 Saved in kv "update_check": {"checked": iso, "newest": "0.1.19", "channel": "beta", "error": "..."}.
 """
 from __future__ import annotations

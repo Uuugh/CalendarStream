@@ -213,7 +213,6 @@ class Store:
         with self.pool.connection() as c:
             return c.execute("SELECT 1 FROM debug_files WHERE name = %s", (name,)).fetchone() is not None
 
-    # --- activity log ------------------------------------------------------
     # --- Google Calendar sync state ---
 
     def google_rows(self) -> dict[str, dict]:
@@ -235,6 +234,8 @@ class Store:
                 c.execute("DELETE FROM google_events")
             else:
                 c.execute("DELETE FROM google_events WHERE uid = %s", (uid,))
+
+    # --- activity log ------------------------------------------------------
 
     def add_log(self, level: str, msg: str):
         with self.pool.connection() as c:

@@ -24,4 +24,7 @@ RUN sed -i 's/\r$//' /entrypoint.sh && chmod 755 /entrypoint.sh && chmod -R a+rX
 EXPOSE 8080
 HEALTHCHECK --interval=60s --timeout=5s CMD python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8080/healthz')"
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--proxy-headers", "--forwarded-allow-ips=*"]
+# Forwarded headers (the visitor's address and https) are only trusted from proxies on private networks
+# (a reverse proxy in Docker or on the LAN). Set FORWARDED_ALLOW_IPS to your proxy's address to narrow it.
+ENV FORWARDED_ALLOW_IPS="127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,fc00::/7"
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port 8080 --proxy-headers --forwarded-allow-ips \"$FORWARDED_ALLOW_IPS\""]

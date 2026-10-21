@@ -1,6 +1,6 @@
 # CalendarStream: the app and its Postgres database.
 # Needs .env and .secrets/DB_PASSWORD.txt. The database and .secrets/ live in MNT_DOCKER (set in .env)
-# or, when it isn't set, next to this file. Logins (CCS+ and the status page) are set on the status page.
+# or, when it isn't set, next to this file. Logins (status page, CCS+, Google) are set on the status page.
 services:
   calendar_stream:
     # Built by GitHub Actions from https://github.com/Uuugh/CalendarStream
@@ -50,7 +50,7 @@ services:
       start_period: 30s
     restart: ${RESTART:-unless-stopped}
 
-# The database password: one line, chosen by you (a trailing newline is fine). It's set when the
+# The database password: one line, made at random by install.sh or chosen by you (a trailing newline is fine). It's set when the
 # database is first created, and also protects the passwords CalendarStream stores.
 secrets:
   DB_PASSWORD:

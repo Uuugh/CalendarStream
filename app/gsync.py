@@ -180,12 +180,10 @@ class Google:
         self._access: tuple[str, float] | None = None            # (access token, expiry)
         self._lock = asyncio.Lock()
 
-    # --- What the status page shows ------------------------------------------------
-
-    # --- The OAuth client (entered in the Settings menu) -------------------------------
+    # --- The OAuth client (entered in the Google Calendar Autosync box) ----------------
 
     def client(self) -> tuple[str, str]:
-        """The OAuth client ID and secret saved in the Settings menu, or ("", "")."""
+        """The OAuth client ID and secret saved in the Google Calendar Autosync box, or ("", "")."""
         if self._client is None:
             saved = self.store.get("google_client") or {}
             secret = self._unseal(saved["secret"], "") if saved.get("secret") else ""
@@ -205,7 +203,7 @@ class Google:
         return all(self.client())
 
     def save_client(self, client_id: str, client_secret: str):
-        """Save the OAuth client. A blank secret keeps the one already saved (the menu never shows it)."""
+        """Save the OAuth client. A blank secret keeps the one already saved (the page never shows it)."""
         client_id, client_secret = client_id.strip(), client_secret.strip()
         if not CLIENT_ID_RE.match(client_id):
             raise GoogleError("That doesn't look like a Google OAuth client ID "
@@ -233,8 +231,8 @@ class Google:
     async def check_client(self, redirect_uri: str) -> dict:
         """Ask Google whether it accepts the saved client ID and secret, without signing anyone in:
         swap a made-up code. Google answers "invalid_grant" (bad code) only once the client ID and
-        secret are right, and "invalid_client" when either is wrong. The redirect URI and consent
-        screen are only checked when someone connects."""
+        secret are right, "invalid_client" when either is wrong, and "redirect_uri_mismatch" when the
+        redirect URI isn't listed on the client. The consent screen is only checked when someone connects."""
         try:
             async with httpx.AsyncClient(timeout=TIMEOUT) as client:
                 r = await client.post(TOKEN_URL, data={
@@ -245,7 +243,10 @@ class Google:
             self._save_check(None, f"couldn't reach Google to check it ({type(e).__name__})")
             return self.client_check()
         error, detail = body.get("error", ""), str(body.get("error_description", "")).lower()
-        if error in ("invalid_grant", "redirect_uri_mismatch"):
+        if error == "redirect_uri_mismatch":
+            # The ID and secret are right, but Connect would fail: the redirect URI isn't listed.
+            self._save_check(False, f"Google doesn't list {redirect_uri} under Authorised redirect URIs; add it to the client in Google Cloud")
+        elif error == "invalid_grant":
             self._save_check(True, "Google accepted the client ID and secret")
         elif error in ("invalid_client", "unauthorized_client"):
             self._save_check(False, "Google doesn't know this client ID" if "not found" in detail
@@ -545,11 +546,11 @@ class Google:
     def notice_ok(self, channel: str, token: str) -> bool:
         """Whether a notification comes from the current channel (its ID and secret token match)."""
         w = self.watch_info()
-        if not w.get("id") or not secrets.compare_digest(channel or "", w["id"]):
+        if not w.get("id") or not secrets.compare_digest((channel or "").encode(), w["id"].encode()):
             return False
         if not w.get("token"):
             return False
-        return secrets.compare_digest(token or "", self._unseal(w["token"], ""))
+        return secrets.compare_digest((token or "").encode(), self._unseal(w["token"], "").encode())
 
     def noticed(self):
         self._update_watch(last_notice=datetime.now(timezone.utc).isoformat())
@@ -587,7 +588,7 @@ class Google:
 
     async def _sync(self, calendar_id, events, name, color_for, first_day, tz, full, result) -> SyncResult:
         cal = f"/calendars/{_quote(calendar_id)}"
-        if self.info().get("calendar_name") != name:          # F2: keep the name in step
+        if self.info().get("calendar_name") != name:          # keep the name in step
             if await self.api("PATCH", cal, body={"summary": name}, ok_missing=True) is None:
                 raise CalendarMissing()
             self._update_info(calendar_name=name)

@@ -1,5 +1,6 @@
 """Settings loaded from environment variables (populated from .env by docker compose)."""
 import os
+import re
 import secrets
 from urllib.parse import quote
 from dataclasses import dataclass, field
@@ -26,10 +27,44 @@ def _secret(env_name: str, secret_name: str, strip_all: bool = True) -> str:
     return os.environ.get(env_name, "").strip() if strip_all else os.environ.get(env_name, "").rstrip("\r\n")
 
 
+def normalise_public_url(value: str) -> str:
+    """Tidy a public address (Settings or PUBLIC_URL in .env) into the one form every link and the
+    Google redirect URI are built from: https:// added when there's no scheme, scheme and host in
+    lower case (Google compares redirect URIs exactly), default ports and a trailing slash dropped.
+    Raises ValueError for anything that isn't a plain http(s) address."""
+    from urllib.parse import urlparse
+    value = (value or "").strip().rstrip("/")
+    if not value:
+        return ""
+    if "://" not in value:
+        value = "https://" + value
+    parsed = urlparse(value)
+    scheme = parsed.scheme.lower()
+    if (scheme not in ("http", "https") or not parsed.hostname or parsed.query or parsed.fragment
+            or parsed.username or parsed.password or any(c.isspace() for c in value) or len(value) > 300):
+        raise ValueError(value)
+    try:
+        port = parsed.port
+    except ValueError:
+        raise ValueError(value)
+    host = parsed.hostname.lower()
+    if ":" in host:                       # IPv6
+        host = f"[{host}]"
+    if port and not (scheme == "https" and port == 443 or scheme == "http" and port == 80):
+        host = f"{host}:{port}"
+    return f"{scheme}://{host}{parsed.path.rstrip('/')}"
+
+
 def _public_url() -> str:
-    url = (_env("PUBLIC_URL") or _env("PUBLIC_BASE_URL")).rstrip("/")
-    if url and "://" not in url:
-        url = "https://" + url   # allow "ccs.example.com"
+    try:
+        url = normalise_public_url(_env("PUBLIC_URL") or _env("PUBLIC_BASE_URL"))
+    except ValueError:
+        return ""   # an unusable value is ignored (Settings → Public address can set it)
+    # Installers up to 0.1.19 wrote http://<this computer's IP>:8080 here by default. That isn't a
+    # public address and would override the one the page is opened at (breaking Google sign-in), so
+    # it counts as not set.
+    if re.match(r"^http://\d+\.\d+\.\d+\.\d+(:\d+)?$", url):
+        return ""
     return url
 
 
@@ -38,8 +73,8 @@ DEFAULT_CALENDAR_URL = "https://ccsplus.ual.com/calendarsyncapi/api/Calendar/Get
 
 @dataclass
 class Settings:
-    # Logins are entered on the status page and kept in the database (see logins.py). These four
-    # are only read to import logins from the secret files used up to 0.1.2.
+    # Logins are entered on the status page and kept in the database (see logins.py). These two, and
+    # gui_user / gui_password below, are only read to import logins from the secret files used up to 0.1.2.
     username: str = field(default_factory=lambda: _secret("CCS_USERNAME", "CCS_USER"))
     password: str = field(default_factory=lambda: _secret("CCS_PASSWORD", "CCS_PASSWORD", strip_all=False))
     # The link from CCS+ "Copy link". Can also be set on the status page (saved in the database,

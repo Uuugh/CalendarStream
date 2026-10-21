@@ -55,8 +55,8 @@ explained in [`.env.default`](.env.default):
 | `IMAGE_TAG` | `latest` | `latest` (stable), `beta` (newest) or a version, e.g. `0.1.6`; the installer asks |
 | `PUID` / `GUID`, `RESTART` | `1000` / `100`, `unless-stopped` | |
 | `PUBLIC_URL` | — | Overridden by ☰ → Public address |
-| `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440; overridden by the box under the health bar |
-| `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in Setup and (edit) |
+| `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440; overridden by “Check for changes every” in the CCS+ Calendar Sync box |
+| `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in the CCS+ Calendar Sync help and (edit) |
 | `DEFAULT_EVENT_HOURS` | `1` | Hours for items with no end time, or `allday` |
 | `ALLDAY_24H` | `true` | Show 24-hour (48 h…) events as all-day |
 | `FEED_TOKEN` | made once | Secret part of the feed links; change it to cut off old links |
@@ -76,7 +76,7 @@ logins or setup codes lock an address out for 15 minutes.
   00:01–23:59:59) become all-day with the original times in the notes.
 - A failed download or a suddenly empty calendar keeps the previous schedule.
 - If the download is blocked, open the Calendar Sync link in a browser and use **Upload & publish**
-  under the health bar.
+  in the CCS+ Calendar Sync box.
 - **Sign-in rejected** means CCS+ refused the UID or password; after two rejections, automatic
   checks pause so your account isn't locked (press **Sync now** after fixing them).
 
@@ -90,9 +90,10 @@ logins or setup codes lock an address out for 15 minutes.
   Click an empty spot on a day (or **+**) to add your own. Events can have their own color (one of
   Google's 11), which wins over tags. Edits survive new downloads; ✎ marks
   an edited event, ⚠ one United changed since. Nothing is ever changed in CCS+.
-- **Status & setup:** the calendar's name and color (**(edit)**) with its status and **Sync now**,
+- **Status & setup:** the calendar's name and color (**(edit)**) with its status chip,
   then one box each for **Tag Colors** (e.g. RDO in red, matched by whole word, contains, starts
-  with or exact title), **CCS+ Calendar Sync** (login, check interval, upload, step-by-step help)
+  with or exact title), **CCS+ Calendar Sync** (login, **Sync now**, check interval, upload,
+  step-by-step help)
   and **Google Calendar Autosync**; the feed and the shareable page are under **Other ways to get
   the schedule**. Each box shows its status, and each login **✓ Validated** until you change it.
 - **Activity log:** each check and what changed, plus the last download for debugging.
@@ -132,8 +133,8 @@ to the feed in Google, remove that calendar, or you'll see everything twice.
 ## Versions and releases
 
 Versions are `0.y.z`. Each release has a git tag, a GitHub Release with its
-[`CHANGELOG.md`](CHANGELOG.md) notes, and an image `ghcr.io/uuugh/calendarstream:<version>`
-(`calendar_stream` up to 0.1.0). `beta` is the newest release; `latest` is the last one marked
+[`CHANGELOG.md`](CHANGELOG.md) notes, and an image `ghcr.io/uuugh/calendarstream:<version>`.
+`beta` is the newest release; `latest` is the last one marked
 stable (the `STABLE` file). The **Release** GitHub Action builds a release when `VERSION` changes
 and moves `latest` when `STABLE` changes (or from **Actions → Release → Run workflow**).
 

@@ -19,9 +19,8 @@ on:
         description: "Version to mark as stable / latest (e.g. 0.0.6)"
         required: true
 
-permissions:
-  contents: write
-  packages: write
+# Nothing by default; each job asks for what it needs.
+permissions: {}
 
 concurrency:
   group: release
@@ -30,6 +29,8 @@ concurrency:
 jobs:
   detect:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.d.outputs.version }}
       version_changed: ${{ steps.d.outputs.version_changed }}
@@ -73,13 +74,14 @@ jobs:
             echo "stable_changed=false" >> "$GITHUB_OUTPUT"
           fi
 
-  # Copy versions published under the old image name to the current one (each only once), so
-  # every version, beta and latest can be pulled under the new name. Copies the manifests as they
-  # are: nothing is rebuilt.
+  # A new VERSION: tag it, move "beta", build and push the image, publish a pre-release.
   beta:
     needs: detect
     if: needs.detect.outputs.version_changed == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # tags and the GitHub Release
+      packages: write   # the image
     env:
       VERSION: ${{ needs.detect.outputs.version }}
       IMAGE: ${{ needs.detect.outputs.image }}
@@ -146,6 +148,9 @@ jobs:
     # Runs after beta when both files changed in one push; beta being skipped is fine.
     if: always() && needs.detect.result == 'success' && needs.detect.outputs.stable_changed == 'true' && needs.beta.result != 'failure'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # the GitHub Release
+      packages: write   # the "latest" image tag
     env:
       STABLE: ${{ needs.detect.outputs.stable }}
       IMAGE: ${{ needs.detect.outputs.image }}
