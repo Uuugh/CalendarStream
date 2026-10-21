@@ -1,0 +1,15 @@
+name: Suggest a feature
+description: An idea that would make CalendarStream more useful.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like CalendarStream to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help? (optional)
+      description: The problem it solves, or how you'd use it.

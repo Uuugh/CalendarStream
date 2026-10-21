@@ -17,28 +17,31 @@ A status page shows the schedule, lets you edit events, and walks you through se
 
 ## Quick start
 
-On a Linux server with Docker, run:
+On any computer with Docker (Linux, macOS with Docker Desktop, or Windows in a WSL terminal), run:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/install.sh)
 ```
 
-[`install.sh`](install.sh) asks three questions (press Enter for the default):
+[`install.sh`](install.sh) asks four questions (press Enter for the default):
 
-1. the folder for `docker-compose.yml` and `.env` (`~/stacks/calendarstream`);
-2. the folder for CalendarStream's config and data, the database and `.secrets/` (the same folder);
-3. which release to install, `latest` (stable) or `beta` (`stable`).
+1. which release to install, `latest` (stable) or `beta` (`stable`);
+2. the folder for `docker-compose.yml` and `.env` (`~/stacks/calendarstream`);
+3. the folder for CalendarStream's config and data, the database and `.secrets/` (the same folder);
+4. the public address (`http://<this computer's IP>:8080`); it can also be set later in ☰ Settings.
 
 It then downloads `docker-compose.yml` and `.env`, creates a random database password, starts
 CalendarStream and prints its address and a **setup code**. Running it again updates
-CalendarStream; your `.env` (apart from those answers) and the database password are kept.
+CalendarStream: the defaults are then your current settings, and your `.env` (apart from those
+answers) and the database password are kept.
 
 Then open the address it printed:
 
 1. **Create your login** with the setup code.
-2. **Status & setup → Setup:** enter your CCS+ UID and Calendar Sync password.
+2. **CCS+ Calendar Sync:** enter your CCS+ UID and Calendar Sync password (shown until they're
+   entered; later under Status & setup or ☰ Settings).
 3. **☰ → Public address:** your public `https://` address (needed for Google and for sharing).
-4. **☰ → Google Calendar:** connect it (recommended), or use **Add to Google Calendar** to
+4. **Google Calendar:** set up **Autosync** (recommended), or use **Add to Google Calendar** to
    subscribe to the feed instead.
 
 ## Settings
@@ -81,13 +84,16 @@ logins or setup codes lock an address out for 15 minutes.
 ## The status page
 
 - **Month view:** the schedule as it's sent to Google. Click an event to see or **Edit** it (title,
-  times, notes, or hide it from Google), or **+** to add your own. Edits survive new downloads; ✎ marks
+  times, notes, or hide it from Google); clicking elsewhere closes it, and its 📌 pin keeps it open.
+  Click an empty spot on a day (or **+**) to add your own. Edits survive new downloads; ✎ marks
   an edited event, ⚠ one United changed since. Nothing is ever changed in CCS+.
 - **Status & setup:** the calendar's name and colour, and **tags** (e.g. RDO in red) matched by whole
-  word, contains, starts with or exact title. Below: the health bar, **Sync now**, the check
-  interval, the upload, the feed links, and Setup.
+  word, contains, starts with or exact title. Below: the health bar, **Sync now**, the CCS+ login,
+  the check interval, the upload, and **Google Calendar** (Autosync, the feed, the shareable page).
 - **Activity log:** each check and what changed, plus the last download for debugging.
-- **☰ Settings:** status-page login, public address, Google Calendar.
+- **☰ Settings:** status-page login, CCS+ Calendar Sync login, public address, Google Calendar
+  Autosync.
+- **Report a problem / Suggest a feature** at the bottom of the page open a GitHub issue form.
 - **Language** (🌐, left of the Light / Dark / System theme switch): English, Español, Français,
   Deutsch, Português and Vlaams, or Automatic (the browser's language). Everything on the page is
   translated, including status messages and the activity log; event titles stay as United sends
@@ -106,7 +112,7 @@ for access to **calendars it created** and your e-mail address, so it can't see 
 - Changes reach Google within seconds. A daily check (or **Sync now**) puts back events changed or
   deleted in Google and makes a new calendar if it was deleted.
 
-**Setup:** ☰ → Google Calendar has a step-by-step guide to creating a free OAuth client in Google
+**Setup:** Google Calendar → Autosync (or ☰ → Google Calendar Autosync) has a step-by-step guide to creating a free OAuth client in Google
 Cloud. Paste its client ID and secret (checked with Google straight away), then **Connect**. Google
 warns the app "hasn't verified" it because it's your own: choose **Advanced → Go to CalendarStream**.
 One client serves the whole install, for up to 100 people while unverified. If you also subscribed

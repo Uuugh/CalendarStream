@@ -1,0 +1,99 @@
+{# Pieces used in more than one place on the status page. Import with context, so `_` and `csrf`
+   are available: {% import "_macros.html" as m with context %} #}
+
+{# A copy button showing the "copy" icon from Bootstrap Icons (MIT licence). #}
+{% macro copybtn(target) -%}
+<button type="button" class="copybtn" onclick="copyField('{{ target }}', this)" title="{{ _('Copy') }}" aria-label="{{ _('Copy') }}"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/></svg></button>
+{%- endmacro %}
+
+{# A read-only field with its copy button. #}
+{% macro copyfield(id, value) -%}
+<div class="feed"><input id="{{ id }}" readonly onclick="this.select()" value="{{ value }}">{{ copybtn(id) }}</div>
+{%- endmacro %}
+
+{# The CCS+ Calendar Sync login: UID and password, with whether CCS+ accepted them.
+   `back` says where to return after saving ("menu" reopens the Settings menu). #}
+{% macro ccs_login(setup, s, back="") -%}
+<form method="post" action="/setup/ccs" class="ccsform" autocomplete="off">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <input type="hidden" name="back" value="{{ back }}">
+  <div class="feed">
+    <input name="uid" value="{{ setup.uid }}" required placeholder="{{ _('UID, e.g. U123456') }}" aria-label="UID" spellcheck="false" autocomplete="off" class="uid">
+    <input name="password" type="password" {% if not setup.has_password %}required{% endif %} autocomplete="new-password"
+           placeholder="{{ _('Saved (leave empty to keep it)') if setup.has_password else _('Calendar Sync password') }}" aria-label="{{ _('Calendar Sync password') }}">
+    <button>{{ _('Save & sync') }}</button>
+  </div>
+  {% if setup.configured %}
+    {% if s.last_auth_ok %}<p class="check good">✓ {{ _('Validated: CCS+ accepted the sign-in') }}</p>
+    {% elif s.last_auth_ok == false %}<p class="check bad">✗ {{ _('CCS+ rejected the UID or Calendar Sync password') }}</p>
+    {% else %}<p class="check unknown">{{ _('Not checked yet') }}</p>{% endif %}
+  {% endif %}
+</form>
+{%- endmacro %}
+
+{# The Google OAuth client for Autosync: client ID and secret, the check result, Connect, and
+   the step-by-step guide (closed). `p` prefixes element IDs, as this appears twice on the page. #}
+{% macro google_client(g, p, back="") -%}
+<form method="post" action="/google/client" class="clientform" autocomplete="off">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <input type="hidden" name="back" value="{{ back }}">
+  <label for="{{ p }}cid">{{ _('Client ID') }}</label>
+  <input type="text" id="{{ p }}cid" name="client_id" value="{{ g.client_id }}" spellcheck="false"
+         placeholder="1234…apps.googleusercontent.com" required>
+  <label for="{{ p }}csecret">{{ _('Client secret') }}</label>
+  <input type="password" id="{{ p }}csecret" name="client_secret" spellcheck="false" autocomplete="new-password"
+         placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else 'GOCSPX-…' }}"
+         {% if not g.has_secret %}required{% endif %}>
+  {% if g.configured %}
+    {% set ck = g.check %}
+    <p class="check {{ 'good' if ck.ok else ('bad' if ck.ok == false else 'unknown') }}">
+      {% if ck.ok %}✓{% elif ck.ok == false %}✗{% else %}?{% endif %}
+      {{ msg(ck.message) if ck.message else _('Not checked yet') }}{% if g.checked_at %} <span class="muted">({{ g.checked_at }})</span>{% endif %}{% if ck.ok == false %}. {{ _('Check both values and save again.') }}{% endif %}
+    </p>
+  {% endif %}
+  <div class="eactions">
+    {% if g.configured %}
+      <button class="ghost" name="action" value="remove" formnovalidate>{{ _('Remove') }}</button>
+      <button class="ghost" name="action" value="check" formnovalidate>{{ _('Check again') }}</button>
+    {% endif %}
+    <button name="action" value="save">{{ _('Save') }}</button>
+  </div>
+</form>
+{% if g.configured and g.redirect_ok %}
+  <form method="post" action="/google/connect" class="connect">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button{% if g.check.ok == false %} disabled title="{{ _('Google rejected the client: fix it first') }}"{% endif %}>{{ _('Connect Google Calendar') }}</button>
+  </form>
+  <p class="mnote">{{ _('Google may say <i>“Google hasn’t verified this app”</i>: that’s expected for your own app. Click <b>Advanced</b> → <b>Go to CalendarStream</b>, tick the calendar box and press <b>Continue</b>.') }}</p>
+{% elif not g.redirect_ok %}
+  <p class="merr">{{ _('First set the <b>Public address</b> above to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>
+{% endif %}
+<details class="guide">
+  <summary>{{ _('How to get a client ID and secret (step by step)') }}</summary>
+  <ol>
+    <li>{{ _('<b>Open Google Cloud</b> and sign in with your Google account: <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">create a project</a>. Name it <code>CalendarStream</code> and press <b>Create</b>. Make sure it’s selected (top left) in the next steps.') }}</li>
+    <li>{{ _('<b>Turn on the Calendar API:</b> open <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" rel="noopener">Google Calendar API</a> and press <b>Enable</b>.') }}</li>
+    <li>{{ _('<b>Describe the app:</b> open <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> → <b>Get started</b>. App name <code>CalendarStream</code>, your e-mail as support e-mail → Next → Audience <b>External</b> → Next → your e-mail again → agree → <b>Create</b>.') }}</li>
+    <li>{{ _('<b>Allow calendar access:</b> on <a href="https://console.cloud.google.com/auth/scopes" target="_blank" rel="noopener">Data access</a> press <b>Add or remove scopes</b>. Tick <code>openid</code> and <code>…/auth/userinfo.email</code>, then under <b>Manually add scopes</b> paste:') }}
+      {{ copyfield(p ~ "scope", "https://www.googleapis.com/auth/calendar.app.created") }}
+      {{ _('Press <b>Add to table</b> → <b>Update</b> → <b>Save</b>.') }}</li>
+    <li>{{ _('<b>Publish it</b> so the sign-in lasts: on <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a> press <b>Publish app</b> → <b>Confirm</b>. (In “Testing”, Google signs you out every 7 days.) No review is needed for your own use.') }}</li>
+    <li>{{ _('<b>Make the client:</b> on <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a> press <b>Create client</b>. Application type <b>Web application</b>, name <code>CalendarStream</code>. Under <b>Authorised redirect URIs</b> press <b>Add URI</b> and paste exactly:') }}
+      {{ copyfield(p ~ "redirect", g.redirect_uri) }}
+      {{ _('Then press <b>Create</b>.') }}</li>
+    <li>{{ _('<b>Copy the two values</b> Google shows (<b>Client ID</b> and <b>Client secret</b>) into the boxes above and press <b>Save</b>. CalendarStream checks them with Google straight away. Keep the secret private: don’t send it to anyone or paste it into a chat.') }}</li>
+  </ol>
+</details>
+{%- endmacro %}
+
+{# Google Autosync when connected: account, calendar, last sync, Sync now, Disconnect. #}
+{% macro google_connected(g, name, p) -%}
+<p>{{ _('Connected as <b>{email}</b>, to the calendar <b>{calendar}</b>.', email=g.info.email or _('your Google account'), calendar=g.info.calendar_name or name) }}</p>
+<p>{% if g.running %}<b>{{ _('Syncing…') }}</b>
+  {% elif g.last_sync %}{{ _('Last synced <b>{when}</b> · {n} events · {result}', when=g.last_sync, n=g.info.events or 0, result=msg(g.info.last_result)) }}
+  {% else %}{{ _('Not synced yet.') }}{% endif %}</p>
+<form method="post" action="/google/sync" class="inline">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <button class="ghost">{{ _('Sync now') }}</button>
+</form>
+{%- endmacro %}

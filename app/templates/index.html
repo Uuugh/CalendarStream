@@ -63,6 +63,9 @@
   .menu label { display:flex; align-items:center; gap:6px; margin:0 0 8px }
   .menu .feed input { font-size:12px; padding:6px }
   .menu .feed button { padding:6px 10px; font-size:13px }
+  /* The menu and phones are narrow: UID and password each get a full row, the button sits under them. */
+  .menu .ccsform .feed { flex-wrap:wrap } .menu .ccsform .feed input { flex:1 1 100% } .menu .ccsform .feed button { margin-left:auto }
+  @media (max-width:600px) { .ccsform .feed { flex-wrap:wrap } .ccsform .feed input, .ccsform .uid { flex:1 1 100% } .ccsform .feed button { margin-left:auto } }
   .menu { max-height:calc(100vh - 80px); overflow-y:auto }
   .menu .ok-line { color:var(--ok); font-weight:600 }
   .menu details.guide { border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin:8px 0 0; background:var(--soft) }
@@ -158,6 +161,39 @@
   .logwin th { position:sticky; top:0; background:var(--card) }
   .logwin tr:last-child td { border-bottom:0 }
   .debug { font-size:13px; margin-top:12px }
+  /* Copy buttons: an icon */
+  .copybtn { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; min-width:38px; padding:0 10px;
+             background:var(--card); color:var(--accent); border:1px solid var(--line); font-size:13px }
+  .copybtn.done { color:var(--ok) }
+  /* Check results (CCS+ sign-in, Google client) */
+  .check { margin:6px 0 0; font-weight:600; font-size:13px }
+  .check.good { color:var(--ok) } .check.bad { color:var(--bad) } .check.unknown { color:var(--warn) }
+  .check .muted { font-weight:400 }
+  .ccsform .uid { flex:0 1 180px }
+  .mnote { color:var(--muted); font-size:12px; margin:6px 0 0 }
+  .merr { background:var(--badbg); color:var(--bad); border-radius:8px; padding:6px 10px; font-size:13px; margin:6px 0 }
+  .part .h4 { font-weight:600; font-size:14px; margin:14px 0 0 }
+  /* Google Calendar: the three ways */
+  .way { border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-top:12px }
+  .wayhead { font-size:14px; margin-bottom:4px } .wayhead .muted { font-size:12.5px }
+  .way .clientform label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin:8px 0 3px }
+  .way .clientform input { width:100%; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line);
+                           border-radius:8px; background:var(--bg); color:var(--text) }
+  .way .eactions, .menu .eactions { display:flex; justify-content:flex-end; gap:8px; margin-top:10px }
+  .way details.guide { border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin:10px 0 0; background:var(--soft); font-size:13px }
+  .way details.guide summary { cursor:pointer; font-weight:600 }
+  .way details.guide li { margin:0 0 8px }
+  form.connect { margin:12px 0 4px } form.inline { margin:4px 0 0 }
+  /* Month view: pin to keep an event open; empty spots add an event */
+  .day { cursor:copy } .day .ev, .day a { cursor:pointer }
+  .ev .body { position:relative; padding-right:26px }
+  .ev .pin { position:absolute; right:4px; bottom:4px; width:20px; height:20px; padding:0; display:inline-flex; align-items:center;
+             justify-content:center; background:transparent; color:var(--muted); border:0; border-radius:4px; opacity:.6 }
+  .ev .pin:hover { opacity:1; background:var(--soft) }
+  .ev.pinned .pin { color:var(--accent); opacity:1 }
+  /* Footer */
+  .foot { text-align:center; font-size:12.5px; color:var(--muted); margin:8px 0 0 }
+  .foot a { color:var(--muted) } .foot a:hover { color:var(--accent) }
   /* Under the health bar: check interval and manual upload, kept small */
   .syncline, .uploadline { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:12.5px; color:var(--muted); margin:10px 0 0 }
   .syncline input[type=number] { width:64px; font:inherit; padding:2px 6px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--text) }
@@ -176,7 +212,7 @@
   .langmenu hr { border:0; border-top:1px solid var(--line); margin:4px 2px }
 </style>
 </head>
-<body><main>
+<body>{% import "_macros.html" as m with context %}<main>
   <header class="topbar">
     <h1>CalendarStream<span class="ver">v{{ version }}</span></h1>
     {# Language menu: Automatic follows the browser; the choice is saved in the database. #}
@@ -227,6 +263,11 @@
           </details>
         </div>
 
+        <div class="mgroup" id="ccsmenu">
+          <div class="mhead">{{ _('CCS+ Calendar Sync') }}</div>
+          {{ m.ccs_login(setup, s, "menu") }}
+        </div>
+
         <div class="mgroup" id="public">
           <div class="mhead">{{ _('Public address') }}</div>
           <p class="mnote" style="margin-bottom:6px">{{ _('The https:// address people use to reach this page, e.g. <code>https://cal.example.com</code>. Used for the feed and subscribe links and for Google sign-in.') }}
@@ -248,92 +289,29 @@
 
         {% set g = google %}
         <div class="mgroup" id="google">
-          <div class="mhead">Google Calendar
+          <div class="mhead">{{ _('Google Calendar Autosync') }}
             {% if g.connected %}<span class="pill ok">{{ _('Connected') }}</span>{% endif %}</div>
           {% if g.info.last_error %}<p class="merr">{{ msg(g.info.last_error) }}</p>{% endif %}
           {% if g.connected %}
-            <p>{{ _('Connected as <b>{email}</b>, to the calendar <b>{calendar}</b>.', email=g.info.email or _('your Google account'), calendar=g.info.calendar_name or name) }}</p>
-            <p>{% if g.running %}<b>{{ _('Syncing…') }}</b>
-              {% elif g.last_sync %}{{ _('Last synced <b>{when}</b> · {n} events · {result}', when=g.last_sync, n=g.info.events or 0, result=msg(g.info.last_result)) }}
-              {% else %}{{ _('Not synced yet.') }}{% endif %}</p>
-            <form method="post" action="/google/sync" style="margin:0 0 10px">
-              <input type="hidden" name="csrf" value="{{ csrf }}">
-              <button class="ghost">{{ _('Sync now') }}</button>
-            </form>
+            {{ m.google_connected(g, name, "s") }}
             <p class="mnote">{{ _('Events from the start of this month on are copied, without reminders. Events changed in Google are put back at the next full check (daily, or <b>Sync now</b>). If you also subscribed to the feed in Google, remove that calendar there, or you’ll see everything twice.') }}</p>
             <p class="mnote">{{ _('OAuth client: <code>{client}…</code> (disconnect to change it)', client=g.client_id.split(".")[0][:24]) }}</p>
-            <form method="post" action="/google/disconnect" id="disconnectform">
+            <form method="post" action="/google/disconnect" class="disconnectform">
               <input type="hidden" name="csrf" value="{{ csrf }}">
               <label><input type="checkbox" name="delete" value="1"> {{ _('Also delete this calendar in Google') }}</label>
               <button class="ghost">{{ _('Disconnect') }}</button>
             </form>
           {% else %}
-            <p>{{ _('Copy the schedule into a calendar of its own in your Google account, updated within minutes. CalendarStream can only see and change calendars it created.') }}</p>
-            {% if not g.redirect_ok %}
-              <p class="merr">{{ _('First set the <b>Public address</b> above to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>
-            {% endif %}
-
-            {% if not g.configured %}
-              <p>{{ _('<b>Step 1 of 2:</b> CalendarStream needs its own “OAuth client” from Google: a client ID and a client secret. It’s free and takes about 10 minutes: open the step-by-step guide below the boxes.') }}</p>
-            {% endif %}
-            <form method="post" action="/google/client" class="clientform" autocomplete="off">
-              <input type="hidden" name="csrf" value="{{ csrf }}">
-              <label for="gcid">{{ _('Client ID') }}</label>
-              <input type="text" id="gcid" name="client_id" value="{{ g.client_id }}" spellcheck="false"
-                     placeholder="1234…apps.googleusercontent.com" required>
-              <label for="gcsecret">{{ _('Client secret') }}</label>
-              <input type="password" id="gcsecret" name="client_secret" spellcheck="false" autocomplete="new-password"
-                     placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else 'GOCSPX-…' }}"
-                     {% if not g.has_secret %}required{% endif %}>
-              {% if g.configured %}
-                {% set ck = g.check %}
-                <p class="check {{ 'good' if ck.ok else ('bad' if ck.ok == false else 'unknown') }}">
-                  {% if ck.ok %}✓{% elif ck.ok == false %}✗{% else %}?{% endif %}
-                  {{ msg(ck.message) if ck.message else _('Not checked yet') }}{% if g.checked_at %} <span class="muted">({{ g.checked_at }})</span>{% endif %}{% if ck.ok == false %}. {{ _('Check both values and save again.') }}{% endif %}
-                </p>
-              {% endif %}
-              <div class="eactions">
-                {% if g.configured %}
-                  <button class="ghost" name="action" value="remove" formnovalidate>{{ _('Remove') }}</button>
-                  <button class="ghost" name="action" value="check" formnovalidate>{{ _('Check again') }}</button>
-                {% endif %}
-                <button name="action" value="save">{{ _('Save') }}</button>
-              </div>
-            </form>
-            {% if g.configured and g.redirect_ok %}
-              <form method="post" action="/google/connect" style="margin:12px 0 8px">
-                <input type="hidden" name="csrf" value="{{ csrf }}">
-                <button{% if g.check.ok == false %} disabled title="{{ _('Google rejected the client: fix it first') }}"{% endif %}>{{ _('Connect Google Calendar') }}</button>
-              </form>
-              <p class="mnote">{{ _('Google may say <i>“Google hasn’t verified this app”</i>: that’s expected for your own app. Click <b>Advanced</b> → <b>Go to CalendarStream</b>, tick the calendar box and press <b>Continue</b>.') }}</p>
-            {% endif %}
-
-            <details class="guide">
-              <summary>{{ _('How to get a client ID and secret (step by step)') }}</summary>
-              <ol>
-                <li>{{ _('<b>Open Google Cloud</b> and sign in with your Google account: <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">create a project</a>. Name it <code>CalendarStream</code> and press <b>Create</b>. Make sure it’s selected (top left) in the next steps.') }}</li>
-                <li>{{ _('<b>Turn on the Calendar API:</b> open <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" rel="noopener">Google Calendar API</a> and press <b>Enable</b>.') }}</li>
-                <li>{{ _('<b>Describe the app:</b> open <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> → <b>Get started</b>. App name <code>CalendarStream</code>, your e-mail as support e-mail → Next → Audience <b>External</b> → Next → your e-mail again → agree → <b>Create</b>.') }}</li>
-                <li>{{ _('<b>Allow calendar access:</b> on <a href="https://console.cloud.google.com/auth/scopes" target="_blank" rel="noopener">Data access</a> press <b>Add or remove scopes</b>. Tick <code>openid</code> and <code>…/auth/userinfo.email</code>, then under <b>Manually add scopes</b> paste:') }}
-                  <div class="feed" style="margin:6px 0"><input id="gscope" readonly onclick="this.select()" value="https://www.googleapis.com/auth/calendar.app.created">
-                    <button type="button" onclick="copyField('gscope', this)">{{ _('Copy') }}</button></div>
-                  {{ _('Press <b>Add to table</b> → <b>Update</b> → <b>Save</b>.') }}</li>
-                <li>{{ _('<b>Publish it</b> so the sign-in lasts: on <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a> press <b>Publish app</b> → <b>Confirm</b>. (In “Testing”, Google signs you out every 7 days.) No review is needed for your own use.') }}</li>
-                <li>{{ _('<b>Make the client:</b> on <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a> press <b>Create client</b>. Application type <b>Web application</b>, name <code>CalendarStream</code>. Under <b>Authorised redirect URIs</b> press <b>Add URI</b> and paste exactly:') }}
-                  <div class="feed" style="margin:6px 0"><input id="gredirect" readonly onclick="this.select()" value="{{ g.redirect_uri }}">
-                    <button type="button" onclick="copyField('gredirect', this)">{{ _('Copy') }}</button></div>
-                  {{ _('Then press <b>Create</b>.') }}</li>
-                <li>{{ _('<b>Copy the two values</b> Google shows (<b>Client ID</b> and <b>Client secret</b>) into the boxes above and press <b>Save</b>. CalendarStream checks them with Google straight away. Keep the secret private: don’t send it to anyone or paste it into a chat.') }}</li>
-              </ol>
-            </details>
+            <p class="mnote">{{ _('Copy the schedule into a calendar of its own in your Google account, updated within minutes. CalendarStream can only see and change calendars it created.') }}</p>
+            {{ m.google_client(g, "s", "menu") }}
           {% endif %}
         </div>
       </div>
     </div>
   </header>
 
-  {% set cls = {"ok":"ok","running":"run","starting":"run","paused":"warn"}.get(s.status,"bad") %}
-  {% set label = {"ok":_("Healthy"),"running":_("Syncing…"),"starting":_("Starting"),"paused":_("Paused"),"auth_failed":_("Sign-in rejected"),"blocked":_("Blocked"),"error":_("Error")}.get(s.status, s.status) %}
+  {% set cls = {"ok":"ok","running":"run","starting":"run","paused":"warn","setup":"warn"}.get(s.status,"bad") %}
+  {% set label = {"ok":_("Healthy"),"running":_("Syncing…"),"starting":_("Starting"),"paused":_("Paused"),"setup":_("Setup needed"),"auth_failed":_("Sign-in rejected"),"blocked":_("Blocked"),"error":_("Error")}.get(s.status, s.status) %}
 
   <div class="card" id="cal">
     <div class="calhead">
@@ -346,14 +324,14 @@
     <div class="scroll"><div class="month"{% if color %} style="--cal:{{ color }}"{% endif %}>
       {% for d in cal.dow %}<div class="dow">{{ d }}</div>{% endfor %}
       {% for week in cal.weeks %}{% for day in week %}
-      <div class="day{% if not day.in_month %} out{% endif %}{% if day.date == cal.today %} today{% endif %}">
+      <div class="day{% if not day.in_month %} out{% endif %}{% if day.date == cal.today %} today{% endif %}" data-add="/event?date={{ day.date.isoformat() }}&amp;month={{ cal.month }}" title="{{ _('Click an empty spot to add an event on {day}', day=dates.day(day.date)) }}">
         <div class="dayhead"><span class="num">{{ day.date.day }}</span>
           <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">+</a></div>
         {% for it in day["items"] %}
         {% set e = it.e %}
         <details class="ev{% if e.all_day %} allday{% endif %}{% if e.origin == 'custom' %} custom{% endif %}{% if e.hidden %} hidden{% endif %}{% if it.tag_color or (color and e.origin != 'custom') %} tint{% endif %}"{% if it.tag_color %} style="--cal:{{ it.tag_color }}"{% endif %}>
           <summary title="{{ e.title }}{% if e.hidden %} ({{ _('hidden from Google') }}){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if e.stale %}<span class="mark" title="{{ _('United changed this since your edit') }}">⚠</span>{% elif e.edited %}<span class="mark" title="{{ _('Edited here') }}">✎</span>{% endif %}</summary>
-          <div class="body"><b>{{ e.title }}</b>
+          <div class="body"><button type="button" class="pin" aria-pressed="false" title="{{ _('Keep this open') }}" aria-label="{{ _('Keep this open') }}"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146"/></svg></button><b>{{ e.title }}</b>
 {{ it.range }}{% if e.location %}
 📍 {{ e.location }}{% endif %}{% if e.hidden %}
 {{ _('Hidden from Google Calendar') }}{% endif %}{% if e.stale %}
@@ -377,9 +355,10 @@
 
   {# Status & setup: the header is the calendar's name, colour and (edit); the body has the health bar,
      the Google Calendar feed and setup. #}
-  <section class="card section{% if sections.status %} open{% endif %}" id="status" data-section="status" aria-label="{{ _('Status & setup') }}">
+  {% set status_open = sections.status or not setup.configured %}
+  <section class="card section{% if status_open %} open{% endif %}" id="status" data-section="status" aria-label="{{ _('Status & setup') }}">
     <div class="shead">
-      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.status else 'false' }}" aria-controls="status-body"
+      <button type="button" class="toggle" aria-expanded="{{ 'true' if status_open else 'false' }}" aria-controls="status-body"
               title="{{ _('Show or hide status & setup') }}"><span class="sr">{{ _('Status & setup') }}</span></button>
       <span class="calname" id="calname"{% if color %} style="color:{{ color }}"{% endif %} title="{{ _('The calendar’s name in Google Calendar') }}">{{ name }}</span>
       <button type="button" class="linkbtn" id="editbtn" aria-expanded="false" aria-controls="editor">{{ _('(edit)') }}</button>
@@ -391,7 +370,8 @@
       <input type="hidden" name="csrf" value="{{ csrf }}">
       <label class="lbl" for="calname-input">{{ _('Calendar name') }}</label>
       <div class="row"><input type="text" id="calname-input" name="name" value="{{ name }}" placeholder="{{ _('Calendar name') }}" maxlength="100"></div>
-      <p class="hint">{{ _('Google only reads the name when the calendar is first added. If it’s already in your Google Calendar, rename it there too: hover over it under <b>Other calendars</b> → ⋮ → <b>Settings</b> → <b>Name</b>.') }}</p>
+      {% if g.connected %}<p class="hint">{{ _('Autosync renames your Google calendar within a minute of saving.') }}</p>{% else %}
+      <p class="hint">{{ _('Google only reads the name when the calendar is first added. If it’s already in your Google Calendar, rename it there too: hover over it under <b>Other calendars</b> → ⋮ → <b>Settings</b> → <b>Name</b>.') }}</p>{% endif %}
 
       <label class="lbl" for="colorpick">{{ _('Default colour') }}</label>
       <div class="row">
@@ -424,84 +404,57 @@
         <button>{{ _('Save') }}</button>
       </div>
     </form>
-    <div class="sbody" id="status-body"{% if not sections.status %} hidden{% endif %}>
+    <div class="sbody" id="status-body"{% if not (sections.status or not setup.configured) %} hidden{% endif %}>
     <div class="banner">
       <span class="pill {{ cls }}">{{ label }}</span>
       <div class="msg">{{ msg(s.message) or "—" }}</div>
-      <form method="post" action="/run"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running %}disabled{% endif %}>{{ _('Sync now') }}</button></form>
+      <form method="post" action="/run"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running or not setup.configured %}disabled{% endif %}>{{ _('Sync now') }}</button></form>
     </div>
 
-    {# How the schedule is fetched; the check interval can be changed here. #}
-    <form class="syncline" method="post" action="/setup/interval">
-      <input type="hidden" name="csrf" value="{{ csrf }}">
-      <span>{{ _('CCS+ Calendar Sync · checks every') }}
-        <input type="number" name="minutes" value="{{ interval }}" min="15" max="1440" step="5" required
-               aria-label="{{ _('Minutes between checks') }}" title="{{ _('Minutes between checks (15–1440)') }}"> {{ _('min') }}
-        <button class="ghost tiny" title="{{ _('Save the check interval') }}">{{ _('Save') }}</button></span>
-      <span>· {{ _('items without an end time: {value}', value=(_('all-day') if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours)) }}{% if cfg.allday_24h %} · {{ _('24-hour events shown as all-day') }}{% endif %}</span>
-    </form>
+    {# CCS+ Calendar Sync: the login is always visible here; the link, checklist and help are below it. #}
+    <div class="part" id="setup">
+      <h3>{{ _('CCS+ Calendar Sync') }}</h3>
+      {% if not setup.configured %}<p class="k" style="margin-top:0">{{ _('Enter your CCS+ <b>UID</b> and <b>Calendar Sync password</b> (the one created for calendar syncing in CCS+, not your CCS login) to start downloading the schedule:') }}</p>{% endif %}
+      {{ m.ccs_login(setup, s) }}
+      {% if not setup.configured %}<p class="mnote">{{ _('Your CCS+ UID and Calendar Sync password may be updated in Status & setup, or in Settings (☰).') }}</p>{% endif %}
 
-    {# Manual upload, for when the automatic download can't get through. #}
-    <form class="uploadline" method="post" action="/setup/upload" enctype="multipart/form-data">
-      <input type="hidden" name="csrf" value="{{ csrf }}">
-      <span class="lbl" title="{{ _('Open the Calendar Sync link in your browser, sign in with your UID and Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.') }}">{{ _('Or upload <b>Calendar.ics</b> by hand <span class="muted">(from the Calendar Sync link, signed in with your UID and Calendar Sync password)</span>:') }}</span>
-      <input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}">
-      <button class="ghost tiny">{{ _('Upload & publish') }}</button>
-    </form>
-
-    <div class="part" id="feedcard">
-      <h3>{{ _('Google Calendar feed') }}</h3>
-      {% if not links.is_public %}<p class="warnline">{{ _('⚠ This isn’t a public HTTPS address yet, so Google can’t load the feed. Set the <b>Public address</b> in Settings (☰).') }}</p>{% endif %}
-      <div class="actions">
-        <a class="btn" href="{{ links.google }}" target="_blank" rel="noopener">{{ _('Add to Google Calendar') }}</a>
-        <a class="btn2" href="{{ links.page }}" target="_blank">{{ _('Open subscribe page') }}</a>
-      </div>
-      <div class="k">{{ _('<b>(Recommended)</b> Shareable subscribe page — send this to anyone who should see the schedule (no status-page login needed):') }}</div>
-      <div class="feed"><input id="page" readonly onclick="this.select()" value="{{ links.page }}"><button type="button" onclick="copyField('page', this)">{{ _('Copy') }}</button></div>
-      <div class="k">{{ _('Raw feed URL (for adding manually: Google Calendar → Other calendars → + → From URL):') }}</div>
-      <div class="feed"><input id="feed" readonly onclick="this.select()" value="{{ feed }}"><button type="button" onclick="copyField('feed', this)">{{ _('Copy') }}</button></div>
-      <p class="muted" style="font-size:13px;margin:8px 0 0">{{ _('Google re-checks subscribed feeds on its own schedule (typically every several hours). The name at the top of this section (change it with <b>(edit)</b>) is what Google shows for new subscriptions; calendars already added keep theirs (rename them in Google’s settings). The colour is used by Apple Calendar and this page.') }}</p>
-    </div>
-
-    {# Open by itself until the CCS+ login has been entered #}
-    {% set setup_open = sections.setup or not setup.configured %}
-    <div class="part section{% if setup_open %} open{% endif %}" id="setup" data-section="setup">
-      <div class="shead">
-        <button type="button" class="toggle" aria-expanded="{{ 'true' if setup_open else 'false' }}" aria-controls="setup-body"><span class="h3">{{ _('Setup: CCS+ Calendar Sync') }}</span></button>
-        <span class="peek">{% if s.last_auth_ok == false %}{{ _('Sign-in rejected') }}{% elif setup.downloaded %}{{ _('Schedule received · {n} events', n=s.event_count) }}{% else %}{{ _('Not set up yet') }}{% endif %}</span>
-      </div>
-      <div class="sbody" id="setup-body"{% if not setup_open %} hidden{% endif %}>
-      <form method="post" action="/setup/ccs" class="ccsform" autocomplete="off">
+      {# How the schedule is fetched; the check interval can be changed here. #}
+      <form class="syncline" method="post" action="/setup/interval">
         <input type="hidden" name="csrf" value="{{ csrf }}">
-        <div class="k" style="margin-top:0">{{ _('Your CCS+ <b>UID</b> and <b>Calendar Sync password</b> (the one created for calendar syncing in CCS+, not your CCS login; see the steps below):') }}</div>
-        <div class="feed">
-          <input name="uid" value="{{ setup.uid }}" required placeholder="{{ _('UID, e.g. U123456') }}" aria-label="UID" spellcheck="false" autocomplete="off" style="flex:0 1 180px">
-          <input name="password" type="password" {% if not setup.has_password %}required{% endif %} autocomplete="new-password"
-                 placeholder="{{ _('Saved (leave empty to keep it)') if setup.has_password else _('Calendar Sync password') }}" aria-label="{{ _('Calendar Sync password') }}">
-          <button>{{ _('Save & sync') }}</button>
-        </div>
+        <span>{{ _('CCS+ Calendar Sync · checks every') }}
+          <input type="number" name="minutes" value="{{ interval }}" min="15" max="1440" step="5" required
+                 aria-label="{{ _('Minutes between checks') }}" title="{{ _('Minutes between checks (15–1440)') }}"> {{ _('min') }}
+          <button class="ghost tiny" title="{{ _('Save the check interval') }}">{{ _('Save') }}</button></span>
+        <span>· {{ _('items without an end time: {value}', value=(_('all-day') if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours)) }}{% if cfg.allday_24h %} · {{ _('24-hour events shown as all-day') }}{% endif %}</span>
       </form>
 
-      <form method="post" action="/setup/link" style="margin-top:12px">
+      {# Manual upload, for when the automatic download can't get through. #}
+      <form class="uploadline" method="post" action="/setup/upload" enctype="multipart/form-data">
         <input type="hidden" name="csrf" value="{{ csrf }}">
-        <div class="k" style="margin-top:0">{{ _('Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):') }}</div>
-        <div class="feed">
-          <input name="url" type="url" required value="{{ setup.url }}" placeholder="https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar">
-          <button name="action" value="save">{{ _('Save & sync') }}</button>
-          {% if setup.url_from_gui %}<button class="ghost" name="action" value="reset" formnovalidate>{{ _('Reset') }}</button>{% endif %}
-        </div>
+        <span class="lbl" title="{{ _('Open the Calendar Sync link in your browser, sign in with your UID and Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.') }}">{{ _('Or upload <b>Calendar.ics</b> by hand.') }}</span>
+        <input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}">
+        <button class="ghost tiny">{{ _('Upload & publish') }}</button>
       </form>
 
-      <ul class="checks" style="margin-top:14px">
-        <li class="{{ 'done' if setup.uid else '' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code>{% else %}<span class="muted">{{ _('not entered yet') }}</span>{% endif %}</li>
-        <li class="{{ 'done' if setup.has_password else '' }}">{{ _('Calendar Sync password') }} {% if setup.has_password %}{{ _('saved <span class="muted">(encrypted)</span>') }}{% else %}<span class="muted">{{ _('not entered yet') }}</span>{% endif %}</li>
-        <li class="done">{{ _('Calendar Sync link') }} <span class="muted">({% if setup.url_from_gui %}{{ _('set here') }}{% elif setup.url_is_default %}{{ _('default') }}{% else %}{{ _('from .env') }}{% endif %})</span></li>
-        <li class="{{ 'done' if s.last_auth_ok else ('fail' if s.last_auth_ok == false else '') }}">{{ _('CCS+ accepted the sign-in') }}{% if s.last_auth_ok == false %} — {{ _('<b>rejected</b>; check the UID and Calendar Sync password') }}{% endif %}</li>
-        <li class="{{ 'done' if setup.downloaded else '' }}">{{ _('Schedule received') }}{% if setup.downloaded %} <span class="muted">({{ _('{n} events', n=s.event_count) }})</span>{% endif %}</li>
-      </ul>
-
-      <details class="howto" style="margin-top:14px" {% if not setup.downloaded %}open{% endif %}>
-        <summary>{{ _('How to turn on Calendar Sync in CCS+') }}</summary>
+      <details class="howto" {% if not setup.downloaded %}open{% endif %}>
+        <summary>{{ _('Calendar Sync link, checklist and help') }}</summary>
+        <form method="post" action="/setup/link" style="margin-top:10px">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <div class="k" style="margin-top:0">{{ _('Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):') }}</div>
+          <div class="feed">
+            <input name="url" type="url" required value="{{ setup.url }}" placeholder="https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar">
+            <button name="action" value="save">{{ _('Save & sync') }}</button>
+            {% if setup.url_from_gui %}<button class="ghost" name="action" value="reset" formnovalidate>{{ _('Reset') }}</button>{% endif %}
+          </div>
+        </form>
+        <ul class="checks" style="margin-top:14px">
+          <li class="{{ 'done' if setup.uid else '' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code>{% else %}<span class="muted">{{ _('not entered yet') }}</span>{% endif %}</li>
+          <li class="{{ 'done' if setup.has_password else '' }}">{{ _('Calendar Sync password') }} {% if setup.has_password %}{{ _('saved <span class="muted">(encrypted)</span>') }}{% else %}<span class="muted">{{ _('not entered yet') }}</span>{% endif %}</li>
+          <li class="done">{{ _('Calendar Sync link') }} <span class="muted">({% if setup.url_from_gui %}{{ _('set here') }}{% elif setup.url_is_default %}{{ _('default') }}{% else %}{{ _('from .env') }}{% endif %})</span></li>
+          <li class="{{ 'done' if s.last_auth_ok else ('fail' if s.last_auth_ok == false else '') }}">{{ _('CCS+ accepted the sign-in') }}{% if s.last_auth_ok == false %} — {{ _('<b>rejected</b>; check the UID and Calendar Sync password') }}{% endif %}</li>
+          <li class="{{ 'done' if setup.downloaded else '' }}">{{ _('Schedule received') }}{% if setup.downloaded %} <span class="muted">({{ _('{n} events', n=s.event_count) }})</span>{% endif %}</li>
+        </ul>
+        <p class="h4">{{ _('How to turn on Calendar Sync in CCS+') }}</p>
         <ol>
           <li>{{ _('In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.') }}</li>
           <li>{{ _('Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.') }}</li>
@@ -511,6 +464,43 @@
         </ol>
         <p class="muted" style="font-size:13px;margin:8px 0 0">{{ _('The password is stored encrypted and never shown again; leave its box empty to keep it.') }}</p>
       </details>
+    </div>
+
+    {# Getting the schedule into Google: Autosync (recommended), or subscribing to the feed. #}
+    {% set g = google %}
+    <div class="part" id="feedcard">
+      <h3>Google Calendar</h3>
+      {% if not links.is_public %}<p class="warnline">{{ _('⚠ This isn’t a public HTTPS address yet, so Google can’t load the feed. Set the <b>Public address</b> in Settings (☰).') }}</p>{% endif %}
+
+      <div class="way">
+        <div class="wayhead"><b>{{ _('Autosync') }}</b> <span class="muted">{{ _('(recommended: a calendar of its own in your Google account, updated within minutes, with tag colours)') }}</span></div>
+        {% if g.info.last_error %}<p class="merr">{{ msg(g.info.last_error) }}</p>{% endif %}
+        {% if g.connected %}
+          {{ m.google_connected(g, name, "f") }}
+          <p class="mnote">{{ _('Disconnect or change it in Settings (☰).') }}</p>
+        {% else %}
+          {{ m.google_client(g, "f") }}
+        {% endif %}
+      </div>
+
+      <div class="way">
+        <div class="wayhead"><b>{{ _('Subscribe to the feed') }}</b> <span class="muted">{{ _('(if not using Autosync: Google refreshes it every few hours, without tag colours)') }}</span></div>
+        <div class="k" style="margin-top:4px">{{ _('Raw feed URL (if not using Autosync: Google Calendar → Other calendars → + → From URL):') }}</div>
+        {{ m.copyfield("feed", feed) }}
+        <div class="actions" style="margin:8px 0 2px">
+          <a class="btn" href="{{ links.google }}" target="_blank" rel="noopener">{{ _('Add to Google Calendar') }}</a>
+        </div>
+        <p class="mnote">{{ _('<b>Add to Google Calendar</b> subscribes your signed-in Google account to this feed, in one click.') }}</p>
+      </div>
+
+      <div class="way">
+        <div class="wayhead"><b>{{ _('Share it') }}</b></div>
+        <div class="k" style="margin-top:4px">{{ _('Shareable subscribe page — send this to anyone who should see the schedule (no status-page login needed):') }}</div>
+        {{ m.copyfield("page", links.page) }}
+        <div class="actions" style="margin:8px 0 2px">
+          <a class="btn2" href="{{ links.page }}" target="_blank">{{ _('Open subscribe page') }}</a>
+        </div>
+        <p class="mnote">{{ _('<b>Open subscribe page</b> shows the page other people get: one-click buttons for Google and Apple Calendar, with step-by-step help.') }}</p>
       </div>
     </div>
     </div>
@@ -541,6 +531,11 @@
       {% else %}<span class="muted">{{ _('available after the first download.') }}</span>{% endif %}</div>
     </div>
   </section>
+  <footer class="foot">
+    CalendarStream v{{ version }} ·
+    <a href="https://github.com/Uuugh/CalendarStream/issues/new?template=bug_report.yml&amp;version={{ version|urlencode }}" target="_blank" rel="noopener">{{ _('Report a problem') }}</a> ·
+    <a href="https://github.com/Uuugh/CalendarStream/issues/new?template=feature_request.yml" target="_blank" rel="noopener">{{ _('Suggest a feature') }}</a>
+  </footer>
 </main>
 <script>
 // Texts used by the scripts below, in the page's language.
@@ -548,14 +543,18 @@ var T = {
   copied: {{ _('Copied')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }},
   edit: {{ _('(edit)')|string|tojson }}, close: {{ _('(close)')|string|tojson }},
   backToStandard: {{ _('Back to the standard colours when you save')|string|tojson }},
-  disconnect: {{ _('Disconnect Google Calendar?')|string|tojson }}
+  disconnect: {{ _('Disconnect Google Calendar?')|string|tojson }},
+  pin: {{ _('Keep this open')|string|tojson }}, unpin: {{ _('Let this close')|string|tojson }}
 };
 
 // Copy a field's text. Uses the Clipboard API on HTTPS/localhost, and falls back to
 // select + execCommand on plain-HTTP pages (e.g. http://192.168.x.x:8080) where it's blocked.
 function copyField(id, btn) {
-  var el = document.getElementById(id), text = el.value, label = btn.textContent;
-  function done(msg) { btn.textContent = msg || T.copied; setTimeout(function () { btn.textContent = label; }, 1800); }
+  var el = document.getElementById(id), text = el.value, icon = btn.innerHTML;
+  function done(msg) {   // show the result briefly, then the copy icon again
+    btn.textContent = msg || T.copied; btn.classList.add('done');
+    setTimeout(function () { btn.innerHTML = icon; btn.classList.remove('done'); }, 1800);
+  }
   function fallback() {
     el.focus(); el.select(); el.setSelectionRange(0, text.length);
     var ok = false;
@@ -625,8 +624,9 @@ document.getElementById('usethis').addEventListener('click', function () {
     set(true);
     history.replaceState(null, '', location.pathname);   // a reload shouldn't open it again
   }
-  var disc = document.getElementById('disconnectform');
-  if (disc) disc.addEventListener('submit', function (e) { if (!confirm(T.disconnect)) e.preventDefault(); });
+  document.querySelectorAll('.disconnectform').forEach(function (f) {
+    f.addEventListener('submit', function (e) { if (!confirm(T.disconnect)) e.preventDefault(); });
+  });
 })();
 
 // Collapsible sections: clicking the header (outside its form) or the arrow opens or closes the
@@ -687,6 +687,34 @@ document.querySelectorAll('.section[data-section]').forEach(function (sec) {
       e.target.closest('.casebtn').setAttribute('aria-pressed', String(on));
     } else if (e.target.closest('.deltag')) {
       if (rows.children.length > 1) row.remove(); else row.querySelector('input[name=tag]').value = '';
+    }
+  });
+})();
+
+// Month view: an open event closes when you click anywhere else, unless it's pinned (the pin in its
+// corner). Clicking an empty part of a day adds an event on that day (or, while an event is open,
+// just closes it).
+(function () {
+  var month = document.querySelector('.month');
+  if (!month) return;
+  function openOnes() { return Array.prototype.filter.call(month.querySelectorAll('details.ev[open]'),
+                                                           function (d) { return !d.classList.contains('pinned'); }); }
+  document.addEventListener('click', function (e) {
+    var inside = e.target.closest('details.ev');
+    var closed = 0;
+    openOnes().forEach(function (d) { if (d !== inside) { d.open = false; closed++; } });
+    var pin = e.target.closest('.pin');
+    if (pin) {
+      e.preventDefault();
+      var ev = pin.closest('details.ev'), on = !ev.classList.contains('pinned');
+      ev.classList.toggle('pinned', on);
+      pin.setAttribute('aria-pressed', String(on));
+      pin.title = on ? T.unpin : T.pin;
+      return;
+    }
+    var day = e.target.closest('.day');
+    if (day && !inside && !e.target.closest('a, button') && !closed && day.dataset.add) {
+      location.href = day.dataset.add;
     }
   });
 })();

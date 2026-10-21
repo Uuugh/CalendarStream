@@ -27,6 +27,7 @@
   .note { font-size:13px; color:var(--muted) }
   .warn { background:var(--warnbg); color:var(--warn); border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:16px }
   details summary { cursor:pointer; font-weight:600 }
+  .copybtn { display:inline-flex; align-items:center; justify-content:center; min-width:40px }
 </style>
 </head>
 <body><main>
@@ -61,7 +62,7 @@
       <ol style="margin-top:10px">
         <li>{{ _('Copy this link:') }}
           <div class="feed"><input id="feed" readonly onclick="this.select()" value="{{ links.feed }}">
-            <button type="button" onclick="copyField('feed', this)">{{ _('Copy') }}</button></div></li>
+            <button type="button" class="copybtn" onclick="copyField('feed', this)" title="{{ _('Copy') }}" aria-label="{{ _('Copy') }}"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/></svg></button></div></li>
         <li>{{ _('On a computer, go to <a href="https://calendar.google.com" target="_blank" rel="noopener">calendar.google.com</a> (this can’t be done in the phone app).') }}</li>
         <li>{{ _('On the left, next to <b>Other calendars</b>, click <b>+</b> → <b>From URL</b>.') }}</li>
         <li>{{ _('Paste the link and click <b>Add calendar</b>.') }}</li>
@@ -76,8 +77,8 @@ var T = { copied: {{ _('Copied')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+
 // Copy a field's text. Uses the Clipboard API on HTTPS/localhost, and falls back to
 // select + execCommand on plain-HTTP pages (e.g. http://192.168.x.x:8080) where it's blocked.
 function copyField(id, btn) {
-  var el = document.getElementById(id), text = el.value, label = btn.textContent;
-  function done(msg) { btn.textContent = msg || T.copied; setTimeout(function () { btn.textContent = label; }, 1800); }
+  var el = document.getElementById(id), text = el.value, icon = btn.innerHTML;
+  function done(msg) { btn.textContent = msg || T.copied; setTimeout(function () { btn.innerHTML = icon; }, 1800); }
   function fallback() {
     el.focus(); el.select(); el.setSelectionRange(0, text.length);
     var ok = false;

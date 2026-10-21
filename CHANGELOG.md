@@ -5,7 +5,43 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.8**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.9**
+
+## 0.1.9 — 2026-10-20
+
+### Added
+- **F1.3** The installer asks for the **public address** (default `http://<this computer's IP>:8080`);
+  it may also be entered later in ☰ Settings.
+- **I1.2** The CCS+ UID and Calendar Sync password are in the **Settings** menu (☰), with whether
+  CCS+ accepted them.
+- **F4** A footer with the version and links to **Report a problem** and **Suggest a feature**
+  (GitHub issue forms; the bug form is filled in with the version).
+- **F6.2** A pin (bottom right of an open event) keeps it open.
+- **F6.3** Clicking an empty spot on a day opens **Add event** for that day.
+- **F6.4** A line under **Add to Google Calendar** and **Open subscribe page** explaining each.
+- The installer works on macOS (Docker Desktop) and on Windows inside WSL.
+
+### Changed
+- **F1.1** Running the installer again offers your current settings as the defaults.
+- **F1.2** The installer's questions are now: release (stable or beta), the folder for
+  `docker-compose.yml` and `.env`, then the config and data folder, which is always asked so you can
+  confirm it.
+- **I1.1** With no CCS+ login yet, the health bar shows **Setup needed** (not an error) and asks for
+  it; nothing is downloaded until it's entered. The **CCS+ Calendar Sync** login now sits just under
+  the health bar, always visible, with "✓ Validated: CCS+ accepted the sign-in" when it works, and
+  the note "Your CCS+ UID and Calendar Sync password may be updated in Status & setup, or in
+  Settings (☰)." Status & setup opens by itself until it's set up.
+- **F2.1** The Settings Google section is now **Google Calendar Autosync**: Client ID, Client secret
+  and a closed "How to get a client ID and secret (step by step)".
+- **F3** Status & setup's Google section has three parts: **Autosync** (connected, or the client
+  ID and secret with the same guide), **Subscribe to the feed** (the raw feed URL and **Add to Google
+  Calendar**) and **Share it** (the shareable subscribe page and **Open subscribe page**).
+- **F4** Copy buttons use the Bootstrap "copy" icon.
+- **F5** The upload line is shorter: "Or upload **Calendar.ics** by hand."
+- **F6.1** Clicking anywhere else closes an open event (unless it's pinned).
+- **I2** The calendar-name hint says Autosync renames the Google calendar by itself; without
+  Autosync, Google keeps the name it saw when you subscribed, so rename it in Google too.
+- README: works on Linux, macOS or Windows (WSL); the installer's four questions in order.
 
 ## 0.1.8 — 2026-10-20
 

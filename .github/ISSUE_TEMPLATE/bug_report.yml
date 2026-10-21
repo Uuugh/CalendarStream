@@ -1,0 +1,30 @@
+name: Report a problem
+description: Something in CalendarStream doesn't work as it should.
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Shown next to "CalendarStream" at the top of the status page (filled in when you use the link at the bottom of the page).
+      placeholder: "0.1.9"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Activity log or container log (optional)
+      description: Lines from the Activity log, or `docker compose logs --tail 50`. Remove anything private (UID, passwords, e-mail addresses, feed links) first.
+      render: text
+  - type: input
+    id: setup
+    attributes:
+      label: Setup (optional)
+      description: e.g. Linux server, Mac with Docker Desktop, Windows with WSL; Google Autosync or the subscribed feed.

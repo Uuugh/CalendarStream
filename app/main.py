@@ -322,9 +322,9 @@ async def run_once(manual: bool = False):
     if state.running:
         return
     if not logins.ccs_configured:
-        state.status = "error"
-        state.message = ("Enter your CCS+ UID and Calendar Sync password in Status & setup → Setup "
-                         "to start downloading the schedule.")
+        # Nothing to do until the login is entered; the page shows the boxes for it.
+        state.status = "setup"
+        state.message = "Enter your CCS+ UID and Calendar Sync password to start downloading the schedule."
         state.save()
         return
     if state.login_failures >= MAX_AUTH_FAILURES and not manual:
@@ -644,7 +644,7 @@ def index(request: Request, month: str | None = None):
         "csrf": CSRF_TOKEN, "name": calendar_name(), "name_from_gui": bool(store.get("calendar_name")),
         "color": calendar_color(), "tags": calendar_tags(), "tag_modes": TAG_MODES,
         "sections": section_state(), "interval": interval_minutes(),
-        "google": google_view(request, lang), "open_menu": request.query_params.get("menu") == "google",
+        "google": google_view(request, lang), "open_menu": request.query_params.get("menu") in ("google", "settings"),
         "public": {"url": public_url(), "from_settings": bool(store.get("public_url")),
                    "env": settings.public_base_url},
         "page_user": logins.page_user,
@@ -718,8 +718,13 @@ def change_login(request: Request, csrf: str = Form(""), current: str = Form("")
     return RedirectResponse("/", status_code=303)
 
 
+def _back_to(back: str, anchor: str) -> str:
+    """Where a form returns to: the Settings menu, or a part of the status page."""
+    return "/?menu=settings" if back == "menu" else f"/#{anchor}"
+
+
 @app.post("/setup/ccs", dependencies=[Depends(gui_auth)])
-async def set_ccs_login(csrf: str = Form(""), uid: str = Form(""), password: str = Form("")):
+async def set_ccs_login(csrf: str = Form(""), uid: str = Form(""), password: str = Form(""), back: str = Form("")):
     """Save the CCS+ UID and Calendar Sync password (Setup), then download straight away."""
     check_csrf(csrf)
     try:
@@ -731,7 +736,8 @@ async def set_ccs_login(csrf: str = Form(""), uid: str = Form(""), password: str
     state.record("info", "CCS+ UID and Calendar Sync password saved")
     if not state.running:
         asyncio.create_task(run_once(manual=True))
-    return RedirectResponse("/#setup", status_code=303)
+        await asyncio.sleep(1.5)   # usually long enough to show whether CCS+ accepted it
+    return RedirectResponse(_back_to(back, "setup"), status_code=303)
 
 
 @app.post("/setup/interval", dependencies=[Depends(gui_auth)])
@@ -1019,7 +1025,7 @@ async def set_public_url(csrf: str = Form(""), url: str = Form(""), action: str 
 
 @app.post("/google/client", dependencies=[Depends(gui_auth)])
 async def google_client(request: Request, csrf: str = Form(""), client_id: str = Form(""),
-                        client_secret: str = Form(""), action: str = Form("save")):
+                        client_secret: str = Form(""), action: str = Form("save"), back: str = Form("")):
     """Save or remove the Google OAuth client (Settings menu). The secret is stored encrypted and
     never shown again. It can't change while connected: the sign-in belongs to that client."""
     check_csrf(csrf)
@@ -1040,7 +1046,7 @@ async def google_client(request: Request, csrf: str = Form(""), client_id: str =
         check = await google.check_client(google_redirect_uri(request))
         state.record("info" if check["ok"] else "warn",
                      f"Google OAuth client saved ({google.client_id.split('.')[0][:12]}…): {check['message']}")
-    return RedirectResponse("/?menu=google", status_code=303)
+    return RedirectResponse(_back_to(back, "feedcard"), status_code=303)
 
 
 @app.post("/google/connect", dependencies=[Depends(gui_auth)])
