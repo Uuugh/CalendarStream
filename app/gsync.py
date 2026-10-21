@@ -55,6 +55,9 @@ WATCH_TTL = 7 * 24 * 3600   # seconds a push-notification channel lasts (Google'
 
 CALENDAR_DESCRIPTION = ("Your United CCS+ schedule, kept up to date by CalendarStream. "
                         "Changes made here may be overwritten at the next sync.")
+FEED_DESCRIPTION = ("A calendar feed, kept up to date by CalendarStream. "
+                    "Changes made here may be overwritten at the next sync.")
+CAL_KEYS = ("calendar_id", "calendar_name", "synced_calendar", "created", "last_sync", "events")
 
 
 class GoogleError(Exception):
@@ -272,8 +275,47 @@ class Google:
         self._access = None
 
     def info(self) -> dict:
-        """Saved connection details: email, calendar_id, calendar_name, connected_at, last_error."""
+        """Saved connection details: email, connected_at, last_sync, last_result, last_error, and each
+        source's calendar (see cal_info)."""
         return self.store.get("google") or {}
+
+    # Each calendar source has a calendar of its own in Google: {calendar_id, calendar_name,
+    # synced_calendar, created, last_sync, events}. CCS+ ("ccs") keeps its details at the top level
+    # of "google" (where versions before 0.2 kept them); other sources under "calendars".
+
+    def cal_info(self, sid: str) -> dict:
+        info = self.info()
+        if sid == "ccs":
+            return {k: info[k] for k in CAL_KEYS if k in info}
+        return dict((info.get("calendars") or {}).get(sid) or {})
+
+    def _update_cal(self, sid: str, **changes):
+        if sid == "ccs":
+            self._update_info(**changes)
+            return
+        info = self.info()
+        cals = dict(info.get("calendars") or {})
+        cal = {**(cals.get(sid) or {}), **changes}
+        cals[sid] = {k: v for k, v in cal.items() if v not in (None, "")}
+        info["calendars"] = cals
+        self.store.set("google", info)
+
+    def calendar_sids(self) -> list[str]:
+        """Sources that have (or had) a calendar in Google."""
+        info = self.info()
+        return (["ccs"] if info.get("calendar_id") else []) + list((info.get("calendars") or {}).keys())
+
+    def _forget_cal(self, sid: str):
+        if sid == "ccs":
+            info = self.info()
+            for k in CAL_KEYS:
+                info.pop(k, None)
+            self.store.set("google", info)
+        else:
+            info = self.info()
+            (info.get("calendars") or {}).pop(sid, None)
+            self.store.set("google", info)
+        self.store.google_forget(source=sid)
 
     def _update_info(self, **changes):
         info = self.info()
@@ -332,9 +374,9 @@ class Google:
             "code_challenge_method": "S256",
         })
 
-    async def finish_sign_in(self, state: str, code: str, calendar_name: str) -> dict:
-        """Handle Google's answer: swap the code for tokens, check the permission was granted,
-        save the refresh token and make sure CalendarStream's calendar exists. Returns the info."""
+    async def finish_sign_in(self, state: str, code: str) -> dict:
+        """Handle Google's answer: swap the code for tokens, check the permission was granted and
+        save the refresh token. The calendars are made (or found again) by the next sync. Returns the info."""
         pending = self._pending.pop(state or "", None)
         if not pending or pending[2] < time.monotonic():
             raise GoogleError("This Google sign-in has expired or was already used. Try Connect again.")
@@ -362,7 +404,6 @@ class Google:
         self._save_check(True, "Google accepted the client ID and secret")
         self._access = (tokens["access_token"], time.monotonic() + int(tokens.get("expires_in", 3600)) - 60)
         self._update_info(email=email, connected_at=datetime.now(timezone.utc).isoformat(), last_error=None)
-        await self.ensure_calendar(calendar_name, previous.get("calendar_id"))
         return self.info()
 
     async def _token_request(self, form: dict) -> dict:
@@ -439,18 +480,33 @@ class Google:
                               + (f" ({reason})" if reason else "") + f" to {method} {path.split('?')[0]}.")
         raise GoogleError("Google Calendar is busy; CalendarStream will try again later.")
 
-    async def ensure_calendar(self, name: str, calendar_id: str | None = None) -> str:
-        """Use CalendarStream's calendar if it still exists in Google, otherwise create it."""
-        calendar_id = calendar_id or self.info().get("calendar_id")
+    async def ensure_calendar(self, sid: str, name: str, calendar_id: str | None = None) -> str:
+        """Use a source's calendar if it still exists in Google, otherwise create it."""
+        calendar_id = calendar_id or self.cal_info(sid).get("calendar_id")
         if calendar_id:
             found = await self.api("GET", f"/calendars/{_quote(calendar_id)}", ok_missing=True)
             if found is not None:
-                self._update_info(calendar_id=calendar_id, calendar_name=found.get("summary", name), created=False)
+                self._update_cal(sid, calendar_id=calendar_id, calendar_name=found.get("summary", name), created=False)
                 return calendar_id
         made = await self.api("POST", "/calendars", body={
-            "summary": name, "timeZone": self.tz_name, "description": CALENDAR_DESCRIPTION})
-        self._update_info(calendar_id=made["id"], calendar_name=made.get("summary", name), created=True)
+            "summary": name, "timeZone": self.tz_name,
+            "description": CALENDAR_DESCRIPTION if sid == "ccs" else FEED_DESCRIPTION})
+        self._update_cal(sid, calendar_id=made["id"], calendar_name=made.get("summary", name), created=True)
         return made["id"]
+
+    async def delete_calendar(self, sid: str) -> str:
+        """Delete a removed source's calendar in Google (if connected) and forget it. Returns a note
+        when Google couldn't be reached ("" otherwise)."""
+        note = ""
+        calendar_id = self.cal_info(sid).get("calendar_id")
+        if calendar_id and self.connected:
+            try:
+                await self.stop_watch([sid])
+                await self.api("DELETE", f"/calendars/{_quote(calendar_id)}", ok_missing=True)
+            except GoogleError as e:
+                note = f"its calendar in Google wasn't deleted ({e}); delete it there by hand"
+        self._forget_cal(sid)
+        return note
 
     # --- Disconnecting ------------------------------------------------------------------------
 
@@ -458,14 +514,16 @@ class Google:
         """Optionally delete CalendarStream's calendar, revoke the sign-in in Google and forget it.
         The local sign-in is always forgotten; returns notes on anything Google didn't confirm."""
         notes = []
+        if delete_calendar:
+            for sid in self.calendar_sids():
+                calendar_id = self.cal_info(sid).get("calendar_id")
+                try:
+                    if calendar_id:
+                        await self.api("DELETE", f"/calendars/{_quote(calendar_id)}", ok_missing=True)
+                    self._forget_cal(sid)
+                except GoogleError as e:
+                    notes.append(f"a calendar wasn't deleted ({e})")
         info = self.info()
-        try:
-            if delete_calendar and info.get("calendar_id"):
-                await self.api("DELETE", f"/calendars/{_quote(info['calendar_id'])}", ok_missing=True)
-                info.pop("calendar_id", None)
-                info.pop("calendar_name", None)
-        except GoogleError as e:
-            notes.append(f"the calendar wasn't deleted ({e})")
         try:
             token = self._refresh_token()
             async with httpx.AsyncClient(timeout=TIMEOUT) as client:
@@ -478,7 +536,7 @@ class Google:
                          "myaccount.google.com/permissions")
         self.store.delete("google_token")
         self._access = None
-        # Keep the calendar ID (unless deleted) so reconnecting the same account reuses that calendar.
+        # Keep the calendar IDs (unless deleted) so reconnecting the same account reuses those calendars.
         info.pop("connected_at", None)
         info.pop("last_error", None)
         info.pop("created", None)
@@ -496,19 +554,23 @@ class Google:
     # must be renewed (a new channel, then the old one stopped). Saved in kv "google_watch":
     # {id, resource, token (sealed), address, calendar_id, expires, error, tried, last_notice}.
 
-    def watch_info(self) -> dict:
-        return self.store.get("google_watch") or {}
+    @staticmethod
+    def _watch_key(sid: str) -> str:
+        return "google_watch" if sid == "ccs" else f"google_watch:{sid}"
 
-    def _update_watch(self, **changes):
-        info = self.watch_info()
+    def watch_info(self, sid: str = "ccs") -> dict:
+        return self.store.get(self._watch_key(sid)) or {}
+
+    def _update_watch(self, sid: str, **changes):
+        info = self.watch_info(sid)
         info.update(changes)
-        self.store.set("google_watch", info)
+        self.store.set(self._watch_key(sid), info)
 
-    def watch_due(self, address: str, now_: datetime, renew_before: timedelta, retry_after: timedelta) -> bool:
+    def watch_due(self, sid: str, address: str, now_: datetime, renew_before: timedelta, retry_after: timedelta) -> bool:
         """Whether a channel should be started now: none yet, a new address or calendar, close to
         expiring; after a failure, only once `retry_after` has passed (or the address changed)."""
-        w = self.watch_info()
-        calendar_id = self.info().get("calendar_id")
+        w = self.watch_info(sid)
+        calendar_id = self.cal_info(sid).get("calendar_id")
         if w.get("error") and w.get("address") == address:
             tried = datetime.fromisoformat(w["tried"]) if w.get("tried") else None
             return not tried or now_ - tried >= retry_after
@@ -517,11 +579,11 @@ class Google:
         expires = datetime.fromisoformat(w["expires"]) if w.get("expires") else now_
         return expires - now_ <= renew_before
 
-    async def start_watch(self, address: str):
-        """Ask Google to notify `address` of changes to CalendarStream's calendar; stop the old channel."""
-        calendar_id = self.info().get("calendar_id")
-        old = self.watch_info()
-        self._update_watch(address=address, tried=datetime.now(timezone.utc).isoformat())
+    async def start_watch(self, sid: str, address: str):
+        """Ask Google to notify `address` of changes to a source's calendar; stop the old channel."""
+        calendar_id = self.cal_info(sid).get("calendar_id")
+        old = self.watch_info(sid)
+        self._update_watch(sid, address=address, tried=datetime.now(timezone.utc).isoformat())
         if not calendar_id:
             return
         channel, token = secrets.token_hex(16), secrets.token_urlsafe(32)
@@ -530,11 +592,11 @@ class Google:
                 "id": channel, "type": "web_hook", "address": address, "token": token,
                 "params": {"ttl": str(WATCH_TTL)}})
         except GoogleError as e:
-            self._update_watch(error=str(e))
+            self._update_watch(sid, error=str(e))
             raise
         expires = datetime.fromtimestamp(int(made.get("expiration") or 0) / 1000, timezone.utc) \
             if made.get("expiration") else datetime.now(timezone.utc) + timedelta(seconds=WATCH_TTL)
-        self.store.set("google_watch", {
+        self.store.set(self._watch_key(sid), {
             "id": channel, "resource": made.get("resourceId", ""), "token": self._seal(token),
             "address": address, "calendar_id": calendar_id, "expires": expires.isoformat(),
             "tried": datetime.now(timezone.utc).isoformat(), "last_notice": old.get("last_notice")})
@@ -547,29 +609,32 @@ class Google:
         except GoogleError:
             pass    # it runs out by itself within a week
 
-    async def stop_watch(self):
-        """Stop notifications (when disconnecting)."""
-        w = self.watch_info()
-        if w.get("id") and w.get("resource"):
-            await self._stop_channel(w["id"], w["resource"])
-        self.store.delete("google_watch")
+    async def stop_watch(self, sids: list[str]):
+        """Stop notifications for these sources' calendars (when disconnecting or removing a source)."""
+        for sid in sids:
+            w = self.watch_info(sid)
+            if w.get("id") and w.get("resource"):
+                await self._stop_channel(w["id"], w["resource"])
+            self.store.delete(self._watch_key(sid))
 
-    def notice_ok(self, channel: str, token: str) -> bool:
-        """Whether a notification comes from the current channel (its ID and secret token match)."""
-        w = self.watch_info()
-        if not w.get("id") or not secrets.compare_digest((channel or "").encode(), w["id"].encode()):
-            return False
-        if not w.get("token"):
-            return False
-        return secrets.compare_digest((token or "").encode(), self._unseal(w["token"], "").encode())
+    def notice_from(self, channel: str, token: str, sids: list[str]) -> str | None:
+        """The source whose current channel sent a notification (its ID and secret token match), or None."""
+        for sid in sids:
+            w = self.watch_info(sid)
+            if not w.get("id") or not w.get("token"):
+                continue
+            if secrets.compare_digest((channel or "").encode(), w["id"].encode()) and \
+                    secrets.compare_digest((token or "").encode(), self._unseal(w["token"], "").encode()):
+                return sid
+        return None
 
-    def noticed(self):
-        self._update_watch(last_notice=datetime.now(timezone.utc).isoformat())
+    def noticed(self, sid: str):
+        self._update_watch(sid, last_notice=datetime.now(timezone.utc).isoformat())
 
     # --- Keeping the events in step -------------------------------------------------------
 
-    async def sync(self, events: list, name: str, color_for, first_day: date, full: bool = False) -> SyncResult:
-        """Write the schedule to CalendarStream's calendar in Google.
+    async def sync(self, sid: str, events: list, name: str, color_for, first_day: date, full: bool = False) -> SyncResult:
+        """Write one source's events to its calendar in Google.
 
         `events` are the published events (calsync.Event); hidden ones are left out. `color_for(title)`
         gives a tag's #rrggbb color or "". Only events ending after `first_day` are written; older
@@ -577,36 +642,36 @@ class Google:
         with `full`, Google's copy is also checked and anything changed or deleted there is repaired."""
         tz = ZoneInfo(self.tz_name)
         result = SyncResult()
-        info = self.info()
+        info = self.cal_info(sid)
         calendar_id = info.get("calendar_id")
         if not calendar_id or info.get("synced_calendar") != calendar_id:
             full = True                       # a new calendar: nothing in it is known yet
         if full:
-            calendar_id = await self.ensure_calendar(name, calendar_id)
-            if self.info().get("synced_calendar") != calendar_id:
-                self.store.google_forget()
-                self._update_info(synced_calendar=calendar_id)
+            calendar_id = await self.ensure_calendar(sid, name, calendar_id)
+            if self.cal_info(sid).get("synced_calendar") != calendar_id:
+                self.store.google_forget(source=sid)
+                self._update_cal(sid, synced_calendar=calendar_id)
         try:
-            return await self._sync(calendar_id, events, name, color_for, first_day, tz, full, result)
+            return await self._sync(sid, calendar_id, events, name, color_for, first_day, tz, full, result)
         except CalendarMissing:
             # Deleted in Google since the last check: make a new one and write everything again.
-            self._update_info(calendar_id=None, synced_calendar=None)
-            calendar_id = await self.ensure_calendar(name)
-            self.store.google_forget()
-            self._update_info(synced_calendar=calendar_id)
-            result = SyncResult(notes=["the calendar was missing in Google, so a new one was made"])
-            return await self._sync(calendar_id, events, name, color_for, first_day, tz, True, result)
+            self._update_cal(sid, calendar_id=None, synced_calendar=None)
+            calendar_id = await self.ensure_calendar(sid, name)
+            self.store.google_forget(source=sid)
+            self._update_cal(sid, synced_calendar=calendar_id)
+            result = SyncResult(notes=[f"the calendar {name} was missing in Google, so a new one was made"])
+            return await self._sync(sid, calendar_id, events, name, color_for, first_day, tz, True, result)
 
-    async def _sync(self, calendar_id, events, name, color_for, first_day, tz, full, result) -> SyncResult:
+    async def _sync(self, sid, calendar_id, events, name, color_for, first_day, tz, full, result) -> SyncResult:
         cal = f"/calendars/{_quote(calendar_id)}"
-        if self.info().get("calendar_name") != name:          # keep the name in step
+        if self.cal_info(sid).get("calendar_name") != name:          # keep the name in step
             if await self.api("PATCH", cal, body={"summary": name}, ok_missing=True) is None:
                 raise CalendarMissing()
-            self._update_info(calendar_name=name)
+            self._update_cal(sid, calendar_name=name)
             result.renamed = True
 
         wanted = {e.uid: e for e in events if not e.hidden and in_window(e, first_day, tz)}
-        rows = self.store.google_rows()
+        rows = self.store.google_rows(sid)
         remote = await self._list_events(cal, first_day, tz) if full else None
         writes = 0
 
@@ -628,7 +693,7 @@ class Google:
                 result.updated += 1
             else:
                 result.added += 1
-            self.store.google_saved(uid, gid, digest, e.end)
+            self.store.google_saved(uid, gid, digest, e.end, sid)
             writes += 1
 
         wanted_ids = {event_id(uid) for uid in wanted}
@@ -651,8 +716,9 @@ class Google:
                     result.removed += 1
                     writes += 1
 
-        self._update_info(last_sync=datetime.now(timezone.utc).isoformat(), last_result=result.summary(),
-                          events=len(wanted), last_error=None)
+        when = datetime.now(timezone.utc).isoformat()
+        self._update_cal(sid, last_sync=when, events=len(wanted))
+        self._update_info(last_sync=when, last_result=result.summary(), last_error=None)
         return result
 
     async def _list_events(self, cal: str, first_day: date, tz: ZoneInfo) -> dict[str, dict]:

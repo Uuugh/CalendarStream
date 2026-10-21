@@ -10,7 +10,7 @@ import re
 import secrets
 import threading
 from contextlib import asynccontextmanager
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, time as dtime, timedelta, timezone
 from itertools import zip_longest
 from pathlib import Path
 from urllib.parse import quote, urlparse
@@ -23,8 +23,8 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 
 from . import __version__, i18n
-from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, check_calendar, download,
-                      empty_feed, new_calendar, parse, render)
+from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, apply_changes, build_feed,
+                      check_calendar, download, empty_feed, new_calendar, parse, parse_feed, render)
 from .config import DEFAULT_CALENDAR_URL, normalise_public_url, settings
 from .gsync import GOOGLE_COLORS, Google, GoogleError
 from .logins import LoginError, Logins
@@ -54,28 +54,90 @@ def defaults() -> Defaults:
     return Defaults(settings.default_event_type, settings.default_event_hours, settings.allday_24h)
 
 
+# --- Calendar sources and destinations ------------------------------------------------
+#
+# A source is where events come from: United's CCS+ Calendar Sync (ID "ccs", at most one) or any
+# .ics feed link (type "ics", IDs such as "f3a9c1"). Each source has its own name, color, rules,
+# check interval, status, events, feed link and Google calendar. CCS+ keeps the database keys used
+# before 0.2 ("calendar_name", "status"…); a feed source's keys are the same plus ":<id>" (skey).
+# Destinations are where the events go: "google" (Google Calendar Autosync) and "feed" (feed links
+# and subscribe pages). A new install starts with neither; + adds them.
+
+SOURCE_TYPES = ("ccs", "ics")
+DESTINATION_TYPES = ("google", "feed")
+SID_RE = re.compile(r"^(ccs|f[0-9a-f]{6})$")
+
+
+def skey(sid: str, base: str) -> str:
+    """The database key of one of a source's settings."""
+    return base if sid == "ccs" else f"{base}:{sid}"
+
+
+def sources() -> list[dict]:
+    """The calendar sources, in the order they were added: [{"id", "type", "url"?}, …]."""
+    return [x for x in (store.get("sources") or []) if isinstance(x, dict) and SID_RE.match(str(x.get("id", "")))]
+
+
+def source(sid: str) -> dict | None:
+    return next((x for x in sources() if x["id"] == sid), None)
+
+
+def source_ids() -> list[str]:
+    return [x["id"] for x in sources()]
+
+
+def destinations() -> list[str]:
+    return [d for d in (store.get("destinations") or []) if d in DESTINATION_TYPES]
+
+
+def migrate_sources():
+    """0.2 added sources and destinations. An install from before keeps what it had: CCS+ as its source,
+    and the feed (its links may be in use) plus Google Autosync if it was set up. A new install starts empty."""
+    if store.get("sources") is not None:
+        return
+    had = logins.ccs_configured or store.get_calendar("source") is not None or store.event_count() > 0
+    store.set("sources", [{"id": "ccs", "type": "ccs"}] if had else [])
+    store.set("destinations", (["feed"] if had else []) + (["google"] if google.configured else []))
+
+
 def calendar_url() -> str:
+    """The CCS+ Calendar Sync link."""
     return store.get("calendar_url") or settings.calendar_url
 
 
-def calendar_name() -> str:
-    """Name set on the status page, else CALENDAR_NAME from .env."""
-    return store.get("calendar_name") or settings.calendar_name
+def source_url(sid: str) -> str:
+    return calendar_url() if sid == "ccs" else str((source(sid) or {}).get("url", ""))
+
+
+def calendar_name(sid: str = "ccs") -> str:
+    """A source's name, set on the status page; for CCS+ else CALENDAR_NAME from .env."""
+    saved = store.get(skey(sid, "calendar_name"))
+    if saved:
+        return saved
+    if sid == "ccs":
+        return settings.calendar_name
+    return urlparse(source_url(sid)).hostname or "Calendar"
 
 
 COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
-def calendar_color() -> str:
-    """Color set on the status page (#rrggbb), or "" for none. Validated again on the way out
-    because it is written into the page's CSS."""
-    color = store.get("calendar_color") or ""
+def calendar_color(sid: str = "ccs") -> str:
+    """A source's color (#rrggbb), or "" for none. Validated again on the way out because it is
+    written into the page's CSS."""
+    color = store.get(skey(sid, "calendar_color")) or ""
     return color.lower() if COLOR_RE.match(color) else ""
 
 
 MAX_TAGS, MAX_TAG_LEN = 30, 40
 
-# How a tag is matched against an event title. "word" is the default.
+# Rules (called tags before 0.2): a word or phrase matched against event titles, and what to do with
+# matching events: give them a color, or add an event made from a template next to them.
+RULE_ACTIONS = {"color": "Color", "event": "Add event"}
+RULE_WHEN = {"before_start": "before the start", "after_start": "after the start", "after_end": "after the end"}
+MAX_OFFSET = 7 * 24 * 60     # minutes
+
+# How a rule is matched against an event title. "word" is the default.
 TAG_MODES = {
     "word": "Whole word",      # "RDO" matches "RDO" and "RDO." but not "VRDO"
     "contains": "Contains",    # "RDO" also matches "VRDO"
@@ -84,17 +146,95 @@ TAG_MODES = {
 }
 
 
-def calendar_tags() -> list[dict]:
-    """Tag colors set on the status page, in priority order:
-    [{"tag": "RDO", "color": "#rrggbb", "mode": "word", "case": False}, …].
-    Validated again on the way out because the colors are written into the page's CSS."""
-    tags = []
-    for t in store.get("calendar_tags") or []:
+def calendar_tags(sid: str = "ccs") -> list[dict]:
+    """A source's rules, in priority order: [{"id", "tag": "RDO", "mode": "word", "case": False,
+    "action": "color" | "event", "color": "#rrggbb", "template": template ID, "when": "before_start",
+    "offset": minutes}, …]. Validated again on the way out because colors are written into the page's CSS."""
+    rules = []
+    for i, t in enumerate(store.get(skey(sid, "calendar_tags")) or []):
         tag, color = str(t.get("tag", "")).strip(), str(t.get("color", ""))
         mode = t.get("mode") if t.get("mode") in TAG_MODES else "word"
-        if tag and COLOR_RE.match(color):
-            tags.append({"tag": tag[:MAX_TAG_LEN], "color": color.lower(), "mode": mode, "case": bool(t.get("case"))})
-    return tags[:MAX_TAGS]
+        action = t.get("action") if t.get("action") in RULE_ACTIONS else "color"
+        if not tag or (action == "color" and not COLOR_RE.match(color)):
+            continue
+        try:
+            offset = max(0, min(MAX_OFFSET, int(t.get("offset") or 0)))
+        except (TypeError, ValueError):
+            offset = 0
+        rid = str(t.get("id") or f"r{i}")
+        rules.append({"id": rid if re.fullmatch(r"[a-z0-9]{1,16}", rid) else f"r{i}", "tag": tag[:MAX_TAG_LEN],
+                      "color": color.lower() if COLOR_RE.match(color) else "", "mode": mode, "case": bool(t.get("case")),
+                      "action": action, "template": str(t.get("template") or "")[:16],
+                      "when": t.get("when") if t.get("when") in RULE_WHEN else "before_start", "offset": offset})
+    return rules[:MAX_TAGS]
+
+
+def color_rules(rules: list[dict]) -> list[dict]:
+    return [r for r in rules if r["action"] == "color" and r["color"]]
+
+
+# --- Event templates ------------------------------------------------------------------------
+# Ready-made events: used by "Add event" rules, and offered when adding an event by hand.
+
+MAX_TEMPLATES = 30
+
+
+def event_templates() -> list[dict]:
+    """[{"id", "title", "all_day", "minutes", "location", "description", "color"}, …]"""
+    found = []
+    for t in store.get("event_templates") or []:
+        title = " ".join(str(t.get("title", "")).split())[:200]
+        tid = str(t.get("id", ""))
+        if not title or not re.fullmatch(r"[a-z0-9]{1,16}", tid):
+            continue
+        try:
+            minutes = max(5, min(24 * 60, int(t.get("minutes") or 60)))
+        except (TypeError, ValueError):
+            minutes = 60
+        color = str(t.get("color") or "").lower()
+        found.append({"id": tid, "title": title, "all_day": bool(t.get("all_day")), "minutes": minutes,
+                      "location": str(t.get("location") or "")[:200], "description": str(t.get("description") or "")[:2000],
+                      "color": color if color in EVENT_COLORS else ""})
+    return found[:MAX_TEMPLATES]
+
+
+def _from_template(e: Event, rule: dict, t: dict) -> Event:
+    """The event an "Add event" rule makes next to a matching event `e`."""
+    if e.all_day:      # all-day events count from midnight
+        s0 = datetime.combine(date.fromisoformat(e.start[:10]), dtime(), TZ)
+        s1 = datetime.combine(date.fromisoformat(e.end[:10]), dtime(), TZ)
+    else:
+        s0, s1 = datetime.fromisoformat(e.start), datetime.fromisoformat(e.end)
+    off = timedelta(minutes=rule["offset"])
+    at = {"before_start": s0 - off, "after_start": s0 + off, "after_end": s1 + off}[rule["when"]].astimezone(TZ)
+    if t["all_day"]:
+        start, end = at.date().isoformat(), (at.date() + timedelta(days=1)).isoformat()
+    else:
+        start, end = at.isoformat(), (at + timedelta(minutes=t["minutes"])).isoformat()
+    return Event(title=t["title"], start=start, end=end, all_day=t["all_day"], location=t["location"],
+                 description=t["description"], uid=f"{e.uid}#rule-{rule['id']}", origin="rule",
+                 color=t["color"], source=e.source)
+
+
+def rule_maker(sid: str):
+    """A function adding the events a source's "Add event" rules make (or None when it has none)."""
+    templates = {t["id"]: t for t in event_templates()}
+    rules = [(r, _tag_pattern(r), templates[r["template"]]) for r in calendar_tags(sid)
+             if r["action"] == "event" and r["template"] in templates]
+    if not rules:
+        return None
+
+    def make(events: list[Event]) -> list[Event]:
+        made = {}
+        for e in events:
+            if e.origin == "rule" or e.hidden:
+                continue
+            for rule, rx, t in rules:
+                if rx.search(e.title):
+                    ev = _from_template(e, rule, t)
+                    made[ev.uid] = ev
+        return list(made.values())
+    return make
 
 
 def _tag_pattern(t: dict) -> re.Pattern:
@@ -105,9 +245,9 @@ def _tag_pattern(t: dict) -> re.Pattern:
 
 
 def tag_matcher(tags: list[dict]):
-    """Return a function giving the color of the first tag that matches an event title
-    (by each tag's mode and case setting), or "" when none match."""
-    rules = [(_tag_pattern(t), t["color"]) for t in tags]
+    """Return a function giving the color of the first color rule that matches an event title
+    (by each rule's mode and case setting), or "" when none match."""
+    rules = [(_tag_pattern(t), t["color"]) for t in color_rules(tags)]
 
     def color_for(title: str) -> str:
         return next((color for rx, color in rules if rx.search(title)), "")
@@ -120,8 +260,11 @@ SECTIONS = {"status": True, "activity": False}
 
 
 def section_state() -> dict:
+    """Open/closed: the page's sections, and each source's box ("src:<id>", open unless closed)."""
     saved = store.get("ui_sections") or {}
-    return {k: bool(saved.get(k, default)) for k, default in SECTIONS.items()}
+    found = {k: bool(saved.get(k, default)) for k, default in SECTIONS.items()}
+    found.update({k: bool(v) for k, v in saved.items() if k.startswith("src:")})
+    return found
 
 
 def lang_for(request: Request) -> str:
@@ -189,7 +332,9 @@ def ui_theme() -> str:
 
 
 class State:
-    def __init__(self):
+    """A source's download status (CCS+ or a feed), saved in the database."""
+    def __init__(self, sid: str = "ccs"):
+        self.sid = sid
         self.status = "starting"   # ok | auth_failed | blocked | error | paused | running | starting
         self.message = ""
         self.last_attempt: datetime | None = None
@@ -204,6 +349,9 @@ class State:
         self.wake = asyncio.Event()
 
     def record(self, level: str, msg: str):
+        """Add a line to the activity log (a feed source's lines start with its name)."""
+        if self.sid != "ccs":
+            msg = f"{calendar_name(self.sid)}: {msg}"
         log.log({"warn": logging.WARNING, "error": logging.ERROR}.get(level, logging.INFO), msg)
         try:
             store.add_log(level, msg)
@@ -218,12 +366,12 @@ class State:
         for k in self._TIMES:
             data[k] = iso(data[k])
         try:
-            store.set("status", data)
+            store.set(skey(self.sid, "status"), data)
         except Exception as e:
             log.error("Couldn't save status to the database: %s", e)
 
     def load(self):
-        data = store.get("status") or {}
+        data = store.get(skey(self.sid, "status")) or {}
         for k in self._SAVED:
             if k in data:
                 v = data[k]
@@ -235,7 +383,19 @@ class State:
             self.status = "starting"
 
 
-state = State()
+states: dict[str, State] = {}
+
+
+def st(sid: str) -> State:
+    """A source's status (loaded from the database the first time)."""
+    if sid not in states:
+        states[sid] = State(sid)
+        if sid != "ccs":
+            states[sid].load()
+    return states[sid]
+
+
+state = st("ccs")      # CCS+, and the activity log for everything that isn't a source's
 
 
 # --- Google Calendar sync --------------------------------------------------------
@@ -273,17 +433,17 @@ def notify_address() -> str:
     return f"{base}/google/notify"
 
 
-async def ensure_watch():
-    """Keep Google's change notifications ("webhooks") running for CalendarStream's calendar: start
+async def ensure_watch(sid: str):
+    """Keep Google's change notifications ("webhooks") running for a source's calendar: start
     them, move them to a new public address, renew them before they run out. If Google refuses,
     Autosync carries on as before (daily check) and asks again later."""
     address = notify_address()
-    if not address or not google.connected or not google.watch_due(address, now(), WATCH_RENEW, WATCH_RETRY):
+    if not address or not google.connected or not google.watch_due(sid, address, now(), WATCH_RENEW, WATCH_RETRY):
         return
-    before = google.watch_info()
-    had = bool(before.get("id"))
+    before = google.watch_info(sid)
+    had = bool(before.get("id")) or any(google.watch_info(x).get("id") for x in source_ids() if x != sid)
     try:
-        await google.start_watch(address)
+        await google.start_watch(sid, address)
         if not had:
             state.record("info", "Google: instant updates turned on (changes made in Google are checked within seconds)")
     except GoogleError as e:
@@ -299,16 +459,19 @@ def sync_window_start() -> date:
 async def google_sync_once(full: bool) -> bool:
     """Run one sync. Returns False if it failed."""
     async with google_job.lock:
-        if not (google.configured and google.connected):
+        if not (google.configured and google.connected and "google" in destinations()):
             return True
         google_job.running = True
         try:
-            result = await google.sync(store.load_events(), calendar_name(), tag_matcher(calendar_tags()),
-                                       sync_window_start(), full)
-            if result.changed or result.notes:
-                state.record("info", f"Google: {result.summary()}"
-                             + ("; " + "; ".join(result.notes) if result.notes else ""))
-            await ensure_watch()
+            ids = source_ids()
+            for sid in ids:
+                result = await google.sync(sid, store.load_events(sid), calendar_name(sid),
+                                           tag_matcher(calendar_tags(sid)), sync_window_start(), full)
+                if result.changed or result.notes:
+                    who = "Google" if len(ids) == 1 else f"Google, {calendar_name(sid)}"
+                    state.record("info", f"{who}: {result.summary()}"
+                                 + ("; " + "; ".join(result.notes) if result.notes else ""))
+                await ensure_watch(sid)
             return True
         except GoogleError as e:
             message = str(e)
@@ -345,59 +508,92 @@ async def google_loop():
             pass
 
 
-def publish(raw: bytes | None, sha: str | None = None) -> tuple[list[Event], list[Event]]:
-    """Build the feed from a CCS+ calendar (or none yet) plus the edits and added events made here,
-    and store it. Returns (all events now, events before)."""
-    if raw is not None:
-        cal, base, digest = parse(raw, settings.timezone, defaults())
+def feed_window() -> tuple[date, date]:
+    """Which occurrences of a feed's repeating events are kept: a year back to two years ahead."""
+    today = now().date()
+    return today - timedelta(days=365), today + timedelta(days=730)
+
+
+def customs_for(sid: str) -> list[dict]:
+    """Events added on the status page to one source's calendar."""
+    return [c for c in store.get_customs() if (c.get("source") or "ccs") == sid]
+
+
+def publish(raw: bytes | None, sha: str | None = None, sid: str = "ccs") -> tuple[list[Event], list[Event]]:
+    """Build a source's feed from its last download (or none yet) plus the edits, added events and
+    rule-made events, and store it. Returns (all its events now, its events before)."""
+    edits, customs, extra = store.get_edits(), customs_for(sid), rule_maker(sid)
+    if sid == "ccs":
+        if raw is not None:
+            cal, base, digest = parse(raw, settings.timezone, defaults())
+        else:
+            cal, base, digest = new_calendar(), [], ""
+        feed, events = render(cal, base, calendar_name(), settings.timezone, edits, customs, calendar_color(), extra)
     else:
-        cal, base, digest = new_calendar(), [], ""
-    feed, events = render(cal, base, calendar_name(), settings.timezone, store.get_edits(), store.get_customs(),
-                          calendar_color())
-    previous = store.load_events()
+        base, digest = parse_feed(raw, settings.timezone, defaults(), sid, *feed_window()) if raw is not None else ([], "")
+        events = apply_changes(base, edits, customs, sid)
+        if extra:
+            events = sorted(events + extra(events), key=lambda e: e.start)
+        feed = build_feed(events, calendar_name(sid), settings.timezone, calendar_color(sid))
+    previous = store.load_events(sid)
     if raw is not None:
-        store.save_calendar("source", raw, sha or digest)
-    store.save_calendar("feed", feed, sha or digest)
-    store.replace_events(events)
-    state.event_count = sum(1 for e in events if not e.hidden)
+        store.save_calendar(skey(sid, "source"), raw, sha or digest)
+    store.save_calendar(skey(sid, "feed"), feed, sha or digest)
+    store.replace_events(events, sid)
+    st(sid).event_count = sum(1 for e in events if not e.hidden)
     request_google_sync()
     return events, previous
 
 
-def rebuild():
-    """Rebuild the feed from the last CCS+ calendar, e.g. after an edit or a rename."""
-    source = store.get_calendar("source")
-    publish(source[0] if source else None, source[1] if source else None)
+def rebuild(sid: str | None = None):
+    """Rebuild a source's feed (or every source's) from its last download, e.g. after an edit or a rename."""
+    for one in ([sid] if sid else source_ids()):
+        if one not in source_ids():
+            continue
+        found = store.get_calendar(skey(one, "source"))
+        publish(found[0] if found else None, found[1] if found else None, one)
 
 
-def apply_calendar(body: bytes, how: str) -> bool:
+def preview(sid: str, body: bytes) -> tuple[list[Event], str]:
+    """A downloaded calendar's events (before edits), and its hash."""
+    if sid == "ccs":
+        _, events, digest = parse(body, settings.timezone, defaults())
+        return events, digest
+    return parse_feed(body, settings.timezone, defaults(), sid, *feed_window())
+
+
+def apply_calendar(body: bytes, how: str, sid: str = "ccs") -> bool:
     """Publish a calendar file (downloaded or uploaded). Returns False if it was rejected."""
-    old_source = store.get_calendar("source")
+    S = st(sid)
+    old_source = store.get_calendar(skey(sid, "source"))
     changed = not old_source or old_source[0] != body
-    _, preview, digest = parse(body, settings.timezone, defaults())
-    if not preview and store.event_count() > 0:
-        state.status = "error"
-        state.message = (f"The {how} calendar has no events. Keeping the previous feed "
-                         f"({state.event_count} events) in case this is a glitch.")
-        state.record("warn", state.message)
+    events_found, digest = preview(sid, body)
+    if not events_found and store.event_count(sid) > 0:
+        S.status = "error"
+        S.message = (f"The {how} calendar has no events. Keeping the previous feed "
+                     f"({S.event_count} events) in case this is a glitch.")
+        S.record("warn", S.message)
         return False
-    events, previous = publish(body, digest)
-    state.status, state.last_success = "ok", now()
+    events, previous = publish(body, digest, sid)
+    S.status, S.last_success = "ok", now()
     if changed:
-        state.last_change = now()
+        S.last_change = now()
         old_ids, new_ids = {e.uid for e in previous}, {e.uid for e in events}
         added, removed = len(new_ids - old_ids), len(old_ids - new_ids)
         detail = f"{added} new, {removed} removed" if previous else "first copy"
-        state.message = f"{how[:1].upper()}{how[1:]}: {state.event_count} events in feed ({detail})"
-        state.record("info", f"Schedule {how}: {state.event_count} events in feed ({detail})")
+        S.message = f"{how[:1].upper()}{how[1:]}: {S.event_count} events in feed ({detail})"
+        S.record("info", f"Schedule {how}: {S.event_count} events in feed ({detail})")
     else:
-        state.message = f"Up to date: {state.event_count} events in feed (no changes)"
-        state.record("info", f"Schedule {how}: no changes")
+        S.message = f"Up to date: {S.event_count} events in feed (no changes)"
+        S.record("info", f"Schedule {how}: no changes")
     return True
 
 
-async def run_once(manual: bool = False):
-    if state.running:
+async def run_once(manual: bool = False, sid: str = "ccs"):
+    """Download a source now (CCS+ or a feed) and publish it if it changed."""
+    if sid != "ccs":
+        return await run_feed(sid)
+    if state.running or "ccs" not in source_ids():
         return
     if not logins.ccs_configured:
         # Nothing to do until the login is entered; the page shows the boxes for it.
@@ -452,30 +648,81 @@ async def run_once(manual: bool = False):
         state.save()
 
 
+async def run_feed(sid: str):
+    """Download a feed source (no login) and publish it if it changed."""
+    S = st(sid)
+    if S.running or sid not in source_ids():
+        return
+    S.running, S.status = True, "running"
+    S.last_attempt = now()
+    try:
+        url = source_url(sid)
+        host = urlparse(url).hostname or url
+        have_source = store.get_calendar(skey(sid, "source")) is not None
+        cache = (store.get(skey(sid, "http_cache")) or {}) if have_source else {}
+        dl = await download(url, etag=cache.get("etag", ""), last_modified=cache.get("last_modified", ""), who=host)
+        store.save_debug(skey(sid, "response"), json.dumps(dl.debug, indent=2).encode(), "application/json")
+        if dl.not_modified:
+            S.status, S.last_success = "ok", now()
+            S.message = f"Up to date: {S.event_count} events in feed (no changes)"
+            S.record("info", f"Schedule downloaded from {host}: no changes")
+            return
+        store.save_debug(skey(sid, "source"), dl.body, "text/calendar; charset=utf-8")
+        if apply_calendar(dl.body, f"downloaded from {host}", sid):
+            store.set(skey(sid, "http_cache"), {"etag": dl.etag, "last_modified": dl.last_modified})
+    except (AuthError, BlockedError, SourceError) as e:
+        S.status, S.message = "error", str(e)
+        S.record("error", f"Download failed: {e}")
+    except Exception as e:
+        S.status, S.message = "error", f"{type(e).__name__}: {e}"
+        S.record("error", f"Unexpected error: {S.message}")
+    finally:
+        S.running = False
+        S.save()
+
+
 MIN_INTERVAL, MAX_INTERVAL = 15, 24 * 60   # minutes between automatic downloads
 
 
-def interval_minutes() -> int:
-    """How often to download from CCS+: set on the status page, else SYNC_INTERVAL_MINUTES."""
-    saved = store.get("sync_interval")
-    return saved if isinstance(saved, int) and MIN_INTERVAL <= saved <= MAX_INTERVAL else settings.interval_minutes
+def interval_minutes(sid: str = "ccs") -> int:
+    """How often to download a source: set on the status page, else SYNC_INTERVAL_MINUTES (CCS+) or an hour."""
+    saved = store.get(skey(sid, "sync_interval"))
+    default = settings.interval_minutes if sid == "ccs" else 60
+    return saved if isinstance(saved, int) and MIN_INTERVAL <= saved <= MAX_INTERVAL else default
 
 
-async def loop():
+async def loop(sid: str = "ccs"):
+    """One source's checks, every interval_minutes."""
+    S = st(sid)
     while True:
         try:
-            await run_once()
-            state.next_run = now() + timedelta(minutes=interval_minutes())
+            await run_once(sid=sid)
+            S.next_run = now() + timedelta(minutes=interval_minutes(sid))
         except Exception as e:      # e.g. the database restarting: keep the loop alive, try again soon
             log.error("Scheduled check failed: %s", e)
-            state.next_run = now() + timedelta(minutes=5)
-        # Sleep until the next check. state.wake means the interval changed: work out the time again.
-        while (remaining := (state.next_run - now()).total_seconds()) > 0:
-            state.wake.clear()
+            S.next_run = now() + timedelta(minutes=5)
+        # Sleep until the next check. S.wake means the interval changed: work out the time again.
+        while (remaining := (S.next_run - now()).total_seconds()) > 0:
+            S.wake.clear()
             try:
-                await asyncio.wait_for(state.wake.wait(), timeout=remaining)
+                await asyncio.wait_for(S.wake.wait(), timeout=remaining)
             except asyncio.TimeoutError:
                 break
+
+
+source_tasks: dict[str, asyncio.Task] = {}
+
+
+def start_source(sid: str):
+    """Start a source's checks (when the app starts or the source is added)."""
+    if sid not in source_tasks or source_tasks[sid].done():
+        source_tasks[sid] = asyncio.create_task(loop(sid))
+
+
+def stop_source(sid: str):
+    task = source_tasks.pop(sid, None)
+    if task:
+        task.cancel()
 
 
 _background: set[asyncio.Task] = set()
@@ -509,8 +756,11 @@ async def update_loop():
 async def lifespan(_app):
     await asyncio.to_thread(store.open)       # waits for the database container if needed
     settings.resolve_feed_token(store)
+    if store.get("feed_token_manual") and store.get("feed_token"):
+        settings.feed_token = store.get("feed_token")      # a stream name entered by hand wins over FEED_TOKEN
     state.load()
     import_public_url()
+    migrate_sources()
     imported = logins.import_old(settings.username, settings.password, settings.gui_user, settings.gui_password)
     if imported:
         state.record("info", "Imported " + " and ".join(imported) + " from the old secret files. They're "
@@ -523,8 +773,12 @@ async def lifespan(_app):
         rebuild()
     except Exception as e:
         log.error("Couldn't rebuild the feed from the stored download: %s", e)
-    tasks = [asyncio.create_task(loop()), asyncio.create_task(google_loop()), asyncio.create_task(update_loop())]
+    for sid in source_ids():
+        start_source(sid)
+    tasks = [asyncio.create_task(google_loop()), asyncio.create_task(update_loop())]
     yield
+    tasks += list(source_tasks.values())
+    source_tasks.clear()
     for task in tasks:
         task.cancel()
     await asyncio.gather(*tasks, return_exceptions=True)
@@ -652,18 +906,45 @@ def renew_csrf():
 # when it last came shows whether Google can reach the feed at all: until it has, Google shows the
 # subscription under its web address and without events.
 
-def note_feed_read(user_agent: str):
+def note_feed_read(user_agent: str, sid: str = "ccs"):
     kind = "google" if "google" in user_agent.lower() else "other"
-    reads = store.get("feed_reads") or {}
+    reads = store.get(skey(sid, "feed_reads")) or {}
     last = from_iso(reads.get(kind))
     if last is None or now() - last > timedelta(minutes=1):     # don't write on every fetch
         reads[kind] = iso(now())
-        store.set("feed_reads", reads)
+        store.set(skey(sid, "feed_reads"), reads)
 
 
-def feed_reads(lang: str) -> dict:
-    reads = store.get("feed_reads") or {}
+def feed_reads(lang: str, sid: str = "ccs") -> dict:
+    reads = store.get(skey(sid, "feed_reads")) or {}
     return {k: _local_time(reads.get(k), lang) for k in ("google", "other")}
+
+
+# --- Stream names: the secret part of each source's feed links -------------------------------
+
+STREAM_RE = re.compile(r"^[A-Za-z0-9_-]{16,128}$")
+
+
+def feed_token(sid: str = "ccs") -> str:
+    """A source's stream name. CCS+ uses FEED_TOKEN (or the one made once); a feed source gets its
+    own when it's added."""
+    if sid == "ccs":
+        return settings.feed_token
+    token = store.get(f"feed_token:{sid}")
+    if not token:
+        token = secrets.token_urlsafe(24)
+        store.set(f"feed_token:{sid}", token)
+    return token
+
+
+def sid_for_token(token: str) -> str | None:
+    """The source whose feed links use this stream name, while the feed destination is on."""
+    if "feed" not in destinations():
+        return None
+    for sid in source_ids():
+        if secrets.compare_digest(token.encode(), feed_token(sid).encode()):
+            return sid
+    return None
 
 
 # --- Links ---------------------------------------------------------------------
@@ -694,19 +975,19 @@ def base_url(request: Request) -> str:
     return public_url() or str(request.base_url).rstrip("/")
 
 
-def feed_url(request: Request) -> str:
-    return f"{base_url(request)}/calendar/{settings.feed_token}.ics"
+def feed_url(request: Request, sid: str = "ccs") -> str:
+    return f"{base_url(request)}/calendar/{feed_token(sid)}.ics"
 
 
-def subscribe_links(request: Request) -> dict:
-    feed = feed_url(request)
+def subscribe_links(request: Request, sid: str = "ccs") -> dict:
+    feed = feed_url(request, sid)
     return {
         "feed": feed,
         # Opens Google Calendar's "add this calendar?" prompt. Google expects the feed as webcal://.
         "google": "https://calendar.google.com/calendar/r?cid=" + quote("webcal://" + feed.split("://", 1)[1], safe=""),
         # webcal:// hands the feed to Apple Calendar / Outlook / the phone's default calendar app.
         "webcal": "webcal://" + feed.split("://", 1)[1],
-        "page": f"{base_url(request)}/subscribe/{settings.feed_token}",
+        "page": f"{base_url(request)}/subscribe/{feed_token(sid)}",
         "is_public": feed.startswith("https://") and not any(
             h in feed for h in ("localhost", "127.0.0.1", "testserver")),
     }
@@ -728,14 +1009,17 @@ def _local_time(value: str | None, lang: str = "en") -> str:
 
 
 def _watch_view(lang: str) -> dict:
-    """Instant updates from Google, for the page: on (until when, last notice) or why not."""
-    w = google.watch_info()
+    """Instant updates from Google, for the page: on (every source's calendar has them, with the last
+    notice) or why not."""
     if not notify_address():
         return {"on": False, "why": "needs a public https:// address (☰ → Public address)"}
-    if w.get("error") and w.get("address") == notify_address():
-        return {"on": False, "why": w["error"]}
-    if w.get("id"):
-        return {"on": True, "until": _local_time(w.get("expires"), lang), "last": _local_time(w.get("last_notice"), lang)}
+    watches = [google.watch_info(sid) for sid in source_ids()]
+    for w in watches:
+        if w.get("error") and w.get("address") == notify_address():
+            return {"on": False, "why": w["error"]}
+    if watches and all(w.get("id") for w in watches):
+        last = max((w.get("last_notice") or "" for w in watches), default="")
+        return {"on": True, "last": _local_time(last or None, lang)}
     return {"on": False, "why": "starts with the next sync"}
 
 
@@ -769,7 +1053,9 @@ def google_view(request: Request, lang: str = "en") -> dict:
                                 and google.client_check().get("redirect_uri") == uri,
             "running": google_job.running, "last_sync": _local_time(info.get("last_sync"), lang),
             "redirect_uri": uri, "watch": _watch_view(lang), "host_mismatch": _host_mismatch(request),
-            "admin_email": admin_email(),
+            "admin_email": admin_email(), "on": "google" in destinations(),
+            "calendars": [{"sid": sid, "name": calendar_name(sid), **google.cal_info(sid)} for sid in source_ids()],
+            "events": sum(int(google.cal_info(sid).get("events") or 0) for sid in source_ids()),
             # Google only sends sign-ins back to https:// addresses with a public domain name (not a bare IP or .local),
             # or to http://localhost on this computer.
             "redirect_ok": (uri.startswith("https://") and not _is_ip(host) and not host.endswith(".local"))
@@ -790,14 +1076,15 @@ def _span(e: Event, tz: ZoneInfo | None = None) -> tuple[date, date, datetime | 
     return s.date(), last, s, t
 
 
-def month_view(events: list[Event], year: int, month: int, tags: list[dict] | None = None,
-               lang: str = "en") -> dict:
+def month_view(events: list[Event], year: int, month: int, lang: str = "en") -> dict:
     tz = display_tz()
     dates = dates_for(lang)
     hm = dates.clock
     cont = str(i18n.tr(lang, "cont."))
     weeks = pycal.Calendar(firstweekday=6).monthdatescalendar(year, month)   # Sunday first, like CCS+
-    color_for = tag_matcher(tags or [])
+    matchers = {sid: tag_matcher(calendar_tags(sid)) for sid in source_ids()}
+    colors = {sid: calendar_color(sid) for sid in source_ids()}
+    nobody = lambda title: ""
     first_day, last_day = weeks[0][0], weeks[-1][-1]
     by_day: dict[date, list] = {}
     in_month = 0
@@ -819,7 +1106,9 @@ def month_view(events: list[Event], year: int, month: int, tags: list[dict] | No
                 when = f"→ {hm(t)}"
             else:
                 when = cont
-            by_day.setdefault(d, []).append({"e": e, "when": when, "first": d == d0, "tag_color": e.color or color_for(e.title),
+            by_day.setdefault(d, []).append({"e": e, "when": when, "first": d == d0,
+                                             "tag_color": e.color or matchers.get(e.source, nobody)(e.title),
+                                             "src_color": colors.get(e.source, ""),
                                              "multi": d0 != d1, "range": _range_text(e, s, t, lang)})
             d += timedelta(days=1)
     prev_m = date(year, month, 1) - timedelta(days=1)
@@ -857,40 +1146,206 @@ def _parse_month(value: str | None) -> tuple[int, int]:
 
 # --- Routes ----------------------------------------------------------------------
 
+def source_view(request: Request, sid: str, lang: str, sections: dict) -> dict:
+    """One source's box on the status page."""
+    S = st(sid)
+    url = source_url(sid)
+    view = {"id": sid, "type": (source(sid) or {}).get("type", "ccs"), "name": calendar_name(sid),
+            "color": calendar_color(sid), "s": S, "rules": calendar_tags(sid), "interval": interval_minutes(sid),
+            "url": url, "host": urlparse(url).hostname or url, "feed": feed_url(request, sid),
+            "links": subscribe_links(request, sid), "reads": feed_reads(lang, sid), "stream": feed_token(sid),
+            "open": sections.get(f"src:{sid}", True) or S.status not in ("ok", "running", "starting"),
+            "downloaded": store.get_calendar(skey(sid, "source")) is not None,
+            "has_debug": store.has_debug(skey(sid, "source"))}
+    if sid == "ccs":
+        view["setup"] = {
+            "uid": logins.ccs()[0], "has_password": bool(logins.ccs()[1]), "configured": logins.ccs_configured,
+            "url": url, "url_is_default": url == DEFAULT_CALENDAR_URL, "url_from_gui": bool(store.get("calendar_url")),
+            "downloaded": view["downloaded"]}
+    return view
+
+
 @app.get("/", dependencies=[Depends(gui_auth)])
 def index(request: Request, month: str | None = None):
     events = store.load_events()
     year, mon = _parse_month(month)
     history = [{**h, "time": h["time"].astimezone(TZ)} for h in store.recent_log(100)]
-    url = calendar_url()
     lang = lang_for(request)
+    sections = section_state()
+    srcs = [source_view(request, sid, lang, sections) for sid in source_ids()]
     return page(request, "index.html", {
-        "s": state, "cfg": settings, "feed": feed_url(request), "links": subscribe_links(request),
-        "history": history, "cal": month_view(events, year, mon, calendar_tags(), lang),
-        "csrf": CSRF_TOKEN, "name": calendar_name(), "name_from_gui": bool(store.get("calendar_name")),
-        "color": calendar_color(), "tags": calendar_tags(), "tag_modes": TAG_MODES,
-        "sections": section_state(), "interval": interval_minutes(),
-        "zone": display_zone(), "zones": ALL_ZONES, "common_zones": COMMON_ZONES, "reads": feed_reads(lang),
+        "s": state, "cfg": settings, "history": history, "cal": month_view(events, year, mon, lang),
+        "csrf": CSRF_TOKEN, "name": calendar_name(), "srcs": srcs, "dests": destinations(),
+        "src_names": {x["id"]: x["name"] for x in srcs},
+        "has_ccs": "ccs" in source_ids(), "templates": event_templates(), "tag_modes": TAG_MODES,
+        "rule_actions": RULE_ACTIONS, "rule_when": RULE_WHEN, "event_colors": GOOGLE_COLORS.values(),
+        "sections": sections, "zone": display_zone(), "zones": ALL_ZONES, "common_zones": COMMON_ZONES,
         "google": google_view(request, lang), "open_menu": request.query_params.get("menu") == "settings",
-        "public": {"url": public_url()},
+        # The first destination offers this page's address as the public one, if it's https:// (an
+        # http://<IP>:8080 address would break Google sign-in, as the old installer default did).
+        "public": {"url": public_url(), "here": (lambda u: u if u.startswith("https://") else "")(str(request.base_url).rstrip("/"))},
         "page_user": logins.page_user, "admin_email": admin_email(),
-        "setup": {
-            "uid": logins.ccs()[0], "has_password": bool(logins.ccs()[1]), "configured": logins.ccs_configured,
-            "url": url, "url_is_default": url == DEFAULT_CALENDAR_URL,
-            "url_from_gui": bool(store.get("calendar_url")),
-            "downloaded": store.get_calendar("source") is not None,
-        },
-        "has_source": store.has_debug("source"), "has_response": store.has_debug("response"),
     }, lang=lang)
 
 
+def _sid(sid: str) -> str:
+    """A source ID from a form, which must be one of the sources."""
+    if sid not in source_ids():
+        raise HTTPException(400, "That calendar source doesn't exist (any more).")
+    return sid
+
+
 @app.post("/run", dependencies=[Depends(gui_auth)])
-async def run_now(csrf: str = Form("")):
-    """Sync now: download from CCS+ straight away, even while automatic checks are paused."""
+async def run_now(csrf: str = Form(""), sid: str = Form("ccs")):
+    """Sync now: download a source straight away, even while automatic checks are paused."""
     check_csrf(csrf)
-    if not state.running:
-        background(run_once(manual=True))
-    return RedirectResponse("/", status_code=303)
+    sid = _sid(sid)
+    if not st(sid).running:
+        background(run_once(manual=True, sid=sid))
+        await asyncio.sleep(0.5)
+    return RedirectResponse(f"/#src-{sid}", status_code=303)
+
+
+# --- Adding and removing sources and destinations ---------------------------------------------
+
+def _feed_link(url: str) -> str:
+    """A feed link as entered: webcal:// is the same as https://; only https:// is downloaded."""
+    url = url.strip()
+    if url.lower().startswith("webcal://"):
+        url = "https://" + url[9:]
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.hostname:
+        raise HTTPException(400, "The feed link must start with https:// (or webcal://).")
+    return url
+
+
+@app.post("/sources/add", dependencies=[Depends(gui_auth)])
+async def add_source(csrf: str = Form(""), type_: str = Form("", alias="type"), url: str = Form(""),
+                     name: str = Form("")):
+    """Calendar Sources → +: United's CCS+ Calendar Sync (once), or any .ics feed link."""
+    check_csrf(csrf)
+    found = sources()
+    if type_ == "ccs":
+        if "ccs" in source_ids():
+            raise HTTPException(400, "CCS+ Calendar Sync is already a source.")
+        found.append({"id": "ccs", "type": "ccs"})
+        sid = "ccs"
+    elif type_ == "ics":
+        url = _feed_link(url)
+        if any(x.get("url") == url for x in found):
+            raise HTTPException(400, "That feed is already a source.")
+        if len(found) >= 10:
+            raise HTTPException(400, "Up to 10 calendar sources can be added.")
+        sid = "f" + secrets.token_hex(3)
+        found.append({"id": sid, "type": "ics", "url": url})
+        name = " ".join(name.split())[:100]
+        if name:
+            store.set(f"calendar_name:{sid}", name)
+    else:
+        raise HTTPException(400, "Unknown kind of calendar source.")
+    store.set("sources", found)
+    state.record("info", f"Calendar source added: {calendar_name(sid)}")
+    rebuild(sid)
+    start_source(sid)
+    return RedirectResponse(f"/#src-{sid}", status_code=303)
+
+
+@app.post("/sources/remove", dependencies=[Depends(gui_auth)])
+async def remove_source(csrf: str = Form(""), sid: str = Form("")):
+    """Remove a source: its checks stop, its events, edits and feed link go, and its calendar in
+    Google is deleted. CCS+'s UID and Calendar Sync password are forgotten too."""
+    check_csrf(csrf)
+    sid = _sid(sid)
+    name = calendar_name(sid)
+    stop_source(sid)
+    store.set("sources", [x for x in sources() if x["id"] != sid])
+    async with google_job.lock:
+        note = await google.delete_calendar(sid)
+    store.forget_source(sid)
+    for base in ("calendar_name", "calendar_color", "calendar_tags", "sync_interval", "http_cache", "status", "feed_reads"):
+        store.delete(skey(sid, base))
+    if sid == "ccs":
+        logins.clear_ccs()
+        store.delete("calendar_url")
+        state.__init__("ccs")
+    else:
+        store.delete(f"feed_token:{sid}")
+        states.pop(sid, None)
+    state.record("warn" if note else "info", f"Calendar source removed: {name}" + (f" ({note})" if note else ""))
+    return RedirectResponse("/#sources", status_code=303)
+
+
+@app.post("/sources/url", dependencies=[Depends(gui_auth)])
+async def set_source_url(csrf: str = Form(""), sid: str = Form(""), url: str = Form("")):
+    """Change a feed source's link, then download it."""
+    check_csrf(csrf)
+    sid = _sid(sid)
+    if sid == "ccs":
+        raise HTTPException(400, "Use the Calendar Sync link field for CCS+.")
+    url = _feed_link(url)
+    store.set("sources", [{**x, "url": url} if x["id"] == sid else x for x in sources()])
+    store.delete(skey(sid, "http_cache"))
+    st(sid).record("info", f"Feed link changed to {urlparse(url).hostname}")
+    background(run_once(manual=True, sid=sid))
+    await asyncio.sleep(1)
+    return RedirectResponse(f"/#src-{sid}", status_code=303)
+
+
+@app.post("/destinations/add", dependencies=[Depends(gui_auth)])
+async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="type"), public: str = Form("")):
+    """Calendar Destinations → +: Google Calendar Autosync, or feed links. The first one asks for the
+    public address (it can be changed later in ☰ Settings)."""
+    check_csrf(csrf)
+    if type_ not in DESTINATION_TYPES:
+        raise HTTPException(400, "Unknown kind of destination.")
+    if public.strip():
+        try:
+            store.set("public_url", normalise_public_url(public))
+        except ValueError:
+            raise HTTPException(400, "Enter the address people use to reach this page, e.g. https://cal.example.com")
+        state.record("info", f"Public address set to {public_url()}")
+    found = destinations()
+    if type_ not in found:
+        store.set("destinations", found + [type_])
+        state.record("info", "Destination added: " + {"google": "Google Calendar Autosync", "feed": "feed links"}[type_])
+        request_google_sync(full=True)
+    return RedirectResponse(f"/#dest-{type_}", status_code=303)
+
+
+@app.post("/destinations/remove", dependencies=[Depends(gui_auth)])
+async def remove_destination(csrf: str = Form(""), type_: str = Form("", alias="type"), delete: str = Form("")):
+    """Remove a destination. Google: disconnects (optionally deleting its calendars; the OAuth client is
+    kept). Feed: the feed links and subscribe pages stop working."""
+    check_csrf(csrf)
+    if type_ == "google" and google.connected:
+        await google_disconnect(csrf=csrf, delete=delete)
+    store.set("destinations", [d for d in destinations() if d != type_])
+    state.record("info", "Destination removed: " + {"google": "Google Calendar Autosync", "feed": "feed links"}.get(type_, type_))
+    return RedirectResponse("/#destinations", status_code=303)
+
+
+@app.post("/feed/stream", dependencies=[Depends(gui_auth)])
+async def set_stream(csrf: str = Form(""), sid: str = Form(""), stream: str = Form("")):
+    """Set a source's stream name by hand, e.g. the one from before a reinstall, so old feed links and
+    subscriptions work again. A whole old link can be pasted; its stream name is taken from it."""
+    check_csrf(csrf)
+    sid = _sid(sid)
+    value = stream.strip()
+    m = re.search(r"/(?:calendar|subscribe)/([A-Za-z0-9_-]+?)(?:\.ics)?/?$", value)
+    if m:
+        value = m.group(1)
+    if not STREAM_RE.match(value):
+        raise HTTPException(400, "A stream name is 16 to 128 letters, digits, - or _ (or paste a whole old feed link).")
+    if any(feed_token(x) == value for x in source_ids() if x != sid):
+        raise HTTPException(400, "Another calendar source already uses that stream name.")
+    if sid == "ccs":
+        store.set("feed_token", value)
+        store.set("feed_token_manual", True)
+        settings.feed_token = value
+    else:
+        store.set(f"feed_token:{sid}", value)
+    state.record("info", f"Stream name of {calendar_name(sid)} changed; links with the old name no longer work")
+    return RedirectResponse("/#dest-feed", status_code=303)
 
 
 # --- Logins -----------------------------------------------------------------------
@@ -967,28 +1422,30 @@ async def set_ccs_login(csrf: str = Form(""), uid: str = Form(""), password: str
     if not state.running:
         background(run_once(manual=True))
         await asyncio.sleep(1.5)   # usually long enough to show whether CCS+ accepted it
-    return RedirectResponse(_back_to(back, "setup"), status_code=303)
+    return RedirectResponse(_back_to(back, "src-ccs"), status_code=303)
 
 
 @app.post("/setup/interval", dependencies=[Depends(gui_auth)])
-async def set_interval(csrf: str = Form(""), minutes: str = Form("")):
-    """Change how often the schedule is downloaded from CCS+ (saved in the database)."""
+async def set_interval(csrf: str = Form(""), minutes: str = Form(""), sid: str = Form("ccs")):
+    """Change how often a source is downloaded (saved in the database)."""
     check_csrf(csrf)
+    sid = _sid(sid)
+    S = st(sid)
     try:
         value = int(minutes)
     except ValueError:
         raise HTTPException(400, "Enter a number of minutes.")
     if not MIN_INTERVAL <= value <= MAX_INTERVAL:
         raise HTTPException(400, f"Choose between {MIN_INTERVAL} and {MAX_INTERVAL} minutes.")
-    if value == settings.interval_minutes:
+    if sid == "ccs" and value == settings.interval_minutes:
         store.delete("sync_interval")
     else:
-        store.set("sync_interval", value)
+        store.set(skey(sid, "sync_interval"), value)
     # The next check counts from the last one (or now, if that time has already passed).
-    state.next_run = max(now(), (state.last_attempt or now()) + timedelta(minutes=value))
-    state.wake.set()
-    state.record("info", f"Checks every {value} min from now on")
-    return RedirectResponse("/", status_code=303)
+    S.next_run = max(now(), (S.last_attempt or now()) + timedelta(minutes=value))
+    S.wake.set()
+    S.record("info", f"Checks every {value} min from now on")
+    return RedirectResponse(f"/#src-{sid}", status_code=303)
 
 
 @app.post("/setup/link", dependencies=[Depends(gui_auth)])
@@ -1009,74 +1466,148 @@ async def set_link(csrf: str = Form(""), url: str = Form(""), action: str = Form
     state.login_failures = 0
     if not state.running:
         background(run_once(manual=True))
-    return RedirectResponse("/#setup", status_code=303)
+    return RedirectResponse("/#src-ccs", status_code=303)
 
 
 @app.post("/feed/name", dependencies=[Depends(gui_auth)])
 async def set_name(csrf: str = Form(""), name: str = Form(""), color: str = Form(""),
-                   color_default: str = Form(""), tag: list[str] = Form([]), tag_color: list[str] = Form([]),
-                   tag_mode: list[str] = Form([]), tag_case: list[str] = Form([])):
-    """Save the calendar's name and color (the title editor of Status & setup).
-    A blank name goes back to CALENDAR_NAME from .env. `color` is only sent when it was changed on
-    the page; `color_default` clears it. Tags are saved by /feed/tags."""
+                   color_default: str = Form(""), sid: str = Form("ccs")):
+    """Save a source's name and color (its (edit) link). A blank name goes back to the default
+    (CALENDAR_NAME from .env for CCS+). `color` is only sent when it was changed on the page;
+    `color_default` clears it."""
     check_csrf(csrf)
+    sid = _sid(sid)
     name = " ".join(name.split())[:100]
-    if name and name != settings.calendar_name:
-        store.set("calendar_name", name)
+    if name and not (sid == "ccs" and name == settings.calendar_name):
+        store.set(skey(sid, "calendar_name"), name)
     else:
-        store.delete("calendar_name")
-    notes = [f"name \"{calendar_name()}\""]
+        store.delete(skey(sid, "calendar_name"))
+    notes = [f"name \"{calendar_name(sid)}\""]
     if color_default:
-        store.delete("calendar_color")
+        store.delete(skey(sid, "calendar_color"))
         notes.append("default color")
     elif color:
         if not COLOR_RE.match(color):
             raise HTTPException(400, "Choose the color with the color picker.")
-        store.set("calendar_color", color.lower())
+        store.set(skey(sid, "calendar_color"), color.lower())
         notes.append(f"color {color.lower()}")
-    if tag:   # older pages sent the tags with the name; they now have their own form (/feed/tags)
-        notes += _save_tags(tag, tag_color, tag_mode, tag_case)
-    rebuild()
+    rebuild(sid)
     state.record("info", "Calendar settings saved: " + ", ".join(notes))
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse(f"/#src-{sid}", status_code=303)
 
 
-def _save_tags(tag: list[str], tag_color: list[str], tag_mode: list[str], tag_case: list[str]) -> list[str]:
-    """Check and store the tag rows; returns a note for the activity log if they changed."""
-    tags = []
+DURATION_RE = re.compile(r"^\s*(?:(\d{1,3})\s*[:h]\s*(\d{1,2})?|(\d{1,3}(?:[.,]\d+)?)\s*(h|m|min)?)\s*$", re.I)
+
+
+def parse_duration(text: str, default: int = 0) -> int:
+    """Minutes from "1:30", "1h30", "2" (hours), "1.5" (hours), "90m"; `default` when empty.
+    Raises ValueError when it isn't a duration."""
+    text = (text or "").strip()
+    if not text:
+        return default
+    m = DURATION_RE.match(text)
+    if not m:
+        raise ValueError(text)
+    if m.group(1) is not None:
+        return int(m.group(1)) * 60 + int(m.group(2) or 0)
+    value = float(m.group(3).replace(",", "."))
+    return round(value if (m.group(4) or "").lower() in ("m", "min") else value * 60)
+
+
+def show_duration(minutes: int) -> str:
+    return f"{minutes // 60}:{minutes % 60:02d}"
+
+
+def _save_tags(tag: list[str], tag_color: list[str], tag_mode: list[str], tag_case: list[str], sid: str = "ccs",
+               action: list[str] = (), template: list[str] = (), when: list[str] = (), offset: list[str] = (),
+               rule_id: list[str] = ()) -> list[str]:
+    """Check and store a source's rule rows; returns a note for the activity log if they changed."""
+    rules = []
+    templates = {t["id"] for t in event_templates()}
     # Each row sends one value per field (the case toggle is a hidden "1"/"" input), so they line up.
-    for t, c, m, cs in zip_longest(tag, tag_color, tag_mode, tag_case, fillvalue=""):
+    for t, c, m, cs, a, tp, w, o, rid in zip_longest(tag, tag_color, tag_mode, tag_case, action, template, when,
+                                                    offset, rule_id, fillvalue=""):
         t = " ".join(t.split())[:MAX_TAG_LEN]
         if not t:
             continue
-        if not COLOR_RE.match(c):
-            raise HTTPException(400, f"Choose a color for the tag \"{t}\" with the color picker.")
-        tags.append({"tag": t, "color": c.lower(), "mode": m if m in TAG_MODES else "word", "case": cs == "1"})
-    if len(tags) > MAX_TAGS:
-        raise HTTPException(400, f"Up to {MAX_TAGS} tags can be used.")
-    if tags != calendar_tags():
-        store.set("calendar_tags", tags)
-        return [f"{len(tags)} tag color{'' if len(tags) == 1 else 's'}"]
+        a = a if a in RULE_ACTIONS else "color"
+        if a == "color" and not COLOR_RE.match(c):
+            raise HTTPException(400, f"Choose a color for the rule \"{t}\" with the color picker.")
+        if a == "event" and tp not in templates:
+            raise HTTPException(400, f"Choose an event template for the rule \"{t}\".")
+        try:
+            minutes = parse_duration(o)
+        except ValueError:
+            raise HTTPException(400, f"Check the time for the rule \"{t}\" (e.g. 1:30).")
+        rid = rid if re.fullmatch(r"[a-z0-9]{1,16}", rid or "") else "r" + secrets.token_hex(3)
+        rules.append({"id": rid, "tag": t, "color": c.lower() if COLOR_RE.match(c) else "",
+                      "mode": m if m in TAG_MODES else "word", "case": cs == "1", "action": a,
+                      "template": tp if a == "event" else "", "when": w if w in RULE_WHEN else "before_start",
+                      "offset": max(0, min(MAX_OFFSET, minutes))})
+    if len(rules) > MAX_TAGS:
+        raise HTTPException(400, f"Up to {MAX_TAGS} rules can be used.")
+    if rules != calendar_tags(sid):
+        store.set(skey(sid, "calendar_tags"), rules)
+        return [f"{len(rules)} rule{'' if len(rules) == 1 else 's'}"]
     return []
 
 
 @app.post("/feed/tags", dependencies=[Depends(gui_auth)])
-async def set_tags(csrf: str = Form(""), tag: list[str] = Form([]), tag_color: list[str] = Form([]),
-                   tag_mode: list[str] = Form([]), tag_case: list[str] = Form([])):
-    """Save the tag colors (the Tag Colors box in Status & setup). Rows with no text are dropped."""
+async def set_tags(csrf: str = Form(""), sid: str = Form("ccs"), tag: list[str] = Form([]),
+                   tag_color: list[str] = Form([]), tag_mode: list[str] = Form([]), tag_case: list[str] = Form([]),
+                   rule_action: list[str] = Form([]), rule_template: list[str] = Form([]),
+                   rule_when: list[str] = Form([]), rule_offset: list[str] = Form([]), rule_id: list[str] = Form([])):
+    """Save a source's rules (its Rules box). Rows with no text are dropped."""
     check_csrf(csrf)
-    notes = _save_tags(tag, tag_color, tag_mode, tag_case)
+    sid = _sid(sid)
+    notes = _save_tags(tag, tag_color, tag_mode, tag_case, sid, rule_action, rule_template, rule_when,
+                       rule_offset, rule_id)
     if notes:
-        rebuild()
-        state.record("info", "Calendar settings saved: " + ", ".join(notes))
-    return RedirectResponse("/#tags", status_code=303)
+        rebuild(sid)
+        state.record("info", f"Rules of {calendar_name(sid)} saved: " + ", ".join(notes))
+    return RedirectResponse(f"/#rules-{sid}", status_code=303)
+
+
+@app.post("/templates", dependencies=[Depends(gui_auth)])
+async def set_templates(csrf: str = Form(""), tpl_id: list[str] = Form([]), tpl_title: list[str] = Form([]),
+                        tpl_kind: list[str] = Form([]), tpl_duration: list[str] = Form([]),
+                        tpl_location: list[str] = Form([]), tpl_color: list[str] = Form([])):
+    """Save the event templates. Rows with no title are dropped; rules using a removed template stop
+    adding events."""
+    check_csrf(csrf)
+    found = []
+    old = {t["id"]: t for t in event_templates()}
+    for tid, title, kind, dur, loc, color in zip_longest(tpl_id, tpl_title, tpl_kind, tpl_duration, tpl_location,
+                                                         tpl_color, fillvalue=""):
+        title = " ".join(title.split())[:200]
+        if not title:
+            continue
+        try:
+            minutes = parse_duration(dur, 60)
+        except ValueError:
+            raise HTTPException(400, f"Check the length of \"{title}\" (e.g. 1:30).")
+        if kind != "allday" and not 5 <= minutes <= 24 * 60:
+            raise HTTPException(400, f"\"{title}\" can last from 0:05 to 24:00.")
+        color = color.lower()
+        if color and color not in EVENT_COLORS:
+            raise HTTPException(400, "Choose one of the colors offered.")
+        tid = tid if re.fullmatch(r"[a-z0-9]{1,16}", tid or "") else "t" + secrets.token_hex(3)
+        found.append({"id": tid, "title": title, "all_day": kind == "allday", "minutes": minutes if kind != "allday" else 60,
+                      "location": loc.strip()[:200], "description": (old.get(tid) or {}).get("description", ""),
+                      "color": color})
+    if len(found) > MAX_TEMPLATES:
+        raise HTTPException(400, f"Up to {MAX_TEMPLATES} templates can be kept.")
+    store.set("event_templates", found)
+    rebuild()
+    state.record("info", f"Event templates saved: {len(found)}")
+    return RedirectResponse("/#templates", status_code=303)
 
 
 @app.post("/ui/section", dependencies=[Depends(gui_auth)])
 async def set_section(csrf: str = Form(""), section: str = Form(""), open_: str = Form("", alias="open")):
     """Remember whether a status-page section is open (the page sends this when it's toggled)."""
     check_csrf(csrf)
-    if section not in SECTIONS:
+    if section not in SECTIONS and not re.fullmatch(r"src:(ccs|f[0-9a-f]{6})", section):
         raise HTTPException(400, "Unknown section.")
     saved = store.get("ui_sections") or {}
     saved[section] = open_ == "1"
@@ -1154,12 +1685,12 @@ def _back(month: str | None) -> str:
     return f"/?month={y}-{m:02d}#cal"
 
 
-def united_original(uid: str) -> Event | None:
-    """United's own version of an event, from the last CCS+ calendar."""
-    source = store.get_calendar("source")
-    if not source:
+def united_original(uid: str, sid: str = "ccs") -> Event | None:
+    """The source's own version of an event, from its last download (United's, for CCS+)."""
+    found = store.get_calendar(skey(sid, "source"))
+    if not found:
         return None
-    _, base, _ = parse(source[0], settings.timezone, defaults())
+    base, _ = preview(sid, found[0])
     return next((e for e in base if e.uid == uid), None)
 
 
@@ -1195,7 +1726,11 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         e = store.get_event(uid)
         if not e:
             raise HTTPException(404, "That event isn't in the current schedule any more.")
+        if e.origin == "rule":
+            raise HTTPException(400, "This event is made by a rule; change the rule or its event template instead.")
     else:   # new event on a given day
+        if not source_ids():
+            raise HTTPException(400, "Add a calendar source first (Calendar Sources → +).")
         try:
             day = date.fromisoformat(date_)
         except ValueError:
@@ -1204,16 +1739,19 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
                   origin="custom")
         e.start = datetime.combine(day, datetime.min.time().replace(hour=9), display_tz()).isoformat()
         e.end = datetime.combine(day, datetime.min.time().replace(hour=10), display_tz()).isoformat()
-    original = united_original(uid) if e.origin == "united" and uid else None
+    original = united_original(uid, e.source) if e.origin == "united" and uid else None
     lang = lang_for(request)
-    tag_color = tag_matcher(calendar_tags())(e.title) if e.title else ""
+    tag_color = tag_matcher(calendar_tags(e.source))(e.title) if e.title and e.source in source_ids() else ""
     start_zone, end_zone = _saved_zones(uid) if uid else ("", "")
     start_zone, end_zone = start_zone or display_zone(), end_zone or start_zone or display_zone()
     return page(request, "event.html", {
         "e": e, "f": _form_values(e, ZoneInfo(start_zone), ZoneInfo(end_zone), dates_for(lang).clock),
         "start_zone": start_zone, "end_zone": end_zone, "zones": ALL_ZONES, "common_zones": COMMON_ZONES,
         "is_new": not uid, "original": original,
-        "colors": GOOGLE_COLORS.values(), "auto_color": tag_color or calendar_color() or "",
+        "colors": GOOGLE_COLORS.values(), "auto_color": tag_color or calendar_color(e.source) or "",
+        "sources": [{"id": sid, "name": calendar_name(sid), "type": (source(sid) or {}).get("type")} for sid in source_ids()],
+        "src_type": (source(e.source) or {}).get("type", "ccs"), "src_name": calendar_name(e.source),
+        "templates": [{**t, "length": show_duration(t["minutes"])} for t in event_templates()],
         "original_range": _range_text(original, *_span(original)[2:], lang) if original else "",
         "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": display_zone(),
     }, lang=lang)
@@ -1280,26 +1818,33 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
                      all_day: str = Form(""), start_date: str = Form(""), start_time: str = Form(""),
                      end_date: str = Form(""), end_time: str = Form(""), location: str = Form(""),
                      description: str = Form(""), hidden: str = Form(""), color: str = Form(""),
-                     start_tz: str = Form(""), end_tz: str = Form(""), end_tz_differs: str = Form("")):
-    """Save the event page: an edit of a United event, or an added event. end_tz is only used when
-    "The end is in a different time zone" is ticked."""
+                     start_tz: str = Form(""), end_tz: str = Form(""), end_tz_differs: str = Form(""),
+                     source_: str = Form("", alias="source")):
+    """Save the event page: an edit of a source's event, or an added event (into `source`). end_tz is
+    only used when "The end is in a different time zone" is ticked."""
     check_csrf(csrf)
     end_tz = end_tz if end_tz_differs else start_tz      # one time zone for both unless asked otherwise
     data = _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description,
                             color, start_tz, end_tz)
     current = store.get_event(uid) if uid else None
+    if current and current.origin == "rule":
+        raise HTTPException(400, "This event is made by a rule; change the rule or its event template instead.")
     if current and current.origin == "united":
-        original = united_original(uid)
+        original = united_original(uid, current.source)
         if not original:
             raise HTTPException(404, "That event isn't in the current schedule any more.")
         store.set_edit(uid, {**data, "hidden": bool(hidden), "base": original.fingerprint()})
         state.record("info", f"Edited \"{original.title}\" ({original.start[:10]})"
                      + (" and hid it from Google" if hidden else ""))
+        sid = current.source
     else:
+        sid = current.source if current else (source_ if source_ in source_ids() else (source_ids() or [""])[0])
+        if sid not in source_ids():
+            raise HTTPException(400, "Add a calendar source first (Calendar Sources → +).")
         new_uid = uid if current else f"cs-{secrets.token_hex(8)}@calendar_stream"
-        store.set_custom(new_uid, data)
+        store.set_custom(new_uid, {**data, "source": sid})
         state.record("info", f"{'Updated' if current else 'Added'} \"{data['title']}\" ({data['start'][:10]})")
-    rebuild()
+    rebuild(sid)
     state.save()
     return RedirectResponse(_back(month or data["start"][:7]), status_code=303)
 
@@ -1307,8 +1852,9 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
 @app.post("/event/revert", dependencies=[Depends(gui_auth)])
 async def revert_event(csrf: str = Form(""), uid: str = Form(""), month: str = Form("")):
     check_csrf(csrf)
+    e = store.get_event(uid)
     store.delete_edit(uid)
-    rebuild()
+    rebuild(e.source if e else None)
     state.record("info", "Reverted an event to United's version")
     return RedirectResponse(_back(month), status_code=303)
 
@@ -1320,7 +1866,7 @@ async def delete_event(csrf: str = Form(""), uid: str = Form(""), month: str = F
     if not e or e.origin != "custom":
         raise HTTPException(400, "Only events added here can be deleted. Hide United's events instead.")
     store.delete_custom(uid)
-    rebuild()
+    rebuild(e.source)
     state.record("info", f"Deleted \"{e.title}\" ({e.start[:10]})")
     return RedirectResponse(_back(month), status_code=303)
 
@@ -1332,6 +1878,7 @@ MAX_UPLOAD = 5 * 1024 * 1024
 async def upload(csrf: str = Form(""), file: UploadFile = File(...)):
     """Publish a Calendar.ics downloaded by hand from CCS+ (United's own Google Calendar procedure)."""
     check_csrf(csrf)
+    _sid("ccs")
     body = await file.read(MAX_UPLOAD + 1)
     if len(body) > MAX_UPLOAD:
         raise HTTPException(413, "That file is too large for a schedule (over 5 MB).")
@@ -1346,7 +1893,7 @@ async def upload(csrf: str = Form(""), file: UploadFile = File(...)):
         raise HTTPException(400, str(e))
     finally:
         state.save()
-    return RedirectResponse("/#setup", status_code=303)
+    return RedirectResponse("/#src-ccs", status_code=303)
 
 
 # --- Public address (Settings) ---------------------------------------------------
@@ -1366,7 +1913,7 @@ async def set_public_url(csrf: str = Form(""), url: str = Form(""), action: str 
             raise HTTPException(400, "Enter the address people use to reach this page, e.g. https://cal.example.com")
         store.set("public_url", value)
         state.record("info", f"Public address set to {value}")
-    return RedirectResponse("/#feedcard", status_code=303)
+    return RedirectResponse("/#dest-google", status_code=303)
 
 
 # --- Admin e-mail (Settings) -------------------------------------------------------
@@ -1421,7 +1968,7 @@ async def google_client(request: Request, csrf: str = Form(""), client_id: str =
         check = await google.check_client(google_redirect_uri(request))
         state.record("info" if check["ok"] else "warn",
                      f"Google OAuth client saved ({google.client_id.split('.')[0][:12]}…): {check['message']}")
-    return RedirectResponse(_back_to(back, "feedcard"), status_code=303)
+    return RedirectResponse(_back_to(back, "dest-google"), status_code=303)
 
 
 @app.post("/google/connect", dependencies=[Depends(gui_auth)])
@@ -1444,16 +1991,23 @@ async def google_callback(state_: str = Query("", alias="state"), code: str = ""
             raise GoogleError("Google sign-in was cancelled or refused. If Google said the app is only for "
                               "testers, add your Gmail address under Audience → Test users in Google Cloud."
                               if error in ("access_denied", "") else f"Google sign-in failed: {error[:80]}.")
-        async with google_job.lock:      # no sync may start while the calendar is being found or made
-            info = await google.finish_sign_in(state_, code, calendar_name())
-        how = "created" if info.get("created") else "found again"
-        state.record("info", f"Google Calendar connected as {info.get('email') or 'your account'}; "
-                             f"calendar \"{info.get('calendar_name', '')}\" {how}")
+        async with google_job.lock:      # no sync may start while the calendars are being found or made
+            info = await google.finish_sign_in(state_, code)
+            found = []
+            for sid in source_ids():     # each source's calendar: the one from before, or a new one
+                await google.ensure_calendar(sid, calendar_name(sid))
+                cal = google.cal_info(sid)
+                found.append(f"calendar \"{cal.get('calendar_name', '')}\" "
+                             + ("created" if cal.get("created") else "found again"))
+        state.record("info", f"Google Calendar connected as {info.get('email') or 'your account'}"
+                     + "".join("; " + f for f in found))
+        if "google" not in destinations():
+            store.set("destinations", destinations() + ["google"])
         request_google_sync(full=True)
     except GoogleError as e:
         google.record_error(str(e))
         state.record("error", f"Google: {e}")
-    return RedirectResponse("/#feedcard", status_code=303)
+    return RedirectResponse("/#dest-google", status_code=303)
 
 
 @app.post("/google/disconnect", dependencies=[Depends(gui_auth)])
@@ -1461,17 +2015,17 @@ async def google_disconnect(csrf: str = Form(""), delete: str = Form("")):
     """Stop syncing: optionally delete CalendarStream's calendar, then remove its access in Google."""
     check_csrf(csrf)
     if not google.connected:
-        return RedirectResponse("/#feedcard", status_code=303)
+        return RedirectResponse("/#dest-google", status_code=303)
     email = google.info().get("email") or "your account"
     async with google_job.lock:      # not in the middle of a sync
-        await google.stop_watch()
+        await google.stop_watch(sorted(set(source_ids()) | set(google.calendar_sids())))
         notes = await google.disconnect(delete_calendar=delete == "1")
     if delete == "1":
         store.google_forget()
     what = "and its calendar deleted" if delete == "1" and not any("calendar" in n for n in notes) else ""
     state.record("warn" if notes else "info", f"Google Calendar disconnected ({email}) {what}".strip()
                  + ("; " + "; ".join(notes) if notes else ""))
-    return RedirectResponse("/#feedcard", status_code=303)
+    return RedirectResponse("/#dest-google", status_code=303)
 
 
 @app.post("/google/notify")
@@ -1480,9 +2034,10 @@ async def google_notify(request: Request):
     Checked by the channel ID and the secret token CalendarStream gave Google; it carries no
     details, so it just starts a check that puts back events changed or deleted in Google."""
     channel = request.headers.get("x-goog-channel-id", "")
-    if google.notice_ok(channel, request.headers.get("x-goog-channel-token", "")):
+    sid = google.notice_from(channel, request.headers.get("x-goog-channel-token", ""), source_ids())
+    if sid:
         if request.headers.get("x-goog-resource-state") != "sync":   # "sync" only confirms the channel
-            google.noticed()
+            google.noticed(sid)
             request_google_sync(full=True)
     return Response(status_code=200)   # anything else makes Google retry; unknown channels just expire
 
@@ -1493,19 +2048,20 @@ async def google_sync_now(csrf: str = Form("")):
     check_csrf(csrf)
     request_google_sync(full=True)
     await asyncio.sleep(0.5)
-    return RedirectResponse("/#feedcard", status_code=303)
+    return RedirectResponse("/#dest-google", status_code=303)
 
 
 @app.get("/subscribe/{token}")
 def subscribe(request: Request, token: str):
     """Shareable page (no status-page login needed); the secret token in the URL is the access control."""
-    if not secrets.compare_digest(token.encode(), settings.feed_token.encode()):
+    sid = sid_for_token(token)
+    if not sid:
         raise HTTPException(404)
     # Shared with other people: shown in each visitor's browser language.
     lang = i18n.pick(None, request.headers.get("accept-language", ""))
     return page(request, "subscribe.html", {
-        "cfg": settings, "name": calendar_name(), "links": subscribe_links(request),
-        "last_success": state.last_success, "event_count": state.event_count,
+        "cfg": settings, "name": calendar_name(sid), "links": subscribe_links(request, sid),
+        "last_success": st(sid).last_success, "event_count": st(sid).event_count,
     }, lang=lang)
 
 
@@ -1513,20 +2069,32 @@ def subscribe(request: Request, token: str):
 def api_status():
     """Machine-readable status for monitoring (status-page login)."""
     fmt = lambda d: d.isoformat() if d else None
-    return {"version": __version__, "status": state.status, "message": state.message, "running": state.running,
-            "last_attempt": fmt(state.last_attempt), "last_success": fmt(state.last_success),
-            "last_change": fmt(state.last_change), "last_auth": fmt(state.last_auth),
-            "last_auth_ok": state.last_auth_ok, "next_run": fmt(state.next_run), "events": state.event_count}
+
+    def one(sid: str) -> dict:
+        S = st(sid)
+        return {"id": sid, "name": calendar_name(sid), "type": (source(sid) or {}).get("type"), "status": S.status,
+                "message": S.message, "running": S.running, "last_attempt": fmt(S.last_attempt),
+                "last_success": fmt(S.last_success), "last_change": fmt(S.last_change), "next_run": fmt(S.next_run),
+                "events": S.event_count}
+    found = [one(sid) for sid in source_ids()]
+    # The top-level fields are CCS+'s (as before 0.2), or the first source's.
+    first = st("ccs") if "ccs" in source_ids() else (st(source_ids()[0]) if found else State("none"))
+    return {"version": __version__, "status": first.status, "message": first.message, "running": first.running,
+            "last_attempt": fmt(first.last_attempt), "last_success": fmt(first.last_success),
+            "last_change": fmt(first.last_change), "last_auth": fmt(first.last_auth),
+            "last_auth_ok": first.last_auth_ok, "next_run": fmt(first.next_run), "events": first.event_count,
+            "sources": found, "destinations": destinations()}
 
 
 @app.get("/debug/{name}", dependencies=[Depends(gui_auth)])
 def debug_file(name: str):
     """The last download's response details or calendar file, for debugging (status-page login)."""
-    found = store.get_debug(name) if name in ("source", "response") else None
+    ok = re.fullmatch(r"(source|response)(:f[0-9a-f]{6})?", name)
+    found = store.get_debug(name) if ok else None
     if not found:
         raise HTTPException(404)
     content, content_type = found
-    if name == "source":   # show it in the browser rather than downloading
+    if name.startswith("source"):   # show it in the browser rather than downloading
         content_type = "text/plain; charset=utf-8"
     return Response(content, media_type=content_type)
 
@@ -1534,11 +2102,12 @@ def debug_file(name: str):
 @app.get("/calendar/{token}.ics")
 def calendar(token: str, request: Request):
     """The published .ics feed. The token in the address is the only protection (it's secret)."""
-    if not secrets.compare_digest(token.encode(), settings.feed_token.encode()):
+    sid = sid_for_token(token)
+    if not sid:
         raise HTTPException(404)
-    note_feed_read(request.headers.get("user-agent", ""))
-    found = store.get_calendar("feed")
-    ics = found[0] if found else empty_feed(calendar_name(), settings.timezone)
+    note_feed_read(request.headers.get("user-agent", ""), sid)
+    found = store.get_calendar(skey(sid, "feed"))
+    ics = found[0] if found else empty_feed(calendar_name(sid), settings.timezone)
     return Response(ics, media_type="text/calendar; charset=utf-8", headers={"Cache-Control": "no-cache"})
 
 

@@ -130,10 +130,11 @@
 
 {# Google Autosync when connected: account, calendar, last sync, Sync now, Disconnect. #}
 {% macro google_connected(g, name, p) -%}
-<p>{{ _('Connected as <b>{email}</b>, to the calendar <b>{calendar}</b>.', email=g.info.email or _('your Google account'), calendar=g.info.calendar_name or name) }}</p>
+<p>{{ _('Connected as <b>{email}</b>.', email=g.info.email or _('your Google account')) }}
+  {% if g.calendars %}{{ _('Calendars in Google:') }} {% for c in g.calendars %}<b>{{ c.calendar_name or c.name }}</b>{% if c.events is defined %} <span class="muted">({{ _('{n} events', n=c.events or 0) }})</span>{% endif %}{{ " · " if not loop.last }}{% endfor %}{% endif %}</p>
 <div class="btnrow" style="margin-top:4px">
 <p>{% if g.running %}<b>{{ _('Syncing…') }}</b>
-  {% elif g.last_sync %}{{ _('Last synced <b>{when}</b> · {n} events · {result}', when=g.last_sync, n=g.info.events or 0, result=msg(g.info.last_result)) }}
+  {% elif g.last_sync %}{{ _('Last synced <b>{when}</b> · {n} events · {result}', when=g.last_sync, n=g.events, result=msg(g.info.last_result)) }}
   {% else %}{{ _('Not synced yet.') }}{% endif %}</p>
 <form method="post" action="/google/sync" class="inline">
   <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -143,4 +144,56 @@
 {% set w = g.watch %}
 <p class="mnote">{% if w.on %}⚡ {{ _('<b>Instant updates from Google: on.</b> Events changed or deleted in Google are put back within seconds.') }}{% if w.last %} {{ _('Last notice from Google: {when}.', when=w.last) }}{% endif %}
   {% else %}{{ _('<b>Instant updates from Google: off</b> ({why}). Events changed in Google are put back at the daily check.', why=msg(w.why)) }}{% endif %}</p>
+{%- endmacro %}
+
+{# One rule row (Rules box of a source): the title to match and how, then what to do: give it a color,
+   or add an event from a template some time before/after it. Every row sends every field, so the
+   lists the server gets line up; the fields of the other action are only hidden. #}
+{% macro rule_row(t, templates, modes, actions, whens, trash) -%}
+<div class="row tagrow rulerow" data-action="{{ t.action }}">
+  <input type="hidden" name="rule_id" value="{{ t.id }}">
+  <input type="text" name="tag" value="{{ t.tag }}" placeholder="{{ _('Title has, e.g. RDO') }}" maxlength="40" aria-label="{{ _('Title to match') }}">
+  <select name="tag_mode" aria-label="{{ _('How to match') }}" title="{{ _('How the rule is matched against event titles') }}">
+    {% for k, v in modes.items() %}<option value="{{ k }}"{% if t.mode == k %} selected{% endif %}>{{ _(v) }}</option>{% endfor %}
+  </select>
+  <input type="hidden" name="tag_case" value="{{ '1' if t.case else '' }}">
+  <button type="button" class="ghost casebtn" aria-pressed="{{ 'true' if t.case else 'false' }}" title="{{ _('Match capitals exactly') }}">Aa</button>
+  <span class="arrow" aria-hidden="true">→</span>
+  <select name="rule_action" class="ruleaction" aria-label="{{ _('What to do') }}">
+    {% for k, v in actions.items() %}<option value="{{ k }}"{% if t.action == k %} selected{% endif %}>{{ _(v) }}</option>{% endfor %}
+  </select>
+  <span class="act color"><input type="color" name="tag_color" value="{{ t.color or '#1d4ed8' }}" aria-label="{{ _('Rule color') }}"></span>
+  <span class="act event">
+    <select name="rule_template" aria-label="{{ _('Event template') }}">
+      {% if not templates %}<option value="">{{ _('(add an event template first)') }}</option>{% endif %}
+      {% for x in templates %}<option value="{{ x.id }}"{% if x.id == t.template %} selected{% endif %}>{{ x.title }}</option>{% endfor %}
+    </select>
+    <input type="text" name="rule_offset" class="dur" value="{{ '%d:%02d' % (t.offset // 60, t.offset % 60) }}" aria-label="{{ _('How long before or after (hours:minutes)') }}" title="{{ _('How long before or after (hours:minutes)') }}">
+    <select name="rule_when" aria-label="{{ _('Before or after') }}">
+      {% for k, v in whens.items() %}<option value="{{ k }}"{% if t.when == k %} selected{% endif %}>{{ _(v) }}</option>{% endfor %}
+    </select>
+  </span>
+  <button type="button" class="ghost deltag" title="{{ _('Delete this rule') }}" aria-label="{{ _('Delete this rule') }}">{{ trash }}</button>
+  <button type="button" class="ghost addtag" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">+</button>
+</div>
+{%- endmacro %}
+
+{# One event template row: title, timed (with its length) or all day, location and color. #}
+{% macro template_row(t, colors, trash) -%}
+<div class="row tagrow tplrow" data-kind="{{ 'allday' if t.all_day else 'timed' }}">
+  <input type="hidden" name="tpl_id" value="{{ t.id }}">
+  <input type="text" name="tpl_title" value="{{ t.title }}" placeholder="{{ _('Title, e.g. Drive to the airport') }}" maxlength="200" aria-label="{{ _('Title') }}">
+  <select name="tpl_kind" class="tplkind" aria-label="{{ _('Timed or all day') }}">
+    <option value="timed"{% if not t.all_day %} selected{% endif %}>{{ _('Timed') }}</option>
+    <option value="allday"{% if t.all_day %} selected{% endif %}>{{ _('All day') }}</option>
+  </select>
+  <input type="text" name="tpl_duration" class="dur" value="{{ '%d:%02d' % (t.minutes // 60, t.minutes % 60) }}" aria-label="{{ _('Length (hours:minutes)') }}" title="{{ _('Length (hours:minutes)') }}">
+  <input type="text" name="tpl_location" value="{{ t.location }}" placeholder="{{ _('Location') }}" maxlength="200" aria-label="{{ _('Location') }}">
+  <select name="tpl_color" aria-label="{{ _('Event color') }}">
+    <option value="">{{ _('Default color') }}</option>
+    {% for n, h in colors %}<option value="{{ h }}"{% if t.color == h %} selected{% endif %}>{{ n }}</option>{% endfor %}
+  </select>
+  <button type="button" class="ghost deltag" title="{{ _('Delete this template') }}" aria-label="{{ _('Delete this template') }}">{{ trash }}</button>
+  <button type="button" class="ghost addtag" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">+</button>
+</div>
 {%- endmacro %}

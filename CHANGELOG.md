@@ -1,12 +1,49 @@
 # Changelog
 
 Versions are numbered `0.y.z`; the minor version (`y`) only changes when it's decided (0.1.0 was the
-first). Every release is tagged `v<version>`; the newest is also tagged `beta`. The last one marked stable (in the `STABLE` file) is
+first). Planned: 0.2 more calendar sources and destinations, 0.3 more users, 0.4 backups. Every release is tagged `v<version>`; the newest is also tagged `beta`. The last one marked stable (in the `STABLE` file) is
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Labels refer to that release's request list: F = feature request, I = issue,
 # = review item, R = README; numbers start again with each release.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.24**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.0**
+
+## 0.2.0 — 2026-10-21
+
+Calendar sources and destinations: CalendarStream is no longer only for CCS+. An install from
+before keeps what it had (CCS+ as its source; the feed, and Google Autosync if it was set up).
+
+### Added
+- **F1** The status page has two sections, **Calendar Sources** and **Calendar Destinations**, each
+  with **+** in its corner. A new install starts with neither.
+  - **F1.1** Sources: **United CCS+ Calendar Sync** (once) and **calendar feeds** (any `.ics` or
+    `webcal://` link: another airline, work, school, sports). Each source has its own box: name and
+    color (**(edit)**), status chip, check interval, **Sync now**, its login or link, its rules and
+    a **Remove** button. Repeating events in feeds are shown from a year back to two years ahead.
+  - **F1.2** Destinations: **Google Calendar Autosync**, with a Google calendar of its own for each
+    source (removing a source deletes its calendar there), and **Calendar feed**, with a feed link
+    and subscribe page for each source.
+  - **F1.3** The CCS+ step-by-step help ("How to get a Calendar Sync link, ID and secret") is in the
+    same box as the UID and Calendar Sync password.
+  - **F1.4** Adding an event asks which calendar it goes in (with more than one source).
+- **F2** The first destination asks for the public address (filled in with this page's address
+  when it's https://), noting that it can be changed later in ☰ Settings.
+- **F3** **Rules** replace Tag Colors (existing tags carry over as color rules). A rule matches a
+  title as before; coloring is now one of its actions, so more can follow.
+  - **F3.1** Each rule (and each template) has a bin icon to delete it.
+  - **F3.2** **Add event**: a rule can add an event from a template some time before the start,
+    after the start or after the end of each matching event, e.g. "Drive to the airport", 1:30
+    long, 2:00 before each trip. These events follow their event; edit the rule or the template to
+    change them.
+  - **F3.3** **Event templates**: title, length (or all day), location and color, used by those
+    rules and by **Start from a template** when adding an event by hand.
+- **F4** **Stream names**: each feed's secret link part can be entered by hand (or taken from a
+  pasted old link), so links from before a reinstall, or from a source removed by mistake, work
+  again.
+
+### Changed
+- `/api/status` also lists each source and the destinations (its top-level fields stay CCS+'s).
+- Google sign-in finds or makes a calendar for each source.
 
 ## 0.1.24 — 2026-10-21
 

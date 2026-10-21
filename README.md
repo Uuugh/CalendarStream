@@ -10,10 +10,13 @@ Google Calendar by hand.
 CalendarStream automates this process by downloading the official `.ics` file on a timer and
 either:
 
-1. writes it into a Google calendar of its own (updated within minutes, with tag colors), or
+1. writes it into a Google calendar of its own (updated within minutes, with rule colors), or
 2. republishes it as a feed that Google, Apple Calendar and others can subscribe to.
 
-A status page shows the schedule, lets you edit events, and walks you through setup.
+Other calendars can be added the same way: any `.ics` / `webcal://` feed (another airline, work,
+school, sports) becomes a source of its own, each with its own Google calendar and feed link. A
+status page shows them all, lets you edit events, color or add events with rules, and walks you
+through setup.
 
 <p align="center">
   <picture>
@@ -57,12 +60,13 @@ answers) and the database password are kept.
 Then open the address it printed:
 
 1. **Create your login** with the setup code.
-2. **CCS+ Calendar Sync** (on the status page): enter your CCS+ UID and Calendar Sync password.
-3. **☰ → Public address:** press **This page** to fill it in, then check the spelling: Google sends
-   you back to exactly this address.
-4. **Google Calendar Autosync** (on the status page, recommended): follow its step-by-step guide in
-   order. Publish the app, or add yourself as a test user, **before** pressing Connect. Or use
-   **Other ways to get the schedule** → **Add to Google Calendar** to subscribe to the feed instead.
+2. **Calendar Sources → +** → **United CCS+ Calendar Sync**, then enter your CCS+ UID and Calendar
+   Sync password. (Or add any calendar feed.)
+3. **Calendar Destinations → +**: it first asks for the public `https://` address; check the
+   spelling, because Google sends you back to exactly this address. Then add:
+   - **Google Calendar Autosync** (recommended): follow its step-by-step guide in order. Publish the
+     app, or add yourself as a test user, **before** pressing Connect; or
+   - **Calendar feed**, and press **Add to Google Calendar** to subscribe to it instead.
 
 ## Settings
 
@@ -76,11 +80,11 @@ explained in [`.env.default`](.env.default):
 | `IMAGE_TAG` | `latest` | `latest` (stable), `beta` (newest) or a version, e.g. `0.1.6`; the installer asks |
 | `PUID` / `GUID`, `RESTART` | `1000` / `100`, `unless-stopped` | |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Behind a reverse proxy: its address or network (e.g. `172.18.0.0/16`), so visitors' addresses and https are seen |
-| `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440; overridden by “Check for changes every” in the CCS+ Calendar Sync box |
+| `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440, for CCS+; overridden by “Check for changes every” in its box |
 | `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in the CCS+ Calendar Sync help and (edit) |
 | `DEFAULT_EVENT_HOURS` | `1` | Hours for items with no end time, or `allday` |
 | `ALLDAY_24H` | `true` | Show 24-hour (48 h…) events as all-day |
-| `FEED_TOKEN` | made once | Secret part of the feed links; change it to cut off old links |
+| `FEED_TOKEN` | made once | CCS+'s stream name (the secret part of its feed links); a stream name entered on the status page wins |
 
 **Secrets.** The only file is `.secrets/DB_PASSWORD.txt`, made by the installer. The status-page
 login (hashed), the CCS+ password, and the Google client secret and sign-in (encrypted) are kept in
@@ -103,24 +107,35 @@ logins or setup codes lock an address out for 15 minutes.
 
 ## The status page
 
-- **Month view:** the schedule as it's sent to Google. Click the month and year to jump to any
+- **Month view:** every source's events, as they're sent to Google. Click the month and year to jump to any
   month; the **12h / 24h** switch (top right) picks the time format, and the time-zone menu next to
   the event count shows the calendar in another zone (on this page only; the feed and Google keep
   `TZ`). Click an event to see or **Edit** it (title,
   times, notes, or hide it from Google); clicking elsewhere closes it, and its 📌 pin keeps it open.
   Click an empty spot on a day (or **+**) to add your own. Events can have their own color (one of
-  Google's 11), which wins over tags. Edits survive new downloads; ✎ marks
-  an edited event, ⚠ one United changed since. Nothing is ever changed in CCS+.
-- **Status & setup:** the calendar's name and color (**(edit)**) with its status chip,
-  then one box each for **Tag Colors** (e.g. RDO in red, matched by whole word, contains, starts
-  with or exact title), **CCS+ Calendar Sync** (login, **Sync now**, check interval, upload,
-  step-by-step help)
-  and **Google Calendar Autosync**; the feed and the shareable page are under **Other ways to get
-  the schedule**. Each box shows its status, and each login **✓ Validated** until you change it.
-- **Activity log:** each check and what changed, plus the last download for debugging.
-- **☰ Settings:** site settings only: the status-page login, the public address and **Check for
-  updates** (hourly, weekly, monthly or never; only versions of your release, stable or beta, are
-  offered, and a newer one shows next to the version at the top).
+  Google's 11), which wins over rules. Edits survive new downloads; ✎ marks
+  an edited event, ⚠ one its source changed since. Nothing is ever changed in CCS+.
+- **Calendar Sources** (**+** adds one; a new install has none): **United CCS+ Calendar Sync**
+  (once) and **calendar feeds** (any `.ics` or `webcal://` link; repeating events are shown from a
+  year back to two years ahead). Each source's box has its name and color (**(edit)**), status
+  chip, check interval, **Sync now**, its login or link (CCS+'s with its step-by-step help; the
+  login shows **✓ Validated** until you change it), CCS+'s hand upload, and its **Rules**:
+  match a title (whole word, contains, starts with or exact title) and either **color** the event
+  (e.g. RDO in red) or **add an event** from a template some time before the start, after the
+  start or after the end (e.g. a 1:30 drive to the airport 2:00 before each trip). The bin removes
+  a rule or the source.
+- **Event templates:** ready-made events (title, length or all day, location, color) for those
+  rules and for **Start from a template** when adding an event by hand.
+- **Calendar Destinations** (**+** adds one; the first asks for the public address):
+  **Google Calendar Autosync** (one Google calendar per source) and **Calendar feed** (a feed link
+  and a shareable subscribe page per source). Each feed has a **stream name**, the secret part of
+  its links: after a reinstall, or removing a source by mistake, enter the old one (or paste an
+  old link) and existing subscriptions work again.
+- **Activity log:** each check and what changed, for each source.
+- **☰ Settings:** site settings only: the status-page login (with a show-password eye and a
+  strength bar, like every password box), the public address, the **admin e-mail** (filled into the
+  Google setup guide) and **Check for updates** (hourly, weekly, monthly or never; only versions of
+  your release, stable or beta, are offered, and a newer one shows next to the version at the top).
 - **Report a problem / Suggest a feature** at the bottom of the page open a GitHub issue form.
 - **Language** (🌐, left of the Light / Dark / System theme switch): English, Español, Français,
   Deutsch, Português and Vlaams, or Automatic (the browser's language). Everything on the page is
@@ -130,17 +145,17 @@ logins or setup codes lock an address out for 15 minutes.
 
 ## Syncing straight to Google Calendar
 
-CalendarStream writes the schedule into a calendar it creates in your Google account. It only asks
+CalendarStream writes each source into a calendar it creates in your Google account. It only asks
 for access to **calendars it created** and your e-mail address, so it can't see your other calendars.
 
 - Events from the first of the current month onward, with your edits, without reminders; CCS+'s
   "free" items stay free. Older events are left alone.
-- Tags become the nearest Google event color (Tomato, Basil, Peacock…); the calendar's name follows
-  the status page.
+- Color rules become the nearest Google event color (Tomato, Basil, Peacock…); each calendar's name
+  follows its source's. Removing a source deletes its calendar in Google.
 - Changes reach Google within seconds. A daily check (or **Sync now**) puts back events changed or
   deleted in Google and makes a new calendar if it was deleted.
 - **Instant updates from Google:** with a public `https://` address, CalendarStream asks Google to
-  notify it (a webhook to `/google/notify`) whenever its calendar changes there, and puts back
+  notify it (a webhook to `/google/notify`) whenever one of its calendars changes there, and puts back
   hand edits within seconds instead of at the daily check. Nothing to set up; it needs a valid
   certificate, and your proxy must let Google's POSTs to `/google/notify` through without a login.
   Without it, the daily check carries on as before.
@@ -151,7 +166,7 @@ warns it "hasn't verified this app" because it's your own: press **Continue** (o
 CalendarStream**), tick the calendar box and press **Continue**. The guide ends with a list of
 Google's error messages and what to do about each.
 One client serves the whole install, for up to 100 people while unverified. If you also subscribed
-to the feed in Google, remove that calendar, or you'll see everything twice.
+to a feed in Google, remove that calendar, or you'll see everything twice.
 
 ## Versions and releases
 
@@ -173,4 +188,4 @@ docker exec -it calendar_stream_db psql -U ccs calendar_stream                  
 ```
 
 **Starting over:** `docker compose down`, then delete `calendar_stream/postgres`. This erases
-everything: edits, tags, settings, logins, the Google connection and the feed links.
+everything: sources, destinations, edits, rules, templates, settings, logins, the Google connection and the feed links.

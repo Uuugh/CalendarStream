@@ -61,14 +61,14 @@
 </select>
 {%- endmacro %}
 <main>
-  <h1>{{ _("Add event") if is_new else (_("Edit event") if e.origin == "custom" else _("Edit United event")) }}</h1>
+  <h1>{{ _("Add event") if is_new else (_("Edit event") if e.origin == "custom" or src_type != "ccs" else _("Edit United event")) }}</h1>
   <p class="sub"><a href="/?month={{ month }}#cal">{{ _('← Back to CalendarStream') }}</a> · {{ _('times in {tz}', tz=tz) }}</p>
 
   {% if original %}
     {% if e.stale %}
-    <div class="note warn">{{ _('<b>United changed this event after you edited it.</b> Their current version is below. Save to keep your edit, or use <b>Revert to United’s version</b>.') }}</div>
+    <div class="note warn">{% if src_type == "ccs" %}{{ _('<b>United changed this event after you edited it.</b> Their current version is below. Save to keep your edit, or use <b>Revert to United’s version</b>.') }}{% else %}{{ _('<b>The feed changed this event after you edited it.</b> Its current version is below. Save to keep your edit, or use <b>Revert to the feed’s version</b>.') }}{% endif %}</div>
     {% endif %}
-    <div class="note">{{ _('<b>United’s version</b> (from CCS+)') }}{% if not e.edited %} — {{ _('not edited yet') }}{% endif %}<br>
+    <div class="note">{% if src_type == "ccs" %}{{ _('<b>United’s version</b> (from CCS+)') }}{% else %}{{ _('<b>The feed’s version</b> (from {name})', name=src_name) }}{% endif %}{% if not e.edited %} — {{ _('not edited yet') }}{% endif %}<br>
       <span class="orig">{{ original.title }} · {{ original_range }}{% if original.location %} · {{ original.location }}{% endif %}</span></div>
   {% elif e.origin == "custom" and not is_new %}
     <div class="note">{{ _('Added on this page. It appears only in CalendarStream and Google, not in CCS+.') }}</div>
@@ -78,6 +78,22 @@
     <input type="hidden" name="csrf" value="{{ csrf }}">
     <input type="hidden" name="uid" value="{{ e.uid }}">
     <input type="hidden" name="month" value="{{ month }}">
+
+    {# A new event: which calendar it goes in (when there's more than one), and an optional template. #}
+    {% if is_new %}
+      {% if sources|length > 1 %}
+      <label for="source">{{ _('Calendar') }}</label>
+      <select id="source" name="source" class="zone">{% for x in sources %}<option value="{{ x.id }}">{{ x.name }}</option>{% endfor %}</select>
+      {% else %}<input type="hidden" name="source" value="{{ sources[0].id if sources else '' }}">{% endif %}
+      {% if templates %}
+      <label for="template">{{ _('Start from a template') }}</label>
+      <select id="template" class="zone">
+        <option value="">{{ _('(none)') }}</option>
+        {% for t in templates %}<option value="{{ t.id }}" data-title="{{ t.title }}" data-allday="{{ '1' if t.all_day else '' }}"
+          data-minutes="{{ t.minutes }}" data-location="{{ t.location }}" data-color="{{ t.color }}">{{ t.title }}{% if not t.all_day %} ({{ t.length }}){% endif %}</option>{% endfor %}
+      </select>
+      {% endif %}
+    {% endif %}
 
     <label for="title">{{ _('Title') }}</label>
     <input type="text" id="title" name="title" value="{{ e.title }}" required maxlength="200" {% if is_new %}autofocus{% endif %}>
@@ -137,7 +153,7 @@
     {% if e.origin == "united" and e.edited %}
     <form method="post" action="/event/revert"><input type="hidden" name="csrf" value="{{ csrf }}">
       <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">
-      <button class="ghost">{{ _('Revert to United’s version') }}</button></form>
+      <button class="ghost">{{ _('Revert to United’s version') if src_type == "ccs" else _('Revert to the feed’s version') }}</button></form>
     {% elif e.origin == "custom" %}
     <form method="post" action="/event/delete" id="deleteform"><input type="hidden" name="csrf" value="{{ csrf }}">
       <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">
@@ -215,6 +231,7 @@ if (delForm) delForm.addEventListener('submit', function (e) { if (!confirm(T.de
     if (a !== null && length !== null) setWall(ed, et, zoneOf(true), a + Math.max(length, 0));
   }
   function endChanged() { var l = lengthNow(); if (l !== null) length = l; }
+  window.setEventLength = function (min) { length = min; startChanged(); };   // used by "Start from a template"
   function tidy(input) {   // show a typed time the standard way, or mark it
     var t = parse(input.value);
     input.classList.toggle('bad', t === null);
@@ -290,6 +307,23 @@ if (delForm) delForm.addEventListener('submit', function (e) { if (!confirm(T.de
     box.open = false;
   });
   document.addEventListener('click', function (e) { if (box.open && !box.contains(e.target)) box.open = false; });
+})();
+
+// "Start from a template" fills in the title, length, location and color.
+(function () {
+  var pick = document.getElementById('template');
+  if (!pick) return;
+  pick.addEventListener('change', function () {
+    var o = pick.selectedOptions[0];
+    if (!o || !o.value) return;
+    document.getElementById('title').value = o.dataset.title;
+    document.getElementById('location').value = o.dataset.location;
+    var allDay = document.getElementById('all_day');
+    if (allDay.checked !== !!o.dataset.allday) { allDay.checked = !!o.dataset.allday; allDay.dispatchEvent(new Event('change')); }
+    if (!o.dataset.allday && window.setEventLength) window.setEventLength(+o.dataset.minutes);
+    var radio = document.querySelector('input[name=color][value="' + (o.dataset.color || '') + '"]');
+    if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }
+  });
 })();
 </script>
 </body>

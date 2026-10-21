@@ -5,7 +5,6 @@ Tables are created automatically on startup.
 """
 from __future__ import annotations
 
-import json
 import logging
 import time
 from datetime import datetime
@@ -52,6 +51,7 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS stale  boolean NOT NULL DEFAULT fals
 ALTER TABLE events ADD COLUMN IF NOT EXISTS hidden boolean NOT NULL DEFAULT false;
 ALTER TABLE events ADD COLUMN IF NOT EXISTS free   boolean NOT NULL DEFAULT false;
 ALTER TABLE events ADD COLUMN IF NOT EXISTS color  text NOT NULL DEFAULT '';   -- a color chosen for this event (#rrggbb)
+ALTER TABLE events ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'ccs'; -- which calendar source it's from
 -- What was last written to Google Calendar for each event (see gsync.py)
 CREATE TABLE IF NOT EXISTS google_events (
     uid        text PRIMARY KEY,            -- CalendarStream / CCS+ event UID
@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS google_events (
     ends       text NOT NULL,               -- the event's end, so past events are left alone
     synced_at  timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE google_events ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'ccs';  -- one Google calendar per source
 -- Changes made on the status page; re-applied on top of every download from CCS+
 CREATE TABLE IF NOT EXISTS event_edits (
     uid        text PRIMARY KEY,            -- United's event UID
@@ -123,29 +124,32 @@ class Store:
             c.execute("DELETE FROM kv WHERE key = %s", (key,))
 
     # --- events ------------------------------------------------------------
-    def replace_events(self, events: list[Event]):
-        """Swap in a new set of events in one transaction, so the feed never sees a half-written set."""
+    _COLS = 'title, start, "end", all_day, location, description, uid, origin, edited, stale, hidden, free, color, source'
+
+    def replace_events(self, events: list[Event], source: str = "ccs"):
+        """Swap in a source's new set of events in one transaction, so the feed never sees a half-written set."""
         with self.pool.connection() as c:
             with c.transaction():
-                c.execute("DELETE FROM events")
+                c.execute("DELETE FROM events WHERE source = %s", (source,))
                 with c.cursor() as cur:
                     cur.executemany(
-                        'INSERT INTO events (uid, title, start, "end", all_day, location, description, '
-                        "origin, edited, stale, hidden, free, color) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+                        f"INSERT INTO events ({self._COLS}) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
                         "ON CONFLICT (uid) DO NOTHING",
-                        [(e.uid, e.title, e.start, e.end, e.all_day, e.location, e.description,
-                          e.origin, e.edited, e.stale, e.hidden, e.free, e.color) for e in events])
+                        [(e.title, e.start, e.end, e.all_day, e.location, e.description, e.uid,
+                          e.origin, e.edited, e.stale, e.hidden, e.free, e.color, source) for e in events])
 
-    def load_events(self) -> list[Event]:
+    def load_events(self, source: str | None = None) -> list[Event]:
+        """All events, or one source's."""
         with self.pool.connection() as c:
-            rows = c.execute('SELECT title, start, "end", all_day, location, description, uid, '
-                             "origin, edited, stale, hidden, free, color FROM events ORDER BY start").fetchall()
+            if source is None:
+                rows = c.execute(f"SELECT {self._COLS} FROM events ORDER BY start").fetchall()
+            else:
+                rows = c.execute(f"SELECT {self._COLS} FROM events WHERE source = %s ORDER BY start", (source,)).fetchall()
         return [Event(*r) for r in rows]
 
     def get_event(self, uid: str) -> Event | None:
         with self.pool.connection() as c:
-            r = c.execute('SELECT title, start, "end", all_day, location, description, uid, '
-                          "origin, edited, stale, hidden, free, color FROM events WHERE uid = %s", (uid,)).fetchone()
+            r = c.execute(f"SELECT {self._COLS} FROM events WHERE uid = %s", (uid,)).fetchone()
         return Event(*r) if r else None
 
     # --- edits and added events ---------------------------------------------
@@ -178,9 +182,23 @@ class Store:
         with self.pool.connection() as c:
             c.execute("DELETE FROM custom_events WHERE uid = %s", (uid,))
 
-    def event_count(self) -> int:
+    def event_count(self, source: str | None = None) -> int:
         with self.pool.connection() as c:
-            return c.execute("SELECT count(*) FROM events").fetchone()[0]
+            if source is None:
+                return c.execute("SELECT count(*) FROM events").fetchone()[0]
+            return c.execute("SELECT count(*) FROM events WHERE source = %s", (source,)).fetchone()[0]
+
+    def forget_source(self, source: str):
+        """Remove everything kept for a removed source: its events, edits, added events and files."""
+        with self.pool.connection() as c:
+            with c.transaction():
+                uids = [r[0] for r in c.execute("SELECT uid FROM events WHERE source = %s", (source,)).fetchall()]
+                c.execute("DELETE FROM events WHERE source = %s", (source,))
+                if uids:
+                    c.execute("DELETE FROM event_edits WHERE uid = ANY(%s)", (uids,))
+                c.execute("DELETE FROM custom_events WHERE coalesce(data->>'source', 'ccs') = %s", (source,))
+                names = ["source", "feed"] if source == "ccs" else [f"source:{source}", f"feed:{source}"]
+                c.execute("DELETE FROM calendar_files WHERE name = ANY(%s)", (names,))
 
     # --- calendar files (source download + feed) ---------------------------
     def save_calendar(self, name: str, content: bytes, sha256: str = "", content_type: str = "text/calendar"):
@@ -215,25 +233,28 @@ class Store:
 
     # --- Google Calendar sync state ---
 
-    def google_rows(self) -> dict[str, dict]:
-        """uid -> {google_id, hash, ends, synced_at} for events last written to Google."""
+    def google_rows(self, source: str = "ccs") -> dict[str, dict]:
+        """uid -> {google_id, hash, ends, synced_at} for a source's events last written to Google."""
         with self.pool.connection() as c:
-            rows = c.execute("SELECT uid, google_id, hash, ends, synced_at FROM google_events").fetchall()
+            rows = c.execute("SELECT uid, google_id, hash, ends, synced_at FROM google_events WHERE source = %s",
+                             (source,)).fetchall()
         return {r[0]: {"google_id": r[1], "hash": r[2], "ends": r[3], "synced_at": r[4]} for r in rows}
 
-    def google_saved(self, uid: str, google_id: str, hash_: str, ends: str):
+    def google_saved(self, uid: str, google_id: str, hash_: str, ends: str, source: str = "ccs"):
         with self.pool.connection() as c:
-            c.execute("INSERT INTO google_events (uid, google_id, hash, ends) VALUES (%s, %s, %s, %s) "
+            c.execute("INSERT INTO google_events (uid, google_id, hash, ends, source) VALUES (%s, %s, %s, %s, %s) "
                       "ON CONFLICT (uid) DO UPDATE SET google_id = EXCLUDED.google_id, hash = EXCLUDED.hash, "
-                      "ends = EXCLUDED.ends, synced_at = now()", (uid, google_id, hash_, ends))
+                      "ends = EXCLUDED.ends, source = EXCLUDED.source, synced_at = now()", (uid, google_id, hash_, ends, source))
 
-    def google_forget(self, uid: str | None = None):
-        """Forget one event's Google state, or all of it (uid=None)."""
+    def google_forget(self, uid: str | None = None, source: str | None = None):
+        """Forget one event's Google state, a source's, or all of it (no arguments)."""
         with self.pool.connection() as c:
-            if uid is None:
-                c.execute("DELETE FROM google_events")
-            else:
+            if uid is not None:
                 c.execute("DELETE FROM google_events WHERE uid = %s", (uid,))
+            elif source is not None:
+                c.execute("DELETE FROM google_events WHERE source = %s", (source,))
+            else:
+                c.execute("DELETE FROM google_events")
 
     # --- activity log ------------------------------------------------------
 

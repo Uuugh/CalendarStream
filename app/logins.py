@@ -68,6 +68,11 @@ class Logins:
         self.store.set("ccs_login", {"uid": uid, "password": self.box.seal(password)})
         self._ccs = None
 
+    def clear_ccs(self):
+        """Forget the CCS+ login (when CCS+ is removed as a calendar source)."""
+        self.store.delete("ccs_login")
+        self._ccs = None
+
     # --- Status-page login -----------------------------------------------------------
 
     def page_login(self) -> dict | None:

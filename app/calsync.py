@@ -1,4 +1,4 @@
-"""Download the schedule from United's CCS+ Calendar Sync and prepare it for Google Calendar.
+"""Download calendars (United's CCS+ Calendar Sync, or any .ics feed) and prepare them for Google Calendar.
 
 CCS+ Calendar Sync (CCS+ Settings > Schedule Settings > Calendar syncing) serves the schedule
 as an iCalendar file behind HTTP Basic authentication:
@@ -50,12 +50,14 @@ class Event:
     location: str = ""
     description: str = ""
     uid: str = ""
-    origin: str = "united"   # "united" (from CCS+) or "custom" (added on the status page)
+    origin: str = "united"   # "united" (from the source: CCS+ or a feed), "custom" (added on the status
+                             # page) or "rule" (made by a rule from a template)
     edited: bool = False     # a United event changed on the status page
     stale: bool = False      # United changed this event after it was edited here
     hidden: bool = False     # left out of the Google feed
     free: bool = False       # shown as "free" rather than "busy" (CCS+ sends most items as TRANSP:TRANSPARENT)
-    color: str = ""          # a color chosen for this event on the status page (#rrggbb); overrides tags
+    color: str = ""          # a color chosen for this event on the status page (#rrggbb); overrides rules
+    source: str = "ccs"      # the calendar source it belongs to ("ccs" or a feed source's ID)
 
     def fingerprint(self) -> str:
         """Identifies United's version of an event, to notice when it changes after an edit."""
@@ -121,14 +123,17 @@ async def curl_version() -> str:
     return _curl_version
 
 
-async def download(url: str, username: str, password: str, etag: str = "", last_modified: str = "",
-                   timeout: float = 60.0, connect_timeout: float = 20.0) -> Download:
+async def download(url: str, username: str = "", password: str = "", etag: str = "", last_modified: str = "",
+                   timeout: float = 60.0, connect_timeout: float = 20.0, who: str = "CCS+") -> Download:
+    """Download a calendar. `username`/`password` are sent with HTTP Basic (CCS+); feeds send none.
+    `who` names the server in messages ("CCS+", or the feed's host)."""
     host = urlparse(url).hostname or url
     with tempfile.TemporaryDirectory(prefix="calsync-") as tmp:
         body_path, head_path = os.path.join(tmp, "body"), os.path.join(tmp, "headers")
         # Credentials go to curl on stdin (a config file), never on the command line.
-        config = [f"url = {_q(url)}", f"user = {_q(f'{username}:{password}')}",
-                  f'header = {_q("Accept: text/calendar, */*;q=0.5")}']
+        config = [f"url = {_q(url)}", f'header = {_q("Accept: text/calendar, */*;q=0.5")}']
+        if username:
+            config.append(f"user = {_q(f'{username}:{password}')}")
         if etag:
             config.append(f"header = {_q('If-None-Match: ' + etag)}")
         if last_modified:
@@ -143,7 +148,7 @@ async def download(url: str, username: str, password: str, etag: str = "", last_
                 *args, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE)
         except FileNotFoundError:
-            raise SourceError("curl isn't installed in this container (it's needed to download from CCS+).")
+            raise SourceError("curl isn't installed in this container (it's needed to download calendars).")
         out, err = await proc.communicate(("\n".join(config) + "\n").encode())
         try:
             info = _json.loads(out.decode() or "{}")
@@ -160,12 +165,15 @@ async def download(url: str, username: str, password: str, etag: str = "", last_
             raise SourceError(f"Couldn't connect to {host} within {int(connect_timeout)} seconds "
                               "(network, DNS or firewall problem on this server).")
         raise SourceError(f"Connected to {host}, but it sent no reply within {int(timeout)} seconds. "
-                          "United's bot protection may be holding the request; "
-                          "use Upload & publish in the CCS+ Calendar Sync box in the meantime.")
+                          + ("United's bot protection may be holding the request; "
+                             "use Upload & publish in the CCS+ Calendar Sync box in the meantime." if who == "CCS+" else
+                             "Try again later."))
     if code == 1:
-        raise SourceError("The Calendar Sync link must start with https://, and may only redirect to https:// addresses (CalendarStream only downloads over https).")
+        raise SourceError(("The Calendar Sync link" if who == "CCS+" else "The feed link")
+                          + " must start with https://, and may only redirect to https:// addresses (CalendarStream only downloads over https).")
     if code == 47:
-        raise SourceError(f"{host} redirected too many times; check the Calendar Sync link.")
+        raise SourceError(f"{host} redirected too many times; check the "
+                          + ("Calendar Sync link." if who == "CCS+" else "feed link."))
     if code == 63:
         raise SourceError(f"{host} sent more than 5 MB, which is too large for a schedule.")
     if code in (6, 7):
@@ -182,6 +190,9 @@ async def download(url: str, username: str, password: str, etag: str = "", last_
     }
     if status == 304:
         return Download(304, not_modified=True, etag=etag, last_modified=last_modified, debug=debug)
+    if status == 401 and who != "CCS+":
+        raise AuthError(f"{host} wants a login (HTTP 401). Use the calendar's public or secret .ics "
+                        "link, which works without one.")
     if status == 401:
         raise AuthError("CCS+ rejected the UID or Calendar Sync password (HTTP 401). Check both in "
                         "the CCS+ Calendar Sync box (the Calendar Sync password, not your CCS login).")
@@ -191,9 +202,9 @@ async def download(url: str, username: str, password: str, etag: str = "", last_
         who = "Akamai (United's bot protection)" if "akamai" in server.lower() else (server or "the server")
         raise BlockedError(f"Access denied by {who}, HTTP 403" + (f", reference {ref[1]}" if ref else "") + ".")
     if status >= 400:
-        raise SourceError(f"CCS+ answered HTTP {status}: {_snippet(body, 160) or 'no details'}")
+        raise SourceError(f"{who} answered HTTP {status}: {_snippet(body, 160) or 'no details'}")
     if b"BEGIN:VCALENDAR" not in body[:2000]:
-        raise SourceError("CCS+ answered, but not with a calendar file "
+        raise SourceError(f"{who} answered, but not with a calendar file "
                           f"({headers.get('content-type', 'unknown type')}): {_snippet(body, 160)}")
     return Download(status, body=body, etag=headers.get("etag", ""),
                     last_modified=headers.get("last-modified", ""), debug=debug)
@@ -232,6 +243,53 @@ def _set_all_day(ev, first: date, days: int, note: str = ""):
     return first, first + timedelta(days=days)
 
 
+def _event(ev, tz: ZoneInfo, defaults: Defaults, uid: str = "", source: str = "ccs") -> Event | None:
+    """One VEVENT as an Event, with the end filled in and 24-hour events made all-day (the VEVENT is
+    changed to match). None when it has no start."""
+    if "DTSTART" not in ev:
+        return None
+    start = _as_dt(ev["DTSTART"].dt, tz)
+    if "DTEND" in ev:
+        end = _as_dt(ev["DTEND"].dt, tz)
+    elif "DURATION" in ev:
+        end = start + ev["DURATION"].dt
+    elif isinstance(start, datetime) and start.astimezone(tz).time() == datetime.min.time():
+        # Starts at midnight with no end: CCS+ uses this for day codes (RDO, HDO, VRDO…) -> all-day
+        start, end = _set_all_day(ev, start.astimezone(tz).date(), 1)
+    elif isinstance(start, datetime):
+        # Any other timed event with no end: apply DEFAULT_EVENT_HOURS
+        if defaults.mode == "allday":
+            start, end = _set_all_day(ev, start.astimezone(tz).date(), 1,
+                                      f"Start: {start.astimezone(tz):%H:%M}")
+        else:
+            end = start + timedelta(hours=defaults.hours)
+            ev.add("dtend", end)
+    else:
+        end = start + timedelta(days=1)   # all-day with no end = one day (RFC 5545)
+
+    # 24-hour (or 48 h, 72 h…) timed events -> all-day, on the day(s) they start
+    if defaults.allday_24h and isinstance(start, datetime) and isinstance(end, datetime):
+        dur = end - start
+        days = round(dur / timedelta(days=1))
+        if days >= 1 and abs(dur - timedelta(days=days)) <= ALLDAY_TOLERANCE:
+            s_local, e_local = start.astimezone(tz), end.astimezone(tz)
+            start, end = _set_all_day(ev, s_local.date(), days,
+                                      f"Original time: {s_local:%a %b %d %H:%M} – {e_local:%a %b %d %H:%M}")
+
+    all_day = not isinstance(start, datetime)
+    return Event(
+        title=str(ev.get("SUMMARY", "(no title)")),
+        start=start.isoformat() if all_day else start.astimezone(tz).isoformat(),
+        end=end.isoformat() if all_day else end.astimezone(tz).isoformat(),
+        all_day=all_day,
+        location=str(ev.get("LOCATION", "")),
+        description=str(ev.get("DESCRIPTION", "")).strip()[:2000],
+        uid=uid or str(ev.get("UID", "")) or hashlib.sha1(f"{start}|{ev.get('SUMMARY')}".encode()).hexdigest(),
+        free=str(ev.get("TRANSP", "")).upper() == "TRANSPARENT",
+        source=source,
+    )
+
+
 def parse(raw: bytes, tz_name: str, defaults: Defaults):
     """Read a CCS+ calendar and normalise its events. Returns (Calendar, United's events, content hash)."""
     tz = ZoneInfo(tz_name)
@@ -242,50 +300,105 @@ def parse(raw: bytes, tz_name: str, defaults: Defaults):
 
     events: list[Event] = []
     for ev in cal.walk("VEVENT"):
-        if "DTSTART" not in ev:
-            continue
-        start = _as_dt(ev["DTSTART"].dt, tz)
-        if "DTEND" in ev:
-            end = _as_dt(ev["DTEND"].dt, tz)
-        elif "DURATION" in ev:
-            end = start + ev["DURATION"].dt
-        elif isinstance(start, datetime) and start.astimezone(tz).time() == datetime.min.time():
-            # Starts at midnight with no end: CCS+ uses this for day codes (RDO, HDO, VRDO…) -> all-day
-            start, end = _set_all_day(ev, start.astimezone(tz).date(), 1)
-        elif isinstance(start, datetime):
-            # Any other timed event with no end: apply DEFAULT_EVENT_HOURS
-            if defaults.mode == "allday":
-                start, end = _set_all_day(ev, start.astimezone(tz).date(), 1,
-                                          f"Start: {start.astimezone(tz):%H:%M}")
-            else:
-                end = start + timedelta(hours=defaults.hours)
-                ev.add("dtend", end)
-        else:
-            end = start + timedelta(days=1)   # all-day with no end = one day (RFC 5545)
-
-        # 24-hour (or 48 h, 72 h…) timed events -> all-day, on the day(s) they start
-        if defaults.allday_24h and isinstance(start, datetime) and isinstance(end, datetime):
-            dur = end - start
-            days = round(dur / timedelta(days=1))
-            if days >= 1 and abs(dur - timedelta(days=days)) <= ALLDAY_TOLERANCE:
-                s_local, e_local = start.astimezone(tz), end.astimezone(tz)
-                start, end = _set_all_day(ev, s_local.date(), days,
-                                          f"Original time: {s_local:%a %b %d %H:%M} – {e_local:%a %b %d %H:%M}")
-
-        all_day = not isinstance(start, datetime)
-        events.append(Event(
-            title=str(ev.get("SUMMARY", "(no title)")),
-            start=start.isoformat() if all_day else start.astimezone(tz).isoformat(),
-            end=end.isoformat() if all_day else end.astimezone(tz).isoformat(),
-            all_day=all_day,
-            location=str(ev.get("LOCATION", "")),
-            description=str(ev.get("DESCRIPTION", "")).strip()[:2000],
-            uid=str(ev.get("UID", "")) or hashlib.sha1(f"{start}|{ev.get('SUMMARY')}".encode()).hexdigest(),
-            free=str(ev.get("TRANSP", "")).upper() == "TRANSPARENT",
-        ))
+        e = _event(ev, tz, defaults)
+        if e:
+            events.append(e)
 
     events.sort(key=lambda e: e.start)
     return cal, events, hashlib.sha256(raw).hexdigest()
+
+
+MAX_FEED_EVENTS = 5000   # occurrences kept from one feed (a daily event over three years is ~1,100)
+
+
+def parse_feed(raw: bytes, tz_name: str, defaults: Defaults, source: str, first: date, last: date):
+    """Read a calendar feed (any .ics link). Repeating events are expanded into their occurrences
+    between `first` and `last`. Each event's UID is "<source>/<UID>" (plus "/<start>" for an
+    occurrence of a repeating event), so feeds can't collide with each other or with CCS+.
+    Returns (events, content hash)."""
+    import recurring_ical_events
+    tz = ZoneInfo(tz_name)
+    try:
+        cal = Calendar.from_ical(raw)
+        found = recurring_ical_events.of(cal, skip_bad_series=True).between(first, last)
+    except Exception as e:
+        raise SourceError(f"The calendar file couldn't be read: {e}")
+    events: list[Event] = []
+    seen: set[str] = set()
+    for ev in found:
+        if str(ev.get("STATUS", "")).upper() == "CANCELLED":
+            continue
+        uid = str(ev.get("UID", "")) or hashlib.sha1(f"{ev.get('DTSTART')}|{ev.get('SUMMARY')}".encode()).hexdigest()
+        repeats = "RRULE" in ev or "RDATE" in ev or "RECURRENCE-ID" in ev
+        key = f"{source}/{uid}" + (f"/{ev['DTSTART'].dt.isoformat()}" if repeats and "DTSTART" in ev else "")
+        if key in seen:
+            continue
+        seen.add(key)
+        e = _event(ev, tz, defaults, uid=key, source=source)
+        if e:
+            events.append(e)
+        if len(events) >= MAX_FEED_EVENTS:
+            break
+    events.sort(key=lambda e: e.start)
+    return events, hashlib.sha256(raw).hexdigest()
+
+
+def apply_changes(base: list[Event], edits: dict, customs: list[dict], source: str) -> list[Event]:
+    """A feed source's events with the edits, hides and added events made on the status page
+    (what render() does for CCS+, without a calendar file to keep)."""
+    final = []
+    for original in base:
+        ed = edits.get(original.uid)
+        final.append(_edited(original, ed) if ed else original)
+    for c in customs:
+        final.append(_custom(c, source))
+    final.sort(key=lambda e: e.start)
+    return final
+
+
+def _edited(original: Event, ed: dict) -> Event:
+    return Event(title=ed["title"], start=ed["start"], end=ed["end"], all_day=bool(ed["all_day"]),
+                 location=ed.get("location", ""), description=ed.get("description", ""), uid=original.uid,
+                 origin="united", edited=True, stale=ed.get("base") != original.fingerprint(),
+                 hidden=bool(ed.get("hidden")), free=original.free, color=ed.get("color", ""), source=original.source)
+
+
+def _custom(c: dict, source: str) -> Event:
+    return Event(title=c["title"], start=c["start"], end=c["end"], all_day=bool(c["all_day"]),
+                 location=c.get("location", ""), description=c.get("description", ""), uid=c["uid"],
+                 origin="custom", color=c.get("color", ""), source=source)
+
+
+def build_feed(events: list[Event], name: str, tz_name: str, color: str = "") -> bytes:
+    """A calendar file written from events (hidden ones left out), for a feed source."""
+    from icalendar import Event as VEvent
+    cal = new_calendar()
+    _calendar_props(cal, name, tz_name, color)
+    stamp = datetime.now(ZoneInfo("UTC"))
+    for e in events:
+        if e.hidden:
+            continue
+        ev = VEvent()
+        ev.add("uid", e.uid)
+        ev.add("dtstamp", stamp)
+        if e.free:
+            ev.add("transp", "TRANSPARENT")
+        _write_fields(ev, e, {"custom": "added", "rule": "rule"}.get(e.origin, "edited" if e.edited else "source"))
+        cal.add_component(ev)
+    return cal.to_ical()
+
+
+def _calendar_props(cal, name: str, tz_name: str, color: str):
+    for prop in ("X-WR-CALNAME", "X-WR-TIMEZONE", "REFRESH-INTERVAL", "X-PUBLISHED-TTL", "NAME",
+                 "X-APPLE-CALENDAR-COLOR"):
+        cal.pop(prop, None)
+    if color:
+        cal.add("x-apple-calendar-color", color.upper())
+    cal.add("x-wr-calname", name)
+    cal.add("name", name)
+    cal.add("x-wr-timezone", tz_name)
+    cal.add("refresh-interval;value=duration", "PT1H")
+    cal.add("x-published-ttl", "PT1H")
 
 
 def new_calendar() -> Calendar:
@@ -324,23 +437,15 @@ def _write_fields(ev, e: Event, marker: str):
 
 def render(cal: Calendar, base: list[Event], name: str, tz_name: str,
            edits: dict | None = None, customs: list[dict] | None = None,
-           color: str = "") -> tuple[bytes, list[Event]]:
-    """Apply edits, hides and added events to a parsed calendar.
+           color: str = "", extra=None) -> tuple[bytes, list[Event]]:
+    """Apply edits, hides and added events to a parsed CCS+ calendar, keeping United's own fields.
     `color` (#rrggbb) is offered to subscribers as the calendar's color; Apple Calendar uses it,
-    Google Calendar ignores it. Returns (feed bytes for Google, all events for the status page)."""
+    Google Calendar ignores it. `extra(events)` returns more events to add (made by rules).
+    Returns (feed bytes, all events for the status page)."""
     from icalendar import Event as VEvent
 
     edits, customs = edits or {}, customs or []
-    for prop in ("X-WR-CALNAME", "X-WR-TIMEZONE", "REFRESH-INTERVAL", "X-PUBLISHED-TTL", "NAME",
-                 "X-APPLE-CALENDAR-COLOR"):
-        cal.pop(prop, None)
-    if color:
-        cal.add("x-apple-calendar-color", color.upper())
-    cal.add("x-wr-calname", name)
-    cal.add("name", name)
-    cal.add("x-wr-timezone", tz_name)
-    cal.add("refresh-interval;value=duration", "PT1H")
-    cal.add("x-published-ttl", "PT1H")
+    _calendar_props(cal, name, tz_name, color)
 
     by_uid = {e.uid: e for e in base}
     final: list[Event] = []
@@ -355,10 +460,7 @@ def render(cal: Calendar, base: list[Event], name: str, tz_name: str,
         if not ed:
             final.append(original)
             continue
-        e = Event(title=ed["title"], start=ed["start"], end=ed["end"], all_day=bool(ed["all_day"]),
-                  location=ed.get("location", ""), description=ed.get("description", ""), uid=uid,
-                  origin="united", edited=True, stale=ed.get("base") != original.fingerprint(),
-                  hidden=bool(ed.get("hidden")), free=original.free, color=ed.get("color", ""))
+        e = _edited(original, ed)
         if e.hidden:
             cal.subcomponents.remove(ev)
         else:
@@ -366,16 +468,16 @@ def render(cal: Calendar, base: list[Event], name: str, tz_name: str,
         final.append(e)
 
     stamp = datetime.now(ZoneInfo("UTC"))
-    for c in customs:
-        e = Event(title=c["title"], start=c["start"], end=c["end"], all_day=bool(c["all_day"]),
-                  location=c.get("location", ""), description=c.get("description", ""), uid=c["uid"],
-                  origin="custom", color=c.get("color", ""))
+    added = [_custom(c, "ccs") for c in customs]
+    final += added
+    made = list(extra(final)) if extra else []
+    for e in added + made:
         ev = VEvent()
         ev.add("uid", e.uid)
         ev.add("dtstamp", stamp)
-        _write_fields(ev, e, "added")
+        _write_fields(ev, e, "added" if e.origin == "custom" else "rule")
         cal.add_component(ev)
-        final.append(e)
+    final += made
 
     final.sort(key=lambda e: e.start)
     return cal.to_ical(), final
