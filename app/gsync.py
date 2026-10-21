@@ -219,8 +219,16 @@ class Google:
         self._access = None
 
     def client_check(self) -> dict:
-        """The last check of the saved client: {"ok": True/False/None, "message", "at"}."""
-        return (self.store.get("google_client") or {}).get("check") or {}
+        """The last check of the saved client: {"ok": True/False/None, "message", "at", "redirect_uri",
+        "redirect_ok"}."""
+        check = (self.store.get("google_client") or {}).get("check") or {}
+        message = str(check.get("message") or "")
+        if check.get("ok") is False and message.startswith("Google doesn't list "):
+            # Saved by 0.1.20: the ID and secret were fine, only the redirect URI was missing.
+            uri = message[len("Google doesn't list "):].split(" under ", 1)[0]
+            check = {**check, "ok": True, "message": "Google accepted the client ID and secret",
+                     "redirect_uri": uri, "redirect_ok": False}
+        return check
 
     def _save_check(self, ok: bool | None, message: str, redirect_uri: str = "", redirect_ok: bool | None = None):
         """Remember a check: `ok` is about the ID and secret; `redirect_ok` about `redirect_uri` (the

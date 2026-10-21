@@ -6,7 +6,25 @@ the `latest` image and the GitHub Release marked **Latest**. Each version lists 
 **removed**. Labels refer to that release's request list: F = feature request, I = issue,
 # = review item, R = README; numbers start again with each release.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.21**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.22**
+
+## 0.1.22 — 2026-10-21
+
+Deploy review, rounds 3–4 (release candidate).
+
+### Fixed
+- The login limit across all addresses no longer locks out the owner: addresses that logged in
+  successfully in the last 7 days are exempt (strangers' failures can't keep you out).
+- Login-failure bookkeeping is thread-safe (two logins at once could cause an error).
+- A Google client check saved by 0.1.20 shows correctly after upgrading (✓ Validated plus the
+  missing redirect URI, instead of "Google rejected the client").
+- The installer can't stop silently on macOS when looking up this computer's address.
+- The 12h / 24h switch and the event pin keep their size again (0.1.18 had squashed the switch), and
+  the calendar legend's "?" sits in its circle.
+
+### Added
+- README screenshots (from a made-up demo schedule).
+- Translations for everything added since 0.1.18.
 
 ## 0.1.21 — 2026-10-21
 

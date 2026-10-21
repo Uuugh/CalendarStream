@@ -8,6 +8,7 @@ import json
 import logging
 import re
 import secrets
+import threading
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timedelta, timezone
 from itertools import zip_longest
@@ -569,7 +570,10 @@ basic = HTTPBasic(auto_error=False)
 GUI_MAX_FAILURES, GUI_LOCKOUT = 5, timedelta(minutes=15)
 _gui_failures: dict[str, list] = {}   # client ip -> [failure count, locked-until]
 _global_failures: list[datetime] = []  # every recent failure, from any address
-GLOBAL_MAX_FAILURES = 50               # in GUI_LOCKOUT, from all addresses together: then everyone waits
+GLOBAL_MAX_FAILURES = 50               # in GUI_LOCKOUT, from all addresses together: then everyone waits…
+_good_ips: dict[str, datetime] = {}    # …except addresses that logged in successfully within GOOD_IP_FOR
+GOOD_IP_FOR = timedelta(days=7)
+_failures_lock = threading.Lock()      # gui_auth runs in worker threads
 
 
 def _client_ip(request: Request) -> str:
@@ -577,28 +581,41 @@ def _client_ip(request: Request) -> str:
 
 
 def _check_lockout(ip: str):
-    locked_until = _gui_failures.get(ip, [0, None])[1]
-    if locked_until and now() < locked_until:
-        raise HTTPException(429, "Too many failed attempts. Try again later.")
-    # A limit for all addresses together, so guessing from many (made-up) addresses doesn't help.
-    cutoff = now() - GUI_LOCKOUT
-    while _global_failures and _global_failures[0] < cutoff:
-        _global_failures.pop(0)
-    if len(_global_failures) >= GLOBAL_MAX_FAILURES:
-        raise HTTPException(429, "Too many failed attempts. Try again later.")
+    with _failures_lock:
+        locked_until = _gui_failures.get(ip, [0, None])[1]
+        if locked_until and now() < locked_until:
+            raise HTTPException(429, "Too many failed attempts. Try again later.")
+        # A limit for all addresses together, so guessing from many (made-up) addresses doesn't help.
+        # Addresses that logged in successfully in the last 7 days (since the last restart) are exempt, so
+        # strangers can't lock out the browsers the owner uses.
+        cutoff = now() - GUI_LOCKOUT
+        while _global_failures and _global_failures[0] < cutoff:
+            _global_failures.pop(0)
+        trusted = _good_ips.get(ip)
+        if len(_global_failures) >= GLOBAL_MAX_FAILURES and not (trusted and now() - trusted < GOOD_IP_FOR):
+            raise HTTPException(429, "Too many failed attempts. Try again later.")
 
 
 def _count_failure(ip: str, what: str = "logins"):
-    if len(_gui_failures) > 10_000:      # bounded: forget addresses that aren't locked out first
-        for key in [k for k, (_, until) in _gui_failures.items() if not until or until < now()][:5_000]:
-            _gui_failures.pop(key, None)
-    _global_failures.append(now())
-    count = _gui_failures.get(ip, [0, None])[0] + 1
-    locked = now() + GUI_LOCKOUT if count >= GUI_MAX_FAILURES else None
-    _gui_failures[ip] = [0 if locked else count, locked]
+    with _failures_lock:
+        if len(_gui_failures) > 10_000:      # bounded: forget addresses that aren't locked out first
+            for key in [k for k, (_, until) in list(_gui_failures.items()) if not until or until < now()][:5_000]:
+                _gui_failures.pop(key, None)
+        _global_failures.append(now())
+        count = _gui_failures.get(ip, [0, None])[0] + 1
+        locked = now() + GUI_LOCKOUT if count >= GUI_MAX_FAILURES else None
+        _gui_failures[ip] = [0 if locked else count, locked]
     if locked:
         state.record("warn", f"Status page locked for {ip} after {GUI_MAX_FAILURES} failed {what}")
         raise HTTPException(429, "Too many failed attempts. Try again later.")
+
+
+def _count_success(ip: str):
+    with _failures_lock:
+        _gui_failures.pop(ip, None)
+        if len(_good_ips) > 1_000:
+            _good_ips.clear()
+        _good_ips[ip] = now()
 
 
 def gui_auth(request: Request, creds: HTTPBasicCredentials | None = Depends(basic)):
@@ -608,7 +625,7 @@ def gui_auth(request: Request, creds: HTTPBasicCredentials | None = Depends(basi
     ip = _client_ip(request)
     _check_lockout(ip)
     if creds and logins.check_page_login(creds.username, creds.password):
-        _gui_failures.pop(ip, None)
+        _count_success(ip)
         return
     if creds:   # a real attempt (not just the browser's first, credential-less request)
         _count_failure(ip)

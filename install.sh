@@ -23,7 +23,7 @@ env_value() {   # $1 = file, $2 = name: the value in a .env file, without quotes
 }
 this_ip() {   # this computer's address on the network (Linux, then macOS)
   local ip
-  ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
+  ip="$(hostname -I 2>/dev/null | awk '{print $1}' || true)"   # macOS has no "hostname -I"
   [ -n "$ip" ] || ip="$(ipconfig getifaddr en0 2>/dev/null || true)"
   printf '%s' "$ip"
 }
