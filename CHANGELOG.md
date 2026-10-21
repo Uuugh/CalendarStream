@@ -5,7 +5,21 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.9**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.10**
+
+## 0.1.10 — 2026-10-20
+
+### Changed
+- **F1.1** The setup checklist (UID, Calendar Sync password, link, CCS+ accepted the sign-in,
+  schedule received) now sits just under the CCS+ login, above "CCS+ Calendar Sync · checks every".
+- **F1.1.1** "How to turn on Calendar Sync in CCS+" sits to the right of the checklist (below it on
+  phones), in a sub-block of their own with the Calendar Sync link box.
+- **F1.1.2** That sub-block is only open while the UID or Calendar Sync password is missing, or the
+  last update failed (sign-in rejected, blocked, error or paused); otherwise it's closed.
+- The month view's hint mentions clicking an empty spot on a day to add an event.
+
+### Fixed
+- The calendar-name hint for Autosync (0.1.9) never showed; it now does when Google is connected.
 
 ## 0.1.9 — 2026-10-20
 

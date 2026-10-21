@@ -109,7 +109,6 @@
   "Edit": "Editar",
   "Timed": "Con hora",
   "✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google": "✎ editado · ⚠ United lo cambió después · <s>tachado</s> oculto en Google",
-  "This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; use + on a day to add one. Changes here never affect CCS+.": "Este es el horario tal como se envía a Google Calendar. Haz clic en un evento para ver los detalles o editarlo; usa + en un día para añadir uno. Los cambios aquí nunca afectan a CCS+.",
   "Status & setup": "Estado y configuración",
   "Show or hide status & setup": "Mostrar u ocultar estado y configuración",
   "The calendar’s name in Google Calendar": "El nombre del calendario en Google Calendar",
@@ -169,8 +168,6 @@
   "In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.": "En CCS+, abre <b>Settings → Schedule Settings → Calendar syncing</b>.",
   "Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.": "Activa la sincronización del calendario y <b>crea una contraseña de calendario</b>. Usa una contraseña solo para Calendar Sync, no la de acceso a CCS.",
   "Enter your <b>UID</b> and that <b>Calendar Sync password</b> in the boxes at the top and press <b>Save &amp; sync</b>.": "Escribe tu <b>UID</b> y esa <b>contraseña de Calendar Sync</b> en las casillas de arriba y pulsa <b>Guardar y sincronizar</b>.",
-  "Press <b>Copy link</b> in CCS+. If the link differs from the one in the second box, paste it there and press <b>Save &amp; sync</b>.": "Pulsa <b>Copy link</b> en CCS+. Si el enlace es distinto del de la segunda casilla, pégalo allí y pulsa <b>Guardar y sincronizar</b>.",
-  "The checklist above turns green when CCS+ accepts the sign-in and the schedule downloads.": "La lista de arriba se pone en verde cuando CCS+ acepta el acceso y se descarga el horario.",
   "The password is stored encrypted and never shown again; leave its box empty to keep it.": "La contraseña se guarda cifrada y no se vuelve a mostrar; deja su casilla vacía para conservarla.",
   "never": "nunca",
   "Activity log": "Registro de actividad",
@@ -391,5 +388,8 @@
   "Report a problem": "Informar de un problema",
   "Suggest a feature": "Sugerir una función",
   "Enter your CCS+ UID and Calendar Sync password to start downloading the schedule.": "Escribe tu UID de CCS+ y la contraseña de Calendar Sync para empezar a descargar el horario.",
-  "Autosync renames your Google calendar within a minute of saving.": "La sincronización automática cambia el nombre de tu calendario de Google en menos de un minuto tras guardar."
+  "Autosync renames your Google calendar within a minute of saving.": "La sincronización automática cambia el nombre de tu calendario de Google en menos de un minuto tras guardar.",
+  "Press <b>Copy link</b> in CCS+. If it differs from the link below, paste it there and press <b>Save &amp; sync</b>.": "Pulsa <b>Copy link</b> en CCS+. Si es distinto del enlace de abajo, pégalo ahí y pulsa <b>Guardar y sincronizar</b>.",
+  "The checklist turns green when CCS+ accepts the sign-in and the schedule downloads.": "La lista se pone en verde cuando CCS+ acepta el acceso y se descarga el horario.",
+  "This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.": "Este es el horario tal como se envía a Google Calendar. Haz clic en un evento para ver los detalles o editarlo; haz clic en un espacio vacío de un día (o en +) para añadir uno. Los cambios aquí nunca afectan a CCS+."
 }

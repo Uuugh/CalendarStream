@@ -109,7 +109,6 @@
   "Edit": "Bearbeiten",
   "Timed": "Mit Uhrzeit",
   "✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google": "✎ bearbeitet · ⚠ seitdem von United geändert · <s>durchgestrichen</s> in Google ausgeblendet",
-  "This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; use + on a day to add one. Changes here never affect CCS+.": "So wird der Dienstplan an Google Kalender gesendet. Klicke auf einen Termin für Details oder zum Bearbeiten; mit + an einem Tag fügst du einen hinzu. Änderungen hier wirken sich nie auf CCS+ aus.",
   "Status & setup": "Status und Einrichtung",
   "Show or hide status & setup": "Status und Einrichtung ein- oder ausblenden",
   "The calendar’s name in Google Calendar": "Der Name des Kalenders in Google Kalender",
@@ -169,8 +168,6 @@
   "In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.": "Öffne in CCS+ <b>Settings → Schedule Settings → Calendar syncing</b>.",
   "Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.": "Schalte die Kalendersynchronisierung ein und <b>erstelle ein Kalenderpasswort</b>. Nimm ein Passwort nur für Calendar Sync, nicht deine CCS-Anmeldung.",
   "Enter your <b>UID</b> and that <b>Calendar Sync password</b> in the boxes at the top and press <b>Save &amp; sync</b>.": "Gib deine <b>UID</b> und dieses <b>Calendar-Sync-Passwort</b> oben in die Felder ein und klicke auf <b>Speichern und synchronisieren</b>.",
-  "Press <b>Copy link</b> in CCS+. If the link differs from the one in the second box, paste it there and press <b>Save &amp; sync</b>.": "Klicke in CCS+ auf <b>Copy link</b>. Weicht der Link von dem im zweiten Feld ab, füge ihn dort ein und klicke auf <b>Speichern und synchronisieren</b>.",
-  "The checklist above turns green when CCS+ accepts the sign-in and the schedule downloads.": "Die Liste oben wird grün, wenn CCS+ die Anmeldung akzeptiert und der Dienstplan heruntergeladen wird.",
   "The password is stored encrypted and never shown again; leave its box empty to keep it.": "Das Passwort wird verschlüsselt gespeichert und nie wieder angezeigt; lass das Feld leer, um es zu behalten.",
   "never": "nie",
   "Activity log": "Aktivitätsprotokoll",
@@ -391,5 +388,8 @@
   "Report a problem": "Problem melden",
   "Suggest a feature": "Funktion vorschlagen",
   "Enter your CCS+ UID and Calendar Sync password to start downloading the schedule.": "Gib deine CCS+-UID und das Calendar-Sync-Passwort ein, damit der Dienstplan heruntergeladen wird.",
-  "Autosync renames your Google calendar within a minute of saving.": "Die automatische Synchronisierung benennt deinen Google-Kalender innerhalb einer Minute nach dem Speichern um."
+  "Autosync renames your Google calendar within a minute of saving.": "Die automatische Synchronisierung benennt deinen Google-Kalender innerhalb einer Minute nach dem Speichern um.",
+  "Press <b>Copy link</b> in CCS+. If it differs from the link below, paste it there and press <b>Save &amp; sync</b>.": "Drücke in CCS+ auf <b>Copy link</b>. Wenn er sich vom Link unten unterscheidet, füge ihn dort ein und drücke <b>Speichern und synchronisieren</b>.",
+  "The checklist turns green when CCS+ accepts the sign-in and the schedule downloads.": "Die Checkliste wird grün, sobald CCS+ die Anmeldung annimmt und der Dienstplan heruntergeladen ist.",
+  "This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.": "So wird der Dienstplan an Google Kalender gesendet. Klicke auf einen Termin für Details oder zum Bearbeiten; klicke auf eine freie Stelle eines Tages (oder auf +), um einen hinzuzufügen. Änderungen hier wirken sich nie auf CCS+ aus."
 }

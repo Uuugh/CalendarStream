@@ -120,6 +120,9 @@
   .checks li.done::before { content:"✓"; color:var(--ok); font-weight:700 }
   .checks li.fail::before { content:"✗"; color:var(--bad); font-weight:700 }
   details.howto summary { cursor:pointer; font-weight:600; font-size:14px }
+  details.howto { border:1px solid var(--line); border-radius:10px; padding:8px 12px; margin:10px 0 0; background:var(--soft) }
+  details.howto[open] { padding-bottom:12px }
+  details.howto form .k { margin-top:12px !important }
 
   /* Month view */
   .calhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px }
@@ -198,6 +201,10 @@
   .syncline, .uploadline { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:12.5px; color:var(--muted); margin:10px 0 0 }
   .syncline input[type=number] { width:64px; font:inherit; padding:2px 6px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--text) }
   .uploadline { margin-top:6px }
+  /* Checklist on the left, how-to on the right; stacked on phones. */
+  .helpgrid { display:grid; grid-template-columns:minmax(220px, 1fr) 2fr; gap:8px 28px; margin-top:10px; align-items:start }
+  .helpgrid .checks { margin:4px 0 0 } .helpgrid .h4 { margin-top:0 }
+  @media (max-width:700px) { .helpgrid { grid-template-columns:1fr } }
   .uploadline input[type=file] { font-size:12px; max-width:230px }
   button.tiny { padding:2px 10px; font-size:12px; border-radius:6px }
   /* Language menu (globe), left of the theme switch */
@@ -350,7 +357,7 @@
       {% if color %}<span style="--sw:color-mix(in srgb, {{ color }} 18%, var(--card))">{{ _('Timed') }}</span><span style="--sw:color-mix(in srgb, {{ color }} 34%, var(--card))">{{ _('All-day') }}</span>{% else %}<span style="--sw:var(--ev)">{{ _('Timed') }}</span><span style="--sw:var(--allday)">{{ _('All-day') }}</span>{% endif %}<span style="--sw:var(--custom)">{{ _('Added here') }}</span>{% for t in tags %}<span style="--sw:color-mix(in srgb, {{ t.color }} 34%, var(--card))">{{ t.tag }}</span>{% endfor %}
       <span style="--sw:transparent">{{ _('✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google') }}</span>
     </div>
-    <p class="muted" style="font-size:12px;margin:6px 0 0">{{ _('This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; use + on a day to add one. Changes here never affect CCS+.') }}</p>
+    <p class="muted" style="font-size:12px;margin:6px 0 0">{{ _('This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.') }}</p>
   </div>
 
   {# Status & setup: the header is the calendar's name, colour and (edit); the body has the health bar,
@@ -370,7 +377,7 @@
       <input type="hidden" name="csrf" value="{{ csrf }}">
       <label class="lbl" for="calname-input">{{ _('Calendar name') }}</label>
       <div class="row"><input type="text" id="calname-input" name="name" value="{{ name }}" placeholder="{{ _('Calendar name') }}" maxlength="100"></div>
-      {% if g.connected %}<p class="hint">{{ _('Autosync renames your Google calendar within a minute of saving.') }}</p>{% else %}
+      {% if google.connected %}<p class="hint">{{ _('Autosync renames your Google calendar within a minute of saving.') }}</p>{% else %}
       <p class="hint">{{ _('Google only reads the name when the calendar is first added. If it’s already in your Google Calendar, rename it there too: hover over it under <b>Other calendars</b> → ⋮ → <b>Settings</b> → <b>Name</b>.') }}</p>{% endif %}
 
       <label class="lbl" for="colorpick">{{ _('Default colour') }}</label>
@@ -418,6 +425,42 @@
       {{ m.ccs_login(setup, s) }}
       {% if not setup.configured %}<p class="mnote">{{ _('Your CCS+ UID and Calendar Sync password may be updated in Status & setup, or in Settings (☰).') }}</p>{% endif %}
 
+      {# F1.1: the checklist (left) and how to turn on Calendar Sync (right), with the link box. Open only
+         while the login is missing or the last check failed. #}
+      {% set help_open = not setup.configured or cls == "bad" or s.status == "paused" or s.last_auth_ok == false %}
+      <details class="howto"{% if help_open %} open{% endif %}>
+        <summary>{{ _('Calendar Sync link, checklist and help') }}</summary>
+        <div class="helpgrid">
+          <ul class="checks">
+            <li class="{{ 'done' if setup.uid else '' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code>{% else %}<span class="muted">{{ _('not entered yet') }}</span>{% endif %}</li>
+            <li class="{{ 'done' if setup.has_password else '' }}">{{ _('Calendar Sync password') }} {% if setup.has_password %}{{ _('saved <span class="muted">(encrypted)</span>') }}{% else %}<span class="muted">{{ _('not entered yet') }}</span>{% endif %}</li>
+            <li class="done">{{ _('Calendar Sync link') }} <span class="muted">({% if setup.url_from_gui %}{{ _('set here') }}{% elif setup.url_is_default %}{{ _('default') }}{% else %}{{ _('from .env') }}{% endif %})</span></li>
+            <li class="{{ 'done' if s.last_auth_ok else ('fail' if s.last_auth_ok == false else '') }}">{{ _('CCS+ accepted the sign-in') }}{% if s.last_auth_ok == false %} — {{ _('<b>rejected</b>; check the UID and Calendar Sync password') }}{% endif %}</li>
+            <li class="{{ 'done' if setup.downloaded else '' }}">{{ _('Schedule received') }}{% if setup.downloaded %} <span class="muted">({{ _('{n} events', n=s.event_count) }})</span>{% endif %}</li>
+          </ul>
+          <div>
+            <p class="h4">{{ _('How to turn on Calendar Sync in CCS+') }}</p>
+            <ol>
+              <li>{{ _('In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.') }}</li>
+              <li>{{ _('Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.') }}</li>
+              <li>{{ _('Enter your <b>UID</b> and that <b>Calendar Sync password</b> in the boxes at the top and press <b>Save &amp; sync</b>.') }}</li>
+              <li>{{ _('Press <b>Copy link</b> in CCS+. If it differs from the link below, paste it there and press <b>Save &amp; sync</b>.') }}</li>
+              <li>{{ _('The checklist turns green when CCS+ accepts the sign-in and the schedule downloads.') }}</li>
+            </ol>
+            <form method="post" action="/setup/link">
+              <input type="hidden" name="csrf" value="{{ csrf }}">
+              <div class="k" style="margin-top:0">{{ _('Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):') }}</div>
+              <div class="feed">
+                <input name="url" type="url" required value="{{ setup.url }}" placeholder="https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar">
+                <button name="action" value="save">{{ _('Save & sync') }}</button>
+                {% if setup.url_from_gui %}<button class="ghost" name="action" value="reset" formnovalidate>{{ _('Reset') }}</button>{% endif %}
+              </div>
+            </form>
+            <p class="muted" style="font-size:13px;margin:8px 0 0">{{ _('The password is stored encrypted and never shown again; leave its box empty to keep it.') }}</p>
+          </div>
+        </div>
+      </details>
+
       {# How the schedule is fetched; the check interval can be changed here. #}
       <form class="syncline" method="post" action="/setup/interval">
         <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -435,35 +478,6 @@
         <input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}">
         <button class="ghost tiny">{{ _('Upload & publish') }}</button>
       </form>
-
-      <details class="howto" {% if not setup.downloaded %}open{% endif %}>
-        <summary>{{ _('Calendar Sync link, checklist and help') }}</summary>
-        <form method="post" action="/setup/link" style="margin-top:10px">
-          <input type="hidden" name="csrf" value="{{ csrf }}">
-          <div class="k" style="margin-top:0">{{ _('Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):') }}</div>
-          <div class="feed">
-            <input name="url" type="url" required value="{{ setup.url }}" placeholder="https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar">
-            <button name="action" value="save">{{ _('Save & sync') }}</button>
-            {% if setup.url_from_gui %}<button class="ghost" name="action" value="reset" formnovalidate>{{ _('Reset') }}</button>{% endif %}
-          </div>
-        </form>
-        <ul class="checks" style="margin-top:14px">
-          <li class="{{ 'done' if setup.uid else '' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code>{% else %}<span class="muted">{{ _('not entered yet') }}</span>{% endif %}</li>
-          <li class="{{ 'done' if setup.has_password else '' }}">{{ _('Calendar Sync password') }} {% if setup.has_password %}{{ _('saved <span class="muted">(encrypted)</span>') }}{% else %}<span class="muted">{{ _('not entered yet') }}</span>{% endif %}</li>
-          <li class="done">{{ _('Calendar Sync link') }} <span class="muted">({% if setup.url_from_gui %}{{ _('set here') }}{% elif setup.url_is_default %}{{ _('default') }}{% else %}{{ _('from .env') }}{% endif %})</span></li>
-          <li class="{{ 'done' if s.last_auth_ok else ('fail' if s.last_auth_ok == false else '') }}">{{ _('CCS+ accepted the sign-in') }}{% if s.last_auth_ok == false %} — {{ _('<b>rejected</b>; check the UID and Calendar Sync password') }}{% endif %}</li>
-          <li class="{{ 'done' if setup.downloaded else '' }}">{{ _('Schedule received') }}{% if setup.downloaded %} <span class="muted">({{ _('{n} events', n=s.event_count) }})</span>{% endif %}</li>
-        </ul>
-        <p class="h4">{{ _('How to turn on Calendar Sync in CCS+') }}</p>
-        <ol>
-          <li>{{ _('In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.') }}</li>
-          <li>{{ _('Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.') }}</li>
-          <li>{{ _('Enter your <b>UID</b> and that <b>Calendar Sync password</b> in the boxes at the top and press <b>Save &amp; sync</b>.') }}</li>
-          <li>{{ _('Press <b>Copy link</b> in CCS+. If the link differs from the one in the second box, paste it there and press <b>Save &amp; sync</b>.') }}</li>
-          <li>{{ _('The checklist above turns green when CCS+ accepts the sign-in and the schedule downloads.') }}</li>
-        </ol>
-        <p class="muted" style="font-size:13px;margin:8px 0 0">{{ _('The password is stored encrypted and never shown again; leave its box empty to keep it.') }}</p>
-      </details>
     </div>
 
     {# Getting the schedule into Google: Autosync (recommended), or subscribing to the feed. #}

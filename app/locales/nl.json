@@ -109,7 +109,6 @@
   "Edit": "Bewerken",
   "Timed": "Met tijd",
   "✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google": "✎ bewerkt · ⚠ sindsdien gewijzigd door United · <s>doorgestreept</s> verborgen in Google",
-  "This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; use + on a day to add one. Changes here never affect CCS+.": "Dit is de planning zoals ze naar Google Agenda gaat. Klik op een afspraak voor details of om ze te bewerken; gebruik + op een dag om er een toe te voegen. Wijzigingen hier hebben nooit invloed op CCS+.",
   "Status & setup": "Status en instellingen",
   "Show or hide status & setup": "Status en instellingen tonen of verbergen",
   "The calendar’s name in Google Calendar": "De naam van de agenda in Google Agenda",
@@ -169,8 +168,6 @@
   "In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.": "Open in CCS+ <b>Settings → Schedule Settings → Calendar syncing</b>.",
   "Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.": "Zet agendasynchronisatie aan en <b>maak een agendawachtwoord</b>. Gebruik een wachtwoord alleen voor Calendar Sync, niet je CCS-aanmelding.",
   "Enter your <b>UID</b> and that <b>Calendar Sync password</b> in the boxes at the top and press <b>Save &amp; sync</b>.": "Vul je <b>UID</b> en dat <b>Calendar Sync-wachtwoord</b> in de vakjes bovenaan in en klik op <b>Bewaren en synchroniseren</b>.",
-  "Press <b>Copy link</b> in CCS+. If the link differs from the one in the second box, paste it there and press <b>Save &amp; sync</b>.": "Klik in CCS+ op <b>Copy link</b>. Als de link verschilt van die in het tweede vakje, plak hem daar en klik op <b>Bewaren en synchroniseren</b>.",
-  "The checklist above turns green when CCS+ accepts the sign-in and the schedule downloads.": "De lijst hierboven wordt groen als CCS+ de aanmelding aanvaardt en de planning gedownload is.",
   "The password is stored encrypted and never shown again; leave its box empty to keep it.": "Het wachtwoord wordt versleuteld bewaard en nooit meer getoond; laat het vakje leeg om het te houden.",
   "never": "nooit",
   "Activity log": "Activiteitenlogboek",
@@ -391,5 +388,8 @@
   "Report a problem": "Een probleem melden",
   "Suggest a feature": "Een functie voorstellen",
   "Enter your CCS+ UID and Calendar Sync password to start downloading the schedule.": "Vul je CCS+-UID en het Calendar Sync-wachtwoord in om de planning te beginnen downloaden.",
-  "Autosync renames your Google calendar within a minute of saving.": "Autosync hernoemt je Google-agenda binnen een minuut na het opslaan."
+  "Autosync renames your Google calendar within a minute of saving.": "Autosync hernoemt je Google-agenda binnen een minuut na het opslaan.",
+  "Press <b>Copy link</b> in CCS+. If it differs from the link below, paste it there and press <b>Save &amp; sync</b>.": "Druk in CCS+ op <b>Copy link</b>. Als die verschilt van de link hieronder, plak hem daar en druk op <b>Bewaren en synchroniseren</b>.",
+  "The checklist turns green when CCS+ accepts the sign-in and the schedule downloads.": "De checklist wordt groen zodra CCS+ de aanmelding aanvaardt en het rooster gedownload is.",
+  "This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.": "Dit is het rooster zoals het naar Google Agenda gaat. Klik op een afspraak voor details of om ze te bewerken; klik op een lege plek van een dag (of op +) om er een toe te voegen. Wijzigingen hier hebben nooit invloed op CCS+."
 }
