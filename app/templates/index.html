@@ -42,6 +42,8 @@
   .topbar { display:flex; align-items:center; gap:10px; margin-bottom:4px }
   .topbar h1 { font-size:20px; margin:0; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
   .topbar .ver { color:var(--muted); font-size:13px; font-weight:500; margin-left:4px }
+  .topbar .newver { color:var(--accent); font-weight:600; text-decoration:none; margin-left:3px } .topbar .newver:hover { text-decoration:underline }
+  form .pair label.fld select { width:100%; height:34px; font:inherit; font-size:13px; padding:0 6px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
   .seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--card) }
   .seg button { display:inline-flex; align-items:center; background:transparent; color:var(--muted); border:0; border-radius:0; padding:7px 9px; line-height:1 }
   .seg button + button { border-left:1px solid var(--line) }
@@ -331,13 +333,18 @@
              font-size:11px; font-weight:700; cursor:help; margin-left:auto }
   .helpdot::before { display:none }
   .tagsform.editor { border:0; padding:0; margin:0; background:transparent }
+  .addfirst { width:36px; padding:0; font-size:18px }
+  .tagrows:empty { display:none } #tags:has(#tagrows:empty):has(#tagfoot[hidden]) .boxhead { margin-bottom:0 }
+  .boxhead form.inline { margin:0 }
   .boxhead { flex-wrap:wrap } .boxhead > div { flex:1 1 240px }
   @media (max-width:600px) { .section > .shead .headright { margin-left:0 } .editor .tagrow:not(:last-child) .addtag { display:none } }
 </style>
 </head>
 <body>{% import "_macros.html" as m with context %}<main>
   <header class="topbar">
-    <h1>CalendarStream<span class="ver">v{{ version }}</span></h1>
+    <h1>CalendarStream<span class="ver">v{{ version }}{% if update.available %}
+      <a class="newver" href="{{ update.releases }}/tag/v{{ update.available }}" target="_blank" rel="noopener"
+         title="{{ _('A newer version is available: run the installer again to update.') }}">(v{{ update.available }})</a>{% endif %}</span></h1>
     {# Language menu: Automatic follows the browser; the choice is saved in the database. #}
     <div class="langwrap">
       <button type="button" class="iconbtn" id="langbtn" aria-haspopup="menu" aria-expanded="false" aria-controls="langmenu"
@@ -410,6 +417,26 @@
             {% else %}{{ _('Not set yet.') }}{% endif %}</p>
         </div>
 
+        {# Check for updates: how often, for this install's channel (beta or stable) only. #}
+        <div class="mgroup" id="updates">
+          <div class="mhead">{{ _('Updates') }}</div>
+          <form method="post" action="/settings/updates" class="clientform">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <div class="pair">
+              <label class="fld" for="updfreq"><span>{{ _('Check for updates') }}</span>
+                <select id="updfreq" name="frequency" onchange="this.form.submit()">
+                  {% for f in update.frequencies %}<option value="{{ f }}"{% if f == update.frequency %} selected{% endif %}>{{ {"hourly": _('Hourly'), "weekly": _('Weekly'), "monthly": _('Monthly'), "never": _('Never')}[f] }}</option>{% endfor %}
+                </select></label>
+              <button class="ghost" name="action" value="check">{{ _('Check now') }}</button>
+            </div>
+          </form>
+          <p class="mnote" style="margin:6px 0 0">
+            {{ _('This install follows <b>{channel}</b>.', channel=(_('beta (the newest versions)') if update.channel == 'beta' else _('stable (latest)'))) }}
+            {% if update.available %}<b>{{ _('Version {v} is available.', v=update.available) }}</b> {{ _('Run the installer again to update.') }}
+            {% elif update.info.newest %}{{ _('Up to date.') }}{% endif %}
+            {% if update.info.error %}<span class="bad">{{ msg(update.info.error) }}</span>{% endif %}
+            {% if update.checked %}<span class="muted">{{ _('Last checked {when}.', when=update.checked) }}</span>{% endif %}</p>
+        </div>
       </div>
     </div>
   </header>
@@ -494,10 +521,7 @@
       <span class="cardtitle calname" id="calname"{% if color %} style="color:{{ color }}"{% endif %} title="{{ _('The calendar’s name in Google Calendar') }}">{{ name }}</span>
       <button type="button" class="linkbtn" id="editbtn" aria-expanded="false" aria-controls="editor">{{ _('(edit)') }}</button>
       <span class="peek">{{ msg(s.message) }}</span>
-      <span class="headright">
-        <span class="chip {{ chipcls }}">{{ label }}</span>
-        <form method="post" action="/run" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running or not setup.configured %}disabled{% endif %}>{{ _('Sync now') }}</button></form>
-      </span>
+      <span class="headright"><span class="chip {{ chipcls }}">{{ label }}</span></span>
     </div>
 
     {# Title editor: name and default color. Hidden until (edit) is pressed. #}
@@ -528,11 +552,26 @@
     {# Tag colors (#2: the explanation is folded) #}
     <div class="box" id="tags">
       <div class="boxhead"><div><div class="boxtitle">{{ _('Tag Colors') }}</div>
-        <div class="subtitle">{{ _('Color events by a word in their title, e.g. RDO in red.') }}</div></div></div>
-      <form class="editor tagsform" method="post" action="/feed/tags">
+        <div class="subtitle">{{ _('Color events by a word in their title, e.g. RDO in red.') }}</div></div>
+        <button type="button" class="ghost addfirst" id="addfirst"{% if tags %} hidden{% endif %} title="{{ _('Add a tag') }}" aria-label="{{ _('Add a tag') }}">+</button></div>
+      {# Only saved tags are shown; + adds an empty row (from the template below). With no tags the box is
+         just its header, with + in the corner. #}
+      <form class="editor tagsform" method="post" action="/feed/tags" id="tagsform"{% if not tags %} data-empty{% endif %}>
         <input type="hidden" name="csrf" value="{{ csrf }}">
+        <template id="tagrowtpl">{% set t = {"tag": "", "color": color or "#1d4ed8", "mode": "word", "case": false} %}
+          <div class="row tagrow">
+            <input type="text" name="tag" value="" placeholder="{{ _('Tag, e.g. RDO') }}" maxlength="40" aria-label="{{ _('Tag') }}">
+            <select name="tag_mode" aria-label="{{ _('How to match') }}" title="{{ _('How the tag is matched against event titles') }}">
+              {% for k, v in tag_modes.items() %}<option value="{{ k }}"{% if k == "word" %} selected{% endif %}>{{ _(v) }}</option>{% endfor %}
+            </select>
+            <input type="hidden" name="tag_case" value="">
+            <button type="button" class="ghost casebtn" aria-pressed="false" title="{{ _('Match capitals exactly') }}">Aa</button>
+            <input type="color" name="tag_color" value="{{ t.color }}" aria-label="{{ _('Tag color') }}">
+            <button type="button" class="ghost deltag" title="{{ _('Remove this tag') }}" aria-label="{{ _('Remove this tag') }}">×</button>
+            <button type="button" class="ghost addtag" title="{{ _('Add a tag') }}" aria-label="{{ _('Add a tag') }}">+</button>
+          </div></template>
         <div class="tagrows" id="tagrows">
-          {% for t in tags + [{"tag": "", "color": color or "#1d4ed8", "mode": "word", "case": false}] %}
+          {% for t in tags %}
           <div class="row tagrow">
             <input type="text" name="tag" value="{{ t.tag }}" placeholder="{{ _('Tag, e.g. RDO') }}" maxlength="40" aria-label="{{ _('Tag') }}">
             <select name="tag_mode" aria-label="{{ _('How to match') }}" title="{{ _('How the tag is matched against event titles') }}">
@@ -546,7 +585,7 @@
           </div>
           {% endfor %}
         </div>
-        <div class="btnrow">
+        <div class="btnrow" id="tagfoot"{% if not tags %} hidden{% endif %}>
           <details class="guide inline"><summary>{{ _('How tags match') }}</summary>
             <p>{{ _('Events whose title matches a tag use its color; the first matching tag wins, and other events use the default color. <b>Whole word</b>: “RDO” matches “RDO.” but not “VRDO”. <b>Contains</b>: anywhere, even inside a word. <b>Starts with</b>: the title begins with it. <b>Exact title</b>: the whole title. <b>Aa</b>: match capitals exactly. Colors show on this page and in Google Calendar sync; Apple Calendar uses the default color.') }}</p></details>
           <button>{{ _('Save') }}</button>
@@ -562,7 +601,8 @@
         {% if ccs_ok %}<span class="chip good">{{ _('Sign-in validated') }}</span>
         {% elif s.last_auth_ok == false %}<span class="chip bad">{{ _('Sign-in rejected') }}</span>
         {% elif not setup.configured %}<span class="chip warn">{{ _('Setup needed') }}</span>
-        {% else %}<span class="chip warn">{{ _('Not checked yet') }}</span>{% endif %}</div>
+        {% else %}<span class="chip warn">{{ _('Not checked yet') }}</span>{% endif %}
+        <form method="post" action="/run" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running or not setup.configured %}disabled{% endif %}>{{ _('Sync now') }}</button></form></div>
       {% if not setup.configured %}<p class="mnote" style="margin:0 0 4px">{{ _('Enter your CCS+ <b>UID</b> and <b>Calendar Sync password</b> (the one created for calendar syncing in CCS+, not your CCS login) to start downloading the schedule:') }}</p>{% endif %}
       {{ m.ccs_login(setup, s) }}
 
@@ -903,26 +943,31 @@ document.querySelectorAll('.section[data-section]').forEach(function (sec) {
     note.textContent = T.backToStandard;
   });
 
-  // Tag rows: + adds an empty row after the last one (CSS shows + only on the last row); × removes a
-  // row, or just clears it when it's the only one left.
-  var rows = document.getElementById('tagrows');
+  // Tag rows (F1): only saved tags are listed. + (on the last row, or in the box's corner when there
+  // are none) adds an empty row; × removes a row. The Save line shows once there's something to save.
+  var rows = document.getElementById('tagrows'), tpl = document.getElementById('tagrowtpl'),
+      first = document.getElementById('addfirst'), foot = document.getElementById('tagfoot');
+  function refresh(changed) {
+    first.hidden = rows.children.length > 0;
+    if (changed || rows.children.length) foot.hidden = false;
+  }
+  function addRow() {
+    var row = tpl.content.firstElementChild.cloneNode(true);
+    rows.appendChild(row); refresh(true);
+    row.querySelector('input[name=tag]').focus();
+  }
+  first.addEventListener('click', addRow);
   rows.addEventListener('click', function (e) {
     var row = e.target.closest('.tagrow');
     if (!row) return;
     if (e.target.closest('.addtag')) {
-      var copy = row.cloneNode(true);
-      copy.querySelector('input[name=tag]').value = '';
-      copy.querySelector('select[name=tag_mode]').value = 'word';
-      copy.querySelector('input[name=tag_case]').value = '';
-      copy.querySelector('.casebtn').setAttribute('aria-pressed', 'false');
-      rows.appendChild(copy);
-      copy.querySelector('input[name=tag]').focus();
+      addRow();
     } else if (e.target.closest('.casebtn')) {
       var on = row.querySelector('input[name=tag_case]').value !== '1';
       row.querySelector('input[name=tag_case]').value = on ? '1' : '';
       e.target.closest('.casebtn').setAttribute('aria-pressed', String(on));
     } else if (e.target.closest('.deltag')) {
-      if (rows.children.length > 1) row.remove(); else row.querySelector('input[name=tag]').value = '';
+      row.remove(); refresh(true);
     }
   });
 })();

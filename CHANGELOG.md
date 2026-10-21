@@ -5,7 +5,29 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.18**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.19**
+
+## 0.1.19 — 2026-10-21
+
+### Added
+- **F1** ☰ Settings → **Check for updates**: Hourly, Weekly (the default), Monthly or Never, plus
+  **Check now**. It follows this install's release (`IMAGE_TAG`): a stable install is only told
+  about stable versions, a beta install about the newest beta. A newer version shows in brackets
+  next to the version at the top, linked to its release notes, and once in the activity log.
+
+### Changed
+- **F1 (tags)** Tag Colors shows only saved tags. With none, the box is just its header with **+**
+  in the corner; **+** at the end of the last tag adds another. The Save line appears once there's
+  something to save.
+- **F2** The Google client guide is seven short steps, with its own "Create the OAuth client ID"
+  step, and what to do when Google won't publish the app (stay in Testing and add yourself as a
+  test user).
+- **F3** **Sync now** is in the CCS+ Calendar Sync box (the schedule header keeps the status chip).
+- `docker-compose.yml` passes `IMAGE_TAG` to the app.
+
+### Fixed
+- **I2** On the event page, only the All-day box and its words tick it (clicking elsewhere on the
+  line did too); the same for the other check boxes there.
 
 ## 0.1.18 — 2026-10-20
 

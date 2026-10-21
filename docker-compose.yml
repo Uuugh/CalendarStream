@@ -16,6 +16,8 @@ services:
       - PUID=${PUID:-1000}
       - PGID=${GUID:-100}
       - TZ=${TZ:-America/Chicago}
+      # Which release this is (Settings → Check for updates only reports versions of the same one)
+      - IMAGE_TAG=${IMAGE_TAG:-latest}
       # All project data is stored in the database container below
       - DB_HOST=calendar_stream_db
       - DB_NAME=${DB_NAME:-calendar_stream}

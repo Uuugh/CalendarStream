@@ -86,17 +86,19 @@
 <details class="guide">
   <summary>{{ _('How to get a client ID and secret (step by step)') }}</summary>
   <ol>
-    <li>{{ _('<b>Open Google Cloud</b> and sign in with your Google account: <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">create a project</a>. Name it <code>CalendarStream</code> and press <b>Create</b>. Make sure it’s selected (top left) in the next steps.') }}</li>
-    <li>{{ _('<b>Turn on the Calendar API:</b> open <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" rel="noopener">Google Calendar API</a> and press <b>Enable</b>.') }}</li>
-    <li>{{ _('<b>Describe the app:</b> open <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> → <b>Get started</b>. App name <code>CalendarStream</code>, your e-mail as support e-mail → Next → Audience <b>External</b> → Next → your e-mail again → agree → <b>Create</b>.') }}</li>
-    <li>{{ _('<b>Allow calendar access:</b> on <a href="https://console.cloud.google.com/auth/scopes" target="_blank" rel="noopener">Data access</a> press <b>Add or remove scopes</b>. Tick <code>openid</code> and <code>…/auth/userinfo.email</code>, then under <b>Manually add scopes</b> paste:') }}
+    <li>{{ _('<b>Create a project in Google Cloud:</b> <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">create a project</a> › Project name: <code>CalendarStream</code> › <b>Create</b> › Notifications: <b>Select project</b>.') }}
+      <br><span class="muted">{{ _('Make sure “CalendarStream” is selected in the header for the next steps.') }}</span></li>
+    <li>{{ _('<b>Turn on the Calendar API:</b> <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" rel="noopener">Google Calendar API</a> › <b>Enable</b>.') }}</li>
+    <li>{{ _('<b>Set up the sign-in screen:</b> <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> › <b>Get started</b> › App name: <code>CalendarStream</code>, support e-mail: yours › Next › Audience: <b>External</b> › Next › Contact e-mail: yours › Next › agree › <b>Create</b>.') }}</li>
+    <li>{{ _('<b>Allow calendar access:</b> <a href="https://console.cloud.google.com/auth/scopes" target="_blank" rel="noopener">Data access</a> › <b>Add or remove scopes</b> › Manually add scopes: paste') }}
       {{ copyfield(p ~ "scope", "https://www.googleapis.com/auth/calendar.app.created") }}
-      {{ _('Press <b>Add to table</b> → <b>Update</b> → <b>Save</b>.') }}</li>
-    <li>{{ _('<b>Publish it</b> so the sign-in lasts: on <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a> press <b>Publish app</b> → <b>Confirm</b>. (In “Testing”, Google signs you out every 7 days.) No review is needed for your own use.') }}</li>
-    <li>{{ _('<b>Make the client:</b> on <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a> press <b>Create client</b>. Application type <b>Web application</b>, name <code>CalendarStream</code>. Under <b>Authorised redirect URIs</b> press <b>Add URI</b> and paste exactly:') }}
+      {{ _('› <b>Add to table</b> › <b>Update</b> › <b>Save</b>.') }}</li>
+    <li>{{ _('<b>Create the OAuth client ID:</b> <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a> › <b>Create client</b> › Application type: <b>Web application</b> › Name: <code>CalendarStream</code> › Authorised redirect URIs: <b>Add URI</b> › paste exactly:') }}
       {{ copyfield(p ~ "redirect", g.redirect_uri) }}
-      {{ _('Then press <b>Create</b>.') }}</li>
-    <li>{{ _('<b>Copy the two values</b> Google shows (<b>Client ID</b> and <b>Client secret</b>) into the boxes above and press <b>Save</b>. CalendarStream checks them with Google straight away. Keep the secret private: don’t send it to anyone or paste it into a chat.') }}</li>
+      {{ _('› <b>Create</b>.') }}</li>
+    <li>{{ _('<b>Copy the Client ID and Client secret</b> Google shows into the boxes above › <b>Save</b>. Keep the secret private.') }}</li>
+    <li>{{ _('<b>Publish it</b> so the sign-in lasts: <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a> › <b>Publish app</b> › <b>Confirm</b>.') }}
+      <br><span class="muted">{{ _('If Google won’t publish it, leave it in Testing: on the same page, Test users › <b>Add users</b> › your Gmail address › <b>Save</b>. Google then asks you to Connect again every 7 days.') }}</span></li>
   </ol>
 </details>
 {%- endmacro %}

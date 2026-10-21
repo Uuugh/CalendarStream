@@ -8,7 +8,7 @@ import logging
 import re
 import secrets
 from contextlib import asynccontextmanager
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from itertools import zip_longest
 from pathlib import Path
 from urllib.parse import quote, urlparse
@@ -28,6 +28,7 @@ from .gsync import GOOGLE_COLORS, Google, GoogleError
 from .logins import LoginError, Logins
 from .secretbox import SecretBox
 from .store import Store, from_iso, iso
+from .updates import FREQUENCIES, RELEASES, Updates, channel as release_channel
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("calendar_stream")
@@ -37,6 +38,7 @@ store = Store(settings.dsn)
 box = SecretBox(settings.db_password)
 google = Google(store, box, settings.timezone)
 logins = Logins(store, box)
+updates = Updates(store)
 MAX_AUTH_FAILURES = 2   # pause automatic downloads after this many rejected sign-ins (avoids account lockout)
 CSRF_TOKEN = secrets.token_urlsafe(24)   # forms on the status page must carry this
 
@@ -132,7 +134,10 @@ def page(request: Request, name: str, context: dict, status_code: int = 200, lan
         **context, "lang": lang, "html_lang": i18n.HTML_LANG[lang], "langs": i18n.LANGS,
         "lang_choice": store.get("ui_lang") if store.get("ui_lang") in i18n.LANGS else "auto",
         "_": lambda text, **kw: i18n.tr(lang, text, **kw), "msg": lambda text: i18n.message(lang, text),
-        "dates": dates_for(lang), "theme": ui_theme(), "clock": ui_clock(), "version": __version__,
+        "dates": dates_for(lang), "theme": ui_theme(), "clock": ui_clock(),
+        "update": {"available": updates.available(), "channel": release_channel(), "frequency": updates.frequency(),
+                   "frequencies": list(FREQUENCIES), "info": updates.info(), "releases": RELEASES,
+                   "checked": _local_time(updates.info().get("checked"), lang)}, "version": __version__,
     }, status_code=status_code)
 
 
@@ -461,6 +466,22 @@ async def loop():
                 break
 
 
+async def update_loop():
+    """Settings → Check for updates: look for a newer version of this install's channel when due."""
+    await asyncio.sleep(30)
+    while True:
+        try:
+            if updates.due(datetime.now(timezone.utc)):
+                found = await updates.check()
+                if updates.available() and found.get("newest") != found.get("logged"):
+                    state.record("info", f"Update available: CalendarStream {found['newest']} "
+                                         "(run the installer again to update)")
+                    store.set("update_check", {**found, "logged": found["newest"]})
+        except Exception as e:      # never let this stop the app
+            log.warning("Update check failed: %s", e)
+        await asyncio.sleep(3600)
+
+
 @asynccontextmanager
 async def lifespan(_app):
     await asyncio.to_thread(store.open)       # waits for the database container if needed
@@ -478,7 +499,7 @@ async def lifespan(_app):
         rebuild()
     except Exception as e:
         log.error("Couldn't rebuild the feed from the stored download: %s", e)
-    tasks = [asyncio.create_task(loop()), asyncio.create_task(google_loop())]
+    tasks = [asyncio.create_task(loop()), asyncio.create_task(google_loop()), asyncio.create_task(update_loop())]
     yield
     for task in tasks:
         task.cancel()
@@ -993,6 +1014,20 @@ async def set_display_tz(csrf: str = Form(""), tz: str = Form("")):
     else:
         raise HTTPException(400, "Unknown time zone.")
     return Response(status_code=204)
+
+
+@app.post("/settings/updates", dependencies=[Depends(gui_auth)])
+async def update_settings(csrf: str = Form(""), frequency: str = Form(""), action: str = Form("save")):
+    """Settings → Check for updates: how often, or check now."""
+    check_csrf(csrf)
+    if frequency:
+        try:
+            updates.set_frequency(frequency)
+        except ValueError:
+            raise HTTPException(400, "Unknown update frequency.")
+    if action == "check":
+        await updates.check()
+    return RedirectResponse("/?menu=settings#updates", status_code=303)
 
 
 @app.post("/ui/theme", dependencies=[Depends(gui_auth)])

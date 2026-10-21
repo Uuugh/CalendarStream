@@ -96,7 +96,9 @@ logins or setup codes lock an address out for 15 minutes.
   and **Google Calendar Autosync**; the feed and the shareable page are under **Other ways to get
   the schedule**. Each box shows its status, and each login **✓ Validated** until you change it.
 - **Activity log:** each check and what changed, plus the last download for debugging.
-- **☰ Settings:** site settings only: the status-page login and the public address.
+- **☰ Settings:** site settings only: the status-page login, the public address and **Check for
+  updates** (hourly, weekly, monthly or never; only versions of your release, stable or beta, are
+  offered, and a newer one shows next to the version at the top).
 - **Report a problem / Suggest a feature** at the bottom of the page open a GitHub issue form.
 - **Language** (🌐, left of the Light / Dark / System theme switch): English, Español, Français,
   Deutsch, Português and Vlaams, or Automatic (the browser's language). Everything on the page is
