@@ -55,6 +55,7 @@ class Event:
     stale: bool = False      # United changed this event after it was edited here
     hidden: bool = False     # left out of the Google feed
     free: bool = False       # shown as "free" rather than "busy" (CCS+ sends most items as TRANSP:TRANSPARENT)
+    color: str = ""          # a colour chosen for this event on the status page (#rrggbb); overrides tags
 
     def fingerprint(self) -> str:
         """Identifies United's version of an event, to notice when it changes after an edit."""
@@ -349,7 +350,7 @@ def render(cal: Calendar, base: list[Event], name: str, tz_name: str,
         e = Event(title=ed["title"], start=ed["start"], end=ed["end"], all_day=bool(ed["all_day"]),
                   location=ed.get("location", ""), description=ed.get("description", ""), uid=uid,
                   origin="united", edited=True, stale=ed.get("base") != original.fingerprint(),
-                  hidden=bool(ed.get("hidden")), free=original.free)
+                  hidden=bool(ed.get("hidden")), free=original.free, color=ed.get("color", ""))
         if e.hidden:
             cal.subcomponents.remove(ev)
         else:
@@ -360,7 +361,7 @@ def render(cal: Calendar, base: list[Event], name: str, tz_name: str,
     for c in customs:
         e = Event(title=c["title"], start=c["start"], end=c["end"], all_day=bool(c["all_day"]),
                   location=c.get("location", ""), description=c.get("description", ""), uid=c["uid"],
-                  origin="custom")
+                  origin="custom", color=c.get("color", ""))
         ev = VEvent()
         ev.add("uid", e.uid)
         ev.add("dtstamp", stamp)

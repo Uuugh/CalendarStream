@@ -5,7 +5,26 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.10**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.11**
+
+## 0.1.11 — 2026-10-20
+
+### Added
+- **F1.2** **Time format** in Settings: 12-hour (1:30pm), 24-hour (13:30, "military") or Automatic
+  (12-hour in English, 24-hour in the other languages). It applies to the calendar, event details,
+  the activity log and the event page.
+- **F1.3** An event colour, bottom left on the event page: one of Google Calendar's 11 event colours,
+  or the default (from a tag or the calendar). It wins over tags, on this page and in Autosync.
+
+### Changed
+- **F1.1** On the event page, changing the start (date or time) moves the end by the same amount,
+  so the event keeps its length. Changing the end sets a new length.
+- **F1.2** Times are picked from hour and minute menus (01–12 with am/pm, or 00–23) instead of the
+  browser's time box, whose values ran on endlessly when scrolled.
+- **F1.4** **Cancel** and **Save** are at the bottom right of the event page.
+- **F2.1** Once Google accepts the client, the Client ID and Client secret fold away behind
+  "✓ Validated: Client ID & Client secret" (click it to change them).
+- **I2** "✓ Validated: CCS+ accepted the sign-in" now reads "✓ Validated: CCS+ sign-in".
 
 ## 0.1.10 — 2026-10-20
 

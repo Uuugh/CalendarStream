@@ -51,6 +51,7 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS edited boolean NOT NULL DEFAULT fals
 ALTER TABLE events ADD COLUMN IF NOT EXISTS stale  boolean NOT NULL DEFAULT false;
 ALTER TABLE events ADD COLUMN IF NOT EXISTS hidden boolean NOT NULL DEFAULT false;
 ALTER TABLE events ADD COLUMN IF NOT EXISTS free   boolean NOT NULL DEFAULT false;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS color  text NOT NULL DEFAULT '';   -- a colour chosen for this event (#rrggbb)
 -- What was last written to Google Calendar for each event (see gsync.py)
 CREATE TABLE IF NOT EXISTS google_events (
     uid        text PRIMARY KEY,            -- CalendarStream / CCS+ event UID
@@ -62,12 +63,12 @@ CREATE TABLE IF NOT EXISTS google_events (
 -- Changes made on the status page; re-applied on top of every download from CCS+
 CREATE TABLE IF NOT EXISTS event_edits (
     uid        text PRIMARY KEY,            -- United's event UID
-    data       jsonb NOT NULL,              -- title, start, end, all_day, location, description, hidden, base
+    data       jsonb NOT NULL,              -- title, start, end, all_day, location, description, color, hidden, base
     updated_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE TABLE IF NOT EXISTS custom_events (
     uid        text PRIMARY KEY,
-    data       jsonb NOT NULL,              -- title, start, end, all_day, location, description
+    data       jsonb NOT NULL,              -- title, start, end, all_day, location, description, color
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -130,21 +131,21 @@ class Store:
                 with c.cursor() as cur:
                     cur.executemany(
                         'INSERT INTO events (uid, title, start, "end", all_day, location, description, '
-                        "origin, edited, stale, hidden, free) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+                        "origin, edited, stale, hidden, free, color) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
                         "ON CONFLICT (uid) DO NOTHING",
                         [(e.uid, e.title, e.start, e.end, e.all_day, e.location, e.description,
-                          e.origin, e.edited, e.stale, e.hidden, e.free) for e in events])
+                          e.origin, e.edited, e.stale, e.hidden, e.free, e.color) for e in events])
 
     def load_events(self) -> list[Event]:
         with self.pool.connection() as c:
             rows = c.execute('SELECT title, start, "end", all_day, location, description, uid, '
-                             "origin, edited, stale, hidden, free FROM events ORDER BY start").fetchall()
+                             "origin, edited, stale, hidden, free, color FROM events ORDER BY start").fetchall()
         return [Event(*r) for r in rows]
 
     def get_event(self, uid: str) -> Event | None:
         with self.pool.connection() as c:
             r = c.execute('SELECT title, start, "end", all_day, location, description, uid, '
-                          "origin, edited, stale, hidden, free FROM events WHERE uid = %s", (uid,)).fetchone()
+                          "origin, edited, stale, hidden, free, color FROM events WHERE uid = %s", (uid,)).fetchone()
         return Event(*r) if r else None
 
     # --- edits and added events ---------------------------------------------

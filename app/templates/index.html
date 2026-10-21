@@ -68,6 +68,10 @@
   @media (max-width:600px) { .ccsform .feed { flex-wrap:wrap } .ccsform .feed input, .ccsform .uid { flex:1 1 100% } .ccsform .feed button { margin-left:auto } }
   .menu { max-height:calc(100vh - 80px); overflow-y:auto }
   .menu .ok-line { color:var(--ok); font-weight:600 }
+  .menu .seg { display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden }
+  .menu .seg button { flex:1; background:transparent; color:var(--text); border:0; border-radius:0; padding:6px 8px; font-size:12.5px; font-weight:500 }
+  .menu .seg button + button { border-left:1px solid var(--line) }
+  .menu .seg button[aria-checked=true] { background:var(--accent); color:var(--onaccent); font-weight:600 }
   .menu details.guide { border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin:8px 0 0; background:var(--soft) }
   .menu details.guide summary { cursor:pointer; font-weight:600 }
   .menu details.guide ol { font-size:13px; padding-left:18px; margin:8px 0 }
@@ -170,6 +174,8 @@
   .copybtn.done { color:var(--ok) }
   /* Check results (CCS+ sign-in, Google client) */
   .check { margin:6px 0 0; font-weight:600; font-size:13px }
+  details.clientfold > summary { cursor:pointer; font-size:13px; margin-top:4px } details.clientfold > summary .check { display:inline; margin:0 }
+  details.clientfold[open] > summary { margin-bottom:4px }
   .check.good { color:var(--ok) } .check.bad { color:var(--bad) } .check.unknown { color:var(--warn) }
   .check .muted { font-weight:400 }
   .ccsform .uid { flex:0 1 180px }
@@ -273,6 +279,16 @@
         <div class="mgroup" id="ccsmenu">
           <div class="mhead">{{ _('CCS+ Calendar Sync') }}</div>
           {{ m.ccs_login(setup, s, "menu") }}
+        </div>
+
+        <div class="mgroup" id="clockmenu">
+          <div class="mhead">{{ _('Time format') }}</div>
+          <div class="seg" role="radiogroup" aria-label="{{ _('Time format') }}">
+            {% for k, v in [("12", _('12-hour (1:30pm)')), ("24", _('24-hour (13:30)')), ("auto", _('Automatic'))] %}
+            <button type="button" role="radio" data-clock="{{ k }}" aria-checked="{{ 'true' if clock == k else 'false' }}">{{ v }}</button>
+            {% endfor %}
+          </div>
+          <p class="mnote" style="margin:6px 0 0">{{ _('For the calendar, the activity log and the event times. Automatic uses 12-hour in English and 24-hour (military time) in the other languages.') }}</p>
         </div>
 
         <div class="mgroup" id="public">
@@ -538,7 +554,7 @@
       {% if s.login_failures %}<span style="color:var(--bad)">{{ _('<b>{n}</b> rejected sign-ins in a row', n=s.login_failures) }}</span>{% endif %}
     </div>
     {% if history %}<div class="logwin"><table><thead><tr><th style="width:140px">{{ _('Time') }}</th><th>{{ _('Event') }}</th></tr></thead><tbody>
-      {% for h in history %}<tr><td>{{ dates.short(h.time.date()) }} {{ h.time.strftime("%H:%M:%S") }}</td><td class="lvl-{{ h.level }}">{{ msg(h.msg) }}</td></tr>{% endfor %}
+      {% for h in history %}<tr><td>{{ dates.short(h.time.date()) }} {{ dates.clock(h.time, true) }}</td><td class="lvl-{{ h.level }}">{{ msg(h.msg) }}</td></tr>{% endfor %}
     </tbody></table></div>{% else %}<p class="muted">{{ _('Nothing yet.') }}</p>{% endif %}
     <div class="debug"><span class="muted">{{ _('Debug (last download):') }}</span>
       {% if has_response %}<a href="/debug/response" target="_blank">{{ _('Response details') }}</a>{% if has_source %} · <a href="/debug/source" target="_blank">{{ _('Last calendar file received') }}</a>{% endif %}
@@ -582,6 +598,12 @@ function copyField(id, btn) {
 
 // Save a status-page preference in the database (so every browser and login matches).
 // Fire-and-forget unless a callback is given: if it fails, the page still works.
+// Time format (Settings): saved, then the page reloads so every time is shown the new way.
+document.querySelectorAll('[data-clock]').forEach(function (b) {
+  b.addEventListener('click', function () {
+    savePref('/ui/clock', { clock: b.dataset.clock }, function () { location.reload(); });
+  });
+});
 function savePref(path, fields, then) {
   var body = new URLSearchParams(Object.assign({ csrf: CSRF }, fields));
   fetch(path, { method: 'POST', body: body, credentials: 'same-origin' }).then(then || function () {}, then || function () {});

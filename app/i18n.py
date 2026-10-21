@@ -127,7 +127,10 @@ DATES = {
 class Dates:
     """Day and month names in one language."""
 
-    def __init__(self, lang: str):
+    def __init__(self, lang: str, h24: bool | None = None):
+        """`h24`: show times on a 24-hour clock (13:00) or a 12-hour one (1:00pm). None (Automatic)
+        follows the language: 12-hour in English, 24-hour in the others."""
+        self.h24 = (lang != "en") if h24 is None else h24
         t = DATES.get(lang, DATES["en"])
         self.months, self.mon, self.wd = t["months"].split(), t["mon"].split(), t["wd"].split()
         self.dow = t["dow"].split()                     # Sunday first, like CCS+
@@ -146,7 +149,14 @@ class Dates:
         text = self._title.format(month=self.months[d.month - 1], y=d.year)
         return text[:1].upper() + text[1:]
 
+    def clock(self, dt, seconds: bool = False) -> str:
+        """A time of day: "13:05" on a 24-hour clock, "1:05pm" on a 12-hour one."""
+        if self.h24:
+            return f"{dt:%H:%M:%S}" if seconds else f"{dt:%H:%M}"
+        hour = dt.hour % 12 or 12
+        return f"{hour}:{dt:%M}" + (f":{dt:%S}" if seconds else "") + ("am" if dt.hour < 12 else "pm")
+
     def when(self, dt: datetime, today: date, seconds: bool = False) -> str:
         """A time, with the date unless it's today: "15:42" or "Oct 19, 15:42"."""
-        clock = f"{dt:%H:%M:%S}" if seconds else f"{dt:%H:%M}"
+        clock = self.clock(dt, seconds)
         return clock if dt.date() == today else f"{self.short(dt.date())}, {clock}"

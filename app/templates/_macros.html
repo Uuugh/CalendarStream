@@ -24,7 +24,7 @@
     <button>{{ _('Save & sync') }}</button>
   </div>
   {% if setup.configured %}
-    {% if s.last_auth_ok %}<p class="check good">✓ {{ _('Validated: CCS+ accepted the sign-in') }}</p>
+    {% if s.last_auth_ok %}<p class="check good">✓ {{ _('Validated: CCS+ sign-in') }}</p>
     {% elif s.last_auth_ok == false %}<p class="check bad">✗ {{ _('CCS+ rejected the UID or Calendar Sync password') }}</p>
     {% else %}<p class="check unknown">{{ _('Not checked yet') }}</p>{% endif %}
   {% endif %}
@@ -34,6 +34,9 @@
 {# The Google OAuth client for Autosync: client ID and secret, the check result, Connect, and
    the step-by-step guide (closed). `p` prefixes element IDs, as this appears twice on the page. #}
 {% macro google_client(g, p, back="") -%}
+{# F2.1: once Google has accepted the client, the boxes fold away behind "✓ Validated". #}
+{% set valid = g.configured and g.check.ok %}
+{% if valid %}<details class="clientfold"><summary><span class="check good">✓ {{ _('Validated: Client ID & Client secret') }}</span>{% if g.checked_at %} <span class="muted">({{ g.checked_at }})</span>{% endif %} <span class="muted">· {{ _('change') }}</span></summary>{% endif %}
 <form method="post" action="/google/client" class="clientform" autocomplete="off">
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <input type="hidden" name="back" value="{{ back }}">
@@ -44,7 +47,7 @@
   <input type="password" id="{{ p }}csecret" name="client_secret" spellcheck="false" autocomplete="new-password"
          placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else 'GOCSPX-…' }}"
          {% if not g.has_secret %}required{% endif %}>
-  {% if g.configured %}
+  {% if g.configured and not valid %}
     {% set ck = g.check %}
     <p class="check {{ 'good' if ck.ok else ('bad' if ck.ok == false else 'unknown') }}">
       {% if ck.ok %}✓{% elif ck.ok == false %}✗{% else %}?{% endif %}
@@ -59,15 +62,6 @@
     <button name="action" value="save">{{ _('Save') }}</button>
   </div>
 </form>
-{% if g.configured and g.redirect_ok %}
-  <form method="post" action="/google/connect" class="connect">
-    <input type="hidden" name="csrf" value="{{ csrf }}">
-    <button{% if g.check.ok == false %} disabled title="{{ _('Google rejected the client: fix it first') }}"{% endif %}>{{ _('Connect Google Calendar') }}</button>
-  </form>
-  <p class="mnote">{{ _('Google may say <i>“Google hasn’t verified this app”</i>: that’s expected for your own app. Click <b>Advanced</b> → <b>Go to CalendarStream</b>, tick the calendar box and press <b>Continue</b>.') }}</p>
-{% elif not g.redirect_ok %}
-  <p class="merr">{{ _('First set the <b>Public address</b> above to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>
-{% endif %}
 <details class="guide">
   <summary>{{ _('How to get a client ID and secret (step by step)') }}</summary>
   <ol>
@@ -84,6 +78,16 @@
     <li>{{ _('<b>Copy the two values</b> Google shows (<b>Client ID</b> and <b>Client secret</b>) into the boxes above and press <b>Save</b>. CalendarStream checks them with Google straight away. Keep the secret private: don’t send it to anyone or paste it into a chat.') }}</li>
   </ol>
 </details>
+{% if valid %}</details>{% endif %}
+{% if g.configured and g.redirect_ok %}
+  <form method="post" action="/google/connect" class="connect">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button{% if g.check.ok == false %} disabled title="{{ _('Google rejected the client: fix it first') }}"{% endif %}>{{ _('Connect Google Calendar') }}</button>
+  </form>
+  <p class="mnote">{{ _('Google may say <i>“Google hasn’t verified this app”</i>: that’s expected for your own app. Click <b>Advanced</b> → <b>Go to CalendarStream</b>, tick the calendar box and press <b>Continue</b>.') }}</p>
+{% elif not g.redirect_ok %}
+  <p class="merr">{{ _('First set the <b>Public address</b> above to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>
+{% endif %}
 {%- endmacro %}
 
 {# Google Autosync when connected: account, calendar, last sync, Sync now, Disconnect. #}

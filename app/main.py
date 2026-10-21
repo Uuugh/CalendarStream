@@ -24,7 +24,7 @@ from . import __version__, i18n
 from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, check_calendar, download,
                       empty_feed, new_calendar, parse, render)
 from .config import DEFAULT_CALENDAR_URL, settings
-from .gsync import Google, GoogleError
+from .gsync import GOOGLE_COLORS, Google, GoogleError
 from .logins import LoginError, Logins
 from .secretbox import SecretBox
 from .store import Store, from_iso, iso
@@ -132,11 +132,23 @@ def page(request: Request, name: str, context: dict, status_code: int = 200, lan
         **context, "lang": lang, "html_lang": i18n.HTML_LANG[lang], "langs": i18n.LANGS,
         "lang_choice": store.get("ui_lang") if store.get("ui_lang") in i18n.LANGS else "auto",
         "_": lambda text, **kw: i18n.tr(lang, text, **kw), "msg": lambda text: i18n.message(lang, text),
-        "dates": i18n.Dates(lang), "theme": ui_theme(), "version": __version__,
+        "dates": dates_for(lang), "theme": ui_theme(), "clock": ui_clock(), "version": __version__,
     }, status_code=status_code)
 
 
 THEMES = ("system", "light", "dark")
+CLOCKS = ("auto", "12", "24")
+
+
+def ui_clock() -> str:
+    """12-hour (1:00pm) or 24-hour ("military", 13:00) times on the status page, or "auto" (by language)."""
+    clock = store.get("ui_clock")
+    return clock if clock in CLOCKS else "auto"
+
+
+def dates_for(lang: str) -> i18n.Dates:
+    """Day and month names, and times on the chosen clock."""
+    return i18n.Dates(lang, {"12": False, "24": True}.get(ui_clock()))
 
 
 def ui_theme() -> str:
@@ -538,7 +550,7 @@ def _local_time(value: str | None, lang: str = "en") -> str:
         when = datetime.fromisoformat(value).astimezone(TZ)
     except (TypeError, ValueError):
         return ""
-    return i18n.Dates(lang).when(when, now().date())
+    return dates_for(lang).when(when, now().date())
 
 
 def google_view(request: Request, lang: str = "en") -> dict:
@@ -569,7 +581,8 @@ def _span(e: Event) -> tuple[date, date, datetime | None, datetime | None]:
 
 def month_view(events: list[Event], year: int, month: int, tags: list[dict] | None = None,
                lang: str = "en") -> dict:
-    dates = i18n.Dates(lang)
+    dates = dates_for(lang)
+    hm = dates.clock
     cont = str(i18n.tr(lang, "cont."))
     weeks = pycal.Calendar(firstweekday=6).monthdatescalendar(year, month)
     color_for = tag_matcher(tags or [])   # Sunday first, like CCS+
@@ -587,14 +600,14 @@ def month_view(events: list[Event], year: int, month: int, tags: list[dict] | No
             if s is None:
                 when = "" if d == d0 else cont
             elif d0 == d1:
-                when = f"{s:%H:%M}–{t:%H:%M}"
+                when = f"{hm(s)}–{hm(t)}"
             elif d == d0:
-                when = f"{s:%H:%M} →"
+                when = f"{hm(s)} →"
             elif d == d1:
-                when = f"→ {t:%H:%M}"
+                when = f"→ {hm(t)}"
             else:
                 when = cont
-            by_day.setdefault(d, []).append({"e": e, "when": when, "first": d == d0, "tag_color": color_for(e.title),
+            by_day.setdefault(d, []).append({"e": e, "when": when, "first": d == d0, "tag_color": e.color or color_for(e.title),
                                              "multi": d0 != d1, "range": _range_text(e, s, t, lang)})
             d += timedelta(days=1)
     prev_m = date(year, month, 1) - timedelta(days=1)
@@ -609,13 +622,14 @@ def month_view(events: list[Event], year: int, month: int, tags: list[dict] | No
 
 def _range_text(e: Event, s, t, lang: str = "en") -> str:
     """When an event happens, e.g. "Mon Oct 5, 09:00–10:00" or "Mon Oct 5 – Wed Oct 7 (all day)"."""
-    day = i18n.Dates(lang).day
+    dates = dates_for(lang)
+    day, hm = dates.day, dates.clock
     if s is None:
         a, b = date.fromisoformat(e.start[:10]), date.fromisoformat(e.end[:10]) - timedelta(days=1)
         return day(a) + ("" if a == b else f" – {day(b)}") + " " + str(i18n.tr(lang, "(all day)"))
     if s.date() == t.date():
-        return f"{day(s.date())}, {s:%H:%M}–{t:%H:%M}"
-    return f"{day(s.date())} {s:%H:%M} – {day(t.date())} {t:%H:%M}"
+        return f"{day(s.date())}, {hm(s)}–{hm(t)}"
+    return f"{day(s.date())} {hm(s)} – {day(t.date())} {hm(t)}"
 
 
 def _parse_month(value: str | None) -> tuple[int, int]:
@@ -847,6 +861,19 @@ async def set_lang(csrf: str = Form(""), lang: str = Form("")):
     return Response(status_code=204)
 
 
+@app.post("/ui/clock", dependencies=[Depends(gui_auth)])
+async def set_clock(csrf: str = Form(""), clock: str = Form("")):
+    """Remember 12-hour / 24-hour times (Settings → Time format); "auto" follows the language."""
+    check_csrf(csrf)
+    if clock not in CLOCKS:
+        raise HTTPException(400, "Unknown time format.")
+    if clock == "auto":
+        store.delete("ui_clock")
+    else:
+        store.set("ui_clock", clock)
+    return Response(status_code=204)
+
+
 @app.post("/ui/theme", dependencies=[Depends(gui_auth)])
 async def set_theme(csrf: str = Form(""), theme: str = Form("")):
     """Remember the light / dark / system choice (the page sends this when it's changed)."""
@@ -902,15 +929,42 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         e.end = datetime.combine(day, datetime.min.time().replace(hour=10), TZ).isoformat()
     original = united_original(uid) if e.origin == "united" and uid else None
     lang = lang_for(request)
+    tag_color = tag_matcher(calendar_tags())(e.title) if e.title else ""
     return page(request, "event.html", {
         "e": e, "f": _form_values(e), "is_new": not uid, "original": original,
+        "colors": GOOGLE_COLORS.values(), "auto_color": tag_color or calendar_color() or "",
         "original_range": _range_text(original, *_span(original)[2:], lang) if original else "",
         "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": settings.timezone,
     }, lang=lang)
 
 
-def _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description) -> dict:
+EVENT_COLORS = {hex_ for _, hex_ in GOOGLE_COLORS.values()}   # Google's 11 event colours
+
+
+def _clock_value(time_: str, hour: str, minute: str, ampm: str) -> str:
+    """The event page sends a time as hour / minute (/ am-pm) menus; make it "HH:MM".
+    A plain "HH:MM" (`time_`) is still accepted."""
+    if not hour:
+        return time_
+    try:
+        h, m = int(hour), int(minute or 0)
+    except ValueError:
+        raise HTTPException(400, "Check the dates and times.")
+    if ampm in ("am", "pm"):
+        if not 1 <= h <= 12:
+            raise HTTPException(400, "Check the dates and times.")
+        h = h % 12 + (12 if ampm == "pm" else 0)
+    if not (0 <= h <= 23 and 0 <= m <= 59):
+        raise HTTPException(400, "Check the dates and times.")
+    return f"{h:02d}:{m:02d}"
+
+
+def _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description,
+                     color: str = "") -> dict:
     title = " ".join((title or "").split())
+    color = (color or "").lower()
+    if color and color not in EVENT_COLORS:
+        raise HTTPException(400, "Choose one of the colours offered.")
     if not title:
         raise HTTPException(400, "The event needs a title.")
     try:
@@ -928,16 +982,21 @@ def _event_from_form(title, all_day, start_date, start_time, end_date, end_time,
     except ValueError:
         raise HTTPException(400, "Check the dates and times.")
     return {"title": title[:200], "start": start, "end": end, "all_day": bool(all_day),
-            "location": (location or "").strip()[:200], "description": (description or "").strip()[:4000]}
+            "location": (location or "").strip()[:200], "description": (description or "").strip()[:4000],
+            "color": color}
 
 
 @app.post("/event/save", dependencies=[Depends(gui_auth)])
 async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = Form(""), title: str = Form(""),
                      all_day: str = Form(""), start_date: str = Form(""), start_time: str = Form(""),
                      end_date: str = Form(""), end_time: str = Form(""), location: str = Form(""),
-                     description: str = Form(""), hidden: str = Form("")):
+                     description: str = Form(""), hidden: str = Form(""), color: str = Form(""),
+                     start_hour: str = Form(""), start_minute: str = Form(""), start_ampm: str = Form(""),
+                     end_hour: str = Form(""), end_minute: str = Form(""), end_ampm: str = Form("")):
     check_csrf(csrf)
-    data = _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description)
+    start_time = _clock_value(start_time, start_hour, start_minute, start_ampm)
+    end_time = _clock_value(end_time, end_hour, end_minute, end_ampm)
+    data = _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description, color)
     current = store.get_event(uid) if uid else None
     if current and current.origin == "united":
         original = united_original(uid)

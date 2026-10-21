@@ -26,9 +26,43 @@
   .note.warn { background:var(--warnbg); color:var(--warn) }
   .orig { white-space:pre-wrap; font-size:13px }
   .timed[hidden] { display:none }
+  .timepick { display:flex; align-items:center; gap:4px }
+  .timepick select { font:inherit; padding:8px 6px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); flex:1; min-width:0 }
+  .actions.bottom { margin-top:22px }
+  .grow { flex:1 }
+  a.ghostbtn { font-weight:600; text-decoration:none; padding:8px 16px; border:1px solid var(--line); border-radius:8px }
+  .colorpick { position:relative }
+  .colorpick summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:14px; padding:7px 10px; border:1px solid var(--line); border-radius:8px }
+  .colorpick summary::-webkit-details-marker { display:none }
+  .sw { display:inline-block; width:18px; height:18px; border-radius:50%; background:var(--c) }
+  .sw.auto { background:repeating-linear-gradient(45deg, var(--c) 0 4px, transparent 4px 7px); box-shadow:inset 0 0 0 2px var(--c) }
+  .palette { position:absolute; left:0; bottom:calc(100% + 6px); z-index:5; display:grid; grid-template-columns:repeat(6, 30px); gap:6px;
+             padding:10px; background:var(--card); border:1px solid var(--line); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.18) }
+  .palette label { margin:0; width:30px; height:30px; display:grid; place-items:center; border-radius:50%; cursor:pointer }
+  .palette input { position:absolute; opacity:0; pointer-events:none }
+  .palette .sw { width:22px; height:22px }
+  .palette input:checked + .sw { outline:2px solid var(--text); outline-offset:2px }
+  .palette input:focus-visible + .sw { outline:2px solid var(--accent); outline-offset:2px }
 </style>
 </head>
-<body><main>
+<body>
+{# A time as hour and minute menus (and am/pm on a 12-hour clock), so the values can't run on forever
+   like the browser's own time box. `value` is "HH:MM". #}
+{% macro timepick(prefix, value, label) -%}
+{% set h, mi = value.split(':')|map('int') %}
+<div class="timepick" role="group" aria-label="{{ label }}" data-prefix="{{ prefix }}">
+  <select name="{{ prefix }}_hour" aria-label="{{ _('Hour') }}">
+    {% if dates.h24 %}{% for x in range(24) %}<option value="{{ x }}"{% if x == h %} selected{% endif %}>{{ '%02d' % x }}</option>{% endfor %}
+    {% else %}{% for x in range(1, 13) %}<option value="{{ x }}"{% if x == (h % 12 or 12) %} selected{% endif %}>{{ '%02d' % x }}</option>{% endfor %}{% endif %}
+  </select><span>:</span><select name="{{ prefix }}_minute" aria-label="{{ _('Minute') }}">
+    {% for x in range(60) %}<option value="{{ x }}"{% if x == mi %} selected{% endif %}>{{ '%02d' % x }}</option>{% endfor %}
+  </select>
+  {% if not dates.h24 %}<select name="{{ prefix }}_ampm" aria-label="am/pm">
+    <option value="am"{% if h < 12 %} selected{% endif %}>am</option><option value="pm"{% if h >= 12 %} selected{% endif %}>pm</option>
+  </select>{% endif %}
+</div>
+{%- endmacro %}
+<main>
   <h1>{{ _("Add event") if is_new else (_("Edit event") if e.origin == "custom" else _("Edit United event")) }}</h1>
   <p class="sub"><a href="/?month={{ month }}#cal">{{ _('← Back to CalendarStream') }}</a> · {{ _('times in {tz}', tz=tz) }}</p>
 
@@ -54,11 +88,11 @@
 
     <div class="row">
       <div><label for="start_date">{{ _('Starts') }}</label><input type="date" id="start_date" name="start_date" value="{{ f.start_date }}" required></div>
-      <div class="timed"><label for="start_time">&nbsp;</label><input type="time" id="start_time" name="start_time" value="{{ f.start_time }}"></div>
+      <div class="timed"><label>&nbsp;</label>{{ timepick("start", f.start_time, _('Start time')) }}</div>
     </div>
     <div class="row">
       <div><label for="end_date" id="end_label">{{ _('Ends') }}</label><input type="date" id="end_date" name="end_date" value="{{ f.end_date }}" required></div>
-      <div class="timed"><label for="end_time">&nbsp;</label><input type="time" id="end_time" name="end_time" value="{{ f.end_time }}"></div>
+      <div class="timed"><label>&nbsp;</label>{{ timepick("end", f.end_time, _('End time')) }}</div>
     </div>
 
     <label for="location">{{ _('Location') }}</label>
@@ -72,9 +106,21 @@
       {{ _('Hide from Google Calendar <span class="muted">(stays visible here, struck through)</span>') }}</label>
     {% endif %}
 
-    <div class="actions">
+    <div class="actions bottom">
+      {# The event's own colour (bottom left): Google's 11 event colours, or the tag / calendar colour. #}
+      <details class="colorpick" id="colorpick">
+        <summary title="{{ _('Event colour') }}" aria-label="{{ _('Event colour') }}">
+          <span class="sw" id="colorshow" style="--c:{{ e.color or auto_color or 'var(--accent)' }}"></span>
+          <span id="colorname">{% if e.color %}{% for n, h in colors if h == e.color %}{{ n }}{% endfor %}{% else %}{{ _('Default colour') }}{% endif %}</span> ▾
+        </summary>
+        <div class="palette" role="radiogroup" aria-label="{{ _('Event colour') }}">
+          <label title="{{ _('Default colour (from a tag or the calendar)') }}"><input type="radio" name="color" value="" data-c="{{ auto_color or 'var(--accent)' }}" data-name="{{ _('Default colour') }}" {% if not e.color %}checked{% endif %}><span class="sw auto" style="--c:{{ auto_color or 'var(--accent)' }}"></span></label>
+          {% for n, h in colors %}<label title="{{ n }}"><input type="radio" name="color" value="{{ h }}" data-c="{{ h }}" data-name="{{ n }}" {% if e.color == h %}checked{% endif %}><span class="sw" style="--c:{{ h }}"></span></label>{% endfor %}
+        </div>
+      </details>
+      <span class="grow"></span>
+      <a class="ghostbtn" href="/?month={{ month }}#cal">{{ _('Cancel') }}</a>
       <button>{{ _("Add event") if is_new else _("Save") }}</button>
-      <a href="/?month={{ month }}#cal">{{ _('Cancel') }}</a>
     </div>
   </form>
 
@@ -105,8 +151,52 @@ if (delForm) delForm.addEventListener('submit', function (e) { if (!confirm(T.de
     label.textContent = box.checked ? T.lastDay : T.ends;
   }
   box.addEventListener('change', sync); sync();
+
+  // F1.1: changing the start moves the end by the same amount, so the length stays the same
+  // (like Google Calendar). Changing the end just sets a new length.
   var sd = document.getElementById('start_date'), ed = document.getElementById('end_date');
-  sd.addEventListener('change', function () { if (ed.value < sd.value) ed.value = sd.value; });
+  function pick(prefix) {
+    var g = document.querySelector('.timepick[data-prefix="' + prefix + '"]');
+    return { h: g.querySelector('[name$=_hour]'), m: g.querySelector('[name$=_minute]'), ap: g.querySelector('[name$=_ampm]') };
+  }
+  var S = pick('start'), E = pick('end');
+  function minutes(dateBox, p) {   // minutes since 1970 in "wall clock" time, ignoring the time zone
+    var d = dateBox.value ? Date.parse(dateBox.value + 'T00:00:00Z') / 60000 : 0;
+    var h = +p.h.value;
+    if (p.ap) h = h % 12 + (p.ap.value === 'pm' ? 12 : 0);
+    return d + h * 60 + (+p.m.value);
+  }
+  function setMinutes(dateBox, p, total) {
+    var d = new Date(total * 60000);
+    dateBox.value = d.toISOString().slice(0, 10);
+    var h = d.getUTCHours();
+    if (p.ap) { p.ap.value = h < 12 ? 'am' : 'pm'; h = h % 12 || 12; }
+    p.h.value = String(h); p.m.value = String(d.getUTCMinutes());
+  }
+  var length = minutes(ed, E) - minutes(sd, S);
+  function startChanged() {
+    if (box.checked) {   // all-day: keep the number of days
+      var days = Math.max(0, Math.round(length / 1440));
+      var t = new Date(Date.parse(sd.value + 'T00:00:00Z') + days * 86400000);
+      ed.value = t.toISOString().slice(0, 10);
+      return;
+    }
+    setMinutes(ed, E, minutes(sd, S) + Math.max(length, 0));
+  }
+  [sd, S.h, S.m, S.ap].forEach(function (el) { if (el) el.addEventListener('change', startChanged); });
+  [ed, E.h, E.m, E.ap].forEach(function (el) { if (el) el.addEventListener('change', function () { length = minutes(ed, E) - minutes(sd, S); }); });
+})();
+
+// Event colour: the summary shows the chosen colour; picking one closes the palette.
+(function () {
+  var box = document.getElementById('colorpick');
+  box.addEventListener('change', function (e) {
+    var r = e.target;
+    document.getElementById('colorshow').style.setProperty('--c', r.dataset.c);
+    document.getElementById('colorname').textContent = r.dataset.name;
+    box.open = false;
+  });
+  document.addEventListener('click', function (e) { if (box.open && !box.contains(e.target)) box.open = false; });
 })();
 </script>
 </body>

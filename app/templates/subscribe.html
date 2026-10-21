@@ -33,7 +33,7 @@
 <body><main>
   <h1>{{ name }}</h1>
   <p class="sub">{{ _('A live calendar feed of this United CCS schedule.') }}
-    {% if last_success %}{{ _('Last updated {when} · {n} events.', when=dates.short(last_success.date()) ~ ', ' ~ last_success.strftime("%H:%M"), n=event_count) }}{% endif %}</p>
+    {% if last_success %}{{ _('Last updated {when} · {n} events.', when=dates.short(last_success.date()) ~ ', ' ~ dates.clock(last_success), n=event_count) }}{% endif %}</p>
 
   {% if not links.is_public %}
   <div class="warn">{{ _('This link isn’t on a public HTTPS address yet, so Google won’t be able to load it. Set the public address in CalendarStream’s Settings (☰ → Public address).') }}</div>

@@ -519,7 +519,7 @@ class Google:
         writes = 0
 
         for uid, e in wanted.items():
-            color = color_for(e.title)
+            color = e.color or color_for(e.title)   # a colour chosen for the event wins over tags
             body = event_body(e, self.tz_name, nearest_color_id(color) if color else "")
             digest, gid, row = _hash(body), body["id"], rows.get(uid)
             same = row and row["hash"] == digest

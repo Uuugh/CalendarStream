@@ -85,14 +85,15 @@ logins or setup codes lock an address out for 15 minutes.
 
 - **Month view:** the schedule as it's sent to Google. Click an event to see or **Edit** it (title,
   times, notes, or hide it from Google); clicking elsewhere closes it, and its 📌 pin keeps it open.
-  Click an empty spot on a day (or **+**) to add your own. Edits survive new downloads; ✎ marks
+  Click an empty spot on a day (or **+**) to add your own. Events can have their own colour (one of
+  Google's 11), which wins over tags. Edits survive new downloads; ✎ marks
   an edited event, ⚠ one United changed since. Nothing is ever changed in CCS+.
 - **Status & setup:** the calendar's name and colour, and **tags** (e.g. RDO in red) matched by whole
   word, contains, starts with or exact title. Below: the health bar, **Sync now**, the CCS+ login,
   the check interval, the upload, and **Google Calendar** (Autosync, the feed, the shareable page).
 - **Activity log:** each check and what changed, plus the last download for debugging.
-- **☰ Settings:** status-page login, CCS+ Calendar Sync login, public address, Google Calendar
-  Autosync.
+- **☰ Settings:** status-page login, CCS+ Calendar Sync login, time format (12-hour, 24-hour or
+  Automatic), public address, Google Calendar Autosync.
 - **Report a problem / Suggest a feature** at the bottom of the page open a GitHub issue form.
 - **Language** (🌐, left of the Light / Dark / System theme switch): English, Español, Français,
   Deutsch, Português and Vlaams, or Automatic (the browser's language). Everything on the page is
