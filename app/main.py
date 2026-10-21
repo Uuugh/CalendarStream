@@ -799,9 +799,9 @@ async def set_link(csrf: str = Form(""), url: str = Form(""), action: str = Form
 async def set_name(csrf: str = Form(""), name: str = Form(""), color: str = Form(""),
                    color_default: str = Form(""), tag: list[str] = Form([]), tag_color: list[str] = Form([]),
                    tag_mode: list[str] = Form([]), tag_case: list[str] = Form([])):
-    """Save the calendar's name, colour and tag colours (the title editor of Status & setup).
+    """Save the calendar's name and colour (the title editor of Status & setup).
     A blank name goes back to CALENDAR_NAME from .env. `color` is only sent when it was changed on
-    the page; `color_default` clears it. Tag rows with no text are dropped."""
+    the page; `color_default` clears it. Tags are saved by /feed/tags."""
     check_csrf(csrf)
     name = " ".join(name.split())[:100]
     if name and name != settings.calendar_name:
@@ -817,6 +817,15 @@ async def set_name(csrf: str = Form(""), name: str = Form(""), color: str = Form
             raise HTTPException(400, "Choose the colour with the colour picker.")
         store.set("calendar_color", color.lower())
         notes.append(f"colour {color.lower()}")
+    if tag:   # older pages sent the tags with the name; they now have their own form (/feed/tags)
+        notes += _save_tags(tag, tag_color, tag_mode, tag_case)
+    rebuild()
+    state.record("info", "Calendar settings saved: " + ", ".join(notes))
+    return RedirectResponse("/", status_code=303)
+
+
+def _save_tags(tag: list[str], tag_color: list[str], tag_mode: list[str], tag_case: list[str]) -> list[str]:
+    """Check and store the tag rows; returns a note for the activity log if they changed."""
     tags = []
     # Each row sends one value per field (the case toggle is a hidden "1"/"" input), so they line up.
     for t, c, m, cs in zip_longest(tag, tag_color, tag_mode, tag_case, fillvalue=""):
@@ -830,10 +839,20 @@ async def set_name(csrf: str = Form(""), name: str = Form(""), color: str = Form
         raise HTTPException(400, f"Up to {MAX_TAGS} tags can be used.")
     if tags != calendar_tags():
         store.set("calendar_tags", tags)
-        notes.append(f"{len(tags)} tag colour{'' if len(tags) == 1 else 's'}")
-    rebuild()
-    state.record("info", "Calendar settings saved: " + ", ".join(notes))
-    return RedirectResponse("/", status_code=303)
+        return [f"{len(tags)} tag colour{'' if len(tags) == 1 else 's'}"]
+    return []
+
+
+@app.post("/feed/tags", dependencies=[Depends(gui_auth)])
+async def set_tags(csrf: str = Form(""), tag: list[str] = Form([]), tag_color: list[str] = Form([]),
+                   tag_mode: list[str] = Form([]), tag_case: list[str] = Form([])):
+    """Save the tag colours (the Tag Colors block under the health bar). Rows with no text are dropped."""
+    check_csrf(csrf)
+    notes = _save_tags(tag, tag_color, tag_mode, tag_case)
+    if notes:
+        rebuild()
+        state.record("info", "Calendar settings saved: " + ", ".join(notes))
+    return RedirectResponse("/#tags", status_code=303)
 
 
 @app.post("/ui/section", dependencies=[Depends(gui_auth)])

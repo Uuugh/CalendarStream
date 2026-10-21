@@ -118,7 +118,6 @@
   "Default colour": "Standaardkleur",
   "Default": "Standaard",
   "Using the standard colours": "De standaardkleuren worden gebruikt",
-  "Tag colours": "Tagkleuren",
   "Tag, e.g. RDO": "Tag, bv. RDO",
   "Tag": "Tag",
   "How to match": "Hoe vergelijken",
@@ -406,5 +405,6 @@
   "For the calendar, the activity log and the event times. Automatic uses 12-hour in English and 24-hour (military time) in the other languages.": "Voor de kalender, het activiteitenlogboek en de tijden van afspraken. Automatisch gebruikt 12 uur in het Engels en 24 uur in de andere talen.",
   "Choose one of the colours offered.": "Kies een van de aangeboden kleuren.",
   "Unknown time format.": "Onbekende tijdnotatie.",
-  "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(zonder Autosync: Google leest hem opnieuw volgens een eigen schema, wat tot 12 uur kan duren; het houdt de eerste naam die het zag en toont geen tagkleuren)"
+  "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(zonder Autosync: Google leest hem opnieuw volgens een eigen schema, wat tot 12 uur kan duren; het houdt de eerste naam die het zag en toont geen tagkleuren)",
+  "Tag Colors": "Tagkleuren"
 }

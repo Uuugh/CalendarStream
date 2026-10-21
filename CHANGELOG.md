@@ -5,7 +5,19 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.13**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.14**
+
+## 0.1.14 — 2026-10-20
+
+### Changed
+- **I1 (labels)** The CCS+ Calendar Sync login and the Google Autosync client have their labels
+  outside the boxes, and the two boxes of each sit side by side on one line (UID and password;
+  Client ID and Client secret), with the button at the end of the line.
+- **F2** CCS+ Calendar Sync's contents are in a box, like the Google Calendar ones.
+- **F1** In the Google Calendar boxes, the buttons (Connect, Add to Google Calendar, Open subscribe
+  page) sit to the right of their explanation, so the section is shorter.
+- **I1 (tags)** **Tag Colors** is now its own block, always visible right under the health bar,
+  instead of inside (edit). (edit) keeps the calendar's name and default colour.
 
 ## 0.1.13 — 2026-10-20
 

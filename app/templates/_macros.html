@@ -17,10 +17,13 @@
 <form method="post" action="/setup/ccs" class="ccsform" autocomplete="off">
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <input type="hidden" name="back" value="{{ back }}">
-  <div class="feed">
-    <input name="uid" value="{{ setup.uid }}" required placeholder="{{ _('UID, e.g. U123456') }}" aria-label="UID" spellcheck="false" autocomplete="off" class="uid">
-    <input name="password" type="password" {% if not setup.has_password %}required{% endif %} autocomplete="new-password"
-           placeholder="{{ _('Saved (leave empty to keep it)') if setup.has_password else _('Calendar Sync password') }}" aria-label="{{ _('Calendar Sync password') }}">
+  {# Labels above the boxes; UID and password side by side, the button at the end of the line. #}
+  <div class="pair">
+    <label class="fld"><span>UID</span>
+      <input name="uid" value="{{ setup.uid }}" required placeholder="{{ _('UID, e.g. U123456') }}" spellcheck="false" autocomplete="off"></label>
+    <label class="fld"><span>{{ _('Calendar Sync password') }}</span>
+      <input name="password" type="password" {% if not setup.has_password %}required{% endif %} autocomplete="new-password"
+             placeholder="{{ _('Saved (leave empty to keep it)') if setup.has_password else '' }}"></label>
     <button>{{ _('Save & sync') }}</button>
   </div>
   {% if setup.configured %}
@@ -42,13 +45,16 @@
 <form method="post" action="/google/client" class="clientform" autocomplete="off">
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <input type="hidden" name="back" value="{{ back }}">
-  {# Laid out like the CCS+ Calendar Sync login: the two boxes stacked, named by their placeholders. #}
-  <div class="feed stack">
-    <input type="text" id="{{ p }}cid" name="client_id" value="{{ g.client_id }}" spellcheck="false" required
-           placeholder="{{ _('Client ID') }} (1234…apps.googleusercontent.com)" aria-label="{{ _('Client ID') }}" title="{{ _('Client ID') }}">
-    <input type="password" id="{{ p }}csecret" name="client_secret" spellcheck="false" autocomplete="new-password"
-           placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else _('Client secret') ~ ' (GOCSPX-…)' }}"
-           aria-label="{{ _('Client secret') }}" title="{{ _('Client secret') }}" {% if not g.has_secret %}required{% endif %}>
+  {# Laid out like the CCS+ Calendar Sync login: labels above, the two boxes side by side, and Save at
+     the end of the line (or next to the description, when there is one). #}
+  <div class="pair">
+    <label class="fld" for="{{ p }}cid"><span>{{ _('Client ID') }}</span>
+      <input type="text" id="{{ p }}cid" name="client_id" value="{{ g.client_id }}" spellcheck="false" required
+             placeholder="1234…apps.googleusercontent.com"></label>
+    <label class="fld" for="{{ p }}csecret"><span>{{ _('Client secret') }}</span>
+      <input type="password" id="{{ p }}csecret" name="client_secret" spellcheck="false" autocomplete="new-password"
+             placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else 'GOCSPX-…' }}" {% if not g.has_secret %}required{% endif %}></label>
+    {% if not desc %}<button name="action" value="save">{{ _('Save') }}</button>{% endif %}
   </div>
   {% if g.configured and not valid %}
     {% set ck = g.check %}
@@ -57,6 +63,7 @@
       {{ msg(ck.message) if ck.message else _('Not checked yet') }}{% if g.checked_at %} <span class="muted">({{ g.checked_at }})</span>{% endif %}{% if ck.ok == false %}. {{ _('Check both values and save again.') }}{% endif %}
     </p>
   {% endif %}
+  {% if (desc and not valid) or g.configured %}
   <div class="formfoot">
     {% if desc and not valid %}<p class="mnote">{{ desc }}</p>{% endif %}
     <div class="eactions">
@@ -64,9 +71,10 @@
         <button class="ghost" name="action" value="remove" formnovalidate>{{ _('Remove') }}</button>
         <button class="ghost" name="action" value="check" formnovalidate>{{ _('Check again') }}</button>
       {% endif %}
-      <button name="action" value="save">{{ _('Save') }}</button>
+      {% if desc %}<button name="action" value="save">{{ _('Save') }}</button>{% endif %}
     </div>
   </div>
+  {% endif %}
 </form>
 <details class="guide">
   <summary>{{ _('How to get a client ID and secret (step by step)') }}</summary>
@@ -86,11 +94,13 @@
 </details>
 {% if valid %}</details>{% endif %}
 {% if g.configured and g.redirect_ok %}
-  <form method="post" action="/google/connect" class="connect">
-    <input type="hidden" name="csrf" value="{{ csrf }}">
-    <button{% if g.check.ok == false %} disabled title="{{ _('Google rejected the client: fix it first') }}"{% endif %}>{{ _('Connect Google Calendar') }}</button>
-  </form>
-  <p class="mnote">{{ _('Google may say <i>“Google hasn’t verified this app”</i>: that’s expected for your own app. Click <b>Advanced</b> → <b>Go to CalendarStream</b>, tick the calendar box and press <b>Continue</b>.') }}</p>
+  <div class="btnrow">
+    <p class="mnote">{{ _('Google may say <i>“Google hasn’t verified this app”</i>: that’s expected for your own app. Click <b>Advanced</b> → <b>Go to CalendarStream</b>, tick the calendar box and press <b>Continue</b>.') }}</p>
+    <form method="post" action="/google/connect" class="connect">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button{% if g.check.ok == false %} disabled title="{{ _('Google rejected the client: fix it first') }}"{% endif %}>{{ _('Connect Google Calendar') }}</button>
+    </form>
+  </div>
 {% elif not g.redirect_ok %}
   <p class="merr">{{ _('First set the <b>Public address</b> above to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>
 {% endif %}

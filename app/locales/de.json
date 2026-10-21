@@ -118,7 +118,6 @@
   "Default colour": "Standardfarbe",
   "Default": "Standard",
   "Using the standard colours": "Standardfarben werden verwendet",
-  "Tag colours": "Tag-Farben",
   "Tag, e.g. RDO": "Tag, z. B. RDO",
   "Tag": "Tag",
   "How to match": "Abgleich",
@@ -406,5 +405,6 @@
   "For the calendar, the activity log and the event times. Automatic uses 12-hour in English and 24-hour (military time) in the other languages.": "Für den Kalender, das Aktivitätsprotokoll und die Terminzeiten. Automatisch verwendet 12 Stunden auf Englisch und 24 Stunden in den anderen Sprachen.",
   "Choose one of the colours offered.": "Wähle eine der angebotenen Farben.",
   "Unknown time format.": "Unbekanntes Zeitformat.",
-  "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(ohne automatische Synchronisierung: Google liest ihn nach eigenem Zeitplan neu ein, was bis zu 12 Stunden dauern kann; es behält den zuerst gesehenen Namen und zeigt keine Tag-Farben)"
+  "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(ohne automatische Synchronisierung: Google liest ihn nach eigenem Zeitplan neu ein, was bis zu 12 Stunden dauern kann; es behält den zuerst gesehenen Namen und zeigt keine Tag-Farben)",
+  "Tag Colors": "Tag-Farben"
 }

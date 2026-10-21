@@ -88,9 +88,10 @@ logins or setup codes lock an address out for 15 minutes.
   Click an empty spot on a day (or **+**) to add your own. Events can have their own colour (one of
   Google's 11), which wins over tags. Edits survive new downloads; ✎ marks
   an edited event, ⚠ one United changed since. Nothing is ever changed in CCS+.
-- **Status & setup:** the calendar's name and colour, and **tags** (e.g. RDO in red) matched by whole
-  word, contains, starts with or exact title. Below: the health bar, **Sync now**, the CCS+ login,
-  the check interval, the upload, and **Google Calendar** (Autosync, the feed, the shareable page).
+- **Status & setup:** the calendar's name and colour (**(edit)**), the health bar and **Sync now**,
+  **Tag Colors** (e.g. RDO in red, matched by whole word, contains, starts with or exact title), the
+  CCS+ login, the check interval, the upload, and **Google Calendar** (Autosync, the feed, the
+  shareable page).
 - **Activity log:** each check and what changed, plus the last download for debugging.
 - **☰ Settings:** status-page login, CCS+ Calendar Sync login, time format (12-hour, 24-hour or
   Automatic), public address, Google Calendar Autosync.

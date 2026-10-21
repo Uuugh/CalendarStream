@@ -118,7 +118,6 @@
   "Default colour": "Color predeterminado",
   "Default": "Predeterminado",
   "Using the standard colours": "Usando los colores estándar",
-  "Tag colours": "Colores de etiquetas",
   "Tag, e.g. RDO": "Etiqueta, p. ej. RDO",
   "Tag": "Etiqueta",
   "How to match": "Cómo coincidir",
@@ -406,5 +405,6 @@
   "For the calendar, the activity log and the event times. Automatic uses 12-hour in English and 24-hour (military time) in the other languages.": "Para el calendario, el registro de actividad y las horas de los eventos. Automático usa 12 horas en inglés y 24 horas en los demás idiomas.",
   "Choose one of the colours offered.": "Elige uno de los colores ofrecidos.",
   "Unknown time format.": "Formato de hora desconocido.",
-  "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(si no usas la sincronización automática: Google lo vuelve a leer cuando quiere, lo que puede tardar hasta 12 horas; conserva el primer nombre que vio y no muestra los colores de las etiquetas)"
+  "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(si no usas la sincronización automática: Google lo vuelve a leer cuando quiere, lo que puede tardar hasta 12 horas; conserva el primer nombre que vio y no muestra los colores de las etiquetas)",
+  "Tag Colors": "Colores de etiquetas"
 }
