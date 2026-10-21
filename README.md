@@ -84,7 +84,9 @@ logins or setup codes lock an address out for 15 minutes.
 ## The status page
 
 - **Month view:** the schedule as it's sent to Google. Click the month and year to jump to any
-  month; the **12h / 24h** switch (top right) picks the time format. Click an event to see or **Edit** it (title,
+  month; the **12h / 24h** switch (top right) picks the time format, and the time-zone menu next to
+  the event count shows the calendar in another zone (on this page only; the feed and Google keep
+  `TZ`). Click an event to see or **Edit** it (title,
   times, notes, or hide it from Google); clicking elsewhere closes it, and its 📌 pin keeps it open.
   Click an empty spot on a day (or **+**) to add your own. Events can have their own colour (one of
   Google's 11), which wins over tags. Edits survive new downloads; ✎ marks
@@ -94,8 +96,8 @@ logins or setup codes lock an address out for 15 minutes.
   CCS+ login, the check interval, the upload, and **Google Calendar** (Autosync, the feed, the
   shareable page).
 - **Activity log:** each check and what changed, plus the last download for debugging.
-- **☰ Settings:** status-page login, CCS+ Calendar Sync login, time format (12-hour, 24-hour or
-  Automatic), public address, Google Calendar Autosync.
+- **☰ Settings:** status-page login, public address, CCS+ Calendar Sync login, Google Calendar
+  Autosync. Each login shows **✓ Validated** until you change it.
 - **Report a problem / Suggest a feature** at the bottom of the page open a GitHub issue form.
 - **Language** (🌐, left of the Light / Dark / System theme switch): English, Español, Français,
   Deutsch, Português and Vlaams, or Automatic (the browser's language). Everything on the page is

@@ -5,7 +5,33 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.15**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.16**
+
+## 0.1.16 — 2026-10-20
+
+### Added
+- **F2.2** A time-zone menu above the calendar ("times in …"): shows the calendar in any time zone.
+  It only changes this page; the feed, Google and the server keep `TZ` from `.env`.
+- **F2.3** Event times are one box each: type them ("9:30", "9:30pm", "21:30", "930") or pick from
+  a list every 15 minutes (the end list shows the length). A **Time zone** menu, and **The end is
+  in a different time zone** for events such as flights; lengths are kept in real hours across
+  zones, and the event page remembers the zones used.
+- The Subscribe box says when Google Calendar last read the feed, or that it hasn't yet, with
+  what to check.
+
+### Changed
+- **F1.1, F1.2** In Settings and Status & setup, the CCS+ and Google client logins show
+  **✓ Validated** to the right of the boxes; it turns into **Save & sync** / **Save** when a box is
+  empty, being edited, or the check failed.
+- **F1.3** The status-page login looks like the other logins: user name and password with
+  **✓ Signed in**; typing a new password asks for the current one and shows **Save**.
+- **F1.4** **Public address** is right under the status-page login, with **This page** inside the
+  box, **Save** on the same line and the explanation underneath. Buttons are now always on the
+  same line as their boxes.
+- **F1.5** Time format is no longer in Settings; use the 12h / 24h switch above the calendar.
+
+### Removed
+- The hour / minute / am-pm menus on the event page (replaced by the time boxes).
 
 ## 0.1.15 — 2026-10-20
 

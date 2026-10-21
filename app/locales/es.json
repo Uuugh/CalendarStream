@@ -420,5 +420,20 @@
   "Google: instant updates turned on (changes made in Google are checked within seconds)": "Google: actualizaciones instantáneas activadas (los cambios hechos en Google se revisan en segundos)",
   "Google: instant updates aren't available ({error}); changes made in Google are checked daily instead": "Google: las actualizaciones instantáneas no están disponibles ({error}); los cambios hechos en Google se revisan a diario",
   "needs a public https:// address (☰ → Public address)": "hace falta una dirección pública https:// (☰ → Dirección pública)",
-  "starts with the next sync": "empiezan con la próxima sincronización"
+  "starts with the next sync": "empiezan con la próxima sincronización",
+  "Validated": "Validado",
+  "Common": "Comunes",
+  "All time zones": "Todas las zonas horarias",
+  "Time zone": "Zona horaria",
+  "End time zone": "Zona horaria del final",
+  "The end is in a different time zone": "El final está en otra zona horaria",
+  "Type a time like 9:30, 9:30pm or 21:30.": "Escribe una hora como 9:30, 9:30pm o 21:30.",
+  "Start time zone": "Zona horaria del inicio",
+  "Type a new one to change it": "Escribe una nueva para cambiarla",
+  "Signed in": "Sesión iniciada",
+  "times in": "horas en",
+  "Show the calendar in another time zone (only on this page; the feed and Google are unchanged)": "Mostrar el calendario en otra zona horaria (solo en esta página; el feed y Google no cambian)",
+  "Unknown time zone.": "Zona horaria desconocida.",
+  "Google Calendar last read this feed {when}.": "Google Calendar leyó este feed por última vez {when}.",
+  "Google Calendar hasn’t read this feed yet. Until it does, Google shows the subscription under its web address and without events. If that lasts more than a few hours, open the raw feed URL in a private browser window: it must download without a login, and nothing in front of CalendarStream (a proxy, or Cloudflare’s bot protection) may block Google.": "Google Calendar aún no ha leído este feed. Hasta entonces, Google muestra la suscripción con su dirección web y sin eventos. Si dura más de unas horas, abre la URL del feed en una ventana privada: debe descargarse sin iniciar sesión, y nada delante de CalendarStream (un proxy o la protección contra bots de Cloudflare) debe bloquear a Google."
 }

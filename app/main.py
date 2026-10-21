@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta
 from itertools import zip_longest
 from pathlib import Path
 from urllib.parse import quote, urlparse
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, available_timezones
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.exception_handlers import http_exception_handler as default_http_error
@@ -144,6 +144,28 @@ def ui_clock() -> str:
     """12-hour (1:00pm) or 24-hour ("military", 13:00) times on the status page, or "auto" (by language)."""
     clock = store.get("ui_clock")
     return clock if clock in CLOCKS else "auto"
+
+
+# F2.2: the time zone the status page's calendar is shown in. It only changes how the calendar looks
+# here; the feed, Google and the server's own clock (TZ in .env) are unaffected.
+ALL_ZONES = sorted(z for z in available_timezones() if "/" in z and not z.startswith(("Etc/", "SystemV/", "posix/", "right/")))
+COMMON_ZONES = ["America/New_York", "America/Chicago", "America/Denver", "America/Phoenix", "America/Los_Angeles",
+                "America/Anchorage", "Pacific/Honolulu", "Pacific/Guam", "UTC", "Europe/London", "Europe/Frankfurt",
+                "Asia/Tokyo", "Asia/Hong_Kong", "Australia/Sydney"]
+
+
+def valid_zone(name: str) -> bool:
+    return name == "UTC" or name in ALL_ZONES
+
+
+def display_zone() -> str:
+    """The calendar's time zone on the status page: chosen above the calendar, else TZ."""
+    name = store.get("ui_tz") or ""
+    return name if valid_zone(name) else settings.timezone
+
+
+def display_tz() -> ZoneInfo:
+    return ZoneInfo(display_zone())
 
 
 def dates_for(lang: str) -> i18n.Dates:
@@ -527,6 +549,26 @@ def check_csrf(token: str):
         raise HTTPException(400, "This form has expired. Reload the page and try again.")
 
 
+# --- Who reads the feed --------------------------------------------------------------------
+#
+# Google Calendar fetches a subscribed feed with its own reader ("Google-Calendar-Importer"). Noting
+# when it last came shows whether Google can reach the feed at all: until it has, Google shows the
+# subscription under its web address and without events.
+
+def note_feed_read(user_agent: str):
+    kind = "google" if "google" in user_agent.lower() else "other"
+    reads = store.get("feed_reads") or {}
+    last = from_iso(reads.get(kind))
+    if last is None or now() - last > timedelta(minutes=1):     # don't write on every fetch
+        reads[kind] = iso(now())
+        store.set("feed_reads", reads)
+
+
+def feed_reads(lang: str) -> dict:
+    reads = store.get("feed_reads") or {}
+    return {k: _local_time(reads.get(k), lang) for k in ("google", "other")}
+
+
 # --- Links ---------------------------------------------------------------------
 
 def public_url() -> str:
@@ -611,19 +653,21 @@ def google_view(request: Request, lang: str = "en") -> dict:
 
 # --- Month view ----------------------------------------------------------------
 
-def _span(e: Event) -> tuple[date, date, datetime | None, datetime | None]:
-    """First and last calendar day an event covers (in the display time zone)."""
+def _span(e: Event, tz: ZoneInfo | None = None) -> tuple[date, date, datetime | None, datetime | None]:
+    """First and last calendar day an event covers (in `tz`, by default the display time zone)."""
+    tz = tz or display_tz()
     if e.all_day:
         first, end = date.fromisoformat(e.start[:10]), date.fromisoformat(e.end[:10])
         return first, max(first, end - timedelta(days=1)), None, None
-    s = datetime.fromisoformat(e.start).astimezone(TZ)
-    t = datetime.fromisoformat(e.end).astimezone(TZ)
+    s = datetime.fromisoformat(e.start).astimezone(tz)
+    t = datetime.fromisoformat(e.end).astimezone(tz)
     last = (t - timedelta(microseconds=1)).date() if t > s else s.date()
     return s.date(), last, s, t
 
 
 def month_view(events: list[Event], year: int, month: int, tags: list[dict] | None = None,
                lang: str = "en") -> dict:
+    tz = display_tz()
     dates = dates_for(lang)
     hm = dates.clock
     cont = str(i18n.tr(lang, "cont."))
@@ -633,7 +677,7 @@ def month_view(events: list[Event], year: int, month: int, tags: list[dict] | No
     by_day: dict[date, list] = {}
     in_month = 0
     for e in events:
-        d0, d1, s, t = _span(e)
+        d0, d1, s, t = _span(e, tz)
         if d1 < first_day or d0 > last_day:
             continue
         if d1 >= date(year, month, 1) and d0 <= date(year, month, pycal.monthrange(year, month)[1]):
@@ -659,7 +703,7 @@ def month_view(events: list[Event], year: int, month: int, tags: list[dict] | No
         "title": dates.title(date(year, month, 1)), "dow": dates.dow,
         "weeks": [[{"date": d, "in_month": d.month == month, "items": by_day.get(d, [])} for d in w] for w in weeks],
         "prev": f"{prev_m:%Y-%m}", "next": f"{next_m.replace(day=1):%Y-%m}", "month": f"{year}-{month:02d}",
-        "today": now().date(), "count": in_month,
+        "today": now().astimezone(tz).date(), "count": in_month,
     }
 
 
@@ -701,6 +745,7 @@ def index(request: Request, month: str | None = None):
         "csrf": CSRF_TOKEN, "name": calendar_name(), "name_from_gui": bool(store.get("calendar_name")),
         "color": calendar_color(), "tags": calendar_tags(), "tag_modes": TAG_MODES,
         "sections": section_state(), "interval": interval_minutes(),
+        "zone": display_zone(), "zones": ALL_ZONES, "common_zones": COMMON_ZONES, "reads": feed_reads(lang),
         "google": google_view(request, lang), "open_menu": request.query_params.get("menu") in ("google", "settings"),
         "public": {"url": public_url(), "from_settings": bool(store.get("public_url")),
                    "env": settings.public_base_url},
@@ -936,6 +981,19 @@ async def set_clock(csrf: str = Form(""), clock: str = Form("")):
     return Response(status_code=204)
 
 
+@app.post("/ui/tz", dependencies=[Depends(gui_auth)])
+async def set_display_tz(csrf: str = Form(""), tz: str = Form("")):
+    """F2.2: the time zone the calendar is shown in here; "" goes back to TZ from .env."""
+    check_csrf(csrf)
+    if not tz or tz == settings.timezone:
+        store.delete("ui_tz")
+    elif valid_zone(tz):
+        store.set("ui_tz", tz)
+    else:
+        raise HTTPException(400, "Unknown time zone.")
+    return Response(status_code=204)
+
+
 @app.post("/ui/theme", dependencies=[Depends(gui_auth)])
 async def set_theme(csrf: str = Form(""), theme: str = Form("")):
     """Remember the light / dark / system choice (the page sends this when it's changed)."""
@@ -962,16 +1020,29 @@ def united_original(uid: str) -> Event | None:
     return next((e for e in base if e.uid == uid), None)
 
 
-def _form_values(e: Event) -> dict:
-    """Split an event into the date/time fields the edit form uses (end date shown inclusive)."""
+def _form_values(e: Event, start_tz: ZoneInfo | None = None, end_tz: ZoneInfo | None = None, clock=None) -> dict:
+    """Split an event into the edit form's fields (end date shown inclusive). Times are given as
+    "HH:MM" and as shown on the page (`clock`: 12- or 24-hour), each in its own time zone."""
+    start_tz = start_tz or display_tz()
+    end_tz = end_tz or start_tz
+    clock = clock or (lambda dt: f"{dt:%H:%M}")
     if e.all_day:
         first = date.fromisoformat(e.start[:10])
         last = max(first, date.fromisoformat(e.end[:10]) - timedelta(days=1))
-        return {"start_date": first.isoformat(), "start_time": "09:00",
-                "end_date": last.isoformat(), "end_time": "10:00"}
-    s_, t_ = datetime.fromisoformat(e.start).astimezone(TZ), datetime.fromisoformat(e.end).astimezone(TZ)
-    return {"start_date": f"{s_:%Y-%m-%d}", "start_time": f"{s_:%H:%M}",
-            "end_date": f"{t_:%Y-%m-%d}", "end_time": f"{t_:%H:%M}"}
+        s_ = datetime.combine(first, datetime.min.time().replace(hour=9))
+        t_ = datetime.combine(last, datetime.min.time().replace(hour=10))
+    else:
+        s_, t_ = datetime.fromisoformat(e.start).astimezone(start_tz), datetime.fromisoformat(e.end).astimezone(end_tz)
+    return {"start_date": f"{s_:%Y-%m-%d}", "start_time": f"{s_:%H:%M}", "start_label": clock(s_),
+            "end_date": f"{t_:%Y-%m-%d}", "end_time": f"{t_:%H:%M}", "end_label": clock(t_)}
+
+
+def _saved_zones(uid: str) -> tuple[str, str]:
+    """The time zones an event was last saved with on the event page, if any."""
+    data = store.get_edits().get(uid) or next((c for c in store.get_customs() if c["uid"] == uid), None) or {}
+    start = data.get("start_tz") if valid_zone(data.get("start_tz") or "") else ""
+    end = data.get("end_tz") if valid_zone(data.get("end_tz") or "") else ""
+    return start, end or start
 
 
 @app.get("/event", dependencies=[Depends(gui_auth)])
@@ -987,42 +1058,50 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
             day = now().date()
         e = Event(title="", start=day.isoformat(), end=(day + timedelta(days=1)).isoformat(), all_day=False,
                   origin="custom")
-        e.start = datetime.combine(day, datetime.min.time().replace(hour=9), TZ).isoformat()
-        e.end = datetime.combine(day, datetime.min.time().replace(hour=10), TZ).isoformat()
+        e.start = datetime.combine(day, datetime.min.time().replace(hour=9), display_tz()).isoformat()
+        e.end = datetime.combine(day, datetime.min.time().replace(hour=10), display_tz()).isoformat()
     original = united_original(uid) if e.origin == "united" and uid else None
     lang = lang_for(request)
     tag_color = tag_matcher(calendar_tags())(e.title) if e.title else ""
+    start_zone, end_zone = _saved_zones(uid) if uid else ("", "")
+    start_zone, end_zone = start_zone or display_zone(), end_zone or start_zone or display_zone()
     return page(request, "event.html", {
-        "e": e, "f": _form_values(e), "is_new": not uid, "original": original,
+        "e": e, "f": _form_values(e, ZoneInfo(start_zone), ZoneInfo(end_zone), dates_for(lang).clock),
+        "start_zone": start_zone, "end_zone": end_zone, "zones": ALL_ZONES, "common_zones": COMMON_ZONES,
+        "is_new": not uid, "original": original,
         "colors": GOOGLE_COLORS.values(), "auto_color": tag_color or calendar_color() or "",
         "original_range": _range_text(original, *_span(original)[2:], lang) if original else "",
-        "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": settings.timezone,
+        "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": display_zone(),
     }, lang=lang)
 
 
 EVENT_COLORS = {hex_ for _, hex_ in GOOGLE_COLORS.values()}   # Google's 11 event colours
 
 
-def _clock_value(time_: str, hour: str, minute: str, ampm: str) -> str:
-    """The event page sends a time as hour / minute (/ am-pm) menus; make it "HH:MM".
-    A plain "HH:MM" (`time_`) is still accepted."""
-    if not hour:
-        return time_
-    try:
-        h, m = int(hour), int(minute or 0)
-    except ValueError:
-        raise HTTPException(400, "Check the dates and times.")
-    if ampm in ("am", "pm"):
+CLOCK_RE = re.compile(r"^\s*(\d{1,2})(?:[:.h]?(\d{2}))?\s*(?:([ap])\.?\s*m?\.?)?\s*$", re.I)
+
+
+def parse_clock(text: str) -> str:
+    """A time as typed on the event page, as "HH:MM": "9:30", "9:30pm", "930", "21:30", "2130",
+    "9 pm", "9h30". Raises ValueError when it isn't a time."""
+    m = CLOCK_RE.match(text or "")
+    if not m:
+        raise ValueError(text)
+    digits, minute, ampm = m.group(1), m.group(2), (m.group(3) or "").lower()
+    if minute is None and len(digits) > 2:          # "930" → 9:30 (handled by the regex as 9 + 30)
+        raise ValueError(text)
+    h, mi = int(digits), int(minute or 0)
+    if ampm:
         if not 1 <= h <= 12:
-            raise HTTPException(400, "Check the dates and times.")
-        h = h % 12 + (12 if ampm == "pm" else 0)
-    if not (0 <= h <= 23 and 0 <= m <= 59):
-        raise HTTPException(400, "Check the dates and times.")
-    return f"{h:02d}:{m:02d}"
+            raise ValueError(text)
+        h = h % 12 + (12 if ampm == "p" else 0)
+    if not (0 <= h <= 23 and 0 <= mi <= 59):
+        raise ValueError(text)
+    return f"{h:02d}:{mi:02d}"
 
 
 def _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description,
-                     color: str = "") -> dict:
+                     color: str = "", start_tz: str = "", end_tz: str = "") -> dict:
     title = " ".join((title or "").split())
     color = (color or "").lower()
     if color and color not in EVENT_COLORS:
@@ -1036,8 +1115,10 @@ def _event_from_form(title, all_day, start_date, start_time, end_date, end_time,
                 raise HTTPException(400, "The last day is before the first day.")
             start, end = sd.isoformat(), (ed + timedelta(days=1)).isoformat()
         else:
-            s_ = datetime.combine(sd, datetime.strptime(start_time or "00:00", "%H:%M").time(), TZ)
-            t_ = datetime.combine(ed, datetime.strptime(end_time or "00:00", "%H:%M").time(), TZ)
+            stz = ZoneInfo(start_tz) if valid_zone(start_tz) else display_tz()
+            etz = ZoneInfo(end_tz) if valid_zone(end_tz) else stz
+            s_ = datetime.combine(sd, datetime.strptime(parse_clock(start_time or "0:00"), "%H:%M").time(), stz)
+            t_ = datetime.combine(ed, datetime.strptime(parse_clock(end_time or "0:00"), "%H:%M").time(), etz)
             if t_ <= s_:
                 raise HTTPException(400, "The end has to be after the start.")
             start, end = s_.isoformat(), t_.isoformat()
@@ -1045,7 +1126,9 @@ def _event_from_form(title, all_day, start_date, start_time, end_date, end_time,
         raise HTTPException(400, "Check the dates and times.")
     return {"title": title[:200], "start": start, "end": end, "all_day": bool(all_day),
             "location": (location or "").strip()[:200], "description": (description or "").strip()[:4000],
-            "color": color}
+            "color": color,
+            # remembered so the event page opens in the same time zones next time
+            "start_tz": start_tz if valid_zone(start_tz) else "", "end_tz": end_tz if valid_zone(end_tz) else ""}
 
 
 @app.post("/event/save", dependencies=[Depends(gui_auth)])
@@ -1053,12 +1136,11 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
                      all_day: str = Form(""), start_date: str = Form(""), start_time: str = Form(""),
                      end_date: str = Form(""), end_time: str = Form(""), location: str = Form(""),
                      description: str = Form(""), hidden: str = Form(""), color: str = Form(""),
-                     start_hour: str = Form(""), start_minute: str = Form(""), start_ampm: str = Form(""),
-                     end_hour: str = Form(""), end_minute: str = Form(""), end_ampm: str = Form("")):
+                     start_tz: str = Form(""), end_tz: str = Form(""), end_tz_differs: str = Form("")):
     check_csrf(csrf)
-    start_time = _clock_value(start_time, start_hour, start_minute, start_ampm)
-    end_time = _clock_value(end_time, end_hour, end_minute, end_ampm)
-    data = _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description, color)
+    end_tz = end_tz if end_tz_differs else start_tz      # one time zone for both unless asked otherwise
+    data = _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description,
+                            color, start_tz, end_tz)
     current = store.get_event(uid) if uid else None
     if current and current.origin == "united":
         original = united_original(uid)
@@ -1274,9 +1356,10 @@ def debug_file(name: str):
 
 
 @app.get("/calendar/{token}.ics")
-def calendar(token: str):
+def calendar(token: str, request: Request):
     if not secrets.compare_digest(token, settings.feed_token):
         raise HTTPException(404)
+    note_feed_read(request.headers.get("user-agent", ""))
     found = store.get_calendar("feed")
     ics = found[0] if found else empty_feed(calendar_name(), settings.timezone)
     return Response(ics, media_type="text/calendar; charset=utf-8", headers={"Cache-Control": "no-cache"})

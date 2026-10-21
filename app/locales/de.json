@@ -420,5 +420,20 @@
   "Google: instant updates turned on (changes made in Google are checked within seconds)": "Google: Sofort-Updates eingeschaltet (Änderungen in Google werden in Sekunden geprüft)",
   "Google: instant updates aren't available ({error}); changes made in Google are checked daily instead": "Google: Sofort-Updates sind nicht verfügbar ({error}); Änderungen in Google werden täglich geprüft",
   "needs a public https:// address (☰ → Public address)": "braucht eine öffentliche https://-Adresse (☰ → Öffentliche Adresse)",
-  "starts with the next sync": "beginnen mit der nächsten Synchronisierung"
+  "starts with the next sync": "beginnen mit der nächsten Synchronisierung",
+  "Validated": "Bestätigt",
+  "Common": "Häufige",
+  "All time zones": "Alle Zeitzonen",
+  "Time zone": "Zeitzone",
+  "End time zone": "Zeitzone des Endes",
+  "The end is in a different time zone": "Das Ende liegt in einer anderen Zeitzone",
+  "Type a time like 9:30, 9:30pm or 21:30.": "Gib eine Zeit wie 9:30, 9:30pm oder 21:30 ein.",
+  "Start time zone": "Zeitzone des Beginns",
+  "Type a new one to change it": "Neues eingeben, um es zu ändern",
+  "Signed in": "Angemeldet",
+  "times in": "Zeiten in",
+  "Show the calendar in another time zone (only on this page; the feed and Google are unchanged)": "Kalender in einer anderen Zeitzone anzeigen (nur auf dieser Seite; Feed und Google bleiben gleich)",
+  "Unknown time zone.": "Unbekannte Zeitzone.",
+  "Google Calendar last read this feed {when}.": "Google Kalender hat diesen Feed zuletzt {when} gelesen.",
+  "Google Calendar hasn’t read this feed yet. Until it does, Google shows the subscription under its web address and without events. If that lasts more than a few hours, open the raw feed URL in a private browser window: it must download without a login, and nothing in front of CalendarStream (a proxy, or Cloudflare’s bot protection) may block Google.": "Google Kalender hat diesen Feed noch nicht gelesen. Bis dahin zeigt Google das Abo unter seiner Webadresse und ohne Termine. Dauert das mehr als ein paar Stunden, öffne die Feed-URL in einem privaten Fenster: Sie muss sich ohne Anmeldung herunterladen lassen, und nichts vor CalendarStream (ein Proxy oder der Bot-Schutz von Cloudflare) darf Google blockieren."
 }

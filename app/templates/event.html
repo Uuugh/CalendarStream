@@ -13,7 +13,7 @@
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px }
   label { display:block; font-size:13px; font-weight:600; margin:12px 0 4px }
   label.inline { display:flex; align-items:center; gap:8px; font-weight:500; font-size:14px }
-  input[type=text], input[type=date], input[type=time], textarea {
+  input[type=text], input[type=date], textarea {
     width:100%; font:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
   textarea { min-height:110px; resize:vertical }
   .row { display:grid; grid-template-columns:1fr 1fr; gap:10px }
@@ -26,8 +26,15 @@
   .note.warn { background:var(--warnbg); color:var(--warn) }
   .orig { white-space:pre-wrap; font-size:13px }
   .timed[hidden] { display:none }
-  .timepick { display:flex; align-items:center; gap:4px }
-  .timepick select { font:inherit; padding:8px 6px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); flex:1; min-width:0 }
+  select.zone { width:100%; font:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .endzone[hidden] { display:none }
+  .timefield:invalid, .timefield.bad { border-color:var(--bad) !important }
+  .timelist { position:absolute; z-index:6; max-height:240px; overflow-y:auto; min-width:150px; background:var(--card);
+              border:1px solid var(--line); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.18); padding:4px 0 }
+  .timelist div { padding:6px 12px; font-size:14px; cursor:pointer; white-space:nowrap }
+  .timelist div:hover, .timelist div.near { background:var(--soft) }
+  .timelist div .muted { font-size:12px }
+  form.card { position:relative }
   .actions.bottom { margin-top:22px }
   .grow { flex:1 }
   a.ghostbtn { font-weight:600; text-decoration:none; padding:8px 16px; border:1px solid var(--line); border-radius:8px }
@@ -46,21 +53,12 @@
 </style>
 </head>
 <body>
-{# A time as hour and minute menus (and am/pm on a 12-hour clock), so the values can't run on forever
-   like the browser's own time box. `value` is "HH:MM". #}
-{% macro timepick(prefix, value, label) -%}
-{% set h, mi = value.split(':')|map('int') %}
-<div class="timepick" role="group" aria-label="{{ label }}" data-prefix="{{ prefix }}">
-  <select name="{{ prefix }}_hour" aria-label="{{ _('Hour') }}">
-    {% if dates.h24 %}{% for x in range(24) %}<option value="{{ x }}"{% if x == h %} selected{% endif %}>{{ '%02d' % x }}</option>{% endfor %}
-    {% else %}{% for x in range(1, 13) %}<option value="{{ x }}"{% if x == (h % 12 or 12) %} selected{% endif %}>{{ '%02d' % x }}</option>{% endfor %}{% endif %}
-  </select><span>:</span><select name="{{ prefix }}_minute" aria-label="{{ _('Minute') }}">
-    {% for x in range(60) %}<option value="{{ x }}"{% if x == mi %} selected{% endif %}>{{ '%02d' % x }}</option>{% endfor %}
-  </select>
-  {% if not dates.h24 %}<select name="{{ prefix }}_ampm" aria-label="am/pm">
-    <option value="am"{% if h < 12 %} selected{% endif %}>am</option><option value="pm"{% if h >= 12 %} selected{% endif %}>pm</option>
-  </select>{% endif %}
-</div>
+{# A time zone menu: the common ones first, then all of them. #}
+{% macro zonepick(name, value, label) -%}
+<select id="{{ name }}" name="{{ name }}" aria-label="{{ label }}" class="zone">
+  <optgroup label="{{ _('Common') }}">{% for z in common_zones %}<option value="{{ z }}"{% if z == value %} selected{% endif %}>{{ z.replace('_', ' ') }}</option>{% endfor %}</optgroup>
+  <optgroup label="{{ _('All time zones') }}">{% for z in zones if z not in common_zones %}<option value="{{ z }}"{% if z == value %} selected{% endif %}>{{ z.replace('_', ' ') }}</option>{% endfor %}</optgroup>
+</select>
 {%- endmacro %}
 <main>
   <h1>{{ _("Add event") if is_new else (_("Edit event") if e.origin == "custom" else _("Edit United event")) }}</h1>
@@ -88,12 +86,22 @@
 
     <div class="row">
       <div><label for="start_date">{{ _('Starts') }}</label><input type="date" id="start_date" name="start_date" value="{{ f.start_date }}" required></div>
-      <div class="timed"><label>&nbsp;</label>{{ timepick("start", f.start_time, _('Start time')) }}</div>
+      <div class="timed"><label for="start_time">{{ _('Time') }}</label><input type="text" class="timefield" id="start_time" name="start_time" value="{{ f.start_label }}" autocomplete="off" spellcheck="false" inputmode="text" aria-haspopup="listbox"></div>
     </div>
     <div class="row">
       <div><label for="end_date" id="end_label">{{ _('Ends') }}</label><input type="date" id="end_date" name="end_date" value="{{ f.end_date }}" required></div>
-      <div class="timed"><label>&nbsp;</label>{{ timepick("end", f.end_time, _('End time')) }}</div>
+      <div class="timed"><label for="end_time">{{ _('Time') }}</label><input type="text" class="timefield" id="end_time" name="end_time" value="{{ f.end_label }}" autocomplete="off" spellcheck="false" inputmode="text" aria-haspopup="listbox"></div>
     </div>
+
+    {# Time zone: one for both ends, or a different one for the end (e.g. a flight). #}
+    <div class="timed zones">
+      <div class="row">
+        <div><label for="start_tz" id="start_tz_label">{{ _('Time zone') }}</label>{{ zonepick("start_tz", start_zone, _('Time zone')) }}</div>
+        <div class="endzone"{% if end_zone == start_zone %} hidden{% endif %}><label>{{ _('End time zone') }}</label>{{ zonepick("end_tz", end_zone, _('End time zone')) }}</div>
+      </div>
+      <label class="inline" style="margin-top:8px;font-size:13px"><input type="checkbox" id="end_tz_differs" name="end_tz_differs" value="1"{% if end_zone != start_zone %} checked{% endif %}> {{ _('The end is in a different time zone') }}</label>
+    </div>
+    <div class="timelist" id="timelist" role="listbox" hidden></div>
 
     <label for="location">{{ _('Location') }}</label>
     <input type="text" id="location" name="location" value="{{ e.location }}" maxlength="200">
@@ -140,7 +148,9 @@
   {% endif %}
 </main>
 <script>
-var T = { lastDay: {{ _('Last day')|string|tojson }}, ends: {{ _('Ends')|string|tojson }}, del: {{ _('Delete this event?')|string|tojson }} };
+var T = { lastDay: {{ _('Last day')|string|tojson }}, ends: {{ _('Ends')|string|tojson }}, del: {{ _('Delete this event?')|string|tojson }},
+          badTime: {{ _('Type a time like 9:30, 9:30pm or 21:30.')|string|tojson }}, zone: {{ _('Time zone')|string|tojson }},
+          startZone: {{ _('Start time zone')|string|tojson }} };
 var delForm = document.getElementById('deleteform');
 if (delForm) delForm.addEventListener('submit', function (e) { if (!confirm(T.del)) e.preventDefault(); });
 // Show the time fields only for timed events; for all-day events the end date is the last day.
@@ -152,39 +162,122 @@ if (delForm) delForm.addEventListener('submit', function (e) { if (!confirm(T.de
   }
   box.addEventListener('change', sync); sync();
 
-  // F1.1: changing the start moves the end by the same amount, so the length stays the same
-  // (like Google Calendar). Changing the end just sets a new length.
+  // Times are typed ("9:30pm", "21:30", "930") or picked from a list every 15 minutes. Changing the
+  // start (date, time or zone) moves the end by the same amount, so the length stays the same;
+  // changing the end sets a new length. Lengths are real minutes, so they work across time zones.
+  var H24 = {{ dates.h24|tojson }};
   var sd = document.getElementById('start_date'), ed = document.getElementById('end_date');
-  function pick(prefix) {
-    var g = document.querySelector('.timepick[data-prefix="' + prefix + '"]');
-    return { h: g.querySelector('[name$=_hour]'), m: g.querySelector('[name$=_minute]'), ap: g.querySelector('[name$=_ampm]') };
+  var st = document.getElementById('start_time'), et = document.getElementById('end_time');
+  var sz = document.getElementById('start_tz'), ez = document.querySelector('select[name=end_tz]');
+  var differs = document.getElementById('end_tz_differs'), endzone = document.querySelector('.endzone');
+  var list = document.getElementById('timelist');
+
+  function parse(text) {   // minutes after midnight, or null (same rules as the server)
+    var m = /^\s*(\d{1,2})(?:[:.h]?(\d{2}))?\s*(?:([ap])\.?\s*m?\.?)?\s*$/i.exec(text || '');
+    if (!m) return null;
+    var h = +m[1], mi = +(m[2] || 0), ap = (m[3] || '').toLowerCase();
+    if (ap) { if (h < 1 || h > 12) return null; h = h % 12 + (ap === 'p' ? 12 : 0); }
+    return h > 23 || mi > 59 ? null : h * 60 + mi;
   }
-  var S = pick('start'), E = pick('end');
-  function minutes(dateBox, p) {   // minutes since 1970 in "wall clock" time, ignoring the time zone
-    var d = dateBox.value ? Date.parse(dateBox.value + 'T00:00:00Z') / 60000 : 0;
-    var h = +p.h.value;
-    if (p.ap) h = h % 12 + (p.ap.value === 'pm' ? 12 : 0);
-    return d + h * 60 + (+p.m.value);
+  function fmt(min) {
+    var h = Math.floor(min / 60), m = ('0' + min % 60).slice(-2);
+    if (H24) return ('0' + h).slice(-2) + ':' + m;
+    return (h % 12 || 12) + ':' + m + (h < 12 ? 'am' : 'pm');
   }
-  function setMinutes(dateBox, p, total) {
-    var d = new Date(total * 60000);
-    dateBox.value = d.toISOString().slice(0, 10);
-    var h = d.getUTCHours();
-    if (p.ap) { p.ap.value = h < 12 ? 'am' : 'pm'; h = h % 12 || 12; }
-    p.h.value = String(h); p.m.value = String(d.getUTCMinutes());
+  function zoneOf(isEnd) { return isEnd && differs.checked ? ez.value : sz.value; }
+  function offset(zone, utcMs) {   // the zone's offset from UTC (minutes) at that moment
+    var p = {}; new Intl.DateTimeFormat('en-US', { timeZone: zone, hourCycle: 'h23', year: 'numeric', month: '2-digit',
+      day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(utcMs)).forEach(function (x) { p[x.type] = x.value; });
+    return (Date.UTC(+p.year, p.month - 1, +p.day, +p.hour, +p.minute) - Math.floor(utcMs / 60000) * 60000) / 60000;
   }
-  var length = minutes(ed, E) - minutes(sd, S);
+  function instant(dateBox, timeBox, zone) {   // minutes since 1970 (UTC) for a wall-clock date and time
+    var t = parse(timeBox.value); if (t === null || !dateBox.value) return null;
+    var wall = Date.parse(dateBox.value + 'T00:00:00Z') + t * 60000;
+    var guess = wall - offset(zone, wall) * 60000;
+    return (wall - offset(zone, guess) * 60000) / 60000;
+  }
+  function setWall(dateBox, timeBox, zone, utcMin) {
+    var wall = new Date(utcMin * 60000 + offset(zone, utcMin * 60000) * 60000);
+    dateBox.value = wall.toISOString().slice(0, 10);
+    timeBox.value = fmt(wall.getUTCHours() * 60 + wall.getUTCMinutes());
+    timeBox.classList.remove('bad');
+  }
+  function lengthNow() { var a = instant(sd, st, zoneOf(false)), b = instant(ed, et, zoneOf(true)); return a === null || b === null ? null : b - a; }
+  var length = lengthNow();
   function startChanged() {
     if (box.checked) {   // all-day: keep the number of days
-      var days = Math.max(0, Math.round(length / 1440));
-      var t = new Date(Date.parse(sd.value + 'T00:00:00Z') + days * 86400000);
-      ed.value = t.toISOString().slice(0, 10);
+      var days = Math.max(0, Math.round((Date.parse(ed.value) - Date.parse(sd.value)) / 86400000) || 0);
+      if (startChanged.days !== undefined) days = startChanged.days;
+      ed.value = new Date(Date.parse(sd.value + 'T00:00:00Z') + days * 86400000).toISOString().slice(0, 10);
       return;
     }
-    setMinutes(ed, E, minutes(sd, S) + Math.max(length, 0));
+    var a = instant(sd, st, zoneOf(false));
+    if (a !== null && length !== null) setWall(ed, et, zoneOf(true), a + Math.max(length, 0));
   }
-  [sd, S.h, S.m, S.ap].forEach(function (el) { if (el) el.addEventListener('change', startChanged); });
-  [ed, E.h, E.m, E.ap].forEach(function (el) { if (el) el.addEventListener('change', function () { length = minutes(ed, E) - minutes(sd, S); }); });
+  function endChanged() { var l = lengthNow(); if (l !== null) length = l; }
+  function tidy(input) {   // show a typed time the standard way, or mark it
+    var t = parse(input.value);
+    input.classList.toggle('bad', t === null);
+    input.setCustomValidity(t === null ? T.badTime : '');
+    if (t !== null) input.value = fmt(t);
+    return t !== null;
+  }
+  sd.addEventListener('focus', function () { startChanged.days = Math.round((Date.parse(ed.value) - Date.parse(sd.value)) / 86400000); });
+  sd.addEventListener('change', function () { startChanged(); startChanged.days = undefined; });
+  sz.addEventListener('change', startChanged);
+  st.addEventListener('change', function () { closeList(); if (tidy(st)) startChanged(); });
+  et.addEventListener('change', function () { closeList(); if (tidy(et)) endChanged(); });
+  ed.addEventListener('change', endChanged);
+  ez.addEventListener('change', endChanged);
+  differs.addEventListener('change', function () {
+    endzone.hidden = !differs.checked;
+    if (!differs.checked) ez.value = sz.value;
+    document.getElementById('start_tz_label').textContent = differs.checked ? T.startZone : T.zone;
+    endChanged();
+  });
+  if (differs.checked) document.getElementById('start_tz_label').textContent = T.startZone;
+
+  // The list of times under a time box.
+  var target = null;
+  function lengthText(min) {
+    var h = Math.floor(min / 60), m = min % 60;
+    return '(' + (h ? h + ' h' : '') + (h && m ? ' ' : '') + (m || !h ? m + ' min' : '') + ')';
+  }
+  function openList(input) {
+    target = input;
+    var isEnd = input === et, from = isEnd ? instant(sd, st, zoneOf(false)) : null, cur = parse(input.value);
+    var html = '';
+    for (var m = 0; m < 1440; m += 15) {
+      var extra = '';
+      if (isEnd && from !== null) {
+        var probe = instant(ed, { value: fmt(m) }, zoneOf(true));
+        if (probe !== null && probe > from && probe - from <= 1440) extra = ' <span class="muted">' + lengthText(probe - from) + '</span>';
+      }
+      html += '<div role="option" data-min="' + m + '"' + (cur !== null && Math.abs(cur - m) < 8 ? ' class="near"' : '') + '>' + fmt(m) + extra + '</div>';
+    }
+    list.innerHTML = html;
+    var r = input.getBoundingClientRect(), f = input.closest('form').getBoundingClientRect();
+    list.style.left = (r.left - f.left) + 'px'; list.style.top = (r.bottom - f.top + 4) + 'px'; list.style.minWidth = r.width + 'px';
+    list.hidden = false;
+    var near = list.querySelector('.near') || list.children[Math.floor((cur === null ? 540 : cur) / 15)];
+    if (near) list.scrollTop = near.offsetTop - 80;
+  }
+  function closeList() { list.hidden = true; target = null; }
+  [st, et].forEach(function (input) {
+    input.addEventListener('focus', function () { openList(input); });
+    input.addEventListener('click', function () { if (list.hidden) openList(input); });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' || e.key === 'Tab') closeList();
+      if (e.key === 'Enter') { e.preventDefault(); closeList(); input.dispatchEvent(new Event('change')); }
+    });
+    input.addEventListener('blur', function () { setTimeout(function () { if (target === input) closeList(); }, 150); });
+  });
+  list.addEventListener('mousedown', function (e) {
+    var item = e.target.closest('[data-min]'); if (!item || !target) return;
+    e.preventDefault();
+    var input = target; input.value = fmt(+item.dataset.min); closeList();
+    input.dispatchEvent(new Event('change'));
+  });
 })();
 
 // Event colour: the summary shows the chosen colour; picking one closes the palette.

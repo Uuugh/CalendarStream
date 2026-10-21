@@ -11,10 +11,18 @@
 <div class="feed"><input id="{{ id }}" readonly onclick="this.select()" value="{{ value }}">{{ copybtn(id) }}</div>
 {%- endmacro %}
 
+{# The end of a login line: "✓ <ok_text>" while the saved values are good and untouched, otherwise the
+   button. Typing in the form swaps the mark for the button (see the "watch" script on the page). #}
+{% macro okbutton(ok, ok_text, button, ok_title="", name="", value="") -%}
+<span class="okmark"{% if not ok %} hidden{% endif %}{% if ok_title %} title="{{ ok_title }}"{% endif %}>✓ {{ ok_text }}</span>
+<button data-save{% if name %} name="{{ name }}" value="{{ value }}"{% endif %}{% if ok %} hidden{% endif %}>{{ button }}</button>
+{%- endmacro %}
+
 {# The CCS+ Calendar Sync login: UID and password, with whether CCS+ accepted them.
    `back` says where to return after saving ("menu" reopens the Settings menu). #}
 {% macro ccs_login(setup, s, back="") -%}
-<form method="post" action="/setup/ccs" class="ccsform" autocomplete="off">
+{% set valid = setup.configured and s.last_auth_ok %}
+<form method="post" action="/setup/ccs" class="ccsform watch" autocomplete="off">
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <input type="hidden" name="back" value="{{ back }}">
   {# Labels above the boxes; UID and password side by side, the button at the end of the line. #}
@@ -24,11 +32,10 @@
     <label class="fld"><span>{{ _('Calendar Sync password') }}</span>
       <input name="password" type="password" {% if not setup.has_password %}required{% endif %} autocomplete="new-password"
              placeholder="{{ _('Saved (leave empty to keep it)') if setup.has_password else '' }}"></label>
-    <button>{{ _('Save & sync') }}</button>
+    {{ okbutton(valid, _('Validated'), _('Save & sync'), _('Validated: CCS+ sign-in')) }}
   </div>
-  {% if setup.configured %}
-    {% if s.last_auth_ok %}<p class="check good">✓ {{ _('Validated: CCS+ sign-in') }}</p>
-    {% elif s.last_auth_ok == false %}<p class="check bad">✗ {{ _('CCS+ rejected the UID or Calendar Sync password') }}</p>
+  {% if setup.configured and not valid %}
+    {% if s.last_auth_ok == false %}<p class="check bad">✗ {{ _('CCS+ rejected the UID or Calendar Sync password') }}</p>
     {% else %}<p class="check unknown">{{ _('Not checked yet') }}</p>{% endif %}
   {% endif %}
 </form>
@@ -37,16 +44,12 @@
 {# The Google OAuth client for Autosync: client ID and secret, the check result, Connect, and
    the step-by-step guide (closed). `p` prefixes element IDs, as this appears twice on the page. #}
 {% macro google_client(g, p, back="", desc="") -%}
-{# F2.1: once Google has accepted the client, the boxes fold away behind "✓ Validated".
-   `desc` (optional) is a line about Autosync shown next to Save, or above the fold once validated. #}
+{# Like the CCS+ login: the two boxes side by side, then "✓ Validated" once Google accepted them, or
+   Save when they're missing, being edited or were rejected. `desc` (optional) goes under the boxes. #}
 {% set valid = g.configured and g.check.ok %}
-{% if valid and desc %}<p class="mnote">{{ desc }}</p>{% endif %}
-{% if valid %}<details class="clientfold"><summary><span class="check good">✓ {{ _('Validated: Client ID & Client secret') }}</span>{% if g.checked_at %} <span class="muted">({{ g.checked_at }})</span>{% endif %} <span class="muted">· {{ _('change') }}</span></summary>{% endif %}
-<form method="post" action="/google/client" class="clientform" autocomplete="off">
+<form method="post" action="/google/client" class="clientform watch" autocomplete="off">
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <input type="hidden" name="back" value="{{ back }}">
-  {# Laid out like the CCS+ Calendar Sync login: labels above, the two boxes side by side, and Save at
-     the end of the line (or next to the description, when there is one). #}
   <div class="pair">
     <label class="fld" for="{{ p }}cid"><span>{{ _('Client ID') }}</span>
       <input type="text" id="{{ p }}cid" name="client_id" value="{{ g.client_id }}" spellcheck="false" required
@@ -54,28 +57,32 @@
     <label class="fld" for="{{ p }}csecret"><span>{{ _('Client secret') }}</span>
       <input type="password" id="{{ p }}csecret" name="client_secret" spellcheck="false" autocomplete="new-password"
              placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else 'GOCSPX-…' }}" {% if not g.has_secret %}required{% endif %}></label>
-    {% if not desc %}<button name="action" value="save">{{ _('Save') }}</button>{% endif %}
+    {{ okbutton(valid, _('Validated'), _('Save'), _('Validated: Client ID & Client secret'), "action", "save") }}
   </div>
   {% if g.configured and not valid %}
     {% set ck = g.check %}
-    <p class="check {{ 'good' if ck.ok else ('bad' if ck.ok == false else 'unknown') }}">
-      {% if ck.ok %}✓{% elif ck.ok == false %}✗{% else %}?{% endif %}
+    <p class="check {{ 'bad' if ck.ok == false else 'unknown' }}">
+      {% if ck.ok == false %}✗{% else %}?{% endif %}
       {{ msg(ck.message) if ck.message else _('Not checked yet') }}{% if g.checked_at %} <span class="muted">({{ g.checked_at }})</span>{% endif %}{% if ck.ok == false %}. {{ _('Check both values and save again.') }}{% endif %}
     </p>
-  {% endif %}
-  {% if (desc and not valid) or g.configured %}
-  <div class="formfoot">
-    {% if desc and not valid %}<p class="mnote">{{ desc }}</p>{% endif %}
-    <div class="eactions">
-      {% if g.configured %}
-        <button class="ghost" name="action" value="remove" formnovalidate>{{ _('Remove') }}</button>
-        <button class="ghost" name="action" value="check" formnovalidate>{{ _('Check again') }}</button>
-      {% endif %}
-      {% if desc %}<button name="action" value="save">{{ _('Save') }}</button>{% endif %}
+    <div class="eactions" style="margin-top:6px">
+      <button class="ghost" name="action" value="remove" formnovalidate>{{ _('Remove') }}</button>
+      <button class="ghost" name="action" value="check" formnovalidate>{{ _('Check again') }}</button>
     </div>
-  </div>
   {% endif %}
+  {% if desc %}<p class="mnote" style="margin:6px 0 0">{{ desc }}</p>{% endif %}
 </form>
+{% if g.configured and g.redirect_ok %}
+  <div class="btnrow">
+    <p class="mnote">{{ _('Google may say <i>“Google hasn’t verified this app”</i>: that’s expected for your own app. Click <b>Advanced</b> → <b>Go to CalendarStream</b>, tick the calendar box and press <b>Continue</b>.') }}</p>
+    <form method="post" action="/google/connect" class="connect">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button{% if g.check.ok == false %} disabled title="{{ _('Google rejected the client: fix it first') }}"{% endif %}>{{ _('Connect Google Calendar') }}</button>
+    </form>
+  </div>
+{% elif not g.redirect_ok %}
+  <p class="merr">{{ _('First set the <b>Public address</b> above to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>
+{% endif %}
 <details class="guide">
   <summary>{{ _('How to get a client ID and secret (step by step)') }}</summary>
   <ol>
@@ -92,18 +99,6 @@
     <li>{{ _('<b>Copy the two values</b> Google shows (<b>Client ID</b> and <b>Client secret</b>) into the boxes above and press <b>Save</b>. CalendarStream checks them with Google straight away. Keep the secret private: don’t send it to anyone or paste it into a chat.') }}</li>
   </ol>
 </details>
-{% if valid %}</details>{% endif %}
-{% if g.configured and g.redirect_ok %}
-  <div class="btnrow">
-    <p class="mnote">{{ _('Google may say <i>“Google hasn’t verified this app”</i>: that’s expected for your own app. Click <b>Advanced</b> → <b>Go to CalendarStream</b>, tick the calendar box and press <b>Continue</b>.') }}</p>
-    <form method="post" action="/google/connect" class="connect">
-      <input type="hidden" name="csrf" value="{{ csrf }}">
-      <button{% if g.check.ok == false %} disabled title="{{ _('Google rejected the client: fix it first') }}"{% endif %}>{{ _('Connect Google Calendar') }}</button>
-    </form>
-  </div>
-{% elif not g.redirect_ok %}
-  <p class="merr">{{ _('First set the <b>Public address</b> above to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>
-{% endif %}
 {%- endmacro %}
 
 {# Google Autosync when connected: account, calendar, last sync, Sync now, Disconnect. #}

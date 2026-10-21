@@ -420,5 +420,20 @@
   "Google: instant updates turned on (changes made in Google are checked within seconds)": "Google : mises à jour instantanées activées (les changements faits dans Google sont vérifiés en quelques secondes)",
   "Google: instant updates aren't available ({error}); changes made in Google are checked daily instead": "Google : les mises à jour instantanées ne sont pas disponibles ({error}) ; les changements faits dans Google sont vérifiés chaque jour",
   "needs a public https:// address (☰ → Public address)": "il faut une adresse publique https:// (☰ → Adresse publique)",
-  "starts with the next sync": "commencent à la prochaine synchronisation"
+  "starts with the next sync": "commencent à la prochaine synchronisation",
+  "Validated": "Validé",
+  "Common": "Courants",
+  "All time zones": "Tous les fuseaux horaires",
+  "Time zone": "Fuseau horaire",
+  "End time zone": "Fuseau horaire de fin",
+  "The end is in a different time zone": "La fin est dans un autre fuseau horaire",
+  "Type a time like 9:30, 9:30pm or 21:30.": "Saisissez une heure comme 9:30, 9:30pm ou 21:30.",
+  "Start time zone": "Fuseau horaire de début",
+  "Type a new one to change it": "Saisissez-en un nouveau pour le changer",
+  "Signed in": "Connecté",
+  "times in": "heures en",
+  "Show the calendar in another time zone (only on this page; the feed and Google are unchanged)": "Afficher l’agenda dans un autre fuseau horaire (sur cette page seulement ; le flux et Google ne changent pas)",
+  "Unknown time zone.": "Fuseau horaire inconnu.",
+  "Google Calendar last read this feed {when}.": "Google Agenda a lu ce flux pour la dernière fois {when}.",
+  "Google Calendar hasn’t read this feed yet. Until it does, Google shows the subscription under its web address and without events. If that lasts more than a few hours, open the raw feed URL in a private browser window: it must download without a login, and nothing in front of CalendarStream (a proxy, or Cloudflare’s bot protection) may block Google.": "Google Agenda n’a pas encore lu ce flux. D’ici là, Google affiche l’abonnement sous son adresse web et sans événements. Si cela dure plus de quelques heures, ouvrez l’URL du flux dans une fenêtre privée : il doit se télécharger sans connexion, et rien devant CalendarStream (un proxy ou la protection anti-bots de Cloudflare) ne doit bloquer Google."
 }

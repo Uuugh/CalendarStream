@@ -133,6 +133,8 @@
   .calhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px }
   .calhead .title { font-size:18px; font-weight:700; min-width:150px }
   .monthwrap { position:relative }
+  .tzpick select { font:inherit; font-size:13px; color:var(--text); background:transparent; border:1px solid transparent; border-radius:6px; padding:1px 2px; max-width:190px; cursor:pointer }
+  .tzpick select:hover, .tzpick select:focus { border-color:var(--line); background:var(--soft) }
   .calhead button.title { background:transparent; color:var(--text); border:0; padding:4px 6px; border-radius:8px; cursor:pointer; text-align:left; font-family:inherit }
   .calhead button.title:hover, .calhead button.title[aria-expanded=true] { background:var(--soft) }
   .calhead .caret { font-size:12px; color:var(--muted) }
@@ -200,6 +202,18 @@
   form .pair label.fld { flex:1 1 150px; display:flex; flex-direction:column; align-items:stretch; text-align:left; gap:3px; margin:0; font-size:12px; font-weight:600; color:var(--muted) }
   form .pair label.fld input { width:100%; min-width:0; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
   form .pair > button { flex:0 0 auto; margin-left:auto }
+  /* The Settings menu is narrow: smaller boxes so the button or ✓ stays on the same line (F1.4.3). */
+  .menu form .pair { flex-wrap:nowrap } .menu form .pair label.fld, .menu .inbox { flex:1 1 0; min-width:0 }
+  .menu form .pair > button, .menu .okmark { padding-left:10px; padding-right:10px }
+  /* "✓ Validated" / "✓ Signed in" where the button goes, until something is typed. */
+  .okmark { flex:0 0 auto; margin-left:auto; align-self:center; padding:0 4px; color:var(--ok); font-weight:600; font-size:13px; white-space:nowrap }
+  .okmark[hidden], form .pair[hidden], .mnote[hidden] { display:none }
+  form .pair > .okmark + button { margin-left:auto }
+  /* A box with a small button inside it, on the right (Public address → This page). */
+  .inbox { position:relative; flex:1 1 180px; min-width:0 }
+  .inbox input { width:100%; font:13px ui-monospace,monospace; padding:7px 84px 7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .inbox .inboxbtn { position:absolute; right:4px; top:50%; transform:translateY(-50%); padding:3px 8px; font-size:12px; font-weight:600;
+                     background:var(--soft); color:var(--accent); border:1px solid var(--line); border-radius:6px; cursor:pointer }
   /* A note on the left, its button on the right. */
   .btnrow { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin-top:8px }
   .btnrow > p { flex:1 1 240px; margin:0 }
@@ -288,64 +302,53 @@
       </button>
       <div class="menu" id="menu" role="dialog" aria-label="{{ _('Settings') }}" hidden>
         <div class="title">{{ _('Settings') }}</div>
+        {# F1.3: laid out like the other logins; "✓ Signed in" until something is typed, then the
+           current password (and the new one again) are asked for and Save appears. #}
         <div class="mgroup" id="pagelogin">
           <div class="mhead">{{ _('Status-page login') }}</div>
-          <details class="guide" style="margin-top:0">
-            <summary>{{ _('Signed in as <b>{user}</b> · change', user=page_user) }}</summary>
-            <form method="post" action="/settings/login" class="clientform" autocomplete="off">
-              <input type="hidden" name="csrf" value="{{ csrf }}">
-              <div class="pair">
-                <label class="fld" for="luser"><span>{{ _('User name') }}</span>
-                  <input type="text" id="luser" name="user" value="{{ page_user }}" required maxlength="64" autocomplete="username" spellcheck="false"></label>
-                <label class="fld" for="lcur"><span>{{ _('Current password') }}</span>
-                  <input type="password" id="lcur" name="current" required autocomplete="current-password"></label>
-              </div>
-              <div class="pair">
-                <label class="fld" for="lnew"><span>{{ _('New password') }}</span>
-                  <input type="password" id="lnew" name="password" minlength="8" autocomplete="new-password" placeholder="{{ _('leave empty to keep it') }}"></label>
-                <label class="fld" for="lconf"><span>{{ _('New password again') }}</span>
-                  <input type="password" id="lconf" name="confirm" minlength="8" autocomplete="new-password"></label>
-              </div>
-              <div class="btnrow">
-                <p class="mnote">{{ _('Your browser will then ask for the new login.') }}</p>
-                <button>{{ _('Save') }}</button>
-              </div>
-            </form>
-          </details>
+          <form method="post" action="/settings/login" class="clientform watch" autocomplete="off">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <div class="pair">
+              <label class="fld" for="luser"><span>{{ _('User name') }}</span>
+                <input type="text" id="luser" name="user" value="{{ page_user }}" required maxlength="64" autocomplete="username" spellcheck="false"></label>
+              <label class="fld" for="lnew"><span>{{ _('Password') }}</span>
+                <input type="password" id="lnew" name="password" minlength="8" autocomplete="new-password" placeholder="{{ _('Type a new one to change it') }}"></label>
+              {{ m.okbutton(true, _('Signed in'), _('Save')) }}
+            </div>
+            <div class="pair more" hidden>
+              <label class="fld" for="lcur"><span>{{ _('Current password') }}</span>
+                <input type="password" id="lcur" name="current" autocomplete="current-password" data-required></label>
+              <label class="fld" for="lconf"><span>{{ _('New password again') }}</span>
+                <input type="password" id="lconf" name="confirm" minlength="8" autocomplete="new-password"></label>
+            </div>
+            <p class="mnote more" style="margin:6px 0 0" hidden>{{ _('Your browser will then ask for the new login.') }}</p>
+          </form>
         </div>
 
-        <div class="mgroup" id="ccsmenu">
-          <div class="mhead">{{ _('CCS+ Calendar Sync') }}</div>
-          {{ m.ccs_login(setup, s, "menu") }}
-        </div>
-
-        <div class="mgroup" id="clockmenu">
-          <div class="mhead">{{ _('Time format') }}</div>
-          <div class="seg" role="radiogroup" aria-label="{{ _('Time format') }}">
-            {% for k, v in [("12", _('12-hour (1:30pm)')), ("24", _('24-hour (13:30)')), ("auto", _('Automatic'))] %}
-            <button type="button" role="radio" data-clock="{{ k }}" aria-checked="{{ 'true' if clock == k else 'false' }}">{{ v }}</button>
-            {% endfor %}
-          </div>
-          <p class="mnote" style="margin:6px 0 0">{{ _('For the calendar, the activity log and the event times. Automatic uses 12-hour in English and 24-hour (military time) in the other languages.') }}</p>
-        </div>
-
+        {# F1.4: right under the page login. "This page" sits inside the box; Save is on the same line. #}
         <div class="mgroup" id="public">
           <div class="mhead">{{ _('Public address') }}</div>
-          <p class="mnote" style="margin-bottom:6px">{{ _('The https:// address people use to reach this page, e.g. <code>https://cal.example.com</code>. Used for the feed and subscribe links and for Google sign-in.') }}
-            {% if public.from_settings %}{{ _('Set here (overrides <code>PUBLIC_URL</code> in .env).') if public.env else _('Set here.') }}
-            {% elif public.env %}{{ _('From <code>PUBLIC_URL</code> in .env; saving here overrides it.') }}
-            {% else %}{{ _('Not set yet.') }}{% endif %}</p>
           <form method="post" action="/settings/public-url" class="clientform">
             <input type="hidden" name="csrf" value="{{ csrf }}">
             <div class="pair">
-              <label class="fld" for="publicurl"><span>{{ _('Address') }}</span>
-                <input type="text" id="publicurl" name="url" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com"></label>
-              <button type="button" class="ghost" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
+              <div class="inbox">
+                <input type="text" id="publicurl" name="url" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
+                <button type="button" class="inboxbtn" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
+              </div>
               {% if public.from_settings %}<button class="ghost" name="action" value="reset" formnovalidate
                 title="{{ _('Go back to PUBLIC_URL in .env') }}">{{ _('Reset') }}</button>{% endif %}
               <button name="action" value="save">{{ _('Save') }}</button>
             </div>
           </form>
+          <p class="mnote" style="margin:6px 0 0">{{ _('The https:// address people use to reach this page, e.g. <code>https://cal.example.com</code>. Used for the feed and subscribe links and for Google sign-in.') }}
+            {% if public.from_settings %}{{ _('Set here (overrides <code>PUBLIC_URL</code> in .env).') if public.env else _('Set here.') }}
+            {% elif public.env %}{{ _('From <code>PUBLIC_URL</code> in .env; saving here overrides it.') }}
+            {% else %}{{ _('Not set yet.') }}{% endif %}</p>
+        </div>
+
+        <div class="mgroup" id="ccsmenu">
+          <div class="mhead">{{ _('CCS+ Calendar Sync') }}</div>
+          {{ m.ccs_login(setup, s, "menu") }}
         </div>
 
         {% set g = google %}
@@ -391,7 +394,13 @@
           <div class="months">{% for i in range(12) %}<button type="button" data-m="{{ '%02d' % (i + 1) }}">{{ dates.mon[i] }}</button>{% endfor %}</div>
         </div>
       </div>
-      <span class="muted" style="font-size:13px">{{ (_('1 event') if cal.count == 1 else _('{n} events', n=cal.count)) }} · {{ _('times in {tz}', tz=cfg.timezone) }}</span>
+      <span class="muted" style="font-size:13px">{{ (_('1 event') if cal.count == 1 else _('{n} events', n=cal.count)) }} ·
+        {# F2.2: the time zone the calendar is shown in, here only (not the feed or Google). #}
+        <label class="tzpick">{{ _('times in') }}
+          <select id="tzpick" title="{{ _('Show the calendar in another time zone (only on this page; the feed and Google are unchanged)') }}">
+            <optgroup label="{{ _('Common') }}">{% for z in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
+            <optgroup label="{{ _('All time zones') }}">{% for z in zones if z not in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
+          </select></label></span>
       {# I1: 12-hour / 24-hour switch (the same setting as ☰ → Time format). #}
       <div class="clockswitch" title="{{ _('Time format') }}">
         <span>12h</span>
@@ -587,6 +596,9 @@
           <p class="mnote">{{ _('<b>Add to Google Calendar</b> subscribes your signed-in Google account to this feed, in one click.') }}</p>
           <a class="btn" href="{{ links.google }}" target="_blank" rel="noopener">{{ _('Add to Google Calendar') }}</a>
         </div>
+        {# Whether Google can actually reach the feed (until it has, Google shows the web address as the name). #}
+        {% if reads.google %}<p class="check good" style="margin-top:8px">✓ {{ _('Google Calendar last read this feed {when}.', when=reads.google) }}</p>
+        {% else %}<p class="mnote" style="margin-top:8px">{{ _('Google Calendar hasn’t read this feed yet. Until it does, Google shows the subscription under its web address and without events. If that lasts more than a few hours, open the raw feed URL in a private browser window: it must download without a login, and nothing in front of CalendarStream (a proxy, or Cloudflare’s bot protection) may block Google.') }}</p>{% endif %}
       </div>
 
       <div class="way">
@@ -664,6 +676,18 @@ function copyField(id, btn) {
 
 // Save a status-page preference in the database (so every browser and login matches).
 // Fire-and-forget unless a callback is given: if it fails, the page still works.
+// Login forms ("watch"): typing swaps "✓ Validated" / "✓ Signed in" for the Save button, and shows
+// any extra fields the change needs (the page login asks for the current password).
+document.querySelectorAll('form.watch').forEach(function (f) {
+  f.addEventListener('input', function () {
+    var mark = f.querySelector('.okmark'), btn = f.querySelector('[data-save]');
+    if (mark) mark.hidden = true;
+    if (btn) btn.hidden = false;
+    f.querySelectorAll('.more').forEach(function (el) { el.hidden = false; });
+    f.querySelectorAll('[data-required]').forEach(function (el) { el.required = true; });
+  });
+});
+
 // I1: the 12h / 24h switch above the calendar (same setting as ☰ → Time format).
 (function () {
   var sw = document.getElementById('clockswitch');
@@ -673,6 +697,12 @@ function copyField(id, btn) {
     sw.setAttribute('aria-checked', String(to24));
     savePref('/ui/clock', { clock: to24 ? '24' : '12' }, function () { location.reload(); });
   });
+})();
+
+// F2.2: the calendar's time zone (this page only).
+(function () {
+  var sel = document.getElementById('tzpick');
+  if (sel) sel.addEventListener('change', function () { savePref('/ui/tz', { tz: sel.value }, function () { location.reload(); }); });
 })();
 
 // F1.1: month picker. ‹ › change the year; a month jumps there.
