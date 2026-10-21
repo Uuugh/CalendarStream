@@ -7,8 +7,6 @@
 #                                (no "latest" git tag: GitHub won't let the workflow token create one
 #                                on an older commit, and the server uses the image, not a checkout)
 #  - Run manually (Actions -> Release -> Run workflow) with a version -> same as a STABLE change
-#  - Every run first copies any versions still only under the old image name
-#    (ghcr.io/<owner>/calendar_stream, used up to 0.1.0) to the current one.
 name: Release
 
 on:
@@ -38,7 +36,6 @@ jobs:
       stable: ${{ steps.d.outputs.stable }}
       stable_changed: ${{ steps.d.outputs.stable_changed }}
       image: ${{ steps.d.outputs.image }}
-      old_image: ${{ steps.d.outputs.old_image }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,9 +51,9 @@ jobs:
           VERSION="$(tr -d '[:space:]' < VERSION)"; check "$VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           # A fixed image name (not taken from the repository name), so renaming the repository
-          # doesn't change it. Up to 0.1.0 the image was called calendar_stream.
+          # doesn't change it. (Up to 0.1.0 it was called calendar_stream; all of those versions
+          # were copied here, and that old package has been removed.)
           echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/calendarstream" >> "$GITHUB_OUTPUT"
-          echo "old_image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/calendar_stream" >> "$GITHUB_OUTPUT"
           if [ "$EVENT" = workflow_dispatch ]; then
             STABLE="${INPUT_STABLE#v}"; check "$STABLE"
             echo "version_changed=false" >> "$GITHUB_OUTPUT"
@@ -79,40 +76,8 @@ jobs:
   # Copy versions published under the old image name to the current one (each only once), so
   # every version, beta and latest can be pulled under the new name. Copies the manifests as they
   # are: nothing is rebuilt.
-  move-image:
-    needs: detect
-    runs-on: ubuntu-latest
-    env:
-      IMAGE: ${{ needs.detect.outputs.image }}
-      OLD_IMAGE: ${{ needs.detect.outputs.old_image }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Copy missing tags from the old image name
-        run: |
-          set -uo pipefail
-          git fetch --tags --force
-          copied=0
-          for tag in $(git tag -l 'v*.*.*' --sort=version:refname | sed 's/^v//') beta latest; do
-            docker buildx imagetools inspect "$IMAGE:$tag" >/dev/null 2>&1 && continue
-            docker buildx imagetools inspect "$OLD_IMAGE:$tag" >/dev/null 2>&1 || continue
-            if out=$(docker buildx imagetools create -t "$IMAGE:$tag" "$OLD_IMAGE:$tag" 2>&1); then
-              echo "Copied $OLD_IMAGE:$tag -> $IMAGE:$tag"; copied=$((copied + 1))
-            else
-              echo "::error::Couldn't copy $tag: $(echo "$out" | tail -3 | tr '\n' ' ')"; exit 1
-            fi
-          done
-          echo "Copied $copied tag(s) from \`$OLD_IMAGE\` to \`$IMAGE\`" >> "$GITHUB_STEP_SUMMARY"
-
   beta:
-    needs: [detect, move-image]
+    needs: detect
     if: needs.detect.outputs.version_changed == 'true'
     runs-on: ubuntu-latest
     env:
@@ -177,9 +142,9 @@ jobs:
           echo "Released **$VERSION** (beta): \`$IMAGE:$VERSION\`, \`:beta\`" >> "$GITHUB_STEP_SUMMARY"
 
   latest:
-    needs: [detect, move-image, beta]
+    needs: [detect, beta]
     # Runs after beta when both files changed in one push; beta being skipped is fine.
-    if: always() && needs.detect.result == 'success' && needs.move-image.result == 'success' && needs.detect.outputs.stable_changed == 'true' && needs.beta.result != 'failure'
+    if: always() && needs.detect.result == 'success' && needs.detect.outputs.stable_changed == 'true' && needs.beta.result != 'failure'
     runs-on: ubuntu-latest
     env:
       STABLE: ${{ needs.detect.outputs.stable }}

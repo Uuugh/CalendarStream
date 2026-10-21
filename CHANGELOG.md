@@ -5,7 +5,17 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.16**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.17**
+
+## 0.1.17 — 2026-10-20
+
+### Changed
+- **F1** CCS+ Calendar Sync is laid out like Google Calendar Autosync: the step-by-step help is at
+  the bottom of the box, now called "How to get a Calendar Sync link, ID and secret (step by step)".
+- **F3.1** "Colour" is spelled "color" everywhere in English.
+- **F4** The folded schedule header shows **Sync now** on the right.
+- The release workflow no longer copies images from the old `calendar_stream` package (every
+  version is under `calendarstream`; the old package is being removed).
 
 ## 0.1.16 — 2026-10-20
 

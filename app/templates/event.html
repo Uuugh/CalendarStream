@@ -115,14 +115,14 @@
     {% endif %}
 
     <div class="actions bottom">
-      {# The event's own colour (bottom left): Google's 11 event colours, or the tag / calendar colour. #}
+      {# The event's own color (bottom left): Google's 11 event colors, or the tag / calendar color. #}
       <details class="colorpick" id="colorpick">
-        <summary title="{{ _('Event colour') }}" aria-label="{{ _('Event colour') }}">
+        <summary title="{{ _('Event color') }}" aria-label="{{ _('Event color') }}">
           <span class="sw" id="colorshow" style="--c:{{ e.color or auto_color or 'var(--accent)' }}"></span>
-          <span id="colorname">{% if e.color %}{% for n, h in colors if h == e.color %}{{ n }}{% endfor %}{% else %}{{ _('Default colour') }}{% endif %}</span> ▾
+          <span id="colorname">{% if e.color %}{% for n, h in colors if h == e.color %}{{ n }}{% endfor %}{% else %}{{ _('Default color') }}{% endif %}</span> ▾
         </summary>
-        <div class="palette" role="radiogroup" aria-label="{{ _('Event colour') }}">
-          <label title="{{ _('Default colour (from a tag or the calendar)') }}"><input type="radio" name="color" value="" data-c="{{ auto_color or 'var(--accent)' }}" data-name="{{ _('Default colour') }}" {% if not e.color %}checked{% endif %}><span class="sw auto" style="--c:{{ auto_color or 'var(--accent)' }}"></span></label>
+        <div class="palette" role="radiogroup" aria-label="{{ _('Event color') }}">
+          <label title="{{ _('Default color (from a tag or the calendar)') }}"><input type="radio" name="color" value="" data-c="{{ auto_color or 'var(--accent)' }}" data-name="{{ _('Default color') }}" {% if not e.color %}checked{% endif %}><span class="sw auto" style="--c:{{ auto_color or 'var(--accent)' }}"></span></label>
           {% for n, h in colors %}<label title="{{ n }}"><input type="radio" name="color" value="{{ h }}" data-c="{{ h }}" data-name="{{ n }}" {% if e.color == h %}checked{% endif %}><span class="sw" style="--c:{{ h }}"></span></label>{% endfor %}
         </div>
       </details>
@@ -280,7 +280,7 @@ if (delForm) delForm.addEventListener('submit', function (e) { if (!confirm(T.de
   });
 })();
 
-// Event colour: the summary shows the chosen colour; picking one closes the palette.
+// Event color: the summary shows the chosen color; picking one closes the palette.
 (function () {
   var box = document.getElementById('colorpick');
   box.addEventListener('change', function (e) {

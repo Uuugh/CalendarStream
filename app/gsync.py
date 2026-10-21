@@ -43,7 +43,7 @@ MAX_WRITES = 1500          # Google writes in one sync at most; the rest wait fo
 SYNC_NOTE = "Synced by CalendarStream"
 MARKER = "calendarstream"   # private extended property on every event CalendarStream writes
 
-# Google Calendar's event colours, as its apps show them: colorId -> (name, hex).
+# Google Calendar's event colors, as its apps show them: colorId -> (name, hex).
 GOOGLE_COLORS = {
     "11": ("Tomato", "#d50000"), "4": ("Flamingo", "#e67c73"), "6": ("Tangerine", "#f4511e"),
     "5": ("Banana", "#f6bf26"), "2": ("Sage", "#33b679"), "10": ("Basil", "#0b8043"),
@@ -78,7 +78,7 @@ def _rgb(hex_color: str) -> tuple[int, int, int]:
 
 
 def nearest_color_id(hex_color: str) -> str:
-    """The Google event colour closest to a #rrggbb colour."""
+    """The Google event color closest to a #rrggbb color."""
     r, g, b = _rgb(hex_color)
     return min(GOOGLE_COLORS, key=lambda cid: sum((x - y) ** 2 for x, y in zip((r, g, b), _rgb(GOOGLE_COLORS[cid][1]))))
 
@@ -560,7 +560,7 @@ class Google:
         """Write the schedule to CalendarStream's calendar in Google.
 
         `events` are the published events (calsync.Event); hidden ones are left out. `color_for(title)`
-        gives a tag's #rrggbb colour or "". Only events ending after `first_day` are written; older
+        gives a tag's #rrggbb color or "". Only events ending after `first_day` are written; older
         ones are left as they are. Normally only events that changed since the last sync are sent;
         with `full`, Google's copy is also checked and anything changed or deleted there is repaired."""
         tz = ZoneInfo(self.tz_name)
@@ -599,7 +599,7 @@ class Google:
         writes = 0
 
         for uid, e in wanted.items():
-            color = e.color or color_for(e.title)   # a colour chosen for the event wins over tags
+            color = e.color or color_for(e.title)   # a color chosen for the event wins over tags
             body = event_body(e, self.tz_name, nearest_color_id(color) if color else "")
             digest, gid, row = _hash(body), body["id"], rows.get(uid)
             same = row and row["hash"] == digest

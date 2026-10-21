@@ -55,7 +55,7 @@ class Event:
     stale: bool = False      # United changed this event after it was edited here
     hidden: bool = False     # left out of the Google feed
     free: bool = False       # shown as "free" rather than "busy" (CCS+ sends most items as TRANSP:TRANSPARENT)
-    color: str = ""          # a colour chosen for this event on the status page (#rrggbb); overrides tags
+    color: str = ""          # a color chosen for this event on the status page (#rrggbb); overrides tags
 
     def fingerprint(self) -> str:
         """Identifies United's version of an event, to notice when it changes after an edit."""
@@ -318,7 +318,7 @@ def render(cal: Calendar, base: list[Event], name: str, tz_name: str,
            edits: dict | None = None, customs: list[dict] | None = None,
            color: str = "") -> tuple[bytes, list[Event]]:
     """Apply edits, hides and added events to a parsed calendar.
-    `color` (#rrggbb) is offered to subscribers as the calendar's colour; Apple Calendar uses it,
+    `color` (#rrggbb) is offered to subscribers as the calendar's color; Apple Calendar uses it,
     Google Calendar ignores it. Returns (feed bytes for Google, all events for the status page)."""
     from icalendar import Event as VEvent
 

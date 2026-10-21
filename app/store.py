@@ -51,7 +51,7 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS edited boolean NOT NULL DEFAULT fals
 ALTER TABLE events ADD COLUMN IF NOT EXISTS stale  boolean NOT NULL DEFAULT false;
 ALTER TABLE events ADD COLUMN IF NOT EXISTS hidden boolean NOT NULL DEFAULT false;
 ALTER TABLE events ADD COLUMN IF NOT EXISTS free   boolean NOT NULL DEFAULT false;
-ALTER TABLE events ADD COLUMN IF NOT EXISTS color  text NOT NULL DEFAULT '';   -- a colour chosen for this event (#rrggbb)
+ALTER TABLE events ADD COLUMN IF NOT EXISTS color  text NOT NULL DEFAULT '';   -- a color chosen for this event (#rrggbb)
 -- What was last written to Google Calendar for each event (see gsync.py)
 CREATE TABLE IF NOT EXISTS google_events (
     uid        text PRIMARY KEY,            -- CalendarStream / CCS+ event UID

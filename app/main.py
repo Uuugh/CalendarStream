@@ -62,7 +62,7 @@ COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
 def calendar_color() -> str:
-    """Colour set on the status page (#rrggbb), or "" for none. Validated again on the way out
+    """Color set on the status page (#rrggbb), or "" for none. Validated again on the way out
     because it is written into the page's CSS."""
     color = store.get("calendar_color") or ""
     return color.lower() if COLOR_RE.match(color) else ""
@@ -80,9 +80,9 @@ TAG_MODES = {
 
 
 def calendar_tags() -> list[dict]:
-    """Tag colours set on the status page, in priority order:
+    """Tag colors set on the status page, in priority order:
     [{"tag": "RDO", "color": "#rrggbb", "mode": "word", "case": False}, …].
-    Validated again on the way out because the colours are written into the page's CSS."""
+    Validated again on the way out because the colors are written into the page's CSS."""
     tags = []
     for t in store.get("calendar_tags") or []:
         tag, color = str(t.get("tag", "")).strip(), str(t.get("color", ""))
@@ -100,7 +100,7 @@ def _tag_pattern(t: dict) -> re.Pattern:
 
 
 def tag_matcher(tags: list[dict]):
-    """Return a function giving the colour of the first tag that matches an event title
+    """Return a function giving the color of the first tag that matches an event title
     (by each tag's mode and case setting), or "" when none match."""
     rules = [(_tag_pattern(t), t["color"]) for t in tags]
 
@@ -887,7 +887,7 @@ async def set_link(csrf: str = Form(""), url: str = Form(""), action: str = Form
 async def set_name(csrf: str = Form(""), name: str = Form(""), color: str = Form(""),
                    color_default: str = Form(""), tag: list[str] = Form([]), tag_color: list[str] = Form([]),
                    tag_mode: list[str] = Form([]), tag_case: list[str] = Form([])):
-    """Save the calendar's name and colour (the title editor of Status & setup).
+    """Save the calendar's name and color (the title editor of Status & setup).
     A blank name goes back to CALENDAR_NAME from .env. `color` is only sent when it was changed on
     the page; `color_default` clears it. Tags are saved by /feed/tags."""
     check_csrf(csrf)
@@ -899,12 +899,12 @@ async def set_name(csrf: str = Form(""), name: str = Form(""), color: str = Form
     notes = [f"name \"{calendar_name()}\""]
     if color_default:
         store.delete("calendar_color")
-        notes.append("default colour")
+        notes.append("default color")
     elif color:
         if not COLOR_RE.match(color):
-            raise HTTPException(400, "Choose the colour with the colour picker.")
+            raise HTTPException(400, "Choose the color with the color picker.")
         store.set("calendar_color", color.lower())
-        notes.append(f"colour {color.lower()}")
+        notes.append(f"color {color.lower()}")
     if tag:   # older pages sent the tags with the name; they now have their own form (/feed/tags)
         notes += _save_tags(tag, tag_color, tag_mode, tag_case)
     rebuild()
@@ -921,20 +921,20 @@ def _save_tags(tag: list[str], tag_color: list[str], tag_mode: list[str], tag_ca
         if not t:
             continue
         if not COLOR_RE.match(c):
-            raise HTTPException(400, f"Choose a colour for the tag \"{t}\" with the colour picker.")
+            raise HTTPException(400, f"Choose a color for the tag \"{t}\" with the color picker.")
         tags.append({"tag": t, "color": c.lower(), "mode": m if m in TAG_MODES else "word", "case": cs == "1"})
     if len(tags) > MAX_TAGS:
         raise HTTPException(400, f"Up to {MAX_TAGS} tags can be used.")
     if tags != calendar_tags():
         store.set("calendar_tags", tags)
-        return [f"{len(tags)} tag colour{'' if len(tags) == 1 else 's'}"]
+        return [f"{len(tags)} tag color{'' if len(tags) == 1 else 's'}"]
     return []
 
 
 @app.post("/feed/tags", dependencies=[Depends(gui_auth)])
 async def set_tags(csrf: str = Form(""), tag: list[str] = Form([]), tag_color: list[str] = Form([]),
                    tag_mode: list[str] = Form([]), tag_case: list[str] = Form([])):
-    """Save the tag colours (the Tag Colors block under the health bar). Rows with no text are dropped."""
+    """Save the tag colors (the Tag Colors block under the health bar). Rows with no text are dropped."""
     check_csrf(csrf)
     notes = _save_tags(tag, tag_color, tag_mode, tag_case)
     if notes:
@@ -1075,7 +1075,7 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
     }, lang=lang)
 
 
-EVENT_COLORS = {hex_ for _, hex_ in GOOGLE_COLORS.values()}   # Google's 11 event colours
+EVENT_COLORS = {hex_ for _, hex_ in GOOGLE_COLORS.values()}   # Google's 11 event colors
 
 
 CLOCK_RE = re.compile(r"^\s*(\d{1,2})(?:[:.h]?(\d{2}))?\s*(?:([ap])\.?\s*m?\.?)?\s*$", re.I)
@@ -1105,7 +1105,7 @@ def _event_from_form(title, all_day, start_date, start_time, end_date, end_time,
     title = " ".join((title or "").split())
     color = (color or "").lower()
     if color and color not in EVENT_COLORS:
-        raise HTTPException(400, "Choose one of the colours offered.")
+        raise HTTPException(400, "Choose one of the colors offered.")
     if not title:
         raise HTTPException(400, "The event needs a title.")
     try:

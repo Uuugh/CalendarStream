@@ -88,10 +88,10 @@ logins or setup codes lock an address out for 15 minutes.
   the event count shows the calendar in another zone (on this page only; the feed and Google keep
   `TZ`). Click an event to see or **Edit** it (title,
   times, notes, or hide it from Google); clicking elsewhere closes it, and its 📌 pin keeps it open.
-  Click an empty spot on a day (or **+**) to add your own. Events can have their own colour (one of
+  Click an empty spot on a day (or **+**) to add your own. Events can have their own color (one of
   Google's 11), which wins over tags. Edits survive new downloads; ✎ marks
   an edited event, ⚠ one United changed since. Nothing is ever changed in CCS+.
-- **Status & setup:** the calendar's name and colour (**(edit)**), the health bar and **Sync now**,
+- **Status & setup:** the calendar's name and color (**(edit)**), the health bar and **Sync now**,
   **Tag Colors** (e.g. RDO in red, matched by whole word, contains, starts with or exact title), the
   CCS+ login, the check interval, the upload, and **Google Calendar** (Autosync, the feed, the
   shareable page).
@@ -112,7 +112,7 @@ for access to **calendars it created** and your e-mail address, so it can't see 
 
 - Events from the first of the current month onward, with your edits, without reminders; CCS+'s
   "free" items stay free. Older events are left alone.
-- Tags become the nearest Google event colour (Tomato, Basil, Peacock…); the calendar's name follows
+- Tags become the nearest Google event color (Tomato, Basil, Peacock…); the calendar's name follows
   the status page.
 - Changes reach Google within seconds. A daily check (or **Sync now**) puts back events changed or
   deleted in Google and makes a new calendar if it was deleted.

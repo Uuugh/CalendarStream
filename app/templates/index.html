@@ -94,7 +94,9 @@
   .section > .sbody[hidden] { display:none }
   .section .peek { font-size:13px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 }
   .section.open > .shead .peek { display:none }
-  /* Calendar title (read-only, in the calendar colour) and its editor */
+  .section .peekform { flex:0 0 auto; margin-left:auto; overflow:visible }
+  .section .peekform button.small { padding:5px 12px; font-size:13px }
+  /* Calendar title (read-only, in the calendar color) and its editor */
   .calname { font-size:18px; font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
   .calname.outlined { text-shadow:-1px -1px 0 var(--ol), 1px -1px 0 var(--ol), -1px 1px 0 var(--ol), 1px 1px 0 var(--ol) }
   .linkbtn { background:none; border:0; padding:0; color:var(--accent); font:inherit; font-size:13px; font-weight:500; cursor:pointer }
@@ -178,7 +180,7 @@
   @media (hover:none) { .add { visibility:visible; opacity:.6 } }
   .legend { display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin:8px 0 0 }
   .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; background:var(--sw) }
-  /* F1: the chosen calendar colour tints United's events (timed lighter, all-day stronger) */
+  /* F1: the chosen calendar color tints United's events (timed lighter, all-day stronger) */
   .ev.tint { background:color-mix(in srgb, var(--cal) 18%, var(--card)); color:color-mix(in srgb, var(--cal) 70%, var(--text)) }
   .ev.tint.allday { background:color-mix(in srgb, var(--cal) 34%, var(--card)) }
 
@@ -288,7 +290,7 @@
         {% endfor %}
       </div>
     </div>
-    <div class="seg" role="group" aria-label="{{ _('Colour theme') }}">
+    <div class="seg" role="group" aria-label="{{ _('Color theme') }}">
       <button type="button" data-theme-choice="light" title="{{ _('Light') }}" aria-label="{{ _('Light theme') }}">
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
       <button type="button" data-theme-choice="dark" title="{{ _('Dark') }}" aria-label="{{ _('Dark theme') }}">
@@ -440,7 +442,7 @@
     <p class="muted" style="font-size:12px;margin:6px 0 0">{{ _('This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.') }}</p>
   </div>
 
-  {# Status & setup: the header is the calendar's name, colour and (edit); the body has the health bar,
+  {# Status & setup: the header is the calendar's name, color and (edit); the body has the health bar,
      the Google Calendar feed and setup. #}
   {% set status_open = sections.status or not setup.configured %}
   <section class="card section{% if status_open %} open{% endif %}" id="status" data-section="status" aria-label="{{ _('Status & setup') }}">
@@ -450,9 +452,11 @@
       <span class="calname" id="calname"{% if color %} style="color:{{ color }}"{% endif %} title="{{ _('The calendar’s name in Google Calendar') }}">{{ name }}</span>
       <button type="button" class="linkbtn" id="editbtn" aria-expanded="false" aria-controls="editor">{{ _('(edit)') }}</button>
       <span class="pill {{ cls }} peek" style="flex:0 0 auto">{{ label }}</span><span class="peek">{{ msg(s.message) }}</span>
+      {# F4: Sync now on the right of the folded header too. #}
+      <form method="post" action="/run" class="peek peekform"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="small" {% if s.running or not setup.configured %}disabled{% endif %}>{{ _('Sync now') }}</button></form>
     </div>
 
-    {# Title editor: name, default colour and tag colours. Hidden until (edit) is pressed. #}
+    {# Title editor: name, default color and tag colors. Hidden until (edit) is pressed. #}
     <form class="editor" id="editor" method="post" action="/feed/name" hidden>
       <input type="hidden" name="csrf" value="{{ csrf }}">
       <label class="lbl" for="calname-input">{{ _('Calendar name') }}</label>
@@ -460,12 +464,12 @@
       {% if google.connected %}<p class="hint">{{ _('Autosync renames your Google calendar within a minute of saving.') }}</p>{% else %}
       <p class="hint">{{ _('Google only reads the name when the calendar is first added. If it’s already in your Google Calendar, rename it there too: hover over it under <b>Other calendars</b> → ⋮ → <b>Settings</b> → <b>Name</b>.') }}</p>{% endif %}
 
-      <label class="lbl" for="colorpick">{{ _('Default colour') }}</label>
+      <label class="lbl" for="colorpick">{{ _('Default color') }}</label>
       <div class="row">
-        <input type="color" id="colorpick" value="{{ color or '#1d4ed8' }}" aria-label="{{ _('Default colour') }}">
+        <input type="color" id="colorpick" value="{{ color or '#1d4ed8' }}" aria-label="{{ _('Default color') }}">
         <input type="hidden" name="color_default" id="colordefault" value="">
         <button type="button" class="ghost small" id="colorreset">{{ _('Default') }}</button>
-        <span class="muted" id="colornote" style="font-size:13px">{{ "" if color else _('Using the standard colours') }}</span>
+        <span class="muted" id="colornote" style="font-size:13px">{{ "" if color else _('Using the standard colors') }}</span>
       </div>
 
       <div class="eactions">
@@ -480,7 +484,7 @@
       <form method="post" action="/run"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running or not setup.configured %}disabled{% endif %}>{{ _('Sync now') }}</button></form>
     </div>
 
-    {# Tag colours: always visible under the health bar (not inside (edit)). #}
+    {# Tag colors: always visible under the health bar (not inside (edit)). #}
     <div class="part" id="tags">
       <h3>{{ _('Tag Colors') }}</h3>
       <form class="way editor tagsform" method="post" action="/feed/tags">
@@ -494,14 +498,14 @@
             </select>
             <input type="hidden" name="tag_case" value="{{ '1' if t.case else '' }}">
             <button type="button" class="ghost casebtn" aria-pressed="{{ 'true' if t.case else 'false' }}" title="{{ _('Match capitals exactly') }}">Aa</button>
-            <input type="color" name="tag_color" value="{{ t.color }}" aria-label="{{ _('Tag colour') }}">
+            <input type="color" name="tag_color" value="{{ t.color }}" aria-label="{{ _('Tag color') }}">
             <button type="button" class="ghost deltag" title="{{ _('Remove this tag') }}" aria-label="{{ _('Remove this tag') }}">×</button>
             <button type="button" class="ghost addtag" title="{{ _('Add a tag') }}" aria-label="{{ _('Add a tag') }}">+</button>
           </div>
           {% endfor %}
         </div>
         <div class="btnrow">
-  <p class="hint" style="margin:0">{{ _('Events whose title matches a tag use its colour; the first matching tag wins, and other events use the default colour. <b>Whole word</b>: “RDO” matches “RDO.” but not “VRDO”. <b>Contains</b>: anywhere, even inside a word. <b>Starts with</b>: the title begins with it. <b>Exact title</b>: the whole title. <b>Aa</b>: match capitals exactly. Colours show on this page and in Google Calendar sync; Apple Calendar uses the default colour.') }}</p>
+  <p class="hint" style="margin:0">{{ _('Events whose title matches a tag use its color; the first matching tag wins, and other events use the default color. <b>Whole word</b>: “RDO” matches “RDO.” but not “VRDO”. <b>Contains</b>: anywhere, even inside a word. <b>Starts with</b>: the title begins with it. <b>Exact title</b>: the whole title. <b>Aa</b>: match capitals exactly. Colors show on this page and in Google Calendar sync; Apple Calendar uses the default color.') }}</p>
           <button>{{ _('Save') }}</button>
         </div>
       </form>
@@ -515,11 +519,29 @@
       {{ m.ccs_login(setup, s) }}
       {% if not setup.configured %}<p class="mnote">{{ _('Your CCS+ UID and Calendar Sync password may be updated in Status & setup, or in Settings (☰).') }}</p>{% endif %}
 
-      {# F1.1: the checklist (left) and how to turn on Calendar Sync (right), with the link box. Open only
-         while the login is missing or the last check failed. #}
+
+      {# How the schedule is fetched; the check interval can be changed here. #}
+      <form class="syncline" method="post" action="/setup/interval">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <span>{{ _('CCS+ Calendar Sync · checks every') }}
+          <input type="number" name="minutes" value="{{ interval }}" min="15" max="1440" step="5" required
+                 aria-label="{{ _('Minutes between checks') }}" title="{{ _('Minutes between checks (15–1440)') }}"> {{ _('min') }}
+          <button class="ghost tiny" title="{{ _('Save the check interval') }}">{{ _('Save') }}</button></span>
+        <span>· {{ _('items without an end time: {value}', value=(_('all-day') if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours)) }}{% if cfg.allday_24h %} · {{ _('24-hour events shown as all-day') }}{% endif %}</span>
+      </form>
+
+      {# Manual upload, for when the automatic download can't get through. #}
+      <form class="uploadline" method="post" action="/setup/upload" enctype="multipart/form-data">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <span class="lbl" title="{{ _('Open the Calendar Sync link in your browser, sign in with your UID and Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.') }}">{{ _('Or upload <b>Calendar.ics</b> by hand.') }}</span>
+        <input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}">
+        <button class="ghost tiny">{{ _('Upload & publish') }}</button>
+      </form>
+      {# The checklist (left) and how to turn on Calendar Sync (right), with the link box: at the bottom, like
+         Google's step-by-step guide. Open only while the login is missing or the last check failed. #}
       {% set help_open = not setup.configured or cls == "bad" or s.status == "paused" or s.last_auth_ok == false %}
       <details class="howto"{% if help_open %} open{% endif %}>
-        <summary>{{ _('Calendar Sync link, checklist and help') }}</summary>
+        <summary>{{ _('How to get a Calendar Sync link, ID and secret (step by step)') }}</summary>
         <div class="helpgrid">
           <ul class="checks">
             <li class="{{ 'done' if setup.uid else '' }}">UID {% if setup.uid %}<code>{{ setup.uid }}</code>{% else %}<span class="muted">{{ _('not entered yet') }}</span>{% endif %}</li>
@@ -550,24 +572,6 @@
           </div>
         </div>
       </details>
-
-      {# How the schedule is fetched; the check interval can be changed here. #}
-      <form class="syncline" method="post" action="/setup/interval">
-        <input type="hidden" name="csrf" value="{{ csrf }}">
-        <span>{{ _('CCS+ Calendar Sync · checks every') }}
-          <input type="number" name="minutes" value="{{ interval }}" min="15" max="1440" step="5" required
-                 aria-label="{{ _('Minutes between checks') }}" title="{{ _('Minutes between checks (15–1440)') }}"> {{ _('min') }}
-          <button class="ghost tiny" title="{{ _('Save the check interval') }}">{{ _('Save') }}</button></span>
-        <span>· {{ _('items without an end time: {value}', value=(_('all-day') if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours)) }}{% if cfg.allday_24h %} · {{ _('24-hour events shown as all-day') }}{% endif %}</span>
-      </form>
-
-      {# Manual upload, for when the automatic download can't get through. #}
-      <form class="uploadline" method="post" action="/setup/upload" enctype="multipart/form-data">
-        <input type="hidden" name="csrf" value="{{ csrf }}">
-        <span class="lbl" title="{{ _('Open the Calendar Sync link in your browser, sign in with your UID and Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.') }}">{{ _('Or upload <b>Calendar.ics</b> by hand.') }}</span>
-        <input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}">
-        <button class="ghost tiny">{{ _('Upload & publish') }}</button>
-      </form>
       </div>
     </div>
 
@@ -578,7 +582,7 @@
       {% if not links.is_public %}<p class="warnline">{{ _('⚠ This isn’t a public HTTPS address yet, so Google can’t load the feed. Set the <b>Public address</b> in Settings (☰).') }}</p>{% endif %}
 
       <div class="way">
-        <div class="wayhead"><b>{{ _('Autosync') }}</b> <span class="muted">{{ _('(recommended: a calendar of its own in your Google account, updated within minutes, with tag colours)') }}</span></div>
+        <div class="wayhead"><b>{{ _('Autosync') }}</b> <span class="muted">{{ _('(recommended: a calendar of its own in your Google account, updated within minutes, with tag colors)') }}</span></div>
         {% if g.info.last_error %}<p class="merr">{{ msg(g.info.last_error) }}</p>{% endif %}
         {% if g.connected %}
           {{ m.google_connected(g, name, "f") }}
@@ -589,7 +593,7 @@
       </div>
 
       <div class="way">
-        <div class="wayhead"><b>{{ _('Subscribe to the feed') }}</b> <span class="muted">{{ _('(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)') }}</span></div>
+        <div class="wayhead"><b>{{ _('Subscribe to the feed') }}</b> <span class="muted">{{ _('(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colors)') }}</span></div>
         <div class="k" style="margin-top:4px">{{ _('Raw feed URL (if not using Autosync: Google Calendar → Other calendars → + → From URL):') }}</div>
         {{ m.copyfield("feed", feed) }}
         <div class="btnrow">
@@ -650,7 +654,7 @@
 var T = {
   copied: {{ _('Copied')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }},
   edit: {{ _('(edit)')|string|tojson }}, close: {{ _('(close)')|string|tojson }},
-  backToStandard: {{ _('Back to the standard colours when you save')|string|tojson }},
+  backToStandard: {{ _('Back to the standard colors when you save')|string|tojson }},
   disconnect: {{ _('Disconnect Google Calendar?')|string|tojson }},
   pin: {{ _('Keep this open')|string|tojson }}, unpin: {{ _('Let this close')|string|tojson }}
 };
@@ -821,7 +825,7 @@ document.querySelectorAll('.section[data-section]').forEach(function (sec) {
   btn.addEventListener('click', function () { show(form.hidden); });
   document.getElementById('editcancel').addEventListener('click', function () { form.reset(); show(false); location.reload(); });
 
-  // Default colour: only sent when changed, so saving a new name doesn't set a colour by accident.
+  // Default color: only sent when changed, so saving a new name doesn't set a color by accident.
   var pick = document.getElementById('colorpick'), def = document.getElementById('colordefault'),
       note = document.getElementById('colornote');
   pick.addEventListener('input', function () { pick.name = 'color'; def.value = ''; note.textContent = ''; });
@@ -882,7 +886,7 @@ document.querySelectorAll('.section[data-section]').forEach(function (sec) {
   });
 })();
 
-// Calendar title: when its colour is hard to read on this background, give it an outline in
+// Calendar title: when its color is hard to read on this background, give it an outline in
 // whichever of black or white contrasts more. Re-checked when the theme changes.
 (function () {
   var title = document.getElementById('calname');
