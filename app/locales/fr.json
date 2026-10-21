@@ -378,7 +378,6 @@
   "(recommended: a calendar of its own in your Google account, updated within minutes, with tag colours)": "(recommandé : un agenda dédié dans votre compte Google, mis à jour en quelques minutes, avec les couleurs des étiquettes)",
   "Disconnect or change it in Settings (☰).": "Déconnectez-la ou modifiez-la dans Réglages (☰).",
   "Subscribe to the feed": "S’abonner au flux",
-  "(if not using Autosync: Google refreshes it every few hours, without tag colours)": "(sans synchronisation automatique : Google l’actualise toutes les quelques heures, sans couleurs d’étiquettes)",
   "Raw feed URL (if not using Autosync: Google Calendar → Other calendars → + → From URL):": "URL brute du flux (sans synchronisation automatique : Google Agenda → Autres agendas → + → À partir de l’URL) :",
   "<b>Add to Google Calendar</b> subscribes your signed-in Google account to this feed, in one click.": "<b>Ajouter à Google Agenda</b> abonne à ce flux le compte Google auquel vous êtes connecté, en un clic.",
   "Share it": "Le partager",
@@ -406,5 +405,6 @@
   "Automatic": "Automatique",
   "For the calendar, the activity log and the event times. Automatic uses 12-hour in English and 24-hour (military time) in the other languages.": "Pour l’agenda, le journal d’activité et les heures des événements. Automatique utilise 12 heures en anglais et 24 heures dans les autres langues.",
   "Choose one of the colours offered.": "Choisissez l’une des couleurs proposées.",
-  "Unknown time format.": "Format de l’heure inconnu."
+  "Unknown time format.": "Format de l’heure inconnu.",
+  "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(sans synchronisation automatique : Google le relit selon son propre rythme, ce qui peut prendre jusqu’à 12 heures ; il garde le premier nom vu et n’affiche pas les couleurs des étiquettes)"
 }

@@ -5,7 +5,17 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.11**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.12**
+
+## 0.1.12 — 2026-10-20
+
+### Changed
+- **F1** Settings → Google Calendar Autosync is shorter: **Client ID** and **Client secret** each sit
+  on one line with their box, and the description shares the last line with **Save**. The Google
+  section of Status & setup uses the same layout.
+- **I1, I2** The "Subscribe to the feed" note now says what Google does with a subscribed feed: it
+  re-reads it on its own schedule, which can take up to 12 hours, and keeps the name it saw first.
+  New events and a new name reach Google within minutes only with Autosync.
 
 ## 0.1.11 — 2026-10-20
 

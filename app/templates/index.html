@@ -174,6 +174,12 @@
   .copybtn.done { color:var(--ok) }
   /* Check results (CCS+ sign-in, Google client) */
   .check { margin:6px 0 0; font-weight:600; font-size:13px }
+  /* Google client form: "Client ID [box]" and "Client secret [box]" on one line each; the note and Save share the last line. */
+  .clientform .kv { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:4px 10px; margin-top:6px }
+  .clientform .kv label { margin:0 !important; white-space:nowrap; min-width:88px }
+  .clientform .formfoot { display:flex; align-items:flex-start; gap:12px; margin-top:8px }
+  .clientform .formfoot .mnote { flex:1; margin:0 }
+  .clientform .formfoot .eactions { display:flex; gap:8px; margin:0 0 0 auto; flex:0 0 auto }
   details.clientfold > summary { cursor:pointer; font-size:13px; margin-top:4px } details.clientfold > summary .check { display:inline; margin:0 }
   details.clientfold[open] > summary { margin-bottom:4px }
   .check.good { color:var(--ok) } .check.bad { color:var(--bad) } .check.unknown { color:var(--warn) }
@@ -325,8 +331,7 @@
               <button class="ghost">{{ _('Disconnect') }}</button>
             </form>
           {% else %}
-            <p class="mnote">{{ _('Copy the schedule into a calendar of its own in your Google account, updated within minutes. CalendarStream can only see and change calendars it created.') }}</p>
-            {{ m.google_client(g, "s", "menu") }}
+            {{ m.google_client(g, "s", "menu", _('Copy the schedule into a calendar of its own in your Google account, updated within minutes. CalendarStream can only see and change calendars it created.')) }}
           {% endif %}
         </div>
       </div>
@@ -514,7 +519,7 @@
       </div>
 
       <div class="way">
-        <div class="wayhead"><b>{{ _('Subscribe to the feed') }}</b> <span class="muted">{{ _('(if not using Autosync: Google refreshes it every few hours, without tag colours)') }}</span></div>
+        <div class="wayhead"><b>{{ _('Subscribe to the feed') }}</b> <span class="muted">{{ _('(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)') }}</span></div>
         <div class="k" style="margin-top:4px">{{ _('Raw feed URL (if not using Autosync: Google Calendar → Other calendars → + → From URL):') }}</div>
         {{ m.copyfield("feed", feed) }}
         <div class="actions" style="margin:8px 0 2px">

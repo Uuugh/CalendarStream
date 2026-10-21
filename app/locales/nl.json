@@ -378,7 +378,6 @@
   "(recommended: a calendar of its own in your Google account, updated within minutes, with tag colours)": "(aanbevolen: een eigen agenda in je Google-account, binnen enkele minuten bijgewerkt, met tagkleuren)",
   "Disconnect or change it in Settings (☰).": "Verbreek of wijzig ze bij Instellingen (☰).",
   "Subscribe to the feed": "Abonneren op de feed",
-  "(if not using Autosync: Google refreshes it every few hours, without tag colours)": "(zonder automatische synchronisatie: Google vernieuwt hem om de paar uur, zonder tagkleuren)",
   "Raw feed URL (if not using Autosync: Google Calendar → Other calendars → + → From URL):": "URL van de feed (zonder automatische synchronisatie: Google Agenda → Andere agenda’s → + → Via URL):",
   "<b>Add to Google Calendar</b> subscribes your signed-in Google account to this feed, in one click.": "<b>Toevoegen aan Google Agenda</b> abonneert het Google-account waarmee je aangemeld bent met één klik op deze feed.",
   "Share it": "Delen",
@@ -406,5 +405,6 @@
   "Automatic": "Automatisch",
   "For the calendar, the activity log and the event times. Automatic uses 12-hour in English and 24-hour (military time) in the other languages.": "Voor de kalender, het activiteitenlogboek en de tijden van afspraken. Automatisch gebruikt 12 uur in het Engels en 24 uur in de andere talen.",
   "Choose one of the colours offered.": "Kies een van de aangeboden kleuren.",
-  "Unknown time format.": "Onbekende tijdnotatie."
+  "Unknown time format.": "Onbekende tijdnotatie.",
+  "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(zonder Autosync: Google leest hem opnieuw volgens een eigen schema, wat tot 12 uur kan duren; het houdt de eerste naam die het zag en toont geen tagkleuren)"
 }

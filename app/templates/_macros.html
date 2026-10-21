@@ -33,20 +33,23 @@
 
 {# The Google OAuth client for Autosync: client ID and secret, the check result, Connect, and
    the step-by-step guide (closed). `p` prefixes element IDs, as this appears twice on the page. #}
-{% macro google_client(g, p, back="") -%}
-{# F2.1: once Google has accepted the client, the boxes fold away behind "✓ Validated". #}
+{% macro google_client(g, p, back="", desc="") -%}
+{# F2.1: once Google has accepted the client, the boxes fold away behind "✓ Validated".
+   `desc` (optional) is a line about Autosync shown next to Save, or above the fold once validated. #}
 {% set valid = g.configured and g.check.ok %}
+{% if valid and desc %}<p class="mnote">{{ desc }}</p>{% endif %}
 {% if valid %}<details class="clientfold"><summary><span class="check good">✓ {{ _('Validated: Client ID & Client secret') }}</span>{% if g.checked_at %} <span class="muted">({{ g.checked_at }})</span>{% endif %} <span class="muted">· {{ _('change') }}</span></summary>{% endif %}
 <form method="post" action="/google/client" class="clientform" autocomplete="off">
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <input type="hidden" name="back" value="{{ back }}">
-  <label for="{{ p }}cid">{{ _('Client ID') }}</label>
+  {# Label and box on one line each, to keep the section short. #}
+  <div class="kv"><label for="{{ p }}cid">{{ _('Client ID') }}</label>
   <input type="text" id="{{ p }}cid" name="client_id" value="{{ g.client_id }}" spellcheck="false"
-         placeholder="1234…apps.googleusercontent.com" required>
-  <label for="{{ p }}csecret">{{ _('Client secret') }}</label>
+         placeholder="1234…apps.googleusercontent.com" required></div>
+  <div class="kv"><label for="{{ p }}csecret">{{ _('Client secret') }}</label>
   <input type="password" id="{{ p }}csecret" name="client_secret" spellcheck="false" autocomplete="new-password"
          placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else 'GOCSPX-…' }}"
-         {% if not g.has_secret %}required{% endif %}>
+         {% if not g.has_secret %}required{% endif %}></div>
   {% if g.configured and not valid %}
     {% set ck = g.check %}
     <p class="check {{ 'good' if ck.ok else ('bad' if ck.ok == false else 'unknown') }}">
@@ -54,12 +57,15 @@
       {{ msg(ck.message) if ck.message else _('Not checked yet') }}{% if g.checked_at %} <span class="muted">({{ g.checked_at }})</span>{% endif %}{% if ck.ok == false %}. {{ _('Check both values and save again.') }}{% endif %}
     </p>
   {% endif %}
-  <div class="eactions">
-    {% if g.configured %}
-      <button class="ghost" name="action" value="remove" formnovalidate>{{ _('Remove') }}</button>
-      <button class="ghost" name="action" value="check" formnovalidate>{{ _('Check again') }}</button>
-    {% endif %}
-    <button name="action" value="save">{{ _('Save') }}</button>
+  <div class="formfoot">
+    {% if desc and not valid %}<p class="mnote">{{ desc }}</p>{% endif %}
+    <div class="eactions">
+      {% if g.configured %}
+        <button class="ghost" name="action" value="remove" formnovalidate>{{ _('Remove') }}</button>
+        <button class="ghost" name="action" value="check" formnovalidate>{{ _('Check again') }}</button>
+      {% endif %}
+      <button name="action" value="save">{{ _('Save') }}</button>
+    </div>
   </div>
 </form>
 <details class="guide">
