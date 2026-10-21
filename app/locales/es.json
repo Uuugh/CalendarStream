@@ -406,5 +406,19 @@
   "Choose one of the colours offered.": "Elige uno de los colores ofrecidos.",
   "Unknown time format.": "Formato de hora desconocido.",
   "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(si no usas la sincronización automática: Google lo vuelve a leer cuando quiere, lo que puede tardar hasta 12 horas; conserva el primer nombre que vio y no muestra los colores de las etiquetas)",
-  "Tag Colors": "Colores de etiquetas"
+  "Tag Colors": "Colores de etiquetas",
+  "<b>Instant updates from Google: on.</b> Events changed or deleted in Google are put back within seconds.": "<b>Actualizaciones instantáneas desde Google: activadas.</b> Los eventos cambiados o borrados en Google se restauran en segundos.",
+  "Last notice from Google: {when}.": "Último aviso de Google: {when}.",
+  "<b>Instant updates from Google: off</b> ({why}). Events changed in Google are put back at the daily check.": "<b>Actualizaciones instantáneas desde Google: desactivadas</b> ({why}). Los eventos cambiados en Google se restauran en la revisión diaria.",
+  "New password": "Contraseña nueva",
+  "leave empty to keep it": "déjala vacía para conservarla",
+  "Address": "Dirección",
+  "Jump to a month": "Ir a un mes",
+  "Previous year": "Año anterior",
+  "Next year": "Año siguiente",
+  "24-hour times": "Horas en formato de 24 horas",
+  "Google: instant updates turned on (changes made in Google are checked within seconds)": "Google: actualizaciones instantáneas activadas (los cambios hechos en Google se revisan en segundos)",
+  "Google: instant updates aren't available ({error}); changes made in Google are checked daily instead": "Google: las actualizaciones instantáneas no están disponibles ({error}); los cambios hechos en Google se revisan a diario",
+  "needs a public https:// address (☰ → Public address)": "hace falta una dirección pública https:// (☰ → Dirección pública)",
+  "starts with the next sync": "empiezan con la próxima sincronización"
 }

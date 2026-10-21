@@ -406,5 +406,19 @@
   "Choose one of the colours offered.": "Choisissez l’une des couleurs proposées.",
   "Unknown time format.": "Format de l’heure inconnu.",
   "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(sans synchronisation automatique : Google le relit selon son propre rythme, ce qui peut prendre jusqu’à 12 heures ; il garde le premier nom vu et n’affiche pas les couleurs des étiquettes)",
-  "Tag Colors": "Couleurs des étiquettes"
+  "Tag Colors": "Couleurs des étiquettes",
+  "<b>Instant updates from Google: on.</b> Events changed or deleted in Google are put back within seconds.": "<b>Mises à jour instantanées depuis Google : activées.</b> Les événements modifiés ou supprimés dans Google sont rétablis en quelques secondes.",
+  "Last notice from Google: {when}.": "Dernier avis de Google : {when}.",
+  "<b>Instant updates from Google: off</b> ({why}). Events changed in Google are put back at the daily check.": "<b>Mises à jour instantanées depuis Google : désactivées</b> ({why}). Les événements modifiés dans Google sont rétablis lors de la vérification quotidienne.",
+  "New password": "Nouveau mot de passe",
+  "leave empty to keep it": "laissez vide pour le garder",
+  "Address": "Adresse",
+  "Jump to a month": "Aller à un mois",
+  "Previous year": "Année précédente",
+  "Next year": "Année suivante",
+  "24-hour times": "Heures sur 24 heures",
+  "Google: instant updates turned on (changes made in Google are checked within seconds)": "Google : mises à jour instantanées activées (les changements faits dans Google sont vérifiés en quelques secondes)",
+  "Google: instant updates aren't available ({error}); changes made in Google are checked daily instead": "Google : les mises à jour instantanées ne sont pas disponibles ({error}) ; les changements faits dans Google sont vérifiés chaque jour",
+  "needs a public https:// address (☰ → Public address)": "il faut une adresse publique https:// (☰ → Adresse publique)",
+  "starts with the next sync": "commencent à la prochaine synchronisation"
 }

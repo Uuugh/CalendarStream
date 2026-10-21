@@ -83,7 +83,8 @@ logins or setup codes lock an address out for 15 minutes.
 
 ## The status page
 
-- **Month view:** the schedule as it's sent to Google. Click an event to see or **Edit** it (title,
+- **Month view:** the schedule as it's sent to Google. Click the month and year to jump to any
+  month; the **12h / 24h** switch (top right) picks the time format. Click an event to see or **Edit** it (title,
   times, notes, or hide it from Google); clicking elsewhere closes it, and its 📌 pin keeps it open.
   Click an empty spot on a day (or **+**) to add your own. Events can have their own colour (one of
   Google's 11), which wins over tags. Edits survive new downloads; ✎ marks
@@ -113,6 +114,11 @@ for access to **calendars it created** and your e-mail address, so it can't see 
   the status page.
 - Changes reach Google within seconds. A daily check (or **Sync now**) puts back events changed or
   deleted in Google and makes a new calendar if it was deleted.
+- **Instant updates from Google:** with a public `https://` address, CalendarStream asks Google to
+  notify it (a webhook to `/google/notify`) whenever its calendar changes there, and puts back
+  hand edits within seconds instead of at the daily check. Nothing to set up; it needs a valid
+  certificate, and your proxy must let Google's POSTs to `/google/notify` through without a login.
+  Without it, the daily check carries on as before.
 
 **Setup:** Google Calendar → Autosync (or ☰ → Google Calendar Autosync) has a step-by-step guide to creating a free OAuth client in Google
 Cloud. Paste its client ID and secret (checked with Google straight away), then **Connect**. Google

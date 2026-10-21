@@ -51,6 +51,8 @@ GOOGLE_COLORS = {
     "3": ("Grape", "#8e24aa"), "8": ("Graphite", "#616161"),
 }
 
+WATCH_TTL = 7 * 24 * 3600   # seconds a push-notification channel lasts (Google's default and usual limit)
+
 CALENDAR_DESCRIPTION = ("Your United CCS+ schedule, kept up to date by CalendarStream. "
                         "Changes made here may be overwritten at the next sync.")
 
@@ -473,6 +475,84 @@ class Google:
 
     def record_error(self, message: str):
         self._update_info(last_error=message)
+
+    # --- Instant updates from Google (push notifications, "webhooks") -------------------------
+    #
+    # Google calls /google/notify whenever an event in CalendarStream's calendar changes there, so a
+    # change made by hand in Google is repaired within seconds instead of at the daily check. The
+    # notification carries no details; it only triggers a check. Channels last about a week and
+    # must be renewed (a new channel, then the old one stopped). Saved in kv "google_watch":
+    # {id, resource, token (sealed), address, calendar_id, expires, error, tried, last_notice}.
+
+    def watch_info(self) -> dict:
+        return self.store.get("google_watch") or {}
+
+    def _update_watch(self, **changes):
+        info = self.watch_info()
+        info.update(changes)
+        self.store.set("google_watch", info)
+
+    def watch_due(self, address: str, now_: datetime, renew_before: timedelta, retry_after: timedelta) -> bool:
+        """Whether a channel should be started now: none yet, a new address or calendar, close to
+        expiring; after a failure, only once `retry_after` has passed (or the address changed)."""
+        w = self.watch_info()
+        calendar_id = self.info().get("calendar_id")
+        if w.get("error") and w.get("address") == address:
+            tried = datetime.fromisoformat(w["tried"]) if w.get("tried") else None
+            return not tried or now_ - tried >= retry_after
+        if not w.get("id") or w.get("address") != address or w.get("calendar_id") != calendar_id:
+            return True
+        expires = datetime.fromisoformat(w["expires"]) if w.get("expires") else now_
+        return expires - now_ <= renew_before
+
+    async def start_watch(self, address: str):
+        """Ask Google to notify `address` of changes to CalendarStream's calendar; stop the old channel."""
+        calendar_id = self.info().get("calendar_id")
+        old = self.watch_info()
+        self._update_watch(address=address, tried=datetime.now(timezone.utc).isoformat())
+        if not calendar_id:
+            return
+        channel, token = secrets.token_hex(16), secrets.token_urlsafe(32)
+        try:
+            made = await self.api("POST", f"/calendars/{_quote(calendar_id)}/events/watch", body={
+                "id": channel, "type": "web_hook", "address": address, "token": token,
+                "params": {"ttl": str(WATCH_TTL)}})
+        except GoogleError as e:
+            self._update_watch(error=str(e))
+            raise
+        expires = datetime.fromtimestamp(int(made.get("expiration") or 0) / 1000, timezone.utc) \
+            if made.get("expiration") else datetime.now(timezone.utc) + timedelta(seconds=WATCH_TTL)
+        self.store.set("google_watch", {
+            "id": channel, "resource": made.get("resourceId", ""), "token": self._seal(token),
+            "address": address, "calendar_id": calendar_id, "expires": expires.isoformat(),
+            "tried": datetime.now(timezone.utc).isoformat(), "last_notice": old.get("last_notice")})
+        if old.get("id") and old.get("resource"):
+            await self._stop_channel(old["id"], old["resource"])
+
+    async def _stop_channel(self, channel: str, resource: str):
+        try:
+            await self.api("POST", "/channels/stop", body={"id": channel, "resourceId": resource}, ok_missing=True)
+        except GoogleError:
+            pass    # it runs out by itself within a week
+
+    async def stop_watch(self):
+        """Stop notifications (when disconnecting)."""
+        w = self.watch_info()
+        if w.get("id") and w.get("resource"):
+            await self._stop_channel(w["id"], w["resource"])
+        self.store.delete("google_watch")
+
+    def notice_ok(self, channel: str, token: str) -> bool:
+        """Whether a notification comes from the current channel (its ID and secret token match)."""
+        w = self.watch_info()
+        if not w.get("id") or not secrets.compare_digest(channel or "", w["id"]):
+            return False
+        if not w.get("token"):
+            return False
+        return secrets.compare_digest(token or "", self._unseal(w["token"], ""))
+
+    def noticed(self):
+        self._update_watch(last_notice=datetime.now(timezone.utc).isoformat())
 
     # --- Keeping the events in step -------------------------------------------------------
 

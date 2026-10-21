@@ -5,7 +5,25 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.14**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.15**
+
+## 0.1.15 — 2026-10-20
+
+### Added
+- **F3** Instant updates from Google (webhooks). With Autosync and a public `https://` address,
+  CalendarStream asks Google to notify `/google/notify` whenever its calendar changes there; a
+  change or deletion made by hand in Google is put back within seconds instead of at the daily
+  check. Notifications are checked against a secret token, renewed every week, moved when the
+  public address changes, and stopped on disconnect. If Google refuses them, Autosync carries on
+  with the daily check and asks again 6 hours later. Settings and the Google section show whether
+  they're on.
+- **F1.1** Click the month and year above the calendar to jump to any month (‹ › change the year).
+- **I1** A **12h / 24h** switch at the top right of the calendar (the same setting as ☰ → Time format).
+
+### Changed
+- **F2.1** Settings forms match the status page: labels above the boxes, boxes side by side
+  (user name and current password; new password twice), buttons beside their notes.
+- **F2.2** Each Settings section is in its own outlined block.
 
 ## 0.1.14 — 2026-10-20
 

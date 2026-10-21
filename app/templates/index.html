@@ -53,7 +53,9 @@
           border:1px solid var(--line); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.18); padding:12px 14px }
   .menu[hidden] { display:none }
   .menu .title { font-weight:700; font-size:14px; margin-bottom:4px }
-  .menu .mgroup { border-top:1px solid var(--line); margin-top:8px; padding-top:10px; font-size:13px }
+  /* F2.2: each Settings section in its own outlined block, like the status page. */
+  .menu .mgroup { border:1px solid var(--line); border-radius:10px; margin-top:10px; padding:10px 12px; font-size:13px }
+  .menu .pair > .ghost, .menu .pair > button { margin-left:0 } .menu .pair > button:last-child { margin-left:auto }
   .menu .mgroup p { margin:0 0 8px }
   .menu .mhead { display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px; margin-bottom:6px }
   .menu .pill { font-size:11px; padding:2px 8px }
@@ -130,6 +132,25 @@
   /* Month view */
   .calhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px }
   .calhead .title { font-size:18px; font-weight:700; min-width:150px }
+  .monthwrap { position:relative }
+  .calhead button.title { background:transparent; color:var(--text); border:0; padding:4px 6px; border-radius:8px; cursor:pointer; text-align:left; font-family:inherit }
+  .calhead button.title:hover, .calhead button.title[aria-expanded=true] { background:var(--soft) }
+  .calhead .caret { font-size:12px; color:var(--muted) }
+  .monthpick { position:absolute; top:calc(100% + 6px); left:0; z-index:8; width:250px; padding:10px; background:var(--card);
+               border:1px solid var(--line); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.18) }
+  .monthpick .yearrow { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:15px }
+  .monthpick .yearrow button { width:30px; height:30px; padding:0; background:transparent; color:var(--accent); border:1px solid var(--line); border-radius:8px; font-size:18px; line-height:1; cursor:pointer }
+  .calhead { position:relative }
+  @media (max-width:600px) { .monthwrap { position:static } .monthpick { left:0 } }
+  .monthpick .months { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px }
+  .monthpick .months button { background:transparent; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:7px 0; font-size:13px; font-weight:500; cursor:pointer }
+  .monthpick .months button:hover { background:var(--soft) }
+  .monthpick .months button.on { background:var(--accent); color:var(--onaccent); border-color:var(--accent); font-weight:700 }
+  .clockswitch { margin-left:auto; display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); font-weight:600 }
+  .clockswitch button { position:relative; width:38px; height:22px; border-radius:11px; border:1px solid var(--line); background:var(--soft); padding:0; cursor:pointer }
+  .clockswitch button span { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--muted); transition:left .15s, background .15s }
+  .clockswitch button[aria-checked=true] { background:var(--accent); border-color:var(--accent) }
+  .clockswitch button[aria-checked=true] span { left:18px; background:var(--onaccent) }
   .navbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border:1px solid var(--line);
             border-radius:8px; text-decoration:none; color:var(--accent); font-size:18px; font-weight:700 }
   .navbtn.wide { width:auto; padding:0 12px; font-size:14px }
@@ -273,16 +294,22 @@
             <summary>{{ _('Signed in as <b>{user}</b> · change', user=page_user) }}</summary>
             <form method="post" action="/settings/login" class="clientform" autocomplete="off">
               <input type="hidden" name="csrf" value="{{ csrf }}">
-              <label for="lcur">{{ _('Current password') }}</label>
-              <input type="password" id="lcur" name="current" required autocomplete="current-password">
-              <label for="luser">{{ _('User name') }}</label>
-              <input type="text" id="luser" name="user" value="{{ page_user }}" required maxlength="64" autocomplete="username" spellcheck="false">
-              <label for="lnew">{{ _('New password <span class="muted">(leave empty to keep it)</span>') }}</label>
-              <input type="password" id="lnew" name="password" minlength="8" autocomplete="new-password">
-              <label for="lconf">{{ _('New password again') }}</label>
-              <input type="password" id="lconf" name="confirm" minlength="8" autocomplete="new-password">
-              <p class="mnote" style="margin:8px 0 0">{{ _('Your browser will then ask for the new login.') }}</p>
-              <div class="eactions"><button>{{ _('Save') }}</button></div>
+              <div class="pair">
+                <label class="fld" for="luser"><span>{{ _('User name') }}</span>
+                  <input type="text" id="luser" name="user" value="{{ page_user }}" required maxlength="64" autocomplete="username" spellcheck="false"></label>
+                <label class="fld" for="lcur"><span>{{ _('Current password') }}</span>
+                  <input type="password" id="lcur" name="current" required autocomplete="current-password"></label>
+              </div>
+              <div class="pair">
+                <label class="fld" for="lnew"><span>{{ _('New password') }}</span>
+                  <input type="password" id="lnew" name="password" minlength="8" autocomplete="new-password" placeholder="{{ _('leave empty to keep it') }}"></label>
+                <label class="fld" for="lconf"><span>{{ _('New password again') }}</span>
+                  <input type="password" id="lconf" name="confirm" minlength="8" autocomplete="new-password"></label>
+              </div>
+              <div class="btnrow">
+                <p class="mnote">{{ _('Your browser will then ask for the new login.') }}</p>
+                <button>{{ _('Save') }}</button>
+              </div>
             </form>
           </details>
         </div>
@@ -310,10 +337,10 @@
             {% else %}{{ _('Not set yet.') }}{% endif %}</p>
           <form method="post" action="/settings/public-url" class="clientform">
             <input type="hidden" name="csrf" value="{{ csrf }}">
-            <div class="feed"><input type="text" id="publicurl" name="url" value="{{ public.url }}" spellcheck="false"
-                     placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
-              <button type="button" class="ghost" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button></div>
-            <div class="eactions">
+            <div class="pair">
+              <label class="fld" for="publicurl"><span>{{ _('Address') }}</span>
+                <input type="text" id="publicurl" name="url" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com"></label>
+              <button type="button" class="ghost" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
               {% if public.from_settings %}<button class="ghost" name="action" value="reset" formnovalidate
                 title="{{ _('Go back to PUBLIC_URL in .env') }}">{{ _('Reset') }}</button>{% endif %}
               <button name="action" value="save">{{ _('Save') }}</button>
@@ -330,9 +357,9 @@
             {{ m.google_connected(g, name, "s") }}
             <p class="mnote">{{ _('Events from the start of this month on are copied, without reminders. Events changed in Google are put back at the next full check (daily, or <b>Sync now</b>). If you also subscribed to the feed in Google, remove that calendar there, or you’ll see everything twice.') }}</p>
             <p class="mnote">{{ _('OAuth client: <code>{client}…</code> (disconnect to change it)', client=g.client_id.split(".")[0][:24]) }}</p>
-            <form method="post" action="/google/disconnect" class="disconnectform">
+            <form method="post" action="/google/disconnect" class="disconnectform btnrow">
               <input type="hidden" name="csrf" value="{{ csrf }}">
-              <label><input type="checkbox" name="delete" value="1"> {{ _('Also delete this calendar in Google') }}</label>
+              <label style="flex:1 1 200px;margin:0"><input type="checkbox" name="delete" value="1"> {{ _('Also delete this calendar in Google') }}</label>
               <button class="ghost">{{ _('Disconnect') }}</button>
             </form>
           {% else %}
@@ -351,8 +378,26 @@
       <a class="navbtn" href="?month={{ cal.prev }}" title="{{ _('Previous month') }}" aria-label="{{ _('Previous month') }}">‹</a>
       <a class="navbtn" href="?month={{ cal.next }}" title="{{ _('Next month') }}" aria-label="{{ _('Next month') }}">›</a>
       <a class="navbtn wide" href="/">{{ _('Today') }}</a>
-      <span class="title">{{ cal.title }}</span>
+      {# F1.1: the month and year open a picker, to jump straight to any month. #}
+      <div class="monthwrap">
+        <button type="button" class="title" id="monthbtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="monthpick"
+                title="{{ _('Jump to a month') }}">{{ cal.title }} <span class="caret">▾</span></button>
+        <div class="monthpick" id="monthpick" role="dialog" aria-label="{{ _('Jump to a month') }}" hidden data-month="{{ cal.month }}">
+          <div class="yearrow">
+            <button type="button" class="navbtn" data-year="-1" aria-label="{{ _('Previous year') }}">‹</button>
+            <b id="pickyear">{{ cal.month[:4] }}</b>
+            <button type="button" class="navbtn" data-year="1" aria-label="{{ _('Next year') }}">›</button>
+          </div>
+          <div class="months">{% for i in range(12) %}<button type="button" data-m="{{ '%02d' % (i + 1) }}">{{ dates.mon[i] }}</button>{% endfor %}</div>
+        </div>
+      </div>
       <span class="muted" style="font-size:13px">{{ (_('1 event') if cal.count == 1 else _('{n} events', n=cal.count)) }} · {{ _('times in {tz}', tz=cfg.timezone) }}</span>
+      {# I1: 12-hour / 24-hour switch (the same setting as ☰ → Time format). #}
+      <div class="clockswitch" title="{{ _('Time format') }}">
+        <span>12h</span>
+        <button type="button" role="switch" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') }}"><span></span></button>
+        <span>24h</span>
+      </div>
     </div>
     <div class="scroll"><div class="month"{% if color %} style="--cal:{{ color }}"{% endif %}>
       {% for d in cal.dow %}<div class="dow">{{ d }}</div>{% endfor %}
@@ -619,6 +664,37 @@ function copyField(id, btn) {
 
 // Save a status-page preference in the database (so every browser and login matches).
 // Fire-and-forget unless a callback is given: if it fails, the page still works.
+// I1: the 12h / 24h switch above the calendar (same setting as ☰ → Time format).
+(function () {
+  var sw = document.getElementById('clockswitch');
+  if (!sw) return;
+  sw.addEventListener('click', function () {
+    var to24 = sw.getAttribute('aria-checked') !== 'true';
+    sw.setAttribute('aria-checked', String(to24));
+    savePref('/ui/clock', { clock: to24 ? '24' : '12' }, function () { location.reload(); });
+  });
+})();
+
+// F1.1: month picker. ‹ › change the year; a month jumps there.
+(function () {
+  var btn = document.getElementById('monthbtn'), box = document.getElementById('monthpick');
+  if (!btn) return;
+  var cur = box.dataset.month, year = +cur.slice(0, 4), yearEl = document.getElementById('pickyear');
+  function draw() {
+    yearEl.textContent = year;
+    box.querySelectorAll('[data-m]').forEach(function (b) { b.classList.toggle('on', year + '-' + b.dataset.m === cur); });
+  }
+  function set(open) { box.hidden = !open; btn.setAttribute('aria-expanded', String(open)); if (open) { year = +cur.slice(0, 4); draw(); } }
+  btn.addEventListener('click', function () { set(box.hidden); });
+  box.addEventListener('click', function (e) {
+    var y = e.target.closest('[data-year]'), m = e.target.closest('[data-m]');
+    if (y) { year += +y.dataset.year; draw(); }
+    if (m) location.href = '?month=' + year + '-' + m.dataset.m;
+  });
+  document.addEventListener('click', function (e) { if (!box.hidden && !e.target.closest('.monthwrap')) set(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
+})();
+
 // Time format (Settings): saved, then the page reloads so every time is shown the new way.
 document.querySelectorAll('[data-clock]').forEach(function (b) {
   b.addEventListener('click', function () {

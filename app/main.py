@@ -211,6 +211,8 @@ state = State()
 
 GOOGLE_FULL_CHECK = timedelta(hours=24)    # how often Google's copy is checked and repaired
 GOOGLE_RETRY = timedelta(minutes=15)       # wait after a failed sync before trying again
+WATCH_RENEW = timedelta(days=1)            # renew Google's change notifications this long before they end
+WATCH_RETRY = timedelta(hours=6)           # after Google refused them, ask again this much later
 
 
 class GoogleJob:
@@ -230,6 +232,34 @@ def request_google_sync(full: bool = False):
     google_job.wake.set()
 
 
+def notify_address() -> str:
+    """Where Google sends change notifications, or "" when there's no public https:// address
+    (Google only delivers them to https:// with a valid certificate)."""
+    base = public_url()
+    host = urlparse(base).hostname or ""
+    if not base.startswith("https://") or host in ("localhost", "127.0.0.1") or host.endswith(".local"):
+        return ""
+    return f"{base}/google/notify"
+
+
+async def ensure_watch():
+    """Keep Google's change notifications ("webhooks") running for CalendarStream's calendar: start
+    them, move them to a new public address, renew them before they run out. If Google refuses,
+    Autosync carries on as before (daily check) and asks again later."""
+    address = notify_address()
+    if not address or not google.connected or not google.watch_due(address, now(), WATCH_RENEW, WATCH_RETRY):
+        return
+    before = google.watch_info()
+    had = bool(before.get("id"))
+    try:
+        await google.start_watch(address)
+        if not had:
+            state.record("info", "Google: instant updates turned on (changes made in Google are checked within seconds)")
+    except GoogleError as e:
+        if str(e) != before.get("error"):     # say so once, not at every retry
+            state.record("warn", f"Google: instant updates aren't available ({e}); changes made in Google are checked daily instead")
+
+
 def sync_window_start() -> date:
     """Decision 5: events from the first day of the current month onward are synced."""
     return now().date().replace(day=1)
@@ -247,6 +277,7 @@ async def google_sync_once(full: bool) -> bool:
             if result.changed or result.notes:
                 state.record("info", f"Google: {result.summary()}"
                              + ("; " + "; ".join(result.notes) if result.notes else ""))
+            await ensure_watch()
             return True
         except GoogleError as e:
             message = str(e)
@@ -553,6 +584,18 @@ def _local_time(value: str | None, lang: str = "en") -> str:
     return dates_for(lang).when(when, now().date())
 
 
+def _watch_view(lang: str) -> dict:
+    """Instant updates from Google, for the page: on (until when, last notice) or why not."""
+    w = google.watch_info()
+    if not notify_address():
+        return {"on": False, "why": "needs a public https:// address (☰ → Public address)"}
+    if w.get("error") and w.get("address") == notify_address():
+        return {"on": False, "why": w["error"]}
+    if w.get("id"):
+        return {"on": True, "until": _local_time(w.get("expires"), lang), "last": _local_time(w.get("last_notice"), lang)}
+    return {"on": False, "why": "starts with the next sync"}
+
+
 def google_view(request: Request, lang: str = "en") -> dict:
     uri = google_redirect_uri(request)
     host = urlparse(uri).hostname or ""
@@ -561,7 +604,7 @@ def google_view(request: Request, lang: str = "en") -> dict:
             "client_id": google.client_id, "has_secret": bool(google.client_secret),
             "check": google.client_check(), "checked_at": _local_time(google.client_check().get("at"), lang),
             "running": google_job.running, "last_sync": _local_time(info.get("last_sync"), lang),
-            "redirect_uri": uri,
+            "redirect_uri": uri, "watch": _watch_view(lang),
             # Google only sends sign-ins back to https:// addresses, or http:// on this computer.
             "redirect_ok": uri.startswith("https://") or host in ("localhost", "127.0.0.1")}
 
@@ -1165,6 +1208,7 @@ async def google_disconnect(csrf: str = Form(""), delete: str = Form("")):
         return RedirectResponse("/?menu=google", status_code=303)
     email = google.info().get("email") or "your account"
     async with google_job.lock:      # not in the middle of a sync
+        await google.stop_watch()
         notes = await google.disconnect(delete_calendar=delete == "1")
     if delete == "1":
         store.google_forget()
@@ -1172,6 +1216,19 @@ async def google_disconnect(csrf: str = Form(""), delete: str = Form("")):
     state.record("warn" if notes else "info", f"Google Calendar disconnected ({email}) {what}".strip()
                  + ("; " + "; ".join(notes) if notes else ""))
     return RedirectResponse("/?menu=google", status_code=303)
+
+
+@app.post("/google/notify")
+async def google_notify(request: Request):
+    """Google's change notification for CalendarStream's calendar (no login: Google can't sign in).
+    Checked by the channel ID and the secret token CalendarStream gave Google; it carries no
+    details, so it just starts a check that puts back events changed or deleted in Google."""
+    channel = request.headers.get("x-goog-channel-id", "")
+    if google.notice_ok(channel, request.headers.get("x-goog-channel-token", "")):
+        if request.headers.get("x-goog-resource-state") != "sync":   # "sync" only confirms the channel
+            google.noticed()
+            request_google_sync(full=True)
+    return Response(status_code=200)   # anything else makes Google retry; unknown channels just expire
 
 
 @app.post("/google/sync", dependencies=[Depends(gui_auth)])

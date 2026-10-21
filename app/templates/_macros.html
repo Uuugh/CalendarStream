@@ -109,6 +109,7 @@
 {# Google Autosync when connected: account, calendar, last sync, Sync now, Disconnect. #}
 {% macro google_connected(g, name, p) -%}
 <p>{{ _('Connected as <b>{email}</b>, to the calendar <b>{calendar}</b>.', email=g.info.email or _('your Google account'), calendar=g.info.calendar_name or name) }}</p>
+<div class="btnrow" style="margin-top:4px">
 <p>{% if g.running %}<b>{{ _('Syncing…') }}</b>
   {% elif g.last_sync %}{{ _('Last synced <b>{when}</b> · {n} events · {result}', when=g.last_sync, n=g.info.events or 0, result=msg(g.info.last_result)) }}
   {% else %}{{ _('Not synced yet.') }}{% endif %}</p>
@@ -116,4 +117,8 @@
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <button class="ghost">{{ _('Sync now') }}</button>
 </form>
+</div>
+{% set w = g.watch %}
+<p class="mnote">{% if w.on %}⚡ {{ _('<b>Instant updates from Google: on.</b> Events changed or deleted in Google are put back within seconds.') }}{% if w.last %} {{ _('Last notice from Google: {when}.', when=w.last) }}{% endif %}
+  {% else %}{{ _('<b>Instant updates from Google: off</b> ({why}). Events changed in Google are put back at the daily check.', why=msg(w.why)) }}{% endif %}</p>
 {%- endmacro %}

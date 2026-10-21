@@ -406,5 +406,19 @@
   "Choose one of the colours offered.": "Escolha uma das cores oferecidas.",
   "Unknown time format.": "Formato de hora desconhecido.",
   "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(sem a sincronização automática: o Google o relê no próprio ritmo, o que pode levar até 12 horas; mantém o primeiro nome que viu e não mostra as cores das etiquetas)",
-  "Tag Colors": "Cores das etiquetas"
+  "Tag Colors": "Cores das etiquetas",
+  "<b>Instant updates from Google: on.</b> Events changed or deleted in Google are put back within seconds.": "<b>Atualizações instantâneas do Google: ativadas.</b> Eventos alterados ou excluídos no Google são restaurados em segundos.",
+  "Last notice from Google: {when}.": "Último aviso do Google: {when}.",
+  "<b>Instant updates from Google: off</b> ({why}). Events changed in Google are put back at the daily check.": "<b>Atualizações instantâneas do Google: desativadas</b> ({why}). Eventos alterados no Google são restaurados na verificação diária.",
+  "New password": "Nova senha",
+  "leave empty to keep it": "deixe vazio para manter",
+  "Address": "Endereço",
+  "Jump to a month": "Ir para um mês",
+  "Previous year": "Ano anterior",
+  "Next year": "Próximo ano",
+  "24-hour times": "Horários em 24 horas",
+  "Google: instant updates turned on (changes made in Google are checked within seconds)": "Google: atualizações instantâneas ativadas (mudanças feitas no Google são verificadas em segundos)",
+  "Google: instant updates aren't available ({error}); changes made in Google are checked daily instead": "Google: as atualizações instantâneas não estão disponíveis ({error}); mudanças feitas no Google são verificadas diariamente",
+  "needs a public https:// address (☰ → Public address)": "precisa de um endereço público https:// (☰ → Endereço público)",
+  "starts with the next sync": "começam na próxima sincronização"
 }

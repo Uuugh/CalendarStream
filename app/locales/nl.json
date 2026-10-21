@@ -406,5 +406,19 @@
   "Choose one of the colours offered.": "Kies een van de aangeboden kleuren.",
   "Unknown time format.": "Onbekende tijdnotatie.",
   "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(zonder Autosync: Google leest hem opnieuw volgens een eigen schema, wat tot 12 uur kan duren; het houdt de eerste naam die het zag en toont geen tagkleuren)",
-  "Tag Colors": "Tagkleuren"
+  "Tag Colors": "Tagkleuren",
+  "<b>Instant updates from Google: on.</b> Events changed or deleted in Google are put back within seconds.": "<b>Directe updates van Google: aan.</b> Afspraken die in Google gewijzigd of verwijderd zijn, worden binnen seconden hersteld.",
+  "Last notice from Google: {when}.": "Laatste melding van Google: {when}.",
+  "<b>Instant updates from Google: off</b> ({why}). Events changed in Google are put back at the daily check.": "<b>Directe updates van Google: uit</b> ({why}). Afspraken die in Google gewijzigd zijn, worden bij de dagelijkse controle hersteld.",
+  "New password": "Nieuw wachtwoord",
+  "leave empty to keep it": "leeg laten om het te houden",
+  "Address": "Adres",
+  "Jump to a month": "Naar een maand springen",
+  "Previous year": "Vorig jaar",
+  "Next year": "Volgend jaar",
+  "24-hour times": "Tijden in 24-uursnotatie",
+  "Google: instant updates turned on (changes made in Google are checked within seconds)": "Google: directe updates ingeschakeld (wijzigingen in Google worden binnen seconden gecontroleerd)",
+  "Google: instant updates aren't available ({error}); changes made in Google are checked daily instead": "Google: directe updates zijn niet beschikbaar ({error}); wijzigingen in Google worden dagelijks gecontroleerd",
+  "needs a public https:// address (☰ → Public address)": "vereist een openbaar https://-adres (☰ → Openbaar adres)",
+  "starts with the next sync": "starten bij de volgende synchronisatie"
 }

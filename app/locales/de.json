@@ -406,5 +406,19 @@
   "Choose one of the colours offered.": "Wähle eine der angebotenen Farben.",
   "Unknown time format.": "Unbekanntes Zeitformat.",
   "(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colours)": "(ohne automatische Synchronisierung: Google liest ihn nach eigenem Zeitplan neu ein, was bis zu 12 Stunden dauern kann; es behält den zuerst gesehenen Namen und zeigt keine Tag-Farben)",
-  "Tag Colors": "Tag-Farben"
+  "Tag Colors": "Tag-Farben",
+  "<b>Instant updates from Google: on.</b> Events changed or deleted in Google are put back within seconds.": "<b>Sofort-Updates von Google: an.</b> In Google geänderte oder gelöschte Termine werden in Sekunden wiederhergestellt.",
+  "Last notice from Google: {when}.": "Letzte Meldung von Google: {when}.",
+  "<b>Instant updates from Google: off</b> ({why}). Events changed in Google are put back at the daily check.": "<b>Sofort-Updates von Google: aus</b> ({why}). In Google geänderte Termine werden bei der täglichen Prüfung wiederhergestellt.",
+  "New password": "Neues Passwort",
+  "leave empty to keep it": "leer lassen, um es zu behalten",
+  "Address": "Adresse",
+  "Jump to a month": "Zu einem Monat springen",
+  "Previous year": "Vorheriges Jahr",
+  "Next year": "Nächstes Jahr",
+  "24-hour times": "24-Stunden-Zeiten",
+  "Google: instant updates turned on (changes made in Google are checked within seconds)": "Google: Sofort-Updates eingeschaltet (Änderungen in Google werden in Sekunden geprüft)",
+  "Google: instant updates aren't available ({error}); changes made in Google are checked daily instead": "Google: Sofort-Updates sind nicht verfügbar ({error}); Änderungen in Google werden täglich geprüft",
+  "needs a public https:// address (☰ → Public address)": "braucht eine öffentliche https://-Adresse (☰ → Öffentliche Adresse)",
+  "starts with the next sync": "beginnen mit der nächsten Synchronisierung"
 }
