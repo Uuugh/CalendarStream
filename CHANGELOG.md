@@ -6,7 +6,34 @@ the `latest` image and the GitHub Release marked **Latest**. Each version lists 
 **removed**. Labels refer to that release's request list: F = feature request, I = issue,
 # = review item, R = README; numbers start again with each release.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.22**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.23**
+
+## 0.1.23 — 2026-10-21
+
+The Autosync setup, reviewed for first-time users (after a real first setup ran into each of these).
+
+### Changed
+- The Google Calendar Autosync guide follows the order Google needs: "Before you start" (the public
+  address must match the browser's address bar), then create the project, turn on the Calendar API,
+  set up the sign-in screen, allow calendar access, **publish the app or add yourself as a test user
+  (before creating the client)**, create the client with its Authorized redirect URI, copy both keys
+  (Google shows the secret only once) and Connect. Each step ends with a ✓ checkpoint showing what
+  you should see.
+- Beside **Connect Google Calendar**: the exact address Google sends you back to, which Gmail account
+  to use, and what to press on "Google hasn't verified this app" (**Continue**).
+- The installer's public-address question and the README Quick start say the address needs
+  `https://` and must be typed exactly as in the browser; the first-visit page says where to find the
+  setup code.
+
+### Added
+- **If Google shows an error:** what to do about redirect_uri_mismatch, access_denied, "hasn't
+  verified this app", invalid_client, deleted_client and being asked to connect again each week.
+- A warning when the public address and the address the page is open at differ (e.g. a ccs/css
+  typo), since Google always sends you back to the public address.
+
+### Fixed
+- A refused Google sign-in (403 access_denied) now explains the test-users fix instead of only
+  "cancelled".
 
 ## 0.1.22 — 2026-10-21
 

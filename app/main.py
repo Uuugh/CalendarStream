@@ -725,6 +725,15 @@ def _watch_view(lang: str) -> dict:
     return {"on": False, "why": "starts with the next sync"}
 
 
+def _host_mismatch(request: Request) -> tuple[str, str] | None:
+    """(public address host, this page's host) when they differ, e.g. a typo such as ccs vs css."""
+    public = urlparse(public_url()).hostname or ""
+    here = (request.url.hostname or "").lower()
+    if public and here and public != here and here not in ("localhost", "127.0.0.1") and not _is_ip(here):
+        return public, here
+    return None
+
+
 def _is_ip(host: str) -> bool:
     import ipaddress
     try:
@@ -745,7 +754,7 @@ def google_view(request: Request, lang: str = "en") -> dict:
             "redirect_missing": google.client_check().get("redirect_ok") is False
                                 and google.client_check().get("redirect_uri") == uri,
             "running": google_job.running, "last_sync": _local_time(info.get("last_sync"), lang),
-            "redirect_uri": uri, "watch": _watch_view(lang),
+            "redirect_uri": uri, "watch": _watch_view(lang), "host_mismatch": _host_mismatch(request),
             # Google only sends sign-ins back to https:// addresses with a public domain name (not a bare IP or .local),
             # or to http://localhost on this computer.
             "redirect_ok": (uri.startswith("https://") and not _is_ip(host) and not host.endswith(".local"))
@@ -1394,8 +1403,9 @@ async def google_callback(state_: str = Query("", alias="state"), code: str = ""
     """Google sends the browser back here after the consent page, with a one-time code."""
     try:
         if error or not code:
-            raise GoogleError("Google sign-in was cancelled." if error in ("access_denied", "")
-                              else f"Google sign-in failed: {error[:80]}.")
+            raise GoogleError("Google sign-in was cancelled or refused. If Google said the app is only for "
+                              "testers, add your Gmail address under Audience → Test users in Google Cloud."
+                              if error in ("access_denied", "") else f"Google sign-in failed: {error[:80]}.")
         async with google_job.lock:      # no sync may start while the calendar is being found or made
             info = await google.finish_sign_in(state_, code, calendar_name())
         how = "created" if info.get("created") else "found again"

@@ -76,9 +76,12 @@
   {% endif %}
   {% if desc %}<p class="mnote" style="margin:6px 0 0">{{ desc }}</p>{% endif %}
 </form>
+{% if g.host_mismatch %}
+  <p class="warnline">{{ _('Your <b>Public address</b> is <b>{public}</b>, but this page is open at <b>{here}</b>. Google sends you back to the Public address, so check the spelling (☰ Settings).', public=g.host_mismatch[0], here=g.host_mismatch[1]) }}</p>
+{% endif %}
 {% if g.configured and g.redirect_ok %}
   <div class="btnrow">
-    <p class="mnote">{{ _('Google may say <i>“Google hasn’t verified this app”</i>: that’s expected for your own app. Click <b>Advanced</b> → <b>Go to CalendarStream</b>, tick the calendar box and press <b>Continue</b>.') }}</p>
+    <p class="mnote">{{ _('Connect sends you to Google and back to <code>{uri}</code>, which must be listed under <b>Authorized redirect URIs</b> on your client (step 6). Sign in with the Gmail account from step 5. If Google says <i>“Google hasn’t verified this app”</i>, that’s normal for your own app: press <b>Continue</b> (or <b>Advanced</b> → <b>Go to CalendarStream</b>), tick the calendar box and press <b>Continue</b>.', uri=g.redirect_uri) }}</p>
     <form method="post" action="/google/connect" class="connect">
       <input type="hidden" name="csrf" value="{{ csrf }}">
       <button{% if g.check.ok == false %} disabled title="{{ _('Google rejected the client: fix it first') }}"{% elif g.redirect_missing %} disabled title="{{ _('Add the redirect URI in Google Cloud first') }}"{% endif %}>{{ _('Connect Google Calendar') }}</button>
@@ -87,23 +90,38 @@
 {% elif not g.redirect_ok %}
   <p class="merr">{{ _('First set the <b>Public address</b> in Settings (☰) to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>
 {% endif %}
+{# The guide, in the order Google needs it: everything (including Publish / test users) before Connect. #}
 <details class="guide">
   <summary>{{ _('How to get a client ID and secret (step by step)') }}</summary>
+  <p class="mnote" style="margin-top:8px">{{ _('<b>Before you start:</b> ☰ Settings → <b>Public address</b> must match, letter for letter, the address in your browser’s address bar right now. Google sends you back there.') }}</p>
   <ol>
-    <li>{{ _('<b>Create a project in Google Cloud:</b> <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">create a project</a> › Project name: <code>CalendarStream</code> › <b>Create</b> › Notifications: <b>Select project</b>.') }}
-      <br><span class="muted">{{ _('Make sure “CalendarStream” is selected in the header for the next steps.') }}</span></li>
-    <li>{{ _('<b>Turn on the Calendar API:</b> <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" rel="noopener">Google Calendar API</a> › <b>Enable</b>.') }}</li>
-    <li>{{ _('<b>Set up the sign-in screen:</b> <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> › <b>Get started</b> › App name: <code>CalendarStream</code>, support e-mail: yours › Next › Audience: <b>External</b> › Next › Contact e-mail: yours › Next › agree › <b>Create</b>.') }}</li>
-    <li>{{ _('<b>Allow calendar access:</b> <a href="https://console.cloud.google.com/auth/scopes" target="_blank" rel="noopener">Data access</a> › <b>Add or remove scopes</b> › Manually add scopes: paste') }}
+    <li>{{ _('<b>Create a project.</b> Open <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Create a project</a>. Project name: <code>CalendarStream</code> › <b>Create</b>.') }}
+      <br><span class="muted">{{ _('✓ The project menu at the top left of Google Cloud now shows “CalendarStream”. Every link below opens the project shown there; if it shows another one, click it and choose CalendarStream.') }}</span></li>
+    <li>{{ _('<b>Turn on the Calendar API.</b> Open <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" rel="noopener">Google Calendar API</a> › <b>Enable</b>.') }}
+      <br><span class="muted">{{ _('✓ You now see “API Enabled”.') }}</span></li>
+    <li>{{ _('<b>Set up the sign-in screen.</b> Open <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> › <b>Get started</b> (if you see a dashboard instead, this is already done). App name: <code>CalendarStream</code>, support e-mail: yours › <b>Next</b> › Audience: <b>External</b> › <b>Next</b> › contact e-mail: yours › <b>Next</b> › agree › <b>Create</b>. Don’t upload a logo: that makes Google review the app.') }}
+      <br><span class="muted">{{ _('✓ The menu on the left now shows Branding, Audience, Clients and Data access.') }}</span></li>
+    <li>{{ _('<b>Allow calendar access.</b> Open <a href="https://console.cloud.google.com/auth/scopes" target="_blank" rel="noopener">Data access</a> › <b>Add or remove scopes</b> › under “Manually add scopes”, paste') }}
       {{ copyfield(p ~ "scope", "https://www.googleapis.com/auth/calendar.app.created") }}
       {{ _('› <b>Add to table</b> › <b>Update</b> › <b>Save</b>.') }}</li>
-    <li>{{ _('<b>Create the OAuth client ID:</b> <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a> › <b>Create client</b> › Application type: <b>Web application</b> › Name: <code>CalendarStream</code> › Authorised redirect URIs: <b>Add URI</b> › paste exactly:') }}
+    <li>{{ _('<b>Let yourself sign in. Do this now, or Connect fails with “403 access_denied”.</b> Open <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a> › <b>Publish app</b> › <b>Confirm</b>.') }}
+      <br><span class="muted">{{ _('Can’t publish (the button is greyed out)? On the same page, under <b>Test users</b>, press <b>+ Add users</b>, enter the Gmail address you’ll connect with, and press <b>Save</b>. In Testing, Google makes you press Connect again every 7 days.') }}</span></li>
+    <li>{{ _('<b>Create the client.</b> Open <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a> › <b>Create client</b> › Application type: <b>Web application</b> › Name: <code>CalendarStream</code>. Leave <b>Authorized JavaScript origins</b> empty; under <b>Authorized redirect URIs</b> press <b>+ Add URI</b> and paste this (use the copy button, don’t type it):') }}
       {% if g.redirect_ok %}{{ copyfield(p ~ "redirect", g.redirect_uri) }}
       {{ _('› <b>Create</b>.') }}{% else %}<p class="merr">{{ _('First set the <b>Public address</b> in Settings (☰) to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>{% endif %}</li>
-    <li>{{ _('<b>Copy the Client ID and Client secret</b> Google shows into the boxes above › <b>Save</b>. Keep the secret private.') }}</li>
-    <li>{{ _('<b>Publish it</b> so the sign-in lasts: <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a> › <b>Publish app</b> › <b>Confirm</b>.') }}
-      <br><span class="muted">{{ _('If Google won’t publish it, leave it in Testing: on the same page, Test users › <b>Add users</b> › your Gmail address › <b>Save</b>. Google then asks you to Connect again every 7 days.') }}</span></li>
+    <li>{{ _('<b>Copy both keys now.</b> Google shows the <b>Client secret only once</b>, in a pop-up. Copy the Client ID and the Client secret into the boxes above and press <b>Save</b>.') }}
+      <br><span class="muted">{{ _('✓ You now see “✓ Validated”. Closed the pop-up already? Open Clients › CalendarStream › <b>Add secret</b>.') }}</span></li>
+    <li>{{ _('<b>Connect.</b> Wait about 5 minutes (Google can take that long to apply changes), then press <b>Connect Google Calendar</b> above.') }}</li>
   </ol>
+  <p class="h4">{{ _('If Google shows an error') }}</p>
+  <ul class="trouble">
+    <li>{{ _('<b>Error 400: redirect_uri_mismatch</b>: open Clients › CalendarStream › <b>Authorized redirect URIs</b> (not JavaScript origins) › <b>+ Add URI</b> › paste the address from step 6 › <b>Save</b>, and wait 5 minutes. If that address is misspelled, fix ☰ Settings → Public address first.') }}</li>
+    <li>{{ _('<b>Error 403: access_denied</b> (“has not completed the Google verification process”, “developer-approved testers”): step 5: publish the app, or add the exact Gmail address you sign in with under <b>Test users</b>.') }}</li>
+    <li>{{ _('<b>“Google hasn’t verified this app”</b>: not an error. Press <b>Continue</b> (or <b>Advanced</b> › <b>Go to CalendarStream</b>).') }}</li>
+    <li>{{ _('<b>Error 401: invalid_client</b>: the ID or secret is wrong or from another project. Copy both again, or make a new secret with Clients › CalendarStream › <b>Add secret</b>.') }}</li>
+    <li>{{ _('<b>Error 401: deleted_client</b>: the client was deleted (Google deletes clients unused for 6 months). Restore it on the Clients page within 30 days, or do step 6 again.') }}</li>
+    <li>{{ _('<b>Asked to Connect again after a week</b>: the app is still in Testing. Publish it (step 5).') }}</li>
+  </ul>
 </details>
 {%- endmacro %}
 

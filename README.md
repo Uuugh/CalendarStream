@@ -34,7 +34,10 @@ A status page shows the schedule, lets you edit events, and walks you through se
 
 ## Quick start
 
-On any computer with Docker (Linux, macOS with Docker Desktop, or Windows in a WSL terminal), run:
+On any computer with Docker (Linux, macOS with Docker Desktop, or Windows in a WSL terminal), run the
+installer below. For Google Calendar **Autosync** you also need a web address with your own domain
+name, reached over `https://` (through a reverse proxy or a tunnel to this computer); without one,
+use the feed instead.
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/install.sh)
@@ -45,7 +48,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/in
 1. which release to install, `latest` (stable) or `beta` (`stable`);
 2. the folder for `docker-compose.yml` and `.env` (`~/stacks/calendarstream`);
 3. the folder for CalendarStream's config and data, the database and `.secrets/` (the same folder);
-4. the public address (`http://<this computer's IP>:8080`); it can also be set later in ☰ Settings.
+4. the public `https://` address, typed exactly as you'll open it, e.g. `https://cal.example.com`
+   (Enter to skip; it can be set later in ☰ Settings).
 
 It then downloads `docker-compose.yml` and `.env`, creates a random database password, starts
 CalendarStream and prints its address and a **setup code**. Running it again updates
@@ -56,9 +60,11 @@ Then open the address it printed:
 
 1. **Create your login** with the setup code.
 2. **CCS+ Calendar Sync** (on the status page): enter your CCS+ UID and Calendar Sync password.
-3. **☰ → Public address:** your public `https://` address (needed for Google and for sharing).
-4. **Google Calendar Autosync** (on the status page, recommended), or **Other ways to get the
-   schedule** → **Add to Google Calendar** to subscribe to the feed instead.
+3. **☰ → Public address:** press **This page** to fill it in, then check the spelling: Google sends
+   you back to exactly this address.
+4. **Google Calendar Autosync** (on the status page, recommended): follow its step-by-step guide in
+   order. Publish the app, or add yourself as a test user, **before** pressing Connect. Or use
+   **Other ways to get the schedule** → **Add to Google Calendar** to subscribe to the feed instead.
 
 ## Settings
 
@@ -144,7 +150,9 @@ for access to **calendars it created** and your e-mail address, so it can't see 
 
 **Setup:** the Google Calendar Autosync box has a step-by-step guide to creating a free OAuth client in Google
 Cloud. Paste its client ID and secret (checked with Google straight away), then **Connect**. Google
-warns the app "hasn't verified" it because it's your own: choose **Advanced → Go to CalendarStream**.
+warns it "hasn't verified this app" because it's your own: press **Continue** (or **Advanced → Go to
+CalendarStream**), tick the calendar box and press **Continue**. The guide ends with a list of
+Google's error messages and what to do about each.
 One client serves the whole install, for up to 100 people while unverified. If you also subscribed
 to the feed in Google, remove that calendar, or you'll see everything twice.
 

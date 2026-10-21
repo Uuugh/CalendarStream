@@ -65,7 +65,7 @@ mkdir -p "$MNT_DOCKER/.secrets"
 IP="$(this_ip)"
 CURRENT_URL="$(env_value .env PUBLIC_URL)"
 case "$CURRENT_URL" in http://[0-9]*:8080|http://localhost:8080) CURRENT_URL="" ;; esac   # old defaults (http://<IP or localhost>:8080) aren't public addresses
-PUBLIC_URL="$(ask "Public https:// address, if you have one (Enter to skip; may be set later in Settings)" "${CURRENT_URL}")"
+PUBLIC_URL="$(ask "Public https:// address, exactly as you type it in the browser (e.g. https://cal.example.com; Google uses it). Enter to skip" "${CURRENT_URL}")"
 [ "$PUBLIC_URL" = "-" ] && PUBLIC_URL=""
 
 # The only two files the server needs; the app itself is a ready-made image.
