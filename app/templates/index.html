@@ -271,6 +271,68 @@
   .langmenu button:hover, .langmenu button:focus { background:var(--soft) }
   .langmenu button[aria-checked="true"]::after { content:"✓"; color:var(--accent); font-weight:700 }
   .langmenu hr { border:0; border-top:1px solid var(--line); margin:4px 2px }
+
+  /* ---- Review #1–#11: one pattern for every section and box ---------------------------------- */
+  [hidden] { display:none !important }
+  /* #1 Card titles: one size and weight for the schedule name and Activity log */
+  .cardtitle { font-size:18px; font-weight:700; color:var(--text); text-transform:none; letter-spacing:0 }
+  .section > .shead .headright { display:flex; align-items:center; gap:10px; margin-left:auto }
+  .section > .shead .headright form { margin:0 }
+  .statusmsg { margin:-4px 0 4px; font-size:14px; color:var(--text) }
+  /* Boxes inside a card: title + subtitle on the left, a status chip on the right */
+  .box { display:block; border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-top:12px; background:var(--card) }
+  .boxhead { display:flex; align-items:flex-start; gap:12px; margin-bottom:10px }
+  .boxhead > div { flex:1; min-width:0 }
+  .boxtitle { font-size:15px; font-weight:700 }
+  .subtitle { font-size:12.5px; color:var(--muted); margin-top:1px }
+  details.box > summary { list-style:none; cursor:pointer; margin-bottom:0 }
+  details.box > summary::-webkit-details-marker { display:none }
+  details.box > summary .boxtitle::before { content:"▸"; display:inline-block; width:16px; color:var(--muted); font-size:12px; transition:transform .15s }
+  details.box[open] > summary .boxtitle::before { transform:rotate(90deg) }
+  details.box[open] > summary { margin-bottom:6px }
+  .subbox { border-top:1px solid var(--line); padding-top:12px; margin-top:12px }
+  .subbox .boxtitle { font-size:14px }
+  /* #8 One status chip, three states (plus "working") */
+  .chip { flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; padding:3px 10px 3px 8px;
+          border-radius:999px; white-space:nowrap; letter-spacing:.01em }
+  .chip::before { font-size:11px }
+  .chip.good { background:var(--okbg); color:var(--ok) } .chip.good::before { content:"✓" }
+  .chip.warn { background:var(--warnbg); color:var(--warn) } .chip.warn::before { content:"!" }
+  .chip.bad { background:var(--badbg); color:var(--bad) } .chip.bad::before { content:"✗" }
+  .chip.run { background:var(--runbg); color:var(--run) } .chip.run::before { content:"↻" }
+  .statusline { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; font-size:13px; margin:10px 0 0 }
+  /* #9 Two button sizes: primary and secondary, both at input height */
+  button, .btn, .btn2, .ghostbtn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:34px; padding:0 14px;
+          font:inherit; font-size:14px; font-weight:600; border-radius:8px; text-decoration:none; cursor:pointer; white-space:nowrap }
+  .btn2, .ghostbtn, button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
+  .calhead button.title, .langmenu button, .seg button, .monthpick button, .ev .pin, .linkbtn, .copybtn, .clockswitch button,
+  .inbox .inboxbtn { height:auto }
+  .copybtn { height:34px }
+  .editor .tagrow .addtag, .editor .tagrow .deltag, .editor .casebtn { height:36px }
+  .filebtn { position:relative; overflow:hidden; max-width:260px }
+  .filebtn input { position:absolute; inset:0; opacity:0; cursor:pointer }
+  .filebtn span { overflow:hidden; text-overflow:ellipsis }
+  /* #3 Labelled field rows */
+  .fieldrow { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin:14px 0 0; font-size:13.5px }
+  .fieldrow > label:first-of-type { font-weight:600; color:var(--text) }
+  .fieldrow input[type=number] { width:80px; height:34px; font:inherit; padding:0 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .fieldrow + .mnote { margin-top:4px }
+  /* #11 Every step-by-step / help fold looks the same */
+  details.guide, details.howto { border:1px solid var(--line); border-radius:10px; padding:8px 12px; margin:12px 0 0; background:var(--soft); font-size:13px }
+  details.guide > summary, details.howto > summary { cursor:pointer; font-weight:600; font-size:13.5px }
+  details.guide[open] { padding-bottom:12px }
+  details.guide ol { font-size:13px; padding-left:18px; margin:8px 0 } details.guide li { margin:0 0 6px }
+  details.guide.inline { flex:1 1 260px; margin:0; padding:6px 10px; background:transparent }
+  details.guide.inline p { margin:6px 0 0; color:var(--muted); font-size:12.5px }
+  .statusline details.guide.inline { flex-basis:100% }
+  .k { color:var(--muted); font-size:12px; margin:10px 0 0 }
+  /* #10 One legend row with a help dot */
+  .helpdot { display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; border:1px solid var(--line); color:var(--muted);
+             font-size:11px; font-weight:700; cursor:help; margin-left:auto }
+  .helpdot::before { display:none }
+  .tagsform.editor { border:0; padding:0; margin:0; background:transparent }
+  .boxhead { flex-wrap:wrap } .boxhead > div { flex:1 1 240px }
+  @media (max-width:600px) { .section > .shead .headright { margin-left:0 } .editor .tagrow:not(:last-child) .addtag { display:none } }
 </style>
 </head>
 <body>{% import "_macros.html" as m with context %}<main>
@@ -348,29 +410,6 @@
             {% else %}{{ _('Not set yet.') }}{% endif %}</p>
         </div>
 
-        <div class="mgroup" id="ccsmenu">
-          <div class="mhead">{{ _('CCS+ Calendar Sync') }}</div>
-          {{ m.ccs_login(setup, s, "menu") }}
-        </div>
-
-        {% set g = google %}
-        <div class="mgroup" id="google">
-          <div class="mhead">{{ _('Google Calendar Autosync') }}
-            {% if g.connected %}<span class="pill ok">{{ _('Connected') }}</span>{% endif %}</div>
-          {% if g.info.last_error %}<p class="merr">{{ msg(g.info.last_error) }}</p>{% endif %}
-          {% if g.connected %}
-            {{ m.google_connected(g, name, "s") }}
-            <p class="mnote">{{ _('Events from the start of this month on are copied, without reminders. Events changed in Google are put back at the next full check (daily, or <b>Sync now</b>). If you also subscribed to the feed in Google, remove that calendar there, or you’ll see everything twice.') }}</p>
-            <p class="mnote">{{ _('OAuth client: <code>{client}…</code> (disconnect to change it)', client=g.client_id.split(".")[0][:24]) }}</p>
-            <form method="post" action="/google/disconnect" class="disconnectform btnrow">
-              <input type="hidden" name="csrf" value="{{ csrf }}">
-              <label style="flex:1 1 200px;margin:0"><input type="checkbox" name="delete" value="1"> {{ _('Also delete this calendar in Google') }}</label>
-              <button class="ghost">{{ _('Disconnect') }}</button>
-            </form>
-          {% else %}
-            {{ m.google_client(g, "s", "menu", _('Copy the schedule into a calendar of its own in your Google account, updated within minutes. CalendarStream can only see and change calendars it created.')) }}
-          {% endif %}
-        </div>
       </div>
     </div>
   </header>
@@ -438,25 +477,30 @@
     <div class="legend">
       {% if color %}<span style="--sw:color-mix(in srgb, {{ color }} 18%, var(--card))">{{ _('Timed') }}</span><span style="--sw:color-mix(in srgb, {{ color }} 34%, var(--card))">{{ _('All-day') }}</span>{% else %}<span style="--sw:var(--ev)">{{ _('Timed') }}</span><span style="--sw:var(--allday)">{{ _('All-day') }}</span>{% endif %}<span style="--sw:var(--custom)">{{ _('Added here') }}</span>{% for t in tags %}<span style="--sw:color-mix(in srgb, {{ t.color }} 34%, var(--card))">{{ t.tag }}</span>{% endfor %}
       <span style="--sw:transparent">{{ _('✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google') }}</span>
+      <span class="helpdot" tabindex="0" title="{{ _('This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.') }}" aria-label="{{ _('Help') }}">?</span>
     </div>
-    <p class="muted" style="font-size:12px;margin:6px 0 0">{{ _('This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.') }}</p>
   </div>
 
-  {# Status & setup: the header is the calendar's name, color and (edit); the body has the health bar,
-     the Google Calendar feed and setup. #}
+  {# Status & setup. Every box on the page shares one pattern (review #1): a header with the title and
+     a one-line subtitle on the left and a status chip on the right, then its fields, then its help
+     folded at the bottom. Logins live in Settings; they appear here only while setup is incomplete or
+     a check failed (#4). #}
   {% set status_open = sections.status or not setup.configured %}
+  {% set chipcls = {"ok":"good","run":"run","warn":"warn","bad":"bad"}[cls] %}
   <section class="card section{% if status_open %} open{% endif %}" id="status" data-section="status" aria-label="{{ _('Status & setup') }}">
     <div class="shead">
       <button type="button" class="toggle" aria-expanded="{{ 'true' if status_open else 'false' }}" aria-controls="status-body"
               title="{{ _('Show or hide status & setup') }}"><span class="sr">{{ _('Status & setup') }}</span></button>
-      <span class="calname" id="calname"{% if color %} style="color:{{ color }}"{% endif %} title="{{ _('The calendar’s name in Google Calendar') }}">{{ name }}</span>
+      <span class="cardtitle calname" id="calname"{% if color %} style="color:{{ color }}"{% endif %} title="{{ _('The calendar’s name in Google Calendar') }}">{{ name }}</span>
       <button type="button" class="linkbtn" id="editbtn" aria-expanded="false" aria-controls="editor">{{ _('(edit)') }}</button>
-      <span class="pill {{ cls }} peek" style="flex:0 0 auto">{{ label }}</span><span class="peek">{{ msg(s.message) }}</span>
-      {# F4: Sync now on the right of the folded header too. #}
-      <form method="post" action="/run" class="peek peekform"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="small" {% if s.running or not setup.configured %}disabled{% endif %}>{{ _('Sync now') }}</button></form>
+      <span class="peek">{{ msg(s.message) }}</span>
+      <span class="headright">
+        <span class="chip {{ chipcls }}">{{ label }}</span>
+        <form method="post" action="/run" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running or not setup.configured %}disabled{% endif %}>{{ _('Sync now') }}</button></form>
+      </span>
     </div>
 
-    {# Title editor: name, default color and tag colors. Hidden until (edit) is pressed. #}
+    {# Title editor: name and default color. Hidden until (edit) is pressed. #}
     <form class="editor" id="editor" method="post" action="/feed/name" hidden>
       <input type="hidden" name="csrf" value="{{ csrf }}">
       <label class="lbl" for="calname-input">{{ _('Calendar name') }}</label>
@@ -468,7 +512,7 @@
       <div class="row">
         <input type="color" id="colorpick" value="{{ color or '#1d4ed8' }}" aria-label="{{ _('Default color') }}">
         <input type="hidden" name="color_default" id="colordefault" value="">
-        <button type="button" class="ghost small" id="colorreset">{{ _('Default') }}</button>
+        <button type="button" class="ghost" id="colorreset">{{ _('Default') }}</button>
         <span class="muted" id="colornote" style="font-size:13px">{{ "" if color else _('Using the standard colors') }}</span>
       </div>
 
@@ -477,17 +521,15 @@
         <button>{{ _('Save') }}</button>
       </div>
     </form>
-    <div class="sbody" id="status-body"{% if not (sections.status or not setup.configured) %} hidden{% endif %}>
-    <div class="banner">
-      <span class="pill {{ cls }}">{{ label }}</span>
-      <div class="msg">{{ msg(s.message) or "—" }}</div>
-      <form method="post" action="/run"><input type="hidden" name="csrf" value="{{ csrf }}"><button {% if s.running or not setup.configured %}disabled{% endif %}>{{ _('Sync now') }}</button></form>
-    </div>
 
-    {# Tag colors: always visible under the health bar (not inside (edit)). #}
-    <div class="part" id="tags">
-      <h3>{{ _('Tag Colors') }}</h3>
-      <form class="way editor tagsform" method="post" action="/feed/tags">
+    <div class="sbody" id="status-body"{% if not status_open %} hidden{% endif %}>
+    <p class="statusmsg">{{ msg(s.message) or "—" }}</p>
+
+    {# Tag colors (#2: the explanation is folded) #}
+    <div class="box" id="tags">
+      <div class="boxhead"><div><div class="boxtitle">{{ _('Tag Colors') }}</div>
+        <div class="subtitle">{{ _('Color events by a word in their title, e.g. RDO in red.') }}</div></div></div>
+      <form class="editor tagsform" method="post" action="/feed/tags">
         <input type="hidden" name="csrf" value="{{ csrf }}">
         <div class="tagrows" id="tagrows">
           {% for t in tags + [{"tag": "", "color": color or "#1d4ed8", "mode": "word", "case": false}] %}
@@ -505,42 +547,46 @@
           {% endfor %}
         </div>
         <div class="btnrow">
-  <p class="hint" style="margin:0">{{ _('Events whose title matches a tag use its color; the first matching tag wins, and other events use the default color. <b>Whole word</b>: “RDO” matches “RDO.” but not “VRDO”. <b>Contains</b>: anywhere, even inside a word. <b>Starts with</b>: the title begins with it. <b>Exact title</b>: the whole title. <b>Aa</b>: match capitals exactly. Colors show on this page and in Google Calendar sync; Apple Calendar uses the default color.') }}</p>
+          <details class="guide inline"><summary>{{ _('How tags match') }}</summary>
+            <p>{{ _('Events whose title matches a tag use its color; the first matching tag wins, and other events use the default color. <b>Whole word</b>: “RDO” matches “RDO.” but not “VRDO”. <b>Contains</b>: anywhere, even inside a word. <b>Starts with</b>: the title begins with it. <b>Exact title</b>: the whole title. <b>Aa</b>: match capitals exactly. Colors show on this page and in Google Calendar sync; Apple Calendar uses the default color.') }}</p></details>
           <button>{{ _('Save') }}</button>
         </div>
       </form>
     </div>
 
-    {# CCS+ Calendar Sync: the login is always visible here; the link, checklist and help are below it. #}
-    <div class="part" id="setup">
-      <h3>{{ _('CCS+ Calendar Sync') }}</h3>
-      <div class="way">
-      {% if not setup.configured %}<p class="k" style="margin-top:0">{{ _('Enter your CCS+ <b>UID</b> and <b>Calendar Sync password</b> (the one created for calendar syncing in CCS+, not your CCS login) to start downloading the schedule:') }}</p>{% endif %}
+    {# CCS+ Calendar Sync #}
+    {% set ccs_ok = setup.configured and s.last_auth_ok %}
+    <div class="box" id="setup">
+      <div class="boxhead"><div><div class="boxtitle">{{ _('CCS+ Calendar Sync') }}</div>
+        <div class="subtitle">{{ _('Downloads your schedule from CCS+ with your UID and Calendar Sync password.') }}</div></div>
+        {% if ccs_ok %}<span class="chip good">{{ _('Sign-in validated') }}</span>
+        {% elif s.last_auth_ok == false %}<span class="chip bad">{{ _('Sign-in rejected') }}</span>
+        {% elif not setup.configured %}<span class="chip warn">{{ _('Setup needed') }}</span>
+        {% else %}<span class="chip warn">{{ _('Not checked yet') }}</span>{% endif %}</div>
+      {% if not setup.configured %}<p class="mnote" style="margin:0 0 4px">{{ _('Enter your CCS+ <b>UID</b> and <b>Calendar Sync password</b> (the one created for calendar syncing in CCS+, not your CCS login) to start downloading the schedule:') }}</p>{% endif %}
       {{ m.ccs_login(setup, s) }}
-      {% if not setup.configured %}<p class="mnote">{{ _('Your CCS+ UID and Calendar Sync password may be updated in Status & setup, or in Settings (☰).') }}</p>{% endif %}
 
-
-      {# How the schedule is fetched; the check interval can be changed here. #}
-      <form class="syncline" method="post" action="/setup/interval">
+      {# #3: the check interval as a labelled field; the .env facts underneath #}
+      <form class="fieldrow" method="post" action="/setup/interval">
         <input type="hidden" name="csrf" value="{{ csrf }}">
-        <span>{{ _('CCS+ Calendar Sync · checks every') }}
-          <input type="number" name="minutes" value="{{ interval }}" min="15" max="1440" step="5" required
-                 aria-label="{{ _('Minutes between checks') }}" title="{{ _('Minutes between checks (15–1440)') }}"> {{ _('min') }}
-          <button class="ghost tiny" title="{{ _('Save the check interval') }}">{{ _('Save') }}</button></span>
-        <span>· {{ _('items without an end time: {value}', value=(_('all-day') if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours)) }}{% if cfg.allday_24h %} · {{ _('24-hour events shown as all-day') }}{% endif %}</span>
+        <label for="interval">{{ _('Check for changes every') }}</label>
+        <input type="number" id="interval" name="minutes" value="{{ interval }}" min="15" max="1440" step="5" required title="{{ _('Minutes between checks (15–1440)') }}">
+        <span class="muted">{{ _('minutes') }}</span>
+        <button class="ghost">{{ _('Save') }}</button>
+      </form>
+      <p class="mnote">{{ _('Items without an end time: {value}', value=(_('all-day') if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours)) }}{% if cfg.allday_24h %} · {{ _('24-hour events shown as all-day') }}{% endif %} <span class="muted">({{ _('from .env') }})</span></p>
+
+      {# #9: manual upload with a styled file button #}
+      <form class="fieldrow" method="post" action="/setup/upload" enctype="multipart/form-data">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <label title="{{ _('Open the Calendar Sync link in your browser, sign in with your UID and Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.') }}">{{ _('Or upload Calendar.ics by hand') }}</label>
+        <label class="filebtn ghostbtn"><input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}"><span data-none="{{ _('Choose Calendar.ics…') }}">{{ _('Choose Calendar.ics…') }}</span></label>
+        <button class="ghost">{{ _('Upload & publish') }}</button>
       </form>
 
-      {# Manual upload, for when the automatic download can't get through. #}
-      <form class="uploadline" method="post" action="/setup/upload" enctype="multipart/form-data">
-        <input type="hidden" name="csrf" value="{{ csrf }}">
-        <span class="lbl" title="{{ _('Open the Calendar Sync link in your browser, sign in with your UID and Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.') }}">{{ _('Or upload <b>Calendar.ics</b> by hand.') }}</span>
-        <input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}">
-        <button class="ghost tiny">{{ _('Upload & publish') }}</button>
-      </form>
-      {# The checklist (left) and how to turn on Calendar Sync (right), with the link box: at the bottom, like
-         Google's step-by-step guide. Open only while the login is missing or the last check failed. #}
+      {# #11: help at the bottom, closed unless something needs doing #}
       {% set help_open = not setup.configured or cls == "bad" or s.status == "paused" or s.last_auth_ok == false %}
-      <details class="howto"{% if help_open %} open{% endif %}>
+      <details class="guide"{% if help_open %} open{% endif %}>
         <summary>{{ _('How to get a Calendar Sync link, ID and secret (step by step)') }}</summary>
         <div class="helpgrid">
           <ul class="checks">
@@ -561,60 +607,75 @@
             </ol>
             <form method="post" action="/setup/link">
               <input type="hidden" name="csrf" value="{{ csrf }}">
-              <div class="k" style="margin-top:0">{{ _('Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):') }}</div>
+              <div class="k">{{ _('Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):') }}</div>
               <div class="feed">
                 <input name="url" type="url" required value="{{ setup.url }}" placeholder="https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar">
                 <button name="action" value="save">{{ _('Save & sync') }}</button>
                 {% if setup.url_from_gui %}<button class="ghost" name="action" value="reset" formnovalidate>{{ _('Reset') }}</button>{% endif %}
               </div>
             </form>
-            <p class="muted" style="font-size:13px;margin:8px 0 0">{{ _('The password is stored encrypted and never shown again; leave its box empty to keep it.') }}</p>
+            <p class="mnote">{{ _('The password is stored encrypted and never shown again; leave its box empty to keep it.') }}</p>
           </div>
         </div>
       </details>
-      </div>
     </div>
 
-    {# Getting the schedule into Google: Autosync (recommended), or subscribing to the feed. #}
+    {# Google Calendar: Autosync is the main path (#6); the feed and sharing are folded underneath. #}
     {% set g = google %}
-    <div class="part" id="feedcard">
-      <h3>Google Calendar</h3>
+    {% set gvalid = g.configured and g.check.ok %}
+    <div class="box" id="feedcard">
+      <div class="boxhead"><div><div class="boxtitle">{{ _('Google Calendar Autosync') }}</div>
+        <div class="subtitle">{{ _('Recommended: a calendar of its own in your Google account, updated within minutes, with tag colors.') }}</div></div>
+        {% if g.connected and g.info.last_error %}<span class="chip bad">{{ _('Sync problem') }}</span>
+        {% elif g.connected %}<span class="chip good">{{ _('Connected') }}</span>
+        {% elif gvalid %}<span class="chip warn">{{ _('Ready to connect') }}</span>
+        {% else %}<span class="chip warn">{{ _('Not set up') }}</span>{% endif %}</div>
       {% if not links.is_public %}<p class="warnline">{{ _('⚠ This isn’t a public HTTPS address yet, so Google can’t load the feed. Set the <b>Public address</b> in Settings (☰).') }}</p>{% endif %}
+      {% if g.info.last_error %}<p class="merr">{{ msg(g.info.last_error) }}</p>{% endif %}
+      {% if g.connected %}
+        {{ m.google_connected(g, name, "f") }}
+        <p class="mnote">{{ _('Events from the start of this month on are copied, without reminders. If you also subscribed to the feed in Google, remove that calendar there, or you’ll see everything twice.') }}</p>
+        <form method="post" action="/google/disconnect" class="disconnectform btnrow">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <label class="mnote" style="flex:1 1 240px;margin:0"><input type="checkbox" name="delete" value="1"> {{ _('Also delete this calendar in Google') }}
+            · {{ _('OAuth client: <code>{client}…</code>', client=g.client_id.split(".")[0][:24]) }}</label>
+          <button class="ghost">{{ _('Disconnect') }}</button>
+        </form>
+      {% else %}
+        {{ m.google_client(g, "f") }}
+      {% endif %}
+    </div>
 
-      <div class="way">
-        <div class="wayhead"><b>{{ _('Autosync') }}</b> <span class="muted">{{ _('(recommended: a calendar of its own in your Google account, updated within minutes, with tag colors)') }}</span></div>
-        {% if g.info.last_error %}<p class="merr">{{ msg(g.info.last_error) }}</p>{% endif %}
-        {% if g.connected %}
-          {{ m.google_connected(g, name, "f") }}
-          <p class="mnote">{{ _('Disconnect or change it in Settings (☰).') }}</p>
-        {% else %}
-          {{ m.google_client(g, "f") }}
-        {% endif %}
-      </div>
+    <details class="box others" id="others">
+      <summary class="boxhead"><div><div class="boxtitle">{{ _('Other ways to get the schedule') }}</div>
+        <div class="subtitle">{{ _('Subscribe to the feed instead of Autosync, or share it with others.') }}</div></div>
+        {% if reads.google %}<span class="chip good">{{ _('Google reads the feed') }}</span>{% endif %}</summary>
 
-      <div class="way">
-        <div class="wayhead"><b>{{ _('Subscribe to the feed') }}</b> <span class="muted">{{ _('(if not using Autosync: Google re-reads it on its own schedule, which can take up to 12 hours; it keeps the name it saw first and shows no tag colors)') }}</span></div>
-        <div class="k" style="margin-top:4px">{{ _('Raw feed URL (if not using Autosync: Google Calendar → Other calendars → + → From URL):') }}</div>
+      <div class="subbox">
+        <div class="boxtitle">{{ _('Subscribe to the feed') }}</div>
+        <div class="subtitle">{{ _('Google re-reads it on its own schedule (up to 12 hours), keeps the first name it saw and shows no tag colors.') }}</div>
+        <div class="k">{{ _('Raw feed URL (Google Calendar → Other calendars → + → From URL):') }}</div>
         {{ m.copyfield("feed", feed) }}
         <div class="btnrow">
           <p class="mnote">{{ _('<b>Add to Google Calendar</b> subscribes your signed-in Google account to this feed, in one click.') }}</p>
           <a class="btn" href="{{ links.google }}" target="_blank" rel="noopener">{{ _('Add to Google Calendar') }}</a>
         </div>
-        {# Whether Google can actually reach the feed (until it has, Google shows the web address as the name). #}
-        {% if reads.google %}<p class="check good" style="margin-top:8px">✓ {{ _('Google Calendar last read this feed {when}.', when=reads.google) }}</p>
-        {% else %}<p class="mnote" style="margin-top:8px">{{ _('Google Calendar hasn’t read this feed yet. Until it does, Google shows the subscription under its web address and without events. If that lasts more than a few hours, open the raw feed URL in a private browser window: it must download without a login, and nothing in front of CalendarStream (a proxy, or Cloudflare’s bot protection) may block Google.') }}</p>{% endif %}
+        {# #7: a status line, with what to check folded #}
+        {% if reads.google %}<p class="statusline"><span class="chip good">{{ _('Read by Google') }}</span> {{ _('Google Calendar last read this feed {when}.', when=reads.google) }}</p>
+        {% else %}<div class="statusline"><span class="chip warn">{{ _('Not read yet') }}</span> {{ _('Google Calendar hasn’t read this feed yet.') }}
+          <details class="guide inline"><summary>{{ _('What to check') }}</summary><p>{{ _('Until Google reads it, the subscription shows under its web address and without events. If that lasts more than a few hours, open the raw feed URL in a private browser window: it must download without a login, and nothing in front of CalendarStream (a proxy, or Cloudflare’s bot protection) may block Google.') }}</p></details></div>{% endif %}
       </div>
 
-      <div class="way">
-        <div class="wayhead"><b>{{ _('Share it') }}</b></div>
-        <div class="k" style="margin-top:4px">{{ _('Shareable subscribe page — send this to anyone who should see the schedule (no status-page login needed):') }}</div>
+      <div class="subbox">
+        <div class="boxtitle">{{ _('Share it') }}</div>
+        <div class="subtitle">{{ _('A subscribe page for anyone who should see the schedule (no status-page login needed).') }}</div>
         {{ m.copyfield("page", links.page) }}
         <div class="btnrow">
           <p class="mnote">{{ _('<b>Open subscribe page</b> shows the page other people get: one-click buttons for Google and Apple Calendar, with step-by-step help.') }}</p>
           <a class="btn2" href="{{ links.page }}" target="_blank">{{ _('Open subscribe page') }}</a>
         </div>
       </div>
-    </div>
+    </details>
     </div>
   </section>
 
@@ -622,7 +683,7 @@
   {# Title first, then the status line, a 5-row scrolling log, and the debug links #}
   <section class="card section{% if sections.activity %} open{% endif %}" id="activity" data-section="activity">
     <div class="shead">
-      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.activity else 'false' }}" aria-controls="activity-body"><span class="h2">{{ _('Activity log') }}</span></button>
+      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.activity else 'false' }}" aria-controls="activity-body"><span class="cardtitle">{{ _('Activity log') }}</span></button>
       {% if history %}<span class="peek">{{ _('Latest:') }} {{ msg(history[0].msg) }}</span>{% endif %}
     </div>
     <div class="sbody" id="activity-body"{% if not sections.activity %} hidden{% endif %}>
@@ -689,6 +750,14 @@ document.querySelectorAll('form.watch').forEach(function (f) {
     if (btn) btn.hidden = false;
     f.querySelectorAll('.more').forEach(function (el) { el.hidden = false; });
     f.querySelectorAll('[data-required]').forEach(function (el) { el.required = true; });
+  });
+});
+
+// #9: the styled "Choose Calendar.ics…" button shows the chosen file's name.
+document.querySelectorAll('.filebtn input[type=file]').forEach(function (input) {
+  input.addEventListener('change', function () {
+    var label = input.parentNode.querySelector('span');
+    label.textContent = input.files && input.files[0] ? input.files[0].name : label.dataset.none;
   });
 });
 

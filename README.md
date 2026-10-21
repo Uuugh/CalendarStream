@@ -38,11 +38,10 @@ answers) and the database password are kept.
 Then open the address it printed:
 
 1. **Create your login** with the setup code.
-2. **CCS+ Calendar Sync:** enter your CCS+ UID and Calendar Sync password (shown until they're
-   entered; later under Status & setup or ☰ Settings).
+2. **CCS+ Calendar Sync** (on the status page): enter your CCS+ UID and Calendar Sync password.
 3. **☰ → Public address:** your public `https://` address (needed for Google and for sharing).
-4. **Google Calendar:** set up **Autosync** (recommended), or use **Add to Google Calendar** to
-   subscribe to the feed instead.
+4. **Google Calendar Autosync** (on the status page, recommended), or **Other ways to get the
+   schedule** → **Add to Google Calendar** to subscribe to the feed instead.
 
 ## Settings
 
@@ -91,13 +90,13 @@ logins or setup codes lock an address out for 15 minutes.
   Click an empty spot on a day (or **+**) to add your own. Events can have their own color (one of
   Google's 11), which wins over tags. Edits survive new downloads; ✎ marks
   an edited event, ⚠ one United changed since. Nothing is ever changed in CCS+.
-- **Status & setup:** the calendar's name and color (**(edit)**), the health bar and **Sync now**,
-  **Tag Colors** (e.g. RDO in red, matched by whole word, contains, starts with or exact title), the
-  CCS+ login, the check interval, the upload, and **Google Calendar** (Autosync, the feed, the
-  shareable page).
+- **Status & setup:** the calendar's name and color (**(edit)**) with its status and **Sync now**,
+  then one box each for **Tag Colors** (e.g. RDO in red, matched by whole word, contains, starts
+  with or exact title), **CCS+ Calendar Sync** (login, check interval, upload, step-by-step help)
+  and **Google Calendar Autosync**; the feed and the shareable page are under **Other ways to get
+  the schedule**. Each box shows its status, and each login **✓ Validated** until you change it.
 - **Activity log:** each check and what changed, plus the last download for debugging.
-- **☰ Settings:** status-page login, public address, CCS+ Calendar Sync login, Google Calendar
-  Autosync. Each login shows **✓ Validated** until you change it.
+- **☰ Settings:** site settings only: the status-page login and the public address.
 - **Report a problem / Suggest a feature** at the bottom of the page open a GitHub issue form.
 - **Language** (🌐, left of the Light / Dark / System theme switch): English, Español, Français,
   Deutsch, Português and Vlaams, or Automatic (the browser's language). Everything on the page is
@@ -122,7 +121,7 @@ for access to **calendars it created** and your e-mail address, so it can't see 
   certificate, and your proxy must let Google's POSTs to `/google/notify` through without a login.
   Without it, the daily check carries on as before.
 
-**Setup:** Google Calendar → Autosync (or ☰ → Google Calendar Autosync) has a step-by-step guide to creating a free OAuth client in Google
+**Setup:** the Google Calendar Autosync box has a step-by-step guide to creating a free OAuth client in Google
 Cloud. Paste its client ID and secret (checked with Google straight away), then **Connect**. Google
 warns the app "hasn't verified" it because it's your own: choose **Advanced → Go to CalendarStream**.
 One client serves the whole install, for up to 100 people while unverified. If you also subscribed

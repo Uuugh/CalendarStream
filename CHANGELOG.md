@@ -5,7 +5,30 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.17**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.18**
+
+## 0.1.18 — 2026-10-20
+
+The presentation review (#1–#11), except #4: logins stay on the dashboard.
+
+### Changed
+- **#1** One pattern for every section: the schedule card's header shows its status chip and
+  **Sync now** on the right (folded or not), and each part of Status & setup is a box with a title,
+  a one-line subtitle and a status chip. Activity log uses the same title style.
+- **Logins:** the CCS+ login and the Google Autosync client (with Connect, Disconnect and the
+  instant-updates line) live only on the dashboard, in their boxes. **☰ Settings** now holds only
+  site settings: the status-page login and the public address.
+- **#2** Tag Colors' explanation is folded behind "How tags match".
+- **#3** "Check for changes every [60] minutes" is a labelled field; the `.env` facts are one line under it.
+- **#5** Box titles have short subtitles instead of long bracketed descriptions.
+- **#6** Autosync is the main path; **Subscribe to the feed** and **Share it** are folded under
+  "Other ways to get the schedule".
+- **#7** The feed's "read by Google" status is a chip, with "What to check" folded.
+- **#8** One status chip (✓ good, ! warning, ✗ problem, ↻ working) everywhere.
+- **#9** Two button styles (primary, secondary), all the same height; "Choose Calendar.ics…"
+  replaces the browser's file box and shows the chosen file.
+- **#10** The calendar's legend is one row, with its hint behind a "?".
+- **#11** All step-by-step and help folds look the same.
 
 ## 0.1.17 — 2026-10-20
 

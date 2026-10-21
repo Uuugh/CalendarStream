@@ -746,7 +746,7 @@ def index(request: Request, month: str | None = None):
         "color": calendar_color(), "tags": calendar_tags(), "tag_modes": TAG_MODES,
         "sections": section_state(), "interval": interval_minutes(),
         "zone": display_zone(), "zones": ALL_ZONES, "common_zones": COMMON_ZONES, "reads": feed_reads(lang),
-        "google": google_view(request, lang), "open_menu": request.query_params.get("menu") in ("google", "settings"),
+        "google": google_view(request, lang), "open_menu": request.query_params.get("menu") == "settings",
         "public": {"url": public_url(), "from_settings": bool(store.get("public_url")),
                    "env": settings.public_base_url},
         "page_user": logins.page_user,
@@ -821,8 +821,9 @@ def change_login(request: Request, csrf: str = Form(""), current: str = Form("")
 
 
 def _back_to(back: str, anchor: str) -> str:
-    """Where a form returns to: the Settings menu, or a part of the status page."""
-    return "/?menu=settings" if back == "menu" else f"/#{anchor}"
+    """Where a dashboard form returns to: its own box. (`back` is accepted from older pages and ignored:
+    the logins no longer appear in Settings.)"""
+    return f"/#{anchor}"
 
 
 @app.post("/setup/ccs", dependencies=[Depends(gui_auth)])
@@ -1223,7 +1224,7 @@ async def set_public_url(csrf: str = Form(""), url: str = Form(""), action: str 
         else:
             store.set("public_url", value)
         state.record("info", f"Public address set to {value}")
-    return RedirectResponse("/?menu=google", status_code=303)
+    return RedirectResponse("/#feedcard", status_code=303)
 
 
 @app.post("/google/client", dependencies=[Depends(gui_auth)])
@@ -1279,7 +1280,7 @@ async def google_callback(state_: str = Query("", alias="state"), code: str = ""
     except GoogleError as e:
         google.record_error(str(e))
         state.record("error", f"Google: {e}")
-    return RedirectResponse("/?menu=google", status_code=303)
+    return RedirectResponse("/#feedcard", status_code=303)
 
 
 @app.post("/google/disconnect", dependencies=[Depends(gui_auth)])
@@ -1287,7 +1288,7 @@ async def google_disconnect(csrf: str = Form(""), delete: str = Form("")):
     """Stop syncing: optionally delete CalendarStream's calendar, then remove its access in Google."""
     check_csrf(csrf)
     if not google.connected:
-        return RedirectResponse("/?menu=google", status_code=303)
+        return RedirectResponse("/#feedcard", status_code=303)
     email = google.info().get("email") or "your account"
     async with google_job.lock:      # not in the middle of a sync
         await google.stop_watch()
@@ -1297,7 +1298,7 @@ async def google_disconnect(csrf: str = Form(""), delete: str = Form("")):
     what = "and its calendar deleted" if delete == "1" and not any("calendar" in n for n in notes) else ""
     state.record("warn" if notes else "info", f"Google Calendar disconnected ({email}) {what}".strip()
                  + ("; " + "; ".join(notes) if notes else ""))
-    return RedirectResponse("/?menu=google", status_code=303)
+    return RedirectResponse("/#feedcard", status_code=303)
 
 
 @app.post("/google/notify")
@@ -1319,7 +1320,7 @@ async def google_sync_now(csrf: str = Form("")):
     check_csrf(csrf)
     request_google_sync(full=True)
     await asyncio.sleep(0.5)
-    return RedirectResponse("/?menu=google", status_code=303)
+    return RedirectResponse("/#feedcard", status_code=303)
 
 
 @app.get("/subscribe/{token}")
