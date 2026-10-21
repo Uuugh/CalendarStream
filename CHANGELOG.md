@@ -5,7 +5,14 @@ first). Every release is tagged `v<version>`; the newest is also tagged `beta`. 
 the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
 **removed**. Feature requests are labelled F1, F2, …
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.12**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.1.13**
+
+## 0.1.13 — 2026-10-20
+
+### Changed
+- **F1** The Google Calendar Autosync client form looks like the CCS+ Calendar Sync login: the
+  Client ID and Client secret boxes are stacked full width and named by their placeholders, with
+  the description and **Save** below them.
 
 ## 0.1.12 — 2026-10-20
 

@@ -174,9 +174,10 @@
   .copybtn.done { color:var(--ok) }
   /* Check results (CCS+ sign-in, Google client) */
   .check { margin:6px 0 0; font-weight:600; font-size:13px }
-  /* Google client form: "Client ID [box]" and "Client secret [box]" on one line each; the note and Save share the last line. */
-  .clientform .kv { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:4px 10px; margin-top:6px }
-  .clientform .kv label { margin:0 !important; white-space:nowrap; min-width:88px }
+  /* Google client form: like the CCS+ login (two stacked boxes); the note and Save share the last line. */
+  .clientform .feed.stack { flex-wrap:wrap; margin-top:6px }
+  .clientform .feed.stack input { flex:1 1 100%; width:auto; font:13px ui-monospace,monospace; padding:8px }
+  .menu .clientform .feed.stack input { font-size:12px; padding:6px }
   .clientform .formfoot { display:flex; align-items:flex-start; gap:12px; margin-top:8px }
   .clientform .formfoot .mnote { flex:1; margin:0 }
   .clientform .formfoot .eactions { display:flex; gap:8px; margin:0 0 0 auto; flex:0 0 auto }
