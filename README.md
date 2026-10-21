@@ -15,6 +15,23 @@ either:
 
 A status page shows the schedule, lets you edit events, and walks you through setup.
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/calendar-dark.png">
+    <img src="docs/screenshots/calendar-light.png" alt="The status page's month view: the schedule with RDO, VAC and SIM tag colors, a 12h/24h switch and a time-zone menu" width="760">
+  </picture>
+</p>
+
+<details>
+<summary>More screenshots: setup, adding an event, Settings</summary>
+<p align="center">
+  <img src="docs/screenshots/status.png" alt="Status &amp; setup: Tag Colors, CCS+ Calendar Sync and Google Calendar Autosync boxes" width="620"><br><br>
+  <img src="docs/screenshots/event.png" alt="Adding an event: typed times with a time list, time zones and an event color" width="420">
+  <img src="docs/screenshots/settings.png" alt="Settings: status-page login, public address and update checks" width="300">
+</p>
+<sub>Made-up demo schedule.</sub>
+</details>
+
 ## Quick start
 
 On any computer with Docker (Linux, macOS with Docker Desktop, or Windows in a WSL terminal), run:

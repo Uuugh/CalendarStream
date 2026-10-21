@@ -249,9 +249,10 @@
   button, .btn, .btn2, .ghostbtn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:34px; padding:0 14px;
           font:inherit; font-size:14px; font-weight:600; border-radius:8px; text-decoration:none; cursor:pointer; white-space:nowrap }
   .btn2, .ghostbtn, button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
-  .calhead button.title, .langmenu button, .seg button, .monthpick button, .ev .pin, .linkbtn, .copybtn, .clockswitch button,
+  .calhead button.title, .langmenu button, .seg button, .monthpick button, .linkbtn, .copybtn,
   .inbox .inboxbtn { height:auto }
   .copybtn { height:34px }
+  .clockswitch button { height:22px; width:38px; padding:0 } .ev .pin { height:20px; width:20px; padding:0 }
   .editor .tagrow .addtag, .editor .tagrow .deltag, .editor .casebtn { height:36px }
   .filebtn { position:relative; overflow:hidden; max-width:260px }
   .filebtn input { position:absolute; inset:0; opacity:0; cursor:pointer }
@@ -273,7 +274,7 @@
   /* #10 One legend row with a help dot */
   .helpdot { display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; border:1px solid var(--line); color:var(--muted);
              font-size:11px; font-weight:700; cursor:help; margin-left:auto }
-  .helpdot::before { display:none }
+  .legend .helpdot::before { display:none }
   form.connect, form.inline { margin:0 }
   .tagsform.editor { border:0; padding:0; margin:0; background:transparent }
   .addfirst { width:36px; padding:0; font-size:18px }
