@@ -32,12 +32,25 @@
 </head>
 <body><main>
   <h1>{{ name }}</h1>
-  <p class="sub">{{ _('A live calendar feed of this United CCS schedule.') }}
+  <p class="sub">{{ _('A live calendar feed.') }}
     {% if last_success %}{{ _('Last updated {when} · {n} events.', when=dates.short(last_success.date()) ~ ', ' ~ dates.clock(last_success), n=event_count) }}{% endif %}</p>
 
   {% if not links.is_public %}
   <div class="warn">{{ _('This link isn’t on a public HTTPS address yet, so Google won’t be able to load it. Set the public address in CalendarStream’s Settings (☰ → Public address).') }}</div>
   {% endif %}
+
+  {# On a phone, Google's app can't add a calendar from a link, and a calendar added on the mobile website
+     doesn't show in the app until its Sync is turned on (I1). Shown on phones only, by the script below. #}
+  <div class="card phonehelp" id="phonehelp" hidden>
+    <h2>{{ _('On a phone') }}</h2>
+    <ol>
+      <li>{{ _('Copy the link (under <b>Button didn’t work?</b> below).') }}</li>
+      <li>{{ _('In Chrome, open <a href="https://calendar.google.com" target="_blank" rel="noopener">calendar.google.com</a>, then menu <b>⋮</b> → tick <b>Desktop site</b> (or use a computer).') }}</li>
+      <li>{{ _('Next to <b>Other calendars</b>, press <b>+</b> → <b>From URL</b>, paste the link and press <b>Add calendar</b>.') }}</li>
+      <li>{{ _('In the <b>Google Calendar app</b>: menu ☰ → <b>Settings</b> → tap the calendar’s name (under your Google account; it may be under <b>Show more</b>) → turn on <b>Sync</b>. Until then the app doesn’t show it, even if Google added it.') }}</li>
+      <li>{{ _('Google loads a new calendar within a few hours; it’s empty until then.') }}</li>
+    </ol>
+  </div>
 
   <div class="card">
     <h2>{{ _('Add to Google Calendar') }}</h2>
@@ -51,7 +64,7 @@
       <li>{{ _('Click <b>Add to Google Calendar</b> above. Sign in to the Google account you want it on if asked.') }}</li>
       <li>{{ _('Google asks <i>“Add this calendar?”</i> — click <b>Add</b>.') }}</li>
       <li>{{ _('The schedule appears under <b>Other calendars</b> on the left. Change its color or name there if you like.') }}</li>
-      <li>{{ _('<b>On your phone:</b> it appears in the Google Calendar app automatically. If it doesn’t, open the app’s <b>Settings</b>, tap the calendar’s name, and turn on <b>Sync</b>.') }}</li>
+      <li>{{ _('<b>In the Google Calendar app on a phone:</b> menu ☰ → <b>Settings</b> → tap the calendar’s name (it may be under <b>Show more</b>) → turn on <b>Sync</b>. Until then the app doesn’t show it.') }}</li>
     </ol>
     <p class="note">{{ _('Google refreshes subscribed calendars on its own schedule, usually every few hours, so recent changes can take a while to show up. Always confirm against CCS before acting on a change.') }}</p>
   </div>
@@ -70,9 +83,13 @@
     </details>
   </div>
 
-  <p class="note">{{ _('Keep this page’s link private — anyone who has it can see the schedule. To stop sharing, the owner can change the feed token, which turns off the old links.') }}</p>
+  <p class="note">{{ _('Keep this page’s link private — anyone who has it can see the schedule. To stop sharing, the owner can change the stream name, which turns off the old links.') }}</p>
 </main>
 <script>
+// Phones: show how to add it there first (Google's app can't add a calendar from a link).
+if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  var help = document.getElementById('phonehelp'); help.hidden = false;
+}
 var T = { copied: {{ _('Copied')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }} };
 // Copy a field's text. Uses the Clipboard API on HTTPS/localhost, and falls back to
 // select + execCommand on plain-HTTP pages (e.g. http://192.168.x.x:8080) where it's blocked.

@@ -8,6 +8,50 @@ the `latest` image and the GitHub Release marked **Latest**. Each version lists 
 
 **Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.5**
 
+## 0.2.6 — 2026-10-22
+
+### Added
+- **F1.2** The version number at the top links to its release notes on GitHub.
+- **F3.1** Adding a calendar source: "Calendar feed (.ics link) — add any calendar with a link
+  starting with `webcal://` or ending in `.ics`", with a **Title**, the **Link** and a **Note** (a
+  short message shown next to the source's title).
+- **F4** Each destination has a **Start** and **End** date (empty = no limit); it only gets the
+  events between them.
+- **F5.1** Predefined rules in the Rules section: **Items without an end time** and **24-hour
+  events**. New sources start with both.
+
+### Changed
+- **F1.1** "(v0.2.0)" next to the version reads "(v0.2.0 is available)".
+- **F2** The page's layout:
+  - **F2.1** **▸ Configure ◂** uses the same rotating arrows as the other collapsible parts.
+    - **F2.1.1** Equal, smaller spacing above and below it.
+  - **F2.2** No more **(edit)** links: opening Configure turns a source's color, title and note
+    into fields.
+  - **F2.3** **✓ Validated** is a rounded box like **Healthy**.
+    - **F2.3.1** **Save** and **Cancel** together are the same size as that box.
+  - **F2.4** Every section except the Calendar has the same kind of heading as Calendar Sources.
+    - **F2.4.1** The sections are Calendar, Calendar Sources, Calendar Destinations (the Google
+      calendar boxes moved in here), Rules and Activity.
+  - **F2.5** Wide screens: Calendar (opens on the calendar view unless another is chosen), then
+    Calendar Sources | Calendar Destinations and Rules | Activity side by side, then the footer.
+    Narrow screens and phones: one column, the Calendar opens on the List (itinerary) view unless
+    another is chosen, and the view and theme switches become one button each that steps through
+    the choices.
+- **F3.2** A source's Rules:
+  - **F3.2.1** Each rule is a rounded box spanning the line.
+  - **F3.2.2** Each line starts with a menu of the rules defined in the Rules section, ending with
+    **Create a New Rule…**, which opens the same dialog as creating a rule in the Rules section.
+- Rule templates are now simply **Rules**: every rule lives in the Rules section and sources pick
+  from it. A source's own rules and the ticked rule templates of 0.2.5 are moved there, in the same
+  order, with their settings. **Event templates** are a box inside Rules.
+
+### Fixed
+- **I1** "Add to Google Calendar" on Android: the calendar was added but never appeared. Google's
+  Android app can't subscribe by link, and a linked calendar stays hidden on the phone until its
+  **Sync** is turned on. The subscribe page (on Android and iPhone) and each feed's box now explain
+  how: add it on calendar.google.com (desktop site), then in the app **Settings →** the calendar
+  **→ Sync**; Google can take a few hours to load it.
+
 ## 0.2.5 — 2026-10-22
 
 ### Changed

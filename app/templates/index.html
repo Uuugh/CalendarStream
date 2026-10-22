@@ -34,6 +34,7 @@
   .topbar h1 { font-size:20px; margin:0; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
   .topbar .ver { color:var(--muted); font-size:13px; font-weight:500; margin-left:4px }
   .topbar .newver { color:var(--accent); font-weight:600; text-decoration:none; margin-left:3px } .topbar .newver:hover { text-decoration:underline }
+  .topbar .ver a.curver { color:inherit; text-decoration:none } .topbar .ver a.curver:hover { text-decoration:underline }
   form .pair label.fld select { width:100%; height:34px; font:inherit; font-size:13px; padding:0 6px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
   .seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--card) }
   .seg button { display:inline-flex; align-items:center; background:transparent; color:var(--muted); border:0; border-radius:0; padding:7px 9px; line-height:1 }
@@ -201,26 +202,29 @@
   .menu form .pair > button, .menu .okmark { padding-left:10px; padding-right:10px }
   /* "✓ Validated" / "✓ Signed in" where the button goes, until something is typed. */
   /* The slot next to a login: ✓ Validated, or Save + Cancel while editing (see okbutton in _macros.html) */
-  .okslot { flex:0 0 var(--slotw, 170px); width:var(--slotw, 170px); margin-left:auto; align-self:flex-end; height:34px;
-            display:flex; align-items:center; justify-content:flex-end; gap:6px; overflow:hidden }
-  .menu .okslot { --slotw:150px }
+  .okslot { flex:0 0 var(--slotw, 156px); width:var(--slotw, 156px); margin-left:auto; align-self:flex-end; height:28px; margin-bottom:3px;
+            display:flex; align-items:center; justify-content:flex-end; gap:0; overflow:hidden; border-radius:999px }
+  .menu .okslot { --slotw:140px }
   .okslot > * { display:none }
-  .okslot .okmark, .okslot .slotmsg { padding:0 4px; font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-  .okslot .okmark { color:var(--ok) }
-  .okslot button { flex:1 1 0; min-width:0; height:34px; padding:0 8px; overflow:hidden;
+  .okslot .okmark, .okslot .slotmsg { width:100%; height:28px; align-items:center; justify-content:center; border-radius:999px;
+                                      padding:0 8px; font-weight:700; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .okslot .okmark { color:var(--ok); background:var(--okbg) }
+  .okslot button { flex:1 1 0; min-width:0; height:28px; padding:0 8px; font-size:12.5px; border-radius:0; overflow:hidden;
                    transition:flex-grow .3s ease, padding .3s ease, opacity .3s ease, background-color .3s ease, color .3s ease }
-  .okslot[data-state="ok"] .okmark { display:inline; animation:slotfade .45s ease }
-  .okslot[data-state="needs"] .slotsave { display:inline-flex }
+  .okslot .slotsave { border-radius:999px 0 0 999px }
+  .okslot .slotcancel { border-radius:0 999px 999px 0; border-left-width:0 }
+  .okslot[data-state="ok"] .okmark { display:flex; animation:slotfade .45s ease }
+  .okslot[data-state="needs"] .slotsave { display:inline-flex; border-radius:999px }
   .okslot[data-state="edit"] .slotsave, .okslot[data-state="edit"] .slotcancel,
   .okslot[data-state="cancel"] .slotsave, .okslot[data-state="cancel"] .slotcancel,
   .okslot[data-state="saving"] .slotsave, .okslot[data-state="saving"] .slotcancel { display:inline-flex }
+  .okslot[data-state="cancel"] .slotcancel, .okslot[data-state="saving"] .slotsave { border-radius:999px; border-left-width:1px }
   .okslot[data-state="cancel"] .slotsave, .okslot[data-state="saving"] .slotcancel { flex-grow:0; padding:0; border-width:0; opacity:0 }
   .okslot[data-state="saving"] .slotsave { pointer-events:none }
-  .okslot[data-state="verifying"] .slotmsg, .okslot[data-state="valid"] .slotmsg, .okslot[data-state="failed"] .slotmsg { display:inline; animation:slotfade .3s ease }
-  .okslot[data-state="verifying"] .slotmsg { color:var(--warn) }
-  .okslot[data-state="valid"] .slotmsg { color:var(--ok) }
-  .okslot[data-state="failed"] .slotmsg { color:var(--bad) }
-  .okslot[data-state="failed"] .slotsave { display:none }
+  .okslot[data-state="verifying"] .slotmsg, .okslot[data-state="valid"] .slotmsg, .okslot[data-state="failed"] .slotmsg { display:flex; animation:slotfade .3s ease }
+  .okslot[data-state="verifying"] .slotmsg { color:var(--warn); background:var(--warnbg) }
+  .okslot[data-state="valid"] .slotmsg { color:var(--ok); background:var(--okbg) }
+  .okslot[data-state="failed"] .slotmsg { color:var(--bad); background:var(--badbg) }
   @keyframes slotfade { from { opacity:0 } to { opacity:1 } }
   form .pair[hidden], .mnote[hidden] { display:none }
   /* A box with a small button inside it, on the right (Public address → This page). */
@@ -413,13 +417,80 @@
     .editor .tagrow { flex-wrap:wrap; border:1px solid var(--line); border-radius:10px; padding:8px }
     .editor .tagrow input[name=tag], .editor .tagrow input[name=tpl_title] { flex-basis:100% }
   }
+  /* ---- 0.2.6 ------------------------------------------------------------------------------- */
+  /* A source's title, color and note: shown while folded, fields while Configure is open */
+  .editonly { display:none }
+  .src.cfgopen .showonly { display:none !important }
+  .src.cfgopen .editonly { display:inline-block }
+  .src input.colorpick { width:34px; height:28px; padding:1px; border:1px solid var(--line); border-radius:6px; background:var(--card); cursor:pointer }
+  .src .nameinput, .src .noteinput { font:inherit; padding:3px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); width:min(240px, 100%) }
+  .src .nameinput { font-size:16px; font-weight:700 } .src .noteinput { font-size:13px }
+  .srcnote { font-size:13px; color:var(--muted); font-weight:500 }
+  /* ▸ Configure ◂: the arrows turn down when it's open; equal space above and below */
+  .box.src { padding-bottom:6px }
+  .cfgline { margin:6px 0 0 }
+  .cfgtoggle .arr { display:inline-block; color:var(--muted); font-size:12px; transition:transform .15s }
+  .cfgtoggle[aria-expanded="true"] .arr.l { transform:rotate(90deg) }
+  .cfgtoggle[aria-expanded="true"] .arr.r { transform:rotate(-90deg) }
+  .cfgbody { margin-top:6px; padding-bottom:8px; container-type:inline-size }
+  /* In a narrow box (half the page, or a phone) the Site Address, login and upload stack */
+  @container (max-width:720px) {
+    .cfggrid { grid-template-columns:1fr }
+    .cfggrid .siteaddr, .cfggrid .pair, .cfggrid .uploadform { grid-column:1; grid-row:auto }
+    .cfggrid .uploadform { justify-content:flex-start }
+  }
+  /* Rules: each in a rounded box across the line */
+  .rulebox { display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:999px; padding:3px 4px 3px 12px; margin-top:6px; background:var(--card) }
+  .rulebox select.rulepick { flex:1; min-width:0; height:30px; border:0; background:transparent; color:var(--text); font:inherit; font-size:13.5px; cursor:pointer }
+  .rulebox .ruletype { font-size:12px; font-weight:700; color:var(--muted); white-space:nowrap }
+  .rulebox .rulelabel { flex:1; min-width:0; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .rulebox .rulelabel .swatch { width:14px; height:12px }
+  .rulebox .ruleused { font-size:12px; color:var(--muted); white-space:nowrap }
+  .rulebox button, .rulebox form button { height:30px; width:30px; padding:0; border:0; border-radius:999px; color:var(--muted); background:transparent }
+  .rulebox button:hover { background:var(--soft); color:var(--accent) } .rulebox .delrule:hover, .rulebox .delpick:hover { color:var(--bad) }
+  .rulebox form { margin:0 }
+  .rulelist { margin-top:6px }
+  button.addrule { margin-top:8px; height:30px; font-size:13px }
+  @media (max-width:600px) { .rulebox.lib { flex-wrap:wrap; border-radius:12px } .rulebox .ruleused { flex-basis:100% } }
+  /* The rule dialog */
+  #ruledialog { border:1px solid var(--line); border-radius:14px; background:var(--card); color:var(--text); padding:18px; width:min(520px, calc(100vw - 32px)) }
+  #ruledialog::backdrop { background:rgba(0,0,0,.45) }
+  #ruledialog .title { font-weight:700; font-size:16px }
+  #ruledialog .lbl { display:block; font-size:12px; color:var(--muted); font-weight:600; margin:12px 0 4px }
+  #ruledialog .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+  #ruledialog input[type=text], #ruledialog select { font:inherit; font-size:14px; height:34px; padding:0 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  #ruledialog input[name=tag] { flex:1 1 160px; min-width:0 }
+  #ruledialog input.dur { width:64px; text-align:center }
+  #ruledialog input[type=color] { width:44px; height:34px; padding:2px; border:1px solid var(--line); border-radius:8px; background:var(--card) }
+  #ruledialog .casebtn { height:34px; padding:0 10px; color:var(--muted) }
+  #ruledialog .casebtn[aria-pressed="true"] { background:var(--accent); color:var(--onaccent); border-color:var(--accent) }
+  #ruledialog .eactions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px }
+  /* A destination's dates */
+  .destform .pair.dates label.fld { flex:0 1 170px } .destform .pair.dates input { height:34px }
+  .destform .pair.dates .mnote { flex:1 1 200px; align-self:center; margin:0 }
+  /* Activity: the same head as the other sections */
+  #activity > .shead .bigtitle { font-size:24px; font-weight:600; color:var(--text) }
+  /* Wide screens: Sources | Destinations, then Rules | Activity */
+  @media (min-width:1300px) {
+    main { max-width:1640px }
+    .sections { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:0 16px; align-items:start }
+  }
+  /* Narrow screens: the view and theme choices become one button each that steps through them */
+  .cyclebtn { display:none }
+  @media (max-width:700px) {
+    .viewseg, .topbar .seg { display:none }
+    .cyclebtn { display:inline-flex; height:28px; padding:0 10px; font-size:12.5px }
+    .topbar .themecycle { height:34px; width:38px; padding:0 }
+  }
 </style>
 </head>
 <body>{% import "_macros.html" as m with context %}<main>
   <header class="topbar">
-    <h1>CalendarStream<span class="ver">v{{ version }}{% if update.available %}
+    {# The version links to its release notes on GitHub; a newer one shows as "(v0.2.0 is available)". #}
+    <h1>CalendarStream<span class="ver"><a class="curver" href="{{ update.releases }}/tag/v{{ version }}" target="_blank" rel="noopener"
+         title="{{ _('What’s in this version (GitHub)') }}">v{{ version }}</a>{% if update.available %}
       <a class="newver" href="{{ update.releases }}/tag/v{{ update.available }}" target="_blank" rel="noopener"
-         title="{{ _('A newer version is available: run the installer again to update.') }}">(v{{ update.available }})</a>{% endif %}</span></h1>
+         title="{{ _('Run the installer again to update.') }}">{{ _('(v{v} is available)', v=update.available) }}</a>{% endif %}</span></h1>
     {# Language menu: Automatic follows the browser; the choice is saved in the database. #}
     <div class="langwrap">
       <button type="button" class="iconbtn" id="langbtn" aria-haspopup="menu" aria-expanded="false" aria-controls="langmenu"
@@ -434,6 +505,7 @@
         {% endfor %}
       </div>
     </div>
+    <button type="button" class="ghost cyclebtn themecycle" title="{{ _('Theme: press for the next one') }}" aria-label="{{ _('Color theme') }}"></button>
     <div class="seg" role="group" aria-label="{{ _('Color theme') }}">
       <button type="button" data-theme-choice="light" title="{{ _('Light') }}" aria-label="{{ _('Light theme') }}">
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
@@ -531,9 +603,17 @@
   {% set cls = {"ok":"ok","running":"run","starting":"run","paused":"warn","setup":"warn"}.get(s.status,"bad") %}
   {% set label = {"ok":_("Healthy"),"running":_("Syncing…"),"starting":_("Starting"),"paused":_("Paused"),"setup":_("Setup needed"),"auth_failed":_("Sign-in rejected"),"blocked":_("Blocked"),"error":_("Error")}.get(s.status, s.status) %}
 
-  {# A rule template, in one line: "RDO → ■" or "EWR → Drive to the airport". #}
-  {% macro rule_label(t) -%}
-  <b>{{ t.tag }}</b> → {% if t.action == "color" %}<span class="swatch" style="--c:{{ t.color }};width:14px;height:12px" aria-hidden="true"></span>{% else %}{% for e in templates if e.id == t.template %}{{ e.title }}{% endfor %}{% endif %}
+  {# One of a source's rules: a menu of every rule (by kind), ending with "Create a New Rule…". #}
+  {% macro rule_pick(rid) -%}
+  <div class="rulebox pick">
+    <select name="rule_sub" class="rulepick" aria-label="{{ _('Rule') }}">
+      {% if not rid %}<option value="" selected disabled>{{ _('Choose a rule…') }}</option>{% endif %}
+      {% for k, v in rule_types.items() %}{% set group = rule_lib|selectattr("type", "equalto", k)|list %}{% if group %}
+      <optgroup label="{{ _(v) }}">{% for r in group %}<option value="{{ r.id }}"{% if r.id == rid %} selected{% endif %}>{{ r.label }}</option>{% endfor %}</optgroup>{% endif %}{% endfor %}
+      <option value="__new">{{ _('Create a New Rule…') }}</option>
+    </select>
+    <button type="button" class="ghost delpick" title="{{ _('Take this rule off this source') }}" aria-label="{{ _('Take this rule off this source') }}">{{ trash }}</button>
+  </div>
   {%- endmacro %}
 
   {# One event on the calendar: its title line, and its details (with Edit, Duplicate and Delete) when clicked. #}
@@ -582,6 +662,8 @@
           <optgroup label="{{ _('Common') }}">{% for z in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
           <optgroup label="{{ _('All time zones') }}">{% for z in zones if z not in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
         </select>
+        {% set view_names = {"month": _('Month'), "week": _('Week'), "day": _('Day'), "list": _('List')} %}
+        <button type="button" class="ghost cyclebtn viewcycle" data-view="{{ cal.view }}" title="{{ _('View: press for the next one') }}">{{ view_names[cal.view] }} ⟳</button>
         <div class="viewseg" role="group" aria-label="{{ _('View') }}">
           {% for v, label in (("month", _('Month')), ("week", _('Week')), ("day", _('Day')), ("list", _('List'))) %}<button type="button" data-view="{{ v }}" aria-pressed="{{ 'true' if cal.view == v else 'false' }}">{{ label }}</button>{% endfor %}
         </div>
@@ -629,6 +711,7 @@
      help folded at the bottom. + in a card's corner adds a source or destination; a new install has none. #}
   {% set status_labels = {"ok":_("Healthy"),"running":_("Syncing…"),"starting":_("Starting"),"paused":_("Paused"),"setup":_("Setup needed"),"auth_failed":_("Sign-in rejected"),"blocked":_("Blocked"),"error":_("Error")} %}
 
+  <div class="sections">
   <section class="card" id="sources" aria-labelledby="sourcestitle">
     <div class="cardhead">
       <h2 class="bigtitle" id="sourcestitle">{{ _('Calendar Sources') }}</h2>
@@ -648,10 +731,13 @@
           <form method="post" action="/sources/add" class="opt col">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="ics">
             <div><b>{{ _('Calendar feed (.ics link)') }}</b>
-              <div class="subtitle">{{ _('Any calendar with a link ending in .ics or starting with webcal://: another airline, work, school, sports…') }}</div></div>
+              <div class="subtitle">{{ _('Add any calendar with a link starting with webcal:// or ending in .ics') }}</div></div>
             <div class="pair">
+              <label class="fld"><span>{{ _('Title') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Work') }}"></label>
               <label class="fld"><span>{{ _('Link') }}</span><input name="url" required spellcheck="false" placeholder="https://… / webcal://…"></label>
-              <label class="fld"><span>{{ _('Name') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Work') }}"></label>
+            </div>
+            <div class="pair">
+              <label class="fld"><span>{{ _('Note') }}</span><input name="note" maxlength="120" placeholder="{{ _('A short message that will appear next to the source title') }}"></label>
               <button>{{ _('Add') }}</button>
             </div>
           </form>
@@ -666,12 +752,15 @@
     {% set scls = {"ok":"good","running":"run","starting":"run","paused":"warn","setup":"warn"}.get(S.status, "bad") %}
     {# Header: name and kind on the left; the last download, the check interval, status and Sync now on
        the right. "Configure" under it opens the rest (folded unless something needs doing). #}
-    <div class="box src" id="src-{{ x.id }}" data-section="src:{{ x.id }}">
+    <div class="box src{% if x.open %} cfgopen{% endif %}" id="src-{{ x.id }}" data-section="src:{{ x.id }}">
+      {# While Configure is open the title, color and note are fields (saved with Save at the bottom). #}
       <div class="srchead">
-        <span class="swatch" style="--c:{{ x.color or 'var(--accent)' }}" aria-hidden="true"></span>
+        <span class="swatch showonly" style="--c:{{ x.color or 'var(--accent)' }}" aria-hidden="true"></span>
+        <input type="color" class="colorpick editonly" form="srcform-{{ x.id }}" value="{{ x.color or '#1d4ed8' }}" aria-label="{{ _('Color') }}" title="{{ _('Color of its events') }}">
         <div class="srcleft">
-          <div class="srctitle"><span class="srcname">{{ x.name }}</span>
-            <button type="button" class="linkbtn editbtn" aria-expanded="false" aria-controls="ed-{{ x.id }}">{{ _('(edit)') }}</button></div>
+          <div class="srctitle"><span class="srcname showonly">{{ x.name }}</span>{% if x.note %}<span class="srcnote showonly">{{ x.note }}</span>{% endif %}
+            <input type="text" class="nameinput editonly" form="srcform-{{ x.id }}" name="name" value="{{ x.name }}" maxlength="100" aria-label="{{ _('Title') }}" placeholder="{{ _('Title') }}">
+            <input type="text" class="noteinput editonly" form="srcform-{{ x.id }}" name="note" value="{{ x.note }}" maxlength="120" aria-label="{{ _('Note') }}" placeholder="{{ _('Note (shown next to the title)') }}"></div>
           <div class="srctype">{{ _('CCS+ Calendar Sync') if ccs else _('Calendar feed') ~ ' · ' ~ x.host }}</div>
         </div>
         <div class="srcright">
@@ -691,26 +780,8 @@
         </div>
       </div>
 
-      {# Name and color, hidden until (edit) is pressed. #}
-      <form class="editor nameeditor" id="ed-{{ x.id }}" method="post" action="/feed/name" hidden>
-        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
-        <label class="lbl" for="name-{{ x.id }}">{{ _('Source name') }}</label>
-        <div class="row"><input type="text" id="name-{{ x.id }}" name="name" value="{{ x.name }}" placeholder="{{ _('Source name') }}" maxlength="100"></div>
-        <p class="hint">{{ _('The source’s name on this page. Each destination has its own name, which is what Google and other calendar apps show.') }}</p>
-        <label class="lbl">{{ _('Default color') }}</label>
-        <div class="row">
-          <input type="color" class="colorpick" value="{{ x.color or '#1d4ed8' }}" aria-label="{{ _('Default color') }}" data-name="color">
-          <input type="hidden" name="color_default" class="colordefault" value="">
-          <button type="button" class="ghost colorreset">{{ _('Default') }}</button>
-          <span class="muted colornote" style="font-size:13px">{{ "" if x.color else _('Using the standard colors') }}</span>
-        </div>
-        <div class="eactions">
-          <button type="button" class="ghost editcancel">{{ _('Cancel') }}</button>
-          <button>{{ _('Save') }}</button>
-        </div>
-      </form>
 
-      <div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if x.open else 'false' }}" aria-controls="cfg-{{ x.id }}">&gt; {{ _('Configure') }} &lt;</button></div>
+      <div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if x.open else 'false' }}" aria-controls="cfg-{{ x.id }}"><span class="arr l" aria-hidden="true">▸</span> {{ _('Configure') }} <span class="arr r" aria-hidden="true">◂</span></button></div>
       <div class="cfgbody" id="cfg-{{ x.id }}"{% if not x.open %} hidden{% endif %}>
       {% if ccs %}
         {% set setup = x.setup %}
@@ -759,48 +830,22 @@
         <p class="mnote">{{ _('Repeating events are shown from a year back to two years ahead.') }}</p>
       {% endif %}
 
-        {# Rules (were Tag Colors): match a title, then color it or add an event from a template; then the
-           two built-in rules (events with no end time, 24-hour events). #}
-        <div class="subbox rules" id="rules-{{ x.id }}">
-          <div class="boxhead"><div><div class="boxtitle">{{ _('Rules') }}</div>
-            <div class="subtitle">{{ _('Do something with events whose title matches: color RDO in red, or add a drive to the airport before each trip.') }}</div></div>
-            <button type="button" class="ghost addfirst"{% if x.rules %} hidden{% endif %} title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">+</button></div>
-          <form class="editor tagsform" id="rulesform-{{ x.id }}" method="post" action="/feed/tags"{% if not x.rules %} data-empty{% endif %}>
-            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
-            <template class="rowtpl">{{ m.rule_row({"id": "", "tag": "", "color": x.color or "#1d4ed8", "mode": "word", "case": false, "action": "color", "template": "", "when": "before_start", "offset": 0}, templates, tag_modes, rule_actions, rule_when, trash) }}</template>
-            {# The rule templates this source uses (ticked), then its own rules, then the two built-in ones #}
-            <div class="rtpicks">
-              <span class="k">{{ _('Rule templates:') }}</span>
-              {% for t in rule_tpls %}<label class="srcpick"><input type="checkbox" name="rule_sub" value="{{ t.id }}"{% if t.id in x.subs %} checked{% endif %}> {{ rule_label(t) }}</label>{% endfor %}
-              {% if not rule_tpls %}<span class="mnote">{{ _('none yet (add them under Rule templates, below).') }}</span>{% endif %}
-            </div>
-            <div class="tagrows">{% for t in x.rules %}{{ m.rule_row(t, templates, tag_modes, rule_actions, rule_when, trash) }}{% endfor %}</div>
-            <div class="fixedrows">
-              <div class="row tagrow fixedrule" data-mode="{{ x.defaults.mode }}">
-                <span class="fixedname">{{ _('Items without an end time') }}</span><span class="arrow" aria-hidden="true">→</span>
-                <select name="no_end_mode" class="nomode" aria-label="{{ _('Items without an end time') }}">
-                  <option value="hours"{% if x.defaults.mode != "allday" %} selected{% endif %}>{{ _('Last') }}</option>
-                  <option value="allday"{% if x.defaults.mode == "allday" %} selected{% endif %}>{{ _('All day') }}</option>
-                </select>
-                <input type="text" name="no_end_length" class="dur" value="{{ x.no_end_length }}" aria-label="{{ _('How long (hours:minutes)') }}" title="{{ _('How long (hours:minutes)') }}">
-              </div>
-              <div class="row tagrow fixedrule">
-                <span class="fixedname">{{ _('24-hour events') }}</span><span class="arrow" aria-hidden="true">→</span>
-                <select name="allday24" aria-label="{{ _('24-hour events') }}" title="{{ _('CCS+ writes full days as 00:01–23:59; shown as all-day, the original times go in the notes.') }}">
-                  <option value="1"{% if x.defaults.allday_24h %} selected{% endif %}>{{ _('Shown as all-day') }}</option>
-                  <option value="0"{% if not x.defaults.allday_24h %} selected{% endif %}>{{ _('Keep their times') }}</option>
-                </select>
-              </div>
-            </div>
-          </form>
-        </div>
+        {# The rules this source uses, in order: each picked from the Rules section, or made new there. #}
+        <form class="srcform" id="srcform-{{ x.id }}" method="post" action="/feed/tags">
+          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
+          <input type="hidden" name="rules_form" value="1"><input type="hidden" name="color_default" class="colordefault" value="">
+          <div class="subbox rules" id="rules-{{ x.id }}">
+            <div class="boxtitle">{{ _('Rules') }}</div>
+            <div class="subtitle">{{ _('The rules this source uses, in order (for colors the first match wins). Pick one, or Create a New Rule.') }}</div>
+            <div class="srcrules">{% for rid in x.subs %}{{ rule_pick(rid) }}{% endfor %}</div>
+            <template class="srcruletpl">{{ rule_pick("") }}</template>
+            <button type="button" class="ghost addrule" data-sid="{{ x.id }}">+ {{ _('Add a rule') }}</button>
+          </div>
+        </form>
 
-        {# One line at the bottom: how rules work, Save (the rules) and Remove (the source). #}
+        {# One line at the bottom: Save (title, color, note and rules) and Remove (the source). #}
         <div class="srcfoot">
-          <details class="guide inline"><summary>{{ _('How rules work') }}</summary>
-            <p>{{ _('Events whose title matches a rule get its color or an added event; for colors the first matching rule wins, and other events use the calendar’s color. <b>Whole word</b>: “RDO” matches “RDO.” but not “VRDO”. <b>Contains</b>: anywhere, even inside a word. <b>Starts with</b>: the title begins with it. <b>Exact title</b>: the whole title. <b>Aa</b>: match capitals exactly.') }}</p>
-            <p>{{ _('<b>Add event</b> adds an event made from an <b>event template</b> (see Event templates, below), the time you set before the start, after the start or after the end of each matching event (from midnight for all-day events). Added events follow their event: edit the rule or the template to change them.') }}</p></details>
-          <button form="rulesform-{{ x.id }}">{{ _('Save') }}</button>
+          <button form="srcform-{{ x.id }}">{{ _('Save') }}</button>
           <form method="post" action="/sources/remove" class="removeform inline" data-confirm="{{ _('Remove {name}? Its events and edits are removed, and it’s taken off every destination.', name=x.name) }}">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
             <button class="ghost danger" title="{{ _('Remove this source') }}">{{ trash }} {{ _('Remove') }}</button>
@@ -892,6 +937,11 @@
         <div class="pair">
           <label class="fld"><span>{{ _('Name') }}</span><input name="name" value="{{ d.name }}" maxlength="100" required></label>
         </div>
+        <div class="pair dates">
+          <label class="fld"><span>{{ _('Start') }}</span><input type="date" name="start" value="{{ d.start }}" title="{{ _('Empty: no limit') }}"></label>
+          <label class="fld"><span>{{ _('End') }}</span><input type="date" name="end" value="{{ d.end }}" title="{{ _('Empty: no limit') }}"></label>
+          <span class="mnote">{{ _('Only events in these dates; empty = no limit (∞).') }}</span>
+        </div>
         <div class="k">{{ _('Sources') }}</div>
         <div class="srcpicks">
           {% for x in srcs %}<label class="srcpick"><input type="checkbox" name="sources" value="{{ x.id }}"{% if x.id in d.sources %} checked{% endif %}>
@@ -909,7 +959,7 @@
         <div class="k" style="margin-top:0">{{ _('Raw feed URL (Google Calendar → Other calendars → + → From URL):') }}</div>
         {{ m.copyfield("feed-" ~ d.id, d.feed) }}
         <div class="btnrow">
-          <p class="mnote">{{ _('<b>Add to Google Calendar</b> subscribes your signed-in Google account to this feed, in one click. Google re-reads it on its own schedule (up to 12 hours), keeps the first name it saw and shows no colors.') }}</p>
+          <p class="mnote">{{ _('<b>Add to Google Calendar</b> subscribes your signed-in Google account to this feed, in one click. Google re-reads it on its own schedule (up to 12 hours), keeps the first name it saw and shows no colors. On an Android phone, add it on a computer (or Chrome’s Desktop site), then turn on <b>Sync</b> for it in the app’s Settings; the subscribe page explains how.') }}</p>
           <a class="btn" href="{{ d.links.google }}" target="_blank" rel="noopener">{{ _('Add to Google Calendar') }}</a>
         </div>
         {% if not d.links.is_public %}<p class="warnline">{{ _('⚠ This isn’t a public HTTPS address yet, so Google can’t load the feed. Set the <b>Public address</b> in Settings (☰).') }}</p>{% endif %}
@@ -948,43 +998,53 @@
   </section>
 
 
-  {# Rule templates: rules kept once; each source ticks the ones it uses in its Rules (Configure). #}
-  <section class="card" id="ruletemplates" aria-labelledby="rtplstitle">
-    <div class="cardhead"><h2 class="bigtitle" id="rtplstitle">{{ _('Rule templates') }}</h2>
-      <button type="button" class="ghost plus addfirst"{% if rule_tpls %} hidden{% endif %} title="{{ _('Add a rule template') }}" aria-label="{{ _('Add a rule template') }}">+</button></div>
-    <p class="mnote" style="margin:2px 0 0">{{ _('Rules kept once, for any source: tick them in a source’s Rules (under Configure). Changing one here changes every source that uses it.') }}</p>
-    <form class="editor tagsform" method="post" action="/rule-templates"{% if not rule_tpls %} data-empty{% endif %}>
-      <input type="hidden" name="csrf" value="{{ csrf }}">
-      <template class="rowtpl">{{ m.rule_row({"id": "", "tag": "", "color": "#1d4ed8", "mode": "word", "case": false, "action": "color", "template": "", "when": "before_start", "offset": 0}, templates, tag_modes, rule_actions, rule_when, trash) }}</template>
-      <div class="tagrows">{% for t in rule_tpls %}{{ m.rule_row(t, templates, tag_modes, rule_actions, rule_when, trash) }}{% endfor %}</div>
-      <div class="btnrow tagfoot"{% if not rule_tpls %} hidden{% endif %}>
-        <p class="mnote">{{ _('A source’s own rules come first; for colors the first matching rule wins.') }}</p>
-        <button>{{ _('Save') }}</button>
+  {# Rules: every rule, for any source (a source picks the ones it uses, under Configure); then the
+     event templates that "Add event" rules use. #}
+  <section class="card" id="rules" aria-labelledby="rulestitle">
+    <div class="cardhead"><h2 class="bigtitle" id="rulestitle">{{ _('Rules') }}</h2>
+      <button type="button" class="ghost plus newrule" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">+</button></div>
+    <p class="mnote" style="margin:2px 0 0">{{ _('Every rule, for any source: add one to a source under its Configure. Changing a rule here changes every source that uses it.') }}</p>
+    {% if not rule_lib %}<p class="empty">{{ _('No rules yet. Press <b>+</b> to add one.') }}</p>{% endif %}
+    <div class="rulelist">
+      {% for r in rule_lib %}
+      <div class="rulebox lib" data-rule='{{ r|tojson }}'>
+        <span class="ruletype">{{ _(rule_types[r.type]) }}</span>
+        <span class="rulelabel">{% if r.type == "color" %}<span class="swatch" style="--c:{{ r.color }}" aria-hidden="true"></span> {% endif %}{{ r.label.split(' → ', 1)[1] if r.type in ('no_end', 'allday24') else r.label }}</span>
+        <span class="ruleused">{{ _('Used by {names}', names=r.used|join(', ')) if r.used else _('Not used yet') }}</span>
+        <button type="button" class="ghost editrule" title="{{ _('Change this rule') }}" aria-label="{{ _('Change this rule') }}">✎</button>
+        <form method="post" action="/rules/delete" class="inline" data-confirm="{{ _('Delete this rule? It’s removed from every source that uses it.') }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}">
+          <button class="ghost delrule" title="{{ _('Delete this rule') }}" aria-label="{{ _('Delete this rule') }}">{{ trash }}</button></form>
       </div>
-    </form>
-  </section>
+      {% endfor %}
+    </div>
+    <details class="guide"><summary>{{ _('How rules work') }}</summary>
+      <p>{{ _('<b>Color</b> and <b>Add event</b> rules match a word or phrase in event titles. <b>Whole word</b>: “RDO” matches “RDO.” but not “VRDO”. <b>Contains</b>: anywhere, even inside a word. <b>Starts with</b>: the title begins with it. <b>Exact title</b>: the whole title. <b>Aa</b>: match capitals exactly. For colors, a source’s first matching rule wins; other events use its color.') }}</p>
+      <p>{{ _('<b>Add event</b> adds an event made from an <b>event template</b> (below), the time you set before the start, after the start or after the end of each matching event (from midnight for all-day events). Added events follow their event: change the rule or the template to change them.') }}</p>
+      <p>{{ _('<b>Items without an end time</b> last the time you set (or are all-day); <b>24-hour events</b> (CCS+ writes full days as 00:01–23:59) are shown as all-day or keep their times. A source without them uses <code>DEFAULT_EVENT_HOURS</code> from .env and keeps 24-hour events’ times.') }}</p></details>
 
-  {# Event templates: ready-made events for "Add event" rules and for adding events by hand. #}
-  <section class="card" id="templates" aria-labelledby="tplstitle">
-    <div class="cardhead"><h2 class="bigtitle" id="tplstitle">{{ _('Event templates') }}</h2>
-      <button type="button" class="ghost plus addfirst"{% if templates %} hidden{% endif %} title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">+</button></div>
-    <p class="mnote" style="margin:2px 0 0">{{ _('Ready-made events, for rules that add events and for adding an event by hand.') }}</p>
-    <form class="editor tagsform" method="post" action="/templates"{% if not templates %} data-empty{% endif %}>
-      <input type="hidden" name="csrf" value="{{ csrf }}">
-      <template class="rowtpl">{{ m.template_row({"id": "", "title": "", "all_day": false, "minutes": 60, "location": "", "color": ""}, event_colors, trash) }}</template>
-      <div class="tagrows">{% for t in templates %}{{ m.template_row(t, event_colors, trash) }}{% endfor %}</div>
-      <div class="btnrow tagfoot"{% if not templates %} hidden{% endif %}>
-        <p class="mnote">{{ _('Length as hours:minutes, e.g. 1:30.') }}</p>
-        <button>{{ _('Save') }}</button>
-      </div>
-    </form>
+    {# Event templates: ready-made events for "Add event" rules and for adding events by hand. #}
+    <div class="box" id="templates">
+      <div class="boxhead"><div><div class="boxtitle">{{ _('Event templates') }}</div>
+        <div class="subtitle">{{ _('Ready-made events, for rules that add events and for adding an event by hand.') }}</div></div>
+        <button type="button" class="ghost addfirst"{% if templates %} hidden{% endif %} title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">+</button></div>
+      <form class="editor tagsform" method="post" action="/templates"{% if not templates %} data-empty{% endif %}>
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <template class="rowtpl">{{ m.template_row({"id": "", "title": "", "all_day": false, "minutes": 60, "location": "", "color": ""}, event_colors, trash) }}</template>
+        <div class="tagrows">{% for t in templates %}{{ m.template_row(t, event_colors, trash) }}{% endfor %}</div>
+        <div class="btnrow tagfoot"{% if not templates %} hidden{% endif %}>
+          <p class="mnote">{{ _('Length as hours:minutes, e.g. 1:30.') }}</p>
+          <button>{{ _('Save') }}</button>
+        </div>
+      </form>
+    </div>
   </section>
 
   {% macro t(d) %}{{ dates.when(d, cal.today) if d else _('never') }}{% endmacro %}
   {# Title first, then the status line, a 5-row scrolling log, and the debug links #}
   <section class="card section{% if sections.activity %} open{% endif %}" id="activity" data-section="activity">
     <div class="shead">
-      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.activity else 'false' }}" aria-controls="activity-body"><span class="cardtitle">{{ _('Activity log') }}</span></button>
+      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.activity else 'false' }}" aria-controls="activity-body"><span class="bigtitle">{{ _('Activity') }}</span></button>
       {% if history %}<span class="peek">{{ _('Latest:') }} {{ msg(history[0].msg) }}</span>{% endif %}
     </div>
     <div class="sbody" id="activity-body"{% if not sections.activity %} hidden{% endif %}>
@@ -1008,12 +1068,47 @@
 
     </div>
   </section>
+  </div>
   <footer class="foot">
     CalendarStream v{{ version }} ·
     <a href="https://github.com/Uuugh/CalendarStream/issues/new?template=bug_report.yml&amp;version={{ version|urlencode }}" target="_blank" rel="noopener">{{ _('Report a problem') }}</a> ·
     <a href="https://github.com/Uuugh/CalendarStream/issues/new?template=feature_request.yml" target="_blank" rel="noopener">{{ _('Suggest a feature') }}</a>
   </footer>
 </main>
+<dialog id="ruledialog" aria-labelledby="rdtitle">
+  <form method="post" action="/rules/save" class="ruleform" data-type="color">
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value=""><input type="hidden" name="sid" value="">
+    <div class="title" id="rdtitle" data-new="{{ _('New rule') }}" data-edit="{{ _('Change rule') }}">{{ _('New rule') }}</div>
+    <label class="lbl" for="rdtype">{{ _('Kind') }}</label>
+    <select id="rdtype" name="type" class="rtype">{% for k, v in rule_types.items() %}<option value="{{ k }}">{{ _(v) }}</option>{% endfor %}</select>
+    <div data-for="color event">
+      <label class="lbl" for="rdtag">{{ _('When the title has') }}</label>
+      <div class="row"><input type="text" id="rdtag" name="tag" maxlength="40" placeholder="{{ _('e.g. RDO') }}">
+        <select name="mode" aria-label="{{ _('How to match') }}">{% for k, v in tag_modes.items() %}<option value="{{ k }}">{{ _(v) }}</option>{% endfor %}</select>
+        <input type="hidden" name="case" value=""><button type="button" class="ghost casebtn" aria-pressed="false" title="{{ _('Match capitals exactly') }}">Aa</button></div>
+    </div>
+    <div data-for="color">
+      <label class="lbl" for="rdcolor">{{ _('Color it') }}</label>
+      <input type="color" id="rdcolor" name="color" value="#d50000">
+    </div>
+    <div data-for="event">
+      <label class="lbl" for="rdtpl">{{ _('Add this event') }}</label>
+      <div class="row"><select id="rdtpl" name="template">{% for t in templates %}<option value="{{ t.id }}">{{ t.title }}</option>{% else %}<option value="">{{ _('(add an event template first)') }}</option>{% endfor %}</select>
+        <input type="text" name="offset" class="dur" value="0:00" aria-label="{{ _('How long before or after (hours:minutes)') }}">
+        <select name="when" aria-label="{{ _('Before or after') }}">{% for k, v in rule_when.items() %}<option value="{{ k }}">{{ _(v) }}</option>{% endfor %}</select></div>
+    </div>
+    <div data-for="no_end">
+      <label class="lbl">{{ _('Items without an end time') }}</label>
+      <div class="row"><select name="no_end_mode" aria-label="{{ _('Items without an end time') }}"><option value="hours">{{ _('Last') }}</option><option value="allday">{{ _('All day') }}</option></select>
+        <input type="text" name="length" class="dur" value="1:00" aria-label="{{ _('How long (hours:minutes)') }}"></div>
+    </div>
+    <div data-for="allday24">
+      <label class="lbl">{{ _('24-hour events') }}</label>
+      <select name="allday" aria-label="{{ _('24-hour events') }}"><option value="1">{{ _('Shown as all-day') }}</option><option value="0">{{ _('Keep their times') }}</option></select>
+    </div>
+    <div class="eactions"><button type="button" class="ghost rdcancel">{{ _('Cancel') }}</button><button>{{ _('Save') }}</button></div>
+  </form>
+</dialog>
 <script>
 // Texts used by the scripts below, in the page's language.
 var T = {
@@ -1127,11 +1222,26 @@ document.querySelectorAll('.filebtn input[type=file]').forEach(function (input) 
 })();
 
 // The calendar's view: month, week, day or list (saved, then the page is drawn again).
-document.querySelectorAll('.viewseg [data-view]').forEach(function (b) {
-  b.addEventListener('click', function () {
-    savePref('/ui/view', { view: b.dataset.view }, function () { location.reload(); });
+function chooseView(view) {
+  savePref('/ui/view', { view: view }, function () {
+    var q = new URLSearchParams(location.search); q.delete('view');
+    location.search = q.toString();
   });
+}
+document.querySelectorAll('.viewseg [data-view]').forEach(function (b) {
+  b.addEventListener('click', function () { chooseView(b.dataset.view); });
 });
+// Narrow screens: one button steps through the views. Until a view has been chosen, phones open on
+// the list (an itinerary); wider screens on the month.
+(function () {
+  var order = ['month', 'week', 'day', 'list'], cyc = document.querySelector('.viewcycle');
+  if (cyc) cyc.addEventListener('click', function () { chooseView(order[(order.indexOf(cyc.dataset.view) + 1) % order.length]); });
+  if (!{{ view_explicit|tojson }} && window.matchMedia('(max-width: 700px)').matches && {{ cal.view|tojson }} === 'month'
+      && !/[?&]view=/.test(location.search)) {
+    var q = new URLSearchParams(location.search); q.set('view', 'list');
+    location.replace('?' + q.toString());
+  }
+})();
 
 // The calendar's time zone (this page only).
 (function () {
@@ -1203,6 +1313,21 @@ function dropdown(btnId, menuId) {
     });
   });
   show({{ theme|tojson }});
+  // Narrow screens: one button steps through light → dark → system.
+  var cyc = document.querySelector('.themecycle'), themes = ['light', 'dark', 'system'];
+  var current = {{ theme|tojson }};
+  function label() {      // the same icon as the theme switch's button for it
+    cyc.innerHTML = document.querySelector('[data-theme-choice="' + current + '"]').innerHTML;
+    cyc.title = document.querySelector('[data-theme-choice="' + current + '"]').title;
+  }
+  label();
+  cyc.addEventListener('click', function () {
+    current = themes[(themes.indexOf(current) + 1) % themes.length];
+    if (current === 'system') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', current);
+    show(current); label();
+    savePref('/ui/theme', { theme: current });
+  });
 })();
 
 // "This page" fills the public address with the address this page is open at.
@@ -1242,32 +1367,73 @@ document.querySelectorAll('.section[data-section]').forEach(function (sec) {
 
 // Source names: (edit) shows the name and color editor; Cancel hides it again and undoes changes.
 document.querySelectorAll('.box.src').forEach(function (box) {
-  var btn = box.querySelector('.editbtn'), form = box.querySelector('.nameeditor');
-  function show(open) {
-    form.hidden = !open;
-    btn.setAttribute('aria-expanded', String(open));
-    btn.textContent = open ? T.close : T.edit;
-    if (open) form.querySelector('input[name=name]').focus();
-  }
-  btn.addEventListener('click', function () { show(form.hidden); });
-  form.querySelector('.editcancel').addEventListener('click', function () { form.reset(); show(false); location.reload(); });
-  // Default color: only sent when changed, so saving a new name doesn't set a color by accident.
-  var pick = form.querySelector('.colorpick'), def = form.querySelector('.colordefault'), note = form.querySelector('.colornote');
-  pick.addEventListener('input', function () { pick.name = 'color'; def.value = ''; note.textContent = ''; });
-  form.querySelector('.colorreset').addEventListener('click', function () {
-    pick.removeAttribute('name'); pick.value = '#1d4ed8'; def.value = '1';
-    note.textContent = T.backToStandard;
-  });
-  // "> Configure <" opens or folds the rest; remembered (in the database).
+  // "▸ Configure ◂" opens or folds the rest; while open, the title, color and note are fields.
+  // Open or folded is remembered (in the database).
   var cfg = box.querySelector('.cfgtoggle'), body = box.querySelector('.cfgbody');
   cfg.addEventListener('click', function () {
     body.hidden = !body.hidden;
+    box.classList.toggle('cfgopen', !body.hidden);
     cfg.setAttribute('aria-expanded', String(!body.hidden));
     savePref('/ui/section', { section: box.dataset.section, open: body.hidden ? '0' : '1' });
   });
-  // Items without an end time: no length when they're all-day.
-  var mode = box.querySelector('.nomode');
-  if (mode) mode.addEventListener('change', function () { mode.closest('.fixedrule').dataset.mode = mode.value; });
+  // The color is only sent when it's changed, so saving doesn't set one by accident.
+  var pick = box.querySelector('input.colorpick');
+  if (pick) pick.addEventListener('input', function () { pick.name = 'color'; });
+  // The source's rules: + adds a menu; the bin takes one off; "Create a New Rule…" opens the rule dialog.
+  var list = box.querySelector('.srcrules'), tpl = box.querySelector('template.srcruletpl'), add = box.querySelector('.addrule');
+  if (!list) return;
+  add.addEventListener('click', function () {
+    var row = tpl.content.firstElementChild.cloneNode(true);
+    list.appendChild(row); row.querySelector('select').focus();
+  });
+  list.addEventListener('click', function (e) {
+    if (e.target.closest('.delpick')) e.target.closest('.rulebox').remove();
+  });
+  list.addEventListener('focusin', function (e) { if (e.target.matches('.rulepick')) e.target.dataset.was = e.target.value; });
+  list.addEventListener('change', function (e) {
+    var sel = e.target.closest('.rulepick');
+    if (!sel || sel.value !== '__new') return;
+    sel.value = sel.dataset.was || '';
+    if (!sel.value) sel.selectedIndex = 0;
+    openRule(null, add.dataset.sid);
+  });
+});
+
+// The rule dialog: + in Rules (new), ✎ on a rule (change it), or "Create a New Rule…" in a source
+// (new, then added to that source). Only the fields of the chosen kind show.
+var ruleDialog = document.getElementById('ruledialog'), ruleForm = ruleDialog.querySelector('form');
+function showKind() {
+  var kind = ruleForm.elements.type.value;
+  ruleForm.dataset.type = kind;
+  ruleForm.querySelectorAll('[data-for]').forEach(function (el) { el.hidden = el.dataset.for.split(' ').indexOf(kind) < 0; });
+}
+function openRule(rule, sid) {
+  ruleForm.reset();
+  var f = ruleForm.elements, title = document.getElementById('rdtitle');
+  f.id.value = rule ? rule.id : ''; f.sid.value = sid || '';
+  title.textContent = rule ? title.dataset.edit : title.dataset.new;
+  if (rule) {
+    f.type.value = rule.type; f.tag.value = rule.tag; f.mode.value = rule.mode; f.case.value = rule.case ? '1' : '';
+    if (rule.color) f.color.value = rule.color;
+    if (rule.template) f.template.value = rule.template;
+    f.when.value = rule.when; f.offset.value = Math.floor(rule.offset / 60) + ':' + ('0' + rule.offset % 60).slice(-2);
+    f.no_end_mode.value = rule.no_end_mode; f.length.value = Math.floor(rule.minutes / 60) + ':' + ('0' + rule.minutes % 60).slice(-2);
+    f.allday.value = rule.allday ? '1' : '0';
+  }
+  ruleForm.querySelector('.casebtn').setAttribute('aria-pressed', String(f.case.value === '1'));
+  showKind();
+  ruleDialog.showModal();
+}
+ruleForm.elements.type.addEventListener('change', showKind);
+ruleForm.querySelector('.casebtn').addEventListener('click', function (e) {
+  var on = ruleForm.elements.case.value !== '1';
+  ruleForm.elements.case.value = on ? '1' : '';
+  e.currentTarget.setAttribute('aria-pressed', String(on));
+});
+ruleForm.querySelector('.rdcancel').addEventListener('click', function () { ruleDialog.close(); });
+document.querySelectorAll('.newrule').forEach(function (b) { b.addEventListener('click', function () { openRule(null, ''); }); });
+document.querySelectorAll('.rulebox.lib .editrule').forEach(function (b) {
+  b.addEventListener('click', function () { openRule(JSON.parse(b.closest('.rulebox').dataset.rule), ''); });
 });
 
 // Rule and template rows: only saved rows are listed. + (on the last row, or in the box's corner

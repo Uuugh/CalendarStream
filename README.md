@@ -81,9 +81,9 @@ explained in [`.env.default`](.env.default):
 | `PUID` / `GUID`, `RESTART` | `1000` / `100`, `unless-stopped` | |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Behind a reverse proxy: its address or network (e.g. `172.18.0.0/16`), so visitors' addresses and https are seen |
 | `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440, for CCS+; overridden by “Check for changes every” in its box |
-| `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in the CCS+ Calendar Sync help and (edit) |
-| `DEFAULT_EVENT_HOURS` | `1` | Hours for items with no end time, or `allday`; each source's built-in rule overrides it |
-| `ALLDAY_24H` | `true` | Show 24-hour (48 h…) events as all-day; each source's built-in rule overrides it |
+| `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in the CCS+ box (Configure) |
+| `DEFAULT_EVENT_HOURS` | `1` | Hours for items with no end time, or `allday`; a source's Items-without-an-end-time rule overrides it |
+| `ALLDAY_24H` | `true` | Show 24-hour (48 h…) events as all-day; replaced by each source's 24-hour-events rule |
 | `FEED_TOKEN` | made once | The stream name of the feed made when upgrading from before 0.2.1; feeds' stream names are set on the status page |
 
 **Secrets.** The only file is `.secrets/DB_PASSWORD.txt`, made by the installer. The status-page
@@ -115,32 +115,44 @@ logins or setup codes lock an address out for 15 minutes.
   Click an empty spot on a day (or **+**) to add your own. Events can have their own color (one of
   Google's 11), which wins over rules. Edits survive new downloads; ✎ marks
   an edited event, ⚠ one its source changed since. Nothing is ever changed in CCS+.
+- The page's sections: **Calendar** at the top, then **Calendar Sources**, **Calendar
+  Destinations**, **Rules** and **Activity**, each with the same kind of heading. On a wide screen
+  they sit in two columns (Sources | Destinations, Rules | Activity); on a narrow screen or a phone
+  they're one column, the calendar opens on the List view, and the view and theme switches become
+  one button each that steps through the choices.
 - **Calendar Sources** (**+** adds one; a new install has none): **United CCS+ Calendar Sync**
-  (once) and **calendar feeds** (any `.ics` or `webcal://` link; repeating events are shown from a
-  year back to two years ahead). Each source's box shows its name and color (**(edit)**), the last
-  download ("Downloaded 98 events from feed @ 23:13 (0 new, 0 removed)"), the check interval, its
-  status and **Sync Now**. **> Configure <** opens the rest (it opens by itself when something
-  needs doing): the **Site Address** (the Calendar Sync link, or the feed's link) with CCS+'s UID
-  and password (**✓ Validated** until you type; then **Save** / **Cancel**, and Save shows Saved → Verifying… → ✓ Validated or ✗ Verification failed) and step-by-step help, CCS+'s hand upload,
-  and its **Rules**: match a title (whole word, contains, starts with or exact title) and either
-  **color** the event (e.g. RDO in red) or **add an event** from a template some time before the
-  start, after the start or after the end (e.g. a 1:30 drive to the airport 2:00 before each
-  trip). Two built-in rules end the list: how long **items without an end time** last (or
-  all day), and whether **24-hour events** are shown as all-day. The bin removes a rule or the
-  source.
-- **Rule templates:** rules kept once, for any source; each source ticks the ones it uses in its
-  Rules (under Configure), next to its own rules. Changing a template changes every source using it.
-- **Event templates:** ready-made events (title, length or all day, location, color) for rules that
-  add events and for **Start from a template** when adding an event by hand.
-- The page's sections, in order: Calendar, Sources, Destinations, Rule templates, Event templates,
-  Activity.
+  (once) and **calendar feeds** (any link starting with `webcal://` or ending in `.ics`, with a
+  title and an optional short note shown next to it; repeating events are shown from a year back to
+  two years ahead). Each source's box shows its color, title and note, the last download
+  ("Downloaded 98 events from feed @ 23:13 (0 new, 0 removed)"), the check interval, its status
+  and **Sync Now**. **▸ Configure ◂** opens the rest (it opens by itself when something needs
+  doing) and turns the color, title and note into fields: the **Site Address** (the Calendar Sync
+  link, or the feed's link) with CCS+'s UID and password (**✓ Validated** until you type; then
+  **Save** / **Cancel**, and Save shows Saved → Verifying… → ✓ Validated or ✗ Verification failed),
+  step-by-step help, CCS+'s hand upload, and its **Rules**: one rounded line per rule, each picked
+  from the Rules section's list (or **Create a New Rule…**, which opens the same dialog as there).
+  The bin removes a rule from the source, or the source itself.
 - **Calendar Destinations** (**+** adds one; the first asks for the public address), independent of
   the sources: **Google calendars** (Autosync; one **Google account** box signs in for all of them)
   and **Calendar feeds** (a feed link and a shareable subscribe page each), as many as you like.
-  Each has its own name and ticks the sources it gets; every event keeps its source's colors and
-  rules. Each feed has a **stream name**, the secret part of its links: after a reinstall, or
-  removing a feed by mistake, enter the old one (or paste an old link) and existing subscriptions
-  work again.
+  Each has its own name, a **Start** and **End** date (empty = no limit) and ticks the sources it
+  gets; every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
+  part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
+  an old link) and existing subscriptions work again.
+- **Rules:** every rule, kept once and used by any source (each shows which sources use it; **+**
+  or ✎ opens the rule dialog). Kinds:
+  - **Color:** match a title (whole word, contains, starts with or exact title) and color the event
+    (e.g. RDO in red).
+  - **Add event:** match a title and add an event from an event template some time before the
+    start, after the start or after the end (e.g. a 1:30 drive to the airport 2:00 before each trip).
+  - **Items without an end time** (predefined): how long they last, or all day.
+  - **24-hour events** (predefined): show them (CCS+ writes full days as 00:01–23:59:59) as all-day,
+    with the original times in the notes.
+
+  New sources start with the two predefined rules; a source without them uses
+  `DEFAULT_EVENT_HOURS` and keeps 24-hour events as they are. **Event templates** (inside Rules) are
+  ready-made events (title, length or all day, location, color) for Add-event rules and for **Start
+  from a template** when adding an event by hand.
 - **Activity log:** each check and what changed, for each source.
 - **☰ Settings:** site settings only: the status-page login (with a show-password eye and a
   strength bar, like every password box), the public address, the **admin e-mail** (filled into the
@@ -159,8 +171,8 @@ CalendarStream writes each Google destination into a calendar it creates in your
 with the events of the sources it ticks. It only asks
 for access to **calendars it created** and your e-mail address, so it can't see your other calendars.
 
-- Events from the first of the current month onward, with your edits, without reminders; CCS+'s
-  "free" items stay free. Older events are left alone.
+- Events within the destination's Start and End dates (all of them when empty), with your edits,
+  without reminders; CCS+'s "free" items stay free. Events before the Start are left alone.
 - Each event gets the nearest Google event color (Tomato, Basil, Peacock…) to its own color, its
   source's color rule or its source's color; each calendar's name follows its destination's.
   Removing a destination leaves its calendar in Google unless you tick "Also delete it in Google".
@@ -179,6 +191,10 @@ CalendarStream**), tick the calendar box and press **Continue**. The guide ends 
 Google's error messages and what to do about each.
 One client serves the whole install, for up to 100 people while unverified. If you also subscribed
 to a feed in Google, remove that calendar, or you'll see everything twice.
+
+**Feeds on Android:** Google's Android app can't add a calendar by link, and a calendar added by
+link on calendar.google.com stays hidden on the phone until it's turned on there: in the app,
+**Settings →** the calendar **→ Sync**. The subscribe page explains this on Android and iPhone.
 
 ## Versions and releases
 
