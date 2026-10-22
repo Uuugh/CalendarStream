@@ -18,20 +18,24 @@
 <button data-save{% if name %} name="{{ name }}" value="{{ value }}"{% endif %}{% if ok %} hidden{% endif %}>{{ button }}</button>
 {%- endmacro %}
 
-{# The CCS+ Calendar Sync login: UID and password, with whether CCS+ accepted them.
-   `back` is unused (kept so older pages still post). #}
-{% macro ccs_login(setup, s, back="") -%}
+{# The CCS+ Calendar Sync login: the Site Address (the Calendar Sync link), UID and password, with
+   whether CCS+ accepted them. "✓ Validated" until something is typed, then Save & sync. `upload` (HTML)
+   sits to the right of the Site Address. `back` is unused (kept so older pages still post). #}
+{% macro ccs_login(setup, s, back="", upload="") -%}
 {% set valid = setup.configured and s.last_auth_ok %}
+<div class="cfggrid">
 <form method="post" action="/setup/ccs" class="ccsform watch" autocomplete="off">
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <input type="hidden" name="back" value="{{ back }}">
-  {# Labels above the boxes; UID and password side by side, the button at the end of the line. #}
+  <label class="fld siteaddr"><span>{{ _('Site Address') }}</span>
+    <input name="url" type="url" value="{{ setup.url }}" placeholder="{{ _('Site Address') }}" spellcheck="false"
+           title="{{ _('The Calendar Sync link from CCS+ (Copy link). Leave it as it is unless CCS+ shows a different one.') }}"></label>
   <div class="pair">
     <label class="fld"><span>UID</span>
       <input name="uid" value="{{ setup.uid }}" required placeholder="{{ _('UID, e.g. U123456') }}" spellcheck="false" autocomplete="off"></label>
-    <label class="fld"><span>{{ _('Calendar Sync password') }}</span>
+    <label class="fld"><span>{{ _('Password') }}</span>
       <input name="password" type="password" data-strength {% if not setup.has_password %}required{% endif %} autocomplete="new-password"
-             placeholder="{{ _('Saved (leave empty to keep it)') if setup.has_password else '' }}"></label>
+             placeholder="{{ _('Saved (leave empty to keep it)') if setup.has_password else _('Calendar Sync password') }}"></label>
     {{ okbutton(valid, _('Validated'), _('Save & sync'), _('Validated: CCS+ sign-in')) }}
   </div>
   {% if setup.configured and not valid %}
@@ -39,6 +43,8 @@
     {% else %}<p class="check unknown">{{ _('Not checked yet') }}</p>{% endif %}
   {% endif %}
 </form>
+{{ upload }}
+</div>
 {%- endmacro %}
 
 {# The Google OAuth client for Autosync: client ID and secret, the check result, Connect, and

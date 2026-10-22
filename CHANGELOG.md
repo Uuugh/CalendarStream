@@ -6,7 +6,23 @@ the `latest` image and the GitHub Release marked **Latest**. Each version lists 
 **removed**. Labels refer to that release's request list: F = feature request, I = issue,
 # = review item, R = README; numbers start again with each release.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.1**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.2**
+
+## 0.2.2 — 2026-10-22
+
+### Changed
+- **F1** Calendar Sources look like the mockups:
+  - **F1.1** Each source's header: name (**(edit)**) and kind on the left; on the right, the last
+    download ("Downloaded 98 events from feed @ 23:13. (0 new, 0 removed)") above the check
+    interval (saved as soon as it's changed), then the status with **Sync Now** under it.
+  - **F1.2** **> Configure <** under the header opens the rest; it's folded until opened (and
+    remembered), unless something needs doing.
+  - **F1.3** **Site Address** (the Calendar Sync link) sits with the UID and password and is saved
+    with them; the hand upload is to its right. A feed source's Site Address is its link.
+  - **F1.4** Two built-in rules end each source's Rules: **Items without an end time** (last a set
+    time, or all day) and **24-hour events** (shown as all-day, or keep their times). They replace
+    the ".env" note and override `DEFAULT_EVENT_HOURS` / `ALLDAY_24H` for that source.
+  - **F1.5** One line at the bottom: How rules work, **Save** and **Remove**.
 
 ## 0.2.1 — 2026-10-21
 

@@ -51,8 +51,17 @@ def now():
     return datetime.now(TZ)
 
 
-def defaults() -> Defaults:
-    return Defaults(settings.default_event_type, settings.default_event_hours, settings.allday_24h)
+def defaults(sid: str = "ccs") -> Defaults:
+    """How a source's events with no end, and its 24-hour events, are shown: the two built-in rules
+    at the end of its Rules box, else DEFAULT_EVENT_HOURS and ALLDAY_24H from .env."""
+    saved = store.get(skey(sid, "defaults")) or {}
+    mode = saved.get("mode") if saved.get("mode") in ("hours", "allday") else settings.default_event_type
+    try:
+        hours = float(saved["hours"]) if "hours" in saved else settings.default_event_hours
+    except (TypeError, ValueError):
+        hours = settings.default_event_hours
+    allday = bool(saved["allday_24h"]) if "allday_24h" in saved else settings.allday_24h
+    return Defaults(mode, max(5 / 60, min(24.0, hours)), allday)
 
 
 # --- Calendar sources and destinations ------------------------------------------------
@@ -409,6 +418,7 @@ class State:
         self.next_run: datetime | None = None
         self.login_failures = 0
         self.event_count = 0
+        self.last_detail = ""       # what the last download changed: "3 new, 1 removed", "no changes"…
         self.running = False
         self.wake = asyncio.Event()
 
@@ -423,7 +433,7 @@ class State:
             log.error("Couldn't write activity log to the database: %s", e)
 
     _TIMES = ("last_attempt", "last_success", "last_change", "last_auth")
-    _SAVED = _TIMES + ("status", "message", "last_auth_ok", "login_failures", "event_count")
+    _SAVED = _TIMES + ("status", "message", "last_auth_ok", "login_failures", "event_count", "last_detail")
 
     def save(self):
         data = {k: getattr(self, k) for k in self._SAVED}
@@ -603,12 +613,12 @@ def publish(raw: bytes | None, sha: str | None = None, sid: str = "ccs") -> tupl
     edits, customs, extra = store.get_edits(), customs_for(sid), rule_maker(sid)
     if sid == "ccs":
         if raw is not None:
-            cal, base, digest = parse(raw, settings.timezone, defaults())
+            cal, base, digest = parse(raw, settings.timezone, defaults(sid))
         else:
             cal, base, digest = new_calendar(), [], ""
         feed, events = render(cal, base, calendar_name(), settings.timezone, edits, customs, calendar_color(), extra)
     else:
-        base, digest = parse_feed(raw, settings.timezone, defaults(), sid, *feed_window()) if raw is not None else ([], "")
+        base, digest = parse_feed(raw, settings.timezone, defaults(sid), sid, *feed_window()) if raw is not None else ([], "")
         events = apply_changes(base, edits, customs, sid)
         if extra:
             events = sorted(events + extra(events), key=lambda e: e.start)
@@ -635,9 +645,9 @@ def rebuild(sid: str | None = None):
 def preview(sid: str, body: bytes) -> tuple[list[Event], str]:
     """A downloaded calendar's events (before edits), and its hash."""
     if sid == "ccs":
-        _, events, digest = parse(body, settings.timezone, defaults())
+        _, events, digest = parse(body, settings.timezone, defaults(sid))
         return events, digest
-    return parse_feed(body, settings.timezone, defaults(), sid, *feed_window())
+    return parse_feed(body, settings.timezone, defaults(sid), sid, *feed_window())
 
 
 def apply_calendar(body: bytes, how: str, sid: str = "ccs") -> bool:
@@ -659,9 +669,11 @@ def apply_calendar(body: bytes, how: str, sid: str = "ccs") -> bool:
         old_ids, new_ids = {e.uid for e in previous}, {e.uid for e in events}
         added, removed = len(new_ids - old_ids), len(old_ids - new_ids)
         detail = f"{added} new, {removed} removed" if previous else "first copy"
+        S.last_detail = detail
         S.message = f"{how[:1].upper()}{how[1:]}: {S.event_count} events in feed ({detail})"
         S.record("info", f"Schedule {how}: {S.event_count} events in feed ({detail})")
     else:
+        S.last_detail = "no changes"
         S.message = f"Up to date: {S.event_count} events in feed (no changes)"
         S.record("info", f"Schedule {how}: no changes")
     return True
@@ -698,7 +710,7 @@ async def run_once(manual: bool = False, sid: str = "ccs"):
         state.last_auth, state.last_auth_ok, state.login_failures = now(), True, 0
 
         if dl.not_modified:
-            state.status, state.last_success = "ok", now()
+            state.status, state.last_success, state.last_detail = "ok", now(), "no changes"
             state.message = f"Up to date: {state.event_count} events in feed (no changes)"
             state.record("info", "Schedule downloaded from CCS+: no changes")
             return
@@ -741,7 +753,7 @@ async def run_feed(sid: str):
         dl = await download(url, etag=cache.get("etag", ""), last_modified=cache.get("last_modified", ""), who=host)
         store.save_debug(skey(sid, "response"), json.dumps(dl.debug, indent=2).encode(), "application/json")
         if dl.not_modified:
-            S.status, S.last_success = "ok", now()
+            S.status, S.last_success, S.last_detail = "ok", now(), "no changes"
             S.message = f"Up to date: {S.event_count} events in feed (no changes)"
             S.record("info", f"Schedule downloaded from {host}: no changes")
             return
@@ -1251,9 +1263,13 @@ def source_view(request: Request, sid: str, lang: str, sections: dict) -> dict:
     view = {"id": sid, "type": (source(sid) or {}).get("type", "ccs"), "name": calendar_name(sid),
             "color": calendar_color(sid), "s": S, "rules": calendar_tags(sid), "interval": interval_minutes(sid),
             "url": url, "host": urlparse(url).hostname or url,
-            "open": sections.get(f"src:{sid}", True) or S.status not in ("ok", "running", "starting"),
+            # Configure is folded unless it's been opened, or something needs doing
+            "open": sections.get(f"src:{sid}", False) or S.status not in ("ok", "running", "starting")
+                    or (sid == "ccs" and not logins.ccs_configured),
             "downloaded": store.get_calendar(skey(sid, "source")) is not None,
-            "has_debug": store.has_debug(skey(sid, "source"))}
+            "has_debug": store.has_debug(skey(sid, "source")),
+            "last_when": dates_for(lang).when(S.last_success, now().date()) if S.last_success else "",
+            "defaults": defaults(sid), "no_end_length": show_duration(round(defaults(sid).hours * 60))}
     if sid == "ccs":
         view["setup"] = {
             "uid": logins.ccs()[0], "has_password": bool(logins.ccs()[1]), "configured": logins.ccs_configured,
@@ -1575,9 +1591,22 @@ def _back_to(back: str, anchor: str) -> str:
 
 
 @app.post("/setup/ccs", dependencies=[Depends(gui_auth)])
-async def set_ccs_login(csrf: str = Form(""), uid: str = Form(""), password: str = Form(""), back: str = Form("")):
-    """Save the CCS+ UID and Calendar Sync password (CCS+ Calendar Sync box), then download straight away."""
+async def set_ccs_login(csrf: str = Form(""), uid: str = Form(""), password: str = Form(""), back: str = Form(""),
+                        url: str | None = Form(None)):
+    """Save the CCS+ Site Address (the Calendar Sync link; empty = United's), UID and Calendar Sync
+    password, then download straight away."""
     check_csrf(csrf)
+    if url is not None:
+        url = url.strip()
+        if not url or url == DEFAULT_CALENDAR_URL:
+            store.delete("calendar_url")
+        else:
+            parsed = urlparse(url)
+            if parsed.scheme != "https" or not parsed.netloc:
+                raise HTTPException(400, "The Calendar Sync link must start with https://")
+            if url != store.get("calendar_url"):
+                store.set("calendar_url", url)
+                store.delete("http_cache")
     try:
         logins.save_ccs(uid, password)
     except LoginError as e:
@@ -1722,12 +1751,26 @@ def _save_tags(tag: list[str], tag_color: list[str], tag_mode: list[str], tag_ca
 async def set_tags(csrf: str = Form(""), sid: str = Form("ccs"), tag: list[str] = Form([]),
                    tag_color: list[str] = Form([]), tag_mode: list[str] = Form([]), tag_case: list[str] = Form([]),
                    rule_action: list[str] = Form([]), rule_template: list[str] = Form([]),
-                   rule_when: list[str] = Form([]), rule_offset: list[str] = Form([]), rule_id: list[str] = Form([])):
-    """Save a source's rules (its Rules box). Rows with no text are dropped."""
+                   rule_when: list[str] = Form([]), rule_offset: list[str] = Form([]), rule_id: list[str] = Form([]),
+                   no_end_mode: str = Form(""), no_end_length: str = Form(""), allday24: str = Form("")):
+    """Save a source's rules (its Rules box), with the two built-in ones at the end (events with no
+    end; 24-hour events). Rows with no text are dropped."""
     check_csrf(csrf)
     sid = _sid(sid)
     notes = _save_tags(tag, tag_color, tag_mode, tag_case, sid, rule_action, rule_template, rule_when,
                        rule_offset, rule_id)
+    if no_end_mode or allday24:
+        try:
+            minutes = parse_duration(no_end_length, round(defaults(sid).hours * 60))
+        except ValueError:
+            raise HTTPException(400, "Check the length for items without an end time (e.g. 1:00).")
+        if not 5 <= minutes <= 24 * 60:
+            raise HTTPException(400, "Items without an end time can last from 0:05 to 24:00.")
+        before = defaults(sid)
+        store.set(skey(sid, "defaults"), {"mode": "allday" if no_end_mode == "allday" else "hours",
+                                          "hours": minutes / 60, "allday_24h": allday24 != "0"})
+        if defaults(sid) != before:
+            notes.append("items without an end time / 24-hour events")
     if notes:
         rebuild(sid)
         state.record("info", f"Rules of {calendar_name(sid)} saved: " + ", ".join(notes))

@@ -325,17 +325,48 @@
   .addmenu .lbl { display:block; font-size:13px; font-weight:600; margin-bottom:4px }
   .pubask { border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:var(--soft) }
   .empty { color:var(--muted); font-size:14px; margin:10px 0 2px }
-  details.src > summary { list-style:none; cursor:pointer; display:flex; flex-wrap:nowrap; align-items:center; gap:10px; margin-bottom:0 }
-  details.src > summary > div { flex:1 1 auto; min-width:0 }
-  details.src > summary::-webkit-details-marker { display:none }
-  details.src > summary::before { content:"▸"; color:var(--muted); font-size:12px; transition:transform .15s }
-  details.src[open] > summary::before { transform:rotate(90deg) }
-  details.src[open] > summary { margin-bottom:10px }
+  /* A source: header (name, kind | last download, interval | status, Sync Now), then Configure */
+  .box.src { padding:12px 16px 14px }
+  .srchead { display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap }
+  .srcleft { flex:1 1 220px; min-width:0 }
+  .srcleft .srctype { font-size:13.5px; font-weight:600; margin-top:2px }
+  .srcright { flex:0 1 auto; display:grid; gap:6px; justify-items:end; text-align:right }
+  .srcstatus { margin:0; font-size:13.5px }
+  .intervalform { display:flex; align-items:center; gap:8px; margin:0; font-size:13.5px }
+  .intervalform label { font-weight:600 }
+  .intervalform input { width:78px; height:32px; font:inherit; padding:0 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .statusbox { display:grid; gap:4px; justify-items:center; padding:5px; border:1px solid var(--line); border-radius:8px }
+  .statusbox.good { border-color:color-mix(in srgb, var(--ok) 35%, var(--line)); background:var(--okbg) }
+  .statusbox.bad { border-color:color-mix(in srgb, var(--bad) 35%, var(--line)); background:var(--badbg) }
+  .statusbox.warn { border-color:color-mix(in srgb, var(--warn) 35%, var(--line)); background:var(--warnbg) }
+  .statusbox .chip { background:transparent; padding:0 4px }
+  .statusbox button.syncnow { height:28px; padding:0 8px; font-size:13.5px }
+  .cfgline { position:relative; text-align:center; margin:10px 0 0 }
+  .cfgline::before { content:""; position:absolute; left:0; right:0; top:50%; border-top:1px solid var(--line) }
+  .cfgline .cfgtoggle { position:relative; height:auto; padding:0 10px; background:var(--card); color:var(--text); border:0; font-weight:500; font-size:13.5px }
+  .cfgline .cfgtoggle:hover { color:var(--accent) }
+  .cfgbody { margin-top:12px }
+  .cfggrid { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:10px 16px; align-items:end }
+  .cfggrid > form.ccsform { display:contents }
+  .cfggrid .siteaddr { grid-column:1; grid-row:1; display:flex; flex-direction:column; gap:3px; margin:0; font-size:12px; font-weight:600; color:var(--muted) }
+  .cfggrid .siteaddr input { width:100%; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .cfggrid .pair { grid-column:1 / -1; grid-row:2; margin:0 }
+  .cfggrid .check { grid-column:1 / -1; margin:0 }
+  .cfggrid .uploadform { grid-column:2; grid-row:1; display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin:0; font-size:13.5px }
+  .cfggrid .uploadform > label:first-of-type { font-weight:600 }
+  @media (max-width:760px) { .cfggrid { grid-template-columns:1fr } .cfggrid .siteaddr, .cfggrid .pair, .cfggrid .uploadform { grid-column:1; grid-row:auto }
+                             .cfggrid .uploadform { justify-content:flex-start } .srcright { justify-items:start; text-align:left } }
+  .fixedrows { display:grid; gap:6px; margin-top:6px }
+  .fixedrule .fixedname { flex:1 1 200px; display:flex; align-items:center; height:36px; padding:0 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; color:var(--muted) }
+  .fixedrule[data-mode="allday"] input.dur { visibility:hidden }
+  .srcfoot { display:flex; align-items:center; gap:8px; margin-top:12px; justify-content:flex-end; flex-wrap:wrap }
+  .srcfoot details.guide.inline { margin-right:auto }
+  .srcfoot form { margin:0 }
   .swatch { display:inline-block; flex:0 0 auto; width:22px; height:16px; border-radius:4px; background:var(--c); vertical-align:-2px }
   .srctitle { display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 10px }
   .srcname { font-size:17px; font-weight:700 }
   .srctype { font-size:14px; font-weight:700 }
-  details.src .nameeditor { margin-top:0 }
+  .src .nameeditor { margin:10px 0 0 }
   .srcrow { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px }
   .srcrow .fieldrow { margin:0 }
   .srcrow .statusmsg { flex:1 1 220px; margin:0 }
@@ -360,7 +391,7 @@
   @media (max-width:700px) {
     .editor .tagrow { flex-wrap:wrap; border:1px solid var(--line); border-radius:10px; padding:8px }
     .editor .tagrow input[name=tag], .editor .tagrow input[name=tpl_title] { flex-basis:100% }
-    details.src > summary { align-items:flex-start } }
+  }
 </style>
 </head>
 <body>{% import "_macros.html" as m with context %}<main>
@@ -607,15 +638,32 @@
     {% set S = x.s %}
     {% set ccs = x.type == "ccs" %}
     {% set scls = {"ok":"good","running":"run","starting":"run","paused":"warn","setup":"warn"}.get(S.status, "bad") %}
-    <details class="box src" id="src-{{ x.id }}" data-section="src:{{ x.id }}"{% if x.open %} open{% endif %}>
-      <summary class="boxhead">
+    {# Header: name and kind on the left; the last download, the check interval, status and Sync now on
+       the right. "Configure" under it opens the rest (folded unless something needs doing). #}
+    <div class="box src" id="src-{{ x.id }}" data-section="src:{{ x.id }}">
+      <div class="srchead">
         <span class="swatch" style="--c:{{ x.color or 'var(--accent)' }}" aria-hidden="true"></span>
-        <div><div class="srctitle"><span class="srcname">{{ x.name }}</span>
-            <button type="button" class="linkbtn editbtn" aria-expanded="false" aria-controls="ed-{{ x.id }}">{{ _('(edit)') }}</button>
-            <span class="srctype">{{ _('CCS+ Calendar Sync') if ccs else _('Calendar feed') }}</span></div>
-          <div class="subtitle">{% if ccs %}{{ _('Downloads your schedule from CCS+ with your UID and Calendar Sync password.') }}{% else %}{{ _('Downloads the feed from {host}.', host=x.host) }}{% endif %}</div></div>
-        <span class="chip {{ scls }}">{{ status_labels.get(S.status, S.status) }}</span>
-      </summary>
+        <div class="srcleft">
+          <div class="srctitle"><span class="srcname">{{ x.name }}</span>
+            <button type="button" class="linkbtn editbtn" aria-expanded="false" aria-controls="ed-{{ x.id }}">{{ _('(edit)') }}</button></div>
+          <div class="srctype">{{ _('CCS+ Calendar Sync') if ccs else _('Calendar feed') ~ ' · ' ~ x.host }}</div>
+        </div>
+        <div class="srcright">
+          <p class="srcstatus">{% if S.status in ("ok", "running") and S.last_success %}{{ _('Downloaded {n} events from feed @ <b>{when}</b>.', n=S.event_count, when=x.last_when) }}{% if S.last_detail %} ({{ msg(S.last_detail) }}){% endif %}{% else %}{{ msg(S.message) or "—" }}{% endif %}</p>
+          <form class="intervalform" method="post" action="/setup/interval">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
+            <label for="interval-{{ x.id }}">{{ _('Check for changes every') }}</label>
+            <input type="number" id="interval-{{ x.id }}" name="minutes" value="{{ x.interval }}" min="15" max="1440" step="5" required
+                   title="{{ _('Minutes between checks (15–1440)') }}" onchange="this.form.requestSubmit()">
+            <span class="muted">{{ _('minutes') }}</span>
+          </form>
+        </div>
+        <div class="statusbox {{ scls }}">
+          <span class="chip {{ scls }}">{{ status_labels.get(S.status, S.status) }}</span>
+          <form method="post" action="/run" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
+            <button class="syncnow" {% if S.running or (ccs and not x.setup.configured) %}disabled{% endif %}>{{ _('Sync Now') }}</button></form>
+        </div>
+      </div>
 
       {# Name and color, hidden until (edit) is pressed. #}
       <form class="editor nameeditor" id="ed-{{ x.id }}" method="post" action="/feed/name" hidden>
@@ -636,27 +684,19 @@
         </div>
       </form>
 
-      {# How often, the last result and Sync now. #}
-      <div class="srcrow">
-        <form class="fieldrow" method="post" action="/setup/interval">
-          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
-          <label for="interval-{{ x.id }}">{{ _('Check for changes every') }}</label>
-          <input type="number" id="interval-{{ x.id }}" name="minutes" value="{{ x.interval }}" min="15" max="1440" step="5" required title="{{ _('Minutes between checks (15–1440)') }}">
-          <span class="muted">{{ _('minutes') }}</span>
-          <button class="ghost">{{ _('Save') }}</button>
-        </form>
-        <p class="statusmsg">{{ msg(S.message) or "—" }}</p>
-        <form method="post" action="/run" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
-          <button {% if S.running or (ccs and not x.setup.configured) %}disabled{% endif %}>{{ _('Sync now') }}</button></form>
-      </div>
-      <p class="mnote">{{ _('Items without an end time: {value}', value=(_('all-day') if cfg.default_event_type == "allday" else "%g h" % cfg.default_event_hours)) }}{% if cfg.allday_24h %} · {{ _('24-hour events shown as all-day') }}{% endif %} <span class="muted">({{ _('from .env') }})</span></p>
-
+      <div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if x.open else 'false' }}" aria-controls="cfg-{{ x.id }}">&gt; {{ _('Configure') }} &lt;</button></div>
+      <div class="cfgbody" id="cfg-{{ x.id }}"{% if not x.open %} hidden{% endif %}>
       {% if ccs %}
-      {% set setup = x.setup %}
-      {# The login, with its step-by-step help in the same box. #}
-      <div class="subbox">
+        {% set setup = x.setup %}
+        {# The upload sits to the right of the Site Address. #}
+        {% set upload %}<form class="uploadform" method="post" action="/setup/upload" enctype="multipart/form-data">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <label title="{{ _('Open the Calendar Sync link in your browser, sign in with your UID and Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.') }}">{{ _('Or upload Calendar.ics by hand') }}</label>
+          <label class="filebtn ghostbtn"><input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}"><span data-none="{{ _('Choose Calendar.ics…') }}">{{ _('Choose Calendar.ics…') }}</span></label>
+          <button class="ghost">{{ _('Upload & publish') }}</button>
+        </form>{% endset %}
         {% if not setup.configured %}<p class="mnote" style="margin:0 0 4px">{{ _('Enter your CCS+ <b>UID</b> and <b>Calendar Sync password</b> (the one created for calendar syncing in CCS+, not your CCS login) to start downloading the schedule:') }}</p>{% endif %}
-        {{ m.ccs_login(setup, S) }}
+        {{ m.ccs_login(setup, S, upload=upload) }}
         {% set help_open = not setup.configured or scls == "bad" or S.status == "paused" or S.last_auth_ok == false %}
         <details class="guide"{% if help_open %} open{% endif %}>
           <summary>{{ _('How to get a Calendar Sync link, ID and secret (step by step)') }}</summary>
@@ -673,72 +713,69 @@
               <ol>
                 <li>{{ _('In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.') }}</li>
                 <li>{{ _('Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.') }}</li>
-                <li>{{ _('Enter your <b>UID</b> and that <b>Calendar Sync password</b> in the boxes at the top and press <b>Save &amp; sync</b>.') }}</li>
-                <li>{{ _('Press <b>Copy link</b> in CCS+. If it differs from the link below, paste it there and press <b>Save &amp; sync</b>.') }}</li>
+                <li>{{ _('Press <b>Copy link</b> in CCS+. If it differs from the <b>Site Address</b> above, paste it there.') }}</li>
+                <li>{{ _('Enter your <b>UID</b> and that <b>Calendar Sync password</b> in the <b>Password</b> box and press <b>Save &amp; sync</b>.') }}</li>
                 <li>{{ _('The checklist turns green when CCS+ accepts the sign-in and the schedule downloads.') }}</li>
               </ol>
-              <form method="post" action="/setup/link">
-                <input type="hidden" name="csrf" value="{{ csrf }}">
-                <div class="k">{{ _('Paste the link from CCS+ <b>Copy link</b> (CCS+ Settings → Schedule Settings → Calendar syncing):') }}</div>
-                <div class="feed">
-                  <input name="url" type="url" required value="{{ setup.url }}" placeholder="https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar">
-                  <button name="action" value="save">{{ _('Save & sync') }}</button>
-                  {% if setup.url_from_gui %}<button class="ghost" name="action" value="reset" formnovalidate>{{ _('Reset') }}</button>{% endif %}
-                </div>
-              </form>
               <p class="mnote">{{ _('The password is stored encrypted and never shown again; leave its box empty to keep it.') }}</p>
             </div>
           </div>
         </details>
-      </div>
-
-      {# Manual upload, with a styled file button #}
-      <div class="subbox">
-        <form class="fieldrow" method="post" action="/setup/upload" enctype="multipart/form-data" style="margin:0">
-          <input type="hidden" name="csrf" value="{{ csrf }}">
-          <label title="{{ _('Open the Calendar Sync link in your browser, sign in with your UID and Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.') }}">{{ _('Or upload Calendar.ics by hand') }}</label>
-          <label class="filebtn ghostbtn"><input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}"><span data-none="{{ _('Choose Calendar.ics…') }}">{{ _('Choose Calendar.ics…') }}</span></label>
-          <button class="ghost">{{ _('Upload & publish') }}</button>
-        </form>
-      </div>
       {% else %}
-      {# A feed source: its link #}
-      <div class="subbox">
-        <form method="post" action="/sources/url" class="clientform">
+        {# A feed source: its link, saved like a login (✓ until it's changed) #}
+        <form method="post" action="/sources/url" class="clientform watch">
           <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
           <div class="pair">
-            <label class="fld"><span>{{ _('Feed link') }}</span><input name="url" value="{{ x.url }}" required spellcheck="false"></label>
-            <button class="ghost">{{ _('Save & sync') }}</button>
+            <label class="fld"><span>{{ _('Site Address') }}</span><input name="url" value="{{ x.url }}" required spellcheck="false"></label>
+            {{ m.okbutton(S.status == "ok", _('Validated'), _('Save & sync'), _('The feed downloaded')) }}
           </div>
         </form>
         <p class="mnote">{{ _('Repeating events are shown from a year back to two years ahead.') }}</p>
-      </div>
       {% endif %}
 
-      {# Rules (were Tag Colors): match a title, then color it or add an event from a template. #}
-      <div class="subbox rules" id="rules-{{ x.id }}">
-        <div class="boxhead"><div><div class="boxtitle">{{ _('Rules') }}</div>
-          <div class="subtitle">{{ _('Do something with events whose title matches: color RDO in red, or add a drive to the airport before each trip.') }}</div></div>
-          <button type="button" class="ghost addfirst"{% if x.rules %} hidden{% endif %} title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">+</button></div>
-        <form class="editor tagsform" method="post" action="/feed/tags"{% if not x.rules %} data-empty{% endif %}>
-          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
-          <template class="rowtpl">{{ m.rule_row({"id": "", "tag": "", "color": x.color or "#1d4ed8", "mode": "word", "case": false, "action": "color", "template": "", "when": "before_start", "offset": 0}, templates, tag_modes, rule_actions, rule_when, trash) }}</template>
-          <div class="tagrows">{% for t in x.rules %}{{ m.rule_row(t, templates, tag_modes, rule_actions, rule_when, trash) }}{% endfor %}</div>
-          <div class="btnrow tagfoot"{% if not x.rules %} hidden{% endif %}>
-            <details class="guide inline"><summary>{{ _('How rules work') }}</summary>
-              <p>{{ _('Events whose title matches a rule get its color or an added event; for colors the first matching rule wins, and other events use the calendar’s color. <b>Whole word</b>: “RDO” matches “RDO.” but not “VRDO”. <b>Contains</b>: anywhere, even inside a word. <b>Starts with</b>: the title begins with it. <b>Exact title</b>: the whole title. <b>Aa</b>: match capitals exactly.') }}</p>
-              <p>{{ _('<b>Add event</b> adds an event made from an <b>event template</b> (below), the time you set before the start, after the start or after the end of each matching event (from midnight for all-day events). Added events follow their event: edit the rule or the template to change them.') }}</p></details>
-            <button>{{ _('Save') }}</button>
-          </div>
-        </form>
-      </div>
+        {# Rules (were Tag Colors): match a title, then color it or add an event from a template; then the
+           two built-in rules (events with no end time, 24-hour events). #}
+        <div class="subbox rules" id="rules-{{ x.id }}">
+          <div class="boxhead"><div><div class="boxtitle">{{ _('Rules') }}</div>
+            <div class="subtitle">{{ _('Do something with events whose title matches: color RDO in red, or add a drive to the airport before each trip.') }}</div></div>
+            <button type="button" class="ghost addfirst"{% if x.rules %} hidden{% endif %} title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">+</button></div>
+          <form class="editor tagsform" id="rulesform-{{ x.id }}" method="post" action="/feed/tags"{% if not x.rules %} data-empty{% endif %}>
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
+            <template class="rowtpl">{{ m.rule_row({"id": "", "tag": "", "color": x.color or "#1d4ed8", "mode": "word", "case": false, "action": "color", "template": "", "when": "before_start", "offset": 0}, templates, tag_modes, rule_actions, rule_when, trash) }}</template>
+            <div class="tagrows">{% for t in x.rules %}{{ m.rule_row(t, templates, tag_modes, rule_actions, rule_when, trash) }}{% endfor %}</div>
+            <div class="fixedrows">
+              <div class="row tagrow fixedrule" data-mode="{{ x.defaults.mode }}">
+                <span class="fixedname">{{ _('Items without an end time') }}</span><span class="arrow" aria-hidden="true">→</span>
+                <select name="no_end_mode" class="nomode" aria-label="{{ _('Items without an end time') }}">
+                  <option value="hours"{% if x.defaults.mode != "allday" %} selected{% endif %}>{{ _('Last') }}</option>
+                  <option value="allday"{% if x.defaults.mode == "allday" %} selected{% endif %}>{{ _('All day') }}</option>
+                </select>
+                <input type="text" name="no_end_length" class="dur" value="{{ x.no_end_length }}" aria-label="{{ _('How long (hours:minutes)') }}" title="{{ _('How long (hours:minutes)') }}">
+              </div>
+              <div class="row tagrow fixedrule">
+                <span class="fixedname">{{ _('24-hour events') }}</span><span class="arrow" aria-hidden="true">→</span>
+                <select name="allday24" aria-label="{{ _('24-hour events') }}" title="{{ _('CCS+ writes full days as 00:01–23:59; shown as all-day, the original times go in the notes.') }}">
+                  <option value="1"{% if x.defaults.allday_24h %} selected{% endif %}>{{ _('Shown as all-day') }}</option>
+                  <option value="0"{% if not x.defaults.allday_24h %} selected{% endif %}>{{ _('Keep their times') }}</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
 
-      <form method="post" action="/sources/remove" class="removeform btnrow" data-confirm="{{ _('Remove {name}? Its events, edits and feed link are removed, and its calendar in Google is deleted.', name=x.name) }}">
-        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
-        <p class="mnote">{% if x.has_debug %}{{ _('Debug (last download):') }} <a href="/debug/{{ 'response' if ccs else 'response:' ~ x.id }}" target="_blank">{{ _('Response details') }}</a> · <a href="/debug/{{ 'source' if ccs else 'source:' ~ x.id }}" target="_blank">{{ _('Last calendar file received') }}</a>{% endif %}</p>
-        <button class="ghost danger" title="{{ _('Remove this source') }}">{{ trash }} {{ _('Remove') }}</button>
-      </form>
-    </details>
+        {# One line at the bottom: how rules work, Save (the rules) and Remove (the source). #}
+        <div class="srcfoot">
+          <details class="guide inline"><summary>{{ _('How rules work') }}</summary>
+            <p>{{ _('Events whose title matches a rule get its color or an added event; for colors the first matching rule wins, and other events use the calendar’s color. <b>Whole word</b>: “RDO” matches “RDO.” but not “VRDO”. <b>Contains</b>: anywhere, even inside a word. <b>Starts with</b>: the title begins with it. <b>Exact title</b>: the whole title. <b>Aa</b>: match capitals exactly.') }}</p>
+            <p>{{ _('<b>Add event</b> adds an event made from an <b>event template</b> (below), the time you set before the start, after the start or after the end of each matching event (from midnight for all-day events). Added events follow their event: edit the rule or the template to change them.') }}</p></details>
+          <button form="rulesform-{{ x.id }}">{{ _('Save') }}</button>
+          <form method="post" action="/sources/remove" class="removeform inline" data-confirm="{{ _('Remove {name}? Its events and edits are removed, and it’s taken off every destination.', name=x.name) }}">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
+            <button class="ghost danger" title="{{ _('Remove this source') }}">{{ trash }} {{ _('Remove') }}</button>
+          </form>
+        </div>
+      </div>
+    </div>
     {% endfor %}
 
     {# Event templates: ready-made events for "Add event" rules and for adding events by hand. #}
@@ -1103,15 +1140,15 @@ document.querySelectorAll('.section[data-section]').forEach(function (sec) {
 });
 
 // Source names: (edit) shows the name and color editor; Cancel hides it again and undoes changes.
-document.querySelectorAll('details.src').forEach(function (box) {
+document.querySelectorAll('.box.src').forEach(function (box) {
   var btn = box.querySelector('.editbtn'), form = box.querySelector('.nameeditor');
   function show(open) {
     form.hidden = !open;
     btn.setAttribute('aria-expanded', String(open));
     btn.textContent = open ? T.close : T.edit;
-    if (open) { box.open = true; form.querySelector('input[name=name]').focus(); }
+    if (open) form.querySelector('input[name=name]').focus();
   }
-  btn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); show(form.hidden); });
+  btn.addEventListener('click', function () { show(form.hidden); });
   form.querySelector('.editcancel').addEventListener('click', function () { form.reset(); show(false); location.reload(); });
   // Default color: only sent when changed, so saving a new name doesn't set a color by accident.
   var pick = form.querySelector('.colorpick'), def = form.querySelector('.colordefault'), note = form.querySelector('.colornote');
@@ -1120,10 +1157,16 @@ document.querySelectorAll('details.src').forEach(function (box) {
     pick.removeAttribute('name'); pick.value = '#1d4ed8'; def.value = '1';
     note.textContent = T.backToStandard;
   });
-  // Open or closed is remembered (in the database).
-  box.addEventListener('toggle', function () {
-    savePref('/ui/section', { section: box.dataset.section, open: box.open ? '1' : '0' });
+  // "> Configure <" opens or folds the rest; remembered (in the database).
+  var cfg = box.querySelector('.cfgtoggle'), body = box.querySelector('.cfgbody');
+  cfg.addEventListener('click', function () {
+    body.hidden = !body.hidden;
+    cfg.setAttribute('aria-expanded', String(!body.hidden));
+    savePref('/ui/section', { section: box.dataset.section, open: body.hidden ? '0' : '1' });
   });
+  // Items without an end time: no length when they're all-day.
+  var mode = box.querySelector('.nomode');
+  if (mode) mode.addEventListener('change', function () { mode.closest('.fixedrule').dataset.mode = mode.value; });
 });
 
 // Rule and template rows: only saved rows are listed. + (on the last row, or in the box's corner
@@ -1133,7 +1176,7 @@ document.querySelectorAll('form.tagsform').forEach(function (form) {
       first = form.closest('.box, .subbox').querySelector('.addfirst'), foot = form.querySelector('.tagfoot');
   function refresh(changed) {
     first.hidden = rows.children.length > 0;
-    if (changed || rows.children.length) foot.hidden = false;
+    if (foot && (changed || rows.children.length)) foot.hidden = false;
   }
   function addRow() {
     var row = tpl.content.firstElementChild.cloneNode(true);

@@ -82,8 +82,8 @@ explained in [`.env.default`](.env.default):
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Behind a reverse proxy: its address or network (e.g. `172.18.0.0/16`), so visitors' addresses and https are seen |
 | `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440, for CCS+; overridden by “Check for changes every” in its box |
 | `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in the CCS+ Calendar Sync help and (edit) |
-| `DEFAULT_EVENT_HOURS` | `1` | Hours for items with no end time, or `allday` |
-| `ALLDAY_24H` | `true` | Show 24-hour (48 h…) events as all-day |
+| `DEFAULT_EVENT_HOURS` | `1` | Hours for items with no end time, or `allday`; each source's built-in rule overrides it |
+| `ALLDAY_24H` | `true` | Show 24-hour (48 h…) events as all-day; each source's built-in rule overrides it |
 | `FEED_TOKEN` | made once | The stream name of the feed made when upgrading from before 0.2.1; feeds' stream names are set on the status page |
 
 **Secrets.** The only file is `.secrets/DB_PASSWORD.txt`, made by the installer. The status-page
@@ -117,13 +117,17 @@ logins or setup codes lock an address out for 15 minutes.
   an edited event, ⚠ one its source changed since. Nothing is ever changed in CCS+.
 - **Calendar Sources** (**+** adds one; a new install has none): **United CCS+ Calendar Sync**
   (once) and **calendar feeds** (any `.ics` or `webcal://` link; repeating events are shown from a
-  year back to two years ahead). Each source's box has its name and color (**(edit)**), status
-  chip, check interval, **Sync now**, its login or link (CCS+'s with its step-by-step help; the
-  login shows **✓ Validated** until you change it), CCS+'s hand upload, and its **Rules**:
-  match a title (whole word, contains, starts with or exact title) and either **color** the event
-  (e.g. RDO in red) or **add an event** from a template some time before the start, after the
-  start or after the end (e.g. a 1:30 drive to the airport 2:00 before each trip). The bin removes
-  a rule or the source.
+  year back to two years ahead). Each source's box shows its name and color (**(edit)**), the last
+  download ("Downloaded 98 events from feed @ 23:13 (0 new, 0 removed)"), the check interval, its
+  status and **Sync Now**. **> Configure <** opens the rest (it opens by itself when something
+  needs doing): the **Site Address** (the Calendar Sync link, or the feed's link) with CCS+'s UID
+  and password (**✓ Validated** until you change them) and step-by-step help, CCS+'s hand upload,
+  and its **Rules**: match a title (whole word, contains, starts with or exact title) and either
+  **color** the event (e.g. RDO in red) or **add an event** from a template some time before the
+  start, after the start or after the end (e.g. a 1:30 drive to the airport 2:00 before each
+  trip). Two built-in rules end the list: how long **items without an end time** last (or
+  all day), and whether **24-hour events** are shown as all-day. The bin removes a rule or the
+  source.
 - **Event templates:** ready-made events (title, length or all day, location, color) for those
   rules and for **Start from a template** when adding an event by hand.
 - **Calendar Destinations** (**+** adds one; the first asks for the public address), independent of
