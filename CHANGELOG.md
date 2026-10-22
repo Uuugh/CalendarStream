@@ -6,7 +6,13 @@ the `latest` image and the GitHub Release marked **Latest**. Each version lists 
 **removed**. Labels refer to that release's request list: F = feature request, I = issue,
 # = review item, R = README; numbers start again with each release.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.2**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.3**
+
+## 0.2.3 — 2026-10-22
+
+### Fixed
+- The debug links (Response details, Last calendar file received) are back, in the Activity log
+  for each source (0.2.2 had dropped them with the old source footer).
 
 ## 0.2.2 — 2026-10-22
 

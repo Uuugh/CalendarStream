@@ -950,6 +950,7 @@
       <span><span class="k">{{ _('Next check') }}</span> <b>{{ t(S.next_run) }}</b></span>
       <span>{{ _('<b>{n}</b> <span class="k">events in feed</span>', n=S.event_count) }}</span>
       {% if S.login_failures %}<span style="color:var(--bad)">{{ _('<b>{n}</b> rejected sign-ins in a row', n=S.login_failures) }}</span>{% endif %}
+      {% if x.has_debug %}<span class="k">{{ _('Debug (last download):') }} <a href="/debug/{{ 'response' if x.type == 'ccs' else 'response:' ~ x.id }}" target="_blank">{{ _('Response details') }}</a> · <a href="/debug/{{ 'source' if x.type == 'ccs' else 'source:' ~ x.id }}" target="_blank">{{ _('Last calendar file received') }}</a></span>{% endif %}
     </div>
     {% endfor %}
     {% if google.connected %}<div class="statline"><span><span class="k">Google</span> {% if google.info.last_error %}<b style="color:var(--bad)">✗ {{ _('error') }}</b>{% elif google.running %}<b>{{ _('syncing…') }}</b>{% elif google.last_sync %}<b>{{ google.last_sync }}</b>{% else %}<span class="muted">{{ _('not yet') }}</span>{% endif %}</span></div>{% endif %}
