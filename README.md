@@ -128,8 +128,12 @@ logins or setup codes lock an address out for 15 minutes.
   trip). Two built-in rules end the list: how long **items without an end time** last (or
   all day), and whether **24-hour events** are shown as all-day. The bin removes a rule or the
   source.
-- **Event templates:** ready-made events (title, length or all day, location, color) for those
-  rules and for **Start from a template** when adding an event by hand.
+- **Rule templates:** rules kept once, for any source; each source ticks the ones it uses in its
+  Rules (under Configure), next to its own rules. Changing a template changes every source using it.
+- **Event templates:** ready-made events (title, length or all day, location, color) for rules that
+  add events and for **Start from a template** when adding an event by hand.
+- The page's sections, in order: Calendar, Sources, Destinations, Rule templates, Event templates,
+  Activity.
 - **Calendar Destinations** (**+** adds one; the first asks for the public address), independent of
   the sources: **Google calendars** (Autosync; one **Google account** box signs in for all of them)
   and **Calendar feeds** (a feed link and a shareable subscribe page each), as many as you like.

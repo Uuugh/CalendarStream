@@ -399,7 +399,8 @@
   .srcpick { display:inline-flex; align-items:center; gap:6px; cursor:pointer }
   .destform .pair label.fld { flex:0 1 320px }
   .addmenu input.solo { width:100%; font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
-  .rules .boxhead, #templates .boxhead { margin-bottom:6px }
+  .rules .boxhead { margin-bottom:6px } #templates form.tagsform, #ruletemplates form.tagsform { margin-top:10px }
+  .rtpicks { display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin:0 0 8px; font-size:13.5px } .rtpicks .k { margin:0 }
   .rulerow[data-action="color"] .act.event, .rulerow[data-action="event"] .act.color { display:none }
   .act { display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap }
   .arrow { color:var(--muted) }
@@ -530,6 +531,11 @@
   {% set cls = {"ok":"ok","running":"run","starting":"run","paused":"warn","setup":"warn"}.get(s.status,"bad") %}
   {% set label = {"ok":_("Healthy"),"running":_("Syncing…"),"starting":_("Starting"),"paused":_("Paused"),"setup":_("Setup needed"),"auth_failed":_("Sign-in rejected"),"blocked":_("Blocked"),"error":_("Error")}.get(s.status, s.status) %}
 
+  {# A rule template, in one line: "RDO → ■" or "EWR → Drive to the airport". #}
+  {% macro rule_label(t) -%}
+  <b>{{ t.tag }}</b> → {% if t.action == "color" %}<span class="swatch" style="--c:{{ t.color }};width:14px;height:12px" aria-hidden="true"></span>{% else %}{% for e in templates if e.id == t.template %}{{ e.title }}{% endfor %}{% endif %}
+  {%- endmacro %}
+
   {# One event on the calendar: its title line, and its details (with Edit, Duplicate and Delete) when clicked. #}
   {% macro evitem(it) -%}
         {% set e = it.e %}
@@ -612,7 +618,7 @@
     {% endif %}
     <div class="legend">
       {% if srcs|length > 1 %}{% for x in srcs %}<span style="--sw:{{ ('color-mix(in srgb, ' ~ x.color ~ ' 34%, var(--card))') if x.color else 'var(--allday)' }}">{{ x.name }}</span>{% endfor %}
-      {% elif srcs and srcs[0].color %}<span style="--sw:color-mix(in srgb, {{ srcs[0].color }} 18%, var(--card))">{{ _('Timed') }}</span><span style="--sw:color-mix(in srgb, {{ srcs[0].color }} 34%, var(--card))">{{ _('All-day') }}</span>{% else %}<span style="--sw:var(--ev)">{{ _('Timed') }}</span><span style="--sw:var(--allday)">{{ _('All-day') }}</span>{% endif %}<span style="--sw:var(--custom)">{{ _('Added here') }}</span>{% for x in srcs %}{% for t in x.rules if t.action == 'color' %}<span style="--sw:color-mix(in srgb, {{ t.color }} 34%, var(--card))">{{ t.tag }}</span>{% endfor %}{% endfor %}
+      {% elif srcs and srcs[0].color %}<span style="--sw:color-mix(in srgb, {{ srcs[0].color }} 18%, var(--card))">{{ _('Timed') }}</span><span style="--sw:color-mix(in srgb, {{ srcs[0].color }} 34%, var(--card))">{{ _('All-day') }}</span>{% else %}<span style="--sw:var(--ev)">{{ _('Timed') }}</span><span style="--sw:var(--allday)">{{ _('All-day') }}</span>{% endif %}<span style="--sw:var(--custom)">{{ _('Added here') }}</span>{% for x in srcs %}{% for t in x.effective if t.action == 'color' %}<span style="--sw:color-mix(in srgb, {{ t.color }} 34%, var(--card))">{{ t.tag }}</span>{% endfor %}{% endfor %}
       <span style="--sw:transparent">{{ _('✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google') }}</span>
       <span class="helpdot" tabindex="0" title="{{ _('This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.') }}" aria-label="{{ _('Help') }}">?</span>
     </div>
@@ -762,6 +768,12 @@
           <form class="editor tagsform" id="rulesform-{{ x.id }}" method="post" action="/feed/tags"{% if not x.rules %} data-empty{% endif %}>
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
             <template class="rowtpl">{{ m.rule_row({"id": "", "tag": "", "color": x.color or "#1d4ed8", "mode": "word", "case": false, "action": "color", "template": "", "when": "before_start", "offset": 0}, templates, tag_modes, rule_actions, rule_when, trash) }}</template>
+            {# The rule templates this source uses (ticked), then its own rules, then the two built-in ones #}
+            <div class="rtpicks">
+              <span class="k">{{ _('Rule templates:') }}</span>
+              {% for t in rule_tpls %}<label class="srcpick"><input type="checkbox" name="rule_sub" value="{{ t.id }}"{% if t.id in x.subs %} checked{% endif %}> {{ rule_label(t) }}</label>{% endfor %}
+              {% if not rule_tpls %}<span class="mnote">{{ _('none yet (add them under Rule templates, below).') }}</span>{% endif %}
+            </div>
             <div class="tagrows">{% for t in x.rules %}{{ m.rule_row(t, templates, tag_modes, rule_actions, rule_when, trash) }}{% endfor %}</div>
             <div class="fixedrows">
               <div class="row tagrow fixedrule" data-mode="{{ x.defaults.mode }}">
@@ -787,7 +799,7 @@
         <div class="srcfoot">
           <details class="guide inline"><summary>{{ _('How rules work') }}</summary>
             <p>{{ _('Events whose title matches a rule get its color or an added event; for colors the first matching rule wins, and other events use the calendar’s color. <b>Whole word</b>: “RDO” matches “RDO.” but not “VRDO”. <b>Contains</b>: anywhere, even inside a word. <b>Starts with</b>: the title begins with it. <b>Exact title</b>: the whole title. <b>Aa</b>: match capitals exactly.') }}</p>
-            <p>{{ _('<b>Add event</b> adds an event made from an <b>event template</b> (below), the time you set before the start, after the start or after the end of each matching event (from midnight for all-day events). Added events follow their event: edit the rule or the template to change them.') }}</p></details>
+            <p>{{ _('<b>Add event</b> adds an event made from an <b>event template</b> (see Event templates, below), the time you set before the start, after the start or after the end of each matching event (from midnight for all-day events). Added events follow their event: edit the rule or the template to change them.') }}</p></details>
           <button form="rulesform-{{ x.id }}">{{ _('Save') }}</button>
           <form method="post" action="/sources/remove" class="removeform inline" data-confirm="{{ _('Remove {name}? Its events and edits are removed, and it’s taken off every destination.', name=x.name) }}">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
@@ -798,23 +810,6 @@
     </div>
     {% endfor %}
 
-    {# Event templates: ready-made events for "Add event" rules and for adding events by hand. #}
-    {% if srcs %}
-    <div class="box" id="templates">
-      <div class="boxhead"><div><div class="boxtitle">{{ _('Event templates') }}</div>
-        <div class="subtitle">{{ _('Ready-made events, for rules that add events and for adding an event by hand.') }}</div></div>
-        <button type="button" class="ghost addfirst"{% if templates %} hidden{% endif %} title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">+</button></div>
-      <form class="editor tagsform" method="post" action="/templates"{% if not templates %} data-empty{% endif %}>
-        <input type="hidden" name="csrf" value="{{ csrf }}">
-        <template class="rowtpl">{{ m.template_row({"id": "", "title": "", "all_day": false, "minutes": 60, "location": "", "color": ""}, event_colors, trash) }}</template>
-        <div class="tagrows">{% for t in templates %}{{ m.template_row(t, event_colors, trash) }}{% endfor %}</div>
-        <div class="btnrow tagfoot"{% if not templates %} hidden{% endif %}>
-          <p class="mnote">{{ _('Length as hours:minutes, e.g. 1:30.') }}</p>
-          <button>{{ _('Save') }}</button>
-        </div>
-      </form>
-    </div>
-    {% endif %}
   </section>
 
   <section class="card" id="destinations" aria-labelledby="deststitle">
@@ -950,6 +945,39 @@
       </form>
     </div>
     {% endfor %}
+  </section>
+
+
+  {# Rule templates: rules kept once; each source ticks the ones it uses in its Rules (Configure). #}
+  <section class="card" id="ruletemplates" aria-labelledby="rtplstitle">
+    <div class="cardhead"><h2 class="bigtitle" id="rtplstitle">{{ _('Rule templates') }}</h2>
+      <button type="button" class="ghost plus addfirst"{% if rule_tpls %} hidden{% endif %} title="{{ _('Add a rule template') }}" aria-label="{{ _('Add a rule template') }}">+</button></div>
+    <p class="mnote" style="margin:2px 0 0">{{ _('Rules kept once, for any source: tick them in a source’s Rules (under Configure). Changing one here changes every source that uses it.') }}</p>
+    <form class="editor tagsform" method="post" action="/rule-templates"{% if not rule_tpls %} data-empty{% endif %}>
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <template class="rowtpl">{{ m.rule_row({"id": "", "tag": "", "color": "#1d4ed8", "mode": "word", "case": false, "action": "color", "template": "", "when": "before_start", "offset": 0}, templates, tag_modes, rule_actions, rule_when, trash) }}</template>
+      <div class="tagrows">{% for t in rule_tpls %}{{ m.rule_row(t, templates, tag_modes, rule_actions, rule_when, trash) }}{% endfor %}</div>
+      <div class="btnrow tagfoot"{% if not rule_tpls %} hidden{% endif %}>
+        <p class="mnote">{{ _('A source’s own rules come first; for colors the first matching rule wins.') }}</p>
+        <button>{{ _('Save') }}</button>
+      </div>
+    </form>
+  </section>
+
+  {# Event templates: ready-made events for "Add event" rules and for adding events by hand. #}
+  <section class="card" id="templates" aria-labelledby="tplstitle">
+    <div class="cardhead"><h2 class="bigtitle" id="tplstitle">{{ _('Event templates') }}</h2>
+      <button type="button" class="ghost plus addfirst"{% if templates %} hidden{% endif %} title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">+</button></div>
+    <p class="mnote" style="margin:2px 0 0">{{ _('Ready-made events, for rules that add events and for adding an event by hand.') }}</p>
+    <form class="editor tagsform" method="post" action="/templates"{% if not templates %} data-empty{% endif %}>
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <template class="rowtpl">{{ m.template_row({"id": "", "title": "", "all_day": false, "minutes": 60, "location": "", "color": ""}, event_colors, trash) }}</template>
+      <div class="tagrows">{% for t in templates %}{{ m.template_row(t, event_colors, trash) }}{% endfor %}</div>
+      <div class="btnrow tagfoot"{% if not templates %} hidden{% endif %}>
+        <p class="mnote">{{ _('Length as hours:minutes, e.g. 1:30.') }}</p>
+        <button>{{ _('Save') }}</button>
+      </div>
+    </form>
   </section>
 
   {% macro t(d) %}{{ dates.when(d, cal.today) if d else _('never') }}{% endmacro %}
@@ -1246,7 +1274,7 @@ document.querySelectorAll('.box.src').forEach(function (box) {
 // when there are none) adds an empty row; the bin removes one. Save shows once there's something to save.
 document.querySelectorAll('form.tagsform').forEach(function (form) {
   var rows = form.querySelector('.tagrows'), tpl = form.querySelector('template.rowtpl'),
-      first = form.closest('.box, .subbox').querySelector('.addfirst'), foot = form.querySelector('.tagfoot');
+      first = form.closest('.box, .subbox, .card').querySelector('.addfirst'), foot = form.querySelector('.tagfoot');
   function refresh(changed) {
     first.hidden = rows.children.length > 0;
     if (foot && (changed || rows.children.length)) foot.hidden = false;

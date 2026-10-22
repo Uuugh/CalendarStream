@@ -6,7 +6,17 @@ the `latest` image and the GitHub Release marked **Latest**. Each version lists 
 **removed**. Labels refer to that release's request list: F = feature request, I = issue,
 # = review item, R = README; numbers start again with each release.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.4**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.5**
+
+## 0.2.5 — 2026-10-22
+
+### Changed
+- **F1** The page's sections, in order: **Calendar, Sources, Destinations, Rule templates, Event
+  templates, Activity**.
+  - **F1.1** **Rule templates** (new section): rules kept once, for any source. Each source's Rules
+    (under Configure) has a subsection where it ticks the rule templates it uses, alongside its own
+    rules; changing a template changes every source that ticks it. A source's own rules come first.
+  - **F1.2** **Event templates** is its own section (it was a box at the end of Sources).
 
 ## 0.2.4 — 2026-10-22
 
