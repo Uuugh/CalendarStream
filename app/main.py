@@ -18,7 +18,7 @@ from zoneinfo import ZoneInfo, available_timezones
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.exception_handlers import http_exception_handler as default_http_error
-from fastapi.responses import RedirectResponse, Response
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 from markupsafe import Markup
@@ -900,6 +900,13 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 async def http_error(request: Request, exc: HTTPException):
     """Show form errors as a small page in the visitor's language (the API keeps JSON). Sign-in
     prompts (401) and redirects (303) pass through unchanged."""
+    if _is_async(request) and exc.status_code not in (303, 401):
+        # A login saved from its Save button (see verify): the message, for next to the boxes
+        try:
+            lang = lang_for(request)
+        except Exception:
+            lang = "en"
+        return JSONResponse({"detail": str(i18n.message(lang, str(exc.detail)))}, status_code=exc.status_code)
     wants_page = "text/html" in request.headers.get("accept", "") and not request.url.path.startswith("/api/")
     if exc.status_code in (303, 401) or not wants_page:
         return await default_http_error(request, exc)
@@ -909,6 +916,11 @@ async def http_error(request: Request, exc: HTTPException):
         lang = "en"
     return page(request, "error.html", {"detail": exc.detail, "code": exc.status_code},
                 status_code=exc.status_code, lang=lang)
+def _is_async(request: Request) -> bool:
+    """A login form saved by the page's script (Save → Saved → Verifying… → ✓ / ✗), not a plain post."""
+    return request.headers.get("x-cs-async") == "1"
+
+
 basic = HTTPBasic(auto_error=False)
 
 
@@ -1349,6 +1361,45 @@ async def run_now(csrf: str = Form(""), sid: str = Form("ccs")):
     return RedirectResponse(f"/#src-{sid}", status_code=303)
 
 
+async def _wait_idle(S: State, seconds: int = 120):
+    """Wait for a source's download in progress to finish."""
+    for _ in range(seconds * 4):
+        if not S.running:
+            return
+        await asyncio.sleep(0.25)
+
+
+@app.post("/verify", dependencies=[Depends(gui_auth)])
+async def verify(request: Request, csrf: str = Form(""), kind: str = Form(""), sid: str = Form("")):
+    """After a login was saved from its Save button: check it now (CCS+ downloads, Google checks the
+    client, a feed downloads) and say whether it worked, for "✓ Validated" / "✗ Verification failed"."""
+    check_csrf(csrf)
+    lang = lang_for(request)
+    if kind == "ccs":
+        await _wait_idle(state)
+        await run_once(manual=True)
+        await _wait_idle(state)
+        ok, message = bool(state.last_auth_ok) and state.status == "ok", state.message
+    elif kind == "google":
+        if not google.configured:
+            return JSONResponse({"ok": False, "message": str(i18n.message(lang, "Enter the client secret too."))})
+        check = await google.check_client(google_redirect_uri(request))
+        ok = check.get("ok") is True
+        message = check.get("message", "")
+        if ok and check.get("redirect_ok") is False:
+            message = f"Google doesn't list {check.get('redirect_uri')} under Authorised redirect URIs; add it to the client in Google Cloud"
+        state.record("info" if ok else "warn", f"Google OAuth client checked: {message}")
+    elif kind == "feed":
+        S = st(_sid(sid))
+        await _wait_idle(S)
+        await run_once(manual=True, sid=sid)
+        await _wait_idle(S)
+        ok, message = S.status == "ok", S.message
+    else:
+        raise HTTPException(400, "Unknown kind of login.")
+    return JSONResponse({"ok": ok, "message": str(i18n.message(lang, message)) if message else ""})
+
+
 # --- Adding and removing sources and destinations ---------------------------------------------
 
 def _feed_link(url: str) -> str:
@@ -1420,7 +1471,7 @@ async def remove_source(csrf: str = Form(""), sid: str = Form("")):
 
 
 @app.post("/sources/url", dependencies=[Depends(gui_auth)])
-async def set_source_url(csrf: str = Form(""), sid: str = Form(""), url: str = Form("")):
+async def set_source_url(request: Request, csrf: str = Form(""), sid: str = Form(""), url: str = Form("")):
     """Change a feed source's link, then download it."""
     check_csrf(csrf)
     sid = _sid(sid)
@@ -1430,6 +1481,8 @@ async def set_source_url(csrf: str = Form(""), sid: str = Form(""), url: str = F
     store.set("sources", [{**x, "url": url} if x["id"] == sid else x for x in sources()])
     store.delete(skey(sid, "http_cache"))
     st(sid).record("info", f"Feed link changed to {urlparse(url).hostname}")
+    if _is_async(request):
+        return JSONResponse({"saved": True})      # the page then asks /verify
     background(run_once(manual=True, sid=sid))
     await asyncio.sleep(1)
     return RedirectResponse(f"/#src-{sid}", status_code=303)
@@ -1591,8 +1644,8 @@ def _back_to(back: str, anchor: str) -> str:
 
 
 @app.post("/setup/ccs", dependencies=[Depends(gui_auth)])
-async def set_ccs_login(csrf: str = Form(""), uid: str = Form(""), password: str = Form(""), back: str = Form(""),
-                        url: str | None = Form(None)):
+async def set_ccs_login(request: Request, csrf: str = Form(""), uid: str = Form(""), password: str = Form(""),
+                        back: str = Form(""), url: str | None = Form(None)):
     """Save the CCS+ Site Address (the Calendar Sync link; empty = United's), UID and Calendar Sync
     password, then download straight away."""
     check_csrf(csrf)
@@ -1614,6 +1667,8 @@ async def set_ccs_login(csrf: str = Form(""), uid: str = Form(""), password: str
     state.login_failures = 0
     store.delete("http_cache")
     state.record("info", "CCS+ UID and Calendar Sync password saved")
+    if _is_async(request):
+        return JSONResponse({"saved": True})      # the page then asks /verify
     if not state.running:
         background(run_once(manual=True))
         await asyncio.sleep(1.5)   # usually long enough to show whether CCS+ accepted it
@@ -2215,6 +2270,9 @@ async def google_client(request: Request, csrf: str = Form(""), client_id: str =
         except GoogleError as e:
             raise HTTPException(400, str(e))
         google.record_error("")
+        if _is_async(request):
+            state.record("info", f"Google OAuth client saved ({google.client_id.split('.')[0][:12]}…)")
+            return JSONResponse({"saved": True})      # the page then asks /verify
         check = await google.check_client(google_redirect_uri(request))
         state.record("info" if check["ok"] else "warn",
                      f"Google OAuth client saved ({google.client_id.split('.')[0][:12]}…): {check['message']}")

@@ -200,9 +200,29 @@
   .menu form .pair { flex-wrap:nowrap } .menu form .pair label.fld, .menu .inbox { flex:1 1 0; min-width:0 }
   .menu form .pair > button, .menu .okmark { padding-left:10px; padding-right:10px }
   /* "✓ Validated" / "✓ Signed in" where the button goes, until something is typed. */
-  .okmark { flex:0 0 auto; margin-left:auto; align-self:center; padding:0 4px; color:var(--ok); font-weight:600; font-size:13px; white-space:nowrap }
-  .okmark[hidden], form .pair[hidden], .mnote[hidden] { display:none }
-  form .pair > .okmark + button { margin-left:auto }
+  /* The slot next to a login: ✓ Validated, or Save + Cancel while editing (see okbutton in _macros.html) */
+  .okslot { flex:0 0 var(--slotw, 170px); width:var(--slotw, 170px); margin-left:auto; align-self:flex-end; height:34px;
+            display:flex; align-items:center; justify-content:flex-end; gap:6px; overflow:hidden }
+  .menu .okslot { --slotw:150px }
+  .okslot > * { display:none }
+  .okslot .okmark, .okslot .slotmsg { padding:0 4px; font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .okslot .okmark { color:var(--ok) }
+  .okslot button { flex:1 1 0; min-width:0; height:34px; padding:0 8px; overflow:hidden;
+                   transition:flex-grow .3s ease, padding .3s ease, opacity .3s ease, background-color .3s ease, color .3s ease }
+  .okslot[data-state="ok"] .okmark { display:inline; animation:slotfade .45s ease }
+  .okslot[data-state="needs"] .slotsave { display:inline-flex }
+  .okslot[data-state="edit"] .slotsave, .okslot[data-state="edit"] .slotcancel,
+  .okslot[data-state="cancel"] .slotsave, .okslot[data-state="cancel"] .slotcancel,
+  .okslot[data-state="saving"] .slotsave, .okslot[data-state="saving"] .slotcancel { display:inline-flex }
+  .okslot[data-state="cancel"] .slotsave, .okslot[data-state="saving"] .slotcancel { flex-grow:0; padding:0; border-width:0; opacity:0 }
+  .okslot[data-state="saving"] .slotsave { pointer-events:none }
+  .okslot[data-state="verifying"] .slotmsg, .okslot[data-state="valid"] .slotmsg, .okslot[data-state="failed"] .slotmsg { display:inline; animation:slotfade .3s ease }
+  .okslot[data-state="verifying"] .slotmsg { color:var(--warn) }
+  .okslot[data-state="valid"] .slotmsg { color:var(--ok) }
+  .okslot[data-state="failed"] .slotmsg { color:var(--bad) }
+  .okslot[data-state="failed"] .slotsave { display:none }
+  @keyframes slotfade { from { opacity:0 } to { opacity:1 } }
+  form .pair[hidden], .mnote[hidden] { display:none }
   /* A box with a small button inside it, on the right (Public address → This page). */
   .inbox { position:relative; flex:1 1 180px; min-width:0 }
   .inbox input { width:100%; font:13px ui-monospace,monospace; padding:7px 84px 7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
@@ -714,7 +734,7 @@
                 <li>{{ _('In CCS+, open <b>Settings → Schedule Settings → Calendar syncing</b>.') }}</li>
                 <li>{{ _('Turn on calendar syncing and <b>create a calendar password</b>. Use a password just for Calendar Sync, not your CCS login.') }}</li>
                 <li>{{ _('Press <b>Copy link</b> in CCS+. If it differs from the <b>Site Address</b> above, paste it there.') }}</li>
-                <li>{{ _('Enter your <b>UID</b> and that <b>Calendar Sync password</b> in the <b>Password</b> box and press <b>Save &amp; sync</b>.') }}</li>
+                <li>{{ _('Enter your <b>UID</b> and that <b>Calendar Sync password</b> in the <b>Password</b> box and press <b>Save</b>.') }}</li>
                 <li>{{ _('The checklist turns green when CCS+ accepts the sign-in and the schedule downloads.') }}</li>
               </ol>
               <p class="mnote">{{ _('The password is stored encrypted and never shown again; leave its box empty to keep it.') }}</p>
@@ -723,11 +743,11 @@
         </details>
       {% else %}
         {# A feed source: its link, saved like a login (✓ until it's changed) #}
-        <form method="post" action="/sources/url" class="clientform watch">
+        <form method="post" action="/sources/url" class="clientform watch" data-verify="feed" data-sid="{{ x.id }}">
           <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
           <div class="pair">
             <label class="fld"><span>{{ _('Site Address') }}</span><input name="url" value="{{ x.url }}" required spellcheck="false"></label>
-            {{ m.okbutton(S.status == "ok", _('Validated'), _('Save & sync'), _('The feed downloaded')) }}
+            {{ m.okbutton(S.status == "ok", _('Validated'), _('Save'), _('The feed downloaded')) }}
           </div>
         </form>
         <p class="mnote">{{ _('Repeating events are shown from a year back to two years ahead.') }}</p>
@@ -970,6 +990,8 @@
 // Texts used by the scripts below, in the page's language.
 var T = {
   copied: {{ _('Copied')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }},
+  saved: {{ _('Saved')|string|tojson }}, verifying: {{ _('Verifying…')|string|tojson }},
+  validated: {{ _('Validated')|string|tojson }}, verifyFailed: {{ _('Verification failed')|string|tojson }},
   edit: {{ _('(edit)')|string|tojson }}, close: {{ _('(close)')|string|tojson }},
   backToStandard: {{ _('Back to the standard colors when you save')|string|tojson }},
   disconnect: {{ _('Disconnect Google Calendar?')|string|tojson }},
@@ -995,15 +1017,65 @@ function copyField(id, btn) {
   } else { fallback(); }
 }
 
-// Login forms ("watch"): typing swaps "✓ Validated" / "✓ Signed in" for the Save button, and shows
-// any extra fields the change needs (the page login asks for the current password).
+// Login forms ("watch"): typing swaps "✓ Validated" / "✓ Signed in" for Save and Cancel (and shows any
+// extra fields the change needs: the page login asks for the current password). Cancel grows to fill
+// the slot, undoes the typing and fades back to ✓. Save grows and is sent in the background: "Saved",
+// then "Verifying…" (the server checks the login: /verify), then "✓ Validated" or "✗ Verification
+// failed" with the reason under the boxes. The page login has nothing to verify: it's simply sent.
 document.querySelectorAll('form.watch').forEach(function (f) {
+  var slot = f.querySelector('.okslot');
+  if (!slot) return;
+  var save = slot.querySelector('.slotsave'), cancel = slot.querySelector('.slotcancel'),
+      msg = slot.querySelector('.slotmsg'), label = save.textContent, initial = slot.dataset.state, note = null;
+  function set(state) { slot.dataset.state = state; }
+  function busy() { return slot.dataset.state === 'saving' || slot.dataset.state === 'verifying' || slot.dataset.state === 'valid'; }
+  function extras(show) {
+    f.querySelectorAll('.more').forEach(function (el) { el.hidden = !show; });
+    f.querySelectorAll('[data-required]').forEach(function (el) { el.required = show; });
+  }
+  function fail(text) {
+    set('failed'); msg.textContent = '✗ ' + T.verifyFailed; save.textContent = label;
+    if (text) { note = document.createElement('p'); note.className = 'check bad slotnote'; note.textContent = text; f.appendChild(note); }
+  }
   f.addEventListener('input', function () {
-    var mark = f.querySelector('.okmark'), btn = f.querySelector('[data-save]');
-    if (mark) mark.hidden = true;
-    if (btn) btn.hidden = false;
-    f.querySelectorAll('.more').forEach(function (el) { el.hidden = false; });
-    f.querySelectorAll('[data-required]').forEach(function (el) { el.required = true; });
+    if (busy()) return;
+    if (note) { note.remove(); note = null; }
+    set('edit'); extras(true);
+  });
+  cancel.addEventListener('click', function () {
+    f.reset(); extras(false);
+    if (note) { note.remove(); note = null; }
+    set('cancel');
+    setTimeout(function () { set(initial); }, 380);
+  });
+  f.addEventListener('submit', function (e) {
+    if (e.submitter && !e.submitter.matches('.slotsave')) return;     // Check again, Remove…: a normal post
+    if (busy()) { e.preventDefault(); return; }
+    e.preventDefault();
+    var data;
+    try { data = new FormData(f, e.submitter || undefined); } catch (err) { data = new FormData(f); if (save.name) data.append(save.name, save.value); }
+    set('saving');
+    var kind = f.dataset.verify;
+    if (!kind) {     // nothing to check here: show Saved, then send it
+      setTimeout(function () { save.textContent = T.saved; setTimeout(function () { HTMLFormElement.prototype.submit.call(f); }, 450); }, 300);
+      return;
+    }
+    var pause = function (ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); };
+    fetch(f.action, { method: 'POST', body: data, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw (j.detail || ''); }); })
+      .then(function () { save.textContent = T.saved; return pause(600); })
+      .then(function () {
+        set('verifying'); msg.textContent = T.verifying;
+        var body = new URLSearchParams({ csrf: CSRF, kind: kind, sid: f.dataset.sid || '' });
+        return fetch('/verify', { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
+          .then(function (r) { return r.json(); });
+      })
+      .then(function (j) {
+        if (!j.ok) return fail(j.message);
+        set('valid'); msg.textContent = '✓ ' + T.validated; initial = 'ok';
+        setTimeout(function () { location.reload(); }, 1600);      // show the rest of the page up to date
+      })
+      .catch(function (text) { fail(typeof text === 'string' ? text : ''); });
   });
 });
 

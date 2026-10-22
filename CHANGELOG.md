@@ -6,7 +6,19 @@ the `latest` image and the GitHub Release marked **Latest**. Each version lists 
 **removed**. Labels refer to that release's request list: F = feature request, I = issue,
 # = review item, R = README; numbers start again with each release.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.3**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.4**
+
+## 0.2.4 — 2026-10-22
+
+### Changed
+- **F1** The "✓ Validated" slot next to each login (CCS+, the Google client, a feed's Site Address, the
+  status-page login):
+  - **F1.1** When text is entered, ✓ Validated is replaced by **Save** and **Cancel**, side by side in
+    the same space.
+  - **F1.2** **Cancel** grows to fill the space, undoes the typing and fades back to ✓ Validated.
+  - **F1.3** **Save** grows to fill the space and says **Saved**, then **Verifying…** (yellow) while
+    CalendarStream checks the login, then **✓ Validated** (green) or **✗ Verification failed** (red,
+    with the reason under the boxes). The page login is simply saved (your browser then asks for it).
 
 ## 0.2.3 — 2026-10-22
 

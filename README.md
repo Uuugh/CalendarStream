@@ -121,7 +121,7 @@ logins or setup codes lock an address out for 15 minutes.
   download ("Downloaded 98 events from feed @ 23:13 (0 new, 0 removed)"), the check interval, its
   status and **Sync Now**. **> Configure <** opens the rest (it opens by itself when something
   needs doing): the **Site Address** (the Calendar Sync link, or the feed's link) with CCS+'s UID
-  and password (**✓ Validated** until you change them) and step-by-step help, CCS+'s hand upload,
+  and password (**✓ Validated** until you type; then **Save** / **Cancel**, and Save shows Saved → Verifying… → ✓ Validated or ✗ Verification failed) and step-by-step help, CCS+'s hand upload,
   and its **Rules**: match a title (whole word, contains, starts with or exact title) and either
   **color** the event (e.g. RDO in red) or **add an event** from a template some time before the
   start, after the start or after the end (e.g. a 1:30 drive to the airport 2:00 before each

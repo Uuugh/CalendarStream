@@ -14,8 +14,16 @@
 {# The end of a login line: "✓ <ok_text>" while the saved values are good and untouched, otherwise the
    button. Typing in the form swaps the mark for the button (see the "watch" script on the page). #}
 {% macro okbutton(ok, ok_text, button, ok_title="", name="", value="") -%}
-<span class="okmark"{% if not ok %} hidden{% endif %}{% if ok_title %} title="{{ ok_title }}"{% endif %}>✓ {{ ok_text }}</span>
-<button data-save{% if name %} name="{{ name }}" value="{{ value }}"{% endif %}{% if ok %} hidden{% endif %}>{{ button }}</button>
+{# One slot to the right of a login's boxes: "✓ Validated" (or Signed in); typing swaps it for Save and
+   Cancel side by side. Cancel grows to fill the slot, then fades back to ✓. Save grows, says Saved,
+   then Verifying… (yellow), then ✓ Validated (green) or ✗ Verification failed (red). With nothing
+   valid saved yet, the slot is just Save. The states are set by the script in index.html. #}
+<span class="okslot" data-state="{{ 'ok' if ok else 'needs' }}">
+  <span class="okmark"{% if ok_title %} title="{{ ok_title }}"{% endif %}>✓ {{ ok_text }}</span>
+  <span class="slotmsg" aria-live="polite"></span>
+  <button data-save class="slotsave"{% if name %} name="{{ name }}" value="{{ value }}"{% endif %}>{{ button }}</button>
+  <button type="button" data-cancel class="ghost slotcancel">{{ _('Cancel') }}</button>
+</span>
 {%- endmacro %}
 
 {# The CCS+ Calendar Sync login: the Site Address (the Calendar Sync link), UID and password, with
@@ -24,7 +32,7 @@
 {% macro ccs_login(setup, s, back="", upload="") -%}
 {% set valid = setup.configured and s.last_auth_ok %}
 <div class="cfggrid">
-<form method="post" action="/setup/ccs" class="ccsform watch" autocomplete="off">
+<form method="post" action="/setup/ccs" class="ccsform watch" data-verify="ccs" autocomplete="off">
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <input type="hidden" name="back" value="{{ back }}">
   <label class="fld siteaddr"><span>{{ _('Site Address') }}</span>
@@ -36,7 +44,7 @@
     <label class="fld"><span>{{ _('Password') }}</span>
       <input name="password" type="password" data-strength {% if not setup.has_password %}required{% endif %} autocomplete="new-password"
              placeholder="{{ _('Saved (leave empty to keep it)') if setup.has_password else _('Calendar Sync password') }}"></label>
-    {{ okbutton(valid, _('Validated'), _('Save & sync'), _('Validated: CCS+ sign-in')) }}
+    {{ okbutton(valid, _('Validated'), _('Save'), _('Validated: CCS+ sign-in')) }}
   </div>
   {% if setup.configured and not valid %}
     {% if s.last_auth_ok == false %}<p class="check bad">✗ {{ _('CCS+ rejected the UID or Calendar Sync password') }}</p>
@@ -53,7 +61,7 @@
 {# Like the CCS+ login: the two boxes side by side, then "✓ Validated" once Google accepted them, or
    Save when they're missing, being edited or were rejected. `desc` (optional) goes under the boxes. #}
 {% set valid = g.configured and g.check.ok %}
-<form method="post" action="/google/client" class="clientform watch" autocomplete="off">
+<form method="post" action="/google/client" class="clientform watch" data-verify="google" autocomplete="off">
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <input type="hidden" name="back" value="{{ back }}">
   <div class="pair">
