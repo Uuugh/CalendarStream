@@ -9,7 +9,19 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.3**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.4**
+
+## 0.2.7-beta.4 — 2026-10-22
+
+### Fixed
+- **I1** A source's header didn't fit on its two lines and overflowed. The last-download and
+  check-interval lines now start at the same left edge, and switch to the short wording ("98 events
+  @ 14:53", "Check every 15 min") whenever the long one wouldn't fit beside the title; this is
+  measured on the page, so it also works in other languages.
+
+### Changed
+- **R1** README: every screenshot is shown in the light and the dark theme, side by side (and the
+  add-event screenshot is new).
 
 ## 0.2.7-beta.3 — 2026-10-22
 

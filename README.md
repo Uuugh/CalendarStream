@@ -24,18 +24,26 @@ or add events with rules, and walks you through setup.
 </p>
 
 <details>
-<summary>More screenshots: sources, destinations, rules, activity, Settings, phone</summary>
+<summary>More screenshots, light and dark: sources, destinations, rules, event templates, adding an event, Settings, phone, activity</summary>
 <p align="center">
-  <img src="docs/screenshots/sources.png" alt="Calendar Sources: United CCS+ Calendar Sync with Configure open (Site Address, Username, password, upload, its rules) and a work calendar feed" width="420">
-  <img src="docs/screenshots/destinations.png" alt="Calendar Destinations: the Google account, a Google calendar and a calendar feed with its dates, sources, feed link and subscribe page" width="420"><br><br>
-  <img src="docs/screenshots/rules.png" alt="Rule Templates: color rules, an Add event rule and the two predefined rules, with the sources using each" width="420">
-  <img src="docs/screenshots/templates.png" alt="Event Templates: a drive to the airport and a day off" width="420"><br><br>
-  <img src="docs/screenshots/rule-dialog.png" alt="The rule dialog: a Color rule for RDO" width="360">
-  <img src="docs/screenshots/settings.png" alt="Settings: status-page login, public address, admin e-mail and update checks" width="300">
-  <br><br><img src="docs/screenshots/phone-light.png" alt="On a phone, light theme: the list view, with TZ and the view button" width="200">
-  <img src="docs/screenshots/phone-dark.png" alt="On a phone, dark theme" width="200"><br><br>
-  <img src="docs/screenshots/activity.png" alt="Activities and Logs: each source's last check and the log" width="840"><br><br>
-  <img src="docs/screenshots/event.png" alt="Adding an event: typed times with a time list, time zones and an event color" width="420">
+  <img src="docs/screenshots/sources-light.png" alt="Calendar Sources: United CCS+ Calendar Sync with Configure open (Site Address, Username, password, upload, its rules) and a work calendar feed (light theme)" width="49%">
+  <img src="docs/screenshots/sources-dark.png" alt="The same in the dark theme" width="49%"><br><br>
+  <img src="docs/screenshots/destinations-light.png" alt="Calendar Destinations: the Google account, a Google calendar and a calendar feed with its dates, sources, feed link and subscribe page (light theme)" width="49%">
+  <img src="docs/screenshots/destinations-dark.png" alt="The same in the dark theme" width="49%"><br><br>
+  <img src="docs/screenshots/rules-light.png" alt="Rule Templates: color rules, an Add event rule and the two predefined rules, with the sources using each (light theme)" width="49%">
+  <img src="docs/screenshots/rules-dark.png" alt="The same in the dark theme" width="49%"><br><br>
+  <img src="docs/screenshots/templates-light.png" alt="Event Templates: a drive to the airport and a day off (light theme)" width="49%">
+  <img src="docs/screenshots/templates-dark.png" alt="The same in the dark theme" width="49%"><br><br>
+  <img src="docs/screenshots/rule-dialog-light.png" alt="The rule dialog: a Color rule for RDO (light theme)" width="45%">
+  <img src="docs/screenshots/rule-dialog-dark.png" alt="The same in the dark theme" width="45%"><br><br>
+  <img src="docs/screenshots/event-light.png" alt="Adding an event: calendar, template, title, times, time zone, location, notes and color (light theme)" width="49%">
+  <img src="docs/screenshots/event-dark.png" alt="The same in the dark theme" width="49%"><br><br>
+  <img src="docs/screenshots/settings-light.png" alt="Settings: status-page login, public address, admin e-mail and updates (light theme)" width="40%">
+  <img src="docs/screenshots/settings-dark.png" alt="The same in the dark theme" width="40%"><br><br>
+  <img src="docs/screenshots/phone-light.png" alt="On a phone: the list view, with TZ and the view button (light theme)" width="30%">
+  <img src="docs/screenshots/phone-dark.png" alt="The same in the dark theme" width="30%"><br><br>
+  <img src="docs/screenshots/activity-light.png" alt="Activities and Logs: each source's last check and the log (light theme)" width="49%">
+  <img src="docs/screenshots/activity-dark.png" alt="The same in the dark theme" width="49%">
 </p>
 <sub>Made-up demo schedule.</sub>
 </details>

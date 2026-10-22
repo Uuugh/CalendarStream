@@ -369,11 +369,12 @@
   .empty { color:var(--muted); font-size:14px; margin:10px 0 2px }
   /* A source: header (name, kind | last download, interval | status, Sync Now), then Configure */
   .srchead { display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap }
-  .srcleft { flex:1 1 220px; min-width:0 }
+  .srcleft { flex:1 1 180px; min-width:0 }
   .srcleft .srctype { font-size:13.5px; font-weight:600; margin-top:2px }
-  .srcright { flex:0 1 auto; display:grid; gap:6px; justify-items:end; text-align:right }
+  /* The last download and the check interval: two lines starting at the same left edge. */
+  .srcright { flex:0 1 auto; min-width:0; display:grid; gap:6px; justify-items:start; text-align:left }
   .srcstatus { margin:0; font-size:13.5px }
-  .intervalform { display:flex; align-items:center; gap:8px; margin:0; font-size:13.5px }
+  .intervalform { display:flex; align-items:center; gap:8px; margin:0; font-size:13.5px; white-space:nowrap }
   .intervalform label { font-weight:600 }
   .intervalform input { width:78px; height:32px; font:inherit; padding:0 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
   .statusbox { display:grid; gap:4px; justify-items:center; padding:5px; border:1px solid var(--line); border-radius:8px }
@@ -500,6 +501,8 @@
   .tzlabel { font-size:12.5px; font-weight:600; color:var(--muted); white-space:nowrap }
   @media (max-width:900px) { .tzlabel .long { display:none } .tzlabel .short { display:inline } }
   .box.cfgbox { container-type:inline-size }
+  /* "tight" (set by the script when the long wording would make the header wrap): the short words */
+  .srchead.tight .long { display:none } .srchead.tight .short { display:inline }
   @container (max-width:600px) {
     .srchead .long { display:none } .srchead .short { display:inline }
     /* the status box moves up next to the title; the download and interval lines go underneath */
@@ -515,8 +518,7 @@
     .editor .tagrow { flex-wrap:wrap; border:1px solid var(--line); border-radius:10px; padding:8px }
     .editor .tagrow input[name=tpl_title] { flex-basis:100% }
   }
-  .destsum { margin:0; font-size:13px; color:var(--muted); text-align:right }
-  @container (max-width:600px) { .destsum { text-align:left } }
+  .destsum { margin:0; font-size:13px; color:var(--muted); text-align:left }
   @media (max-width:700px) {
     .viewseg, .topbar .seg { display:none }
     .cyclebtn { display:inline-flex; height:28px; padding:0 10px; font-size:12.5px }
@@ -1497,6 +1499,31 @@ document.querySelectorAll('.box.cfgbox').forEach(function (box) {
     savePref('/ui/section', { section: box.dataset.section, open: body.hidden ? '0' : '1' });
   });
 });
+
+// A box's header: the title on the left, the status lines next to it and the status box on the right.
+// When the long wording ("Downloaded 98 events from feed @ 14:53.", "Check for changes every") would
+// push the status lines onto a line of their own, the short wording is used ("98 events @ 14:53",
+// "Check every"). Measured in the page, so it also fits other languages. (Below 600 px the lines go
+// under the title anyway, with the short words: see the CSS.)
+(function () {
+  var heads = Array.prototype.slice.call(document.querySelectorAll('.srchead'));
+  function fit() {
+    heads.forEach(function (h) {
+      var left = h.querySelector('.srcleft'), rest = h.querySelectorAll('.srcright, .statusbox');
+      if (!left || h.clientWidth <= 600) return;
+      // Wrapped: the status lines (or the status box) start below the bottom of the title.
+      function wraps() {
+        var bottom = left.getBoundingClientRect().bottom;
+        return Array.prototype.some.call(rest, function (el) { return el.getBoundingClientRect().top >= bottom - 2; });
+      }
+      h.classList.remove('tight');
+      if (wraps()) h.classList.add('tight');
+    });
+  }
+  fit();
+  if (window.ResizeObserver) { var ro = new ResizeObserver(fit); heads.forEach(function (h) { ro.observe(h); }); }
+  else window.addEventListener('resize', fit);
+})();
 
 document.querySelectorAll('.box.src').forEach(function (box) {
   // The color is only sent when it's changed, so saving doesn't set one by accident.
