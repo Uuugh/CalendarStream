@@ -9,7 +9,46 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.1**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.2**
+
+## 0.2.7-beta.2 — 2026-10-22
+
+### Changed
+- **F1** Settings:
+  - **F1.1** Hard to see when opened: the Settings panel is now light blue (the blue of the Sync
+    Now box), with each part on white.
+- **F2** Calendar:
+  - **F2.1** "Time Zone" before the time-zone menu; "TZ" when space is limited.
+- **F3** Calendar Sources:
+  - **F3.1** The last-download line no longer fit: when the box is narrow it shortens to
+    "40 events @ 1:10pm (…)".
+  - **F3.2** Likewise "Check for changes every 60 minutes" shortens to "Check every 60 min"; on a
+    phone the status box sits beside the title.
+  - **F3.3** "UID" is now "Username".
+  - **F3.4** Every "✓ Validated" box is half as wide, in the same place; Save and Cancel share that
+    width, and a failed check says "✗ Failed" (the reason shows under the boxes).
+- **F4** Calendar Destinations:
+  - **F4.1** Each destination's box, and the Google account's, has the same header as a source's
+    (name, kind, its sources and dates, status) and folds the rest under **▸ Configure ◂**. The
+    Google account opens by itself until it's connected; the others stay as you left them.
+  - **F4.2** Add a destination: the Name's hint reads "How your calendar will be titled via stream"
+    (left empty, it takes the first source's name).
+- **F5** Rules:
+  - **F5.1** The same section heading as Calendar Sources.
+  - **F5.2** Renamed **Rule Templates**.
+- **F6** Event Templates:
+  - **F6.1** Its own section (it was a box inside Rules), with **+** in its heading.
+  - **F6.2** Where Activity was: beside Rule Templates on a wide screen.
+- **F7** Activity:
+  - **F7.1** Renamed **Activities and Logs**.
+  - **F7.2** Spans the full width.
+- **F8** Layout:
+  - **F8.1** Checked on a wide screen, a narrow one and a phone, with shorter words where needed
+    (no sideways scrolling at any width).
+  - **F8.2** Spacing: 10 px between sections, 5 px between the boxes in a section, 2 px between rows
+    of fields.
+- **R1** Fuller README screenshots: the calendar (light and dark), each section in use, the rule
+  dialog, Settings and a phone (made-up demo schedule).
 
 ## 0.2.7-beta.1 — 2026-10-22
 

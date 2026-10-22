@@ -49,8 +49,9 @@ def _parts(version: str) -> tuple[int, ...] | None:
     return (int(x), int(y), int(z), 0, int(beta)) if beta else (int(x), int(y), int(z), 1, 0)
 
 
-def is_newer(candidate: str, current: str = __version__) -> bool:
-    a, b = _parts(candidate), _parts(current)
+def is_newer(candidate: str, current: str | None = None) -> bool:
+    """True if `candidate` comes after `current` (this install's version by default)."""
+    a, b = _parts(candidate), _parts(current if current is not None else __version__)
     return bool(a and b and a > b)
 
 

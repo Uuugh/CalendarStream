@@ -16,7 +16,7 @@
 {% macro okbutton(ok, ok_text, button, ok_title="", name="", value="") -%}
 {# One slot to the right of a login's boxes: "✓ Validated" (or Signed in); typing swaps it for Save and
    Cancel side by side. Cancel grows to fill the slot, then fades back to ✓. Save grows, says Saved,
-   then Verifying… (yellow), then ✓ Validated (green) or ✗ Verification failed (red). With nothing
+   then Verifying… (yellow), then ✓ Validated (green) or ✗ Failed (red, the reason under the boxes). With nothing
    valid saved yet, the slot is just Save. The states are set by the script in index.html. #}
 <span class="okslot" data-state="{{ 'ok' if ok else 'needs' }}">
   <span class="okmark"{% if ok_title %} title="{{ ok_title }}"{% endif %}>✓ {{ ok_text }}</span>
@@ -39,15 +39,15 @@
     <input name="url" type="url" value="{{ setup.url }}" placeholder="{{ _('Site Address') }}" spellcheck="false"
            title="{{ _('The Calendar Sync link from CCS+ (Copy link). Leave it as it is unless CCS+ shows a different one.') }}"></label>
   <div class="pair">
-    <label class="fld"><span>UID</span>
-      <input name="uid" value="{{ setup.uid }}" required placeholder="{{ _('UID, e.g. U123456') }}" spellcheck="false" autocomplete="off"></label>
+    <label class="fld"><span>{{ _('Username') }}</span>
+      <input name="uid" value="{{ setup.uid }}" required placeholder="{{ _('e.g. U123456') }}" spellcheck="false" autocomplete="off"></label>
     <label class="fld"><span>{{ _('Password') }}</span>
       <input name="password" type="password" data-strength {% if not setup.has_password %}required{% endif %} autocomplete="new-password"
              placeholder="{{ _('Saved (leave empty to keep it)') if setup.has_password else _('Calendar Sync password') }}"></label>
     {{ okbutton(valid, _('Validated'), _('Save'), _('Validated: CCS+ sign-in')) }}
   </div>
   {% if setup.configured and not valid %}
-    {% if s.last_auth_ok == false %}<p class="check bad">✗ {{ _('CCS+ rejected the UID or Calendar Sync password') }}</p>
+    {% if s.last_auth_ok == false %}<p class="check bad">✗ {{ _('CCS+ rejected the Username or Calendar Sync password') }}</p>
     {% else %}<p class="check unknown">{{ _('Not checked yet') }}</p>{% endif %}
   {% endif %}
 </form>

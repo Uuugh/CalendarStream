@@ -57,7 +57,7 @@ class Logins:
         """Save the CCS+ login. A blank password keeps the saved one (it's never shown again)."""
         uid = uid.strip()
         if not UID_RE.match(uid):
-            raise LoginError("Enter your UID (letters and digits, e.g. U123456).")
+            raise LoginError("Enter your Username (letters and digits, e.g. U123456).")
         password = password.rstrip("\r\n")
         if not password:
             password = self.ccs()[1]

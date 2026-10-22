@@ -21,16 +21,22 @@ or add events with rules, and walks you through setup.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/calendar-dark.png">
-    <img src="docs/screenshots/calendar-light.png" alt="The status page's month view: the schedule with RDO, VAC and SIM tag colors, a 12h/24h switch and a time-zone menu" width="760">
+    <img src="docs/screenshots/calendar-light.png" alt="The status page's month view: the schedule and a work calendar, with RDO, VAC and SIM rule colors, the time zone, the views and the 12h/24h switch" width="820">
   </picture>
 </p>
 
 <details>
-<summary>More screenshots: setup, adding an event, Settings</summary>
+<summary>More screenshots: sources, destinations, rules, activity, Settings, phone</summary>
 <p align="center">
-  <img src="docs/screenshots/status.png" alt="Status &amp; setup: Tag Colors, CCS+ Calendar Sync and Google Calendar Autosync boxes" width="620"><br><br>
+  <img src="docs/screenshots/sources.png" alt="Calendar Sources: United CCS+ Calendar Sync with Configure open (Site Address, Username, password, upload, its rules) and a work calendar feed" width="420">
+  <img src="docs/screenshots/destinations.png" alt="Calendar Destinations: the Google account, a Google calendar and a calendar feed with its dates, sources, feed link and subscribe page" width="420"><br><br>
+  <img src="docs/screenshots/rules.png" alt="Rule Templates: color rules, an Add event rule and the two predefined rules, with the sources using each" width="420">
+  <img src="docs/screenshots/templates.png" alt="Event Templates: a drive to the airport and a day off" width="420"><br><br>
+  <img src="docs/screenshots/rule-dialog.png" alt="The rule dialog: a Color rule for RDO" width="360">
+  <img src="docs/screenshots/settings.png" alt="Settings: status-page login, public address, admin e-mail and update checks" width="300">
+  <img src="docs/screenshots/phone.png" alt="On a phone: the list view, with TZ and the view button" width="200"><br><br>
+  <img src="docs/screenshots/activity.png" alt="Activities and Logs: each source's last check and the log" width="840"><br><br>
   <img src="docs/screenshots/event.png" alt="Adding an event: typed times with a time list, time zones and an event color" width="420">
-  <img src="docs/screenshots/settings.png" alt="Settings: status-page login, public address and update checks" width="300">
 </p>
 <sub>Made-up demo schedule.</sub>
 </details>
@@ -60,8 +66,8 @@ answers) and the database password are kept.
 Then open the address it printed:
 
 1. **Create your login** with the setup code.
-2. **Calendar Sources → +** → **United CCS+ Calendar Sync**, then enter your CCS+ UID and Calendar
-   Sync password. (Or add any calendar feed.)
+2. **Calendar Sources → +** → **United CCS+ Calendar Sync**, then enter your CCS+ Username (UID)
+   and Calendar Sync password. (Or add any calendar feed.)
 3. **Calendar Destinations → +**: it first asks for the public `https://` address; check the
    spelling, because Google sends you back to exactly this address. Name the destination, then add:
    - a **Google calendar** (recommended): in the **Google account** box, follow the step-by-step
@@ -102,13 +108,13 @@ logins or setup codes lock an address out for 15 minutes.
 - A failed download or a suddenly empty calendar keeps the previous schedule.
 - If the download is blocked, open the Calendar Sync link in a browser and use **Upload & publish**
   in the CCS+ Calendar Sync box.
-- **Sign-in rejected** means CCS+ refused the UID or password; after two rejections, automatic
+- **Sign-in rejected** means CCS+ refused the Username or password; after two rejections, automatic
   checks pause so your account isn't locked (press **Sync now** after fixing them).
 
 ## The status page
 
-- **Calendar:** every source's events. On the right: the time zone it's shown in (on this page only;
-  the feeds and Google keep `TZ`), **Month / Week / Day / List**, and the **12h / 24h** switch. Click
+- **Calendar:** every source's events. On the right: the **Time Zone** it's shown in (**TZ** when
+  space is tight; on this page only, the feeds and Google keep `TZ`), **Month / Week / Day / List**, and the **12h / 24h** switch. Click
   the title to jump to any month. Click an event to see it, **Edit** it (title, times, notes, or
   hide it), **duplicate** it or **delete** it (a source's own event is hidden instead, since the
   source would send it again); clicking elsewhere closes it, and its 📌 pin keeps it open.
@@ -116,10 +122,12 @@ logins or setup codes lock an address out for 15 minutes.
   Google's 11), which wins over rules. Edits survive new downloads; ✎ marks
   an edited event, ⚠ one its source changed since. Nothing is ever changed in CCS+.
 - The page's sections: **Calendar** at the top, then **Calendar Sources**, **Calendar
-  Destinations**, **Rules** and **Activity**, each with the same kind of heading. On a wide screen
-  they sit in two columns (Sources | Destinations, Rules | Activity); on a narrow screen or a phone
-  they're one column, the calendar opens on the List view, and the view and theme switches become
-  one button each that steps through the choices.
+  Destinations**, **Rule Templates**, **Event Templates** and **Activities and Logs**, each with the
+  same kind of heading. On a wide screen they sit in two columns (Sources | Destinations, Rule
+  Templates | Event Templates), with Activities and Logs across the full width; on a narrow screen
+  or a phone they're one column, the calendar opens on the List view, the view and theme switches
+  become one button each that steps through the choices, and long labels get shorter ("Check every
+  60 min").
 - **Calendar Sources** (**+** adds one; a new install has none): **United CCS+ Calendar Sync**
   (once) and **calendar feeds** (any link starting with `webcal://` or ending in `.ics`, with a
   title and an optional short note shown next to it; repeating events are shown from a year back to
@@ -127,19 +135,21 @@ logins or setup codes lock an address out for 15 minutes.
   ("Downloaded 98 events from feed @ 23:13 (0 new, 0 removed)"), the check interval, its status
   and **Sync Now**. **▸ Configure ◂** opens the rest (it opens by itself when something needs
   doing) and turns the color, title and note into fields: the **Site Address** (the Calendar Sync
-  link, or the feed's link) with CCS+'s UID and password (**✓ Validated** until you type; then
-  **Save** / **Cancel**, and Save shows Saved → Verifying… → ✓ Validated or ✗ Verification failed),
+  link, or the feed's link) with CCS+'s **Username** (your UID) and password (**✓ Validated** until
+  you type; then **Save** / **Cancel**, and Save shows Saved → Verifying… → ✓ Validated or ✗ Failed,
+  with the reason under the boxes),
   step-by-step help, CCS+'s hand upload, and its **Rules**: one rounded line per rule, each picked
-  from the Rules section's list (or **Create a New Rule…**, which opens the same dialog as there).
+  from Rule Templates (or **Create a New Rule…**, which opens the same dialog as there).
   The bin removes a rule from the source, or the source itself.
 - **Calendar Destinations** (**+** adds one; the first asks for the public address), independent of
   the sources: **Google calendars** (Autosync; one **Google account** box signs in for all of them)
   and **Calendar feeds** (a feed link and a shareable subscribe page each), as many as you like.
-  Each has its own name, a **Start** and **End** date (empty = no limit) and ticks the sources it
-  gets; every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
+  Each box has the same header as a source's (name, kind, its sources and dates, status), and
+  **▸ Configure ◂** opens the rest: the name, a **Start** and **End** date (empty = no limit), the
+  sources it gets, and a feed's links. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
   part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
   an old link) and existing subscriptions work again.
-- **Rules:** every rule, kept once and used by any source (each shows which sources use it; **+**
+- **Rule Templates:** every rule, kept once and used by any source (each shows which sources use it; **+**
   or ✎ opens the rule dialog). Kinds:
   - **Color:** match a title (whole word, contains, starts with or exact title) and color the event
     (e.g. RDO in red).
@@ -150,11 +160,11 @@ logins or setup codes lock an address out for 15 minutes.
     with the original times in the notes.
 
   New sources start with the two predefined rules; a source without them uses
-  `DEFAULT_EVENT_HOURS` and keeps 24-hour events as they are. **Event templates** (inside Rules) are
-  ready-made events (title, length or all day, location, color) for Add-event rules and for **Start
-  from a template** when adding an event by hand.
-- **Activity log:** each check and what changed, for each source.
-- **☰ Settings:** site settings only: the status-page login (with a show-password eye and a
+  `DEFAULT_EVENT_HOURS` and keeps 24-hour events as they are.
+- **Event Templates:** ready-made events (title, length or all day, location, color) for Add-event
+  rules and for **Start from a template** when adding an event by hand.
+- **Activities and Logs:** each check and what changed, for each source.
+- **☰ Settings** (a light blue panel): site settings only: the status-page login (with a show-password eye and a
   strength bar, like every password box), the public address, the **admin e-mail** (filled into the
   Google setup guide) and **Check for updates** (hourly, weekly, monthly or never; only versions of
   your release, stable or beta, are offered, and a newer one shows next to the version at the top).

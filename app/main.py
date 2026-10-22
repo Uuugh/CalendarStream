@@ -212,7 +212,7 @@ def calendar_color(sid: str = "ccs") -> str:
 
 MAX_TAGS, MAX_TAG_LEN = 30, 40
 
-# Rules (called tags before 0.2). Since 0.2.6 every rule lives in the Rules section ("the library",
+# Rules (called tags before 0.2). Since 0.2.6 every rule lives in the Rule Templates section ("the library",
 # kv "rule_templates"), and each source lists the ones it uses, in order (kv "rule_subs", per source).
 # Kinds: "color" and "event" match a word or phrase in event titles and give matching events a color
 # or add an event made from an event template next to them; "no_end" (items without an end time: last a
@@ -234,7 +234,7 @@ TAG_MODES = {
 
 
 def rule_library() -> list[dict]:
-    """Every rule (the Rules section)."""
+    """Every rule (the Rule Templates section)."""
     return _rules_from(store.get("rule_templates") or [])
 
 
@@ -461,10 +461,11 @@ SECTIONS = {"status": True, "activity": False}
 
 
 def section_state() -> dict:
-    """Open/closed: the page's sections, and each source's box ("src:<id>", open unless closed)."""
+    """Open/closed: the page's sections, and the Configure part of each source's box ("src:<id>")
+    and destination's box ("dest:<id>", "dest:google" for the Google account)."""
     saved = store.get("ui_sections") or {}
     found = {k: bool(saved.get(k, default)) for k, default in SECTIONS.items()}
-    found.update({k: bool(v) for k, v in saved.items() if k.startswith("src:")})
+    found.update({k: bool(v) for k, v in saved.items() if k.startswith(("src:", "dest:"))})
     return found
 
 
@@ -823,13 +824,13 @@ async def run_once(manual: bool = False, sid: str = "ccs"):
     if not logins.ccs_configured:
         # Nothing to do until the login is entered; the page shows the boxes for it.
         state.status = "setup"
-        state.message = "Enter your CCS+ UID and Calendar Sync password to start downloading the schedule."
+        state.message = "Enter your CCS+ Username and Calendar Sync password to start downloading the schedule."
         state.save()
         return
     if state.login_failures >= MAX_AUTH_FAILURES and not manual:
         state.status = "paused"
         state.message = (f"Automatic downloads paused after {state.login_failures} rejected sign-ins, to avoid "
-                         "locking your account. Check the UID and Calendar Sync password in the CCS+ Calendar Sync box, then press Sync now.")
+                         "locking your account. Check the Username and Calendar Sync password in the CCS+ Calendar Sync box, then press Sync now.")
         state.save()
         return
 
@@ -1427,9 +1428,9 @@ def source_view(request: Request, sid: str, lang: str, sections: dict) -> dict:
     return view
 
 
-def dest_view(request: Request, d: dict, lang: str) -> dict:
-    """One destination's box on the status page."""
-    view = {**d, "names": [calendar_name(x) for x in d["sources"]]}
+def dest_view(request: Request, d: dict, lang: str, sections: dict) -> dict:
+    """One destination's box on the status page ("open": its Configure part, as last left)."""
+    view = {**d, "names": [calendar_name(x) for x in d["sources"]], "open": sections.get(f"dest:{d['id']}", False)}
     if d["type"] == "feed":
         view.update(feed=feed_url(request, d["token"]), links=subscribe_links(request, d["token"]),
                     reads=feed_reads(lang, d["id"]))
@@ -1470,7 +1471,7 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
         "s": state, "cfg": settings, "history": history, "cal": cal_view(events, view if view in VIEWS else ui_view(), ref, lang), "views": VIEWS,
         "view_explicit": store.get("ui_view") in VIEWS,
         "csrf": CSRF_TOKEN, "name": calendar_name(), "srcs": srcs,
-        "dests": [dest_view(request, d, lang) for d in destinations()], "dest_types": DESTINATION_TYPES,
+        "dests": [dest_view(request, d, lang, sections) for d in destinations()], "dest_types": DESTINATION_TYPES,
         "rule_lib": [{**r, "label": rule_label(r, lang),
                       "used": [calendar_name(x) for x in source_ids() if r["id"] in rule_subs(x)]} for r in rule_library()],
         "rule_types": RULE_TYPES,
@@ -1821,7 +1822,7 @@ async def set_ccs_login(request: Request, csrf: str = Form(""), uid: str = Form(
         raise HTTPException(400, str(e))
     state.login_failures = 0
     store.delete("http_cache")
-    state.record("info", "CCS+ UID and Calendar Sync password saved")
+    state.record("info", "CCS+ Username and Calendar Sync password saved")
     if _is_async(request):
         return JSONResponse({"saved": True})      # the page then asks /verify
     if not state.running:
@@ -2015,7 +2016,7 @@ async def set_tags(csrf: str = Form(""), sid: str = Form("ccs"), tag: list[str] 
                    rule_sub: list[str] = Form([]), rules_form: str = Form(""), name: str | None = Form(None),
                    color: str = Form(""), color_default: str = Form(""), note: str | None = Form(None)):
     """Save a source's Configure: its name, color and note (in its header) and the rules it uses, in
-    order (each picked from the Rules section). Pages from 0.2.5 and before sent the rules as rows
+    order (each picked from the Rule Templates section). Pages from 0.2.5 and before sent the rules as rows
     (`tag`…) and the two built-in settings (`no_end_mode`, `allday24`); those still work."""
     check_csrf(csrf)
     sid = _sid(sid)
@@ -2089,7 +2090,7 @@ async def save_rule(csrf: str = Form(""), rid: str = Form("", alias="id"), sid: 
 
 @app.post("/rules/delete", dependencies=[Depends(gui_auth)])
 async def delete_rule(csrf: str = Form(""), rid: str = Form("", alias="id")):
-    """Delete a rule from the Rules section, and from every source that uses it."""
+    """Delete a rule from the Rule Templates section, and from every source that uses it."""
     check_csrf(csrf)
     lib = rule_library()
     rule = next((r for r in lib if r["id"] == rid), None)
@@ -2161,7 +2162,7 @@ async def set_templates(csrf: str = Form(""), tpl_id: list[str] = Form([]), tpl_
 async def set_section(csrf: str = Form(""), section: str = Form(""), open_: str = Form("", alias="open")):
     """Remember whether a status-page section is open (the page sends this when it's toggled)."""
     check_csrf(csrf)
-    if section not in SECTIONS and not re.fullmatch(r"src:(ccs|f[0-9a-f]{6})", section):
+    if section not in SECTIONS and not re.fullmatch(r"src:(ccs|f[0-9a-f]{6})|dest:(google|d[0-9a-f]{6})", section):
         raise HTTPException(400, "Unknown section.")
     saved = store.get("ui_sections") or {}
     saved[section] = open_ == "1"
