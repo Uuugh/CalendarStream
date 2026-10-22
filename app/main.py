@@ -31,7 +31,7 @@ from .gsync import GOOGLE_COLORS, Google, GoogleError, nearest_color_id
 from .logins import LoginError, Logins
 from .secretbox import SecretBox
 from .store import Store, from_iso, iso
-from .updates import FREQUENCIES, RELEASES, Updates, channel as release_channel
+from .updates import FREQUENCIES, RELEASES, Updater, UpdaterError, Updates, channel as release_channel
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("calendar_stream")
@@ -42,6 +42,7 @@ box = SecretBox(settings.db_password)
 google = Google(store, box, settings.timezone)
 logins = Logins(store, box)
 updates = Updates(store)
+updater = Updater()     # the optional updater container behind "Update now"
 MAX_AUTH_FAILURES = 2   # pause automatic downloads after this many rejected sign-ins (avoids account lockout)
 CSRF_TOKEN = secrets.token_urlsafe(24)     # forms on the status page must carry this; renewed when the login changes
 WELCOME_TOKEN = secrets.token_urlsafe(24)  # the first-visit page's own token (shown before any login exists)
@@ -486,7 +487,8 @@ def page(request: Request, name: str, context: dict, status_code: int = 200, lan
         "update": {"available": updates.available(), "channel": release_channel(), "frequency": updates.frequency(),
                    "frequencies": list(FREQUENCIES), "info": updates.info(), "releases": RELEASES,
                    "checked": _local_time(updates.info().get("checked"), lang),
-                   "next": _local_time(iso(updates.next_check(datetime.now(timezone.utc))), lang)}, "version": __version__,
+                   "next": _local_time(iso(updates.next_check(datetime.now(timezone.utc))), lang),
+                   "updater": updater.ready, "can_update": updater.ready and not updater.pinned()}, "version": __version__,
     }, status_code=status_code)
 
 
@@ -971,11 +973,23 @@ async def update_loop():
                 found = await updates.check()
                 if updates.available() and found.get("newest") != found.get("logged"):
                     state.record("info", f"Update available: CalendarStream {found['newest']} "
-                                         "(run the installer again to update)")
+                                         + ("(press Update now next to the version)" if updater.ready and not updater.pinned()
+                                            else "(run the installer again to update)"))
                     store.set("update_check", {**found, "logged": found["newest"]})
         except Exception as e:      # never let this stop the app
             log.warning("Update check failed: %s", e)
         await asyncio.sleep(3600)
+
+
+async def updater_loop():
+    """Whether the optional updater container is running (checked now and every 5 minutes), so the
+    page knows whether to offer "Update now"."""
+    while True:
+        try:
+            await updater.probe()
+        except Exception as e:      # never let this stop the app
+            log.warning("Updater check failed: %s", e)
+        await asyncio.sleep(300)
 
 
 @asynccontextmanager
@@ -1003,7 +1017,7 @@ async def lifespan(_app):
         log.error("Couldn't rebuild the feed from the stored download: %s", e)
     for sid in source_ids():
         start_source(sid)
-    tasks = [asyncio.create_task(google_loop()), asyncio.create_task(update_loop())]
+    tasks = [asyncio.create_task(google_loop()), asyncio.create_task(update_loop()), asyncio.create_task(updater_loop())]
     yield
     tasks += list(source_tasks.values())
     source_tasks.clear()
@@ -2217,6 +2231,26 @@ async def set_display_tz(csrf: str = Form(""), tz: str = Form("")):
     else:
         raise HTTPException(400, "Unknown time zone.")
     return Response(status_code=204)
+
+
+@app.post("/update/now", dependencies=[Depends(gui_auth)])
+async def update_now(csrf: str = Form("")):
+    """Update now (next to "(vX is available)"): ask the updater container to pull this install's
+    image and restart CalendarStream with it. The page then follows along through /api/status:
+    still the old version while it downloads, no answer while it restarts, the new version after."""
+    check_csrf(csrf)
+    target = updates.available()
+    if not target:
+        raise HTTPException(400, "CalendarStream is already up to date.")
+    if updater.pinned():
+        raise HTTPException(400, "This install runs an exact version (IMAGE_TAG); choose latest or beta with the installer to update from here.")
+    try:
+        await updater.update()
+    except UpdaterError as e:
+        state.record("warn", f"Update to CalendarStream {target} not started: {e}")
+        raise HTTPException(502, str(e))
+    state.record("info", f"Updating to CalendarStream {target}: downloading, then restarting")
+    return {"ok": True, "from": __version__, "to": target}
 
 
 @app.post("/settings/updates", dependencies=[Depends(gui_auth)])

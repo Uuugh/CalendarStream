@@ -58,6 +58,14 @@ CURRENT_DATA="${MNT_DOCKER:-$(env_value .env MNT_DOCKER)}"
 MNT_DOCKER="$(absolute "$(ask "Folder for CalendarStream's config and data (database, .secrets)" "${CURRENT_DATA:-$DIR}")")"
 mkdir -p "$MNT_DOCKER/.secrets"
 
+# 4. Updating from the status page: an optional small updater container (Watchtower) that pulls the
+#    new image and restarts CalendarStream when you press "Update now". It needs access to Docker,
+#    so it's only added if you say yes. The default is your current choice (no on a new install).
+CURRENT_PROFILES="$(env_value .env COMPOSE_PROFILES)"
+case ",$CURRENT_PROFILES," in *,updater,*) UPD_DEFAULT=yes ;; *) UPD_DEFAULT=no ;; esac
+UPDATER="$(ask "Allow updating from the status page (adds a small updater container with access to Docker), yes or no" "$UPD_DEFAULT" | tr '[:upper:]' '[:lower:]')"
+case "$UPDATER" in y|yes) UPDATER=yes ;; n|no) UPDATER=no ;; *) echo "Please answer yes or no." >&2; exit 1 ;; esac
+
 IP="$(this_ip)"
 # (The public address used to be asked here and written to .env as PUBLIC_URL. It's now set on the
 # status page, ☰ Settings → Public address; an existing PUBLIC_URL is moved there once.)
@@ -78,6 +86,7 @@ set_env() {   # $1 = name, $2 = value ("sed -i.bak" works with both GNU and macO
 }
 set_env IMAGE_TAG "$IMAGE_TAG"
 set_env MNT_DOCKER "$MNT_DOCKER"
+set_env COMPOSE_PROFILES "$([ "$UPDATER" = yes ] && echo updater || true)"
 
 # The database password, made once at random. It also encrypts the passwords CalendarStream
 # stores (CCS+, Google): keep this file, back it up, and don't change it.
@@ -85,7 +94,14 @@ if [ ! -s "$MNT_DOCKER/.secrets/DB_PASSWORD.txt" ]; then
   (umask 077; head -c 32 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32 > "$MNT_DOCKER/.secrets/DB_PASSWORD.txt")
 fi
 
-# Start it, or update it to the newest image of the chosen release.
+# The updater's token, made once at random (always, so the file the compose file names exists).
+if [ ! -s "$MNT_DOCKER/.secrets/UPDATER_TOKEN.txt" ]; then
+  (umask 077; head -c 48 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 40 > "$MNT_DOCKER/.secrets/UPDATER_TOKEN.txt")
+fi
+
+# Start it, or update it to the newest image of the chosen release. Saying no to the updater after
+# a yes removes its container.
+[ "$UPDATER" = yes ] || docker rm -f calendar_stream_updater >/dev/null 2>&1 || true
 docker compose up -d
 
 # First install only: the status page asks for this code before you create your login.
@@ -100,6 +116,7 @@ done
 echo
 echo "CalendarStream ($([ "$IMAGE_TAG" = latest ] && echo stable || echo "$IMAGE_TAG")): docker-compose.yml and .env in $DIR, config and data in $MNT_DOCKER"
 echo "Open http://${IP:-localhost}:8080 (or your public https:// address)"
+[ "$UPDATER" = yes ] && echo "Updater on: \"Update now\" appears next to the version when a newer one is out."
 if [ -n "$code" ]; then
   echo "New install: enter the ${code} there to create your login."
 fi

@@ -19,10 +19,8 @@ like) each pick which sources they get. A status page shows them all, lets you e
 or add events with rules, and walks you through setup.
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/calendar-dark.png">
-    <img src="docs/screenshots/calendar-light.png" alt="The status page's month view: the schedule and a work calendar, with RDO, VAC and SIM rule colors, the time zone, the views and the 12h/24h switch" width="820">
-  </picture>
+  <img src="docs/screenshots/calendar-light.png" alt="The status page's month view in the light theme: the schedule and a work calendar, with RDO, VAC and SIM rule colors, the time zone, the views and the 12h/24h switch" width="49%">
+  <img src="docs/screenshots/calendar-dark.png" alt="The same month view in the dark theme" width="49%">
 </p>
 
 <details>
@@ -34,7 +32,8 @@ or add events with rules, and walks you through setup.
   <img src="docs/screenshots/templates.png" alt="Event Templates: a drive to the airport and a day off" width="420"><br><br>
   <img src="docs/screenshots/rule-dialog.png" alt="The rule dialog: a Color rule for RDO" width="360">
   <img src="docs/screenshots/settings.png" alt="Settings: status-page login, public address, admin e-mail and update checks" width="300">
-  <img src="docs/screenshots/phone.png" alt="On a phone: the list view, with TZ and the view button" width="200"><br><br>
+  <br><br><img src="docs/screenshots/phone-light.png" alt="On a phone, light theme: the list view, with TZ and the view button" width="200">
+  <img src="docs/screenshots/phone-dark.png" alt="On a phone, dark theme" width="200"><br><br>
   <img src="docs/screenshots/activity.png" alt="Activities and Logs: each source's last check and the log" width="840"><br><br>
   <img src="docs/screenshots/event.png" alt="Adding an event: typed times with a time list, time zones and an event color" width="420">
 </p>
@@ -52,11 +51,13 @@ use the feed instead.
 bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/install.sh)
 ```
 
-[`install.sh`](install.sh) asks three questions (press Enter for the default):
+[`install.sh`](install.sh) asks four questions (press Enter for the default):
 
 1. which release to install, `latest` (stable) or `beta` (`stable`);
 2. the folder for `docker-compose.yml` and `.env` (`~/stacks/calendarstream`);
-3. the folder for CalendarStream's config and data, the database and `.secrets/` (the same folder).
+3. the folder for CalendarStream's config and data, the database and `.secrets/` (the same folder);
+4. whether to allow updating from the status page (`no`): yes adds a small updater container (see
+   [Updating](#updating)).
 
 It then downloads `docker-compose.yml` and `.env`, creates a random database password, starts
 CalendarStream and prints its address and a **setup code**. Running it again updates
@@ -84,6 +85,7 @@ explained in [`.env.default`](.env.default):
 | `MNT_DOCKER` | the stack folder | Where the database (`calendar_stream/postgres`) and `.secrets/` live; the installer asks |
 | `TZ` | `America/Chicago` | Time zone the schedule is shown in |
 | `IMAGE_TAG` | `latest` | `latest` (stable), `beta` (newest) or a version, e.g. `0.2.7` or `0.2.7-beta.1`; the installer asks |
+| `COMPOSE_PROFILES` | empty | `updater` adds the updater behind **Update now** ([Updating](#updating)); the installer asks |
 | `PUID` / `GUID`, `RESTART` | `1000` / `100`, `unless-stopped` | |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Behind a reverse proxy: its address or network (e.g. `172.18.0.0/16`), so visitors' addresses and https are seen |
 | `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440, for CCS+; overridden by “Check for changes every” in its box |
@@ -92,7 +94,7 @@ explained in [`.env.default`](.env.default):
 | `ALLDAY_24H` | `true` | Show 24-hour (48 h…) events as all-day; replaced by each source's 24-hour-events rule |
 | `FEED_TOKEN` | made once | The stream name of the feed made when upgrading from before 0.2.1; feeds' stream names are set on the status page |
 
-**Secrets.** The only file is `.secrets/DB_PASSWORD.txt`, made by the installer. The status-page
+**Secrets.** The files are `.secrets/DB_PASSWORD.txt` and `.secrets/UPDATER_TOKEN.txt`, made by the installer. The status-page
 login (hashed), the CCS+ password, and the Google client secret and sign-in (encrypted) are kept in
 the database. The encryption key comes from `DB_PASSWORD`, so a copy of the database alone reveals
 nothing; keep that file and don't change it (if you do, re-enter those passwords). Five wrong
@@ -205,6 +207,27 @@ to a feed in Google, remove that calendar, or you'll see everything twice.
 **Feeds on Android:** Google's Android app can't add a calendar by link, and a calendar added by
 link on calendar.google.com stays hidden on the phone until it's turned on there: in the app,
 **Settings →** the calendar **→ Sync**. The subscribe page explains this on Android and iPhone.
+
+## Updating
+
+Run the installer again: it keeps your settings and starts the newest image of your release.
+
+Or, if you answered yes to updating from the status page, press **Update now** next to
+"(v0.2.8 is available)" at the top of the page. The button shows **Downloading…** (with a moving
+bar) while the new image is fetched, then **Restarting…** while CalendarStream starts again (the
+page is unreachable for a few seconds), then disappears, and the version at the top shows the new
+one. Behind it is the updater container, `calendar_stream_updater`:
+[Watchtower](https://github.com/nicholas-fedor/watchtower), the maintained fork (the original,
+containrrr/watchtower, was archived in December 2025).
+
+- It only updates when you press the button (it never checks on its own), and only the
+  CalendarStream container (it's labelled for it), never the database. Old images are removed.
+- It needs Docker's socket (`/var/run/docker.sock`) to pull the image and restart the container,
+  which is why it's optional. Its API isn't published on any port: only CalendarStream reaches it,
+  inside the Docker network, with a random token in `.secrets/UPDATER_TOKEN.txt`.
+- It works the same on Linux, macOS (Docker Desktop) and Windows (WSL). It's turned on by
+  `COMPOSE_PROFILES=updater` in `.env`; run the installer again and answer no to remove it.
+- An install pinned to an exact version (`IMAGE_TAG=0.2.7`) is updated with the installer.
 
 ## Versions and releases
 

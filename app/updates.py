@@ -115,3 +115,67 @@ class Updates:
         """The newer version for this channel, or ""."""
         newest = self.info().get("newest") or ""
         return newest if is_newer(newest) else ""
+
+
+# --- Updating from the status page ------------------------------------------------------------
+# With the optional updater container (Watchtower, nicholas-fedor's maintained fork; install.sh asks)
+# "Update now" asks it to pull this install's image tag again and restart the container with it.
+# Watchtower's API is only reachable inside the Docker network, behind a random token kept in
+# .secrets/UPDATER_TOKEN.txt; it updates only containers labelled for it (this one, not the database).
+
+IMAGE = "ghcr.io/uuugh/calendarstream"
+
+
+class UpdaterError(RuntimeError):
+    """The updater couldn't be asked to update; the message says why."""
+
+
+class Updater:
+    def __init__(self):
+        self.ready = False          # the updater answered its last health check
+
+    @staticmethod
+    def url() -> str:
+        return (os.environ.get("UPDATER_URL") or "").rstrip("/")
+
+    @staticmethod
+    def token() -> str:
+        path = os.environ.get("UPDATER_TOKEN_FILE") or ""
+        try:
+            return open(path, encoding="utf-8").read().strip() if path else ""
+        except OSError:
+            return ""
+
+    @staticmethod
+    def pinned() -> bool:
+        """An exact version in IMAGE_TAG: updating would only fetch the same version again."""
+        return (os.environ.get("IMAGE_TAG") or "latest").strip().lower() not in ("latest", "beta")
+
+    async def probe(self) -> bool:
+        """Is the updater running? (Its /livez needs no token.) Saved in `ready`."""
+        ok = False
+        if self.url() and self.token():
+            try:
+                async with httpx.AsyncClient(timeout=3) as client:
+                    ok = (await client.get(self.url() + "/livez")).status_code == 200
+            except httpx.HTTPError:
+                ok = False
+        self.ready = ok
+        return ok
+
+    async def update(self):
+        """Ask the updater to pull this install's image and restart CalendarStream with it. It answers
+        at once and works in the background; this container is stopped and replaced along the way."""
+        if not (self.url() and self.token()):
+            raise UpdaterError("The updater isn't set up. Run the installer again and answer yes to updating from the status page.")
+        try:
+            async with httpx.AsyncClient(timeout=15) as client:
+                r = await client.post(self.url() + "/v1/update", params={"image": IMAGE, "async": "true"},
+                                      headers={"Authorization": f"Bearer {self.token()}"})
+        except httpx.HTTPError as e:
+            raise UpdaterError(f"Couldn't reach the updater ({type(e).__name__}). Is its container running?")
+        if r.status_code in (200, 202, 429):        # 429: an update is already running
+            return
+        if r.status_code == 401:
+            raise UpdaterError("The updater refused the token. Run the installer again to set them up together.")
+        raise UpdaterError(f"The updater answered HTTP {r.status_code}.")

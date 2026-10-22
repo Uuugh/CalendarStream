@@ -1,5 +1,6 @@
-# CalendarStream: the app and its Postgres database.
-# Needs .env and .secrets/DB_PASSWORD.txt. The database and .secrets/ live in MNT_DOCKER (set in .env)
+# CalendarStream: the app and its Postgres database, and (if you chose it) the updater behind the
+# status page's "Update now" button.
+# Needs .env and .secrets/DB_PASSWORD.txt (and .secrets/UPDATER_TOKEN.txt, made by install.sh). The database and .secrets/ live in MNT_DOCKER (set in .env)
 # or, when it isn't set, next to this file. Logins (status page, CCS+, Google) are set on the status page.
 services:
   calendar_stream:
@@ -12,6 +13,9 @@ services:
     env_file: .env
     ports:
       - "8080:8080"
+    # Only this container may be updated by the updater (never the database)
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
     environment:
       - PUID=${PUID:-1000}
       - PGID=${GUID:-100}
@@ -26,8 +30,12 @@ services:
       - DB_NAME=${DB_NAME:-calendar_stream}
       - DB_USER=${DB_USER:-ccs}
       - DB_PASSWORD_FILE=/run/secrets/DB_PASSWORD
+      # The updater (when it's running): asked to update this container by "Update now"
+      - UPDATER_URL=http://calendar_stream_updater:8080
+      - UPDATER_TOKEN_FILE=/run/secrets/UPDATER_TOKEN
     secrets:
       - DB_PASSWORD
+      - UPDATER_TOKEN
     depends_on:
       calendar_stream_db:
         condition: service_healthy
@@ -53,8 +61,33 @@ services:
       start_period: 30s
     restart: ${RESTART:-unless-stopped}
 
+  # The updater, only with COMPOSE_PROFILES=updater in .env (install.sh asks): Watchtower
+  # (the maintained fork, github.com/nicholas-fedor/watchtower). It never checks on its own; it only
+  # updates the calendar_stream container when the status page asks, with the secret token. It needs
+  # Docker's socket to pull the image and restart the container, so its API is reachable only by the
+  # other containers here (no ports are published).
+  calendar_stream_updater:
+    image: nickfedor/watchtower:latest
+    container_name: calendar_stream_updater
+    profiles: [updater]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_HTTP_API_ENDPOINTS=update,health
+      - WATCHTOWER_HTTP_API_TOKEN=/run/secrets/UPDATER_TOKEN
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_NO_STARTUP_MESSAGE=true
+      - TZ=${TZ:-America/Chicago}
+    secrets:
+      - UPDATER_TOKEN
+    restart: ${RESTART:-unless-stopped}
+
 # The database password: one line, made at random by install.sh or chosen by you (a trailing newline is fine). It's set when the
 # database is first created, and also protects the passwords CalendarStream stores.
 secrets:
   DB_PASSWORD:
     file: ${MNT_DOCKER:-.}/.secrets/DB_PASSWORD.txt
+  # The updater's token, made at random by install.sh; the status page sends it with "Update now".
+  UPDATER_TOKEN:
+    file: ${MNT_DOCKER:-.}/.secrets/UPDATER_TOKEN.txt

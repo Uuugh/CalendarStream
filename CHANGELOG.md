@@ -9,7 +9,30 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.2**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.3**
+
+## 0.2.7-beta.3 — 2026-10-22
+
+### Added
+- **F1** Updates from the status page:
+  - **F1.1** An optional updater container next to CalendarStream: Watchtower, with an HTTP "update
+    now" endpoint protected by a secret token (`.secrets/UPDATER_TOKEN.txt`). It's reachable only
+    inside the Docker network, never checks on its own, and only updates the CalendarStream
+    container (not the database).
+  - **F1.2** "(v… is available)" gets an **Update now** button that asks the updater to download
+    the new image and restart. The button shows the progress like the ✓ Validated box does:
+    **Update now** → **Downloading…** (with a moving bar; the updater doesn't report how far the
+    download is) → **Restarting…** → gone once CalendarStream is running again, with the version at
+    the top (and in the footer) showing the new one. If the updater refuses or isn't reachable, it
+    says **✗ Update failed**, with the reason. Settings → Updates says whether the updater is
+    running.
+  - **F1.3** The installer asks whether to set it up (no by default; yes adds
+    `COMPOSE_PROFILES=updater` to `.env`), and it works the same on Linux, macOS (Docker Desktop)
+    and Windows (WSL).
+  - **F1.4** The updater is [nicholas-fedor/watchtower](https://github.com/nicholas-fedor/watchtower),
+    the maintained fork: the original containrrr/watchtower was archived in December 2025, and the
+    fork releases every week or two (v1.23.2 on 2026-10-22).
+- **R1** README: light and dark screenshots side by side (the calendar and a phone).
 
 ## 0.2.7-beta.2 — 2026-10-22
 
