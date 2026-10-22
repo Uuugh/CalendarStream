@@ -1,8 +1,10 @@
 """Checking for a newer CalendarStream (Settings → Check for updates).
 
-The release channel comes from IMAGE_TAG in .env (the installer writes it): "beta" follows the
-newest version, "latest" (stable) and exact versions (e.g. 0.1.9) follow the last stable one, so a
-stable install is never told about a beta. The newest version of each channel is read from the
+Versions are semver: x.y.z for a stable release, x.y.z-beta.N for the betas leading up to it
+(0.2.7-beta.1 < 0.2.7-beta.2 < 0.2.7). The release channel comes from IMAGE_TAG in .env (the
+installer writes it): "beta" and exact beta versions (e.g. 0.2.7-beta.1) follow the newest version,
+"latest" (stable) and exact stable versions (e.g. 0.1.9) follow the last stable one, so a stable
+install is never told about a beta. The newest version of each channel is read from the
 repository's VERSION (beta) and STABLE (stable) files; only this install's version is sent (in the
 User-Agent).
 Saved in kv "update_check": {"checked": iso, "newest": "0.1.19", "channel": "beta", "error": "...",
@@ -22,17 +24,29 @@ RAW = "https://raw.githubusercontent.com/Uuugh/CalendarStream/main/"
 RELEASES = "https://github.com/Uuugh/CalendarStream/releases"
 FREQUENCIES = {"hourly": timedelta(hours=1), "weekly": timedelta(days=7), "monthly": timedelta(days=30), "never": None}
 DEFAULT_FREQUENCY = "weekly"
-VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
+VERSION_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:-beta\.(\d+))?$")
 
 
 def channel() -> str:
-    """"beta", or "stable" for latest and for a pinned exact version."""
+    """"beta" for beta and a pinned beta version, "stable" for latest and a pinned stable version."""
     tag = (os.environ.get("IMAGE_TAG") or "latest").strip().lower()
-    return "beta" if tag == "beta" else "stable"
+    return "beta" if tag == "beta" or "-beta." in tag else "stable"
+
+
+def is_stable(version: str) -> bool:
+    """True for x.y.z, False for a beta (x.y.z-beta.N) or anything else."""
+    m = VERSION_RE.match(version or "")
+    return bool(m) and m[4] is None
 
 
 def _parts(version: str) -> tuple[int, ...] | None:
-    return tuple(int(p) for p in version.split(".")) if VERSION_RE.match(version or "") else None
+    """A sort key: (x, y, z, 1, 0) for x.y.z and (x, y, z, 0, N) for x.y.z-beta.N, so every
+    beta of a version comes before the version itself. None if it isn't a version."""
+    m = VERSION_RE.match(version or "")
+    if not m:
+        return None
+    x, y, z, beta = m.groups()
+    return (int(x), int(y), int(z), 0, int(beta)) if beta else (int(x), int(y), int(z), 1, 0)
 
 
 def is_newer(candidate: str, current: str = __version__) -> bool:
@@ -87,6 +101,8 @@ class Updates:
             newest = r.text.strip()
             if r.status_code != 200 or not VERSION_RE.match(newest):
                 raise ValueError(f"HTTP {r.status_code}")
+            if name == "STABLE" and not is_stable(newest):     # STABLE never names a beta
+                raise ValueError(f"STABLE says {newest!r}")
             result["newest"] = newest
         except (httpx.HTTPError, ValueError) as e:
             result["error"] = f"Couldn't check for updates ({type(e).__name__}: {e})"

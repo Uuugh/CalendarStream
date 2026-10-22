@@ -1,4 +1,4 @@
-# Releases for CalendarStream
+# Releases for CalendarStream. Versions are x.y.z-beta.N (a beta) or x.y.z (a stable release).
 #  - VERSION changes on main  -> git tag v<VERSION>, move "beta", build and push
 #                                ghcr.io/<owner>/calendarstream:<VERSION> and :beta,
 #                                GitHub Release (pre-release) with the version's CHANGELOG notes
@@ -7,6 +7,8 @@
 #                                (no "latest" git tag: GitHub won't let the workflow token create one
 #                                on an older commit, and the server uses the image, not a checkout)
 #  - Run manually (Actions -> Release -> Run workflow) with a version -> same as a STABLE change
+#  Deploy changes both in one push (VERSION and STABLE = x.y.z, the last beta without its suffix):
+#  the version is built first, then marked latest.
 name: Release
 
 on:
@@ -16,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       stable_version:
-        description: "Version to mark as stable / latest (e.g. 0.0.6)"
+        description: "Version to mark as stable / latest (x.y.z, e.g. 0.2.7)"
         required: true
 
 # Nothing by default; each job asks for what it needs.
@@ -48,8 +50,10 @@ jobs:
           INPUT_STABLE: ${{ inputs.stable_version }}
         run: |
           set -euo pipefail
-          check() { [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "'$1' is not x.y.z"; exit 1; }; }
-          VERSION="$(tr -d '[:space:]' < VERSION)"; check "$VERSION"
+          # VERSION is x.y.z or x.y.z-beta.N; STABLE (latest) is only ever x.y.z.
+          check_version() { [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-beta\.[0-9]+)?$ ]] || { echo "'$1' is not x.y.z or x.y.z-beta.N"; exit 1; }; }
+          check() { [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "'$1' is not x.y.z (a beta can't be latest)"; exit 1; }; }
+          VERSION="$(tr -d '[:space:]' < VERSION)"; check_version "$VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           # A fixed image name (not taken from the repository name), so renaming the repository
           # doesn't change it. (Up to 0.1.0 it was called calendar_stream; all of those versions

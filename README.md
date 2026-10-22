@@ -77,7 +77,7 @@ explained in [`.env.default`](.env.default):
 |---|---|---|
 | `MNT_DOCKER` | the stack folder | Where the database (`calendar_stream/postgres`) and `.secrets/` live; the installer asks |
 | `TZ` | `America/Chicago` | Time zone the schedule is shown in |
-| `IMAGE_TAG` | `latest` | `latest` (stable), `beta` (newest) or a version, e.g. `0.1.6`; the installer asks |
+| `IMAGE_TAG` | `latest` | `latest` (stable), `beta` (newest) or a version, e.g. `0.2.7` or `0.2.7-beta.1`; the installer asks |
 | `PUID` / `GUID`, `RESTART` | `1000` / `100`, `unless-stopped` | |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Behind a reverse proxy: its address or network (e.g. `172.18.0.0/16`), so visitors' addresses and https are seen |
 | `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440, for CCS+; overridden by “Check for changes every” in its box |
@@ -198,11 +198,13 @@ link on calendar.google.com stays hidden on the phone until it's turned on there
 
 ## Versions and releases
 
-Versions are `0.y.z`. Each release has a git tag, a GitHub Release with its
-[`CHANGELOG.md`](CHANGELOG.md) notes, and an image `ghcr.io/uuugh/calendarstream:<version>`.
-`beta` is the newest release; `latest` is the last one marked
-stable (the `STABLE` file). The **Release** GitHub Action builds a release when `VERSION` changes
-and moves `latest` when `STABLE` changes (or from **Actions → Release → Run workflow**).
+Versions follow [semver](https://semver.org): `x.y.z` for a stable release, and `x.y.z-beta.N` for
+the betas leading up to it (0.2.7-beta.1, 0.2.7-beta.2, … then 0.2.7). Each version has a git tag,
+a GitHub Release with its [`CHANGELOG.md`](CHANGELOG.md) notes, and an image
+`ghcr.io/uuugh/calendarstream:<version>`. `beta` is the newest version; `latest` is the last stable
+one (the `STABLE` file). The **Release** GitHub Action builds a version when `VERSION` changes and
+moves `latest` when `STABLE` changes (or from **Actions → Release → Run workflow**). A stable
+install is only told about stable releases; a beta install about every newer version.
 
 ## Data and backups
 

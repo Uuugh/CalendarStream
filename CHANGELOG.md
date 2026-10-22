@@ -1,12 +1,29 @@
 # Changelog
 
-Versions are numbered `0.y.z`; the minor version (`y`) only changes when it's decided (0.1.0 was the
-first). Planned: 0.2 more calendar sources and destinations, 0.3 more users, 0.4 backups. Every release is tagged `v<version>`; the newest is also tagged `beta`. The last one marked stable (in the `STABLE` file) is
-the `latest` image and the GitHub Release marked **Latest**. Each version lists what was **added**, **changed**, **fixed** and
-**removed**. Labels refer to that release's request list: F = feature request, I = issue,
-# = review item, R = README; numbers start again with each release.
+Versions follow [semver](https://semver.org): `x.y.z-beta.N` for betas (from 0.2.7-beta.1) and
+`x.y.z` for stable releases; versions before 0.2.7 are `0.y.z`. Planned: 0.2 more calendar sources
+and destinations, 0.3 backups, 0.4 more users, 0.5 notifications, 0.6 theming. Every version is
+tagged `v<version>`; the newest is also tagged `beta`. The last stable one (in the `STABLE` file) is
+the `latest` image and the GitHub Release marked **Latest**; when a version is released, its betas'
+entries are gathered under its heading. Each version lists what was **added**, **changed**,
+**fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
+I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.5**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.1**
+
+## 0.2.7-beta.1 — 2026-10-22
+
+### Changed
+- **F1** Version numbers follow [semver](https://semver.org): betas are `x.y.z-beta.N` (this is
+  0.2.7-beta.1), and stable releases are `x.y.z` (every beta of 0.2.7 comes before 0.2.7 itself).
+  - **F1.1** The full version shows at the top of the page (on its own line on phones) and in the
+    footer, still linked to its release notes.
+  - **F1.2** Check for updates: a beta install is offered newer betas and stable releases; a
+    stable install only stable releases. An exact beta version in `IMAGE_TAG` (e.g.
+    `0.2.7-beta.1`) follows beta.
+  - **F1.3** The release build accepts `x.y.z-beta.N`. Only an `x.y.z` can become `latest`; a
+    release changes `VERSION` and `STABLE` together, and is built before it's marked latest.
+  - **F1.4** The installer and `.env` accept an exact beta version.
 
 ## 0.2.6 — 2026-10-22
 

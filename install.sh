@@ -43,7 +43,7 @@ CHANNEL="$(ask "Which release would you like to install, latest (stable) or beta
 case "$CHANNEL" in
   stable|latest) IMAGE_TAG=latest ;;
   beta) IMAGE_TAG=beta ;;
-  [0-9]*.[0-9]*.[0-9]*) IMAGE_TAG="$CHANNEL" ;;    # an exact version, e.g. 0.1.9
+  [0-9]*.[0-9]*.[0-9]*) IMAGE_TAG="$CHANNEL" ;;    # an exact version, e.g. 0.2.7 or 0.2.7-beta.1
   *) echo "Please answer latest (stable) or beta." >&2; exit 1 ;;
 esac
 
