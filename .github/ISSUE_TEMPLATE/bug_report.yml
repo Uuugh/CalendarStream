@@ -28,3 +28,14 @@ body:
     attributes:
       label: Setup (optional)
       description: e.g. Linux server, Mac with Docker Desktop, Windows with WSL; Google Autosync or the subscribed feed.
+  - type: textarea
+    id: device
+    attributes:
+      label: Device (optional)
+      description: Browser, screen and language (filled in by the status page's report form).
+      render: text
+  - type: input
+    id: contact
+    attributes:
+      label: Contact (optional)
+      description: Shown publicly. GitHub notifies you of replies to your own issue.

@@ -123,7 +123,8 @@ logins or setup codes lock an address out for 15 minutes.
 
 ## The status page
 
-- **Calendar:** every source's events. On the right: the **Time Zone** it's shown in (**TZ** when
+- **Calendar:** every source's events (views, months and the time zone change in place, without
+  reloading the page). On the right: the **Time Zone** it's shown in (**TZ** when
   space is tight; on this page only, the feeds and Google keep `TZ`), **Month / Week / Day / List**, and the **12h / 24h** switch. Click
   the title to jump to any month. Click an event to see it, **Edit** it (title, times, notes, or
   hide it), **duplicate** it or **delete** it (a source's own event is hidden instead, since the
@@ -138,19 +139,26 @@ logins or setup codes lock an address out for 15 minutes.
   or a phone they're one column, the calendar opens on the List view, the view and theme switches
   become one button each that steps through the choices, and long labels get shorter ("Check every
   60 min").
-- **Calendar Sources** (**+** adds one; a new install has none): **United CCS+ Calendar Sync**
-  (once) and **calendar feeds** (any link starting with `webcal://` or ending in `.ics`, with a
-  title and an optional short note shown next to it; repeating events are shown from a year back to
-  two years ahead). Each source's box shows its color, title and note, the last download
-  ("Downloaded 98 events from feed @ 23:13 (0 new, 0 removed)"), the check interval, its status
-  and **Sync Now**. **▸ Configure ◂** opens the rest (it opens by itself when something needs
-  doing) and turns the color, title and note into fields: the **Site Address** (the Calendar Sync
-  link, or the feed's link) with CCS+'s **Username** (your UID) and password (**✓ Validated** until
-  you type; then **Save** / **Cancel**, and Save shows Saved → Verifying… → ✓ Validated or ✗ Failed,
-  with the reason under the boxes),
-  step-by-step help, CCS+'s hand upload, and its **Rules**: one rounded line per rule, each picked
-  from Rule Templates (or **Create a New Rule…**, which opens the same dialog as there).
-  The bin removes a rule from the source, or the source itself.
+- **Calendar Sources** (**+** adds one; a new install has none). Presets: **United CCS+** (once),
+  **Google** and **Apple** calendars (by their private iCal link, with step-by-step help for finding
+  it) and **Other** (any link starting with `webcal://` or ending in `.ics`; repeating events are
+  shown from a year back to two years ahead). Each source's box shows its color, title and note
+  (e.g. "CCS+ Calendar Sync"), the last download ("98 events @ 07:59 (0 new, 0 removed)"), the next
+  scheduled check, its status and **Sync Now** (which updates the status, the calendar and the log
+  in place, without reloading the page). **▸ Configure ◂** opens the rest (it opens by itself when
+  something needs doing) and turns the color, title and note into fields:
+  - **Automatic Upload:** the **Site Address** with **Check every … min** beside it, CCS+'s
+    **Username** (your UID) and password (**✓ Validated** until you type; then **Save** / **Cancel**,
+    and Save shows Saved → Verifying… → ✓ Validated or ✗ Failed, with the reason under the boxes),
+    and step-by-step help: how to enable it on the left, what's **Accomplished** on the right.
+  - **Manual Upload** (CCS+): upload Calendar.ics by hand.
+  - **Rules:** one thin rounded line per rule, marked **Shared** (a Rule Template; click it to change
+    it for every source) or **This calendar** (this source's own). ✎ turns a line into fields with
+    **Cancel** / **Save**; Save then asks **This calendar** (a copy for this source only, in the same
+    place) or **All sources** (the shared rule). **+ Add a rule** adds a line with a menu of the Rule
+    Templates (or **Create a New Rule…**); the bin takes a rule off the source.
+  - At the bottom: **Remove** on the left (it asks first), **Cancel** (undo the changes) and
+    **Save** on the right.
 - **Calendar Destinations** (**+** adds one; the first asks for the public address), independent of
   the sources: **Google calendars** (Autosync; one **Google account** box signs in for all of them)
   and **Calendar feeds** (a feed link and a shareable subscribe page each), as many as you like.
@@ -159,26 +167,37 @@ logins or setup codes lock an address out for 15 minutes.
   sources it gets, and a feed's links. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
   part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
   an old link) and existing subscriptions work again.
-- **Rule Templates:** every rule, kept once and used by any source (each shows which sources use it; **+**
-  or ✎ opens the rule dialog). Kinds:
+- **Rule Templates** (folds to its title; **+** stays in the corner): the shared rules, kept once
+  and used by any source (each shows which sources use it; **+** or ✎ opens the rule dialog, the copy
+  button makes a copy to change, the bin deletes it). Kinds:
   - **Color:** match a title (whole word, contains, starts with or exact title) and color the event
     (e.g. RDO in red).
   - **Add event:** match a title and add an event from an event template some time before the
     start, after the start or after the end (e.g. a 1:30 drive to the airport 2:00 before each trip).
+  - **Record changes:** when the source changes a matching event (every event when nothing is
+    entered to match), a note is added to the event ("Changed Oct 22: time … → …") and a line goes
+    in Activities and Logs.
   - **Items without an end time** (predefined): how long they last, or all day.
   - **24-hour events** (predefined): show them (CCS+ writes full days as 00:01–23:59:59) as all-day,
     with the original times in the notes.
 
   New sources start with the two predefined rules; a source without them uses
   `DEFAULT_EVENT_HOURS` and keeps 24-hour events as they are.
-- **Event Templates:** ready-made events (title, length or all day, location, color) for Add-event
+- **Event Templates** (folds to its title; **+** stays in the corner): ready-made events (title, length or all day, location, color) for Add-event
   rules and for **Start from a template** when adding an event by hand.
-- **Activities and Logs:** each check and what changed, for each source.
+- **Activities and Logs:** each check and what changed, for each source; each source's last
+  download details (for debugging) at the bottom.
 - **☰ Settings** (a light blue panel): site settings only: the status-page login (with a show-password eye and a
   strength bar, like every password box), the public address, the **admin e-mail** (filled into the
   Google setup guide) and **Check for updates** (hourly, weekly, monthly or never; only versions of
   your release, stable or beta, are offered, and a newer one shows next to the version at the top).
-- **Report a problem / Suggest a feature** at the bottom of the page open a GitHub issue form.
+- **Report a problem / Suggest a feature** at the bottom of the page open a form: what happened (or
+  your idea), and tick what to include: the Activities and Logs lines, each source's last download
+  details, your device and setup, your contact details, and whether you'd like replies. Private
+  details (your Username, links, stream names, e-mail addresses, the public address) are taken out;
+  a preview shows exactly what's sent. **Open on GitHub** fills in a new issue there (its page is
+  the link to follow it, and GitHub notifies you of replies); without a GitHub account, **Copy** or
+  **Download** the report instead.
 - **Language** (🌐, left of the Light / Dark / System theme switch): English, Español, Français,
   Deutsch, Português and Vlaams, or Automatic (the browser's language). Everything on the page is
   translated, including status messages and the activity log; event titles stay as United sends

@@ -9,7 +9,65 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.4**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.5**
+
+## 0.2.7-beta.5 — 2026-10-23
+
+### Added
+- **F2.3** Calendar Sources → +:
+  - **F2.3.1** Presets: **United CCS+**, **Google**, **Apple** and **Other**. Google and Apple
+    calendars connect by their private iCal link, in the same box as United CCS+, with step-by-step
+    help for finding the link.
+  - **F2.3.2** Everything built for CCS+ (Automatic Upload, setup help, Manual Upload) is the United
+    CCS+ preset of one source box shared by all of them.
+  - **F2.3.3** "CCS+ Calendar Sync" is now the CCS+ source's note, like any other source's note
+    (it can be changed or emptied).
+- **F3.2** Rule Templates: each rule can be changed (✎), copied or deleted.
+- **F3.3** A new kind of rule, **Record changes**: when the source changes a matching event (its
+  time, title or location; every event when nothing is entered to match), a note is added to the
+  event ("Changed Oct 22: time … → …") and a line goes in Activities and Logs. A moved occurrence of
+  a repeating event counts as a change, and a dropped event is logged.
+- **F5** Report a problem / Suggest a feature open a form instead of a bare GitHub page: what
+  happened (or the idea), with each thing to include ticked separately: the Activities and Logs
+  lines, each source's last download details, device and setup, contact details, and whether you'd
+  like replies. Private details (Username, links, stream names, e-mail addresses, the public
+  address) are taken out, and a preview shows exactly what's sent. **Open on GitHub** fills in a new
+  issue (its page is the link to follow it; GitHub notifies the author of replies). Without a GitHub
+  account, the report can be copied or downloaded; it can't be sent from the page without one.
+
+### Changed
+- **F2** Calendar Sources:
+  - **F2.1** The source box follows the mockup:
+    - **F2.1.1** **Automatic Upload** first, then **Manual Upload** (CCS+), then **Rules**.
+    - **F2.1.2** "Check every … min" sits beside the Site Address.
+    - **F2.1.3** The header shows the next scheduled check ("Next scheduled check @ 10:20pm").
+    - **F2.1.4** The setup help has two sides with a line between them:
+      - **F2.1.4.1** **How to enable CCS+** (the steps) on the left, **Accomplished** (the checklist)
+        on the right.
+    - **F2.1.5** Rules:
+      - **F2.1.5.1** Thinner lines.
+      - **F2.1.5.2** Rules can be changed right in the source:
+        - **F2.1.5.2.1** ✎ next to the bin.
+        - **F2.1.5.2.2** While changing one, ✎ and the bin become **Cancel** and **Save**, like the
+          other responsive buttons. **Save** then splits into **This calendar** and **All sources**.
+        - **F2.1.5.2.3** Each line says **Shared** (a Rule Template; click it to change it for every
+          source) or **This calendar** (a rule for this source only, made by saving for This
+          calendar; it isn't listed in Rule Templates).
+        - **F2.1.5.2.4** A menu only on a new line (+ Add a rule); existing lines are changed
+          directly.
+  - **F2.2** At the bottom: **Cancel** and **Save** on the right; **Remove** on the lower left,
+    asking "Are you sure?" first.
+- **F3.1** Rule Templates folds to just its title (open or folded is remembered); + stays in the
+  corner.
+- **F4.1** Event Templates folds the same way.
+- **F6.1** Activities and Logs: the debug links are at the bottom.
+
+### Fixed
+- **F2.1.5.3** The rule menus were light in dark mode.
+- **I1.1** Sync Now reloaded the whole page; now only the source's status, the calendar and the log
+  update. Switching the calendar's view (or month, or time zone) now swaps the calendar in at once;
+  before, the view sometimes didn't change until the page was refreshed (a phone's `?view=list`
+  stuck in the address).
 
 ## 0.2.7-beta.4 — 2026-10-22
 

@@ -13,3 +13,14 @@ body:
     attributes:
       label: Why would it help? (optional)
       description: The problem it solves, or how you'd use it.
+  - type: textarea
+    id: setup
+    attributes:
+      label: Setup (optional)
+      description: Filled in by the status page's form when ticked.
+      render: text
+  - type: input
+    id: contact
+    attributes:
+      label: Contact (optional)
+      description: Shown publicly. GitHub notifies you of replies to your own issue.

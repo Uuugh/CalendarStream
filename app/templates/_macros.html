@@ -26,10 +26,11 @@
 </span>
 {%- endmacro %}
 
-{# The CCS+ Calendar Sync login: the Site Address (the Calendar Sync link), UID and password, with
-   whether CCS+ accepted them. "✓ Validated" until something is typed, then Save & sync. `upload` (HTML)
-   sits to the right of the Site Address. `back` is unused (kept so older pages still post). #}
-{% macro ccs_login(setup, s, back="", upload="") -%}
+{# The CCS+ Calendar Sync login: the Site Address (the Calendar Sync link), Username (UID) and password,
+   with whether CCS+ accepted them. "✓ Validated" until something is typed, then Save & sync. `side`
+   (HTML: the check interval) sits to the right of the Site Address. `back` is unused (kept so older
+   pages still post). #}
+{% macro ccs_login(setup, s, back="", side="") -%}
 {% set valid = setup.configured and s.last_auth_ok %}
 <div class="cfggrid">
 <form method="post" action="/setup/ccs" class="ccsform watch" data-verify="ccs" autocomplete="off">
@@ -51,7 +52,7 @@
     {% else %}<p class="check unknown">{{ _('Not checked yet') }}</p>{% endif %}
   {% endif %}
 </form>
-{{ upload }}
+{{ side }}
 </div>
 {%- endmacro %}
 
