@@ -24,11 +24,11 @@ or add events with rules, and walks you through setup.
 </p>
 
 <details>
-<summary>More screenshots, light and dark: sources, destinations, rules, event templates, adding an event, Settings, phone, activity</summary>
+<summary>More screenshots, light and dark: calendars, feeds, rules, event templates, adding an event, Settings, phone, activity</summary>
 <p align="center">
-  <img src="docs/screenshots/sources-light.png" alt="Calendar Sources: United CCS+ Calendar Sync with Configure open (Site Address, Username, password, upload, its rules) and a work calendar feed (light theme)" width="49%">
+  <img src="docs/screenshots/sources-light.png" alt="Calendars: United CCS+ Calendar Sync expanded (Site Address, Username, password, upload, its rules) and a work calendar feed (light theme)" width="49%">
   <img src="docs/screenshots/sources-dark.png" alt="The same in the dark theme" width="49%"><br><br>
-  <img src="docs/screenshots/destinations-light.png" alt="Calendar Destinations: the Google account, a Google calendar and a calendar feed with its dates, sources, feed link and subscribe page (light theme)" width="49%">
+  <img src="docs/screenshots/destinations-light.png" alt="Feeds: the Google account, a Google calendar and a calendar feed with its dates, sources, feed link and subscribe page (light theme)" width="49%">
   <img src="docs/screenshots/destinations-dark.png" alt="The same in the dark theme" width="49%"><br><br>
   <img src="docs/screenshots/rules-light.png" alt="Rule Templates: color rules, an Add event rule and the two predefined rules, with the sources using each (light theme)" width="49%">
   <img src="docs/screenshots/rules-dark.png" alt="The same in the dark theme" width="49%"><br><br>
@@ -75,9 +75,9 @@ answers) and the database password are kept.
 Then open the address it printed:
 
 1. **Create your login** with the setup code.
-2. **Calendar Sources → +** → **United CCS+ Calendar Sync**, then enter your CCS+ Username (UID)
+2. **Calendars → +** → **United CCS+**, then enter your CCS+ Username (UID)
    and Calendar Sync password. (Or add any calendar feed.)
-3. **Calendar Destinations → +**: it first asks for the public `https://` address; check the
+3. **Feeds → +**: it first asks for the public `https://` address; check the
    spelling, because Google sends you back to exactly this address. Name the destination, then add:
    - a **Google calendar** (recommended): in the **Google account** box, follow the step-by-step
      guide in order. Publish the app, or add yourself as a test user, **before** pressing Connect; or
@@ -97,7 +97,7 @@ explained in [`.env.default`](.env.default):
 | `PUID` / `GUID`, `RESTART` | `1000` / `100`, `unless-stopped` | |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Behind a reverse proxy: its address or network (e.g. `172.18.0.0/16`), so visitors' addresses and https are seen |
 | `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440, for CCS+; overridden by “Check for changes every” in its box |
-| `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in the CCS+ box (Configure) |
+| `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in the CCS+ box (Expand) |
 | `DEFAULT_EVENT_HOURS` | `1` | Hours for items with no end time, or `allday`; a source's Items-without-an-end-time rule overrides it |
 | `ALLDAY_24H` | `true` | Show 24-hour (48 h…) events as all-day; replaced by each source's 24-hour-events rule |
 | `FEED_TOKEN` | made once | The stream name of the feed made when upgrading from before 0.2.1; feeds' stream names are set on the status page |
@@ -125,27 +125,37 @@ logins or setup codes lock an address out for 15 minutes.
 
 - **Calendar:** every source's events (views, months and the time zone change in place, without
   reloading the page). On the right: the **Time Zone** it's shown in (**TZ** when
-  space is tight; on this page only, the feeds and Google keep `TZ`), **Month / Week / Day / List**, and the **12h / 24h** switch. Click
+  space is tight; on this page only, the feeds and Google keep `TZ`), **Month / Week / Day / List**, the **12h / 24h** switch,
+  and **Print** (the calendar as it's shown, without the rest of the page). Click
   the title to jump to any month. Click an event to see it, **Edit** it (title, times, notes, or
   hide it), **duplicate** it or **delete** it (a source's own event is hidden instead, since the
   source would send it again); clicking elsewhere closes it, and its 📌 pin keeps it open.
   Click an empty spot on a day (or **+**) to add your own. Events can have their own color (one of
-  Google's 11), which wins over rules. Edits survive new downloads; ✎ marks
-  an edited event, ⚠ one its source changed since. Nothing is ever changed in CCS+.
-- The page's sections: **Calendar** at the top, then **Calendar Sources**, **Calendar
-  Destinations**, **Rule Templates**, **Event Templates** and **Activities and Logs**, each with the
-  same kind of heading. On a wide screen they sit in two columns (Sources | Destinations, Rule
-  Templates | Event Templates), with Activities and Logs across the full width; on a narrow screen
-  or a phone they're one column, the calendar opens on the List view, the view and theme switches
-  become one button each that steps through the choices, and long labels get shorter ("Check every
+  Google's 11), which wins over rules; otherwise all of a calendar's events (timed or all-day) share
+  its color. The key under the calendar lists each calendar, "Added here" and the rules' colors.
+  Edits survive new downloads; ✎ marks an edited event, ⚠ one its source changed since. Nothing is
+  ever changed in CCS+.
+- The page's sections: **Calendar** at the top, then **Calendars**, **Feeds**, **Rule Templates**,
+  **Event Templates** and **Activities and Logs**, each with a small icon and the same kind of
+  section title row. On a wide screen they sit in two columns (Calendars | Feeds, Rule Templates |
+  Event Templates), with Activities and Logs across the full width; on a narrow screen or a phone
+  they're one column, the calendar opens on the List view, the view and theme switches become one
+  button each that steps through the choices, and long labels get shorter ("Expand", "Check every
   60 min").
-- **Calendar Sources** (**+** adds one; a new install has none). Presets: **United CCS+** (once),
+- **(?)** next to a title or button explains it: point at it, or click (tap) it to keep it open.
+- Saving, cancelling and removing happen in place: only the parts of the page they change are
+  updated, without reloading it. **Cancel | Save** is one 130 px pair everywhere; the pressed side
+  fills it and says **Canceled** or **Saved** for 3 seconds.
+- Spacing: 10 px between sections, 5 px between the boxes in a section and around subsection titles
+  (Automatic Upload, Manual Upload, Rules), 2 px between everything else; text boxes and rule lines
+  are 34 px rounded rectangles; instruction tiles ("How to …") keep their own size.
+- **Calendars** (**+** adds one; a new install has none). Presets: **United CCS+** (once),
   **Google** and **Apple** calendars (by their private iCal link, with step-by-step help for finding
   it) and **Other** (any link starting with `webcal://` or ending in `.ics`; repeating events are
   shown from a year back to two years ahead). Each source's box shows its color, title and note
   (e.g. "CCS+ Calendar Sync"), the last download ("98 events @ 07:59 (0 new, 0 removed)"), the next
   scheduled check, its status and **Sync Now** (which updates the status, the calendar and the log
-  in place, without reloading the page). **▸ Configure ◂** opens the rest (it opens by itself when
+  in place, without reloading the page). **▸ Expand for Details or to Edit Configuration ◂** opens the rest (it opens by itself when
   something needs doing) and turns the color, title and note into fields:
   - **Automatic Upload:** the **Site Address** with **Check every … min** beside it, CCS+'s
     **Username** (your UID) and password (**✓ Validated** until you type; then **Save** / **Cancel**,
@@ -153,18 +163,18 @@ logins or setup codes lock an address out for 15 minutes.
     and step-by-step help: how to enable it on the left, what's **Accomplished** on the right.
   - **Manual Upload** (CCS+): upload Calendar.ics by hand.
   - **Rules:** one thin rounded line per rule, marked **Shared** (a Rule Template; click it to change
-    it for every source) or **This calendar** (this source's own). ✎ turns a line into fields with
-    **Cancel** / **Save**; Save then asks **This calendar** (a copy for this source only, in the same
-    place) or **All sources** (the shared rule). **+ Add a rule** adds a line with a menu of the Rule
+    it for every calendar) or **This calendar** (this calendar's own). ✎ turns a line into fields with
+    **Cancel | Save**; Save then asks **This calendar** (a copy for this calendar only, in the same
+    place) or **All calendars** (the shared rule). **+ Add a rule** adds a line with a menu of the Rule
     Templates (or **Create a New Rule…**); the bin takes a rule off the source.
-  - At the bottom: **Remove** on the left (it asks first), **Cancel** (undo the changes) and
-    **Save** on the right.
-- **Calendar Destinations** (**+** adds one; the first asks for the public address), independent of
-  the sources: **Google calendars** (Autosync; one **Google account** box signs in for all of them)
+  - At the bottom, under a line: **Remove** on the left (it asks first), **Cancel | Save** on the
+    right.
+- **Feeds** (**+** adds one; the first asks for the public address): what other apps subscribe to,
+  independent of the calendars: **Google calendars** (Autosync; one **Google account** box signs in for all of them)
   and **Calendar feeds** (a feed link and a shareable subscribe page each), as many as you like.
-  Each box has the same header as a source's (name, kind, its sources and dates, status), and
-  **▸ Configure ◂** opens the rest: the name, a **Start** and **End** date (empty = no limit), the
-  sources it gets, and a feed's links. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
+  Each box has the same header as a calendar's (name, kind, its calendars and dates, status), and
+  **▸ Expand for Details or to Edit Configuration ◂** opens the rest: the name, a **Start** and
+  **End** date (empty = no limit), the calendars it gets, a feed's links, and Remove / Cancel | Save. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
   part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
   an old link) and existing subscriptions work again.
 - **Rule Templates** (folds to its title; **+** stays in the corner): the shared rules, kept once

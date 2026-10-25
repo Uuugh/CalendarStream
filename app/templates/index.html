@@ -166,7 +166,8 @@
   .num { font-weight:600; font-size:12px; margin-bottom:2px; display:inline-block; min-width:22px; text-align:center; border-radius:999px }
   .day.today .num { background:var(--accent); color:var(--card) }
   .ev { margin:2px 0; border-radius:5px; background:var(--ev); color:var(--evtext) }
-  .ev.allday { background:var(--allday); color:var(--alldaytext) }
+  /* I1 (0.2.7-beta.6): all-day and timed events look the same; only rules, your own color, a
+     calendar's color and "Added here" change an event's color. */
   .ev summary { list-style:none; cursor:pointer; padding:1px 5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
   .ev summary::-webkit-details-marker { display:none }
   .ev .t { font-variant-numeric:tabular-nums; opacity:.85; margin-right:4px }
@@ -189,7 +190,6 @@
   .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; background:var(--sw) }
   /* The chosen calendar color tints United's events (timed lighter, all-day stronger) */
   .ev.tint { background:color-mix(in srgb, var(--cal) 18%, var(--card)); color:color-mix(in srgb, var(--cal) 70%, var(--text)) }
-  .ev.tint.allday { background:color-mix(in srgb, var(--cal) 34%, var(--card)) }
 
   /* Activity log */
   .statline { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:13px; margin:0 0 12px }
@@ -253,6 +253,7 @@
   .btnrow { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin-top:8px }
   .btnrow > p { flex:1 1 240px; margin:0 }
   .btnrow > :last-child { flex:0 0 auto; margin-left:auto }
+  .btnrow > .helpdot:last-child { margin-left:-6px }        /* (?) right after its button */
   .check.good { color:var(--ok) } .check.bad { color:var(--bad) } .check.unknown { color:var(--warn) }
   .check .muted { font-weight:400 }
   .mnote { color:var(--muted); font-size:12px; margin:6px 0 0 }
@@ -342,7 +343,17 @@
   /* #10 One legend row with a help dot */
   .helpdot { display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; border:1px solid var(--line); color:var(--muted);
              font-size:11px; font-weight:700; cursor:help; margin-left:auto }
-  .legend .helpdot::before { display:none }
+  .legend .helpdot::before, .legend .helptip::before, .legend .helptip span::before { display:none }
+  /* (?) and its explanation: on hover or focus, or open after a click */
+  .helpdot { position:relative; margin-left:6px; vertical-align:middle; flex:0 0 auto; font-family:system-ui,sans-serif; font-style:normal; letter-spacing:0 }
+  .legend .helpdot { margin-left:auto }
+  .helpdot:hover, .helpdot:focus-visible, .helpdot.open { color:var(--accent); border-color:var(--accent); outline:none }
+  .helptip { display:none; position:absolute; z-index:30; top:calc(100% + 6px); left:50%; transform:translateX(-50%); width:max-content; max-width:min(320px, 80vw);
+             padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--text); box-shadow:0 8px 24px rgba(0,0,0,.18);
+             font-size:12.5px; font-weight:400; line-height:1.45; text-align:left; white-space:normal; cursor:auto }
+  .helpdot:hover .helptip, .helpdot:focus-visible .helptip, .helpdot.open .helptip { display:block }
+  .helpdot.right .helptip { left:auto; right:-6px; transform:none }
+  .helpdot.left .helptip { left:-6px; transform:none }
   form.connect, form.inline { margin:0 }
   .tagsform.editor { border:0; padding:0; margin:0; background:transparent }
   .addfirst { width:36px; padding:0; font-size:18px }
@@ -496,6 +507,83 @@
   /* Narrow screens: the view and theme choices become one button each that steps through them */
   .cyclebtn { display:none }
   #cal.loading { opacity:.6; transition:opacity .15s }
+  /* ---- 0.2.7-beta.6: one spacing scale (F1.6–F1.10) ---------------------------------------------
+     Section: 10 px between sections, 18 px padding. Section title row: gap 5. Subsection (a box in a
+     section): 5 px apart. Subsection title (Automatic Upload, Manual Upload, Rules): 5 px above and
+     below. Everything else in a section: 2 px apart vertically. Instruction tiles ("How to …") keep
+     their 38 px height and 12 px above. Text boxes and rule lines: 34 px rounded rectangles. */
+  .cardhead, .section > .shead { gap:5px }
+  .bigtitle { display:flex; align-items:center; gap:8px }
+  .secicon { width:22px; height:22px; flex:0 0 auto; color:var(--muted) }
+  .cfgline { margin:5px 0 0 }
+  .cfghead { margin:5px 0 !important }
+  .cfgbody > h3.cfghead:not(:first-child), .cfgheadrow { margin-top:5px !important; padding-top:5px !important }
+  .cfgheadrow .cfghead { margin:0 !important; padding:0 !important; display:flex; align-items:center }
+  .cfgheadrow { margin-bottom:5px }
+  .sections .cfgbody { margin-top:2px; padding-bottom:2px }
+  .sections .cfggrid { gap:2px 16px }
+  .sections form .pair { row-gap:2px; margin-top:2px }
+  .sections form .pair label.fld, .sections .cfggrid .siteaddr { gap:2px }
+  .sections .srcright, .sections .statusbox { gap:2px }
+  .sections .rulebox, .sections .rulelist { margin-top:2px }
+  .sections p.mnote, .sections .check, .sections .k, .sections .statusline, .sections .btnrow { margin-top:2px; margin-bottom:0 }
+  .sections .subbox { margin-top:5px; padding-top:5px }
+  .sections .editor .tagrows { gap:2px }
+  .sections .debuglinks { margin-top:2px }
+  .sections details.guide { margin-top:12px }              /* instruction tiles: as they were */
+  /* Text boxes: 34 px rounded rectangles */
+  .sections input[type=text], .sections input[type=url], .sections input[type=password], .sections input[type=email],
+  .sections input[type=number], .sections input[type=date], .sections input:not([type]), .menu input[type=text], .menu input[type=email],
+  .menu input[type=password], dialog input[type=text], dialog input:not([type]) { height:34px; border-radius:8px; box-sizing:border-box }
+  .sections input.nameinput { height:34px }
+  /* Rule lines: 34 px rounded rectangles (taller only while being changed, or on a phone) */
+  .sections .rulebox { border-radius:8px; min-height:34px; padding-top:0; padding-bottom:0; box-sizing:border-box }
+  .sections .rulebox.srule:not(.editing), .sections .rulebox.pick { height:34px }
+  .sections .rulebox select.rulepick { height:32px }
+  @media (max-width:600px) { .sections .rulebox.lib { border-radius:8px } }
+  .sections .srule.editing { padding-top:3px; padding-bottom:3px; height:auto }
+  /* The bottom line of a calendar or feed: a line above; Remove on the left; Cancel | Save on the right */
+  .srcfoot { border-top:1px solid var(--line); margin-top:5px !important; padding-top:5px }
+  .srcfoot .alsodelete { margin:0 auto 0 0; display:flex; align-items:center; gap:4px }
+  .srcfoot .removeform + .pairbtns { margin-left:auto }
+  /* Cancel | Save: one 130 × 34 px pair; the pressed side fills it for 3 seconds (F1.4) */
+  .pairbtns { display:inline-flex; width:130px; height:34px; flex:0 0 130px; border-radius:8px; overflow:hidden }
+  .pairbtns button { flex:0 0 65px; width:65px; height:34px; padding:0; justify-content:center; white-space:nowrap; overflow:hidden; min-width:0;
+                     transition:flex-basis .3s ease, width .3s ease, opacity .3s ease }
+  .pairbtns .pcancel { border-radius:8px 0 0 8px; border-right-width:0 }
+  .pairbtns .psave { border-radius:0 8px 8px 0; border:1px solid var(--accent) }
+  .pairbtns[data-state="saving"] .pcancel, .pairbtns[data-state="saved"] .pcancel, .pairbtns[data-state="failed"] .pcancel,
+  .pairbtns[data-state="canceled"] .psave { flex-basis:0; width:0; opacity:0; border-width:0 }
+  .pairbtns[data-state="saving"] .psave, .pairbtns[data-state="saved"] .psave, .pairbtns[data-state="failed"] .psave { flex-basis:130px; width:130px; border-radius:8px }
+  .pairbtns[data-state="canceled"] .pcancel { flex-basis:130px; width:130px; border-radius:8px; border-right-width:1px }
+  .pairbtns[data-state="saving"] .psave { opacity:.85; pointer-events:none }
+  .pairbtns[data-state="failed"] .psave { background:var(--badbg); color:var(--bad); border-color:var(--bad) }
+  .pairfail { flex-basis:100%; text-align:right; color:var(--bad); font-size:12.5px; margin:2px 0 0 }
+  dialog .eactions .pairbtns { margin-left:auto }
+  /* The rule-line pair: 130 × 26 px inside its 34 px line */
+  .sections .srule .ruleslot { min-width:0; width:130px; height:26px; border-radius:8px }
+  .rulebox.srule .ruleslot button { flex:0 0 65px; width:65px; height:26px; padding:0; border-radius:0 }
+  .rulebox.srule .ruleslot[data-state="edit"] .rcancel, .rulebox.srule .ruleslot[data-state="choose"] .rscope[data-scope="local"] { border-radius:8px 0 0 8px }
+  .rulebox.srule .ruleslot[data-state="edit"] .rsave, .rulebox.srule .ruleslot[data-state="choose"] .rscope[data-scope="global"] { border-radius:0 8px 8px 0 }
+  .rulebox.srule .ruleslot[data-state="choose"] .rscope { font-size:11px }
+  .srule.flash .rulebtns { display:none } .srule.flash .ruleslot { display:inline-flex }
+  .srule .ruleslot[data-state="saved"] .rsave, .srule .ruleslot[data-state="canceled"] .rcancel { display:inline-flex; flex-basis:130px; width:130px; border-radius:8px; animation:slotfade .3s ease }
+  /* Guide headings: underlined (F3.3) */
+  .setupguide .h4 { text-decoration:underline; text-underline-offset:3px }
+  .calright .printbtn { height:28px; width:32px }
+  /* Printing: only the calendar, in black on white, with whole event titles */
+  @media print {
+    :root { --bg:#fff; --card:#fff; --text:#000; --muted:#444; --line:#bbb; color-scheme:light }
+    body { background:#fff }
+    .topbar, .sections, .foot, dialog, .navbtn, .calright, .monthpick, .caret, .day .add, .aday .add, .legend .helpdot { display:none !important }
+    main { max-width:none; padding:0 }
+    #cal { border:0; padding:0; margin:0 }
+    .calhead .title { font-size:20px; padding:0 }
+    .ev summary { white-space:normal; overflow:visible }
+    .ev, .legend span::before { -webkit-print-color-adjust:exact; print-color-adjust:exact }
+    .ev[open] .body { display:none }
+    .day { break-inside:avoid }
+  }
   /* ---- 0.2.7-beta.5: the source box (mockup), its rules, the presets, folding sections, the report form ---- */
   .srcleft .srcname { font-size:17px; font-weight:700; line-height:1.3 }
   .srcleft .srcnote { font-size:13.5px; font-weight:600; color:var(--text); margin-top:2px }
@@ -623,7 +711,19 @@
   }
 </style>
 </head>
-<body>{% import "_macros.html" as m with context %}<main>
+<body>{% import "_macros.html" as m with context %}
+  {# (?): an explanation that shows on hover, on focus, or when clicked (F1.1). `text` may hold <b>. #}
+  {% macro help(text, pos="") -%}
+  <span class="helpdot{% if pos %} {{ pos }}{% endif %}" tabindex="0" role="button" aria-label="{{ _('Help') }}" aria-expanded="false">?<span class="helptip" role="tooltip">{{ text }}</span></span>
+  {%- endmacro %}
+
+  {# Cancel and Save as one 130 × 34 px pair (F1.4). Save sends `form` in the background (F1.5);
+     the pressed side fills the pair and says Saved / Canceled for 3 seconds (see the script). #}
+  {% macro pair(form, save=none) -%}
+  <span class="pairbtns" data-state="idle" data-pair="{{ form }}"><button type="button" class="ghost pcancel" data-text="{{ _('Cancel') }}" data-done="{{ _('Canceled') }}">{{ _('Cancel') }}</button><button class="psave" form="{{ form }}" data-text="{{ save or _('Save') }}" data-busy="{{ _('Saving…') }}" data-done="{{ _('Saved') }}">{{ save or _('Save') }}</button></span>
+  {%- endmacro %}
+
+<main>
   <header class="topbar">
     {# The version links to its release notes on GitHub; a newer one shows as "(v0.2.0 is available)". #}
     <h1>CalendarStream<span class="ver"><a class="curver" href="{{ update.releases }}/tag/v{{ version }}" target="_blank" rel="noopener"
@@ -689,7 +789,7 @@
 
         {# Right under the page login. "This page" sits inside the box; Save is on the same line. #}
         <div class="mgroup" id="public">
-          <div class="mhead">{{ _('Public address') }}</div>
+          <div class="mhead">{{ _('Public address') }}{{ help(_('The https:// address people use to reach this page, e.g. <code>https://cal.example.com</code>. Used for the feed and subscribe links and for Google sign-in.'), 'left') }}</div>
           <form method="post" action="/settings/public-url" class="clientform">
             <input type="hidden" name="csrf" value="{{ csrf }}">
             <div class="pair">
@@ -700,13 +800,12 @@
               <button name="action" value="save">{{ _('Save') }}</button>
             </div>
           </form>
-          <p class="mnote" style="margin:6px 0 0">{{ _('The https:// address people use to reach this page, e.g. <code>https://cal.example.com</code>. Used for the feed and subscribe links and for Google sign-in.') }}
-            {% if not public.url %}{{ _('Not set yet.') }}{% endif %}</p>
+          {% if not public.url %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
         </div>
 
         {# The administrator's e-mail: used in the Google setup guide (support / contact e-mail, test user). #}
         <div class="mgroup" id="admin">
-          <div class="mhead">{{ _('Admin e-mail') }}</div>
+          <div class="mhead">{{ _('Admin e-mail') }}{{ help(_('The administrator’s address. The Google Calendar Autosync guide uses it as the support and contact e-mail and the test user, so use the Gmail account you’ll connect with.'), 'left') }}</div>
           <form method="post" action="/settings/admin-email" class="clientform">
             <input type="hidden" name="csrf" value="{{ csrf }}">
             <div class="pair">
@@ -715,8 +814,7 @@
               <button>{{ _('Save') }}</button>
             </div>
           </form>
-          <p class="mnote" style="margin:6px 0 0">{{ _('The administrator’s address. The Google Calendar Autosync guide uses it as the support and contact e-mail and the test user, so use the Gmail account you’ll connect with.') }}
-            {% if not admin_email %}{{ _('Not set yet.') }}{% endif %}</p>
+          {% if not admin_email %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
         </div>
 
         {# Check for updates: how often, for this install's channel (beta or stable) only. #}
@@ -769,7 +867,7 @@
     <input type="hidden" name="rule_sub" value="{{ r.id }}">
     <span class="rulelabel">{% if r.type == "color" %}<span class="swatch" style="--c:{{ r.color }}" aria-hidden="true"></span> {% endif %}{{ r.label }}</span>
     <span class="ruleedit" hidden></span>
-    {% if r.owner %}<button type="button" class="scope local" title="{{ _('A rule for this calendar only. To share it with every source, ✎ it and choose All sources.') }}">{{ _('This calendar') }}</button>
+    {% if r.owner %}<button type="button" class="scope local" title="{{ _('A rule for this calendar only. To share it with every calendar, ✎ it and choose All calendars.') }}">{{ _('This calendar') }}</button>
     {% else %}<button type="button" class="scope shared" title="{{ _('A Rule Template, shared by {n} source(s). Click to change it for every source.', n=r.used|length) }}">{{ _('Shared') }}</button>{% endif %}
     <span class="rulebtns">
       <button type="button" class="ghost rowedit" title="{{ _('Change this rule here') }}" aria-label="{{ _('Change this rule here') }}">✎</button>
@@ -777,7 +875,7 @@
     </span>
     <span class="ruleslot" data-state="idle">
       <button type="button" class="ghost rcancel">{{ _('Cancel') }}</button><button type="button" class="rsave">{{ _('Save') }}</button>
-      <button type="button" class="rscope" data-scope="local" title="{{ _('Change it for this calendar only') }}">{{ _('This calendar') }}</button><button type="button" class="rscope" data-scope="global" title="{{ _('Change the shared rule, for every source using it') }}">{{ _('All sources') }}</button>
+      <button type="button" class="rscope" data-scope="local" title="{{ _('Change it for this calendar only') }}">{{ _('This calendar') }}</button><button type="button" class="rscope" data-scope="global" title="{{ _('Change the shared rule, for every source using it') }}">{{ _('All calendars') }}</button>
       <span class="rmsg" aria-live="polite"></span>
     </span>
   </div>
@@ -854,6 +952,9 @@
           <button type="button" role="switch" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') }}"><span></span></button>
           <span>24h</span>
         </div>
+        {# Print: the calendar as it's shown (this view and month), without the rest of the page. #}
+        <button type="button" class="iconbtn printbtn" onclick="window.print()" title="{{ _('Print the calendar') }}" aria-label="{{ _('Print the calendar') }}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>
       </div>
     </div>
     {% if cal.view in ("month", "week") %}
@@ -880,10 +981,10 @@
     </div>
     {% endif %}
     <div class="legend">
-      {% if srcs|length > 1 %}{% for x in srcs %}<span style="--sw:{{ ('color-mix(in srgb, ' ~ x.color ~ ' 34%, var(--card))') if x.color else 'var(--allday)' }}">{{ x.name }}</span>{% endfor %}
-      {% elif srcs and srcs[0].color %}<span style="--sw:color-mix(in srgb, {{ srcs[0].color }} 18%, var(--card))">{{ _('Timed') }}</span><span style="--sw:color-mix(in srgb, {{ srcs[0].color }} 34%, var(--card))">{{ _('All-day') }}</span>{% else %}<span style="--sw:var(--ev)">{{ _('Timed') }}</span><span style="--sw:var(--allday)">{{ _('All-day') }}</span>{% endif %}<span style="--sw:var(--custom)">{{ _('Added here') }}</span>{% for x in srcs %}{% for t in x.effective if t.action == 'color' %}<span style="--sw:color-mix(in srgb, {{ t.color }} 34%, var(--card))">{{ t.tag }}</span>{% endfor %}{% endfor %}
+      {# The key: each calendar in its color (when it has one), then "Added here", then the rules' colors. #}
+      {% for x in srcs %}<span style="--sw:{{ ('color-mix(in srgb, ' ~ x.color ~ ' 18%, var(--card))') if x.color else 'var(--ev)' }}">{{ x.name }}</span>{% endfor %}<span style="--sw:var(--custom)">{{ _('Added here') }}</span>{% for x in srcs %}{% for t in x.effective if t.action == 'color' %}<span style="--sw:color-mix(in srgb, {{ t.color }} 18%, var(--card))">{{ t.tag }}</span>{% endfor %}{% endfor %}
       <span style="--sw:transparent">{{ _('✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google') }}</span>
-      <span class="helpdot" tabindex="0" title="{{ _('This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.') }}" aria-label="{{ _('Help') }}">?</span>
+      {{ help(_('This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.'), 'right') }}
     </div>
   </div>
 
@@ -891,18 +992,25 @@
      title and a one-line subtitle on the left and a status chip on the right, then its fields, then its
      help folded at the bottom. + in a card's corner adds a source or destination; a new install has none. #}
   {# "▸ Configure ◂" under a box's header: opens or folds the rest (cfg-<id>). #}
-  {% macro cfgline(id, open) %}<div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="cfg-{{ id }}"><span class="arr l" aria-hidden="true">▸</span> {{ _('Configure') }} <span class="arr r" aria-hidden="true">◂</span></button></div>{% endmacro %}
+  {% macro cfgline(id, open) %}<div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="cfg-{{ id }}"><span class="arr l" aria-hidden="true">▸</span> <span class="long">{{ _('Expand for Details or to Edit Configuration') }}</span><span class="short">{{ _('Expand') }}</span> <span class="arr r" aria-hidden="true">◂</span></button></div>{% endmacro %}
+  {# Small icons left of the section titles (F1.3). #}
+  {% set icons = {
+    "calendars": '<svg class="secicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M12 12v6M9.2 15.4 12 18.2l2.8-2.8"/></svg>',
+    "feeds": '<svg class="secicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19.1 4.9a10 10 0 0 1 0 14.2M4.9 19.1a10 10 0 0 1 0-14.2"/></svg>',
+    "rules": '<svg class="secicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M4 12h7M4 18h10"/><path d="m15 15 2 2 4-4"/><circle cx="18" cy="7" r="2.5"/></svg>',
+    "templates": '<svg class="secicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>',
+    "activity": '<svg class="secicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'} %}
   {% set status_labels = {"ok":_("Healthy"),"running":_("Syncing…"),"starting":_("Starting"),"paused":_("Paused"),"setup":_("Setup needed"),"auth_failed":_("Sign-in rejected"),"blocked":_("Blocked"),"error":_("Error")} %}
 
   <div class="sections">
   <section class="card" id="sources" aria-labelledby="sourcestitle">
     <div class="cardhead">
-      <h2 class="bigtitle" id="sourcestitle">{{ _('Calendar Sources') }}</h2>
+      <h2 class="bigtitle" id="sourcestitle">{{ icons.calendars|safe }}{{ _('Calendars') }}</h2>
       <div class="addwrap">
         <button type="button" class="ghost plus" aria-haspopup="dialog" aria-expanded="false" aria-controls="addsrc"
-                title="{{ _('Add a calendar source') }}" aria-label="{{ _('Add a calendar source') }}">+</button>
-        <div class="addmenu" id="addsrc" role="dialog" aria-label="{{ _('Add a calendar source') }}" hidden>
-          <div class="title">{{ _('Add a calendar source') }}</div>
+                title="{{ _('Add a calendar') }}" aria-label="{{ _('Add a calendar') }}">+</button>
+        <div class="addmenu" id="addsrc" role="dialog" aria-label="{{ _('Add a calendar') }}" hidden>
+          <div class="title">{{ _('Add a calendar') }}</div>
           {# Presets: United CCS+ (once), Google, Apple, or any other calendar link. #}
           <div class="presets" role="radiogroup" aria-label="{{ _('Kind of calendar') }}">
             {% if not has_ccs %}<button type="button" class="preset" data-preset="ccs" role="radio" aria-checked="false">{{ _('United CCS+') }}</button>{% endif %}
@@ -911,14 +1019,14 @@
             <button type="button" class="preset" data-preset="other" role="radio" aria-checked="true">{{ _('Other') }}</button>
           </div>
           {% if not has_ccs %}
-          <form method="post" action="/sources/add" class="opt presetform" data-for="ccs" hidden>
+          <form method="post" action="/sources/add" class="opt presetform" data-for="ccs" hidden data-swap="#sources|#destinations|#cal|#rules|#activity">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="ccs">
             <div><b>{{ _('United CCS+ Calendar Sync') }}</b>
               <div class="subtitle">{{ _('Your schedule from CCS+, with your Username and Calendar Sync password (entered next, under Configure).') }}</div></div>
             <button>{{ _('Add') }}</button>
           </form>
           {% endif %}
-          <form method="post" action="/sources/add" class="opt col presetform" data-for="google apple other">
+          <form method="post" action="/sources/add" class="opt col presetform" data-for="google apple other" data-swap="#sources|#destinations|#cal|#rules|#activity">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="ics">
             <input type="hidden" name="preset" value="other">
             <div><b data-text-google="{{ _('Google Calendar') }}" data-text-apple="{{ _('Apple Calendar') }}" data-text-other="{{ _('Calendar feed (.ics link)') }}">{{ _('Calendar feed (.ics link)') }}</b>
@@ -937,7 +1045,7 @@
         </div>
       </div>
     </div>
-    {% if not srcs %}<p class="empty">{{ _('No calendar sources yet. Press <b>+</b> to add United’s CCS+ Calendar Sync or any calendar feed.') }}</p>{% endif %}
+    {% if not srcs %}<p class="empty">{{ _('No calendars yet. Press <b>+</b> to add United’s CCS+ Calendar Sync, a Google or Apple calendar, or any calendar feed.') }}</p>{% endif %}
 
     {% for x in srcs %}
     {% set S = x.s %}
@@ -971,7 +1079,7 @@
       {{ cfgline(x.id, x.open) }}
       <div class="cfgbody" id="cfg-{{ x.id }}"{% if not x.open %} hidden{% endif %}>
         {# How often it's checked: beside the Site Address #}
-        {% set interval %}<form class="intervalform cfgside" method="post" action="/setup/interval">
+        {% set interval %}<form class="intervalform cfgside" method="post" action="/setup/interval" data-swap="#src-{{ x.id }}>.srchead|#activity">
           <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
           <label for="interval-{{ x.id }}">{{ _('Check every') }}</label>
           <input type="number" id="interval-{{ x.id }}" name="minutes" value="{{ x.interval }}" min="15" max="1440" step="5" required
@@ -1002,7 +1110,7 @@
                       _('The password is stored encrypted and never shown again; leave its box empty to keep it.')) }}
 
         <h3 class="cfghead">{{ _('Manual Upload') }}</h3>
-        <form class="uploadform" method="post" action="/setup/upload" enctype="multipart/form-data">
+        <form class="uploadform" method="post" action="/setup/upload" enctype="multipart/form-data" data-swap="#src-ccs>.srchead|#cal|#activity">
           <input type="hidden" name="csrf" value="{{ csrf }}">
           <label title="{{ _('Open the Calendar Sync link in your browser, sign in with your Username and Calendar Sync password, and upload the file it downloads. The feed updates immediately; automatic checks keep running.') }}">{{ _('Upload Calendar.ics by hand') }}</label>
           <label class="filebtn ghostbtn"><input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}"><span data-none="{{ _('Choose Calendar.ics…') }}">{{ _('Choose Calendar.ics…') }}</span></label>
@@ -1055,13 +1163,12 @@
 
         {# The rules this source uses, in order. Each can be changed right here (✎): for this calendar
            only, or for every source using it; + Add a rule picks one from Rule Templates, or makes one. #}
-        <form class="srcform" id="srcform-{{ x.id }}" method="post" action="/feed/tags">
+        <form class="srcform" id="srcform-{{ x.id }}" method="post" action="/feed/tags" data-swap="#src-{{ x.id }}|#cal|#destinations .srcright|#rules .rulelist|#activity">
           <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
           <input type="hidden" name="rules_form" value="1"><input type="hidden" name="color_default" class="colordefault" value="">
           <div class="rules" id="rules-{{ x.id }}">
-            <div class="cfgheadrow"><h3 class="cfghead">{{ _('Rules') }}</h3>
+            <div class="cfgheadrow"><h3 class="cfghead">{{ _('Rules') }}{{ help(_('The rules this calendar uses, in order (for colors the first match wins). ✎ changes one here: for this calendar only, or for every calendar using it. + Add a rule picks one from Rule Templates, or makes a new one.')) }}</h3>
               <button type="button" class="ghost addrule" data-sid="{{ x.id }}">+ {{ _('Add a rule') }}</button></div>
-            <div class="subtitle">{{ _('The rules this source uses, in order (for colors the first match wins). ✎ changes one here, for this calendar or for every source.') }}</div>
             <div class="srcrules">{% for rid in x.subs %}{{ src_rule(rule_by_id[rid]) }}{% endfor %}</div>
             <template class="srcruletpl">{{ rule_pick("") }}</template>
           </div>
@@ -1069,12 +1176,11 @@
 
         {# The bottom line: Remove on the left (asks first); Cancel and Save on the right. #}
         <div class="srcfoot">
-          <form method="post" action="/sources/remove" class="removeform inline" data-confirm="{{ _('Remove {name}? Are you sure? Its events and edits are removed, and it’s taken off every destination.', name=x.name) }}">
+          <form method="post" action="/sources/remove" class="removeform inline" data-swap="#sources|#destinations|#cal|#rules|#activity" data-confirm="{{ _('Remove {name}? Are you sure? Its events and edits are removed, and it’s taken off every feed.', name=x.name) }}">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
             <button class="ghost danger" title="{{ _('Remove this source') }}">{{ trash }} {{ _('Remove') }}</button>
           </form>
-          <button type="button" class="ghost srccancel">{{ _('Cancel') }}</button>
-          <button form="srcform-{{ x.id }}">{{ _('Save') }}</button>
+          {{ pair("srcform-" ~ x.id) }}
         </div>
       </div>
     </div>
@@ -1084,13 +1190,14 @@
 
   <section class="card" id="destinations" aria-labelledby="deststitle">
     <div class="cardhead">
-      <h2 class="bigtitle" id="deststitle">{{ _('Calendar Destinations') }}</h2>
+      <h2 class="bigtitle" id="deststitle">{{ icons.feeds|safe }}{{ _('Feeds') }}
+        {{ help(_('What other apps can subscribe to: CalendarStream delivers your calendars to them. A Google calendar that it keeps up to date for you, or a feed link for Apple Calendar, Outlook and others, with a page to share it.')) }}</h2>
       <div class="addwrap">
         <button type="button" class="ghost plus" aria-haspopup="dialog" aria-expanded="false" aria-controls="adddest"
-                title="{{ _('Add a destination') }}" aria-label="{{ _('Add a destination') }}">+</button>
-        <form class="addmenu" id="adddest" role="dialog" aria-label="{{ _('Add a destination') }}" method="post" action="/destinations/add" hidden>
+                title="{{ _('Add a feed') }}" aria-label="{{ _('Add a feed') }}">+</button>
+        <form class="addmenu" id="adddest" role="dialog" aria-label="{{ _('Add a feed') }}" method="post" action="/destinations/add" hidden data-swap="#destinations|#activity">
           <input type="hidden" name="csrf" value="{{ csrf }}">
-          <div class="title">{{ _('Add a destination') }}</div>
+          <div class="title">{{ _('Add a feed') }}</div>
           {% if not public.url %}
           {# The first destination asks for the public address. #}
           <div class="pubask">
@@ -1114,7 +1221,7 @@
         </form>
       </div>
     </div>
-    {% if not dests %}<p class="empty">{{ _('No destinations yet. Press <b>+</b> to send your calendars to a Google calendar, or to get a feed link for any calendar app.') }}</p>{% endif %}
+    {% if not dests %}<p class="empty">{{ _('No feeds yet. Press <b>+</b> to send your calendars to a Google calendar, or to get a feed link for any calendar app.') }}</p>{% endif %}
 
     {# The Google account: one sign-in for every Google calendar below. Its box, and each destination's,
        has the same header as a source's (title, kind under it, status on the right) and "Configure"
@@ -1143,7 +1250,7 @@
       {% if g.connected %}
         {{ m.google_connected(g, name, "f") }}
         <p class="mnote">{{ _('Events within each destination’s dates are copied, without reminders. If you also subscribed to a feed in Google, remove that calendar there, or you’ll see everything twice.') }}</p>
-        <form method="post" action="/google/disconnect" class="disconnectform btnrow">
+        <form method="post" action="/google/disconnect" class="disconnectform btnrow" data-swap="#destinations|#activity">
           <input type="hidden" name="csrf" value="{{ csrf }}">
           <label class="mnote" style="flex:1 1 240px;margin:0"><input type="checkbox" name="delete" value="1"> {{ _('Also delete these calendars in Google') }}
             · {{ _('OAuth client: <code>{client}…</code>', client=g.client_id.split(".")[0][:24]) }}</label>
@@ -1183,20 +1290,19 @@
       <p class="mnote" style="margin-top:0">{% if feed %}{{ _('A link that Google, Apple Calendar and others can subscribe to, and a page to share it.') }}{% else %}{{ _('A calendar of its own in your Google account, updated within minutes, in your sources’ colors.') }}{% endif %}</p>
 
       {# Which sources it gets, and its dates #}
-      <form method="post" action="/destinations/update" class="clientform destform" id="destform-{{ d.id }}">
+      <form method="post" action="/destinations/update" class="clientform destform" id="destform-{{ d.id }}" data-swap="#dest-{{ d.id }}|#activity">
         <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
         <div class="pair dates">
           <label class="fld"><span>{{ _('Start') }}</span><input type="date" name="start" value="{{ d.start }}" title="{{ _('Empty: no limit') }}"></label>
           <label class="fld"><span>{{ _('End') }}</span><input type="date" name="end" value="{{ d.end }}" title="{{ _('Empty: no limit') }}"></label>
-          <span class="mnote">{{ _('Only events in these dates; empty = no limit (∞).') }}</span>
+          {{ help(_('Only events in these dates go to this feed. Leave one empty for no limit (∞).')) }}
         </div>
-        <div class="k">{{ _('Sources') }}</div>
+        <div class="k">{{ _('Calendars') }}{% if feed %}{{ help(_('Each event keeps its calendar’s colors and rules.')) }}{% else %}{{ help(_('Each event keeps its calendar’s colors and rules. Renaming renames the calendar in Google.')) }}{% endif %}</div>
         <div class="srcpicks">
           {% for x in srcs %}<label class="srcpick"><input type="checkbox" name="sources" value="{{ x.id }}"{% if x.id in d.sources %} checked{% endif %}>
             <span class="swatch" style="--c:{{ x.color or 'var(--accent)' }}" aria-hidden="true"></span> {{ x.name }}</label>{% endfor %}
-          {% if not srcs %}<span class="mnote">{{ _('Add a calendar source first.') }}</span>{% endif %}
+          {% if not srcs %}<span class="mnote">{{ _('Add a calendar first.') }}</span>{% endif %}
         </div>
-        <p class="mnote">{% if feed %}{{ _('Each event keeps its source’s colors and rules.') }}{% else %}{{ _('Each event keeps its source’s colors and rules. Renaming renames the calendar in Google.') }}{% endif %}</p>
       </form>
 
       {% if feed %}
@@ -1204,21 +1310,21 @@
         <div class="k" style="margin-top:0">{{ _('Raw feed URL (Google Calendar → Other calendars → + → From URL):') }}</div>
         {{ m.copyfield("feed-" ~ d.id, d.feed) }}
         <div class="btnrow">
-          <p class="mnote">{{ _('<b>Add to Google Calendar</b> subscribes your signed-in Google account to this feed, in one click. Google re-reads it on its own schedule (up to 12 hours), keeps the first name it saw and shows no colors. On an Android phone, add it on a computer (or Chrome’s Desktop site), then turn on <b>Sync</b> for it in the app’s Settings; the subscribe page explains how.') }}</p>
           <a class="btn" href="{{ d.links.google }}" target="_blank" rel="noopener">{{ _('Add to Google Calendar') }}</a>
+          {{ help(_('<b>Add to Google Calendar</b> subscribes your signed-in Google account to this feed, in one click. Google re-reads it on its own schedule (up to 12 hours), keeps the first name it saw and shows no colors. On an Android phone, add it on a computer (or Chrome’s Desktop site), then turn on <b>Sync</b> for it in the app’s Settings; the subscribe page explains how.')) }}
         </div>
         {% if not d.links.is_public %}<p class="warnline">{{ _('⚠ This isn’t a public HTTPS address yet, so Google can’t load the feed. Set the <b>Public address</b> in Settings (☰).') }}</p>{% endif %}
         {% if d.reads.google %}<p class="statusline">{{ _('Google Calendar last read this feed {when}.', when=d.reads.google) }}</p>
         {% else %}<div class="statusline">{{ _('Google Calendar hasn’t read this feed yet.') }}
           <details class="guide inline"><summary>{{ _('What to check') }}</summary><p>{{ _('Until Google reads it, the subscription shows under its web address and without events. If that lasts more than a few hours, open the raw feed URL in a private browser window: it must download without a login, and nothing in front of CalendarStream (a proxy, or Cloudflare’s bot protection) may block Google.') }}</p></details></div>{% endif %}
         <div class="btnrow">
-          <p class="mnote">{{ _('<b>Share it:</b> a subscribe page for anyone who should see this calendar (no status-page login needed), with one-click buttons for Google and Apple Calendar.') }}</p>
           <a class="btn2" href="{{ d.links.page }}" target="_blank">{{ _('Open subscribe page') }}</a>
+          {{ help(_('<b>Share it:</b> a subscribe page for anyone who should see this calendar (no status-page login needed), with one-click buttons for Google and Apple Calendar.')) }}
         </div>
         {# Reuse the links from before a reinstall, or from a feed removed by mistake. #}
         <details class="guide">
           <summary>{{ _('Stream name (to reuse old links)') }}</summary>
-          <form method="post" action="/feed/stream" class="clientform">
+          <form method="post" action="/feed/stream" class="clientform" data-swap="#dest-{{ d.id }}|#activity">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
             <div class="pair">
               <label class="fld"><span>{{ _('Stream name') }}</span><input name="stream" value="{{ d.token }}" required spellcheck="false" autocomplete="off"></label>
@@ -1233,14 +1339,14 @@
         {% elif g.connected %}{{ _('The calendar is made at the next sync.') }}{% else %}{{ _('Made in Google once the Google account above is connected.') }}{% endif %}</p>
       {% endif %}
 
-      {# One line at the bottom, as in a source: Save (name, dates, sources) and Remove. #}
+      {# The bottom line, as in a calendar: Remove on the left (asks first), Cancel and Save on the right. #}
       <div class="srcfoot">
-        {% if not feed %}<label class="mnote" style="margin:0 auto 0 0"><input type="checkbox" name="delete" value="1" form="destremove-{{ d.id }}"> {{ _('Also delete it in Google') }}</label>{% endif %}
-        <button form="destform-{{ d.id }}">{{ _('Save') }}</button>
-        <form method="post" action="/destinations/remove" class="removeform inline" id="destremove-{{ d.id }}" data-confirm="{{ (_('Remove the feed {name}? Its links and subscribe page stop working.', name=d.name) if feed else _('Remove the Google calendar {name}? It stays in Google unless you ticked “Also delete it in Google”.', name=d.name)) }}">
+        <form method="post" action="/destinations/remove" class="removeform inline" id="destremove-{{ d.id }}" data-swap="#destinations|#activity" data-confirm="{{ (_('Remove the feed {name}? Are you sure? Its links and subscribe page stop working.', name=d.name) if feed else _('Remove the Google calendar {name}? Are you sure? It stays in Google unless you ticked “Also delete it in Google”.', name=d.name)) }}">
           <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
-          <button class="ghost danger" title="{{ _('Remove this destination') }}">{{ trash }} {{ _('Remove') }}</button>
+          <button class="ghost danger" title="{{ _('Remove this feed') }}">{{ trash }} {{ _('Remove') }}</button>
         </form>
+        {% if not feed %}<label class="mnote alsodelete"><input type="checkbox" name="delete" value="1" form="destremove-{{ d.id }}"> {{ _('Also delete it in Google') }}</label>{% endif %}
+        {{ pair("destform-" ~ d.id) }}
       </div>
       </div>
     </div>
@@ -1253,12 +1359,12 @@
   {% set shared = rule_lib|rejectattr("owner")|list %}
   <section class="card section{% if sections.rules %} open{% endif %}" id="rules" data-section="rules" aria-labelledby="rulestitle">
     <div class="shead">
-      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.rules else 'false' }}" aria-controls="rules-body"><span class="bigtitle" id="rulestitle">{{ _('Rule Templates') }}</span></button>
+      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.rules else 'false' }}" aria-controls="rules-body"><span class="bigtitle" id="rulestitle">{{ icons.rules|safe }}{{ _('Rule Templates') }}</span></button>
+      {{ help(_('Rules any calendar can use: add one to a calendar under its Expand. Changing a rule here changes every calendar that uses it.')) }}
       <span class="peek">{{ _('{n} rules', n=shared|length) }}</span>
       <button type="button" class="ghost plus newrule headplus" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">+</button>
     </div>
     <div class="sbody" id="rules-body"{% if not sections.rules %} hidden{% endif %}>
-    <p class="mnote" style="margin:0">{{ _('Rules any source can use: add one to a source under its Configure. Changing a rule here changes every source that uses it.') }}</p>
     {% if not shared %}<p class="empty">{{ _('No rules yet. Press <b>+</b> to add one.') }}</p>{% endif %}
     <div class="rulelist">
       {% for r in shared %}
@@ -1267,10 +1373,10 @@
         <span class="rulelabel">{% if r.type == "color" %}<span class="swatch" style="--c:{{ r.color }}" aria-hidden="true"></span> {% endif %}{{ r.label.split(' → ', 1)[1] if r.type in ('no_end', 'allday24') else r.label }}</span>
         <span class="ruleused">{{ _('Used by {names}', names=r.used|join(', ')) if r.used else _('Not used yet') }}</span>
         <button type="button" class="ghost editrule" title="{{ _('Change this rule') }}" aria-label="{{ _('Change this rule') }}">✎</button>
-        <form method="post" action="/rules/clone" class="inline">
+        <form method="post" action="/rules/clone" class="inline" data-swap="#rules|#activity">
           <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}">
           <button class="ghost clonerule" title="{{ _('Make a copy of this rule') }}" aria-label="{{ _('Make a copy of this rule') }}">{{ copy_icon }}</button></form>
-        <form method="post" action="/rules/delete" class="inline" data-confirm="{{ _('Delete this rule? It’s removed from every source that uses it.') }}">
+        <form method="post" action="/rules/delete" class="inline" data-swap="#rules|#sources|#cal|#activity" data-confirm="{{ _('Delete this rule? It’s removed from every calendar that uses it.') }}">
           <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}">
           <button class="ghost delrule" title="{{ _('Delete this rule') }}" aria-label="{{ _('Delete this rule') }}">{{ trash }}</button></form>
       </div>
@@ -1287,14 +1393,14 @@
   {# Event Templates: ready-made events for "Add event" rules and for adding events by hand. #}
   <section class="card section{% if sections.templates %} open{% endif %}" id="templates" data-section="templates" aria-labelledby="tplstitle">
     <div class="shead">
-      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.templates else 'false' }}" aria-controls="templates-body"><span class="bigtitle" id="tplstitle">{{ _('Event Templates') }}</span></button>
+      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.templates else 'false' }}" aria-controls="templates-body"><span class="bigtitle" id="tplstitle">{{ icons.templates|safe }}{{ _('Event Templates') }}</span></button>
+      {{ help(_('Ready-made events, for rules that add events and for adding an event by hand.')) }}
       <span class="peek">{{ _('{n} templates', n=templates|length) }}</span>
       <button type="button" class="ghost plus addfirst headplus" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">+</button>
     </div>
     <div class="sbody" id="templates-body"{% if not sections.templates %} hidden{% endif %}>
-    <p class="mnote" style="margin:0">{{ _('Ready-made events, for rules that add events and for adding an event by hand.') }}</p>
     {% if not templates %}<p class="empty">{{ _('No event templates yet. Press <b>+</b> to add one.') }}</p>{% endif %}
-    <form class="editor tagsform" method="post" action="/templates"{% if not templates %} data-empty{% endif %}>
+    <form class="editor tagsform" method="post" action="/templates" data-swap="#templates|#rules|#sources|#cal|#activity"{% if not templates %} data-empty{% endif %}>
       <input type="hidden" name="csrf" value="{{ csrf }}">
       <template class="rowtpl">{{ m.template_row({"id": "", "title": "", "all_day": false, "minutes": 60, "location": "", "color": ""}, event_colors, trash) }}</template>
       <div class="tagrows">{% for t in templates %}{{ m.template_row(t, event_colors, trash) }}{% endfor %}</div>
@@ -1310,7 +1416,7 @@
   {# Title first, then the status line, a 5-row scrolling log, and the debug links #}
   <section class="card section{% if sections.activity %} open{% endif %}" id="activity" data-section="activity">
     <div class="shead">
-      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.activity else 'false' }}" aria-controls="activity-body"><span class="bigtitle">{{ _('Activities and Logs') }}</span></button>
+      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.activity else 'false' }}" aria-controls="activity-body"><span class="bigtitle">{{ icons.activity|safe }}{{ _('Activities and Logs') }}</span></button>
       {% if history %}<span class="peek">{{ _('Latest:') }} {{ msg(history[0].msg) }}</span>{% endif %}
     </div>
     <div class="sbody" id="activity-body"{% if not sections.activity %} hidden{% endif %}>
@@ -1374,7 +1480,7 @@
 </dialog>
 <script type="application/json" id="ruledata">{{ rule_js|tojson }}</script>
 <dialog id="ruledialog" aria-labelledby="rdtitle">
-  <form method="post" action="/rules/save" class="ruleform" data-type="color">
+  <form method="post" action="/rules/save" class="ruleform" id="ruleform" data-type="color" data-swap="#sources|#rules|#cal|#activity">
     <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value=""><input type="hidden" name="sid" value="">
     <div class="title" id="rdtitle" data-new="{{ _('New rule') }}" data-edit="{{ _('Change rule') }}">{{ _('New rule') }}</div>
     <label class="lbl" for="rdtype">{{ _('Kind') }}</label>
@@ -1404,7 +1510,7 @@
       <label class="lbl">{{ _('24-hour events') }}</label>
       <select name="allday" aria-label="{{ _('24-hour events') }}"><option value="1">{{ _('Shown as all-day') }}</option><option value="0">{{ _('Keep their times') }}</option></select>
     </div>
-    <div class="eactions"><button type="button" class="ghost rdcancel">{{ _('Cancel') }}</button><button>{{ _('Save') }}</button></div>
+    <div class="eactions">{{ pair("ruleform") }}</div>
   </form>
 </dialog>
 <script>
@@ -1420,11 +1526,18 @@ var T = {
   updateFailed: {{ _('✗ Update failed')|string|tojson }}, updateSlow: {{ _('It’s taking longer than expected; check the updater container’s log.')|string|tojson }},
   syncing: {{ _('Syncing…')|string|tojson }}, saving: {{ _('Saving…')|string|tojson }},
   thisCalendar: {{ _('This calendar')|string|tojson }}, shared: {{ _('Shared')|string|tojson }},
-  localTitle: {{ _('A rule for this calendar only. To share it with every source, ✎ it and choose All sources.')|string|tojson }},
+  localTitle: {{ _('A rule for this calendar only. To share it with every calendar, ✎ it and choose All calendars.')|string|tojson }},
   sharedTitle: {{ _('A Rule Template, shared by every source using it. Click to change it for all of them.')|string|tojson }},
   copiedReport: {{ _('Report copied')|string|tojson }}, longReport: {{ _('The report is long, so GitHub gets the start of it; the whole report is copied: paste it into the issue.')|string|tojson }},
+  failed: {{ _('✗ Failed')|string|tojson }}, savedWord: {{ _('Saved')|string|tojson }}, canceledWord: {{ _('Canceled')|string|tojson }},
   pin: {{ _('Keep this open')|string|tojson }}, unpin: {{ _('Let this close')|string|tojson }}
 };
+
+// Bind behaviour to elements once each: run again after a section is swapped in, it only binds the
+// new elements (an element's mark doesn't survive being replaced).
+function each(sel, key, fn) {
+  document.querySelectorAll(sel).forEach(function (el) { if (el['_b_' + key]) return; el['_b_' + key] = true; fn(el); });
+}
 
 // Copy a field's text. Uses the Clipboard API on HTTPS/localhost, and falls back to
 // select + execCommand on plain-HTTP pages (e.g. http://192.168.x.x:8080) where it's blocked.
@@ -1450,7 +1563,7 @@ function copyField(id, btn) {
 // the slot, undoes the typing and fades back to ✓. Save grows and is sent in the background: "Saved",
 // then "Verifying…" (the server checks the login: /verify), then "✓ Validated" or "✗ Verification
 // failed" with the reason under the boxes. The page login has nothing to verify: it's simply sent.
-document.querySelectorAll('form.watch').forEach(function (f) {
+function bindWatch() { each('form.watch', 'watch', function (f) {
   var slot = f.querySelector('.okslot');
   if (!slot) return;
   var save = slot.querySelector('.slotsave'), cancel = slot.querySelector('.slotcancel'),
@@ -1505,15 +1618,17 @@ document.querySelectorAll('form.watch').forEach(function (f) {
       })
       .catch(function (text) { fail(typeof text === 'string' ? text : ''); });
   });
-});
+}); }
+bindWatch();
 
 // #9: the styled "Choose Calendar.ics…" button shows the chosen file's name.
-document.querySelectorAll('.filebtn input[type=file]').forEach(function (input) {
+function bindFiles() { each('.filebtn input[type=file]', 'file', function (input) {
   input.addEventListener('change', function () {
     var label = input.parentNode.querySelector('span');
     label.textContent = input.files && input.files[0] ? input.files[0].name : label.dataset.none;
   });
-});
+}); }
+bindFiles();
 
 // The calendar changes in place: a view (month, week, day, list), a time zone or another month is
 // fetched and swapped in without reloading the page (and the address keeps the month, not the view).
@@ -1609,6 +1724,24 @@ function savePref(path, fields, then) {
   fetch(path, { method: 'POST', body: body, credentials: 'same-origin' }).then(then || function () {}, then || function () {});
 }
 var CSRF = {{ csrf|tojson }};
+
+// (?): hovering or focusing shows the explanation; a click (or tap) keeps it open until a click
+// elsewhere or Escape. Delegated, so it also works in sections swapped in after a save.
+document.addEventListener('click', function (e) {
+  var dot = e.target.closest('.helpdot');
+  document.querySelectorAll('.helpdot.open').forEach(function (d) { if (d !== dot) { d.classList.remove('open'); d.setAttribute('aria-expanded', 'false'); } });
+  if (!dot || e.target.closest('.helptip')) return;
+  e.preventDefault(); e.stopPropagation();
+  var on = !dot.classList.contains('open');
+  dot.classList.toggle('open', on); dot.setAttribute('aria-expanded', String(on));
+}, true);
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.helpdot.open').forEach(function (d) { d.classList.remove('open'); d.setAttribute('aria-expanded', 'false'); });
+    if (document.activeElement && document.activeElement.classList.contains('helpdot')) document.activeElement.blur();
+  }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('helpdot')) { e.preventDefault(); e.target.click(); }
+});
 
 // Update now: ask the updater (POST /update/now), then follow along with /api/status. It answers with
 // the old version while the new image downloads, not at all while the container restarts, then with
@@ -1718,7 +1851,7 @@ document.getElementById('usethis').addEventListener('click', function () {
     set(true);
     history.replaceState(null, '', location.pathname);   // a reload shouldn't open it again
   }
-  document.querySelectorAll('.disconnectform').forEach(function (f) {
+  each('.disconnectform', 'disconnect', function (f) {
     f.addEventListener('submit', function (e) { if (!confirm(T.disconnect)) e.preventDefault(); });
   });
 })();
@@ -1738,7 +1871,7 @@ function initSections() {
       savePref('/ui/section', { section: sec.dataset.section, open: open ? '1' : '0' });
     }
     head.addEventListener('click', function (e) {
-      if (e.target.closest('form, #editbtn')) return;   // the editor doesn't toggle the section
+      if (e.target.closest('form, #editbtn, .helpdot')) return;   // the editor and (?) don't toggle the section
       if (e.target.closest('.headplus')) { if (!sec.classList.contains('open')) set(true); return; }
       set(!sec.classList.contains('open'));
     });
@@ -1749,7 +1882,7 @@ initSections();
 // Sources, destinations and the Google account: "▸ Configure ◂" opens or folds the rest of the box;
 // while open, a source's title, color and note (a destination's name) are fields. Open or folded is
 // remembered (in the database).
-document.querySelectorAll('.box.cfgbox').forEach(function (box) {
+function bindCfg() { each('.box.cfgbox', 'cfg', function (box) {
   var cfg = box.querySelector('.cfgtoggle'), body = box.querySelector('.cfgbody');
   cfg.addEventListener('click', function () {
     body.hidden = !body.hidden;
@@ -1757,7 +1890,8 @@ document.querySelectorAll('.box.cfgbox').forEach(function (box) {
     cfg.setAttribute('aria-expanded', String(!body.hidden));
     savePref('/ui/section', { section: box.dataset.section, open: body.hidden ? '0' : '1' });
   });
-});
+}); }
+bindCfg();
 
 // A box's header: the title on the left, the status lines next to it and the status box on the right.
 // When the long wording ("Downloaded 98 events from feed @ 14:53.", "Check for changes every") would
@@ -1765,9 +1899,10 @@ document.querySelectorAll('.box.cfgbox').forEach(function (box) {
 // "Check every"). Measured in the page, so it also fits other languages. (Below 600 px the lines go
 // under the title anyway, with the short words: see the CSS.)
 (function () {
-  var heads = Array.prototype.slice.call(document.querySelectorAll('.srchead'));
+  var watched = typeof WeakSet === 'function' ? new WeakSet() : null, ro = window.ResizeObserver ? new ResizeObserver(function () { fit(); }) : null;
   function fit() {
-    heads.forEach(function (h) {
+    document.querySelectorAll('.srchead').forEach(function (h) {
+      if (ro && watched && !watched.has(h)) { watched.add(h); ro.observe(h); }
       var left = h.querySelector('.srcleft'), rest = h.querySelectorAll('.srcright, .statusbox');
       if (!left || h.clientWidth <= 600) return;
       // Wrapped: the status lines (or the status box) start below the bottom of the title.
@@ -1781,8 +1916,7 @@ document.querySelectorAll('.box.cfgbox').forEach(function (box) {
   }
   fit();
   window.fitHeads = fit;
-  if (window.ResizeObserver) { var ro = new ResizeObserver(fit); heads.forEach(function (h) { ro.observe(h); }); }
-  else window.addEventListener('resize', fit);
+  if (!ro) window.addEventListener('resize', fit);
 })();
 
 // Sync Now: the download runs in the background and only that source's status, the calendar and the
@@ -1803,7 +1937,8 @@ function followSync(sid) {
       var me = (j.sources || []).filter(function (x) { return x.id === sid; })[0];
       if (me && me.running && Date.now() - started < 5 * 60 * 1000) { setTimeout(poll, 1500); return; }
       swapIn(location.href, ['#cal', '#src-' + sid + ' .srcright', '#src-' + sid + ' .statusbox', '#activity']).then(function () {
-        initCal(); if (window.fitHeads) fitHeads(); initSections();
+        var b = document.getElementById('src-' + sid); if (b) b._following = false;
+        initCal(); bindAll();
       });
     }, function () { setTimeout(poll, 3000); });
   })();
@@ -1819,19 +1954,17 @@ document.addEventListener('submit', function (e) {
 });
 document.querySelectorAll('.box.src .statusbox.run').forEach(function (sb) { followSync(sb.closest('.box.src').dataset.sid); });
 
-document.querySelectorAll('.box.src').forEach(function (box) {
+function bindSrc() { each('.box.src', 'src', function (box) {
   // The color is only sent when it's changed, so saving doesn't set one by accident.
   var pick = box.querySelector('input.colorpick');
   if (pick) pick.addEventListener('input', function () { pick.name = 'color'; });
   var list = box.querySelector('.srcrules'), tpl = box.querySelector('template.srcruletpl'), add = box.querySelector('.addrule');
-  // Cancel: the title, note, color and rules go back to how they were saved, and Configure folds.
-  var saved = list ? list.innerHTML : '';
-  box.querySelector('.srccancel').addEventListener('click', function () {
-    box.querySelectorAll('.srchead input[type=text], .srchead input[type=color]').forEach(function (i) { i.value = i.defaultValue; });
+  // Cancel (the pair at the bottom): the title, note and color go back (the form is reset), and so
+  // do the rules.
+  var saved = list ? list.innerHTML : '', form = document.getElementById('srcform-' + box.dataset.sid);
+  if (form) form.addEventListener('paircancel', function () {
     if (pick) pick.removeAttribute('name');
     if (list) list.innerHTML = saved;
-    var cfg = box.querySelector('.cfgtoggle');
-    if (cfg.getAttribute('aria-expanded') === 'true') cfg.click();
   });
   if (!list) return;
   // + Add a rule: a new line with a menu of the Rule Templates; the bin takes a rule off this source;
@@ -1855,7 +1988,8 @@ document.querySelectorAll('.box.src').forEach(function (box) {
     if (!sel.value) sel.selectedIndex = 0;
     openRule(null, add.dataset.sid);
   });
-});
+}); }
+bindSrc();
 
 // A rule changed right in a source's list: ✎ turns it into fields with Cancel / Save. Save splits into
 // "This calendar" (a rule for this source only, in the same place) and "All sources" (the shared
@@ -1887,7 +2021,14 @@ function editRow(row, sid) {
   if (cb) cb.addEventListener('click', function () { cb.setAttribute('aria-pressed', String(cb.getAttribute('aria-pressed') !== 'true')); });
   var first = ed.querySelector('input, select'); if (first) first.focus();
   function done() { row.classList.remove('editing'); ed.hidden = true; ed.innerHTML = ''; slot.dataset.state = 'idle'; }
-  slot.querySelector('.rcancel').onclick = done;
+  // After Save or Cancel the line shows "Saved" / "Canceled" where ✎ and the bin are, for 3 seconds.
+  function flash(st) {
+    var b = slot.querySelector(st === 'saved' ? '.rsave' : '.rcancel'), was = b.textContent;
+    b.textContent = st === 'saved' ? T.savedWord : T.canceledWord;
+    row.classList.add('flash'); slot.dataset.state = st;
+    setTimeout(function () { if (slot.dataset.state !== st) return; row.classList.remove('flash'); slot.dataset.state = 'idle'; b.textContent = was; }, 3000);
+  }
+  slot.querySelector('.rcancel').onclick = function () { done(); flash('canceled'); };
   slot.querySelector('.rsave').onclick = function () { slot.dataset.state = 'choose'; };
   slot.querySelectorAll('.rscope').forEach(function (b) {
     b.onclick = function () {
@@ -1905,7 +2046,7 @@ function editRow(row, sid) {
           sc.className = 'scope ' + (j.local ? 'local' : 'shared'); sc.textContent = j.local ? T.thisCalendar : T.shared;
           sc.title = j.local ? T.localTitle : T.sharedTitle;
           row.classList.toggle('local', j.local);
-          done();
+          done(); flash('saved');
           swapIn(location.href, ['#cal', '#rules .rulelist']).then(function () { initCal(); bindLibRows(); });
         }, function (err) {
           slot.dataset.state = 'failed'; slot.querySelector('.rmsg').textContent = '✗ ' + err.message;
@@ -1990,10 +2131,8 @@ function editRow(row, sid) {
   });
 })();
 
-// + Add a calendar source: the presets (United CCS+, Google, Apple, Other) choose the form and its words.
-(function () {
-  var menu = document.getElementById('addsrc');
-  if (!menu) return;
+// + Add a calendar: the presets (United CCS+, Google, Apple, Other) choose the form and its words.
+function bindPresets() { each('#addsrc', 'presets', function (menu) {
   menu.querySelectorAll('.preset').forEach(function (b) {
     b.addEventListener('click', function () {
       var p = b.dataset.preset;
@@ -2006,7 +2145,8 @@ function editRow(row, sid) {
       }
     });
   });
-})();
+}); }
+bindPresets();
 
 // The rule dialog: + in Rule Templates (new), ✎ on a rule (change it), or "Create a New Rule…" in a source
 // (new, then added to that source). Only the fields of the chosen kind show.
@@ -2030,6 +2170,7 @@ function openRule(rule, sid) {
     f.allday.value = rule.allday ? '1' : '0';
   }
   ruleForm.querySelector('.casebtn').setAttribute('aria-pressed', String(f.case.value === '1'));
+  pairState(ruleForm.querySelector('.pairbtns'), 'idle');
   showKind();
   ruleDialog.showModal();
 }
@@ -2039,14 +2180,10 @@ ruleForm.querySelector('.casebtn').addEventListener('click', function (e) {
   ruleForm.elements.case.value = on ? '1' : '';
   e.currentTarget.setAttribute('aria-pressed', String(on));
 });
-ruleForm.querySelector('.rdcancel').addEventListener('click', function () { ruleDialog.close(); });
-document.querySelectorAll('.newrule').forEach(function (b) { b.addEventListener('click', function () { openRule(null, ''); }); });
 function bindLibRows() {
-  document.querySelectorAll('.rulebox.lib .editrule').forEach(function (b) {
+  each('.newrule', 'newrule', function (b) { b.addEventListener('click', function () { openRule(null, ''); }); });
+  each('.rulebox.lib .editrule', 'edit', function (b) {
     b.addEventListener('click', function () { openRule(JSON.parse(b.closest('.rulebox').dataset.rule), ''); });
-  });
-  document.querySelectorAll('.rulebox.lib form[data-confirm]').forEach(function (f) {
-    f.addEventListener('submit', function (e) { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
   });
 }
 bindLibRows();
@@ -2058,7 +2195,7 @@ bindLibRows();
 
 // Rule and template rows: only saved rows are listed. + (on the last row, or in the box's corner
 // when there are none) adds an empty row; the bin removes one. Save shows once there's something to save.
-document.querySelectorAll('form.tagsform').forEach(function (form) {
+function bindTags() { each('form.tagsform', 'tags', function (form) {
   var rows = form.querySelector('.tagrows'), tpl = form.querySelector('template.rowtpl'),
       first = form.closest('.box, .subbox, .card').querySelector('.addfirst'), foot = form.querySelector('.tagfoot');
   function refresh(changed) {
@@ -2092,10 +2229,11 @@ document.querySelectorAll('form.tagsform').forEach(function (form) {
     if (e.target.matches('.ruleaction')) row.dataset.action = e.target.value;
     if (e.target.matches('.tplkind')) row.dataset.kind = e.target.value;
   });
-});
+}); }
+bindTags();
 
 // + in the corner of Calendar Sources / Calendar Destinations opens its menu.
-document.querySelectorAll('.addwrap').forEach(function (w) {
+function bindAdd() { each('.addwrap', 'add', function (w) {
   var btn = w.querySelector('.plus'), menu = w.querySelector('.addmenu');
   function set(open) { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); }
   btn.addEventListener('click', function (e) {
@@ -2104,17 +2242,98 @@ document.querySelectorAll('.addwrap').forEach(function (w) {
   });
   document.addEventListener('click', function (e) { if (!menu.hidden && !w.contains(e.target)) set(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
-});
+}); }
+bindAdd();
 
 // Removing a source, destination or event asks first.
-document.querySelectorAll('form[data-confirm]').forEach(function (f) {
-  if (f.closest('.rulebox.lib')) return;          // bound by bindLibRows (they can be swapped in again)
+function bindConfirm() { each('form[data-confirm]', 'confirm', function (f) {
   f.addEventListener('submit', function (e) { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
-});
+}); }
+bindConfirm();
 
 // "This page" buttons fill their box with the address this page is open at.
-document.querySelectorAll('[data-fill]').forEach(function (b) {
+each('[data-fill]', 'fill', function (b) {
   b.addEventListener('click', function () { document.getElementById(b.dataset.fill).value = location.origin; });
+});
+
+// Saving without reloading the page (F1.5): a form with data-swap is sent in the background, and only
+// the parts of the page it names ("#src-ccs|#cal|#activity") are swapped in from the page that comes
+// back; everything else (what's being typed elsewhere, open boxes, the scroll) stays as it is.
+function bindAll() {
+  bindWatch(); bindFiles(); bindCfg(); bindSrc(); bindLibRows(); bindPresets(); bindTags(); bindAdd(); bindConfirm();
+  each('[data-fill]', 'fill', function (b) { b.addEventListener('click', function () { document.getElementById(b.dataset.fill).value = location.origin; }); });
+  each('.disconnectform', 'disconnect', function (f) { f.addEventListener('submit', function (e) { if (!confirm(T.disconnect)) e.preventDefault(); }); });
+  initSections();
+  if (window.fitHeads) fitHeads();
+  document.querySelectorAll('.box.src .statusbox.run').forEach(function (sb) { var b = sb.closest('.box.src'); if (!b._following) { b._following = true; followSync(b.dataset.sid); } });
+}
+function swapFrom(html, selectors) {
+  var doc = new DOMParser().parseFromString(html, 'text/html');
+  selectors.forEach(function (sel) {
+    var fresh = doc.querySelectorAll(sel);
+    document.querySelectorAll(sel).forEach(function (el, i) { if (fresh[i]) el.replaceWith(fresh[i]); });
+  });
+  if (selectors.indexOf('#cal') >= 0) initCal();
+  bindAll();
+}
+function sendSwap(f, body) {
+  var sels = (f.dataset.swap || '').split('|').filter(Boolean);
+  return fetch(f.action, { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
+    .then(function (r) {
+      if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { throw new Error(j.detail || ('HTTP ' + r.status)); });
+      var json = (r.headers.get('content-type') || '').indexOf('json') >= 0;
+      // a JSON answer (the rule dialog's): the page is fetched for the swap
+      return (json ? fetch(location.pathname + location.search, { cache: 'no-store', credentials: 'same-origin' }) : Promise.resolve(r))
+        .then(function (page) { var url = page.url; return page.text().then(function (html) { return { html: html, url: url }; }); });
+    })
+    .then(function (res) { swapFrom(res.html, sels); return res; });
+}
+// The Cancel | Save pair: the pressed side fills it and says what happened, for 3 seconds.
+function pairState(p, st) {
+  if (!p) return;
+  var sv = p.querySelector('.psave'), c = p.querySelector('.pcancel');
+  p.dataset.state = st;
+  sv.textContent = { saving: sv.dataset.busy, saved: sv.dataset.done, failed: T.failed }[st] || sv.dataset.text;
+  c.textContent = st === 'canceled' ? c.dataset.done : c.dataset.text;
+}
+function flashPair(p, st, then) {
+  pairState(p, st);
+  setTimeout(function () { if (p.dataset.state === st) pairState(p, 'idle'); if (then) then(); }, 3000);
+}
+// (A form's own id is read with getAttribute: the rule form has a field named "id", which hides f.id.)
+function formId(f) { return f.getAttribute('id') || ''; }
+function pairFor(f) { return formId(f) ? document.querySelector('.pairbtns[data-pair="' + formId(f) + '"]') : null; }
+document.addEventListener('submit', function (e) {
+  var f = e.target;
+  if (e.defaultPrevented || !f.matches || !f.matches('form[data-swap]')) return;
+  e.preventDefault();
+  var body = new FormData(f), btn = e.submitter, pair = pairFor(f);
+  if (btn && btn.name) body.append(btn.name, btn.value);
+  if (pair) pairState(pair, 'saving');
+  var old = f.parentNode && f.parentNode.querySelector('.pairfail'); if (old) old.remove();
+  sendSwap(f, body).then(function (res) {
+    var p2 = pairFor(f) || pair;                      // the pair may have been swapped for a new one
+    if (p2) flashPair(p2, 'saved');
+    if (formId(f) === 'ruleform') setTimeout(function () { ruleDialog.close(); }, 900);
+    var copy = new URL(res.url, location.href).searchParams.get('rule');     // after Copy in Rule Templates
+    if (copy) { var row = document.querySelector('.rulebox.lib[data-rule*=\'"id": "' + copy + '"\']'); if (row) openRule(JSON.parse(row.dataset.rule), ''); }
+  }, function (err) {
+    if (pair) {
+      pairState(pair, 'failed');
+      var note = document.createElement('p'); note.className = 'pairfail'; note.textContent = '✗ ' + err.message;
+      pair.parentNode.appendChild(note);
+      setTimeout(function () { if (pair.dataset.state === 'failed') pairState(pair, 'idle'); }, 4000);
+    } else alert(err.message);
+  });
+});
+document.addEventListener('click', function (e) {
+  var c = e.target.closest('.pairbtns .pcancel');
+  if (!c) return;
+  var p = c.closest('.pairbtns'), f = document.getElementById(p.dataset.pair);
+  if (f) { f.reset(); f.dispatchEvent(new CustomEvent('paircancel')); }
+  var old = p.parentNode.querySelector('.pairfail'); if (old) old.remove();
+  if (f && formId(f) === 'ruleform') { pairState(p, 'canceled'); setTimeout(function () { ruleDialog.close(); }, 700); return; }
+  flashPair(p, 'canceled');
 });
 
 // Month view: an open event closes when you click anywhere else, unless it's pinned (the pin in its

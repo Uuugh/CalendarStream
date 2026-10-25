@@ -9,7 +9,53 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.5**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.6**
+
+## 0.2.7-beta.6 — 2026-10-24
+
+### Added
+- **F1.1** A **(?)** next to a title or button explains it: point at it, or click (tap) it to keep it
+  open (Escape or a click elsewhere closes it). The longer explanations moved behind one: the rules
+  in a calendar, Rule Templates, Event Templates, Feeds, a feed's dates and calendars, Add to Google
+  Calendar, Share it, and Settings' public address and admin e-mail.
+- **F1.3** A small icon left of each section title (F4.2: a streaming icon for Feeds).
+- **F2.1** **Print** in the calendar's upper right corner: prints the calendar as it's shown (that
+  view and month), without the rest of the page.
+
+### Changed
+- **F1** General:
+  - **F1.2** Every "Configure" reads **"Expand for Details or to Edit Configuration"** ("Expand" on a
+    phone).
+    - **F1.2.1** 5 px above it.
+  - **F1.4** Every Cancel and Save form one **130 × 34 px** rounded rectangle, 65 px each, in the
+    same colors and text size (the calendars' and feeds' bottom lines, and the rule dialog; on a
+    rule line, 130 × 26 px to fit inside its 34 px line). The pressed side fills the rectangle and
+    says **Canceled** or **Saved** (or **Saving…** while it's sent) for 3 seconds, then it's back.
+    The ✓ Validated box keeps its own half width.
+  - **F1.5** Saving, cancelling and removing refresh only the parts of the page they change, without
+    reloading it (anything being typed elsewhere stays).
+  - **F1.6** Section title row: gap 5 px.
+  - **F1.7** Subsection titles (Automatic Upload, Manual Upload, Rules): 5 px above and below.
+  - **F1.8** Everything else in a section: 2 px apart vertically.
+  - **F1.9** Rule lines and text boxes: 34 px rounded rectangles.
+  - **F1.10** Instruction tiles ("How to get a Calendar Sync link, ID and secret (step by step)") keep
+    their size (38 px) and spacing (12 px above).
+- **F3** Calendar Sources:
+  - **F3.1** Renamed **Calendars** (and "All sources" on a rule line reads "All calendars").
+  - **F3.2** A line above Remove / Cancel | Save.
+  - **F3.3** "How to enable CCS+" and "Accomplished" are underlined.
+- **F4** Calendar Destinations:
+  - **F4.1** Renamed **Feeds**, with a (?): what other apps can subscribe to; CalendarStream delivers
+    your calendars to them. A feed's box now ends like a calendar's: Remove on the left (it asks
+    first), Cancel | Save on the right.
+
+### Fixed
+- **I1** Calendar:
+  - **I1.1** Timed and all-day events had colors of their own (and all-day events turned green) that
+    were never set. Now all of a calendar's events share its color; only a rule, an event's own
+    color or "Added here" change it.
+  - **I1.2** Timed and All-day are gone from the key; it lists each calendar, "Added here" and the
+    rules' colors.
 
 ## 0.2.7-beta.5 — 2026-10-23
 
