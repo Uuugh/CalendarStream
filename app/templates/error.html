@@ -7,9 +7,9 @@
 {% include "_theme.html" %}
 <style>
   * { box-sizing:border-box }
-  body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
+  body { margin:0; font:15px/1.5 var(--font); background:var(--bg); color:var(--text) }
   main { max-width:520px; margin:0 auto; padding:48px 16px }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:22px }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--rbox); padding:22px }
   h1 { font-size:18px; margin:0 0 10px } p { margin:0 0 16px } a { color:var(--accent); font-weight:600 }
 </style>
 </head>

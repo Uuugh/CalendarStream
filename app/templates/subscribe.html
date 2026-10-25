@@ -5,27 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>{{ _('Subscribe') }} · {{ name }}</title>
+{% include "_theme.html" %}
 <style>
   :root { --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec; --accent:#1a73e8; --warnbg:#fef4e2; --warn:#a15c07; }
   @media (prefers-color-scheme: dark) {
     :root { --bg:#0f1218; --card:#171b23; --text:#e6e8ec; --muted:#98a2b3; --line:#2a303b; --accent:#8ab4f8; --warnbg:#2b2110; --warn:#fbbf24; }
   }
   * { box-sizing:border-box }
-  body { margin:0; font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
+  body { margin:0; font:15px/1.55 var(--font); background:var(--bg); color:var(--text) }
   main { max-width:640px; margin:0 auto; padding:32px 16px 48px }
   h1 { font-size:22px; margin:0 0 4px } h2 { font-size:16px; margin:0 0 10px }
   .sub { color:var(--muted); margin:0 0 24px; font-size:14px }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--rbox); padding:20px; margin-bottom:16px }
   .cta { display:block; text-align:center; background:var(--accent); color:#fff; text-decoration:none; font-weight:600;
-         font-size:16px; padding:14px; border-radius:10px }
+         font-size:16px; padding:14px; border-radius:var(--r) }
   @media (prefers-color-scheme: dark){ .cta{color:#0f1218} }
   .alt { display:block; text-align:center; margin-top:10px; color:var(--accent); font-size:14px }
   .feed { display:flex; gap:8px; margin:10px 0 4px }
-  .feed input { flex:1; min-width:0; font:13px ui-monospace,monospace; padding:9px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
-  button { font:inherit; font-weight:600; background:var(--card); color:var(--accent); border:1px solid var(--line); border-radius:8px; padding:8px 14px; cursor:pointer }
+  .feed input { flex:1; min-width:0; font:13px var(--mono); padding:9px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  button { font:inherit; font-weight:600; background:var(--card); color:var(--accent); border:1px solid var(--line); border-radius:var(--r); padding:8px 14px; cursor:pointer }
   ol { margin:0; padding-left:22px } li { margin:4px 0 }
   .note { font-size:13px; color:var(--muted) }
-  .warn { background:var(--warnbg); color:var(--warn); border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:16px }
+  .warn { background:var(--warnbg); color:var(--warn); border-radius:var(--r); padding:10px 12px; font-size:13px; margin-bottom:16px }
   details summary { cursor:pointer; font-weight:600 }
   .copybtn { display:inline-flex; align-items:center; justify-content:center; min-width:40px }
 </style>
@@ -75,7 +76,7 @@
       <ol style="margin-top:10px">
         <li>{{ _('Copy this link:') }}
           <div class="feed"><input id="feed" readonly onclick="this.select()" value="{{ links.feed }}">
-            <button type="button" class="copybtn" onclick="copyField('feed', this)" title="{{ _('Copy') }}" aria-label="{{ _('Copy') }}"><svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/></svg></button></div></li>
+            <button type="button" class="copybtn" onclick="copyField('feed', this)" title="{{ _('Copy') }}" aria-label="{{ _('Copy') }}">{{ icon("content_copy", 17) }}</button></div></li>
         <li>{{ _('On a computer, go to <a href="https://calendar.google.com" target="_blank" rel="noopener">calendar.google.com</a> (this can’t be done in the phone app).') }}</li>
         <li>{{ _('On the left, next to <b>Other calendars</b>, click <b>+</b> → <b>From URL</b>.') }}</li>
         <li>{{ _('Paste the link and click <b>Add calendar</b>.') }}</li>

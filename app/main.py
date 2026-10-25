@@ -22,10 +22,10 @@ from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request,
 from fastapi.exception_handlers import http_exception_handler as default_http_error
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from markupsafe import Markup
 
-from . import __version__, i18n
+from . import __version__, i18n, icons
 from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, apply_changes, build_feed,
                       check_calendar, download, new_calendar, parse, parse_feed, render)
 from .config import DEFAULT_CALENDAR_URL, normalise_public_url, settings
@@ -1131,6 +1131,10 @@ async def protect(request: Request, call_next):
     response.headers.setdefault("Referrer-Policy", "no-referrer")
     return response
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+# Material Symbols for every page: {{ icon("delete") }} draws one; icon_mask("check") is for stylesheets.
+templates.env.globals.update(icon=icons.svg, icon_mask=icons.mask)
+# The fonts (IBM Plex Sans and Mono): served from here, so pages never load anything from elsewhere.
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 
 @app.exception_handler(HTTPException)
@@ -2539,9 +2543,9 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
 
 EVENT_COLORS = {hex_ for _, hex_ in GOOGLE_COLORS.values()}   # Google's 11 event colors
 
-# Icons for the event tools (Bootstrap Icons, MIT): a bin to delete, two sheets to duplicate.
-TRASH_ICON = Markup('<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>')
-COPY_ICON = Markup('<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/></svg>')
+# Icons for the event tools (Material Symbols): a bin to delete, two sheets to duplicate.
+TRASH_ICON = icons.svg("delete", 17)
+COPY_ICON = icons.svg("content_copy", 17)
 
 
 CLOCK_RE = re.compile(r"^\s*(\d{1,2})(?:[:.h]?(\d{2}))?\s*(?:([ap])\.?\s*m?\.?)?\s*$", re.I)
@@ -2843,11 +2847,14 @@ async def google_notify(request: Request):
 
 
 @app.post("/google/sync", dependencies=[Depends(gui_auth)])
-async def google_sync_now(csrf: str = Form("")):
-    """Sync now, checking Google's copy too (repairs events changed or deleted in Google)."""
+async def google_sync_now(request: Request, csrf: str = Form("")):
+    """Sync now, checking Google's copy too (repairs events changed or deleted in Google). From the
+    page's script it answers at once, and the page follows it in /api/status (see /run)."""
     check_csrf(csrf)
     request_google_sync(full=True)
     await asyncio.sleep(0.5)
+    if _is_async(request):
+        return {"ok": True}
     return RedirectResponse("/#dest-google", status_code=303)
 
 
@@ -2886,7 +2893,10 @@ def api_status():
             "last_change": fmt(first.last_change), "last_auth": fmt(first.last_auth),
             "last_auth_ok": first.last_auth_ok, "next_run": fmt(first.next_run), "events": first.event_count,
             "sources": found,
-            "destinations": [{k: d[k] for k in ("id", "type", "name", "sources")} for d in destinations()]}
+            "destinations": [{k: d[k] for k in ("id", "type", "name", "sources")} for d in destinations()],
+            # Google: a sync asked for (pending) or running, and whether the last one failed
+            "google": {"connected": google.connected, "running": google_job.running, "pending": google_job.wake.is_set(),
+                       "error": bool(google.info().get("last_error"))}}
 
 
 def redact(text: str) -> str:

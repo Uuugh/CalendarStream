@@ -119,7 +119,7 @@ logins or setup codes lock an address out for 15 minutes.
 - If the download is blocked, open the Calendar Sync link in a browser and use **Upload & publish**
   in the CCS+ Calendar Sync box.
 - **Sign-in rejected** means CCS+ refused the Username or password; after two rejections, automatic
-  checks pause so your account isn't locked (press **Sync now** after fixing them).
+  checks pause so your account isn't locked (press **Sync Now** after fixing them).
 
 ## The status page
 
@@ -129,7 +129,7 @@ logins or setup codes lock an address out for 15 minutes.
   and **Print** (the calendar as it's shown, without the rest of the page). Click
   the title to jump to any month. Click an event to see it, **Edit** it (title, times, notes, or
   hide it), **duplicate** it or **delete** it (a source's own event is hidden instead, since the
-  source would send it again); clicking elsewhere closes it, and its 📌 pin keeps it open.
+  source would send it again); clicking elsewhere closes it, and its pin keeps it open.
   Click an empty spot on a day (or **+**) to add your own. Events can have their own color (one of
   Google's 11), which wins over rules; otherwise all of a calendar's events (timed or all-day) share
   its color. The key under the calendar lists each calendar, "Added here" and the rules' colors.
@@ -142,29 +142,41 @@ logins or setup codes lock an address out for 15 minutes.
   they're one column, the calendar opens on the List view, the view and theme switches become one
   button each that steps through the choices, and long labels get shorter ("Expand", "Check every
   60 min").
-- **(?)** next to a title or button explains it: point at it, or click (tap) it to keep it open.
+- **Look:** text in [IBM Plex Sans](https://github.com/IBM/plex), and anything you'd copy or type
+  exactly (links, IDs, the Username, the client ID) in IBM Plex Mono; every icon is a
+  [Material Symbol](https://fonts.google.com/icons). Everything is a rounded rectangle (8 px corners
+  on controls, 12 px on sections and modules); nothing is pill-shaped. The fonts and icons come with
+  CalendarStream, so the page never loads anything from elsewhere.
+- A small **(?)**, raised after a word like a superscript, explains it: point at it, or click (tap)
+  it to keep it open.
 - Saving, cancelling and removing happen in place: only the parts of the page they change are
-  updated, without reloading it. **Cancel | Save** is one 130 px pair everywhere; the pressed side
-  fills it and says **Canceled** or **Saved** for 3 seconds.
-- Spacing: 10 px between sections, 5 px between the boxes in a section and around subsection titles
-  (Automatic Upload, Manual Upload, Rules), 2 px between everything else; text boxes and rule lines
-  are 34 px rounded rectangles; instruction tiles ("How to …") keep their own size.
+  updated, without reloading it. **Cancel | Save** is one 130 px pair at the bottom of a module and
+  in the rule dialog; the pressed side fills it and says **Cancelled** or **Saved** for 3 seconds. A
+  field changed in place (a login, a link, a rule line) gets **✕ | ✓** icons instead.
+- Spacing: 10 px between sections, 5 px between the modules in a section (14 px under a folded one,
+  for its Expand line) and around subsection titles (Automatic Upload, Manual Upload, Rules), 2 px
+  between everything else; text boxes and rule lines are 34 px rounded rectangles; instruction tiles
+  ("How to …") keep their own size.
 - **Calendars** (**+** adds one; a new install has none). Presets: **United CCS+** (once),
   **Google** and **Apple** calendars (by their private iCal link, with step-by-step help for finding
   it) and **Other** (any link starting with `webcal://` or ending in `.ics`; repeating events are
-  shown from a year back to two years ahead). Each source's box shows its color, title and note
-  (e.g. "CCS+ Calendar Sync"), the last download ("98 events @ 07:59 (0 new, 0 removed)"), the next
-  scheduled check, its status and **Sync Now** (which updates the status, the calendar and the log
-  in place, without reloading the page). **▸ Expand for Details or to Edit Configuration ◂** opens the rest (it opens by itself when
-  something needs doing) and turns the color, title and note into fields:
+  shown from a year back to two years ahead). Each calendar is a **module**. Its header is 50 px
+  tall and is all a folded module shows: its color, its title over its note (e.g. "CCS+ Calendar
+  Sync"), the last download ("98 events @ 07:59 (0 new, 0 removed)") over the next scheduled check,
+  and its status over **Sync Now**, in a box of the same size in every module. **Sync Now** says
+  **Syncing…** at once, then pulses green (**Synced**) or yellow (**Failed**) and goes back to Sync
+  Now; the status, the calendar and the log update in place, without reloading the page.
+  **▸ Expand for Details or to Edit Configuration ◂** sits in a folded module's bottom border; it
+  opens the rest (it opens by itself when something needs doing), with a line under the header, and
+  turns the color, title and note into fields of the same size:
   - **Automatic Upload:** the **Site Address** with **Check every … min** beside it, CCS+'s
-    **Username** (your UID) and password (**✓ Validated** until you type; then **Save** / **Cancel**,
-    and Save shows Saved → Verifying… → ✓ Validated or ✗ Failed, with the reason under the boxes),
+    **Username** (your UID) and password (**✓ Validated** until you type; then **✕ | ✓** (Cancel and
+    Save), and ✓ shows Saved → Verifying… → ✓ Validated or ✗ Failed, with the reason under the boxes),
     and step-by-step help: how to enable it on the left, what's **Accomplished** on the right.
   - **Manual Upload** (CCS+): upload Calendar.ics by hand.
   - **Rules:** one thin rounded line per rule, marked **Shared** (a Rule Template; click it to change
     it for every calendar) or **This calendar** (this calendar's own). ✎ turns a line into fields with
-    **Cancel | Save**; Save then asks **This calendar** (a copy for this calendar only, in the same
+    **✕ | ✓** (Cancel and Save); ✓ then asks **This calendar** (a copy for this calendar only, in the same
     place) or **All calendars** (the shared rule). **+ Add a rule** adds a line with a menu of the Rule
     Templates (or **Create a New Rule…**); the bin takes a rule off the source.
   - At the bottom, under a line: **Remove** on the left (it asks first), **Cancel | Save** on the
@@ -172,7 +184,8 @@ logins or setup codes lock an address out for 15 minutes.
 - **Feeds** (**+** adds one; the first asks for the public address): what other apps subscribe to,
   independent of the calendars: **Google calendars** (Autosync; one **Google account** box signs in for all of them)
   and **Calendar feeds** (a feed link and a shareable subscribe page each), as many as you like.
-  Each box has the same header as a calendar's (name, kind, its calendars and dates, status), and
+  Each is a module with the same 50 px header as a calendar's (name over kind, its calendars and
+  dates, status; the Google account's has **Sync Now**), and
   **▸ Expand for Details or to Edit Configuration ◂** opens the rest: the name, a **Start** and
   **End** date (empty = no limit), the calendars it gets, a feed's links, and Remove / Cancel | Save. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
   part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
@@ -208,7 +221,7 @@ logins or setup codes lock an address out for 15 minutes.
   a preview shows exactly what's sent. **Open on GitHub** fills in a new issue there (its page is
   the link to follow it, and GitHub notifies you of replies); without a GitHub account, **Copy** or
   **Download** the report instead.
-- **Language** (🌐, left of the Light / Dark / System theme switch): English, Español, Français,
+- **Language** (the globe, left of the Light / Dark / System theme switch): English, Español, Français,
   Deutsch, Português and Vlaams, or Automatic (the browser's language). Everything on the page is
   translated, including status messages and the activity log; event titles stay as United sends
   them. The shareable subscribe page uses each visitor's browser language.
@@ -225,7 +238,7 @@ for access to **calendars it created** and your e-mail address, so it can't see 
 - Each event gets the nearest Google event color (Tomato, Basil, Peacock…) to its own color, its
   source's color rule or its source's color; each calendar's name follows its destination's.
   Removing a destination leaves its calendar in Google unless you tick "Also delete it in Google".
-- Changes reach Google within seconds. A daily check (or **Sync now**) puts back events changed or
+- Changes reach Google within seconds. A daily check (or the Google account's **Sync Now**) puts back events changed or
   deleted in Google and makes a new calendar if it was deleted.
 - **Instant updates from Google:** with a public `https://` address, CalendarStream asks Google to
   notify it (a webhook to `/google/notify`) whenever one of its calendars changes there, and puts back
@@ -290,7 +303,7 @@ docker exec -it calendar_stream_db psql -U ccs calendar_stream                  
 **Starting over:** `docker compose down`, then delete `calendar_stream/postgres`. This erases
 everything: sources, destinations, edits, rules, templates, settings, logins, the Google connection and the feed links.
 
-## License
+## License & Attribution
 
 CalendarStream is free for **non-commercial use** under the
 [PolyForm Noncommercial License 1.0.0](LICENSE.md): you may use, change and share it for any
@@ -301,3 +314,17 @@ passes it on must include the license and its required notice, which credits the
 
 Because commercial use isn't allowed, this is "source-available" rather than open source in the
 OSI sense. For commercial use, ask the author via a GitHub issue.
+
+### Third-party fonts and icons
+
+CalendarStream includes these, under their own licenses (a copy of each comes with it):
+
+| What | By | License | Copy in this repository |
+| --- | --- | --- | --- |
+| [Material Symbols](https://github.com/google/material-design-icons) (Rounded, weight 400): every icon on the pages | Google | [Apache License 2.0](app/material_symbols/LICENSE) | `app/material_symbols/` |
+| [IBM Plex Sans and IBM Plex Mono](https://github.com/IBM/plex): the pages' fonts | IBM Corp. | [SIL Open Font License 1.1](app/static/fonts/OFL.txt) | `app/static/fonts/` |
+
+The icons are copied from the [`@material-symbols/svg-400`](https://www.npmjs.com/package/@material-symbols/svg-400)
+package by `tools/vendor_icons.py`; the fonts are the `latin` and `latin-ext` files of
+[`@fontsource/ibm-plex-sans`](https://www.npmjs.com/package/@fontsource/ibm-plex-sans) and
+[`@fontsource/ibm-plex-mono`](https://www.npmjs.com/package/@fontsource/ibm-plex-mono) 5.3.0.

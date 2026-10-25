@@ -7,27 +7,27 @@
 {% include "_theme.html" %}
 <style>
   * { box-sizing:border-box }
-  body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text) }
+  body { margin:0; font:15px/1.5 var(--font); background:var(--bg); color:var(--text) }
   main { max-width:1040px; margin:0 auto; padding:16px 16px 48px }
   .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
   /* Spacing: 10px between sections, 5px between the boxes inside one, 2px between rows of fields. */
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:10px }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--rbox); padding:18px; margin-bottom:10px }
   .ok{background:var(--okbg);color:var(--ok)} .bad{background:var(--badbg);color:var(--bad)}
   .warn{background:var(--warnbg);color:var(--warn)} .run{background:var(--runbg);color:var(--run)}
-  button { font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:8px; padding:8px 16px; cursor:pointer }
+  button { font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:var(--r); padding:8px 16px; cursor:pointer }
   button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
   button:disabled { opacity:.5; cursor:default }
-  .feed { display:flex; gap:8px; margin-top:4px } .feed input { flex:1; min-width:0; font:13px ui-monospace,monospace; padding:8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .feed { display:flex; gap:8px; margin-top:4px } .feed input { flex:1; min-width:0; font:13px var(--mono); padding:8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   table { width:100%; border-collapse:collapse; font-size:13px } th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; line-height:18px }
   th { color:var(--muted); font-weight:600 }
   .lvl-error{color:var(--bad);font-weight:600} .lvl-warn{color:var(--warn);font-weight:600}
   a { color:var(--accent) } .muted{color:var(--muted)} .scroll{overflow-x:auto}
   ol { margin:8px 0 0; padding-left:20px; font-size:14px } ol li { margin:3px 0 }
-  .btn, .btn2 { font-weight:600; text-decoration:none; border-radius:8px; padding:9px 16px; font-size:14px }
+  .btn, .btn2 { font-weight:600; text-decoration:none; border-radius:var(--r); padding:9px 16px; font-size:14px }
   .btn { background:var(--accent); color:var(--onaccent) } .btn2 { border:1px solid var(--line); color:var(--accent) }
   .card .k { color:var(--muted); font-size:12px; margin-top:10px }
-  .warnline { background:var(--warnbg); color:var(--warn); border-radius:8px; padding:8px 12px; font-size:13px; margin:0 0 12px }
-  code { font:12.5px ui-monospace,monospace; background:var(--soft); padding:1px 5px; border-radius:4px }
+  .warnline { background:var(--warnbg); color:var(--warn); border-radius:var(--r); padding:8px 12px; font-size:13px; margin:0 0 12px }
+  code { font:12.5px var(--mono); background:var(--soft); padding:1px 5px; border-radius:4px }
 
   /* Title bar */
   .topbar { display:flex; align-items:center; gap:10px; margin-bottom:4px }
@@ -36,9 +36,9 @@
   .topbar .newver { color:var(--accent); font-weight:600; text-decoration:none; margin-left:3px } .topbar .newver:hover { text-decoration:underline }
   .topbar .ver a.curver { color:inherit; text-decoration:none } .topbar .ver a.curver:hover { text-decoration:underline }
   /* Update now: one small pill that changes as the update goes (see the script near the end). */
-  .updslot { display:inline-flex; vertical-align:middle; margin-left:6px; height:24px; min-width:118px; border-radius:999px; overflow:hidden }
+  .updslot { display:inline-flex; vertical-align:middle; margin-left:6px; height:24px; min-width:118px; border-radius:var(--r); overflow:hidden }
   .updslot > * { display:none }
-  .updslot[data-state="ready"] .updbtn { display:inline-flex; height:24px; padding:0 10px; font-size:12px; border-radius:999px }
+  .updslot[data-state="ready"] .updbtn { display:inline-flex; height:24px; padding:0 10px; font-size:12px; border-radius:var(--r) }
   .updslot .updmsg { position:relative; width:100%; align-items:center; justify-content:center; padding:0 10px; font-size:12px; font-weight:700; white-space:nowrap }
   .updslot:not([data-state="ready"]) .updmsg { display:inline-flex; animation:slotfade .3s ease }
   .updslot[data-state="downloading"] .updmsg { color:var(--warn); background:var(--warnbg) }
@@ -52,25 +52,25 @@
   @media (prefers-reduced-motion:reduce) { .updslot .updbar i { animation:none; left:0; width:100% } }
   /* Phones: the version (a beta's is long) goes on its own small line under the name. */
   @media (max-width:560px) { .topbar h1 { line-height:1.15 } .topbar .ver { display:block; margin-left:0; font-size:12px; overflow:hidden; text-overflow:ellipsis } }
-  form .pair label.fld select { width:100%; height:34px; font:inherit; font-size:13px; padding:0 6px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
-  .seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--card) }
+  form .pair label.fld select { width:100%; height:34px; font:inherit; font-size:13px; padding:0 6px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:var(--card) }
   .seg button { display:inline-flex; align-items:center; background:transparent; color:var(--muted); border:0; border-radius:0; padding:7px 9px; line-height:1 }
   .seg button + button { border-left:1px solid var(--line) }
   .seg button[aria-pressed="true"] { background:var(--soft); color:var(--accent) }
   .iconbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:32px; padding:0;
-             background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:8px }
+             background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:var(--r) }
   .menuwrap { position:relative }
   /* Settings: a light blue panel (the same blue as the Sync Now box), so it stands out from the page. */
   .menu { position:absolute; right:0; top:calc(100% + 6px); width:min(420px, calc(100vw - 32px)); z-index:10; background:var(--runbg);
-          border:1px solid var(--line); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.18); padding:12px 14px }
+          border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18); padding:12px 14px }
   .menu[hidden] { display:none }
   .menu .title { font-weight:700; font-size:14px; margin-bottom:4px }
   /* Each Settings section in its own outlined block. */
-  .menu .mgroup { border:1px solid var(--line); border-radius:10px; margin-top:10px; padding:10px 12px; font-size:13px; background:var(--card) }
+  .menu .mgroup { border:1px solid var(--line); border-radius:var(--r); margin-top:10px; padding:10px 12px; font-size:13px; background:var(--card) }
   .menu .pair > .ghost, .menu .pair > button { margin-left:0 } .menu .pair > button:last-child { margin-left:auto }
   .menu .mgroup p { margin:0 0 8px }
   .menu .mhead { display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px; margin-bottom:6px }
-  .menu .merr { background:var(--badbg); color:var(--bad); border-radius:8px; padding:6px 10px }
+  .menu .merr { background:var(--badbg); color:var(--bad); border-radius:var(--r); padding:6px 10px }
   .menu .mnote { color:var(--muted); font-size:12px }
   .menu code { overflow-wrap:anywhere }
   .menu label { display:flex; align-items:center; gap:6px; margin:0 0 8px }
@@ -81,7 +81,7 @@
   .section > .shead { display:flex; align-items:center; gap:10px; flex-wrap:wrap; cursor:pointer }
   .section > .shead .toggle { display:inline-flex; align-items:center; gap:8px; background:transparent; color:var(--muted);
                               border:0; padding:0; font:inherit; cursor:pointer }
-  .section > .shead .toggle::before { content:"▸"; font-size:13px; transition:transform .15s }
+  .section > .shead .toggle::before { transition:transform .15s }
   .section.open > .shead .toggle::before { transform:rotate(90deg) }
   .section.open > .shead { margin-bottom:14px }
   .section > .sbody[hidden] { display:none }
@@ -92,16 +92,16 @@
   .calname.outlined { text-shadow:-1px -1px 0 var(--ol), 1px -1px 0 var(--ol), -1px 1px 0 var(--ol), 1px 1px 0 var(--ol) }
   .linkbtn { background:none; border:0; padding:0; color:var(--accent); font:inherit; font-size:13px; font-weight:500; cursor:pointer }
   .linkbtn:hover { text-decoration:underline }
-  .editor { border:1px solid var(--line); border-radius:10px; padding:14px; margin:0 0 16px; background:var(--soft); cursor:auto }
+  .editor { border:1px solid var(--line); border-radius:var(--r); padding:14px; margin:0 0 16px; background:var(--soft); cursor:auto }
   .editor[hidden] { display:none }
   .editor.tagsform { background:transparent; margin:12px 0 0; padding:12px 14px }
   .editor .lbl { display:block; font-size:12px; color:var(--muted); font-weight:600; margin:10px 0 4px }
   .editor .lbl:first-of-type { margin-top:0 }
   .editor .row { display:flex; gap:8px; align-items:center }
-  .editor input[type=text] { flex:1; min-width:0; font:inherit; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--text) }
+  .editor input[type=text] { flex:1; min-width:0; font:inherit; padding:7px 10px; border:1px solid var(--line); border-radius:var(--r); background:var(--card); color:var(--text) }
   .editor input[name=name] { font-size:16px; font-weight:600 }
-  .editor input[type=color] { flex:0 0 auto; width:40px; height:36px; padding:2px; border:1px solid var(--line); border-radius:8px; background:var(--card); cursor:pointer }
-  .editor select { flex:0 0 auto; font:inherit; font-size:13px; height:36px; padding:0 6px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--text) }
+  .editor input[type=color] { flex:0 0 auto; width:40px; height:36px; padding:2px; border:1px solid var(--line); border-radius:var(--r); background:var(--card); cursor:pointer }
+  .editor select { flex:0 0 auto; font:inherit; font-size:13px; height:36px; padding:0 6px; border:1px solid var(--line); border-radius:var(--r); background:var(--card); color:var(--text) }
   .editor .casebtn { flex:0 0 auto; height:36px; padding:0 9px; font-size:13px; color:var(--muted) }
   .editor .casebtn[aria-pressed="true"] { background:var(--accent); color:var(--onaccent); border-color:var(--accent) }
   @media (max-width:600px) { .editor .tagrow { flex-wrap:wrap } .editor .tagrow input[name=tag] { flex-basis:100% } }
@@ -113,31 +113,33 @@
 
   /* Setup */
   .checks { list-style:none; padding:0; margin:0 0 12px; display:grid; gap:6px; font-size:14px }
-  .checks li::before { content:"○"; display:inline-block; width:1.4em; color:var(--muted) }
-  .checks li.done::before { content:"✓"; color:var(--ok); font-weight:700 }
-  .checks li.fail::before { content:"✗"; color:var(--bad); font-weight:700 }
+  .checks li { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap }
+  .checks li::before { content:""; flex:0 0 auto; width:16px; height:16px; align-self:center; background:var(--muted);
+                       -webkit-mask:var(--i-todo) center / contain no-repeat; mask:var(--i-todo) center / contain no-repeat }
+  .checks li.done::before { background:var(--ok); -webkit-mask-image:var(--i-ok); mask-image:var(--i-ok) }
+  .checks li.fail::before { background:var(--bad); -webkit-mask-image:var(--i-fail); mask-image:var(--i-fail) }
 
   /* Month view */
   .calhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px }
   .calhead .title { font-size:18px; font-weight:700; min-width:150px }
   .monthwrap { position:relative }
-  select.tzpick { font:inherit; font-size:13px; color:var(--text); background:transparent; border:1px solid var(--line); border-radius:8px; height:28px; padding:0 4px; max-width:200px; cursor:pointer }
+  select.tzpick { font:inherit; font-size:13px; color:var(--text); background:transparent; border:1px solid var(--line); border-radius:var(--r); height:28px; padding:0 4px; max-width:200px; cursor:pointer }
   select.tzpick:hover, select.tzpick:focus { background:var(--soft) }
-  .calhead button.title { background:transparent; color:var(--text); border:0; padding:4px 6px; border-radius:8px; cursor:pointer; text-align:left; font-family:inherit }
+  .calhead button.title { background:transparent; color:var(--text); border:0; padding:4px 6px; border-radius:var(--r); cursor:pointer; text-align:left; font-family:inherit }
   .calhead button.title:hover, .calhead button.title[aria-expanded=true] { background:var(--soft) }
   .calhead .caret { font-size:12px; color:var(--muted) }
   .monthpick { position:absolute; top:calc(100% + 6px); left:0; z-index:8; width:250px; padding:10px; background:var(--card);
-               border:1px solid var(--line); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.18) }
+               border:1px solid var(--line); border-radius:var(--rbox); box-shadow:0 10px 30px rgba(0,0,0,.18) }
   .monthpick .yearrow { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:15px }
-  .monthpick .yearrow button { width:30px; height:30px; padding:0; background:transparent; color:var(--accent); border:1px solid var(--line); border-radius:8px; font-size:18px; line-height:1; cursor:pointer }
+  .monthpick .yearrow button { width:30px; height:30px; padding:0; background:transparent; color:var(--accent); border:1px solid var(--line); border-radius:var(--r); font-size:18px; line-height:1; cursor:pointer }
   .calhead { position:relative }
   @media (max-width:600px) { .monthwrap { position:static } .monthpick { left:0 } }
   .monthpick .months { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px }
-  .monthpick .months button { background:transparent; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:7px 0; font-size:13px; font-weight:500; cursor:pointer }
+  .monthpick .months button { background:transparent; color:var(--text); border:1px solid var(--line); border-radius:var(--r); padding:7px 0; font-size:13px; font-weight:500; cursor:pointer }
   .monthpick .months button:hover { background:var(--soft) }
   .monthpick .months button.on { background:var(--accent); color:var(--onaccent); border-color:var(--accent); font-weight:700 }
   .calright { margin-left:auto; display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end }
-  .viewseg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden }
+  .viewseg { display:inline-flex; border:1px solid var(--line); border-radius:var(--r); overflow:hidden }
   .viewseg button { height:28px; padding:0 10px; border:0; border-radius:0; background:transparent; color:var(--muted); font-size:12.5px; font-weight:600 }
   .viewseg button + button { border-left:1px solid var(--line) }
   .viewseg button[aria-pressed="true"] { background:var(--accent); color:var(--onaccent) }
@@ -153,17 +155,17 @@
   @media (max-width:600px) { .aday { grid-template-columns:1fr; gap:4px } .calright { margin-left:0; justify-content:flex-start } }
   .clockswitch { display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); font-weight:600 }
   .clockswitch button { position:relative; width:38px; height:22px; border-radius:11px; border:1px solid var(--line); background:var(--soft); padding:0; cursor:pointer }
-  .clockswitch button span { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--muted); transition:left .15s, background .15s }
+  .clockswitch button span { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:5px; background:var(--muted); transition:left .15s, background .15s }
   .clockswitch button[aria-checked=true] { background:var(--accent); border-color:var(--accent) }
   .clockswitch button[aria-checked=true] span { left:18px; background:var(--onaccent) }
   .navbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border:1px solid var(--line);
-            border-radius:8px; text-decoration:none; color:var(--accent); font-size:18px; font-weight:700 }
+            border-radius:var(--r); text-decoration:none; color:var(--accent); font-size:18px; font-weight:700 }
   .navbtn.wide { width:auto; padding:0 12px; font-size:14px }
   .month { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); border-top:1px solid var(--line); border-left:1px solid var(--line); min-width:640px }
   .dow { font-size:12px; font-weight:600; color:var(--muted); text-align:center; padding:6px 0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--soft) }
   .day { min-height:96px; padding:4px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); font-size:12px; overflow:hidden }
   .day.out { background:var(--soft) } .day.out .num { color:var(--muted); opacity:.7 }
-  .num { font-weight:600; font-size:12px; margin-bottom:2px; display:inline-block; min-width:22px; text-align:center; border-radius:999px }
+  .num { font-weight:600; font-size:12px; margin-bottom:2px; display:inline-block; min-width:22px; text-align:center; border-radius:var(--r) }
   .day.today .num { background:var(--accent); color:var(--card) }
   .ev { margin:2px 0; border-radius:5px; background:var(--ev); color:var(--evtext) }
   /* I1 (0.2.7-beta.6): all-day and timed events look the same; only rules, your own color, a
@@ -195,7 +197,7 @@
   .statline { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:13px; margin:0 0 12px }
   .statline .k { color:var(--muted) } .statline b { font-weight:600 }
   /* Five rows tall: each row is 18px text + 12px padding + 1px border; plus the header row */
-  .logwin { max-height:calc(31px * 6); overflow-y:auto; border:1px solid var(--line); border-radius:8px }
+  .logwin { max-height:calc(31px * 6); overflow-y:auto; border:1px solid var(--line); border-radius:var(--r) }
   .logwin th { position:sticky; top:0; background:var(--card) }
   .logwin tr:last-child td { border-bottom:0 }
   .debug { font-size:13px; margin-top:12px }
@@ -208,34 +210,37 @@
   /* Login forms (CCS+, Google client): a label above each box, the boxes side by side, then the button. */
   form .pair { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; margin-top:4px }
   form .pair label.fld { flex:1 1 150px; display:flex; flex-direction:column; align-items:stretch; text-align:left; gap:3px; margin:0; font-size:12px; font-weight:600; color:var(--muted) }
-  form .pair label.fld input { width:100%; min-width:0; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  form .pair label.fld input { width:100%; min-width:0; font:13px var(--font); padding:7px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   form .pair > button { flex:0 0 auto; margin-left:auto }
   form .pair.inline { align-items:center; flex-wrap:nowrap }
   form .pair.inline .rowlabel { flex:1 1 auto; font-size:13px; font-weight:600; white-space:nowrap }
-  form .pair.inline select { flex:0 0 auto; font:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  form .pair.inline select { flex:0 0 auto; font:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   form .pair.inline > button { margin-left:0 }
-  form .pair > input.solo { flex:1 1 180px; min-width:0; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  form .pair > input.solo { flex:1 1 180px; min-width:0; font:13px var(--font); padding:7px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   /* The Settings menu is narrow: smaller boxes so the button or ✓ stays on the same line. */
   .menu form .pair { flex-wrap:nowrap } .menu form .pair label.fld, .menu .inbox { flex:1 1 0; min-width:0 }
   .menu form .pair > button, .menu .okmark { padding-left:10px; padding-right:10px }
-  /* "✓ Validated" / "✓ Signed in" where the button goes, until something is typed. */
-  /* The slot next to a login: ✓ Validated, or Save + Cancel while editing (see okbutton in _macros.html) */
+  /* The slot next to a login (see okbutton in _macros.html): ✓ Validated; ✕ | ✓ (Cancel and Save, icons
+     only) while typing; Save when nothing valid is saved yet. The pressed side fills the slot. */
   .okslot { flex:0 0 var(--slotw, 80px); width:var(--slotw, 80px); margin-left:auto; align-self:flex-end; height:28px; margin-bottom:3px;
-            display:flex; align-items:center; justify-content:flex-end; gap:0; overflow:hidden; border-radius:999px }
+            display:flex; align-items:center; justify-content:flex-end; gap:0; overflow:hidden; border-radius:var(--r) }
   .okslot > * { display:none }
-  .okslot .okmark, .okslot .slotmsg { width:100%; height:28px; align-items:center; justify-content:center; border-radius:999px;
+  .okslot .okmark, .okslot .slotmsg { width:100%; height:28px; align-items:center; justify-content:center; gap:3px; border-radius:var(--r);
                                       padding:0 4px; font-weight:700; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
   .okslot .okmark { color:var(--ok); background:var(--okbg) }
-  .okslot button { flex:1 1 0; min-width:0; height:28px; padding:0 3px; font-size:11.5px; border-radius:0; overflow:hidden;
+  .okslot button { flex:1 1 0; min-width:0; height:28px; padding:0 3px; font-size:12px; border-radius:0; overflow:hidden;
                    transition:flex-grow .3s ease, padding .3s ease, opacity .3s ease, background-color .3s ease, color .3s ease }
-  .okslot .slotsave { border-radius:999px 0 0 999px }
-  .okslot .slotcancel { border-radius:0 999px 999px 0; border-left-width:0 }
+  .okslot .slotcancel { border-radius:var(--r) 0 0 var(--r); border-right-width:0 }
+  .okslot .slotsave { border-radius:0 var(--r) var(--r) 0 }
+  .okslot .slotsave .slotword { display:none }
   .okslot[data-state="ok"] .okmark { display:flex; animation:slotfade .45s ease }
-  .okslot[data-state="needs"] .slotsave { display:inline-flex; border-radius:999px }
+  .okslot[data-state="needs"] .slotsave { display:inline-flex; border-radius:var(--r) }
+  .okslot[data-state="needs"] .slotsave .slotword, .okslot[data-state="saving"] .slotsave .slotword { display:inline }
+  .okslot[data-state="needs"] .slotsave svg, .okslot[data-state="saving"] .slotsave svg { display:none }
   .okslot[data-state="edit"] .slotsave, .okslot[data-state="edit"] .slotcancel,
   .okslot[data-state="cancel"] .slotsave, .okslot[data-state="cancel"] .slotcancel,
   .okslot[data-state="saving"] .slotsave, .okslot[data-state="saving"] .slotcancel { display:inline-flex }
-  .okslot[data-state="cancel"] .slotcancel, .okslot[data-state="saving"] .slotsave { border-radius:999px; border-left-width:1px }
+  .okslot[data-state="cancel"] .slotcancel, .okslot[data-state="saving"] .slotsave { border-radius:var(--r); border-right-width:1px }
   .okslot[data-state="cancel"] .slotsave, .okslot[data-state="saving"] .slotcancel { flex-grow:0; padding:0; border-width:0; opacity:0 }
   .okslot[data-state="saving"] .slotsave { pointer-events:none }
   .okslot[data-state="verifying"] .slotmsg, .okslot[data-state="valid"] .slotmsg, .okslot[data-state="failed"] .slotmsg { display:flex; animation:slotfade .3s ease }
@@ -246,18 +251,18 @@
   form .pair[hidden], .mnote[hidden] { display:none }
   /* A box with a small button inside it, on the right (Public address → This page). */
   .inbox { position:relative; flex:1 1 180px; min-width:0 }
-  .inbox input { width:100%; font:13px ui-monospace,monospace; padding:7px 84px 7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .inbox input { width:100%; font:13px var(--mono); padding:7px 84px 7px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   .inbox .inboxbtn { position:absolute; right:4px; top:50%; transform:translateY(-50%); padding:3px 8px; font-size:12px; font-weight:600;
                      background:var(--soft); color:var(--accent); border:1px solid var(--line); border-radius:6px; cursor:pointer }
   /* A note on the left, its button on the right. */
   .btnrow { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin-top:8px }
   .btnrow > p { flex:1 1 240px; margin:0 }
   .btnrow > :last-child { flex:0 0 auto; margin-left:auto }
-  .btnrow > .helpdot:last-child { margin-left:-6px }        /* (?) right after its button */
+  .btnrow > .helpdot:last-child { margin-left:-13px }       /* (?) right after its button */
   .check.good { color:var(--ok) } .check.bad { color:var(--bad) } .check.unknown { color:var(--warn) }
   .check .muted { font-weight:400 }
   .mnote { color:var(--muted); font-size:12px; margin:6px 0 0 }
-  .merr { background:var(--badbg); color:var(--bad); border-radius:8px; padding:6px 10px; font-size:13px; margin:6px 0 }
+  .merr { background:var(--badbg); color:var(--bad); border-radius:var(--r); padding:6px 10px; font-size:13px; margin:6px 0 }
   .h4 { font-weight:600; font-size:14px; margin:14px 0 0 }
   /* Month view: pin to keep an event open; empty spots add an event */
   .day { cursor:copy } .day .ev, .day a { cursor:pointer }
@@ -276,12 +281,11 @@
   /* Language menu (globe), left of the theme switch */
   .langwrap { position:relative }
   .langmenu { position:absolute; right:0; top:calc(100% + 6px); min-width:210px; z-index:11; background:var(--card);
-              border:1px solid var(--line); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.18); padding:6px }
+              border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18); padding:6px }
   .langmenu[hidden] { display:none }
   .langmenu button { display:flex; width:100%; justify-content:space-between; gap:12px; background:transparent; color:var(--text);
                      border:0; border-radius:6px; padding:7px 10px; font-weight:500; text-align:left }
   .langmenu button:hover, .langmenu button:focus { background:var(--soft) }
-  .langmenu button[aria-checked="true"]::after { content:"✓"; color:var(--accent); font-weight:700 }
   .langmenu hr { border:0; border-top:1px solid var(--line); margin:4px 2px }
 
   /* ---- Review #1–#11: one pattern for every section and box ---------------------------------- */
@@ -292,30 +296,26 @@
   .section > .shead .headright form { margin:0 }
   .statusmsg { margin:-4px 0 4px; font-size:14px; color:var(--text) }
   /* Boxes inside a card: title + subtitle on the left, a status chip on the right */
-  .box { display:block; border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-top:5px; background:var(--card) }
+  .box { display:block; border:1px solid var(--line); border-radius:var(--rbox); padding:14px 16px; margin-top:5px; background:var(--card) }
   .boxhead { display:flex; align-items:flex-start; gap:12px; margin-bottom:10px }
   .boxhead > div { flex:1; min-width:0 }
   .boxtitle { font-size:15px; font-weight:700 }
   .subtitle { font-size:12.5px; color:var(--muted); margin-top:1px }
   details.box > summary { list-style:none; cursor:pointer; margin-bottom:0 }
   details.box > summary::-webkit-details-marker { display:none }
-  details.box > summary .boxtitle::before { content:"▸"; display:inline-block; width:16px; color:var(--muted); font-size:12px; transition:transform .15s }
-  details.box[open] > summary .boxtitle::before { transform:rotate(90deg) }
   details.box[open] > summary { margin-bottom:6px }
   .subbox { border-top:1px solid var(--line); padding-top:12px; margin-top:12px }
   .subbox .boxtitle { font-size:14px }
-  /* #8 One status chip, three states (plus "working") */
-  .chip { flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; padding:3px 10px 3px 8px;
-          border-radius:999px; white-space:nowrap; letter-spacing:.01em }
-  .chip::before { font-size:11px }
-  .chip.good { background:var(--okbg); color:var(--ok) } .chip.good::before { content:"✓" }
-  .chip.warn { background:var(--warnbg); color:var(--warn) } .chip.warn::before { content:"!" }
-  .chip.bad { background:var(--badbg); color:var(--bad) } .chip.bad::before { content:"✗" }
-  .chip.run { background:var(--runbg); color:var(--run) } .chip.run::before { content:"↻" }
+  /* #8 One status chip: an icon and a word or two (good, warn, bad, or run while working) */
+  .chip { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-size:12px; font-weight:700; height:22px;
+          padding:0 8px 0 6px; border-radius:var(--r); white-space:nowrap; letter-spacing:.01em }
+  .chip .chiptext { overflow:hidden; text-overflow:ellipsis }
+  .chip.good { background:var(--okbg); color:var(--ok) } .chip.warn { background:var(--warnbg); color:var(--warn) }
+  .chip.bad { background:var(--badbg); color:var(--bad) } .chip.run { background:var(--runbg); color:var(--run) }
   .statusline { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; font-size:13px; margin:10px 0 0 }
   /* #9 Two button sizes: primary and secondary, both at input height */
   button, .btn, .btn2, .ghostbtn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:34px; padding:0 14px;
-          font:inherit; font-size:14px; font-weight:600; border-radius:8px; text-decoration:none; cursor:pointer; white-space:nowrap }
+          font:inherit; font-size:14px; font-weight:600; border-radius:var(--r); text-decoration:none; cursor:pointer; white-space:nowrap }
   .btn2, .ghostbtn, button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
   .calhead button.title, .langmenu button, .seg button, .monthpick button, .linkbtn, .copybtn,
   .inbox .inboxbtn { height:auto }
@@ -328,10 +328,10 @@
   /* #3 Labelled field rows */
   .fieldrow { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin:14px 0 0; font-size:13.5px }
   .fieldrow > label:first-of-type { font-weight:600; color:var(--text) }
-  .fieldrow input[type=number] { width:80px; height:34px; font:inherit; padding:0 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .fieldrow input[type=number] { width:80px; height:34px; font:inherit; padding:0 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   .fieldrow + .mnote { margin-top:4px }
   /* #11 Every step-by-step / help fold looks the same */
-  details.guide { border:1px solid var(--line); border-radius:10px; padding:8px 12px; margin:12px 0 0; background:var(--soft); font-size:13px }
+  details.guide { border:1px solid var(--line); border-radius:var(--r); padding:8px 12px; margin:12px 0 0; background:var(--soft); font-size:13px }
   details.guide > summary { cursor:pointer; font-weight:600; font-size:13.5px }
   details.guide[open] { padding-bottom:12px }
   details.guide ol { font-size:13px; padding-left:18px; margin:8px 0 } details.guide li { margin:0 0 6px }
@@ -340,17 +340,18 @@
   .statusline details.guide.inline { flex-basis:100% }
   .k { color:var(--muted); font-size:12px; margin:10px 0 0 }
   .trouble { font-size:13px; padding-left:18px; margin:6px 0 0 } .trouble li { margin:0 0 6px }
-  /* #10 One legend row with a help dot */
-  .helpdot { display:inline-grid; place-items:center; width:18px; height:18px; border-radius:50%; border:1px solid var(--line); color:var(--muted);
-             font-size:11px; font-weight:700; cursor:help; margin-left:auto }
-  .legend .helpdot::before, .legend .helptip::before, .legend .helptip span::before { display:none }
-  /* (?) and its explanation: on hover or focus, or open after a click */
-  .helpdot { position:relative; margin-left:6px; vertical-align:middle; flex:0 0 auto; font-family:system-ui,sans-serif; font-style:normal; letter-spacing:0 }
-  .legend .helpdot { margin-left:auto }
-  .helpdot:hover, .helpdot:focus-visible, .helpdot.open { color:var(--accent); border-color:var(--accent); outline:none }
+  /* (?): a small help icon raised like a superscript right after the word it explains (F1.2); its
+     explanation shows on hover or focus, or stays open after a click. */
+  .helpdot { position:relative; top:-.45em; display:inline-flex; flex:0 0 auto; align-self:center; margin-left:1px; width:15px; height:15px;
+             color:var(--muted); cursor:help; font-style:normal; font-weight:400; letter-spacing:0; line-height:1; vertical-align:baseline }
+  .helpdot > svg.mi { display:block }
+  .legend .helpdot { margin-left:auto; top:0 }
+  .mhead > .helpdot, .bigtitle > .helpdot { margin-left:-7px }          /* right after the word, despite the row's gap */
+  .section > .shead > .helpdot, .cardhead > .helpdot { margin-left:-4px }
+  .helpdot:hover, .helpdot:focus-visible, .helpdot.open { color:var(--accent); outline:none }
   .helptip { display:none; position:absolute; z-index:30; top:calc(100% + 6px); left:50%; transform:translateX(-50%); width:max-content; max-width:min(320px, 80vw);
-             padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--text); box-shadow:0 8px 24px rgba(0,0,0,.18);
-             font-size:12.5px; font-weight:400; line-height:1.45; text-align:left; white-space:normal; cursor:auto }
+             padding:8px 10px; border:1px solid var(--line); border-radius:var(--r); background:var(--card); color:var(--text); box-shadow:0 8px 24px rgba(0,0,0,.18);
+             font-size:12.5px; font-weight:400; line-height:1.45; text-align:left; white-space:normal; cursor:auto; font-family:var(--font) }
   .helpdot:hover .helptip, .helpdot:focus-visible .helptip, .helpdot.open .helptip { display:block }
   .helpdot.right .helptip { left:auto; right:-6px; transform:none }
   .helpdot.left .helptip { left:-6px; transform:none }
@@ -368,69 +369,49 @@
   button.plus { width:38px; height:38px; padding:0; font-size:24px; font-weight:400 }
   .addwrap { position:relative }
   .addmenu { position:absolute; right:0; top:calc(100% + 6px); z-index:12; width:min(500px, calc(100vw - 40px)); display:grid; gap:10px;
-             background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.2); padding:14px }
+             background:var(--card); border:1px solid var(--line); border-radius:var(--rbox); box-shadow:0 10px 30px rgba(0,0,0,.2); padding:14px }
   .addmenu .title { font-weight:700; font-size:15px }
-  .addmenu .opt { display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin:0 }
+  .addmenu .opt { display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:var(--r); padding:10px 12px; margin:0 }
   .addmenu .opt > div { flex:1; min-width:0 }
   .addmenu .opt.col { flex-direction:column; align-items:stretch }
   .addmenu .opt.col .pair { margin-top:2px }
   .addmenu .lbl { display:block; font-size:13px; font-weight:600; margin-bottom:4px }
-  .pubask { border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:var(--soft) }
+  .pubask { border:1px solid var(--line); border-radius:var(--r); padding:10px 12px; background:var(--soft) }
   .empty { color:var(--muted); font-size:14px; margin:10px 0 2px }
-  /* A source: header (name, kind | last download, interval | status, Sync Now), then Configure */
-  .srchead { display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap }
-  .srcleft { flex:1 1 180px; min-width:0 }
-  .srcleft .srctype { font-size:13.5px; font-weight:600; margin-top:2px }
-  /* The last download and the check interval: two lines starting at the same left edge. */
-  .srcright { flex:0 1 auto; min-width:0; display:grid; gap:6px; justify-items:start; text-align:left }
-  .srcstatus { margin:0; font-size:13.5px }
   .intervalform { display:flex; align-items:center; gap:8px; margin:0; font-size:13.5px; white-space:nowrap }
   .intervalform label { font-weight:600 }
-  .intervalform input { width:78px; height:32px; font:inherit; padding:0 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
-  .statusbox { display:grid; gap:4px; justify-items:center; padding:5px; border:1px solid var(--line); border-radius:8px }
-  .statusbox.good { border-color:color-mix(in srgb, var(--ok) 35%, var(--line)); background:var(--okbg) }
-  .statusbox.bad { border-color:color-mix(in srgb, var(--bad) 35%, var(--line)); background:var(--badbg) }
-  .statusbox.warn { border-color:color-mix(in srgb, var(--warn) 35%, var(--line)); background:var(--warnbg) }
-  .statusbox .chip { background:transparent; padding:0 4px }
-  .statusbox button.syncnow { height:28px; padding:0 8px; font-size:13.5px }
-  .cfgline { position:relative; text-align:center; margin:10px 0 0 }
-  .cfgline::before { content:""; position:absolute; left:0; right:0; top:50%; border-top:1px solid var(--line) }
-  .cfgline .cfgtoggle { position:relative; height:auto; padding:0 10px; background:var(--card); color:var(--text); border:0; font-weight:500; font-size:13.5px }
-  .cfgline .cfgtoggle:hover { color:var(--accent) }
+  .intervalform input { width:78px; height:32px; font:inherit; padding:0 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   .cfgbody { margin-top:12px }
   .cfggrid { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:10px 16px; align-items:end }
   .cfggrid > form.ccsform { display:contents }
   .cfggrid .siteaddr { grid-column:1; grid-row:1; display:flex; flex-direction:column; gap:3px; margin:0; font-size:12px; font-weight:600; color:var(--muted) }
-  .cfggrid .siteaddr input { width:100%; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .cfggrid .siteaddr input { width:100%; font:13px var(--mono); padding:7px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   .cfggrid .pair { grid-column:1 / -1; grid-row:2; margin:0 }
   .cfggrid .check { grid-column:1 / -1; margin:0 }
   .cfggrid .uploadform { grid-column:2; grid-row:1; display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin:0; font-size:13.5px }
   .cfggrid .uploadform > label:first-of-type { font-weight:600 }
   @media (max-width:760px) { .cfggrid { grid-template-columns:1fr } .cfggrid .siteaddr, .cfggrid .pair, .cfggrid .uploadform { grid-column:1; grid-row:auto }
-                             .cfggrid .uploadform { justify-content:flex-start } .srcright { justify-items:start; text-align:left } }
+                             .cfggrid .uploadform { justify-content:flex-start } }
   .fixedrows { display:grid; gap:6px; margin-top:6px }
-  .fixedrule .fixedname { flex:1 1 200px; display:flex; align-items:center; height:36px; padding:0 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; color:var(--muted) }
+  .fixedrule .fixedname { flex:1 1 200px; display:flex; align-items:center; height:36px; padding:0 10px; border:1px solid var(--line); border-radius:var(--r); font-size:13px; color:var(--muted) }
   .fixedrule[data-mode="allday"] input.dur { visibility:hidden }
   .srcfoot { display:flex; align-items:center; gap:8px; margin-top:12px; justify-content:flex-end; flex-wrap:wrap }
   .srcfoot details.guide.inline { margin-right:auto }
   .srcfoot form { margin:0 }
   .swatch { display:inline-block; flex:0 0 auto; width:22px; height:16px; border-radius:4px; background:var(--c); vertical-align:-2px }
-  .srctitle { display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 10px }
-  .srcname { font-size:17px; font-weight:700 }
-  .srctype { font-size:14px; font-weight:700 }
   .src .nameeditor { margin:10px 0 0 }
   .srcrow { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px }
   .srcrow .fieldrow { margin:0 }
   .srcrow .statusmsg { flex:1 1 220px; margin:0 }
   .srcrow form.inline { margin-left:auto }
-  .feed { display:flex; gap:6px } .feed input { flex:1; min-width:0; font:13px ui-monospace,monospace; padding:7px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .feed { display:flex; gap:6px } .feed input { flex:1; min-width:0; font:13px var(--mono); padding:7px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   button.danger { color:var(--bad) }
   .removeform { margin-top:12px }
   .removeform p, .removeform label { flex:1 1 240px }
   .srcpicks { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:4px; font-size:14px }
   .srcpick { display:inline-flex; align-items:center; gap:6px; cursor:pointer }
   .destform .pair label.fld { flex:0 1 320px }
-  .addmenu input.solo { width:100%; font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  .addmenu input.solo { width:100%; font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   .rules .boxhead { margin-bottom:6px } #templates form.tagsform, #ruletemplates form.tagsform { margin-top:10px }
   .rtpicks { display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin:0 0 8px; font-size:13.5px } .rtpicks .k { margin:0 }
   .rulerow[data-action="color"] .act.event, .rulerow[data-action="event"] .act.color { display:none }
@@ -442,24 +423,10 @@
   .editor .tagrow input[name=tag] { flex:1 1 120px }
   .editor .tagrow input[name=tpl_location] { flex:1 1 100px }
   @media (max-width:700px) {
-    .editor .tagrow { flex-wrap:wrap; border:1px solid var(--line); border-radius:10px; padding:8px }
+    .editor .tagrow { flex-wrap:wrap; border:1px solid var(--line); border-radius:var(--r); padding:8px }
     .editor .tagrow input[name=tag], .editor .tagrow input[name=tpl_title] { flex-basis:100% }
   }
   /* ---- 0.2.6 ------------------------------------------------------------------------------- */
-  /* A source's title, color and note: shown while folded, fields while Configure is open */
-  .editonly { display:none }
-  .cfgbox.cfgopen .showonly { display:none !important }
-  .cfgbox.cfgopen .editonly { display:inline-block }
-  .src input.colorpick { width:34px; height:28px; padding:1px; border:1px solid var(--line); border-radius:6px; background:var(--card); cursor:pointer }
-  .cfgbox .nameinput, .cfgbox .noteinput { font:inherit; padding:3px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); width:min(240px, 100%) }
-  .cfgbox .nameinput { font-size:16px; font-weight:700 } .src .noteinput { font-size:13px }
-  .srcnote { font-size:13px; color:var(--muted); font-weight:500 }
-  /* ▸ Configure ◂: the arrows turn down when it's open; equal space above and below */
-  .box.cfgbox { padding:12px 16px 6px }
-  .cfgline { margin:6px 0 0 }
-  .cfgtoggle .arr { display:inline-block; color:var(--muted); font-size:12px; transition:transform .15s }
-  .cfgtoggle[aria-expanded="true"] .arr.l { transform:rotate(90deg) }
-  .cfgtoggle[aria-expanded="true"] .arr.r { transform:rotate(-90deg) }
   .cfgbody { margin-top:6px; padding-bottom:8px; container-type:inline-size }
   /* In a narrow box (half the page, or a phone) the Site Address, login and upload stack */
   @container (max-width:520px) {
@@ -468,28 +435,28 @@
     .cfggrid .uploadform { justify-content:flex-start }
   }
   /* Rules: each in a rounded box across the line */
-  .rulebox { display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:999px; padding:3px 4px 3px 12px; margin-top:2px; background:var(--card) }
+  .rulebox { display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:var(--r); padding:3px 4px 3px 12px; margin-top:2px; background:var(--card) }
   .rulebox select.rulepick { flex:1; min-width:0; height:30px; border:0; background:transparent; color:var(--text); font:inherit; font-size:13.5px; cursor:pointer }
   .rulebox .ruletype { font-size:12px; font-weight:700; color:var(--muted); white-space:nowrap }
   .rulebox .rulelabel { flex:1; min-width:0; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
   .rulebox .rulelabel .swatch { width:14px; height:12px }
   .rulebox .ruleused { font-size:12px; color:var(--muted); white-space:nowrap }
-  .rulebox button, .rulebox form button { height:30px; width:30px; padding:0; border:0; border-radius:999px; color:var(--muted); background:transparent }
+  .rulebox button, .rulebox form button { height:30px; width:30px; padding:0; border:0; border-radius:var(--r); color:var(--muted); background:transparent }
   .rulebox button:hover { background:var(--soft); color:var(--accent) } .rulebox .delrule:hover, .rulebox .delpick:hover { color:var(--bad) }
   .rulebox form { margin:0 }
   .rulelist { margin-top:6px }
   button.addrule { margin-top:8px; height:30px; font-size:13px }
-  @media (max-width:600px) { .rulebox.lib { flex-wrap:wrap; border-radius:12px } .rulebox .ruleused { flex-basis:100% } }
+  @media (max-width:600px) { .rulebox.lib { flex-wrap:wrap; border-radius:var(--rbox) } .rulebox .ruleused { flex-basis:100% } }
   /* The rule dialog */
-  #ruledialog { border:1px solid var(--line); border-radius:14px; background:var(--card); color:var(--text); padding:18px; width:min(520px, calc(100vw - 32px)) }
+  #ruledialog { border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); color:var(--text); padding:18px; width:min(520px, calc(100vw - 32px)) }
   #ruledialog::backdrop { background:rgba(0,0,0,.45) }
   #ruledialog .title { font-weight:700; font-size:16px }
   #ruledialog .lbl { display:block; font-size:12px; color:var(--muted); font-weight:600; margin:12px 0 4px }
   #ruledialog .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap }
-  #ruledialog input[type=text], #ruledialog select { font:inherit; font-size:14px; height:34px; padding:0 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  #ruledialog input[type=text], #ruledialog select { font:inherit; font-size:14px; height:34px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   #ruledialog input[name=tag] { flex:1 1 160px; min-width:0 }
   #ruledialog input.dur { width:64px; text-align:center }
-  #ruledialog input[type=color] { width:44px; height:34px; padding:2px; border:1px solid var(--line); border-radius:8px; background:var(--card) }
+  #ruledialog input[type=color] { width:44px; height:34px; padding:2px; border:1px solid var(--line); border-radius:var(--r); background:var(--card) }
   #ruledialog .casebtn { height:34px; padding:0 10px; color:var(--muted) }
   #ruledialog .casebtn[aria-pressed="true"] { background:var(--accent); color:var(--onaccent); border-color:var(--accent) }
   #ruledialog .eactions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px }
@@ -515,7 +482,6 @@
   .cardhead, .section > .shead { gap:5px }
   .bigtitle { display:flex; align-items:center; gap:8px }
   .secicon { width:22px; height:22px; flex:0 0 auto; color:var(--muted) }
-  .cfgline { margin:5px 0 0 }
   .cfghead { margin:5px 0 !important }
   .cfgbody > h3.cfghead:not(:first-child), .cfgheadrow { margin-top:5px !important; padding-top:5px !important }
   .cfgheadrow .cfghead { margin:0 !important; padding:0 !important; display:flex; align-items:center }
@@ -524,7 +490,6 @@
   .sections .cfggrid { gap:2px 16px }
   .sections form .pair { row-gap:2px; margin-top:2px }
   .sections form .pair label.fld, .sections .cfggrid .siteaddr { gap:2px }
-  .sections .srcright, .sections .statusbox { gap:2px }
   .sections .rulebox, .sections .rulelist { margin-top:2px }
   .sections p.mnote, .sections .check, .sections .k, .sections .statusline, .sections .btnrow { margin-top:2px; margin-bottom:0 }
   .sections .subbox { margin-top:5px; padding-top:5px }
@@ -534,40 +499,33 @@
   /* Text boxes: 34 px rounded rectangles */
   .sections input[type=text], .sections input[type=url], .sections input[type=password], .sections input[type=email],
   .sections input[type=number], .sections input[type=date], .sections input:not([type]), .menu input[type=text], .menu input[type=email],
-  .menu input[type=password], dialog input[type=text], dialog input:not([type]) { height:34px; border-radius:8px; box-sizing:border-box }
+  .menu input[type=password], dialog input[type=text], dialog input:not([type]) { height:34px; border-radius:var(--r); box-sizing:border-box }
   .sections input.nameinput { height:34px }
   /* Rule lines: 34 px rounded rectangles (taller only while being changed, or on a phone) */
-  .sections .rulebox { border-radius:8px; min-height:34px; padding-top:0; padding-bottom:0; box-sizing:border-box }
+  .sections .rulebox { border-radius:var(--r); min-height:34px; padding-top:0; padding-bottom:0; box-sizing:border-box }
   .sections .rulebox.srule:not(.editing), .sections .rulebox.pick { height:34px }
   .sections .rulebox select.rulepick { height:32px }
-  @media (max-width:600px) { .sections .rulebox.lib { border-radius:8px } }
+  @media (max-width:600px) { .sections .rulebox.lib { border-radius:var(--r) } }
   .sections .srule.editing { padding-top:3px; padding-bottom:3px; height:auto }
   /* The bottom line of a calendar or feed: a line above; Remove on the left; Cancel | Save on the right */
   .srcfoot { border-top:1px solid var(--line); margin-top:5px !important; padding-top:5px }
   .srcfoot .alsodelete { margin:0 auto 0 0; display:flex; align-items:center; gap:4px }
   .srcfoot .removeform + .pairbtns { margin-left:auto }
   /* Cancel | Save: one 130 × 34 px pair; the pressed side fills it for 3 seconds (F1.4) */
-  .pairbtns { display:inline-flex; width:130px; height:34px; flex:0 0 130px; border-radius:8px; overflow:hidden }
+  .pairbtns { display:inline-flex; width:130px; height:34px; flex:0 0 130px; border-radius:var(--r); overflow:hidden }
   .pairbtns button { flex:0 0 65px; width:65px; height:34px; padding:0; justify-content:center; white-space:nowrap; overflow:hidden; min-width:0;
                      transition:flex-basis .3s ease, width .3s ease, opacity .3s ease }
-  .pairbtns .pcancel { border-radius:8px 0 0 8px; border-right-width:0 }
+  .pairbtns .pcancel { border-radius:var(--r) 0 0 8px; border-right-width:0 }
   .pairbtns .psave { border-radius:0 8px 8px 0; border:1px solid var(--accent) }
   .pairbtns[data-state="saving"] .pcancel, .pairbtns[data-state="saved"] .pcancel, .pairbtns[data-state="failed"] .pcancel,
-  .pairbtns[data-state="canceled"] .psave { flex-basis:0; width:0; opacity:0; border-width:0 }
-  .pairbtns[data-state="saving"] .psave, .pairbtns[data-state="saved"] .psave, .pairbtns[data-state="failed"] .psave { flex-basis:130px; width:130px; border-radius:8px }
-  .pairbtns[data-state="canceled"] .pcancel { flex-basis:130px; width:130px; border-radius:8px; border-right-width:1px }
+  .pairbtns[data-state="cancelled"] .psave { flex-basis:0; width:0; opacity:0; border-width:0 }
+  .pairbtns[data-state="saving"] .psave, .pairbtns[data-state="saved"] .psave, .pairbtns[data-state="failed"] .psave { flex-basis:130px; width:130px; border-radius:var(--r) }
+  .pairbtns[data-state="cancelled"] .pcancel { flex-basis:130px; width:130px; border-radius:var(--r); border-right-width:1px }
   .pairbtns[data-state="saving"] .psave { opacity:.85; pointer-events:none }
   .pairbtns[data-state="failed"] .psave { background:var(--badbg); color:var(--bad); border-color:var(--bad) }
   .pairfail { flex-basis:100%; text-align:right; color:var(--bad); font-size:12.5px; margin:2px 0 0 }
   dialog .eactions .pairbtns { margin-left:auto }
   /* The rule-line pair: 130 × 26 px inside its 34 px line */
-  .sections .srule .ruleslot { min-width:0; width:130px; height:26px; border-radius:8px }
-  .rulebox.srule .ruleslot button { flex:0 0 65px; width:65px; height:26px; padding:0; border-radius:0 }
-  .rulebox.srule .ruleslot[data-state="edit"] .rcancel, .rulebox.srule .ruleslot[data-state="choose"] .rscope[data-scope="local"] { border-radius:8px 0 0 8px }
-  .rulebox.srule .ruleslot[data-state="edit"] .rsave, .rulebox.srule .ruleslot[data-state="choose"] .rscope[data-scope="global"] { border-radius:0 8px 8px 0 }
-  .rulebox.srule .ruleslot[data-state="choose"] .rscope { font-size:11px }
-  .srule.flash .rulebtns { display:none } .srule.flash .ruleslot { display:inline-flex }
-  .srule .ruleslot[data-state="saved"] .rsave, .srule .ruleslot[data-state="canceled"] .rcancel { display:inline-flex; flex-basis:130px; width:130px; border-radius:8px; animation:slotfade .3s ease }
   /* Guide headings: underlined (F3.3) */
   .setupguide .h4 { text-decoration:underline; text-underline-offset:3px }
   .calright .printbtn { height:28px; width:32px }
@@ -585,14 +543,6 @@
     .day { break-inside:avoid }
   }
   /* ---- 0.2.7-beta.5: the source box (mockup), its rules, the presets, folding sections, the report form ---- */
-  .srcleft .srcname { font-size:17px; font-weight:700; line-height:1.3 }
-  .srcleft .srcnote { font-size:13.5px; font-weight:600; color:var(--text); margin-top:2px }
-  .srcnext { margin:0; font-size:13.5px; color:var(--muted) }
-  .srchead .swatch { width:28px; height:22px; border-radius:5px }
-  .cfgbox .nameinput, .cfgbox .noteinput { display:none; width:min(300px, 100%) }
-  .cfgbox.cfgopen .srcleft .nameinput, .cfgbox.cfgopen .srcleft .noteinput { display:block }
-  .cfgbox.cfgopen .srcleft .noteinput { margin-top:4px; font-weight:600 }
-  .cfgbox input.colorpick { width:34px; height:48px }
   /* Section titles inside Configure: Automatic Upload, Manual Upload, Rules */
   .cfghead { margin:12px 0 6px; font-size:19px; font-weight:400; letter-spacing:-.01em }
   .cfgbody > .cfghead:first-child { margin-top:2px }
@@ -616,35 +566,16 @@
   /* A source's rules: thin rounded lines; ✎ and the bin, or Cancel / Save while it's being changed */
   .srule { min-height:32px; padding:1px 4px 1px 12px }
   .srule .rulelabel { font-size:13.5px }
-  .srule .scope { height:22px; padding:0 8px; border-radius:999px; font-size:11px; font-weight:700; border:1px solid var(--line);
+  .srule .scope { height:22px; padding:0 8px; border-radius:var(--r); font-size:11px; font-weight:700; border:1px solid var(--line);
                   background:var(--soft); color:var(--muted); white-space:nowrap; cursor:pointer }
   .srule .scope.local { background:var(--warnbg); color:var(--warn); border-color:transparent }
-  .rulebox.srule .scope { width:auto; height:22px; padding:0 9px; border-radius:999px; border:1px solid var(--line) }
+  .rulebox.srule .scope { width:auto; height:22px; padding:0 9px; border-radius:var(--r); border:1px solid var(--line) }
   .rulebox.srule .scope.local { border-color:transparent }
   .srule .scope:hover { color:var(--accent) }
   .srule .rulebtns { display:inline-flex; gap:2px }
-  .srule .ruleslot { display:none; align-items:center; height:26px; border-radius:999px; overflow:hidden; min-width:170px }
-  .srule .ruleslot > * { display:none }
-  .srule .ruleslot button { height:26px; padding:0 10px; font-size:12px; border-radius:0; flex:1 1 0; min-width:0;
-                            transition:flex-grow .3s ease, opacity .3s ease }
   .srule.editing .rulelabel, .srule.editing .rulebtns, .srule.editing .scope { display:none }
-  .srule.editing { flex-wrap:wrap; border-radius:12px; padding:3px 4px 3px 10px }
+  .srule.editing { flex-wrap:wrap; padding:3px 4px 3px 10px }
   .srule.editing .ruleedit { display:flex; flex:1 1 320px; min-width:0 }
-  .srule.editing .ruleslot { margin-left:auto }
-  .rulebox.srule .ruleslot button { width:auto; height:26px; padding:0 10px; font-size:12px; font-weight:600; border:1px solid var(--line) }
-  .rulebox.srule .ruleslot .rsave, .rulebox.srule .ruleslot .rscope[data-scope="global"] { background:var(--accent); color:var(--onaccent); border-color:var(--accent) }
-  .rulebox.srule .ruleslot .rcancel { background:transparent; color:var(--accent) }
-  .rulebox.srule .ruleslot .rscope[data-scope="local"] { border-color:transparent }
-  .srule.editing .ruleslot { display:inline-flex }
-  .srule .ruleslot[data-state="edit"] .rcancel, .srule .ruleslot[data-state="edit"] .rsave { display:inline-flex }
-  .srule .ruleslot[data-state="edit"] .rcancel { border-radius:999px 0 0 999px } .srule .ruleslot[data-state="edit"] .rsave { border-radius:0 999px 999px 0 }
-  .srule .ruleslot[data-state="choose"] .rscope { display:inline-flex; animation:slotfade .3s ease }
-  .srule .ruleslot[data-state="choose"] .rscope[data-scope="local"] { border-radius:999px 0 0 999px; background:var(--warnbg); color:var(--warn) }
-  .srule .ruleslot[data-state="choose"] .rscope[data-scope="global"] { border-radius:0 999px 999px 0 }
-  .srule .ruleslot[data-state="saving"] .rmsg, .srule .ruleslot[data-state="failed"] .rmsg { display:flex; width:100%; height:26px; align-items:center; justify-content:center;
-                                                                                              font-size:12px; font-weight:700; border-radius:999px }
-  .srule .ruleslot[data-state="saving"] .rmsg { color:var(--warn); background:var(--warnbg) }
-  .srule .ruleslot[data-state="failed"] .rmsg { color:var(--bad); background:var(--badbg) }
   .srule .ruleedit[hidden] { display:none !important }
   .ruleedit { gap:6px; align-items:center; flex-wrap:wrap; padding:2px 0 }
   .ruleedit input, .ruleedit select { height:26px; font:inherit; font-size:13px; padding:0 6px; border:1px solid var(--line); border-radius:6px;
@@ -670,14 +601,14 @@
   .debuglinks { display:flex; flex-wrap:wrap; gap:4px 14px; align-items:baseline; margin-top:10px; font-size:12.5px }
   .debuglinks .k { margin:0 }
   /* Report a problem / Suggest a feature */
-  #reportdialog { border:1px solid var(--line); border-radius:14px; background:var(--card); color:var(--text); padding:18px; width:min(620px, calc(100vw - 32px)) }
+  #reportdialog { border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); color:var(--text); padding:18px; width:min(620px, calc(100vw - 32px)) }
   #reportdialog::backdrop { background:rgba(0,0,0,.45) }
   #reportdialog .title { font-weight:700; font-size:16px }
   #reportdialog .lbl { display:block; font-size:12px; color:var(--muted); font-weight:600; margin:12px 0 4px }
-  #reportdialog input[type=text], #reportdialog textarea { width:100%; font:inherit; font-size:14px; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text) }
+  #reportdialog input[type=text], #reportdialog textarea { width:100%; font:inherit; font-size:14px; padding:6px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   #reportdialog textarea { min-height:90px; resize:vertical }
   #reportdialog .attach { display:grid; gap:4px; font-size:13.5px } #reportdialog .attach label { display:flex; gap:8px; align-items:baseline }
-  #reportdialog pre.preview { max-height:200px; overflow:auto; font:12px ui-monospace,monospace; background:var(--soft); border-radius:8px; padding:8px; white-space:pre-wrap; margin:6px 0 0 }
+  #reportdialog pre.preview { max-height:200px; overflow:auto; font:12px var(--mono); background:var(--soft); border-radius:var(--r); padding:8px; white-space:pre-wrap; margin:6px 0 0 }
   #reportdialog .eactions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-top:16px }
   #reportdialog .noacct { font-size:12.5px; color:var(--muted); margin:10px 0 0 }
   .foot .linkbtn { font-size:inherit; text-decoration:underline; color:inherit }
@@ -685,42 +616,149 @@
   .short { display:none }
   .tzlabel { font-size:12.5px; font-weight:600; color:var(--muted); white-space:nowrap }
   @media (max-width:900px) { .tzlabel .long { display:none } .tzlabel .short { display:inline } }
-  .box.cfgbox { container-type:inline-size }
-  /* "tight" (set by the script when the long wording would make the header wrap): the short words */
-  .srchead.tight .long { display:none } .srchead.tight .short { display:inline }
-  @container (max-width:600px) {
-    .srchead .long { display:none } .srchead .short { display:inline }
-    /* the status box moves up next to the title; the download and interval lines go underneath */
-    .srchead { align-items:flex-start }
-    .srchead .srcleft { flex:1 1 0 }
-    .srchead .statusbox { order:2 }
-    .srchead .srcright { order:3; flex:1 1 100%; justify-items:start; text-align:left }
-    .cfgbox.cfgopen .srchead .srcleft { flex-basis:calc(100% - 56px) }   /* room for the title field, beside the color */
-  }
   /* Event template rows wrap when their section is narrow (half the page, or a phone). */
   #templates form.tagsform { container-type:inline-size }
   @container (max-width:700px) {
-    .editor .tagrow { flex-wrap:wrap; border:1px solid var(--line); border-radius:10px; padding:8px }
+    .editor .tagrow { flex-wrap:wrap; border:1px solid var(--line); border-radius:var(--r); padding:8px }
     .editor .tagrow input[name=tpl_title] { flex-basis:100% }
   }
-  .destsum { margin:0; font-size:13px; color:var(--muted); text-align:left }
   @media (max-width:700px) {
     .viewseg, .topbar .seg { display:none }
     .cyclebtn { display:inline-flex; height:28px; padding:0 10px; font-size:12.5px }
     .topbar .themecycle { height:34px; width:38px; padding:0 }
   }
+  /* ---- 0.2.8: the theme (F1.6) ---------------------------------------------------------------------
+     Fonts, colors, corners and icons come from _theme.html. Every calendar and feed is a module: a
+     50 px header (all a folded module shows), then its details. Folded, there's no line under the
+     header: "▸ Expand … ◂" sits in the module's bottom border. */
+  .box.module { position:relative; container-type:inline-size; padding:6px 10px 6px; margin-top:5px }
+  .box.module:not(.cfgopen) { padding-bottom:12px }
+  .box.module:not(.cfgopen) + .box.module { margin-top:14px }            /* room for the Expand text between them */
+  .module .srchead { display:flex; align-items:center; gap:10px; height:50px }
+  .module .srchead .swatch, .module input.colorpick { flex:0 0 22px; width:22px; height:46px; border-radius:6px }
+  .module input.colorpick { padding:0; border:1px solid var(--line); background:transparent; cursor:pointer }
+  .module input.colorpick::-webkit-color-swatch-wrapper { padding:0 }
+  .module input.colorpick::-webkit-color-swatch { border:0; border-radius:5px }
+  .module input.colorpick::-moz-color-swatch { border:0; border-radius:5px }
+  /* Title over note: two 24 px boxes (fields of the same size while expanded) */
+  .module .srcleft { flex:0 1 270px; min-width:0; display:grid; grid-auto-rows:24px; gap:2px; align-content:center }
+  .module .namebox { display:block; width:100%; min-width:0; height:24px; margin:0; padding:0 8px; border:1px solid var(--line); border-radius:6px;
+                     background:var(--bg); color:var(--text); font:600 12.5px/22px var(--font); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .module .namebox.srcname, .module .namebox.nameinput { font-size:14px; font-weight:700 }
+  .module .editonly { display:none } .module.cfgopen .editonly { display:block } .module.cfgopen .showonly { display:none !important }
+  .sections .module input.namebox { height:24px; line-height:22px }
+  .module input.namebox:focus { outline:2px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset:0 }
+  /* The last download and the next check: two lines, shortened to fit ("98 events @ 22:10") */
+  .module .srcright { flex:1 1 auto; min-width:0; display:grid; gap:2px; align-content:center; justify-items:start }
+  .module .srcright p { margin:0; max-width:100%; font-size:13px; line-height:20px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .module .srcnext, .module .destsum { color:var(--muted) }
+  .module .srcright p:first-child:not(.destsum) { color:var(--text) }
+  .srchead.tight .long { display:none } .srchead.tight .short { display:inline }
+  /* Status over Sync Now: one 132 × 50 px rounded rectangle in every module (F1.1) */
+  .module .statusbox { flex:0 0 132px; width:132px; height:50px; margin-left:auto; display:flex; flex-direction:column; justify-content:center;
+                       align-items:stretch; gap:2px; padding:3px; border:1px solid var(--line); border-radius:var(--r) }
+  .statusbox.good { border-color:color-mix(in srgb, var(--ok) 35%, var(--line)); background:var(--okbg) }
+  .statusbox.bad { border-color:color-mix(in srgb, var(--bad) 35%, var(--line)); background:var(--badbg) }
+  .statusbox.warn { border-color:color-mix(in srgb, var(--warn) 35%, var(--line)); background:var(--warnbg) }
+  .statusbox.run { border-color:color-mix(in srgb, var(--run) 35%, var(--line)); background:var(--runbg) }
+  .statusbox .chip { background:transparent; height:18px; padding:0 }
+  .statusbox .syncform { display:block; margin:0 }
+  /* Sync Now → Syncing… → Synced (a green pulse) or Failed (a yellow pulse) → Sync Now */
+  button.syncnow { width:100%; height:22px; padding:0 6px; font-size:12.5px; border-radius:6px; transition:background-color .2s, color .2s }
+  .syncnow .sn { display:none; align-items:center; gap:3px }
+  .syncnow[data-state="idle"] .sn.idle, .syncnow[data-state="syncing"] .sn.syncing,
+  .syncnow[data-state="done"] .sn.done, .syncnow[data-state="fail"] .sn.fail { display:inline-flex }
+  .syncnow[data-state="syncing"] { background:var(--card); color:var(--run); opacity:1 }
+  .syncnow[data-state="done"] { background:var(--ok); color:var(--card); opacity:1; animation:pulse-ok 1.1s ease-out 2 }
+  .syncnow[data-state="fail"] { background:var(--warn); color:var(--card); opacity:1; animation:pulse-warn 1.1s ease-out 2 }
+  @keyframes pulse-ok { from { box-shadow:0 0 0 0 color-mix(in srgb, var(--ok) 70%, transparent) } to { box-shadow:0 0 0 9px transparent } }
+  @keyframes pulse-warn { from { box-shadow:0 0 0 0 color-mix(in srgb, var(--warn) 70%, transparent) } to { box-shadow:0 0 0 9px transparent } }
+  svg.spin { animation:spin 1s linear infinite }
+  @keyframes spin { to { transform:rotate(360deg) } }
+  @media (prefers-reduced-motion:reduce) { svg.spin, .syncnow { animation:none !important } }
+  /* ▸ Expand for Details or to Edit Configuration ◂: a line under the header while expanded; folded, it
+     sits in the module's bottom border (F1.6). The arrows turn down while it's open. */
+  .module .cfgline { position:relative; height:18px; margin:5px 0 0; text-align:center }
+  .module .cfgline::before { content:""; position:absolute; left:0; right:0; top:50%; border-top:1px solid var(--line) }
+  .module:not(.cfgopen) .cfgline { position:absolute; left:10px; right:10px; bottom:-9.5px; margin:0 }
+  .module:not(.cfgopen) .cfgline::before { display:none }
+  .cfgline .cfgtoggle { position:relative; display:inline-flex; align-items:center; gap:2px; height:18px; padding:0 8px; border:0; border-radius:0;
+                        background:var(--card); color:var(--text); font-weight:500; font-size:13px }
+  .cfgline .cfgtoggle:hover { color:var(--accent) }
+  .cfgtoggle .arr { color:var(--muted); transition:transform .15s }
+  .cfgtoggle .arr.r { transform:rotate(180deg) }
+  .cfgtoggle[aria-expanded="true"] .arr { transform:rotate(90deg) }
+  .module .cfgbody { margin-top:5px }
+  @container (max-width:600px) {
+    .module .srchead .long { display:none } .module .srchead .short { display:inline }
+    /* narrow: the 50 px row keeps the title and status; the two status lines go under it */
+    .module .srchead { height:auto; min-height:50px; flex-wrap:wrap; row-gap:4px }
+    .module .srcleft { flex:1 1 0 }
+    .module .statusbox { order:2 }
+    .module .srcright { order:3; flex:1 1 100% }
+  }
+  .gsyncline { margin:6px 0 0; font-size:13.5px }
+  /* Rule lines: ✎ turns one into fields with ✕ | ✓ (icons, F1.4); ✓ asks This calendar | All calendars;
+     then Saved / Cancelled shows for 3 seconds where ✎ and the bin are. */
+  .srule .ruleslot { display:none; align-items:center; height:26px; border-radius:var(--r); overflow:hidden }
+  .srule .ruleslot > * { display:none }
+  .srule.editing .ruleslot, .srule.flash .ruleslot { display:inline-flex }
+  .srule.editing .ruleslot { margin-left:auto }
+  .srule.flash .rulebtns { display:none }
+  .rulebox.srule .ruleslot button { width:auto; height:26px; padding:0 10px; font-size:12px; font-weight:600; border:1px solid var(--line); border-radius:0 }
+  .rulebox.srule .ruleslot .rsave, .rulebox.srule .ruleslot .rscope[data-scope="global"] { background:var(--accent); color:var(--onaccent); border-color:var(--accent) }
+  .rulebox.srule .ruleslot .rcancel { background:transparent; color:var(--accent); border-right-width:0 }
+  .srule .ruleslot[data-state="edit"] .rcancel, .srule .ruleslot[data-state="edit"] .rsave { display:inline-flex; width:34px; padding:0 }
+  .rulebox.srule .ruleslot[data-state="edit"] .rcancel { border-radius:var(--r) 0 0 var(--r) }
+  .rulebox.srule .ruleslot[data-state="edit"] .rsave { border-radius:0 var(--r) var(--r) 0 }
+  .srule .ruleslot[data-state="choose"] .rscope { display:inline-flex; font-size:11px; animation:slotfade .3s ease }
+  .rulebox.srule .ruleslot[data-state="choose"] .rscope[data-scope="local"] { border-radius:var(--r) 0 0 var(--r); background:var(--warnbg); color:var(--warn); border-color:transparent }
+  .rulebox.srule .ruleslot[data-state="choose"] .rscope[data-scope="global"] { border-radius:0 var(--r) var(--r) 0 }
+  .srule .ruleslot .rmsg, .srule .ruleslot .rflash { height:26px; padding:0 12px; align-items:center; justify-content:center; font-size:12px; font-weight:700; border-radius:var(--r); white-space:nowrap }
+  .srule .ruleslot[data-state="saving"] .rmsg, .srule .ruleslot[data-state="failed"] .rmsg,
+  .srule .ruleslot[data-state="saved"] .rflash, .srule .ruleslot[data-state="cancelled"] .rflash { display:flex; animation:slotfade .3s ease }
+  .srule .ruleslot[data-state="saving"] .rmsg { color:var(--warn); background:var(--warnbg) }
+  .srule .ruleslot[data-state="failed"] .rmsg { color:var(--bad); background:var(--badbg) }
+  .srule .ruleslot[data-state="saved"] .rflash { color:var(--ok); background:var(--okbg) }
+  .srule .ruleslot[data-state="cancelled"] .rflash { color:var(--muted); background:var(--soft) }
+  /* Icons drawn by stylesheets */
+  .section > .shead .toggle::before { content:""; width:18px; height:18px; background:currentColor; font-size:0;
+                                      -webkit-mask:var(--i-arrow) center / contain no-repeat; mask:var(--i-arrow) center / contain no-repeat }
+  .langmenu button[aria-checked="true"]::after { content:""; width:18px; height:18px; background:var(--accent);
+                                                 -webkit-mask:var(--i-check) center / contain no-repeat; mask:var(--i-check) center / contain no-repeat }
+  .ev .pin svg.pinned, .ev.pinned .pin svg.unpinned { display:none } .ev.pinned .pin svg.pinned { display:block }
+  .ev .mark svg, .legendkey svg, .statline svg, .check svg, .mnote > svg { vertical-align:-3px }
+  .ev .body > svg { vertical-align:-2px }
+  button.addrule { gap:4px; padding-left:8px }
+  .menu, .langmenu { border-radius:var(--rbox) }
+  .num { border-radius:5px }
+  .clockswitch button { border-radius:6px } .clockswitch button span { border-radius:4px }
+  .calhead .caret { display:inline-flex; vertical-align:middle; margin-left:-2px }
 </style>
 </head>
 <body>{% import "_macros.html" as m with context %}
-  {# (?): an explanation that shows on hover, on focus, or when clicked (F1.1). `text` may hold <b>. #}
+  {# (?): an explanation that shows on hover, on focus, or when clicked; raised like a superscript right
+     after the word it explains (F1.2). `text` may hold <b>. #}
   {% macro help(text, pos="") -%}
-  <span class="helpdot{% if pos %} {{ pos }}{% endif %}" tabindex="0" role="button" aria-label="{{ _('Help') }}" aria-expanded="false">?<span class="helptip" role="tooltip">{{ text }}</span></span>
+  <span class="helpdot{% if pos %} {{ pos }}{% endif %}" tabindex="0" role="button" aria-label="{{ _('Help') }}" aria-expanded="false">{{ icon("help", 15) }}<span class="helptip" role="tooltip">{{ text }}</span></span>
   {%- endmacro %}
 
   {# Cancel and Save as one 130 × 34 px pair (F1.4). Save sends `form` in the background (F1.5);
-     the pressed side fills the pair and says Saved / Canceled for 3 seconds (see the script). #}
+     the pressed side fills the pair and says Saved / Cancelled for 3 seconds (see the script). #}
   {% macro pair(form, save=none) -%}
-  <span class="pairbtns" data-state="idle" data-pair="{{ form }}"><button type="button" class="ghost pcancel" data-text="{{ _('Cancel') }}" data-done="{{ _('Canceled') }}">{{ _('Cancel') }}</button><button class="psave" form="{{ form }}" data-text="{{ save or _('Save') }}" data-busy="{{ _('Saving…') }}" data-done="{{ _('Saved') }}">{{ save or _('Save') }}</button></span>
+  <span class="pairbtns" data-state="idle" data-pair="{{ form }}"><button type="button" class="ghost pcancel" data-text="{{ _('Cancel') }}" data-done="{{ _('Cancelled') }}">{{ _('Cancel') }}</button><button class="psave" form="{{ form }}" data-text="{{ save or _('Save') }}" data-busy="{{ _('Saving…') }}" data-done="{{ _('Saved') }}">{{ save or _('Save') }}</button></span>
+  {%- endmacro %}
+
+  {# A status chip: an icon for its state (good, warn, bad, run) and a word or two. #}
+  {% macro chip(cls, text) -%}
+  <span class="chip {{ cls }}" title="{{ text }}">{{ icon({"good": "check_circle", "warn": "warning", "bad": "error", "run": "sync"}.get(cls, "info"), 15) }}<span class="chiptext">{{ text }}</span></span>
+  {%- endmacro %}
+
+  {# Sync Now (F1.1): the same size everywhere; while it runs it says Syncing…, then pulses green
+     (Synced) or yellow (Failed) and goes back to Sync Now. `sid` is a source's id, or "google". #}
+  {% macro syncbtn(action, sid, disabled=false) -%}
+  <form method="post" action="{{ action }}" class="inline syncform"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ sid }}">
+    <button class="syncnow" data-state="idle"{% if disabled %} disabled{% endif %}><span class="sn idle">{{ _('Sync Now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Syncing…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Synced') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Failed') }}</span></button></form>
   {%- endmacro %}
 
 <main>
@@ -739,7 +777,7 @@
     <div class="langwrap">
       <button type="button" class="iconbtn" id="langbtn" aria-haspopup="menu" aria-expanded="false" aria-controls="langmenu"
               title="{{ _('Language') }}" aria-label="{{ _('Language') }}">
-        <svg width="17" height="17" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="7.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M1.8 9h14.4M9 1.8c2.2 2 3.2 4.4 3.2 7.2S11.2 14.2 9 16.2C6.8 14.2 5.8 11.8 5.8 9S6.8 3.8 9 1.8z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        {{ icon("language", 20) }}
       </button>
       <div class="langmenu" id="langmenu" role="menu" hidden>
         <button type="button" role="menuitemradio" data-lang="auto" aria-checked="{{ 'true' if lang_choice == 'auto' else 'false' }}">{{ _('Automatic (browser)') }}</button>
@@ -752,15 +790,15 @@
     <button type="button" class="ghost cyclebtn themecycle" title="{{ _('Theme: press for the next one') }}" aria-label="{{ _('Color theme') }}"></button>
     <div class="seg" role="group" aria-label="{{ _('Color theme') }}">
       <button type="button" data-theme-choice="light" title="{{ _('Light') }}" aria-label="{{ _('Light theme') }}">
-        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M3 13l1.4-1.4M11.6 4.4L13 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+        {{ icon("light_mode", 18) }}</button>
       <button type="button" data-theme-choice="dark" title="{{ _('Dark') }}" aria-label="{{ _('Dark theme') }}">
-        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 10.2A6 6 0 0 1 5.8 2.5a6 6 0 1 0 7.7 7.7z" fill="currentColor"/></svg></button>
+        {{ icon("dark_mode", 18) }}</button>
       <button type="button" data-theme-choice="system" title="{{ _('Match system') }}" aria-label="{{ _('Match system theme') }}">
-        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 2a6 6 0 0 0 0 12z" fill="currentColor"/></svg></button>
+        {{ icon("contrast", 18) }}</button>
     </div>
     <div class="menuwrap">
       <button type="button" class="iconbtn" id="menubtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="menu" title="{{ _('Settings') }}">
-        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        {{ icon("menu", 20) }}
       </button>
       <div class="menu" id="menu" role="dialog" aria-label="{{ _('Settings') }}" hidden>
         <div class="title">{{ _('Settings') }}</div>
@@ -870,11 +908,12 @@
     {% if r.owner %}<button type="button" class="scope local" title="{{ _('A rule for this calendar only. To share it with every calendar, ✎ it and choose All calendars.') }}">{{ _('This calendar') }}</button>
     {% else %}<button type="button" class="scope shared" title="{{ _('A Rule Template, shared by {n} source(s). Click to change it for every source.', n=r.used|length) }}">{{ _('Shared') }}</button>{% endif %}
     <span class="rulebtns">
-      <button type="button" class="ghost rowedit" title="{{ _('Change this rule here') }}" aria-label="{{ _('Change this rule here') }}">✎</button>
+      <button type="button" class="ghost rowedit" title="{{ _('Change this rule here') }}" aria-label="{{ _('Change this rule here') }}">{{ icon("edit", 17) }}</button>
       <button type="button" class="ghost delpick" title="{{ _('Take this rule off this source') }}" aria-label="{{ _('Take this rule off this source') }}">{{ trash }}</button>
     </span>
     <span class="ruleslot" data-state="idle">
-      <button type="button" class="ghost rcancel">{{ _('Cancel') }}</button><button type="button" class="rsave">{{ _('Save') }}</button>
+      <button type="button" class="ghost rcancel" title="{{ _('Cancel') }}" aria-label="{{ _('Cancel') }}">{{ icon("close", 17) }}</button><button type="button" class="rsave" title="{{ _('Save') }}" aria-label="{{ _('Save') }}">{{ icon("check", 17) }}</button>
+      <span class="rflash" aria-live="polite"></span>
       <button type="button" class="rscope" data-scope="local" title="{{ _('Change it for this calendar only') }}">{{ _('This calendar') }}</button><button type="button" class="rscope" data-scope="global" title="{{ _('Change the shared rule, for every source using it') }}">{{ _('All calendars') }}</button>
       <span class="rmsg" aria-live="polite"></span>
     </span>
@@ -899,15 +938,15 @@
         {% set e = it.e %}
         {% set tc = it.tag_color or (it.src_color if e.origin == 'united' else '') %}
         <details class="ev{% if e.all_day %} allday{% endif %}{% if e.origin in ('custom', 'rule') %} custom{% endif %}{% if e.hidden %} hidden{% endif %}{% if tc %} tint{% endif %}"{% if tc %} style="--cal:{{ tc }}"{% endif %}>
-          <summary title="{{ e.title }}{% if e.hidden %} ({{ _('hidden from Google') }}){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if e.stale %}<span class="mark" title="{{ _('United changed this since your edit') if e.source == 'ccs' else _('The feed changed this since your edit') }}">⚠</span>{% elif e.edited %}<span class="mark" title="{{ _('Edited here') }}">✎</span>{% elif e.origin == 'rule' %}<span class="mark" title="{{ _('Added by a rule') }}">↳</span>{% endif %}</summary>
-          <div class="body"><button type="button" class="pin" aria-pressed="false" title="{{ _('Keep this open') }}" aria-label="{{ _('Keep this open') }}"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146"/></svg></button><b>{{ e.title }}</b>
+          <summary title="{{ e.title }}{% if e.hidden %} ({{ _('hidden from Google') }}){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if e.stale %}<span class="mark" title="{{ _('United changed this since your edit') if e.source == 'ccs' else _('The feed changed this since your edit') }}">{{ icon("warning", 13) }}</span>{% elif e.edited %}<span class="mark" title="{{ _('Edited here') }}">{{ icon("edit", 13) }}</span>{% elif e.origin == 'rule' %}<span class="mark" title="{{ _('Added by a rule') }}">{{ icon("subdirectory_arrow_right", 13) }}</span>{% endif %}</summary>
+          <div class="body"><button type="button" class="pin" aria-pressed="false" title="{{ _('Keep this open') }}" aria-label="{{ _('Keep this open') }}">{{ icon("keep", 15, "unpinned") }}{{ icon("keep-fill", 15, "pinned") }}</button><b>{{ e.title }}</b>
 {{ it.range }}{% if e.location %}
-📍 {{ e.location }}{% endif %}{% if e.hidden %}
+{{ icon("location_on", 14) }} {{ e.location }}{% endif %}{% if e.hidden %}
 {{ _('Hidden from Google Calendar') }}{% endif %}{% if e.stale %}
-⚠ {{ _('United changed this event after you edited it') if e.source == 'ccs' else _('The feed changed this event after you edited it') }}{% elif e.edited %}
-✎ {{ _('Edited here') }}{% elif e.origin == 'custom' %}
+{{ icon("warning", 14) }} {{ _('United changed this event after you edited it') if e.source == 'ccs' else _('The feed changed this event after you edited it') }}{% elif e.edited %}
+{{ icon("edit", 14) }} {{ _('Edited here') }}{% elif e.origin == 'custom' %}
 {{ _('Added here') }}{% elif e.origin == 'rule' %}
-↳ {{ _('Added by a rule (change the rule or its event template to change it)') }}{% endif %}{% if srcs|length > 1 %}
+{{ icon("subdirectory_arrow_right", 14) }} {{ _('Added by a rule (change the rule or its event template to change it)') }}{% endif %}{% if srcs|length > 1 %}
 {{ src_names.get(e.source, '') }}{% endif %}{% if e.description %}
 
 {{ e.description }}{% endif %}
@@ -918,18 +957,18 @@
   <div class="card" id="cal">
     {% set step = {"month": (_('Previous month'), _('Next month')), "week": (_('Previous week'), _('Next week')), "day": (_('Previous day'), _('Next day')), "list": (_('Previous month'), _('Next month'))}[cal.view] %}
     <div class="calhead">
-      <a class="navbtn" href="?date={{ cal.prev }}" title="{{ step[0] }}" aria-label="{{ step[0] }}">‹</a>
-      <a class="navbtn" href="?date={{ cal.next }}" title="{{ step[1] }}" aria-label="{{ step[1] }}">›</a>
+      <a class="navbtn" href="?date={{ cal.prev }}" title="{{ step[0] }}" aria-label="{{ step[0] }}">{{ icon("chevron_left", 20) }}</a>
+      <a class="navbtn" href="?date={{ cal.next }}" title="{{ step[1] }}" aria-label="{{ step[1] }}">{{ icon("chevron_right", 20) }}</a>
       <a class="navbtn wide" href="/">{{ _('Today') }}</a>
       {# The title opens a picker, to jump straight to any month. #}
       <div class="monthwrap">
         <button type="button" class="title" id="monthbtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="monthpick"
-                title="{{ _('Jump to a month') }}">{{ cal.title }} <span class="caret">▾</span></button>
+                title="{{ _('Jump to a month') }}">{{ cal.title }} <span class="caret">{{ icon("arrow_drop_down", 20) }}</span></button>
         <div class="monthpick" id="monthpick" role="dialog" aria-label="{{ _('Jump to a month') }}" hidden data-month="{{ cal.month }}">
           <div class="yearrow">
-            <button type="button" class="navbtn" data-year="-1" aria-label="{{ _('Previous year') }}">‹</button>
+            <button type="button" class="navbtn" data-year="-1" aria-label="{{ _('Previous year') }}">{{ icon("chevron_left", 20) }}</button>
             <b id="pickyear">{{ cal.month[:4] }}</b>
-            <button type="button" class="navbtn" data-year="1" aria-label="{{ _('Next year') }}">›</button>
+            <button type="button" class="navbtn" data-year="1" aria-label="{{ _('Next year') }}">{{ icon("chevron_right", 20) }}</button>
           </div>
           <div class="months">{% for i in range(12) %}<button type="button" data-m="{{ '%02d' % (i + 1) }}">{{ dates.mon[i] }}</button>{% endfor %}</div>
         </div>
@@ -942,7 +981,7 @@
           <optgroup label="{{ _('All time zones') }}">{% for z in zones if z not in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
         </select>
         {% set view_names = {"month": _('Month'), "week": _('Week'), "day": _('Day'), "list": _('List')} %}
-        <button type="button" class="ghost cyclebtn viewcycle" data-view="{{ cal.view }}" title="{{ _('View: press for the next one') }}">{{ view_names[cal.view] }} ⟳</button>
+        <button type="button" class="ghost cyclebtn viewcycle" data-view="{{ cal.view }}" title="{{ _('View: press for the next one') }}">{{ view_names[cal.view] }} {{ icon("sync", 15) }}</button>
         <div class="viewseg" role="group" aria-label="{{ _('View') }}">
           {% for v, label in (("month", _('Month')), ("week", _('Week')), ("day", _('Day')), ("list", _('List'))) %}<button type="button" data-view="{{ v }}" aria-pressed="{{ 'true' if cal.view == v else 'false' }}">{{ label }}</button>{% endfor %}
         </div>
@@ -954,7 +993,7 @@
         </div>
         {# Print: the calendar as it's shown (this view and month), without the rest of the page. #}
         <button type="button" class="iconbtn printbtn" onclick="window.print()" title="{{ _('Print the calendar') }}" aria-label="{{ _('Print the calendar') }}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>
+          {{ icon("print", 18) }}</button>
       </div>
     </div>
     {% if cal.view in ("month", "week") %}
@@ -963,7 +1002,7 @@
       {% for week in cal.weeks %}{% for day in week %}
       <div class="day{% if not day.in_month and cal.view == 'month' %} out{% endif %}{% if day.date == cal.today %} today{% endif %}" data-add="/event?date={{ day.date.isoformat() }}&amp;month={{ cal.month }}" title="{{ _('Click an empty spot to add an event on {day}', day=dates.day(day.date)) }}">
         <div class="dayhead"><span class="num">{{ day.date.day }}</span>
-          <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">+</a></div>
+          <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">{{ icon("add", 16) }}</a></div>
         {% for it in day["items"] %}{{ evitem(it) }}{% endfor %}
       </div>
       {% endfor %}{% endfor %}
@@ -974,7 +1013,7 @@
       {% for day in cal.days %}
       <div class="aday{% if day.date == cal.today %} today{% endif %}">
         <div class="adate"><span class="num">{{ day.date.day }}</span> {{ dates.day(day.date) }}
-          <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">+</a></div>
+          <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">{{ icon("add", 16) }}</a></div>
         <div class="aitems">{% for it in day["items"] %}{{ evitem(it) }}{% else %}<p class="muted">{{ _('No events.') }}</p>{% endfor %}</div>
       </div>
       {% else %}<p class="muted">{{ _('No events this month.') }}</p>{% endfor %}
@@ -983,7 +1022,7 @@
     <div class="legend">
       {# The key: each calendar in its color (when it has one), then "Added here", then the rules' colors. #}
       {% for x in srcs %}<span style="--sw:{{ ('color-mix(in srgb, ' ~ x.color ~ ' 18%, var(--card))') if x.color else 'var(--ev)' }}">{{ x.name }}</span>{% endfor %}<span style="--sw:var(--custom)">{{ _('Added here') }}</span>{% for x in srcs %}{% for t in x.effective if t.action == 'color' %}<span style="--sw:color-mix(in srgb, {{ t.color }} 18%, var(--card))">{{ t.tag }}</span>{% endfor %}{% endfor %}
-      <span style="--sw:transparent">{{ _('✎ edited · ⚠ United changed it since · <s>struck</s> hidden from Google') }}</span>
+      <span class="legendkey" style="--sw:transparent">{{ icon("edit", 14) }} {{ _('edited') }} · {{ icon("warning", 14) }} {{ _('United changed it since') }} · <s>{{ _('struck') }}</s> {{ _('hidden from Google') }}</span>
       {{ help(_('This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.'), 'right') }}
     </div>
   </div>
@@ -992,14 +1031,11 @@
      title and a one-line subtitle on the left and a status chip on the right, then its fields, then its
      help folded at the bottom. + in a card's corner adds a source or destination; a new install has none. #}
   {# "▸ Configure ◂" under a box's header: opens or folds the rest (cfg-<id>). #}
-  {% macro cfgline(id, open) %}<div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="cfg-{{ id }}"><span class="arr l" aria-hidden="true">▸</span> <span class="long">{{ _('Expand for Details or to Edit Configuration') }}</span><span class="short">{{ _('Expand') }}</span> <span class="arr r" aria-hidden="true">◂</span></button></div>{% endmacro %}
+  {% macro cfgline(id, open) %}<div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="cfg-{{ id }}">{{ icon("arrow_right", 18, "arr l") }}<span class="long">{{ _('Expand for Details or to Edit Configuration') }}</span><span class="short">{{ _('Expand') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>{% endmacro %}
   {# Small icons left of the section titles (F1.3). #}
-  {% set icons = {
-    "calendars": '<svg class="secicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M12 12v6M9.2 15.4 12 18.2l2.8-2.8"/></svg>',
-    "feeds": '<svg class="secicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19.1 4.9a10 10 0 0 1 0 14.2M4.9 19.1a10 10 0 0 1 0-14.2"/></svg>',
-    "rules": '<svg class="secicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M4 12h7M4 18h10"/><path d="m15 15 2 2 4-4"/><circle cx="18" cy="7" r="2.5"/></svg>',
-    "templates": '<svg class="secicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>',
-    "activity": '<svg class="secicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'} %}
+  {% set icons = {"calendars": icon("calendar_month", 24, "secicon"), "feeds": icon("sensors", 24, "secicon"),
+                  "rules": icon("rule", 24, "secicon"), "templates": icon("event_note", 24, "secicon"),
+                  "activity": icon("history", 24, "secicon")} %}
   {% set status_labels = {"ok":_("Healthy"),"running":_("Syncing…"),"starting":_("Starting"),"paused":_("Paused"),"setup":_("Setup needed"),"auth_failed":_("Sign-in rejected"),"blocked":_("Blocked"),"error":_("Error")} %}
 
   <div class="sections">
@@ -1008,7 +1044,7 @@
       <h2 class="bigtitle" id="sourcestitle">{{ icons.calendars|safe }}{{ _('Calendars') }}</h2>
       <div class="addwrap">
         <button type="button" class="ghost plus" aria-haspopup="dialog" aria-expanded="false" aria-controls="addsrc"
-                title="{{ _('Add a calendar') }}" aria-label="{{ _('Add a calendar') }}">+</button>
+                title="{{ _('Add a calendar') }}" aria-label="{{ _('Add a calendar') }}">{{ icon("add", 24) }}</button>
         <div class="addmenu" id="addsrc" role="dialog" aria-label="{{ _('Add a calendar') }}" hidden>
           <div class="title">{{ _('Add a calendar') }}</div>
           {# Presets: United CCS+ (once), Google, Apple, or any other calendar link. #}
@@ -1035,7 +1071,7 @@
                    data-text-other="{{ _('Add any calendar with a link starting with webcal:// or ending in .ics') }}">{{ _('Add any calendar with a link starting with webcal:// or ending in .ics') }}</div></div>
             <div class="pair">
               <label class="fld"><span>{{ _('Title') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Work') }}"></label>
-              <label class="fld"><span>{{ _('Link') }}</span><input name="url" required spellcheck="false" placeholder="https://… / webcal://…"></label>
+              <label class="fld"><span>{{ _('Link') }}</span><input name="url" class="code" required spellcheck="false" placeholder="https://… / webcal://…"></label>
             </div>
             <div class="pair">
               <label class="fld"><span>{{ _('Note') }}</span><input name="note" maxlength="120" placeholder="{{ _('A short message that will appear under the source title') }}"></label>
@@ -1055,24 +1091,26 @@
        Now. "Configure" under it opens the rest (folded unless something needs doing): Automatic Upload
        (the Site Address and how often it's checked, the login and how to set it up), Manual Upload
        (CCS+), and the source's Rules; then Remove (lower left) and Cancel / Save. #}
-    <div class="box src cfgbox{% if x.open %} cfgopen{% endif %}" id="src-{{ x.id }}" data-section="src:{{ x.id }}" data-sid="{{ x.id }}">
+    <div class="box module src cfgbox{% if x.open %} cfgopen{% endif %}" id="src-{{ x.id }}" data-section="src:{{ x.id }}" data-sid="{{ x.id }}">
+      {# The module header (50 px; all a folded module shows): color | title over note | the last download
+         and the next check | status over Sync Now. While expanded, the color, title and note are fields
+         of the same size. #}
       <div class="srchead">
         <span class="swatch showonly" style="--c:{{ x.color or 'var(--accent)' }}" aria-hidden="true"></span>
         <input type="color" class="colorpick editonly" form="srcform-{{ x.id }}" value="{{ x.color or '#1d4ed8' }}" aria-label="{{ _('Color') }}" title="{{ _('Color of its events') }}">
         <div class="srcleft">
-          <div class="srcname showonly">{{ x.name }}</div>
-          {% if x.note %}<div class="srcnote showonly">{{ x.note }}</div>{% endif %}
-          <input type="text" class="nameinput editonly" form="srcform-{{ x.id }}" name="name" value="{{ x.name }}" maxlength="100" aria-label="{{ _('Title') }}" placeholder="{{ _('Title') }}">
-          <input type="text" class="noteinput editonly" form="srcform-{{ x.id }}" name="note" value="{{ x.note }}" maxlength="120" aria-label="{{ _('Note') }}" placeholder="{{ _('Note (shown under the title)') }}">
+          <div class="namebox srcname showonly" title="{{ x.name }}">{{ x.name }}</div>
+          {% if x.note %}<div class="namebox srcnote showonly" title="{{ x.note }}">{{ x.note }}</div>{% endif %}
+          <input type="text" class="namebox nameinput editonly" form="srcform-{{ x.id }}" name="name" value="{{ x.name }}" maxlength="100" aria-label="{{ _('Title') }}" placeholder="{{ _('Title') }}">
+          <input type="text" class="namebox noteinput editonly" form="srcform-{{ x.id }}" name="note" value="{{ x.note }}" maxlength="120" aria-label="{{ _('Note') }}" placeholder="{{ _('Note (shown under the title)') }}">
         </div>
         <div class="srcright">
           <p class="srcstatus">{% if S.status in ("ok", "running") and S.last_success %}<span class="long">{{ _('Downloaded {n} events from feed @ <b>{when}</b>.', n=S.event_count, when=x.last_when) }}</span><span class="short">{{ _('{n} events @ <b>{when}</b>', n=S.event_count, when=x.last_when) }}</span>{% if S.last_detail %} ({{ msg(S.last_detail) }}){% endif %}{% else %}{{ msg(S.message) or "—" }}{% endif %}</p>
           <p class="srcnext">{% if x.next_when and S.status not in ("paused", "setup") %}<span class="long">{{ _('Next scheduled check @ {when}', when=x.next_when) }}</span><span class="short">{{ _('Next check @ {when}', when=x.next_when) }}</span>{% elif S.status == "paused" %}{{ _('Automatic checks paused') }}{% else %}&nbsp;{% endif %}</p>
         </div>
         <div class="statusbox {{ scls }}">
-          <span class="chip {{ scls }}">{{ status_labels.get(S.status, S.status) }}</span>
-          <form method="post" action="/run" class="inline syncform"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
-            <button class="syncnow" {% if S.running or (ccs and not x.setup.configured) %}disabled{% endif %}>{{ _('Sync Now') }}</button></form>
+          {{ chip(scls, status_labels.get(S.status, S.status)) }}
+          {{ syncbtn("/run", x.id, S.running or (ccs and not x.setup.configured)) }}
         </div>
       </div>
 
@@ -1122,7 +1160,7 @@
           <form method="post" action="/sources/url" class="clientform watch feedurl" data-verify="feed" data-sid="{{ x.id }}">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
             <div class="pair">
-              <label class="fld"><span>{{ _('Site Address') }}</span><input name="url" value="{{ x.url }}" required spellcheck="false"></label>
+              <label class="fld"><span>{{ _('Site Address') }}</span><input name="url" class="code" value="{{ x.url }}" required spellcheck="false"></label>
               {{ m.okbutton(S.status == "ok", _('Validated'), _('Save'), _('The feed downloaded')) }}
             </div>
           </form>
@@ -1168,7 +1206,7 @@
           <input type="hidden" name="rules_form" value="1"><input type="hidden" name="color_default" class="colordefault" value="">
           <div class="rules" id="rules-{{ x.id }}">
             <div class="cfgheadrow"><h3 class="cfghead">{{ _('Rules') }}{{ help(_('The rules this calendar uses, in order (for colors the first match wins). ✎ changes one here: for this calendar only, or for every calendar using it. + Add a rule picks one from Rule Templates, or makes a new one.')) }}</h3>
-              <button type="button" class="ghost addrule" data-sid="{{ x.id }}">+ {{ _('Add a rule') }}</button></div>
+              <button type="button" class="ghost addrule" data-sid="{{ x.id }}">{{ icon("add", 17) }}{{ _('Add a rule') }}</button></div>
             <div class="srcrules">{% for rid in x.subs %}{{ src_rule(rule_by_id[rid]) }}{% endfor %}</div>
             <template class="srcruletpl">{{ rule_pick("") }}</template>
           </div>
@@ -1194,7 +1232,7 @@
         {{ help(_('What other apps can subscribe to: CalendarStream delivers your calendars to them. A Google calendar that it keeps up to date for you, or a feed link for Apple Calendar, Outlook and others, with a page to share it.')) }}</h2>
       <div class="addwrap">
         <button type="button" class="ghost plus" aria-haspopup="dialog" aria-expanded="false" aria-controls="adddest"
-                title="{{ _('Add a feed') }}" aria-label="{{ _('Add a feed') }}">+</button>
+                title="{{ _('Add a feed') }}" aria-label="{{ _('Add a feed') }}">{{ icon("add", 24) }}</button>
         <form class="addmenu" id="adddest" role="dialog" aria-label="{{ _('Add a feed') }}" method="post" action="/destinations/add" hidden data-swap="#destinations|#activity">
           <input type="hidden" name="csrf" value="{{ csrf }}">
           <div class="title">{{ _('Add a feed') }}</div>
@@ -1235,14 +1273,15 @@
     {% elif g.connected %}{% set gcls, glabel = "good", _('Connected') %}
     {% elif gvalid %}{% set gcls, glabel = "warn", _('Ready to connect') %}
     {% else %}{% set gcls, glabel = "warn", _('Not set up') %}{% endif %}
-    <div class="box cfgbox{% if gopen %} cfgopen{% endif %}" id="dest-google" data-section="dest:google">
+    <div class="box module cfgbox{% if gopen %} cfgopen{% endif %}" id="dest-google" data-section="dest:google">
       <div class="srchead">
         <div class="srcleft">
-          <div class="srctitle"><span class="srcname">{{ _('Google account') }}</span></div>
-          <div class="srctype">{{ _('One sign-in for every Google calendar below') }}</div>
+          <div class="namebox srcname">{{ _('Google account') }}</div>
+          <div class="namebox srcnote">{{ _('One sign-in for every Google calendar below') }}</div>
         </div>
-        <div class="srcright">{% if g.connected and g.info.email %}<p class="destsum">{{ g.info.email }}</p>{% endif %}</div>
-        <div class="statusbox {{ gcls }}"><span class="chip {{ gcls }}">{{ glabel }}</span></div>
+        <div class="srcright">{% if g.connected and g.info.email %}<p class="destsum code">{{ g.info.email }}</p>{% endif %}
+          {% if g.connected %}<p class="destsum">{% if g.last_sync %}{{ _('Last synced {when}', when=g.last_sync) }}{% else %}{{ _('Not synced yet.') }}{% endif %}</p>{% endif %}</div>
+        <div class="statusbox {{ gcls }}">{{ chip(gcls, glabel) }}{% if g.connected %}{{ syncbtn("/google/sync", "google", g.running) }}{% endif %}</div>
       </div>
       {{ cfgline("dest-google", gopen) }}
       <div class="cfgbody" id="cfg-dest-google"{% if not gopen %} hidden{% endif %}>
@@ -1270,20 +1309,21 @@
     {% elif g.info.last_error %}{% set dcls, dlabel = "bad", _('Sync problem') %}
     {% elif d.cal.calendar_id %}{% set dcls, dlabel = "good", _('In Google') %}
     {% else %}{% set dcls, dlabel = "run", _('Starting') %}{% endif %}
-    <div class="box cfgbox dest{% if d.open %} cfgopen{% endif %}" id="dest-{{ d.id }}" data-section="dest:{{ d.id }}">
-      {# Header: name and kind; which sources and dates; status. While Configure is open the name is a field. #}
+    <div class="box module cfgbox dest{% if d.open %} cfgopen{% endif %}" id="dest-{{ d.id }}" data-section="dest:{{ d.id }}">
+      {# The module header, as a calendar's: name over kind | which calendars and dates | status. While
+         expanded the name is a field. #}
       <div class="srchead">
         <div class="srcleft">
-          <div class="srctitle"><span class="srcname showonly">{{ d.name }}</span>
-            <input type="text" class="nameinput editonly" form="destform-{{ d.id }}" name="name" value="{{ d.name }}" maxlength="100" required aria-label="{{ _('Name') }}" placeholder="{{ _('Name') }}"></div>
-          <div class="srctype">{{ _('Calendar feed') if feed else _('Google calendar') }}</div>
+          <div class="namebox srcname showonly" title="{{ d.name }}">{{ d.name }}</div>
+          <input type="text" class="namebox nameinput editonly" form="destform-{{ d.id }}" name="name" value="{{ d.name }}" maxlength="100" required aria-label="{{ _('Name') }}" placeholder="{{ _('Name') }}">
+          <div class="namebox srcnote">{{ _('Calendar feed') if feed else _('Google calendar') }}</div>
         </div>
         <div class="srcright">
           <p class="destsum">{{ d.names|join(', ') if d.names else _('No sources') }}
             · {% if d.start or d.end %}{{ d.start or '∞' }} – {{ d.end or '∞' }}{% else %}<span class="long">{{ _('All dates') }}</span><span class="short">∞</span>{% endif %}</p>
           {% if not feed and d.cal.calendar_id and d.last_sync %}<p class="destsum">{{ _('{n} events', n=d.cal.events or 0) }} · {{ _('last synced {when}', when=d.last_sync) }}</p>{% endif %}
         </div>
-        <div class="statusbox {{ dcls }}"><span class="chip {{ dcls }}">{{ dlabel }}</span></div>
+        <div class="statusbox {{ dcls }}">{{ chip(dcls, dlabel) }}</div>
       </div>
       {{ cfgline("dest-" ~ d.id, d.open) }}
       <div class="cfgbody" id="cfg-dest-{{ d.id }}"{% if not d.open %} hidden{% endif %}>
@@ -1327,7 +1367,7 @@
           <form method="post" action="/feed/stream" class="clientform" data-swap="#dest-{{ d.id }}|#activity">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
             <div class="pair">
-              <label class="fld"><span>{{ _('Stream name') }}</span><input name="stream" value="{{ d.token }}" required spellcheck="false" autocomplete="off"></label>
+              <label class="fld"><span>{{ _('Stream name') }}</span><input name="stream" class="code" value="{{ d.token }}" required spellcheck="false" autocomplete="off"></label>
               <button class="ghost">{{ _('Save') }}</button>
             </div>
           </form>
@@ -1362,7 +1402,7 @@
       <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.rules else 'false' }}" aria-controls="rules-body"><span class="bigtitle" id="rulestitle">{{ icons.rules|safe }}{{ _('Rule Templates') }}</span></button>
       {{ help(_('Rules any calendar can use: add one to a calendar under its Expand. Changing a rule here changes every calendar that uses it.')) }}
       <span class="peek">{{ _('{n} rules', n=shared|length) }}</span>
-      <button type="button" class="ghost plus newrule headplus" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">+</button>
+      <button type="button" class="ghost plus newrule headplus" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">{{ icon("add", 24) }}</button>
     </div>
     <div class="sbody" id="rules-body"{% if not sections.rules %} hidden{% endif %}>
     {% if not shared %}<p class="empty">{{ _('No rules yet. Press <b>+</b> to add one.') }}</p>{% endif %}
@@ -1372,7 +1412,7 @@
         <span class="ruletype">{{ _(rule_types[r.type]) }}</span>
         <span class="rulelabel">{% if r.type == "color" %}<span class="swatch" style="--c:{{ r.color }}" aria-hidden="true"></span> {% endif %}{{ r.label.split(' → ', 1)[1] if r.type in ('no_end', 'allday24') else r.label }}</span>
         <span class="ruleused">{{ _('Used by {names}', names=r.used|join(', ')) if r.used else _('Not used yet') }}</span>
-        <button type="button" class="ghost editrule" title="{{ _('Change this rule') }}" aria-label="{{ _('Change this rule') }}">✎</button>
+        <button type="button" class="ghost editrule" title="{{ _('Change this rule') }}" aria-label="{{ _('Change this rule') }}">{{ icon("edit", 17) }}</button>
         <form method="post" action="/rules/clone" class="inline" data-swap="#rules|#activity">
           <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}">
           <button class="ghost clonerule" title="{{ _('Make a copy of this rule') }}" aria-label="{{ _('Make a copy of this rule') }}">{{ copy_icon }}</button></form>
@@ -1396,7 +1436,7 @@
       <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.templates else 'false' }}" aria-controls="templates-body"><span class="bigtitle" id="tplstitle">{{ icons.templates|safe }}{{ _('Event Templates') }}</span></button>
       {{ help(_('Ready-made events, for rules that add events and for adding an event by hand.')) }}
       <span class="peek">{{ _('{n} templates', n=templates|length) }}</span>
-      <button type="button" class="ghost plus addfirst headplus" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">+</button>
+      <button type="button" class="ghost plus addfirst headplus" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 24) }}</button>
     </div>
     <div class="sbody" id="templates-body"{% if not sections.templates %} hidden{% endif %}>
     {% if not templates %}<p class="empty">{{ _('No event templates yet. Press <b>+</b> to add one.') }}</p>{% endif %}
@@ -1424,7 +1464,7 @@
     {% for x in srcs %}{% set S = x.s %}
     <div class="statline">
       {% if srcs|length > 1 %}<b>{{ x.name }}</b>{% endif %}
-      {% if x.type == "ccs" %}<span><span class="k">{{ _('Sign-in') }}</span> {% if S.last_auth_ok is none %}<span class="muted">{{ _('not yet') }}</span>{% elif S.last_auth_ok %}<b style="color:var(--ok)">✓ {{ _('accepted') }}</b> {{ t(S.last_auth) }}{% else %}<b style="color:var(--bad)">✗ {{ _('rejected') }}</b> {{ t(S.last_auth) }}{% endif %}</span>{% endif %}
+      {% if x.type == "ccs" %}<span><span class="k">{{ _('Sign-in') }}</span> {% if S.last_auth_ok is none %}<span class="muted">{{ _('not yet') }}</span>{% elif S.last_auth_ok %}<b style="color:var(--ok)">{{ icon("check_circle", 15) }} {{ _('accepted') }}</b> {{ t(S.last_auth) }}{% else %}<b style="color:var(--bad)">{{ icon("cancel", 15) }} {{ _('rejected') }}</b> {{ t(S.last_auth) }}{% endif %}</span>{% endif %}
       <span><span class="k">{{ _('Last check') }}</span> <b>{{ t(S.last_success) }}</b></span>
       <span><span class="k">{{ _('Schedule changed') }}</span> <b>{{ t(S.last_change) }}</b></span>
       <span><span class="k">{{ _('Next check') }}</span> <b>{{ t(S.next_run) }}</b></span>
@@ -1432,7 +1472,7 @@
       {% if S.login_failures %}<span style="color:var(--bad)">{{ _('<b>{n}</b> rejected sign-ins in a row', n=S.login_failures) }}</span>{% endif %}
     </div>
     {% endfor %}
-    {% if google.connected %}<div class="statline"><span><span class="k">Google</span> {% if google.info.last_error %}<b style="color:var(--bad)">✗ {{ _('error') }}</b>{% elif google.running %}<b>{{ _('syncing…') }}</b>{% elif google.last_sync %}<b>{{ google.last_sync }}</b>{% else %}<span class="muted">{{ _('not yet') }}</span>{% endif %}</span></div>{% endif %}
+    {% if google.connected %}<div class="statline"><span><span class="k">Google</span> {% if google.info.last_error %}<b style="color:var(--bad)">{{ icon("cancel", 15) }} {{ _('error') }}</b>{% elif google.running %}<b>{{ _('syncing…') }}</b>{% elif google.last_sync %}<b>{{ google.last_sync }}</b>{% else %}<span class="muted">{{ _('not yet') }}</span>{% endif %}</span></div>{% endif %}
     {% if history %}<div class="logwin"><table><thead><tr><th style="width:140px">{{ _('Time') }}</th><th>{{ _('Event') }}</th></tr></thead><tbody>
       {% for h in history %}<tr><td>{{ dates.short(h.time.date()) }} {{ dates.clock(h.time, true) }}</td><td class="lvl-{{ h.level }}">{{ msg(h.msg) }}</td></tr>{% endfor %}
     </tbody></table></div>{% else %}<p class="muted">{{ _('Nothing yet.') }}</p>{% endif %}
@@ -1446,7 +1486,8 @@
   <footer class="foot">
     CalendarStream v{{ version }} ·
     <button type="button" class="linkbtn reportbtn" data-kind="bug">{{ _('Report a problem') }}</button> ·
-    <button type="button" class="linkbtn reportbtn" data-kind="idea">{{ _('Suggest a feature') }}</button>
+    <button type="button" class="linkbtn reportbtn" data-kind="idea">{{ _('Suggest a feature') }}</button> ·
+    <a href="https://github.com/Uuugh/CalendarStream#license--attribution" target="_blank" rel="noopener">{{ _('License & Attribution') }}</a>
   </footer>
 </main>
 {# Report a problem / Suggest a feature: what to include (each part can be left out), a preview with
@@ -1523,15 +1564,19 @@ var T = {
   backToStandard: {{ _('Back to the standard colors when you save')|string|tojson }},
   disconnect: {{ _('Disconnect Google Calendar?')|string|tojson }},
   downloading: {{ _('Downloading…')|string|tojson }}, restarting: {{ _('Restarting…')|string|tojson }},
-  updateFailed: {{ _('✗ Update failed')|string|tojson }}, updateSlow: {{ _('It’s taking longer than expected; check the updater container’s log.')|string|tojson }},
+  updateFailed: {{ _('Update failed')|string|tojson }}, updateSlow: {{ _('It’s taking longer than expected; check the updater container’s log.')|string|tojson }},
   syncing: {{ _('Syncing…')|string|tojson }}, saving: {{ _('Saving…')|string|tojson }},
   thisCalendar: {{ _('This calendar')|string|tojson }}, shared: {{ _('Shared')|string|tojson }},
   localTitle: {{ _('A rule for this calendar only. To share it with every calendar, ✎ it and choose All calendars.')|string|tojson }},
   sharedTitle: {{ _('A Rule Template, shared by every source using it. Click to change it for all of them.')|string|tojson }},
   copiedReport: {{ _('Report copied')|string|tojson }}, longReport: {{ _('The report is long, so GitHub gets the start of it; the whole report is copied: paste it into the issue.')|string|tojson }},
-  failed: {{ _('✗ Failed')|string|tojson }}, savedWord: {{ _('Saved')|string|tojson }}, canceledWord: {{ _('Canceled')|string|tojson }},
+  failed: {{ _('Failed')|string|tojson }}, savedWord: {{ _('Saved')|string|tojson }}, cancelledWord: {{ _('Cancelled')|string|tojson }},
   pin: {{ _('Keep this open')|string|tojson }}, unpin: {{ _('Let this close')|string|tojson }}
 };
+
+// Icons the scripts put next to a message (Material Symbols).
+var ICON = { ok: {{ icon("check_circle", 15)|string|tojson }}, fail: {{ icon("cancel", 15)|string|tojson }},
+             run: {{ icon("sync", 15)|string|tojson }} };
 
 // Bind behaviour to elements once each: run again after a section is swapped in, it only binds the
 // new elements (an element's mark doesn't survive being replaced).
@@ -1566,8 +1611,8 @@ function copyField(id, btn) {
 function bindWatch() { each('form.watch', 'watch', function (f) {
   var slot = f.querySelector('.okslot');
   if (!slot) return;
-  var save = slot.querySelector('.slotsave'), cancel = slot.querySelector('.slotcancel'),
-      msg = slot.querySelector('.slotmsg'), label = save.textContent, initial = slot.dataset.state, note = null;
+  var save = slot.querySelector('.slotsave'), cancel = slot.querySelector('.slotcancel'), word = save.querySelector('.slotword'),
+      msg = slot.querySelector('.slotmsg'), label = word.textContent, initial = slot.dataset.state, note = null;
   function set(state) { slot.dataset.state = state; }
   function busy() { return slot.dataset.state === 'saving' || slot.dataset.state === 'verifying' || slot.dataset.state === 'valid'; }
   function extras(show) {
@@ -1575,7 +1620,7 @@ function bindWatch() { each('form.watch', 'watch', function (f) {
     f.querySelectorAll('[data-required]').forEach(function (el) { el.required = show; });
   }
   function fail(text) {
-    set('failed'); msg.textContent = '✗ ' + T.verifyFailed; save.textContent = label;
+    set('failed'); msg.innerHTML = ICON.fail + esc(T.verifyFailed); word.textContent = label;
     if (text) { note = document.createElement('p'); note.className = 'check bad slotnote'; note.textContent = text; f.appendChild(note); }
   }
   f.addEventListener('input', function () {
@@ -1598,13 +1643,13 @@ function bindWatch() { each('form.watch', 'watch', function (f) {
     set('saving');
     var kind = f.dataset.verify;
     if (!kind) {     // nothing to check here: show Saved, then send it
-      setTimeout(function () { save.textContent = T.saved; setTimeout(function () { HTMLFormElement.prototype.submit.call(f); }, 450); }, 300);
+      setTimeout(function () { word.textContent = T.saved; setTimeout(function () { HTMLFormElement.prototype.submit.call(f); }, 450); }, 300);
       return;
     }
     var pause = function (ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); };
     fetch(f.action, { method: 'POST', body: data, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw (j.detail || ''); }); })
-      .then(function () { save.textContent = T.saved; return pause(600); })
+      .then(function () { word.textContent = T.saved; return pause(600); })
       .then(function () {
         set('verifying'); msg.textContent = T.verifying;
         var body = new URLSearchParams({ csrf: CSRF, kind: kind, sid: f.dataset.sid || '' });
@@ -1613,7 +1658,7 @@ function bindWatch() { each('form.watch', 'watch', function (f) {
       })
       .then(function (j) {
         if (!j.ok) return fail(j.message);
-        set('valid'); msg.textContent = '✓ ' + T.validated; initial = 'ok';
+        set('valid'); msg.innerHTML = ICON.ok + esc(T.validated); initial = 'ok';
         setTimeout(function () { location.reload(); }, 1600);      // show the rest of the page up to date
       })
       .catch(function (text) { fail(typeof text === 'string' ? text : ''); });
@@ -1751,7 +1796,7 @@ document.addEventListener('keydown', function (e) {
   if (!slot) return;
   var btn = slot.querySelector('.updbtn'), text = slot.querySelector('.updtext'), from = slot.dataset.from;
   function show(state, label) { slot.dataset.state = state; text.textContent = label || ''; }
-  function fail(why) { show('failed', T.updateFailed); slot.title = why || ''; btn.disabled = false;
+  function fail(why) { show('failed', T.updateFailed); text.insertAdjacentHTML('afterbegin', ICON.fail); slot.title = why || ''; btn.disabled = false;
                        setTimeout(function () { if (slot.dataset.state === 'failed') show('ready'); }, 8000); }
   function done(version) {
     document.querySelectorAll('.topbar .curver').forEach(function (a) {
@@ -1893,52 +1938,65 @@ function bindCfg() { each('.box.cfgbox', 'cfg', function (box) {
 }); }
 bindCfg();
 
-// A box's header: the title on the left, the status lines next to it and the status box on the right.
-// When the long wording ("Downloaded 98 events from feed @ 14:53.", "Check for changes every") would
-// push the status lines onto a line of their own, the short wording is used ("98 events @ 14:53",
-// "Check every"). Measured in the page, so it also fits other languages. (Below 600 px the lines go
-// under the title anyway, with the short words: see the CSS.)
+// A module's header: when the long wording ("Downloaded 98 events from feed @ 14:53.", "Next scheduled
+// check @ 15:08") doesn't fit its two status lines, the short wording is used ("98 events @ 14:53",
+// "Next check @ 15:08"). Measured in the page, so it also fits other languages. (In a narrow module the
+// lines go under the title with the short words anyway: see the CSS.)
 (function () {
   var watched = typeof WeakSet === 'function' ? new WeakSet() : null, ro = window.ResizeObserver ? new ResizeObserver(function () { fit(); }) : null;
   function fit() {
     document.querySelectorAll('.srchead').forEach(function (h) {
       if (ro && watched && !watched.has(h)) { watched.add(h); ro.observe(h); }
-      var left = h.querySelector('.srcleft'), rest = h.querySelectorAll('.srcright, .statusbox');
-      if (!left || h.clientWidth <= 600) return;
-      // Wrapped: the status lines (or the status box) start below the bottom of the title.
-      function wraps() {
-        var bottom = left.getBoundingClientRect().bottom;
-        return Array.prototype.some.call(rest, function (el) { return el.getBoundingClientRect().top >= bottom - 2; });
-      }
+      var lines = h.querySelectorAll('.srcright p');
       h.classList.remove('tight');
-      if (wraps()) h.classList.add('tight');
+      if (Array.prototype.some.call(lines, function (p) { return p.scrollWidth > p.clientWidth + 1; })) h.classList.add('tight');
     });
   }
   fit();
   window.fitHeads = fit;
   if (!ro) window.addEventListener('resize', fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);   // after IBM Plex has loaded
 })();
 
-// Sync Now: the download runs in the background and only that source's status, the calendar and the
-// log are brought up to date when it's done (no page reload). The same happens for a download that's
-// already running when the page opens.
+// Sync Now (F1.1): the download runs in the background; the button says Syncing… and only that module's
+// header, the calendar and the log are brought up to date when it's done (no page reload). The button
+// then pulses green (Synced) or yellow (Failed) for a moment and says Sync Now again. A download that's
+// already running when the page opens is followed the same way. "google" is the Google account's.
+function syncButton(sid) {
+  var input = document.querySelector('.syncform input[name=sid][value="' + sid + '"]');
+  return input ? input.form.querySelector('.syncnow') : null;
+}
+function moduleOf(sid) { return document.getElementById(sid === 'google' ? 'dest-google' : 'src-' + sid); }
 function showSyncing(sid) {
-  var box = document.getElementById('src-' + sid);
+  var box = moduleOf(sid), btn = syncButton(sid);
   if (!box) return;
-  var chip = box.querySelector('.statusbox .chip'), btn = box.querySelector('.syncnow');
-  if (chip) { chip.className = 'chip run'; chip.textContent = T.syncing; box.querySelector('.statusbox').className = 'statusbox run'; }
-  if (btn) btn.disabled = true;
+  var sb = box.querySelector('.statusbox'), chip = sb && sb.querySelector('.chip');
+  if (chip) { sb.className = 'statusbox run'; chip.className = 'chip run'; chip.innerHTML = ICON.run + '<span class="chiptext">' + esc(T.syncing) + '</span>'; }
+  if (btn) { btn.dataset.state = 'syncing'; btn.disabled = true; }
+}
+function syncDone(sid, ok) {
+  var btn = syncButton(sid);
+  if (!btn) return;
+  btn.dataset.state = ok ? 'done' : 'fail'; btn.disabled = true;
+  setTimeout(function () { btn.dataset.state = 'idle'; btn.disabled = false; }, 2400);
 }
 function followSync(sid) {
+  var box = moduleOf(sid);
+  if (!box || box._following) return;
+  box._following = true;
   showSyncing(sid);
   var started = Date.now();
   (function poll() {
     fetch('/api/status', { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
-      var me = (j.sources || []).filter(function (x) { return x.id === sid; })[0];
-      if (me && me.running && Date.now() - started < 5 * 60 * 1000) { setTimeout(poll, 1500); return; }
-      swapIn(location.href, ['#cal', '#src-' + sid + ' .srcright', '#src-' + sid + ' .statusbox', '#activity']).then(function () {
-        var b = document.getElementById('src-' + sid); if (b) b._following = false;
+      var me = sid === 'google' ? j.google : (j.sources || []).filter(function (x) { return x.id === sid; })[0];
+      if (me && (me.running || me.pending) && Date.now() - started < 5 * 60 * 1000) { setTimeout(poll, 1500); return; }
+      // only the status parts of the headers: a title being typed is kept
+      var head = sid === 'google' ? ['#dest-google .srcright', '#dest-google .statusbox', '.box.dest .srcright', '.box.dest .statusbox']
+                                  : ['#src-' + sid + ' .srcright', '#src-' + sid + ' .statusbox'];
+      swapIn(location.href, ['#cal', '#activity'].concat(head)).then(function () {
         initCal(); bindAll();
+        syncDone(sid, !!me && (sid === 'google' ? !me.error : me.status === 'ok'));
+        var b = moduleOf(sid); if (b) b._following = false;
       });
     }, function () { setTimeout(poll, 3000); });
   })();
@@ -1949,10 +2007,16 @@ document.addEventListener('submit', function (e) {
   e.preventDefault();
   var sid = f.elements.sid.value;
   showSyncing(sid);
-  fetch('/run', { method: 'POST', body: new URLSearchParams({ csrf: CSRF, sid: sid }), credentials: 'same-origin',
-                  headers: { 'X-CS-Async': '1' } }).then(function () { followSync(sid); }, function () { f.submit(); });
+  fetch(f.action, { method: 'POST', body: new URLSearchParams({ csrf: CSRF, sid: sid }), credentials: 'same-origin',
+                    headers: { 'X-CS-Async': '1' } }).then(function () { followSync(sid); }, function () { f.submit(); });
 });
-document.querySelectorAll('.box.src .statusbox.run').forEach(function (sb) { followSync(sb.closest('.box.src').dataset.sid); });
+function followRunning() {
+  document.querySelectorAll('.box.module .statusbox.run').forEach(function (sb) {
+    var box = sb.closest('.box.module');
+    followSync(box.id === 'dest-google' ? 'google' : box.dataset.sid);
+  });
+}
+followRunning();
 
 function bindSrc() { each('.box.src', 'src', function (box) {
   // The color is only sent when it's changed, so saving doesn't set one by accident.
@@ -2021,14 +2085,13 @@ function editRow(row, sid) {
   if (cb) cb.addEventListener('click', function () { cb.setAttribute('aria-pressed', String(cb.getAttribute('aria-pressed') !== 'true')); });
   var first = ed.querySelector('input, select'); if (first) first.focus();
   function done() { row.classList.remove('editing'); ed.hidden = true; ed.innerHTML = ''; slot.dataset.state = 'idle'; }
-  // After Save or Cancel the line shows "Saved" / "Canceled" where ✎ and the bin are, for 3 seconds.
+  // After Save or Cancel the line shows "Saved" / "Cancelled" where ✎ and the bin are, for 3 seconds.
   function flash(st) {
-    var b = slot.querySelector(st === 'saved' ? '.rsave' : '.rcancel'), was = b.textContent;
-    b.textContent = st === 'saved' ? T.savedWord : T.canceledWord;
+    slot.querySelector('.rflash').textContent = st === 'saved' ? T.savedWord : T.cancelledWord;
     row.classList.add('flash'); slot.dataset.state = st;
-    setTimeout(function () { if (slot.dataset.state !== st) return; row.classList.remove('flash'); slot.dataset.state = 'idle'; b.textContent = was; }, 3000);
+    setTimeout(function () { if (slot.dataset.state !== st) return; row.classList.remove('flash'); slot.dataset.state = 'idle'; }, 3000);
   }
-  slot.querySelector('.rcancel').onclick = function () { done(); flash('canceled'); };
+  slot.querySelector('.rcancel').onclick = function () { done(); flash('cancelled'); };
   slot.querySelector('.rsave').onclick = function () { slot.dataset.state = 'choose'; };
   slot.querySelectorAll('.rscope').forEach(function (b) {
     b.onclick = function () {
@@ -2049,7 +2112,7 @@ function editRow(row, sid) {
           done(); flash('saved');
           swapIn(location.href, ['#cal', '#rules .rulelist']).then(function () { initCal(); bindLibRows(); });
         }, function (err) {
-          slot.dataset.state = 'failed'; slot.querySelector('.rmsg').textContent = '✗ ' + err.message;
+          slot.dataset.state = 'failed'; slot.querySelector('.rmsg').innerHTML = ICON.fail + esc(err.message);
           setTimeout(function () { if (slot.dataset.state === 'failed') slot.dataset.state = 'edit'; }, 4000);
         });
     };
@@ -2265,7 +2328,7 @@ function bindAll() {
   each('.disconnectform', 'disconnect', function (f) { f.addEventListener('submit', function (e) { if (!confirm(T.disconnect)) e.preventDefault(); }); });
   initSections();
   if (window.fitHeads) fitHeads();
-  document.querySelectorAll('.box.src .statusbox.run').forEach(function (sb) { var b = sb.closest('.box.src'); if (!b._following) { b._following = true; followSync(b.dataset.sid); } });
+  followRunning();
 }
 function swapFrom(html, selectors) {
   var doc = new DOMParser().parseFromString(html, 'text/html');
@@ -2294,7 +2357,8 @@ function pairState(p, st) {
   var sv = p.querySelector('.psave'), c = p.querySelector('.pcancel');
   p.dataset.state = st;
   sv.textContent = { saving: sv.dataset.busy, saved: sv.dataset.done, failed: T.failed }[st] || sv.dataset.text;
-  c.textContent = st === 'canceled' ? c.dataset.done : c.dataset.text;
+  if (st === 'failed') sv.insertAdjacentHTML('afterbegin', ICON.fail);
+  c.textContent = st === 'cancelled' ? c.dataset.done : c.dataset.text;
 }
 function flashPair(p, st, then) {
   pairState(p, st);
@@ -2320,7 +2384,7 @@ document.addEventListener('submit', function (e) {
   }, function (err) {
     if (pair) {
       pairState(pair, 'failed');
-      var note = document.createElement('p'); note.className = 'pairfail'; note.textContent = '✗ ' + err.message;
+      var note = document.createElement('p'); note.className = 'pairfail'; note.innerHTML = ICON.fail + esc(err.message);
       pair.parentNode.appendChild(note);
       setTimeout(function () { if (pair.dataset.state === 'failed') pairState(pair, 'idle'); }, 4000);
     } else alert(err.message);
@@ -2332,8 +2396,8 @@ document.addEventListener('click', function (e) {
   var p = c.closest('.pairbtns'), f = document.getElementById(p.dataset.pair);
   if (f) { f.reset(); f.dispatchEvent(new CustomEvent('paircancel')); }
   var old = p.parentNode.querySelector('.pairfail'); if (old) old.remove();
-  if (f && formId(f) === 'ruleform') { pairState(p, 'canceled'); setTimeout(function () { ruleDialog.close(); }, 700); return; }
-  flashPair(p, 'canceled');
+  if (f && formId(f) === 'ruleform') { pairState(p, 'cancelled'); setTimeout(function () { ruleDialog.close(); }, 700); return; }
+  flashPair(p, 'cancelled');
 });
 
 // Month view: an open event closes when you click anywhere else, unless it's pinned (the pin in its

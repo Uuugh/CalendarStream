@@ -9,7 +9,50 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.7-beta.6**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.1**
+
+## 0.2.8-beta.1 — 2026-10-25
+
+The first beta of 0.2.8 (EOF b); it includes everything in 0.2.7-beta.1 to beta.6, which weren't
+released as a stable 0.2.7.
+
+### Added
+- **F1.5** A **License & Attribution** section in the README (CalendarStream's license, and the
+  fonts' and icons' licenses), linked from the page's footer.
+
+### Changed
+- **F1** General:
+  - **F1.1** **Sync Now** is the same rounded rectangle in every module, and answers at once: it
+    says **Syncing…**, then pulses green (**Synced**) or yellow (**Failed**), then says Sync Now
+    again. The Google account's Sync Now moved into its module header and works the same way.
+  - **F1.2** The **(?)** is a small help icon, raised like a superscript right after the word it
+    explains.
+  - **F1.3** "Canceled" is spelled **Cancelled**.
+  - **F1.4** Fields changed in place (a login, a link, a rule line) get **✕ | ✓** icons (Cancel and
+    Save) instead of words. Cancel | Save at the bottom of a module and in the rule dialog keep
+    their words.
+  - **F1.6** Theming:
+    - **F1.6.1** No pills: everything is a rounded rectangle (8 px corners on controls, 12 px on
+      sections and modules), including status chips, the ✓ Validated slot, rule lines, the 12h /
+      24h switch and today's date.
+    - **F1.6.2** Every icon is a [Material Symbol](https://fonts.google.com/icons) (Rounded): the
+      section icons, the language, theme, Settings and Print buttons, the arrows, +, ✎, the bin,
+      copy, pin, the password eye, the status chips (each with its own icon) and the setup
+      checklists.
+    - **F1.6.3** An image of the theme rules (sent with this beta).
+    - **F1.6.4** The standard font is **IBM Plex Sans**.
+    - **F1.6.5** The typed font, **IBM Plex Mono**, is used in fields that hold code: links, IDs,
+      the Username, the client ID and the stream name.
+    - **F1.6.6** Each calendar and feed is a **module**:
+      - **F1.6.6.1** Its header, which is also all a folded module shows (from the Developer's
+        mockup): the color; the title over the note, each in a box (fields of the same size while
+        expanded); the last download over the next check; the status over Sync Now.
+      - **F1.6.6.2** Every module header is **50 px** tall (on a narrow screen the two status lines
+        go under it).
+      - **F1.6.6.3** Folded, there's no line under the header: **▸ Expand for Details or to Edit
+        Configuration ◂** sits in the module's bottom border.
+- The fonts and icons come with CalendarStream (served from `/static`), so the pages never load
+  anything from elsewhere. `/api/status` also reports Google's sync (`google`).
 
 ## 0.2.7-beta.6 — 2026-10-24
 
