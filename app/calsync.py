@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -58,6 +58,15 @@ class Event:
     free: bool = False       # shown as "free" rather than "busy" (CCS+ sends most items as TRANSP:TRANSPARENT)
     color: str = ""          # a color chosen for this event on the status page (#rrggbb); overrides rules
     source: str = "ccs"      # the calendar source it belongs to ("ccs" or a feed source's ID)
+    alarms: str = ""         # reminders, minutes before the start ("15,60"), set on the status page (0.2.8)
+    rule_color: str = ""     # the color its rules give it (#rrggbb), or ""; its own color still wins (0.2.8)
+    # Not stored: set while a download is read, for the rules (app/rules.py)
+    no_end: bool = field(default=False, compare=False)    # it had no end time (its end is its start)
+    ruled: bool = field(default=False, compare=False)     # a rule changed its time
+
+    def alarm_minutes(self) -> list[int]:
+        """The reminders, as minutes before the start, earliest first."""
+        return sorted({int(x) for x in self.alarms.split(",") if x.strip().isdigit()}, reverse=True)
 
     def fingerprint(self) -> str:
         """Identifies United's version of an event, to notice when it changes after an edit."""
@@ -68,7 +77,7 @@ class Event:
 @dataclass
 class Defaults:
     """How to treat events that have a start but no end (DTEND/DURATION)."""
-    mode: str = "hours"     # "hours" or "allday"
+    mode: str = "hours"     # "hours" or "allday"; "rules": leave it to the rules (the end is the start, no_end set)
     hours: float = 1.0
     allday_24h: bool = True  # timed events lasting a whole number of days (24 h, 48 h…) become all-day
 
@@ -249,6 +258,7 @@ def _event(ev, tz: ZoneInfo, defaults: Defaults, uid: str = "", source: str = "c
     if "DTSTART" not in ev:
         return None
     start = _as_dt(ev["DTSTART"].dt, tz)
+    no_end = False
     if "DTEND" in ev:
         end = _as_dt(ev["DTEND"].dt, tz)
     elif "DURATION" in ev:
@@ -256,6 +266,8 @@ def _event(ev, tz: ZoneInfo, defaults: Defaults, uid: str = "", source: str = "c
     elif isinstance(start, datetime) and start.astimezone(tz).time() == datetime.min.time():
         # Starts at midnight with no end: CCS+ uses this for day codes (RDO, HDO, VRDO…) -> all-day
         start, end = _set_all_day(ev, start.astimezone(tz).date(), 1)
+    elif isinstance(start, datetime) and defaults.mode == "rules":
+        end, no_end = start, True       # any other timed event with no end: the rules decide
     elif isinstance(start, datetime):
         # Any other timed event with no end: apply DEFAULT_EVENT_HOURS
         if defaults.mode == "allday":
@@ -287,6 +299,7 @@ def _event(ev, tz: ZoneInfo, defaults: Defaults, uid: str = "", source: str = "c
         uid=uid or str(ev.get("UID", "")) or hashlib.sha1(f"{start}|{ev.get('SUMMARY')}".encode()).hexdigest(),
         free=str(ev.get("TRANSP", "")).upper() == "TRANSPARENT",
         source=source,
+        no_end=no_end,
     )
 
 
@@ -384,8 +397,20 @@ def build_feed(events: list[Event], name: str, tz_name: str, color: str = "") ->
         if e.free:
             ev.add("transp", "TRANSPARENT")
         _write_fields(ev, e, {"custom": "added", "rule": "rule"}.get(e.origin, "edited" if e.edited else "source"))
+        _write_alarms(ev, e)
         cal.add_component(ev)
     return cal.to_ical()
+
+
+def _write_alarms(ev, e: Event):
+    """The event's reminders, as VALARMs (a calendar app shows them; some ignore subscribed ones)."""
+    from icalendar import Alarm
+    for minutes in e.alarm_minutes():
+        a = Alarm()
+        a.add("action", "DISPLAY")
+        a.add("description", e.title)
+        a.add("trigger", timedelta(minutes=-minutes))
+        ev.add_component(a)
 
 
 def _calendar_props(cal, name: str, tz_name: str, color: str):
@@ -433,54 +458,6 @@ def _write_fields(ev, e: Event, marker: str):
     if e.description:
         ev.add("description", e.description)
     ev.add("x-calendar-stream", marker)
-
-
-def render(cal: Calendar, base: list[Event], name: str, tz_name: str,
-           edits: dict | None = None, customs: list[dict] | None = None,
-           color: str = "", extra=None) -> tuple[bytes, list[Event]]:
-    """Apply edits, hides and added events to a parsed CCS+ calendar, keeping United's own fields.
-    `color` (#rrggbb) is offered to subscribers as the calendar's color; Apple Calendar uses it,
-    Google Calendar ignores it. `extra(events)` returns more events to add (made by rules).
-    Returns (feed bytes, all events for the status page)."""
-    from icalendar import Event as VEvent
-
-    edits, customs = edits or {}, customs or []
-    _calendar_props(cal, name, tz_name, color)
-
-    by_uid = {e.uid: e for e in base}
-    final: list[Event] = []
-    for ev in list(cal.subcomponents):
-        if ev.name != "VEVENT":
-            continue
-        uid = str(ev.get("UID", ""))
-        original = by_uid.get(uid)
-        if original is None:
-            continue
-        ed = edits.get(uid)
-        if not ed:
-            final.append(original)
-            continue
-        e = _edited(original, ed)
-        if e.hidden:
-            cal.subcomponents.remove(ev)
-        else:
-            _write_fields(ev, e, "edited")
-        final.append(e)
-
-    stamp = datetime.now(ZoneInfo("UTC"))
-    added = [_custom(c, "ccs") for c in customs]
-    final += added
-    made = list(extra(final)) if extra else []
-    for e in added + made:
-        ev = VEvent()
-        ev.add("uid", e.uid)
-        ev.add("dtstamp", stamp)
-        _write_fields(ev, e, "added" if e.origin == "custom" else "rule")
-        cal.add_component(ev)
-    final += made
-
-    final.sort(key=lambda e: e.start)
-    return cal.to_ical(), final
 
 
 def empty_feed(name: str, tz_name: str) -> bytes:

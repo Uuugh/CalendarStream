@@ -13,7 +13,7 @@
   h1 { font-size:18px; margin:0 0 10px } p { margin:0 0 16px } a { color:var(--accent); font-weight:600 }
 </style>
 </head>
-<body><main>
+<body>{{ icon_sprite() }}<main>
   {# A form was refused (e.g. a value that isn't allowed): say why, then go back to fix it. #}
   <div class="card">
     <h1>{{ _('That didn’t work') if code < 500 else _('Something went wrong') }}</h1>

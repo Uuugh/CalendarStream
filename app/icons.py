@@ -1,7 +1,8 @@
 """Material Symbols (Rounded, weight 400; Apache License 2.0) drawn inline as SVG.
 
-Only the icons in material_symbols/symbols.json are available; tools/vendor_icons.py adds more. Nothing
-here depends on the web page: `svg()` gives markup, `mask()` a CSS url() for icons drawn by stylesheets.
+Only the icons in material_symbols/symbols.json are available; tools/vendor_icons.py adds more. `sprite()`
+puts every icon in a page once; `svg()` draws one by pointing at it; `mask()` gives a CSS url() for icons
+drawn by stylesheets.
 """
 
 import json
@@ -26,10 +27,20 @@ def path(name: str) -> str:
 
 
 def svg(name: str, size: int = 18, cls: str = "") -> Markup:
-    """An icon as inline SVG in the text color, hidden from screen readers (its button has the label)."""
+    """An icon in the text color, hidden from screen readers (its button has the label). It points at
+    the page's sprite (see sprite()), so each icon's drawing is in the page once."""
+    path(name)              # an unknown name fails here, not as an empty square in the page
     classes = f"mi {cls}".strip()
-    return Markup(f'<svg class="{escape(classes)}" width="{size}" height="{size}" viewBox="{_VIEWBOX}" '
-                  f'fill="currentColor" aria-hidden="true" focusable="false"><path d="{path(name)}"/></svg>')
+    # No viewBox here: the symbol has it, and fills the box (whatever size CSS gives it)
+    return Markup(f'<svg class="{escape(classes)}" width="{size}" height="{size}" fill="currentColor" aria-hidden="true" '
+                  f'focusable="false"><use href="#mi-{name}" width="100%" height="100%"/></svg>')
+
+
+def sprite() -> Markup:
+    """Every icon once, for svg() to point at: put it at the top of a page's <body>. (Not display:none:
+    browsers don't draw symbols from an SVG that isn't displayed.)"""
+    symbols = "".join(f'<symbol id="mi-{n}" viewBox="{_VIEWBOX}"><path d="{d}"/></symbol>' for n, d in sorted(_paths().items()))
+    return Markup(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{_VIEWBOX}" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">{symbols}</svg>')
 
 
 def mask(name: str) -> Markup:

@@ -12,7 +12,8 @@ import re
 import secrets
 import threading
 from contextlib import asynccontextmanager
-from datetime import date, datetime, time as dtime, timedelta, timezone
+from dataclasses import replace
+from datetime import date, datetime, timedelta, timezone
 from itertools import zip_longest
 from pathlib import Path
 from urllib.parse import quote, urlparse
@@ -26,8 +27,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from . import __version__, i18n, icons
+from . import rules as rules_mod
 from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, apply_changes, build_feed,
-                      check_calendar, download, new_calendar, parse, parse_feed, render)
+                      check_calendar, download, parse, parse_feed)
 from .config import DEFAULT_CALENDAR_URL, normalise_public_url, settings
 from .gsync import GOOGLE_COLORS, Google, GoogleError, nearest_color_id
 from .logins import LoginError, Logins
@@ -54,22 +56,12 @@ def now():
     return datetime.now(TZ)
 
 
-def defaults(sid: str = "ccs") -> Defaults:
-    """How a source's events with no end, and its 24-hour events, are shown: its predefined rules
-    ("Items without an end time", "24-hour events"). Without the first, DEFAULT_EVENT_HOURS from .env;
-    without the second, 24-hour events keep their times."""
-    rules = effective_rules(sid)
-    no_end = next((r for r in rules if r["type"] == "no_end"), None)
-    whole = next((r for r in rules if r["type"] == "allday24"), None)
-    if no_end:
-        return Defaults(no_end["no_end_mode"], no_end["minutes"] / 60, bool(whole and whole["allday"]))
-    return Defaults(settings.default_event_type, settings.default_event_hours, bool(whole and whole["allday"]))
-
-
 # --- Calendar sources and destinations ------------------------------------------------
 #
-# A source is where events come from: United's CCS+ Calendar Sync (ID "ccs", at most one) or any
-# .ics feed link (type "ics", IDs such as "f3a9c1"). Each source has its own name, color (the
+# A source is where events come from: United's CCS+ Calendar Sync (ID "ccs", at most one), any .ics
+# feed link (type "ics", IDs such as "f3a9c1"), or a local calendar (0.2.8: type "local", IDs such as
+# "l3a9c1"), which only holds events added here. The first source is the default calendar: events
+# added here go to it unless another is chosen. Each source has its own name, color (the
 # default color of its events), rules, check interval, status and events. CCS+ keeps the database
 # keys used before 0.2 ("calendar_name", "status"…); a feed source's keys are the same plus ":<id>" (skey).
 #
@@ -79,9 +71,9 @@ def defaults(sid: str = "ccs") -> Defaults:
 # "destinations": [{"id": "d1a2b3c", "type": "google" | "feed", "name", "sources": [IDs], "token"}],
 # "token" being a feed's stream name. A new install starts with no sources and no destinations.
 
-SOURCE_TYPES = ("ccs", "ics")
+SOURCE_TYPES = ("ccs", "ics", "local")
 DESTINATION_TYPES = {"google": "Google calendar", "feed": "Calendar feed"}
-SID_RE = re.compile(r"^(ccs|f[0-9a-f]{6})$")
+SID_RE = re.compile(r"^(ccs|[fl][0-9a-f]{6})$")
 DID_RE = re.compile(r"^d[0-9a-f]{6}$")
 
 
@@ -91,7 +83,8 @@ def skey(sid: str, base: str) -> str:
 
 
 def sources() -> list[dict]:
-    """The calendar sources, in the order they were added: [{"id", "type", "url"?}, …]."""
+    """The calendar sources, in their order on the page (the first is the default calendar):
+    [{"id", "type", "url"?}, …]."""
     return [x for x in (store.get("sources") or []) if isinstance(x, dict) and SID_RE.match(str(x.get("id", "")))]
 
 
@@ -204,6 +197,7 @@ def calendar_name(sid: str = "ccs") -> str:
 
 
 COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+DEFAULT_COLOR = "#1d4ed8"   # a calendar's events on this page until a color is chosen (its module's color box)
 
 
 def calendar_color(sid: str = "ccs") -> str:
@@ -215,111 +209,122 @@ def calendar_color(sid: str = "ccs") -> str:
 
 MAX_TAGS, MAX_TAG_LEN = 30, 40
 
-# Rules (called tags before 0.2). Since 0.2.6 every rule lives in the Rule Templates section ("the library",
-# kv "rule_templates"), and each source lists the ones it uses, in order (kv "rule_subs", per source).
-# Kinds: "color" and "event" match a word or phrase in event titles and give matching events a color
-# or add an event made from an event template next to them; "no_end" (items without an end time: last a
-# set time, or all day) and "allday24" (24-hour events: shown as all-day, or keep their times) are the
-# predefined kinds and need no match. "changes" (0.2.7) records changes the source makes to matching
-# events (every event when its match is empty): a note on the event and a line in Activities and Logs.
-# A rule with an "owner" (a source's ID) is local to that source: made by editing a rule in the source
-# and choosing "This calendar"; it isn't listed in Rule Templates.
-RULE_TYPES = {"color": "Color", "event": "Add event", "changes": "Record changes", "no_end": "Items without an end time",
-              "allday24": "24-hour events"}
-RULE_ACTIONS = {"color": "Color", "event": "Add event"}
-RULE_WHEN = {"before_start": "before the start", "after_start": "after the start", "after_end": "after the end"}
-MAX_OFFSET = 7 * 24 * 60     # minutes
-MAX_RULES = 60
-
-# How a rule is matched against an event title. "word" is the default.
-TAG_MODES = {
-    "word": "Whole word",      # "RDO" matches "RDO" and "RDO." but not "VRDO"
-    "contains": "Contains",    # "RDO" also matches "VRDO"
-    "starts": "Starts with",   # "UA" matches "UA 122 EWR-LHR" but not "TRV UA"
-    "exact": "Exact title",    # the whole title must be the tag
-}
+# Rules (app/rules.py, 0.2.8): one ordered list in kv "rules" ("If … Then …"; the order is the priority),
+# each saying which calendars it applies to. Events are read with RULES_PARSE: an event with no end
+# time keeps its start as its end (and no_end set), and 24-hour events keep their times, so the
+# rules ("Items without an end time", "24-hour events") decide what becomes of them.
+RULES_PARSE = Defaults(mode="rules", allday_24h=False)
+RULE_WHEN = rules_mod.WHEN
 
 
-def rule_library() -> list[dict]:
-    """Every rule: the Rule Templates section's (shared) and the ones local to a source."""
-    return _rules_from(store.get("rule_templates") or [])
+def all_rules() -> list[dict]:
+    """Every rule, highest priority first."""
+    return rules_mod.normalize_all(store.get("rules"), source_ids())
 
 
-def shared_rules() -> list[dict]:
-    """The Rule Templates section: the rules any source can use."""
-    return [r for r in rule_library() if not r["owner"]]
+def save_rules(found: list[dict]):
+    store.set("rules", found[:rules_mod.MAX_RULES])
 
 
-rule_templates = rule_library     # its name in 0.2.5
+def source_rules(sid: str) -> list[dict]:
+    """The rules a calendar uses, highest priority first."""
+    return rules_mod.for_source(all_rules(), sid)
 
 
-def rule_subs(sid: str) -> list[str]:
-    """The rules a source uses, in order (IDs of rules in the library)."""
-    known = {r["id"] for r in rule_library()}
+def ruleset(sid: str) -> rules_mod.Ruleset:
+    """A calendar's rules, ready to apply to its events. An event with no end time that no rule
+    changes gets DEFAULT_EVENT_TYPE / DEFAULT_EVENT_HOURS from .env."""
+    return rules_mod.Ruleset(source_rules(sid), TZ, {t["id"]: t for t in event_templates()},
+                             (settings.default_event_type, settings.default_event_hours))
+
+
+def color_name(color: str) -> str:
+    return GOOGLE_COLORS[nearest_color_id(color)][0]
+
+
+def rule_label(r: dict, lang: str = "en") -> str:
+    """A rule in one line: its title, else e.g. 'Text contains “RDO” → Color Tomato'."""
+    tr = lambda text, **kw: str(i18n.tr(lang, text, **kw))
+    return rules_mod.label(r, tr, color_name, {t["id"]: t for t in event_templates()})
+
+
+def migrate_rules():
+    """0.2.8: the rules become one list of "If … Then …" rules (app/rules.py). The rules of 0.2.6–0.2.8-beta.1
+    (and, through them, those of 0.2.5 and before) are converted; a new install starts with the two
+    predefined ones (items without an end time, 24-hour events), for every calendar."""
+    if store.get("rules") is not None:
+        return
+    if store.get("rules_v3") or store.get("rule_templates") is not None or any(
+            store.get(skey(sid, "calendar_tags")) for sid in source_ids()):
+        _migrate_rules_v3()
+        lib = _v3_rules(store.get("rule_templates") or [])
+        subs = {sid: list(store.get(skey(sid, "rule_subs")) or []) for sid in source_ids()}
+        save_rules(rules_mod.from_v3(lib, subs, source_ids()))
+    else:
+        save_rules(rules_mod.starters(settings.default_event_type, settings.default_event_hours, settings.allday_24h))
+
+
+def ensure_local():
+    """0.2.8: every install gets a local calendar once, at the top (so it's the default calendar for
+    events added here), in every feed. Removed later, it isn't made again."""
+    if store.get("local_made"):
+        return
+    sid = new_local()
+    store.set("sources", [{"id": sid, "type": "local"}] + sources())
+    store.set(f"calendar_name:{sid}", "Local")
+    save_destinations([{**d, "sources": [sid] + d["sources"]} for d in destinations()])
+    store.set("local_made", True)
+
+
+def new_local() -> str:
+    taken = set(source_ids())
+    while (sid := "l" + secrets.token_hex(3)) in taken:
+        pass
+    return sid
+
+
+# --- Rules from before 0.2.8, only read to convert them (migrate_rules) ------------------------------
+# 0.2.6–0.2.8-beta.1: kv "rule_templates" (the library: one-condition rules of the kinds below, "owner"
+# set for a rule local to one source) and each source's "rule_subs" (the ones it uses, in order).
+# 0.2.5 and before: each source's own "calendar_tags" and "defaults", converted first (_migrate_rules_v3).
+
+TAG_MODES = {"word": "Whole word", "contains": "Contains", "starts": "Starts with", "exact": "Exact title"}
+V3_TYPES = ("color", "event", "changes", "no_end", "allday24")
+
+
+def _v3_rules(raw: list) -> list[dict]:
+    """Rules as 0.2.6–0.2.8-beta.1 saved them, each with every field."""
     found = []
-    for rid in store.get(skey(sid, "rule_subs")) or []:
-        if rid in known and rid not in found:
-            found.append(rid)
-    return found
-
-
-def effective_rules(sid: str) -> list[dict]:
-    """The rules a source uses, in its order (for colors the first match wins)."""
-    by_id = {r["id"]: r for r in rule_library()}
-    return [by_id[rid] for rid in rule_subs(sid)]
-
-
-def calendar_tags(sid: str = "ccs") -> list[dict]:
-    """A source's matching rules (color and add event), in order."""
-    return [r for r in effective_rules(sid) if r["type"] in RULE_ACTIONS]
-
-
-def _rules_from(raw: list) -> list[dict]:
-    """Rules as saved, checked again on the way out (colors are written into the page's CSS). Each has
-    every field: {"id", "type", "action" (= type), "tag", "mode", "case", "color", "template", "when",
-    "offset", "no_end_mode", "minutes", "allday", "owner" ("" for a shared rule, else the source's ID)}."""
-    rules = []
     for i, t in enumerate(raw if isinstance(raw, list) else []):
         if not isinstance(t, dict):
             continue
         kind = t.get("type") or t.get("action") or "color"
-        kind = kind if kind in RULE_TYPES else "color"
-        tag, color = str(t.get("tag", "")).strip(), str(t.get("color", ""))
-        if kind in RULE_ACTIONS and (not tag or (kind == "color" and not COLOR_RE.match(color))):
+        kind = kind if kind in V3_TYPES else "color"
+        tag, color = str(t.get("tag", "")).strip()[:MAX_TAG_LEN], str(t.get("color", ""))
+        if kind in ("color", "event") and (not tag or (kind == "color" and not COLOR_RE.match(color))):
             continue
-        owner = str(t.get("owner") or "")
-        try:
-            offset = max(0, min(MAX_OFFSET, int(t.get("offset") or 0)))
-        except (TypeError, ValueError):
-            offset = 0
-        try:
-            minutes = max(5, min(24 * 60, int(t.get("minutes") or 60)))
-        except (TypeError, ValueError):
-            minutes = 60
         rid = str(t.get("id") or f"r{i}")
-        rules.append({"id": rid if re.fullmatch(r"[a-z0-9]{1,16}", rid) else f"r{i}", "type": kind, "action": kind,
-                      "tag": tag[:MAX_TAG_LEN], "color": color.lower() if COLOR_RE.match(color) else "",
+        found.append({"id": rid if re.fullmatch(r"[a-z0-9]{1,16}", rid) else f"r{i}", "type": kind, "tag": tag,
+                      "color": color.lower() if COLOR_RE.match(color) else "",
                       "mode": t.get("mode") if t.get("mode") in TAG_MODES else "word", "case": bool(t.get("case")),
                       "template": str(t.get("template") or "")[:16],
-                      "when": t.get("when") if t.get("when") in RULE_WHEN else "before_start", "offset": offset,
-                      "no_end_mode": "allday" if t.get("no_end_mode") == "allday" else "hours", "minutes": minutes,
-                      "allday": bool(t.get("allday", True)),
-                      "owner": owner if re.fullmatch(r"ccs|f[0-9a-f]{6}", owner) else ""})
-    return rules[:MAX_RULES]
+                      "when": t.get("when") if t.get("when") in RULE_WHEN else "before_start",
+                      "offset": rules_mod._int(t.get("offset"), 0, rules_mod.MAX_OFFSET),
+                      "no_end_mode": "allday" if t.get("no_end_mode") == "allday" else "hours",
+                      "minutes": rules_mod._int(t.get("minutes"), 5, 24 * 60, 60), "allday": bool(t.get("allday", True)),
+                      "owner": str(t.get("owner") or "") if re.fullmatch(r"ccs|f[0-9a-f]{6}", str(t.get("owner") or "")) else ""})
+    return found
 
 
-def _same_rule(a: dict, b: dict) -> bool:
-    """Whether two rules do the same thing (their IDs aside)."""
-    keys = {"color": ("tag", "mode", "case", "color"), "event": ("tag", "mode", "case", "template", "when", "offset"),
-            "changes": ("tag", "mode", "case"), "no_end": ("no_end_mode", "minutes"), "allday24": ("allday",)}[a["type"]]
-    return a["type"] == b["type"] and a["owner"] == b["owner"] and all(a[k] == b[k] for k in keys)
+_V3_KEYS = {"color": ("tag", "mode", "case", "color"), "event": ("tag", "mode", "case", "template", "when", "offset"),
+            "changes": ("tag", "mode", "case"), "no_end": ("no_end_mode", "minutes"), "allday24": ("allday",)}
 
 
-def _library_add(lib: list[dict], rule: dict) -> str:
-    """Add a rule to the library list (unless the same one is there); returns its ID."""
-    rule = _rules_from([rule])[0]
+def _v3_add(lib: list[dict], rule: dict) -> str:
+    """Add a rule to a 0.2.6 library (unless the same one is there); returns its ID."""
+    rule = _v3_rules([rule])[0]
     for r in lib:
-        if _same_rule(r, rule):
+        if r["type"] == rule["type"] and r["owner"] == rule["owner"] and all(r[k] == rule[k] for k in _V3_KEYS[r["type"]]):
             return r["id"]
     rid, taken = rule["id"], {r["id"] for r in lib}
     while rid in taken:
@@ -328,38 +333,24 @@ def _library_add(lib: list[dict], rule: dict) -> str:
     return rid
 
 
-def predefined_ids() -> list[str]:
-    """The predefined rules a new source starts with (made from DEFAULT_EVENT_HOURS / ALLDAY_24H when
-    the library has none yet)."""
-    lib = rule_library()
-    ids = []
-    for kind, made in (("no_end", {"type": "no_end", "id": "t" + secrets.token_hex(3), "no_end_mode": settings.default_event_type,
-                                   "minutes": round(settings.default_event_hours * 60)}),
-                       ("allday24", {"type": "allday24", "id": "t" + secrets.token_hex(3), "allday": settings.allday_24h})):
-        found = next((r for r in lib if r["type"] == kind and not r["owner"]), None)
-        ids.append(found["id"] if found else _library_add(lib, made))
-    store.set("rule_templates", lib)
-    return ids
-
-
-def migrate_rules():
-    """0.2.6: every rule goes into the library. A source's own rules (0.2.5 and before), the rule
-    templates it ticked and its two built-in settings become the rules it uses, in that order."""
+def _migrate_rules_v3():
+    """0.2.6: every rule into the library; a source's own rules (0.2.5 and before), the rule templates it
+    ticked and its two built-in settings became the rules it used, in that order."""
     if store.get("rules_v3"):
         return
-    lib = rule_library()
+    lib = _v3_rules(store.get("rule_templates") or [])
     for sid in source_ids():
-        own = _rules_from(store.get(skey(sid, "calendar_tags")) or [])
-        subs = [_library_add(lib, r) for r in own] + [x for x in store.get(skey(sid, "rule_subs")) or []]
+        own = _v3_rules(store.get(skey(sid, "calendar_tags")) or [])
+        subs = [_v3_add(lib, r) for r in own] + [x for x in store.get(skey(sid, "rule_subs")) or []]
         saved = store.get(skey(sid, "defaults")) or {}
         try:
             hours = float(saved.get("hours", settings.default_event_hours))
         except (TypeError, ValueError):
             hours = settings.default_event_hours
-        subs.append(_library_add(lib, {"type": "no_end", "id": "t" + secrets.token_hex(3),
-                                       "no_end_mode": saved.get("mode", settings.default_event_type), "minutes": round(hours * 60)}))
-        subs.append(_library_add(lib, {"type": "allday24", "id": "t" + secrets.token_hex(3),
-                                       "allday": saved.get("allday_24h", settings.allday_24h)}))
+        subs.append(_v3_add(lib, {"type": "no_end", "id": "t" + secrets.token_hex(3),
+                                  "no_end_mode": saved.get("mode", settings.default_event_type), "minutes": round(hours * 60)}))
+        subs.append(_v3_add(lib, {"type": "allday24", "id": "t" + secrets.token_hex(3),
+                                  "allday": saved.get("allday_24h", settings.allday_24h)}))
         store.set(skey(sid, "rule_subs"), list(dict.fromkeys(subs)))
         store.delete(skey(sid, "calendar_tags"))
         store.delete(skey(sid, "defaults"))
@@ -367,31 +358,8 @@ def migrate_rules():
     store.set("rules_v3", True)
 
 
-def rule_label(r: dict, lang: str = "en") -> str:
-    """A rule in one line, e.g. "RDO → Tomato", "EWR (contains) → Drive to the airport, 2:00 before the start",
-    "Items without an end time → last 1:00"."""
-    tr = lambda text, **kw: str(i18n.tr(lang, text, **kw))
-    if r["type"] == "no_end":
-        return tr("Items without an end time") + " → " + (tr("all day") if r["no_end_mode"] == "allday"
-                                                          else tr("last {length}", length=show_duration(r["minutes"])))
-    if r["type"] == "allday24":
-        return tr("24-hour events") + " → " + (tr("shown as all-day") if r["allday"] else tr("keep their times"))
-    match = r["tag"] + ("" if r["mode"] == "word" else f" ({tr(TAG_MODES[r['mode']]).lower()})") + (" Aa" if r["case"] else "")
-    if r["type"] == "changes":
-        return tr("Record changes") + " → " + (match if r["tag"] else tr("every event"))
-    if r["type"] == "color":
-        return f"{match} → {GOOGLE_COLORS[nearest_color_id(r['color'])][0]}"
-    t = next((x for x in event_templates() if x["id"] == r["template"]), None)
-    return (f"{match} → {t['title'] if t else '?'}, "
-            + tr("{time} {when}", time=show_duration(r["offset"]), when=tr(RULE_WHEN[r["when"]])))
-
-
-def color_rules(rules: list[dict]) -> list[dict]:
-    return [r for r in rules if r["type"] == "color" and r["color"]]
-
-
 # --- Event templates ------------------------------------------------------------------------
-# Ready-made events: used by "Add event" rules, and offered when adding an event by hand.
+# Ready-made events: used by "Create event" rules, and offered when adding an event by hand.
 
 MAX_TEMPLATES = 30
 
@@ -413,62 +381,6 @@ def event_templates() -> list[dict]:
                       "location": str(t.get("location") or "")[:200], "description": str(t.get("description") or "")[:2000],
                       "color": color if color in EVENT_COLORS else ""})
     return found[:MAX_TEMPLATES]
-
-
-def _from_template(e: Event, rule: dict, t: dict) -> Event:
-    """The event an "Add event" rule makes next to a matching event `e`."""
-    if e.all_day:      # all-day events count from midnight
-        s0 = datetime.combine(date.fromisoformat(e.start[:10]), dtime(), TZ)
-        s1 = datetime.combine(date.fromisoformat(e.end[:10]), dtime(), TZ)
-    else:
-        s0, s1 = datetime.fromisoformat(e.start), datetime.fromisoformat(e.end)
-    off = timedelta(minutes=rule["offset"])
-    at = {"before_start": s0 - off, "after_start": s0 + off, "after_end": s1 + off}[rule["when"]].astimezone(TZ)
-    if t["all_day"]:
-        start, end = at.date().isoformat(), (at.date() + timedelta(days=1)).isoformat()
-    else:
-        start, end = at.isoformat(), (at + timedelta(minutes=t["minutes"])).isoformat()
-    return Event(title=t["title"], start=start, end=end, all_day=t["all_day"], location=t["location"],
-                 description=t["description"], uid=f"{e.uid}#rule-{rule['id']}", origin="rule",
-                 color=t["color"], source=e.source)
-
-
-def rule_maker(sid: str):
-    """A function adding the events a source's "Add event" rules make (or None when it has none)."""
-    templates = {t["id"]: t for t in event_templates()}
-    rules = [(r, _tag_pattern(r), templates[r["template"]]) for r in effective_rules(sid)
-             if r["action"] == "event" and r["template"] in templates]
-    if not rules:
-        return None
-
-    def make(events: list[Event]) -> list[Event]:
-        made = {}
-        for e in events:
-            if e.origin == "rule" or e.hidden:
-                continue
-            for rule, rx, t in rules:
-                if rx.search(e.title):
-                    ev = _from_template(e, rule, t)
-                    made[ev.uid] = ev
-        return list(made.values())
-    return make
-
-
-def _tag_pattern(t: dict) -> re.Pattern:
-    tag = re.escape(t["tag"])
-    pattern = {"word": r"(?<!\w)" + tag + r"(?!\w)", "contains": tag,
-               "starts": r"^\s*" + tag, "exact": r"^\s*" + tag + r"\s*$"}[t["mode"]]
-    return re.compile(pattern, 0 if t["case"] else re.IGNORECASE)
-
-
-def tag_matcher(tags: list[dict]):
-    """Return a function giving the color of the first color rule that matches an event title
-    (by each rule's mode and case setting), or "" when none match."""
-    rules = [(_tag_pattern(t), t["color"]) for t in color_rules(tags)]
-
-    def color_for(title: str) -> str:
-        return next((color for rx, color in rules if rx.search(title)), "")
-    return color_for
 
 
 # Collapsible sections on the status page, and whether each starts open. The open/closed state
@@ -680,12 +592,9 @@ def dest_events(d: dict) -> list[Event]:
 
 
 def event_colorer():
-    """A function giving an event's color: its own, else its source's first matching color rule,
-    else its source's color ("" for none)."""
-    matchers = {sid: tag_matcher(effective_rules(sid)) for sid in source_ids()}
+    """A function giving an event's color: its own, else its rules', else its source's ("" for none)."""
     colors = {sid: calendar_color(sid) for sid in source_ids()}
-    nobody = lambda title: ""
-    return lambda e: e.color or matchers.get(e.source, nobody)(e.title) or colors.get(e.source, "")
+    return lambda e: e.color or e.rule_color or colors.get(e.source, "")
 
 
 EARLIEST = date(2000, 1, 1)      # a Google destination with no Start date gets every event from here on
@@ -760,24 +669,37 @@ def customs_for(sid: str) -> list[dict]:
     return [c for c in store.get_customs() if (c.get("source") or "ccs") == sid]
 
 
-def publish(raw: bytes | None, sha: str | None = None, sid: str = "ccs") -> tuple[list[Event], list[Event]]:
-    """Build a source's feed from its last download (or none yet) plus the edits, added events and
-    rule-made events, and store it. Returns (all its events now, its events before)."""
-    edits, customs, extra = store.get_edits(), customs_for(sid), rule_maker(sid)
+def source_events(sid: str, raw: bytes | None, rs: rules_mod.Ruleset | None = None) -> tuple[list[Event], str]:
+    """A source's own events from a download (none for a local calendar, or before the first one), with
+    its rules' time changes (items without an end time, 24-hour events…), before any edit; and the
+    download's hash."""
+    if raw is None or (source(sid) or {}).get("type") == "local":
+        return [], ""
     if sid == "ccs":
-        if raw is not None:
-            cal, base, digest = parse(raw, settings.timezone, defaults(sid))
-        else:
-            cal, base, digest = new_calendar(), [], ""
-        add_change_notes(base, sid)
-        feed, events = render(cal, base, calendar_name(), settings.timezone, edits, customs, calendar_color(), extra)
+        _, base, digest = parse(raw, settings.timezone, RULES_PARSE)
     else:
-        base, digest = parse_feed(raw, settings.timezone, defaults(sid), sid, *feed_window()) if raw is not None else ([], "")
-        add_change_notes(base, sid)
-        events = apply_changes(base, edits, customs, sid)
-        if extra:
-            events = sorted(events + extra(events), key=lambda e: e.start)
-        feed = build_feed(events, calendar_name(sid), settings.timezone, calendar_color(sid))
+        base, digest = parse_feed(raw, settings.timezone, RULES_PARSE, sid, *feed_window())
+    return (rs or ruleset(sid)).change_times(base), digest
+
+
+def event_alarms() -> dict[str, str]:
+    """The reminders set on the status page: {event UID: "15,60"} (minutes before the start)."""
+    saved = store.get("event_alarms") or {}
+    return {str(k): str(v) for k, v in saved.items() if isinstance(saved, dict)}
+
+
+def publish(raw: bytes | None, sha: str | None = None, sid: str = "ccs") -> tuple[list[Event], list[Event]]:
+    """Build a source's events from its last download (or none yet): its rules' time changes, then the
+    edits and the events added here, the events its rules add, its rules' colors and emoji, and the
+    reminders; store them. Returns (all its events now, its events before)."""
+    rs = ruleset(sid)
+    base, digest = source_events(sid, raw, rs)
+    add_change_notes(base, sid)
+    events = apply_changes(base, store.get_edits(), customs_for(sid), sid)
+    events = rs.finish(sorted(events + rs.made(events, TZ), key=lambda e: e.start))
+    alarms = event_alarms()
+    events = [replace(e, alarms=alarms[e.uid]) if e.uid in alarms else e for e in events]
+    feed = build_feed(events, calendar_name(sid), settings.timezone, calendar_color(sid))
     previous = store.load_events(sid)
     if raw is not None:
         store.save_calendar(skey(sid, "source"), raw, sha or digest)
@@ -798,11 +720,8 @@ def rebuild(sid: str | None = None):
 
 
 def preview(sid: str, body: bytes) -> tuple[list[Event], str]:
-    """A downloaded calendar's events (before edits), and its hash."""
-    if sid == "ccs":
-        _, events, digest = parse(body, settings.timezone, defaults(sid))
-        return events, digest
-    return parse_feed(body, settings.timezone, defaults(sid), sid, *feed_window())
+    """A downloaded calendar's events (with its rules' time changes, before edits), and its hash."""
+    return source_events(sid, body)
 
 
 def _event_time(e: Event, d: i18n.Dates, lang: str = "en") -> str:
@@ -821,11 +740,10 @@ def record_changes(sid: str, old: list[Event], new: list[Event]) -> int:
     a note is added to the event ("Changed Oct 22: time Oct 23 7:15am–9:30am → Oct 23 8:05am–10:20am"),
     kept in kv change_notes:<source> and shown in its description, and a line goes in Activities and
     Logs; a matching event the source dropped is logged too. Returns how many changes were noted."""
-    rules = [r for r in effective_rules(sid) if r["type"] == "changes"]
-    if not rules or not old:
+    rs = ruleset(sid)
+    if not rs.records_changes or not old:
         return 0
-    patterns = [_tag_pattern(r) if r["tag"] else None for r in rules]
-    watched = lambda e: any(p is None or p.search(e.title) for p in patterns)
+    watched = rs.watched
     lang = store.get("ui_lang") if store.get("ui_lang") in i18n.LANGS else "en"
     d, today = dates_for(lang), now().astimezone(TZ).date()
     before, after = {e.uid: e for e in old}, {e.uid for e in new}
@@ -1028,7 +946,9 @@ source_tasks: dict[str, asyncio.Task] = {}
 
 
 def start_source(sid: str):
-    """Start a source's checks (when the app starts or the source is added)."""
+    """Start a source's checks (when the app starts or the source is added); a local calendar has none."""
+    if (source(sid) or {}).get("type") == "local":
+        return
     if sid not in source_tasks or source_tasks[sid].done():
         source_tasks[sid] = asyncio.create_task(loop(sid))
 
@@ -1089,6 +1009,7 @@ async def lifespan(_app):
     migrate_sources()
     migrate_destinations()
     migrate_rules()
+    ensure_local()
     imported = logins.import_old(settings.username, settings.password, settings.gui_user, settings.gui_password)
     if imported:
         state.record("info", "Imported " + " and ".join(imported) + " from the old secret files. They're "
@@ -1119,20 +1040,22 @@ app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, version=__versio
 @app.middleware("http")
 async def protect(request: Request, call_next):
     """Refuse form posts sent from other websites (the browser marks them Sec-Fetch-Site: cross-site),
-    except Google's change notifications, and add headers that stop the pages being framed or
-    leaking their address."""
+    except Google's change notifications, and add headers that stop other sites framing the pages and
+    the pages leaking their address."""
     if (request.method == "POST" and request.headers.get("sec-fetch-site") == "cross-site"
             and request.url.path != "/google/notify"):
         return Response("Cross-site requests aren't accepted.", status_code=403)
     response = await call_next(request)
-    response.headers.setdefault("X-Frame-Options", "DENY")
-    response.headers.setdefault("Content-Security-Policy", "frame-ancestors 'none'")
+    # Only this site may show its pages in a frame (the event and print previews do, 0.2.8)
+    response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    response.headers.setdefault("Content-Security-Policy", "frame-ancestors 'self'")
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("Referrer-Policy", "no-referrer")
     return response
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
-# Material Symbols for every page: {{ icon("delete") }} draws one; icon_mask("check") is for stylesheets.
-templates.env.globals.update(icon=icons.svg, icon_mask=icons.mask)
+# Material Symbols for every page: {{ icon_sprite() }} once at the top of <body>, then {{ icon("delete") }}
+# draws one; icon_mask("check") is for stylesheets.
+templates.env.globals.update(icon=icons.svg, icon_mask=icons.mask, icon_sprite=icons.sprite)
 # The fonts (IBM Plex Sans and Mono): served from here, so pages never load anything from elsewhere.
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
@@ -1439,9 +1362,7 @@ def cal_view(events: list[Event], view: str, ref: date, lang: str = "en") -> dic
         prev = month_first - timedelta(days=1)
         nxt = month_last + timedelta(days=1)
         title = dates.title(ref)
-    matchers = {sid: tag_matcher(effective_rules(sid)) for sid in source_ids()}
-    colors = {sid: calendar_color(sid) for sid in source_ids()}
-    nobody = lambda title: ""
+    colors = {sid: calendar_color(sid) or DEFAULT_COLOR for sid in source_ids()}
     by_day: dict[date, list] = {}
     count = 0
     span_first, span_last = (month_first, month_last) if view in ("month", "list") else (first_day, last_day)
@@ -1464,7 +1385,7 @@ def cal_view(events: list[Event], view: str, ref: date, lang: str = "en") -> dic
             else:
                 when = cont
             by_day.setdefault(d, []).append({"e": e, "when": when, "first": d == d0,
-                                             "tag_color": e.color or matchers.get(e.source, nobody)(e.title),
+                                             "tag_color": e.color or e.rule_color,
                                              "src_color": colors.get(e.source, ""),
                                              "multi": d0 != d1, "range": _range_text(e, s, t, lang)})
             d += timedelta(days=1)
@@ -1510,19 +1431,29 @@ def _parse_month(value: str | None) -> tuple[int, int]:
 # --- Routes ----------------------------------------------------------------------
 
 def source_view(request: Request, sid: str, lang: str, sections: dict) -> dict:
-    """One source's box on the status page."""
+    """One calendar's module on the status page."""
     S = st(sid)
+    kind = (source(sid) or {}).get("type", "ccs")
+    if kind == "local":       # nothing to download: always fine
+        S.status, S.message = "ok", ""
     url = source_url(sid)
-    view = {"id": sid, "type": (source(sid) or {}).get("type", "ccs"), "name": calendar_name(sid),
-            "color": calendar_color(sid), "s": S, "rules": calendar_tags(sid), "interval": interval_minutes(sid),
+    d = dates_for(lang)
+    view = {"id": sid, "type": kind, "name": calendar_name(sid), "default": source_ids()[:1] == [sid],
+            "color": calendar_color(sid), "s": S, "interval": interval_minutes(sid),
             "url": url, "host": urlparse(url).hostname or url,
             # Configure is folded unless it's been opened, or something needs doing
             "open": sections.get(f"src:{sid}", False) or S.status not in ("ok", "running", "starting")
                     or (sid == "ccs" and not logins.ccs_configured),
             "downloaded": store.get_calendar(skey(sid, "source")) is not None,
             "has_debug": store.has_debug(skey(sid, "source")),
-            "last_when": dates_for(lang).when(S.last_success, now().date()) if S.last_success else "",
-            "subs": rule_subs(sid), "effective": effective_rules(sid),
+            "last_when": d.when(S.last_success, now().date()) if S.last_success else "",
+            # "Last check was successful @ 14:34" / "Last check failed @ 14:49"
+            "last_check": ("ok" if S.status in ("ok", "running") and S.last_success else "failed" if S.last_attempt else ""),
+            "check_when": d.when(S.last_success if S.status in ("ok", "running") else S.last_attempt, now().date())
+                          if (S.last_success or S.last_attempt) else "",
+            "added": sum(1 for c in customs_for(sid)),
+            # its rules, highest priority first (its own ones first, unless moved)
+            "rules": [{**r, "label": rule_label(r, lang), "local": rules_mod.is_local(r, sid)} for r in source_rules(sid)],
             "preset": (source(sid) or {}).get("preset", "other"), "next_when": dates_for(lang).when(S.next_run, now().date()) if S.next_run else "",
             # the note under the title: as set (even empty), else the kind of calendar
             "note": store.get(skey(sid, "note")) if store.get(skey(sid, "note")) is not None else default_note(sid)}
@@ -1563,17 +1494,24 @@ def _parse_day(value: str | None, month: str | None) -> date:
 
 
 def rule_js(lang: str) -> dict:
-    """What the page's script needs to turn a rule in a source's list into fields: the choices, in the
-    page's language."""
+    """What the rule dialog's script needs: every rule as saved, and the choices, in the page's language."""
     tr = lambda text: str(i18n.tr(lang, text))
-    return {"types": {k: tr(v) for k, v in RULE_TYPES.items()},
-            "modes": [[k, tr(v)] for k, v in TAG_MODES.items()], "when": [[k, tr(v)] for k, v in RULE_WHEN.items()],
+    return {"rules": {r["id"]: r for r in all_rules()},
+            "types": {k: tr(v) for k, v in rules_mod.COND_TYPES.items()},
+            "ops": {k: [[o, tr(v)] for o, v in ops.items()] for k, ops in rules_mod.OPS.items()},
+            "actions": [[k, tr(v)] for k, v in rules_mod.ACTION_TYPES.items()],
+            "when": [[k, tr(v)] for k, v in rules_mod.WHEN.items()],
             "templates": [[t["id"], t["title"]] for t in event_templates()],
-            "noEnd": [["hours", tr("last")], ["allday", tr("all day")]],
-            "allday": [["1", tr("shown as all-day")], ["0", tr("keep their times")]],
-            "t": {"match": tr("Word or phrase in the title"), "everyEvent": tr("every event"), "how": tr("How to match"),
-                  "caps": tr("Match capitals exactly"), "color": tr("Color"), "template": tr("Event template"),
-                  "time": tr("Time (hours:minutes)"), "length": tr("Length (hours:minutes)")}}
+            "days": [tr(d) for d in rules_mod.DAY_NAMES],
+            "calendars": [[sid, calendar_name(sid)] for sid in source_ids()],
+            "emoji": ["✈️", "🏝️", "📚", "🏠", "🚗", "⭐", "❗", "🛌", "🎓", "🎉"],
+            "t": {"and": tr("and"), "or": tr("or"), "weeks": tr("weeks"), "days": tr("days"), "hours": tr("hours"),
+                  "minutes": tr("minutes"), "caps": tr("Match capitals exactly"), "remove": tr("Take this line out"),
+                  "newEvent": tr("New event…"), "title": tr("Title"), "location": tr("Location"), "allDay": tr("All day"),
+                  "length": tr("Length (hours:minutes)"), "time": tr("Time (hours:minutes)"), "allCalendars": tr("All calendars"),
+                  "toAllDay": tr("all-day"), "toLength": tr("a length of"), "changeTo": tr("to"), "emoji": tr("Emoji"),
+                  "open": tr("Open a bracket here"), "close": tr("Close a bracket here"),
+                  "noEnd": tr("0 = no end time")}}
 
 
 @app.get("/", dependencies=[Depends(gui_auth)])
@@ -1592,22 +1530,24 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
         "view_explicit": store.get("ui_view") in VIEWS,
         "csrf": CSRF_TOKEN, "name": calendar_name(), "srcs": srcs,
         "dests": [dest_view(request, d, lang, sections) for d in destinations()], "dest_types": DESTINATION_TYPES,
-        # every rule with its label and users; Rule Templates and the "+ Add a rule" menu list the shared ones
-        "rule_lib": (lib := [{**r, "label": rule_label(r, lang),
-                              "used": [calendar_name(x) for x in source_ids() if r["id"] in rule_subs(x)]} for r in rule_library()]),
-        "rule_by_id": {r["id"]: r for r in lib},
+        # every rule, highest priority first, with its label and calendars (All Rules; "+ Add a rule")
+        "all_rules": [{**r, "label": rule_label(r, lang),
+                       "used": [calendar_name(x) for x in source_ids() if rules_mod.applies(r, x)]} for r in all_rules()],
         "rule_js": rule_js(lang),
-        "rule_types": RULE_TYPES,
         "default_dest_name": calendar_name(source_ids()[0]) if source_ids() else "CalendarStream",
         "src_names": {x["id"]: x["name"] for x in srcs},
-        "has_ccs": "ccs" in source_ids(), "templates": event_templates(), "tag_modes": TAG_MODES,
-        "rule_actions": RULE_ACTIONS, "rule_when": RULE_WHEN, "event_colors": GOOGLE_COLORS.values(),
+        "has_ccs": "ccs" in source_ids(), "templates": event_templates(), "event_colors": GOOGLE_COLORS.values(),
         "sections": sections, "zone": display_zone(), "zones": ALL_ZONES, "common_zones": COMMON_ZONES,
         "google": google_view(request, lang), "open_menu": request.query_params.get("menu") == "settings",
         # The first destination offers this page's address as the public one, if it's https:// (an
         # http://<IP>:8080 address would break Google sign-in, as the old installer default did).
         "public": {"url": public_url(), "here": (lambda u: u if u.startswith("https://") else "")(str(request.base_url).rstrip("/"))},
         "page_user": logins.page_user, "admin_email": admin_email(), "trash": TRASH_ICON, "copy_icon": COPY_ICON,
+        # Activities and Logs, folded: Healthy unless a problem in the log is still there
+        "healthy": not any(st(sid).status in ("auth_failed", "blocked", "error", "paused") for sid in source_ids())
+                   and not (google.connected and google.info().get("last_error")),
+        "print_prefs": print_prefs(), "print_views": PRINT_VIEWS,
+        "alarm_choices": [(m, alarm_text(m, lang)) for m in ALARM_CHOICES],
     }, lang=lang)
 
 
@@ -1695,6 +1635,8 @@ def default_note(sid: str) -> str:
     x = source(sid) or {}
     if x.get("type") == "ccs":
         return "CCS+ Calendar Sync"
+    if x.get("type") == "local":
+        return "Events added here"
     preset = x.get("preset") if x.get("preset") in SOURCE_PRESETS else "other"
     url = x.get("url") or ""
     return SOURCE_PRESETS[preset] + ("" if preset != "other" else " · " + (urlparse(url).hostname or url))
@@ -1703,11 +1645,18 @@ def default_note(sid: str) -> str:
 @app.post("/sources/add", dependencies=[Depends(gui_auth)])
 async def add_source(csrf: str = Form(""), type_: str = Form("", alias="type"), url: str = Form(""),
                      name: str = Form(""), note: str = Form(""), preset: str = Form("other")):
-    """Calendar Sources → +: a preset: United's CCS+ Calendar Sync (once), a Google or Apple
-    calendar (its private iCal link), or any other .ics feed link."""
+    """Calendars → +: a preset: a local calendar (events added here only), United's CCS+ Calendar Sync
+    (once), a Google or Apple calendar (its private iCal link), or any other .ics feed link."""
     check_csrf(csrf)
     found = sources()
-    if type_ == "ccs":
+    if len(found) >= 10:
+        raise HTTPException(400, "Up to 10 calendars can be added.")
+    if type_ == "local":
+        sid = new_local()
+        found.append({"id": sid, "type": "local"})
+        name = " ".join(name.split())[:100]
+        store.set(f"calendar_name:{sid}", name or "Local")
+    elif type_ == "ccs":
         if "ccs" in source_ids():
             raise HTTPException(400, "CCS+ Calendar Sync is already a source.")
         found.append({"id": "ccs", "type": "ccs"})
@@ -1716,8 +1665,6 @@ async def add_source(csrf: str = Form(""), type_: str = Form("", alias="type"), 
         url = _feed_link(url)
         if any(x.get("url") == url for x in found):
             raise HTTPException(400, "That feed is already a source.")
-        if len(found) >= 10:
-            raise HTTPException(400, "Up to 10 calendar sources can be added.")
         sid = "f" + secrets.token_hex(3)
         found.append({"id": sid, "type": "ics", "url": url, "preset": preset if preset in SOURCE_PRESETS else "other"})
         name = " ".join(name.split())[:100]
@@ -1727,14 +1674,50 @@ async def add_source(csrf: str = Form(""), type_: str = Form("", alias="type"), 
         raise HTTPException(400, "Unknown kind of calendar source.")
     store.set("sources", found)
     state.record("info", f"Calendar source added: {calendar_name(sid)}")
-    store.set(skey(sid, "rule_subs"), predefined_ids())     # it starts with the predefined rules
     if " ".join(note.split()):
         store.set(skey(sid, "note"), " ".join(note.split())[:120])
-    if len(source_ids()) == 1:     # the first source goes into the destinations made before it
-        save_destinations([{**d, "sources": [sid]} for d in destinations()])
+    if len(source_ids()) == 1 or type_ == "local":     # into the feeds: the first calendar, and a local one
+        save_destinations([{**d, "sources": d["sources"] + [sid]} for d in destinations()])
     rebuild(sid)
     start_source(sid)
     return RedirectResponse(f"/#src-{sid}", status_code=303)
+
+
+def _moved(items: list[dict], key: str, before: str, after: str) -> list[dict]:
+    """`items` with the one whose id is `key` put just above `before` (or just below `after`)."""
+    ids = [x["id"] for x in items]
+    if key not in ids:
+        raise HTTPException(400, "That isn't there (any more).")
+    as_rules = rules_mod.move([{"id": x["id"]} for x in items], key, before, after)
+    by_id = {x["id"]: x for x in items}
+    return [by_id[x["id"]] for x in as_rules]
+
+
+@app.post("/sources/move", dependencies=[Depends(gui_auth)])
+async def move_source(request: Request, csrf: str = Form(""), sid: str = Form(""), before: str = Form(""),
+                      after: str = Form("")):
+    """Drag (or ▲ ▼) a calendar module: the order of the calendars. The top one is the default
+    calendar for events added here."""
+    check_csrf(csrf)
+    found = sources()
+    moved = _moved(found, sid, before, after)
+    if moved != found:
+        store.set("sources", moved)
+        if found[0]["id"] != moved[0]["id"]:
+            state.record("info", f"Default calendar: {calendar_name(moved[0]['id'])}")
+    return {"ok": True} if _is_async(request) else RedirectResponse("/#sources", status_code=303)
+
+
+@app.post("/destinations/move", dependencies=[Depends(gui_auth)])
+async def move_destination(request: Request, csrf: str = Form(""), did: str = Form(""), before: str = Form(""),
+                           after: str = Form("")):
+    """Drag (or ▲ ▼) a feed module: the order of the feeds."""
+    check_csrf(csrf)
+    found = destinations()
+    moved = _moved(found, did, before, after)
+    if moved != found:
+        save_destinations(moved)
+    return {"ok": True} if _is_async(request) else RedirectResponse("/#destinations", status_code=303)
 
 
 @app.post("/sources/remove", dependencies=[Depends(gui_auth)])
@@ -1744,12 +1727,15 @@ async def remove_source(csrf: str = Form(""), sid: str = Form("")):
     check_csrf(csrf)
     sid = _sid(sid)
     name = calendar_name(sid)
+    old_rules = all_rules()       # read while it's still a calendar
     stop_source(sid)
     store.set("sources", [x for x in sources() if x["id"] != sid])
     save_destinations([{**d, "sources": [x for x in d["sources"] if x != sid]} for d in destinations()])
     note = ""
     store.forget_source(sid)
-    _drop_unused_local(sid, keep=[])
+    # its own rules go; rules for several calendars are taken off it
+    save_rules([{**r, "apply": r["apply"] if r["apply"] == "all" else [x for x in r["apply"] if x != sid]}
+                for r in old_rules if not rules_mod.is_local(r, sid)])
     for base in ("calendar_name", "calendar_color", "calendar_tags", "rule_subs", "defaults", "note", "sync_interval",
                  "http_cache", "status", "feed_reads"):
         store.delete(skey(sid, base))
@@ -1799,7 +1785,9 @@ async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="typ
     found = destinations()
     if len(found) >= 20:
         raise HTTPException(400, "Up to 20 destinations can be added.")
-    name = " ".join(name.split())[:100] or (calendar_name(source_ids()[0]) if source_ids() else "CalendarStream")
+    # No name: the first calendar that comes from somewhere (not a Local one, which would name every feed "Local")
+    named = [x["id"] for x in sources() if x.get("type") != "local"]
+    name = " ".join(name.split())[:100] or (calendar_name(named[0]) if named else "CalendarStream")
     did = new_did()
     found.append({"id": did, "type": type_, "name": name, "sources": source_ids(),
                   "token": secrets.token_urlsafe(24) if type_ == "feed" else ""})
@@ -2068,74 +2056,6 @@ def show_duration(minutes: int) -> str:
     return f"{minutes // 60}:{minutes % 60:02d}"
 
 
-def _rule_rows(tag, tag_color, tag_mode, tag_case, action, template, when, offset, rule_id, prefix: str) -> list[dict]:
-    """Rule rows (match + color or add event) from a form, checked. New rows get an ID starting with `prefix`."""
-    rules = []
-    templates = {t["id"] for t in event_templates()}
-    # Each row sends one value per field (the case toggle is a hidden "1"/"" input), so they line up.
-    for t, c, m, cs, a, tp, w, o, rid in zip_longest(tag, tag_color, tag_mode, tag_case, action, template, when,
-                                                    offset, rule_id, fillvalue=""):
-        t = " ".join(t.split())[:MAX_TAG_LEN]
-        if not t:
-            continue
-        a = a if a in RULE_ACTIONS else "color"
-        rules.append(_checked_rule(a, t, c, m, cs == "1", tp, w, o, templates, rid if re.fullmatch(r"[a-z0-9]{1,16}", rid or "") else prefix + secrets.token_hex(3)))
-    if len(rules) > MAX_RULES:
-        raise HTTPException(400, f"Up to {MAX_RULES} rules can be kept.")
-    return rules
-
-
-def _checked_rule(kind: str, tag: str, color: str, mode: str, case: bool, template: str, when: str, offset: str,
-                  templates: set, rid: str, no_end_mode: str = "hours", length: str = "", allday: str = "1") -> dict:
-    """One rule from a form (a row or the rule dialog), checked."""
-    if kind in RULE_ACTIONS:
-        tag = " ".join((tag or "").split())[:MAX_TAG_LEN]
-        if not tag:
-            raise HTTPException(400, "Enter the word or phrase the rule matches in event titles.")
-        if kind == "color" and not COLOR_RE.match(color or ""):
-            raise HTTPException(400, f"Choose a color for the rule \"{tag}\" with the color picker.")
-        if kind == "event" and template not in templates:
-            raise HTTPException(400, f"Choose an event template for the rule \"{tag}\".")
-    try:
-        minutes = parse_duration(offset)
-    except ValueError:
-        raise HTTPException(400, f"Check the time for the rule \"{tag}\" (e.g. 1:30).")
-    try:
-        length_min = parse_duration(length, 60)
-    except ValueError:
-        raise HTTPException(400, "Check the length for items without an end time (e.g. 1:00).")
-    if kind == "no_end" and no_end_mode != "allday" and not 5 <= length_min <= 24 * 60:
-        raise HTTPException(400, "Items without an end time can last from 0:05 to 24:00.")
-    if kind == "changes":       # optional: no match = every event
-        tag = " ".join((tag or "").split())[:MAX_TAG_LEN]
-    return {"id": rid, "type": kind, "action": kind, "tag": tag if kind in RULE_ACTIONS or kind == "changes" else "",
-            "color": (color or "").lower() if kind == "color" else "", "mode": mode if mode in TAG_MODES else "word",
-            "case": bool(case), "template": template if kind == "event" else "",
-            "when": when if when in RULE_WHEN else "before_start", "offset": max(0, min(MAX_OFFSET, minutes)),
-            "no_end_mode": "allday" if no_end_mode == "allday" else "hours", "minutes": max(5, min(24 * 60, length_min)),
-            "allday": allday != "0"}
-
-
-def _set_subs(sid: str, subs: list[str]) -> bool:
-    """Store the rules a source uses (in order). Returns whether they changed."""
-    known = {r["id"] for r in rule_library()}
-    subs = list(dict.fromkeys(x for x in subs if x in known))
-    if subs == rule_subs(sid):
-        return False
-    store.set(skey(sid, "rule_subs"), subs)
-    _drop_unused_local(sid)
-    return True
-
-
-def _drop_unused_local(sid: str, keep: list[str] | None = None):
-    """Forget the rules local to a source that it no longer uses (all of them when it's removed)."""
-    keep = rule_subs(sid) if keep is None else keep
-    lib = rule_library()
-    kept = [r for r in lib if r["owner"] != sid or r["id"] in keep]
-    if len(kept) != len(lib):
-        store.set("rule_templates", kept)
-
-
 def _source_name_color(sid: str, name: str | None, color: str, color_default: str, note: str | None) -> list[str]:
     """Save a source's name, color and note (from its header, editable while Configure is open)."""
     notes = []
@@ -2160,154 +2080,120 @@ def _source_name_color(sid: str, name: str | None, color: str, color_default: st
 
 
 @app.post("/feed/tags", dependencies=[Depends(gui_auth)])
-async def set_tags(csrf: str = Form(""), sid: str = Form("ccs"), tag: list[str] = Form([]),
-                   tag_color: list[str] = Form([]), tag_mode: list[str] = Form([]), tag_case: list[str] = Form([]),
-                   rule_action: list[str] = Form([]), rule_template: list[str] = Form([]),
-                   rule_when: list[str] = Form([]), rule_offset: list[str] = Form([]), rule_id: list[str] = Form([]),
-                   no_end_mode: str = Form(""), no_end_length: str = Form(""), allday24: str = Form(""),
-                   rule_sub: list[str] = Form([]), rules_form: str = Form(""), name: str | None = Form(None),
+async def set_tags(csrf: str = Form(""), sid: str = Form("ccs"), name: str | None = Form(None),
                    color: str = Form(""), color_default: str = Form(""), note: str | None = Form(None)):
-    """Save a source's Configure: its name, color and note (in its header) and the rules it uses, in
-    order (each picked from the Rule Templates section). Pages from 0.2.5 and before sent the rules as rows
-    (`tag`…) and the two built-in settings (`no_end_mode`, `allday24`); those still work."""
+    """Save a calendar module's header: its name, color and note (fields while it's expanded). Its rules
+    are changed in the rule dialog and moved in place (/rules/…)."""
     check_csrf(csrf)
     sid = _sid(sid)
     notes = _source_name_color(sid, name, color, color_default, note)
-    if rules_form:
-        if _set_subs(sid, rule_sub):
-            notes.append(f"{len(rule_subs(sid))} rule{'' if len(rule_subs(sid)) == 1 else 's'}")
-    else:
-        lib = rule_library()
-        subs = rule_subs(sid)
-        by_id = {r["id"]: r for r in lib}
-        if tag:      # rows: these become the source's matching rules (its predefined ones stay)
-            rows = _rule_rows(tag, tag_color, tag_mode, tag_case, rule_action, rule_template, rule_when,
-                              rule_offset, rule_id, "t")
-            ids = []
-            for r in rows:
-                if r["id"] in by_id and by_id[r["id"]]["type"] in RULE_ACTIONS:
-                    lib[[x["id"] for x in lib].index(r["id"])] = r
-                    ids.append(r["id"])
-                else:
-                    ids.append(_library_add(lib, r))
-            subs = ids + [x for x in subs if by_id.get(x, {}).get("type") not in RULE_ACTIONS]
-        if no_end_mode or allday24:      # the two built-in settings: the matching predefined rules
-            made = [_checked_rule("no_end", "", "", "", False, "", "", "", set(), "t" + secrets.token_hex(3),
-                                  no_end_mode, no_end_length, "1"),
-                    _checked_rule("allday24", "", "", "", False, "", "", "", set(), "t" + secrets.token_hex(3),
-                                  allday=allday24 or "1")]
-            for r in made:
-                rid = _library_add(lib, r)
-                old = [x for x in subs if by_id.get(x, {}).get("type") == r["type"]]
-                subs = [rid if x in old else x for x in subs] if old else subs + [rid]
-        store.set("rule_templates", lib)
-        if _set_subs(sid, subs):
-            notes.append(f"{len(rule_subs(sid))} rules")
     if notes:
         rebuild(sid)
         state.record("info", f"{calendar_name(sid)} saved: " + ", ".join(notes))
-    return RedirectResponse(f"/#rules-{sid}", status_code=303)
+    return RedirectResponse(f"/#src-{sid}", status_code=303)
+
+
+def _rule_or_400(rid: str) -> tuple[list[dict], int]:
+    found = all_rules()
+    i = next((n for n, r in enumerate(found) if r["id"] == rid), None)
+    if i is None:
+        raise HTTPException(400, "That rule doesn't exist (any more).")
+    return found, i
+
+
+def _rule_done(request: Request, rule: dict | None, anchor: str = "/#rules"):
+    if _is_async(request):
+        return {"ok": True, "id": rule["id"] if rule else "", "label": rule_label(rule, lang_for(request)) if rule else ""}
+    return RedirectResponse(anchor, status_code=303)
 
 
 @app.post("/rules/save", dependencies=[Depends(gui_auth)])
-async def save_rule(request: Request, csrf: str = Form(""), rid: str = Form("", alias="id"), sid: str = Form(""),
-                    type_: str = Form("color", alias="type"), tag: str = Form(""), mode: str = Form("word"),
-                    case: str = Form(""), color: str = Form(""), template: str = Form(""), when: str = Form(""),
-                    offset: str = Form(""), no_end_mode: str = Form("hours"), length: str = Form(""),
-                    allday: str = Form("1"), scope: str = Form("")):
-    """Save one rule: from the rule dialog (Rule Templates → +, a template's ✎, or "Create a New Rule" in
-    a source), or from a rule edited in a source's own list. `scope` says where an edit made in a
-    source goes: "local" makes (or changes) a rule for that source only, in the same place in its list;
-    "global" changes the shared rule, for every source using it (a local rule becomes shared).
-    A new rule made from a source is added to that source's rules."""
+async def save_rule(request: Request, csrf: str = Form(""), rule: str = Form("")):
+    """Save a rule from the rule dialog (`rule`: the rule as JSON, see app/rules.py). A new one goes in
+    at its place (one for a single calendar above that calendar's shared rules, others last); a
+    changed one keeps its place."""
     check_csrf(csrf)
-    if type_ not in RULE_TYPES:
-        raise HTTPException(400, "Unknown kind of rule.")
-    lib = rule_library()
-    ids = [r["id"] for r in lib]
-    old = lib[ids.index(rid)] if rid in ids else None
-    in_source = sid in source_ids()
-    local = in_source and (scope == "local" or (not scope and old is not None and old["owner"] == sid))
-    if local and old is not None and old["owner"] != sid:
-        old = None                              # a shared rule edited for one source: a new local copy
-    new = old is None
-    rule = _checked_rule(type_, tag, color, mode, case == "1", template, when, offset,
-                         {t["id"] for t in event_templates()}, old["id"] if old else "t" + secrets.token_hex(3),
-                         no_end_mode, length, allday)
-    rule["owner"] = sid if local else ""
-    if new:
-        if len(lib) >= MAX_RULES:
-            raise HTTPException(400, f"Up to {MAX_RULES} rules can be kept.")
-        lib.append(rule)
+    try:
+        raw = json.loads(rule)
+        checked = rules_mod.normalize(raw, source_ids(), {t["id"] for t in event_templates()}, strict=True)
+    except (ValueError, TypeError) as e:
+        raise HTTPException(400, str(e) if isinstance(e, rules_mod.RuleError) else "That rule couldn't be read.")
+    found = all_rules()
+    ids = [r["id"] for r in found]
+    if raw.get("id") in ids:
+        checked["id"] = raw["id"]
+        found[ids.index(raw["id"])] = checked
+        what = "changed"
     else:
-        lib[ids.index(rule["id"])] = rule
-    store.set("rule_templates", lib)
-    if in_source:
-        subs = rule_subs(sid)
-        if rid in subs and rule["id"] != rid:
-            subs[subs.index(rid)] = rule["id"]      # the local copy takes the shared rule's place
-        elif rule["id"] not in subs:
-            subs.append(rule["id"])
-        _set_subs(sid, subs)
+        if len(found) >= rules_mod.MAX_RULES:
+            raise HTTPException(400, f"Up to {rules_mod.MAX_RULES} rules can be kept.")
+        while checked["id"] in ids:
+            checked["id"] = "t" + secrets.token_hex(3)
+        found.insert(rules_mod.insert_position(found, checked), checked)
+        what = "added"
+    save_rules(found)
     rebuild()
-    where = f" for {calendar_name(sid)} only" if local else ""
-    state.record("info", f"Rule {'added' if new else 'changed'}{where}: {rule_label(rule)}")
-    if _is_async(request):
-        lang = lang_for(request)
-        return {"ok": True, "id": rule["id"], "label": rule_label(rule, lang), "local": local, "rule": rule}
-    return RedirectResponse(f"/#src-{sid}" if in_source else "/#rules", status_code=303)
+    state.record("info", f"Rule {what}: {rule_label(checked)}")
+    return _rule_done(request, checked)
 
 
 @app.post("/rules/clone", dependencies=[Depends(gui_auth)])
-async def clone_rule(csrf: str = Form(""), rid: str = Form("", alias="id")):
-    """Rule Templates: a copy of a rule, added after it (used by no source yet), to change from there."""
+async def clone_rule(request: Request, csrf: str = Form(""), rid: str = Form("", alias="id")):
+    """All Rules: a copy of a rule, just below it, applying to no calendar yet; it opens in the rule
+    dialog to be changed."""
     check_csrf(csrf)
-    lib = rule_library()
-    i = next((n for n, r in enumerate(lib) if r["id"] == rid), None)
-    if i is None:
-        raise HTTPException(400, "That rule doesn't exist (any more).")
-    if len(lib) >= MAX_RULES:
-        raise HTTPException(400, f"Up to {MAX_RULES} rules can be kept.")
-    copy = {**lib[i], "id": "t" + secrets.token_hex(3), "owner": ""}
-    lib.insert(i + 1, copy)
-    store.set("rule_templates", lib)
+    found, i = _rule_or_400(rid)
+    if len(found) >= rules_mod.MAX_RULES:
+        raise HTTPException(400, f"Up to {rules_mod.MAX_RULES} rules can be kept.")
+    copy = {**found[i], "id": "t" + secrets.token_hex(3), "apply": []}
+    found.insert(i + 1, copy)
+    save_rules(found)
     state.record("info", f"Rule copied: {rule_label(copy)}")
     return RedirectResponse(f"/?rule={copy['id']}#rules", status_code=303)
 
 
 @app.post("/rules/delete", dependencies=[Depends(gui_auth)])
-async def delete_rule(csrf: str = Form(""), rid: str = Form("", alias="id")):
-    """Delete a rule from the Rule Templates section, and from every source that uses it."""
+async def delete_rule(request: Request, csrf: str = Form(""), rid: str = Form("", alias="id")):
+    """Delete a rule (from every calendar)."""
     check_csrf(csrf)
-    lib = rule_library()
-    rule = next((r for r in lib if r["id"] == rid), None)
-    if not rule:
-        raise HTTPException(400, "That rule doesn't exist (any more).")
-    store.set("rule_templates", [r for r in lib if r["id"] != rid])
-    for sid in source_ids():
-        store.set(skey(sid, "rule_subs"), [x for x in store.get(skey(sid, "rule_subs")) or [] if x != rid])
+    found, i = _rule_or_400(rid)
+    gone = found.pop(i)
+    save_rules(found)
     rebuild()
-    state.record("info", f"Rule deleted: {rule_label(rule)}")
-    return RedirectResponse("/#rules", status_code=303)
+    state.record("info", f"Rule deleted: {rule_label(gone)}")
+    return _rule_done(request, None)
 
 
-@app.post("/rule-templates", dependencies=[Depends(gui_auth)])
-async def set_rule_templates(csrf: str = Form(""), tag: list[str] = Form([]), tag_color: list[str] = Form([]),
-                             tag_mode: list[str] = Form([]), tag_case: list[str] = Form([]),
-                             rule_action: list[str] = Form([]), rule_template: list[str] = Form([]),
-                             rule_when: list[str] = Form([]), rule_offset: list[str] = Form([]),
-                             rule_id: list[str] = Form([])):
-    """The 0.2.5 Rule templates form: its rows replace the library's matching rules (the predefined
-    ones stay). Every source that uses one follows its changes."""
+@app.post("/rules/move", dependencies=[Depends(gui_auth)])
+async def move_rule(request: Request, csrf: str = Form(""), rid: str = Form("", alias="id"), before: str = Form(""),
+                    after: str = Form("")):
+    """Change a rule's priority: put it just above `before` (or just below `after`). The page sends the
+    neighbour it now has in the list it was moved in (All Rules, or a calendar's)."""
     check_csrf(csrf)
-    rows = _rule_rows(tag, tag_color, tag_mode, tag_case, rule_action, rule_template, rule_when, rule_offset,
-                      rule_id, "t")
-    keep = [r for r in rule_library() if r["type"] not in RULE_ACTIONS]
-    if rows + keep != rule_library():
-        store.set("rule_templates", rows + keep)
+    found, _ = _rule_or_400(rid)
+    moved = rules_mod.move(found, rid, before, after)
+    if moved != found:
+        save_rules(moved)
         rebuild()
-        state.record("info", f"Rules saved: {len(rows)}")
-    return RedirectResponse("/#rules", status_code=303)
+    return _rule_done(request, next(r for r in moved if r["id"] == rid))
+
+
+@app.post("/rules/apply", dependencies=[Depends(gui_auth)])
+async def apply_rule(request: Request, csrf: str = Form(""), rid: str = Form("", alias="id"), sid: str = Form(""),
+                     on: str = Form("1")):
+    """Add a calendar to a rule's calendars (a calendar module's "+ Add a rule" menu), or take it off
+    (the bin on a rule in a calendar module)."""
+    check_csrf(csrf)
+    sid = _sid(sid)
+    found, i = _rule_or_400(rid)
+    r = found[i]
+    users = list(source_ids()) if r["apply"] == "all" else list(r["apply"])
+    users = list(dict.fromkeys(users + [sid])) if on == "1" else [x for x in users if x != sid]
+    r["apply"] = "all" if on == "1" and r["apply"] == "all" else users
+    save_rules(found)
+    rebuild(sid)
+    state.record("info", f"Rule {'added to' if on == '1' else 'taken off'} {calendar_name(sid)}: {rule_label(r)}")
+    return _rule_done(request, r, f"/#src-{sid}")
 
 
 @app.post("/templates", dependencies=[Depends(gui_auth)])
@@ -2440,6 +2326,79 @@ async def update_settings(csrf: str = Form(""), frequency: str = Form(""), actio
     return RedirectResponse("/?menu=settings#updates", status_code=303)
 
 
+PRINT_VIEWS = ("itinerary", "day", "5day", "week", "month")
+
+
+def print_prefs() -> dict:
+    """The last print's choices (Print Preview starts with them): view, weekends, theme; {} before the first."""
+    saved = store.get("ui_print") or {}
+    return {k: saved[k] for k in ("view", "weekends", "theme") if k in saved} if isinstance(saved, dict) else {}
+
+
+@app.post("/ui/print", dependencies=[Depends(gui_auth)])
+async def set_print(csrf: str = Form(""), view: str = Form(""), weekends: str = Form("1"), theme: str = Form("light")):
+    check_csrf(csrf)
+    store.set("ui_print", {"view": view if view in PRINT_VIEWS else "month", "weekends": weekends == "1",
+                           "theme": "dark" if theme == "dark" else "light"})
+    return {"ok": True}
+
+
+def print_pages(events: list[Event], view: str, first: date, last: date, weekends: bool, lang: str) -> list[dict]:
+    """The calendar from `first` to `last` as pages to print: a month, a week (Sunday to Saturday), five
+    days (Monday to Friday) or a day per page, or one itinerary (the days with events)."""
+    pages: list[dict] = []
+    if view == "itinerary":
+        days = []
+        ref = first.replace(day=1)
+        while ref <= last:
+            days += [d for d in cal_view(events, "list", ref, lang)["days"] if first <= d["date"] <= last]
+            ref = (ref.replace(day=28) + timedelta(days=4)).replace(day=1)
+        days = [d for d in days if weekends or d["date"].weekday() < 5]
+        return [{"view": view, "title": "", "days": days}]
+    if view == "month":
+        ref = first.replace(day=1)
+        while ref <= last and len(pages) < 24:
+            pages.append(cal_view(events, "month", ref, lang))
+            ref = (ref.replace(day=28) + timedelta(days=4)).replace(day=1)
+    elif view in ("week", "5day"):
+        ref = first - timedelta(days=(first.weekday() + 1) % 7)
+        while ref <= last and len(pages) < 60:
+            pages.append(cal_view(events, "week", ref, lang))
+            ref += timedelta(days=7)
+    else:
+        ref = first
+        while ref <= last and len(pages) < 62:
+            pages.append(cal_view(events, "day", ref, lang))
+            ref += timedelta(days=1)
+    # Sunday-first columns: 0 = Sunday … 6 = Saturday; five days are Monday to Friday
+    keep = [1, 2, 3, 4, 5] if view == "5day" or (view in ("week", "month") and not weekends) else list(range(7))
+    for p in pages:
+        p["dow"] = [p["dow"][i] for i in keep]
+        p["weeks"] = [[w[i] for i in keep] for w in p["weeks"]]
+        p["cols"] = len(keep)
+    return pages
+
+
+@app.get("/print", dependencies=[Depends(gui_auth)])
+def print_page(request: Request, view: str = "", start: str = "", end: str = "", weekends: str = "",
+               theme: str = ""):
+    """Print Preview's page: the calendar as chosen, ready to print (the preview shows it in a frame)."""
+    prefs = print_prefs()
+    view = view if view in PRINT_VIEWS else prefs.get("view") or {"list": "itinerary"}.get(ui_view(), ui_view())
+    today = now().astimezone(display_tz()).date()
+    first = _parse_day(start, None) if start else today.replace(day=1)
+    last = _parse_day(end, None) if end else first.replace(day=pycal.monthrange(first.year, first.month)[1])
+    if last < first:
+        first, last = last, first
+    last = min(last, first + timedelta(days=731))
+    lang = lang_for(request)
+    weekends_on = weekends == "1" if weekends else prefs.get("weekends", True)
+    return page(request, "print.html", {
+        "pages": print_pages(store.load_events(), view, first, last, weekends_on, lang), "view": view,
+        "first": first, "last": last, "print_theme": theme if theme in ("light", "dark") else prefs.get("theme", "light"),
+        "src_names": {sid: calendar_name(sid) for sid in source_ids()}}, lang=lang)
+
+
 @app.post("/ui/theme", dependencies=[Depends(gui_auth)])
 async def set_theme(csrf: str = Form(""), theme: str = Form("")):
     """Remember the light / dark / system choice (the page sends this when it's changed)."""
@@ -2493,8 +2452,9 @@ def _saved_zones(uid: str) -> tuple[str, str]:
 
 @app.get("/event", dependencies=[Depends(gui_auth)])
 def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="date"), month: str | None = None,
-               copy: str = ""):
-    """The event page: edit an event (uid), add one on `date`, or add a copy of one (`copy`)."""
+               copy: str = "", embed: str = ""):
+    """The event page: edit an event (uid), add one on `date`, or add a copy of one (`copy`). With
+    `embed`, it's shown in a pop-up on the status page (0.2.8: on a computer; a phone opens the page)."""
     if copy:
         found = store.get_event(copy)
         if not found:
@@ -2519,12 +2479,12 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         except ValueError:
             day = now().date()
         e = Event(title="", start=day.isoformat(), end=(day + timedelta(days=1)).isoformat(), all_day=False,
-                  origin="custom")
+                  origin="custom", source=source_ids()[0])       # the default calendar: the top one
         e.start = datetime.combine(day, datetime.min.time().replace(hour=9), display_tz()).isoformat()
         e.end = datetime.combine(day, datetime.min.time().replace(hour=10), display_tz()).isoformat()
     original = united_original(uid, e.source) if e.origin == "united" and uid else None
     lang = lang_for(request)
-    tag_color = tag_matcher(effective_rules(e.source))(e.title) if e.title and e.source in source_ids() else ""
+    tag_color = e.rule_color
     start_zone, end_zone = _saved_zones(uid) if uid else ("", "")
     start_zone, end_zone = start_zone or display_zone(), end_zone or start_zone or display_zone()
     return page(request, "event.html", {
@@ -2537,8 +2497,23 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         "src_type": (source(e.source) or {}).get("type", "ccs"), "src_name": calendar_name(e.source),
         "templates": [{**t, "length": show_duration(t["minutes"])} for t in event_templates()],
         "original_range": _range_text(original, *_span(original)[2:], lang) if original else "",
-        "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": display_zone(),
+        "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": display_zone(), "embed": embed == "1",
+        "default_sid": (source_ids() or [""])[0],
     }, lang=lang)
+
+
+def _event_back(month: str, embed: str) -> RedirectResponse:
+    """After the event page: back to the calendar, or (in the pop-up) a page that tells it to close."""
+    return RedirectResponse("/event/done" if embed == "1" else _back(month), status_code=303)
+
+
+@app.get("/event/done", dependencies=[Depends(gui_auth)])
+def event_done():
+    """Shown in the event pop-up after a save: it tells the status page to close the pop-up and
+    bring the calendar up to date."""
+    html = ("<!doctype html><meta charset=utf-8><title>Saved</title>"
+            "<script>parent.postMessage('calendarstream:event-saved', location.origin)</script>")
+    return Response(html, media_type="text/html")
 
 
 EVENT_COLORS = {hex_ for _, hex_ in GOOGLE_COLORS.values()}   # Google's 11 event colors
@@ -2607,7 +2582,7 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
                      end_date: str = Form(""), end_time: str = Form(""), location: str = Form(""),
                      description: str = Form(""), hidden: str = Form(""), color: str = Form(""),
                      start_tz: str = Form(""), end_tz: str = Form(""), end_tz_differs: str = Form(""),
-                     source_: str = Form("", alias="source")):
+                     source_: str = Form("", alias="source"), embed: str = Form("")):
     """Save the event page: an edit of a source's event, or an added event (into `source`). end_tz is
     only used when "The end is in a different time zone" is ticked."""
     check_csrf(csrf)
@@ -2634,21 +2609,59 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
         state.record("info", f"{'Updated' if current else 'Added'} \"{data['title']}\" ({data['start'][:10]})")
     rebuild(sid)
     state.save()
-    return RedirectResponse(_back(month or data["start"][:7]), status_code=303)
+    return _event_back(month or data["start"][:7], embed)
 
 
 @app.post("/event/revert", dependencies=[Depends(gui_auth)])
-async def revert_event(csrf: str = Form(""), uid: str = Form(""), month: str = Form("")):
+async def revert_event(csrf: str = Form(""), uid: str = Form(""), month: str = Form(""), embed: str = Form("")):
     check_csrf(csrf)
     e = store.get_event(uid)
     store.delete_edit(uid)
     rebuild(e.source if e else None)
     state.record("info", "Reverted an event to United's version")
-    return RedirectResponse(_back(month), status_code=303)
+    return _event_back(month, embed)
+
+
+ALARM_CHOICES = (0, 5, 10, 15, 30, 60, 120, 1440, 2880, 10080)    # minutes before the start
+
+
+@app.post("/event/alarms", dependencies=[Depends(gui_auth)])
+async def set_alarms(request: Request, csrf: str = Form(""), uid: str = Form(""), minutes: list[str] = Form([]),
+                     month: str = Form("")):
+    """An event's reminders (the bell on an event): sent to Google (up to five) and written into the feeds.
+    Kept by event, so they stay through new downloads and edits."""
+    check_csrf(csrf)
+    e = store.get_event(uid)
+    if not e:
+        raise HTTPException(404, "That event isn't in the current schedule any more.")
+    chosen = sorted({int(m) for m in minutes if m.isdigit() and int(m) in ALARM_CHOICES})[:5]
+    saved = event_alarms()
+    if chosen:
+        saved[uid] = ",".join(map(str, chosen))
+    else:
+        saved.pop(uid, None)
+    store.set("event_alarms", saved)
+    rebuild(e.source)
+    state.record("info", f"Reminders for \"{e.title}\" ({e.start[:10]}): "
+                 + (", ".join(alarm_text(m) for m in chosen) if chosen else "none"))
+    return {"ok": True} if _is_async(request) else RedirectResponse(_back(month), status_code=303)
+
+
+def alarm_text(minutes: int, lang: str = "en") -> str:
+    """e.g. "at the start", "15 min before", "1 day before"."""
+    tr = lambda text, **kw: str(i18n.tr(lang, text, **kw))
+    if minutes == 0:
+        return tr("at the start")
+    for size, one, many in ((10080, "1 week before", "{n} weeks before"), (1440, "1 day before", "{n} days before"),
+                            (60, "1 hour before", "{n} hours before")):
+        if minutes % size == 0:
+            return tr(one) if minutes == size else tr(many, n=minutes // size)
+    return tr("{n} min before", n=minutes)
 
 
 @app.post("/event/delete", dependencies=[Depends(gui_auth)])
-async def delete_event(csrf: str = Form(""), uid: str = Form(""), month: str = Form("")):
+async def delete_event(request: Request, csrf: str = Form(""), uid: str = Form(""), month: str = Form(""),
+                       embed: str = Form("")):
     """Delete an event (the bin on an event). One added here is deleted; a source's own event would
     come back with the next download, so it's hidden from every destination instead (Edit → untick
     Hide brings it back)."""
@@ -2671,7 +2684,9 @@ async def delete_event(csrf: str = Form(""), uid: str = Form(""), month: str = F
         store.set_edit(uid, {**edit, "hidden": True})
         state.record("info", f"Hid \"{e.title}\" ({e.start[:10]}) from the destinations")
     rebuild(e.source)
-    return RedirectResponse(_back(month), status_code=303)
+    if _is_async(request):
+        return {"ok": True}
+    return _event_back(month, embed)
 
 
 MAX_UPLOAD = 5 * 1024 * 1024

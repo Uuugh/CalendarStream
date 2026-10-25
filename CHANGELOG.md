@@ -9,7 +9,85 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.1**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.2**
+
+## 0.2.8-beta.2 — 2026-10-25
+
+### Added
+- **F1.2** **Handles:** every module (calendars, feeds) and every rule line has a handle on its
+  right, outside the box: **▲** above, **☰** to drag, **▼** below. The order is saved at once (the
+  calendars' order, the feeds' order, the rules' priority).
+- **F1.3** On a computer, adding or editing an event and the rule dialog open in a **pop-up**; on a
+  phone they're a full page with a **←** back button.
+- **F2.1** **Print Preview** with a **Print** button: **Itinerary**, **Day**, **5-day** (Monday to
+  Friday), **Week** or **Month**; **include weekends**; **light** or **dark**; a date range (From /
+  To). It opens with the last print's choices (the first time, the calendar's view).
+- **F2.2.5** An event's **reminders** (the bell): up to five, from "at the start" to "1 week
+  before", sent to Google Calendar and written into the feeds.
+- **F3.1** A **(?)** next to **Calendars**.
+- **F3.2** The **Local** calendar: a kind of calendar for events added here.
+  - **F3.2.1** Every install gets one, at the top, so it's the default calendar for new events
+    (upgrades too, once; it's in every feed).
+  - **F3.2.2** Its (?) says so.
+  - **F3.2.3** Removed, the calendar below it becomes the default.
+  - **F3.2.4** **+ → Local calendar** adds another.
+- **F3.3** The top calendar is the **Default**: its expanded module says so in the upper right,
+  under the Close line.
+- **F4** **All Rules** (was Rule Templates): every rule is **If … Then …**.
+  - **If:** conditions joined by **and** / **or**, with grey **(** **)** brackets that turn white
+    when chosen (the outer brackets in a different color). **Date** and **Time**: is / after /
+    between / before. **Day(s)**: the same, choosing several days with ctrl / shift. **Length**:
+    weeks : days : hours : minutes. **Text**: is / contains / begins with / ends with / regex.
+  - **Then** (+ after the last adds more): **Color**, **Add emoji to title**, **Create event** (a
+    new one, or from an event template) and **Change** (to all-day, or to a length).
+  - An instruction tile at the bottom. A higher rule wins over a lower one, even a calendar's own.
+    A new rule applies to All calendars; changing one keeps its choice.
+  - The footer: **Remove** … **Cancel | Apply**, with **Apply to** (ctrl / shift: **All
+    calendars** and each calendar).
+  - Each calendar module lists its own rules above the shared rules it uses; every list of rules
+    can be reordered with its handles.
+  - Rules from earlier versions are converted, in the same order and for the same calendars.
+
+### Changed
+- **F1.1** The expand line becomes a **Close** line while a module is open; **Cancel** also closes
+  it.
+- **F2.2** Events:
+  - **F2.2.1** An expanded event stays expanded (also when the calendar is redrawn).
+  - **F2.2.2** No pin.
+  - **F2.2.3** **Close** where **Edit** was.
+  - **F2.2.4** The event's icons are on the right: reminders, edit, copy, bin.
+- **F3.4** The module header's color box always shows the calendar's color (the color of its
+  events).
+- **F3.5** **Next check @ 14:49** is on the right, beside Sync Now.
+- **F3.6** "98 events @ 14:34 (0 new, 0 removed)" is now **Last check was successful @ 14:34** (or
+  **failed**); what changed is in Activities and Logs.
+- **F3.7** **How to enable CCS+**, step by step:
+  1. Open CCS+ Schedule (<https://ccsplus.ual.com/schedule/>) → Settings → Calendar syncing.
+  2. Enable calendar export / syncing.
+  3. Site Address: if the CCS+ link differs, press **Copy link** and replace the Site Address.
+  4. Edit calendar sync settings → Include Trips Enabled → As a single event → enable all available
+     options → Save → Back to Calendar syncing.
+  5. Change Password → use a password just for Calendar Sync, not your CCS login.
+  6. Enter the Username (Uxxxxxx) and the Calendar Sync password\*, then Save.
+  7. The list on the right turns green.
+
+  \* The password is stored encrypted.
+- **F5** **Activities and Logs** follows the module rules (it folds the same way). Folded, its
+  right side says **Healthy**, or **Unhealthy** while a problem is still there.
+- **F6** The feeds follow the theme rules.
+- Google's note: events are copied with only the reminders set here.
+
+### Fixed
+- **I1** An **Accomplished** line wraps under its first word, not under the check mark.
+- **I2** Pop-ups and pages use the same padding and margins as the rest.
+- **I3** The color box in a calendar module's header changes the calendar's color, like the other
+  fields.
+- The (?) next to **Apply to** in the rule dialog showed its explanation all the time.
+- ▲ / ▼ were hidden on every rule line of the bottom calendar module.
+- A new feed with no name is named after the first calendar that isn't a Local one.
+
+### Removed
+- The pin on an event, and closing an event by clicking elsewhere.
 
 ## 0.2.8-beta.1 — 2026-10-25
 

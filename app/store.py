@@ -52,6 +52,8 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS hidden boolean NOT NULL DEFAULT fals
 ALTER TABLE events ADD COLUMN IF NOT EXISTS free   boolean NOT NULL DEFAULT false;
 ALTER TABLE events ADD COLUMN IF NOT EXISTS color  text NOT NULL DEFAULT '';   -- a color chosen for this event (#rrggbb)
 ALTER TABLE events ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'ccs'; -- which calendar source it's from
+ALTER TABLE events ADD COLUMN IF NOT EXISTS alarms text NOT NULL DEFAULT '';      -- 0.2.8: reminders, minutes before ("15,60")
+ALTER TABLE events ADD COLUMN IF NOT EXISTS rule_color text NOT NULL DEFAULT '';  -- 0.2.8: the color its rules give it
 -- What was last written to Google Calendar for each event (see gsync.py)
 CREATE TABLE IF NOT EXISTS google_events (
     uid        text PRIMARY KEY,            -- CalendarStream / CCS+ event UID
@@ -132,7 +134,8 @@ class Store:
             c.execute("DELETE FROM kv WHERE key = %s", (key,))
 
     # --- events ------------------------------------------------------------
-    _COLS = 'title, start, "end", all_day, location, description, uid, origin, edited, stale, hidden, free, color, source'
+    _COLS = ('title, start, "end", all_day, location, description, uid, origin, edited, stale, hidden, free, color, source, '
+             'alarms, rule_color')
 
     def replace_events(self, events: list[Event], source: str = "ccs"):
         """Swap in a source's new set of events in one transaction, so the feed never sees a half-written set."""
@@ -141,10 +144,10 @@ class Store:
                 c.execute("DELETE FROM events WHERE source = %s", (source,))
                 with c.cursor() as cur:
                     cur.executemany(
-                        f"INSERT INTO events ({self._COLS}) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+                        f"INSERT INTO events ({self._COLS}) VALUES ({', '.join(['%s'] * 16)}) "
                         "ON CONFLICT (uid) DO NOTHING",
                         [(e.title, e.start, e.end, e.all_day, e.location, e.description, e.uid,
-                          e.origin, e.edited, e.stale, e.hidden, e.free, e.color, source) for e in events])
+                          e.origin, e.edited, e.stale, e.hidden, e.free, e.color, source, e.alarms, e.rule_color) for e in events])
 
     def load_events(self, source: str | None = None) -> list[Event]:
         """All events, or one source's."""

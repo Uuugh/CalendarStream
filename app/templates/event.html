@@ -9,6 +9,13 @@
   * { box-sizing:border-box }
   body { margin:0; font:15px/1.5 var(--font); background:var(--bg); color:var(--text) }
   main { max-width:620px; margin:0 auto; padding:24px 16px 48px }
+  /* In the status page's pop-up (I2): the pop-up is the frame and has the title, so no second card or heading */
+  body.embed { background:var(--card) }
+  body.embed main { max-width:none; padding:0 2px 8px }
+  body.embed h1 { display:none }
+  body.embed form.card { border:0; border-radius:0; padding:0; background:transparent }
+  .backbtn { display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 10px 0 6px; border:1px solid var(--line); border-radius:var(--r);
+             color:var(--accent); text-decoration:none; font-weight:600; background:var(--card) }
   h1 { font-size:20px; margin:0 0 4px } .sub { color:var(--muted); font-size:13px; margin:0 0 18px }
   .card { background:var(--card); border:1px solid var(--line); border-radius:var(--rbox); padding:18px; margin-bottom:16px }
   label { display:block; font-size:13px; font-weight:600; margin:12px 0 4px }
@@ -55,7 +62,7 @@
   .palette input:focus-visible + .sw { outline:2px solid var(--accent); outline-offset:2px }
 </style>
 </head>
-<body>
+<body{% if embed %} class="embed"{% endif %}>{{ icon_sprite() }}
 {# A time zone menu: the common ones first, then all of them. #}
 {% macro zonepick(name, value, label) -%}
 <select id="{{ name }}" name="{{ name }}" aria-label="{{ label }}" class="zone">
@@ -65,7 +72,8 @@
 {%- endmacro %}
 <main>
   <h1>{{ (_("Duplicate event") if is_copy else _("Add event")) if is_new else (_("Edit event") if e.origin == "custom" or src_type != "ccs" else _("Edit United event")) }}</h1>
-  <p class="sub"><a href="/?month={{ month }}#cal">{{ _('← Back to CalendarStream') }}</a> · {{ _('times in {tz}', tz=tz) }}</p>
+  {# In the status page's pop-up (a computer) its own ← closes it; on its own (a phone), ← Back returns (F1.3). #}
+  <p class="sub">{% if not embed %}<a class="backbtn" href="/?month={{ month }}#cal">{{ icon("arrow_back", 18) }} {{ _('Back') }}</a> · {% endif %}{{ _('times in {tz}', tz=tz) }}</p>
 
   {% if original %}
     {% if e.stale %}
@@ -81,6 +89,7 @@
     <input type="hidden" name="csrf" value="{{ csrf }}">
     <input type="hidden" name="uid" value="{{ e.uid }}">
     <input type="hidden" name="month" value="{{ month }}">
+    {% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
 
     {# A new event: which calendar it goes in (when there's more than one), and an optional template. #}
     {% if is_new %}
@@ -151,7 +160,7 @@
       {% if e.origin != "rule" and not e.hidden %}<button type="submit" form="deleteform" class="iconbtn del" title="{{ _('Delete') }}" aria-label="{{ _('Delete') }}">{{ trash }}</button>{% endif %}
       {% endif %}
       <span class="grow"></span>
-      <a class="ghostbtn" href="/?month={{ month }}#cal">{{ _('Cancel') }}</a>
+      <a class="ghostbtn evcancel" href="/?month={{ month }}#cal">{{ _('Cancel') }}</a>
       <button>{{ _("Add event") if is_new else _("Save") }}</button>
     </div>
   </form>
@@ -159,11 +168,11 @@
   {% if not is_new %}
   <div class="actions">
     {% if e.origin == "united" and e.edited %}
-    <form method="post" action="/event/revert"><input type="hidden" name="csrf" value="{{ csrf }}">
+    <form method="post" action="/event/revert"><input type="hidden" name="csrf" value="{{ csrf }}">{% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
       <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">
       <button class="ghost">{{ _('Revert to United’s version') if src_type == "ccs" else _('Revert to the feed’s version') }}</button></form>
     {% endif %}
-    <form method="post" action="/event/delete" id="deleteform" hidden><input type="hidden" name="csrf" value="{{ csrf }}">
+    <form method="post" action="/event/delete" id="deleteform" hidden><input type="hidden" name="csrf" value="{{ csrf }}">{% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
       <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}"></form>
   </div>
   <p class="muted" style="font-size:12px">{{ _('Changes here only affect CalendarStream and Google; CCS+ is never changed.') }}{% if e.origin == "united" %} {{ _('Your edit is kept when the schedule is downloaded again.') }}{% endif %}</p>
@@ -331,6 +340,10 @@ if (delForm) delForm.addEventListener('submit', function (e) { if (!confirm(T.de
     if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }
   });
 })();
+// In the status page's pop-up, Cancel closes the pop-up.
+{% if embed %}document.querySelectorAll('.evcancel').forEach(function (a) {
+  a.addEventListener('click', function (e) { e.preventDefault(); parent.postMessage('calendarstream:event-close', location.origin); });
+});{% endif %}
 </script>
 </body>
 </html>

@@ -104,7 +104,8 @@ def event_body(e, tz_name: str, color_id: str = "") -> dict:
         "description": (e.description + "\n\n" if e.description else "") + SYNC_NOTE,
         "start": start, "end": end,
         "transparency": "transparent" if e.free else "opaque",
-        "reminders": {"useDefault": False, "overrides": []},     # decision 3: no reminders
+        # Only the reminders set on the status page (Google allows five); none otherwise (decision 3)
+        "reminders": {"useDefault": False, "overrides": [{"method": "popup", "minutes": m} for m in e.alarm_minutes()[:5]]},
         "extendedProperties": {"private": {MARKER: "1", "uid": e.uid[:900]}},
     }
     if color_id:

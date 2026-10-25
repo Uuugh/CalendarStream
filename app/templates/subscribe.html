@@ -31,7 +31,7 @@
   .copybtn { display:inline-flex; align-items:center; justify-content:center; min-width:40px }
 </style>
 </head>
-<body><main>
+<body>{{ icon_sprite() }}<main>
   <h1>{{ name }}</h1>
   <p class="sub">{{ _('A live calendar feed.') }}
     {% if last_success %}{{ _('Last updated {when} · {n} events.', when=dates.short(last_success.date()) ~ ', ' ~ dates.clock(last_success), n=event_count) }}{% endif %}</p>

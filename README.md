@@ -30,11 +30,11 @@ or add events with rules, and walks you through setup.
   <img src="docs/screenshots/sources-dark.png" alt="The same in the dark theme" width="49%"><br><br>
   <img src="docs/screenshots/destinations-light.png" alt="Feeds: the Google account, a Google calendar and a calendar feed with its dates, sources, feed link and subscribe page (light theme)" width="49%">
   <img src="docs/screenshots/destinations-dark.png" alt="The same in the dark theme" width="49%"><br><br>
-  <img src="docs/screenshots/rules-light.png" alt="Rule Templates: color rules, an Add event rule and the two predefined rules, with the sources using each (light theme)" width="49%">
+  <img src="docs/screenshots/rules-light.png" alt="All Rules: color and emoji rules, a Create event rule and the two predefined rules, highest priority first, with the calendars each applies to and its handle (light theme)" width="49%">
   <img src="docs/screenshots/rules-dark.png" alt="The same in the dark theme" width="49%"><br><br>
   <img src="docs/screenshots/templates-light.png" alt="Event Templates: a drive to the airport and a day off (light theme)" width="49%">
   <img src="docs/screenshots/templates-dark.png" alt="The same in the dark theme" width="49%"><br><br>
-  <img src="docs/screenshots/rule-dialog-light.png" alt="The rule dialog: a Color rule for RDO (light theme)" width="45%">
+  <img src="docs/screenshots/rule-dialog-light.png" alt="The rule dialog: If Text whole word VAC, Then Color Basil and an emoji in front of the title (light theme)" width="45%">
   <img src="docs/screenshots/rule-dialog-dark.png" alt="The same in the dark theme" width="45%"><br><br>
   <img src="docs/screenshots/event-light.png" alt="Adding an event: calendar, template, title, times, time zone, location, notes and color (light theme)" width="49%">
   <img src="docs/screenshots/event-dark.png" alt="The same in the dark theme" width="49%"><br><br>
@@ -98,8 +98,8 @@ explained in [`.env.default`](.env.default):
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Behind a reverse proxy: its address or network (e.g. `172.18.0.0/16`), so visitors' addresses and https are seen |
 | `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440, for CCS+; overridden by “Check for changes every” in its box |
 | `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in the CCS+ box (Expand) |
-| `DEFAULT_EVENT_HOURS` | `1` | Hours for items with no end time, or `allday`; a source's Items-without-an-end-time rule overrides it |
-| `ALLDAY_24H` | `true` | Show 24-hour (48 h…) events as all-day; replaced by each source's 24-hour-events rule |
+| `DEFAULT_EVENT_HOURS` | `1` | Hours for items with no end time, or `allday`; the Items-without-an-end-time rule overrides it, and a new install's rule starts from it |
+| `ALLDAY_24H` | `true` | Whether a new install starts with the 24-hour-events rule (24 h, 48 h… events shown as all-day) |
 | `FEED_TOKEN` | made once | The stream name of the feed made when upgrading from before 0.2.1; feeds' stream names are set on the status page |
 
 **Secrets.** The files are `.secrets/DB_PASSWORD.txt` and `.secrets/UPDATER_TOKEN.txt`, made by the installer. The status-page
@@ -126,18 +126,25 @@ logins or setup codes lock an address out for 15 minutes.
 - **Calendar:** every source's events (views, months and the time zone change in place, without
   reloading the page). On the right: the **Time Zone** it's shown in (**TZ** when
   space is tight; on this page only, the feeds and Google keep `TZ`), **Month / Week / Day / List**, the **12h / 24h** switch,
-  and **Print** (the calendar as it's shown, without the rest of the page). Click
-  the title to jump to any month. Click an event to see it, **Edit** it (title, times, notes, or
-  hide it), **duplicate** it or **delete** it (a source's own event is hidden instead, since the
-  source would send it again); clicking elsewhere closes it, and its pin keeps it open.
-  Click an empty spot on a day (or **+**) to add your own. Events can have their own color (one of
+  and **Print** (Print Preview, below). Click the title to jump to any month. Click an event to
+  open it; it stays open (also while the calendar is redrawn) until its **Close**. On the right of
+  its details: the bell (**reminders**: up to five, from "at the start" to "1 week before", sent to
+  Google and written into the feeds), **✎ Edit** (title, times, notes, or hide it), **duplicate**
+  and **delete** (a source's own event is hidden instead, since the source would send it again).
+  Click an empty spot on a day (or **+**) to add your own. On a computer, adding and editing an
+  event (and the rule dialog) open in a pop-up; on a phone they're a full page with a **←** back
+  button. New events go into the top calendar (the **Default**). Events can have their own color (one of
   Google's 11), which wins over rules; otherwise all of a calendar's events (timed or all-day) share
   its color. The key under the calendar lists each calendar, "Added here" and the rules' colors.
   Edits survive new downloads; ✎ marks an edited event, ⚠ one its source changed since. Nothing is
   ever changed in CCS+.
-- The page's sections: **Calendar** at the top, then **Calendars**, **Feeds**, **Rule Templates**,
+- **Print Preview:** the pages as they'll print, with **Print**. Choose **Itinerary**, **Day**,
+  **5-day** (Monday to Friday), **Week** or **Month**, with or without weekends, light or dark, and
+  the dates (From / To); it opens with your last print's choices (or the calendar's view the first
+  time). One page per month, week or day.
+- The page's sections: **Calendar** at the top, then **Calendars**, **Feeds**, **All Rules**,
   **Event Templates** and **Activities and Logs**, each with a small icon and the same kind of
-  section title row. On a wide screen they sit in two columns (Calendars | Feeds, Rule Templates |
+  section title row. On a wide screen they sit in two columns (Calendars | Feeds, All Rules |
   Event Templates), with Activities and Logs across the full width; on a narrow screen or a phone
   they're one column, the calendar opens on the List view, the view and theme switches become one
   button each that steps through the choices, and long labels get shorter ("Expand", "Check every
@@ -151,34 +158,40 @@ logins or setup codes lock an address out for 15 minutes.
   it to keep it open.
 - Saving, cancelling and removing happen in place: only the parts of the page they change are
   updated, without reloading it. **Cancel | Save** is one 130 px pair at the bottom of a module and
-  in the rule dialog; the pressed side fills it and says **Cancelled** or **Saved** for 3 seconds. A
-  field changed in place (a login, a link, a rule line) gets **✕ | ✓** icons instead.
+  (**Cancel | Apply** in the rule dialog); the pressed side fills it and says **Cancelled** or
+  **Saved** for 3 seconds, and a module's Cancel also closes it. A field changed in place (a login,
+  a link) gets **✕ | ✓** icons instead.
+- **Handles:** to the right of every module and rule line, **▲ ☰ ▼**: drag it by **☰**, or press ▲ ▼,
+  to change the order (of the calendars, the feeds, or the rules' priority). It's saved at once.
 - Spacing: 10 px between sections, 5 px between the modules in a section (14 px under a folded one,
   for its Expand line) and around subsection titles (Automatic Upload, Manual Upload, Rules), 2 px
   between everything else; text boxes and rule lines are 34 px rounded rectangles; instruction tiles
   ("How to …") keep their own size.
-- **Calendars** (**+** adds one; a new install has none). Presets: **United CCS+** (once),
+- **Calendars** (**+** adds one). A new install has one **Local** calendar: it holds the events you
+  add here, and you can add more (**+ → Local calendar**). The top calendar is the **Default** (the
+  one new events go into; its expanded module says so); remove it or move another above it, and the
+  next becomes the Default. Other presets: **United CCS+** (once),
   **Google** and **Apple** calendars (by their private iCal link, with step-by-step help for finding
   it) and **Other** (any link starting with `webcal://` or ending in `.ics`; repeating events are
   shown from a year back to two years ahead). Each calendar is a **module**. Its header is 50 px
-  tall and is all a folded module shows: its color, its title over its note (e.g. "CCS+ Calendar
-  Sync"), the last download ("98 events @ 07:59 (0 new, 0 removed)") over the next scheduled check,
-  and its status over **Sync Now**, in a box of the same size in every module. **Sync Now** says
+  tall and is all a folded module shows: its color (the color of its events; click it to change it),
+  its title over its note (e.g. "CCS+ Calendar Sync"), "Last check was successful @ 07:59" (or
+  failed; what changed is in Activities and Logs), and on the right "Next check @ 08:59" beside its
+  status over **Sync Now**, in a box of the same size in every module. **Sync Now** says
   **Syncing…** at once, then pulses green (**Synced**) or yellow (**Failed**) and goes back to Sync
   Now; the status, the calendar and the log update in place, without reloading the page.
   **▸ Expand for Details or to Edit Configuration ◂** sits in a folded module's bottom border; it
-  opens the rest (it opens by itself when something needs doing), with a line under the header, and
-  turns the color, title and note into fields of the same size:
+  opens the rest (it opens by itself when something needs doing) and becomes a **Close** line under
+  the header, and turns the title and note into fields of the same size:
   - **Automatic Upload:** the **Site Address** with **Check every … min** beside it, CCS+'s
     **Username** (your UID) and password (**✓ Validated** until you type; then **✕ | ✓** (Cancel and
     Save), and ✓ shows Saved → Verifying… → ✓ Validated or ✗ Failed, with the reason under the boxes),
     and step-by-step help: how to enable it on the left, what's **Accomplished** on the right.
   - **Manual Upload** (CCS+): upload Calendar.ics by hand.
-  - **Rules:** one thin rounded line per rule, marked **Shared** (a Rule Template; click it to change
-    it for every calendar) or **This calendar** (this calendar's own). ✎ turns a line into fields with
-    **✕ | ✓** (Cancel and Save); ✓ then asks **This calendar** (a copy for this calendar only, in the same
-    place) or **All calendars** (the shared rule). **+ Add a rule** adds a line with a menu of the Rule
-    Templates (or **Create a New Rule…**); the bin takes a rule off the source.
+  - **Rules:** the rules this calendar uses, highest priority first (its own first, then the shared
+    ones), each marked **This calendar**, **All calendars** or **n calendars**. ✎ opens the rule
+    dialog; the bin takes the rule off this calendar; the handle changes its priority. **+ Add a
+    rule** offers **New rule…** or a rule another calendar uses.
   - At the bottom, under a line: **Remove** on the left (it asks first), **Cancel | Save** on the
     right.
 - **Feeds** (**+** adds one; the first asks for the public address): what other apps subscribe to,
@@ -190,26 +203,33 @@ logins or setup codes lock an address out for 15 minutes.
   **End** date (empty = no limit), the calendars it gets, a feed's links, and Remove / Cancel | Save. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
   part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
   an old link) and existing subscriptions work again.
-- **Rule Templates** (folds to its title; **+** stays in the corner): the shared rules, kept once
-  and used by any source (each shows which sources use it; **+** or ✎ opens the rule dialog, the copy
-  button makes a copy to change, the bin deletes it). Kinds:
-  - **Color:** match a title (whole word, contains, starts with or exact title) and color the event
-    (e.g. RDO in red).
-  - **Add event:** match a title and add an event from an event template some time before the
-    start, after the start or after the end (e.g. a 1:30 drive to the airport 2:00 before each trip).
-  - **Record changes:** when the source changes a matching event (every event when nothing is
-    entered to match), a note is added to the event ("Changed Oct 22: time … → …") and a line goes
-    in Activities and Logs.
-  - **Items without an end time** (predefined): how long they last, or all day.
-  - **24-hour events** (predefined): show them (CCS+ writes full days as 00:01–23:59:59) as all-day,
-    with the original times in the notes.
+- **All Rules** (folds to its title; **+** stays in the corner): every rule, highest priority first,
+  with the calendars it applies to (**+** or ✎ opens the rule dialog, the copy button makes a copy
+  for no calendar yet, the bin deletes it, the handle changes its priority). A higher rule wins over
+  a lower one (for a color, an emoji or a time change), even a calendar's own. A rule is
+  **If … Then …**:
+  - **If** (no lines: every event): **Text** is / contains / whole word / begins with / ends with /
+    regex (**Aa** for matching case); **Date** and **Time** is / after / before / between (a time
+    range can go past midnight); **Day(s)** is / after / before / between (ctrl- or shift-click for
+    several; Fri – Mon goes round the weekend); **Length** is (weeks : days : hours : minutes; 0 =
+    no end time) or is whole days. Join lines with **and** / **or** (and goes first); click the grey
+    **(** and **)** to group lines, the outer brackets in a different color.
+  - **Then** (+ adds more): **Color**, **Add emoji to title**, **Create event** (a new one, or from
+    an event template, some time before the start, after the start or after the end), **Change**
+    (to all-day, with the original time in the notes, or to a length) and **Record changes** (when
+    the source changes a matching event, a note on it and a line in Activities and Logs).
+  - **Apply to** (ctrl or shift for several): **All calendars** (also ones you add later) or the
+    ones chosen. A new rule applies to All; changing one keeps its choice. **Remove** deletes it.
 
-  New sources start with the two predefined rules; a source without them uses
-  `DEFAULT_EVENT_HOURS` and keeps 24-hour events as they are.
+  A new install starts with two rules for every calendar: **Items without an end time** (from
+  `DEFAULT_EVENT_HOURS`) and **24-hour events** (shown as all-day; CCS+ writes full days as
+  00:01–23:59:59). Rules from earlier versions are converted, in the same order.
 - **Event Templates** (folds to its title; **+** stays in the corner): ready-made events (title, length or all day, location, color) for Add-event
   rules and for **Start from a template** when adding an event by hand.
-- **Activities and Logs:** each check and what changed, for each source; each source's last
-  download details (for debugging) at the bottom.
+- **Activities and Logs** (a module like the others): each check and what changed, for each source;
+  each source's last download details (for debugging) at the bottom. Folded, it shows **Healthy**,
+  or **Unhealthy** while a problem is still there (a calendar failing, a sign-in rejected, Google
+  sync failing).
 - **☰ Settings** (a light blue panel): site settings only: the status-page login (with a show-password eye and a
   strength bar, like every password box), the public address, the **admin e-mail** (filled into the
   Google setup guide) and **Check for updates** (hourly, weekly, monthly or never; only versions of
@@ -233,10 +253,10 @@ CalendarStream writes each Google destination into a calendar it creates in your
 with the events of the sources it ticks. It only asks
 for access to **calendars it created** and your e-mail address, so it can't see your other calendars.
 
-- Events within the destination's Start and End dates (all of them when empty), with your edits,
-  without reminders; CCS+'s "free" items stay free. Events before the Start are left alone.
+- Events within the destination's Start and End dates (all of them when empty), with your edits
+  and only the reminders you set here (the bell on an event); CCS+'s "free" items stay free. Events before the Start are left alone.
 - Each event gets the nearest Google event color (Tomato, Basil, Peacock…) to its own color, its
-  source's color rule or its source's color; each calendar's name follows its destination's.
+  rules' color or its calendar's color; each calendar's name follows its destination's.
   Removing a destination leaves its calendar in Google unless you tick "Also delete it in Google".
 - Changes reach Google within seconds. A daily check (or the Google account's **Sync Now**) puts back events changed or
   deleted in Google and makes a new calendar if it was deleted.

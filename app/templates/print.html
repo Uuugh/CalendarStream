@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="{{ html_lang }}" data-theme="{{ print_theme }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ _('Print Preview') }}</title>
+{% include "_theme.html" %}
+{# Print Preview's page (F2.1): the calendar from `first` to `last` as chosen (itinerary, day, 5-day,
+   week or month; with or without weekends; light or dark), one page per month, week or day. #}
+<style>
+  * { box-sizing:border-box }
+  body { margin:0; font:12px/1.35 var(--font); background:var(--bg); color:var(--text); padding:16px }
+  .sheet { break-after:page; margin:0 0 24px }
+  .sheet:last-child { break-after:auto }
+  h1 { font-size:18px; margin:0 0 8px }
+  .grid { display:grid; border-top:1px solid var(--line); border-left:1px solid var(--line) }
+  .dow { font-weight:600; color:var(--muted); text-align:center; padding:3px 0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--soft) }
+  .day { min-height:86px; padding:3px; border-right:1px solid var(--line); border-bottom:1px solid var(--line) }
+  .day.out { background:var(--soft) } .day.out .num { opacity:.6 }
+  .week .day { min-height:380px }
+  .num { font-weight:600; margin-bottom:2px }
+  .ev { margin:1px 0; padding:1px 4px; border-radius:4px; background:var(--ev); color:var(--evtext); overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .week .ev, .list .ev { white-space:normal }
+  .ev.custom { background:var(--custom); color:var(--customtext) }
+  .ev.tint { background:color-mix(in srgb, var(--cal) 18%, var(--card)); color:color-mix(in srgb, var(--cal) 70%, var(--text)) }
+  .ev.hidden { text-decoration:line-through; opacity:.6 }
+  .t { font-variant-numeric:tabular-nums; opacity:.85; margin-right:4px }
+  .list .aday { display:grid; grid-template-columns:150px 1fr; gap:10px; padding:5px 2px; border-bottom:1px solid var(--line); break-inside:avoid }
+  .list .adate { font-weight:600 }
+  .list .loc { color:var(--muted) }
+  .empty { color:var(--muted) }
+  @media print { body { padding:0 } * { -webkit-print-color-adjust:exact; print-color-adjust:exact } }
+  @page { margin:12mm }
+</style>
+</head>
+<body>
+{% macro item(it, wide=false) -%}
+{% set e = it.e %}{% set tc = it.tag_color or (it.src_color if e.origin == 'united' else '') %}
+<div class="ev{% if e.origin in ('custom', 'rule') %} custom{% endif %}{% if e.hidden %} hidden{% endif %}{% if tc %} tint{% endif %}"{% if tc %} style="--cal:{{ tc }}"{% endif %}>
+  {% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if wide and e.location %} <span class="loc">· {{ e.location }}</span>{% endif %}{% if wide and src_names|length > 1 %} <span class="loc">· {{ src_names.get(e.source, '') }}</span>{% endif %}
+</div>
+{%- endmacro %}
+{% for p in pages %}
+<section class="sheet">
+  {% if view == "itinerary" %}
+    <h1>{{ dates.day(first) }}, {{ first.year }} – {{ dates.day(last) }}, {{ last.year }}</h1>
+    <div class="list">
+      {% for day in p.days %}<div class="aday"><div class="adate">{{ dates.day(day.date) }}</div><div>{% for it in day["items"] %}{{ item(it, true) }}{% endfor %}</div></div>
+      {% else %}<p class="empty">{{ _('No events.') }}</p>{% endfor %}
+    </div>
+  {% elif view == "day" %}
+    <h1>{{ p.title }}</h1>
+    <div class="list">{% for day in p.days %}{% for it in day["items"] %}{{ item(it, true) }}{% else %}<p class="empty">{{ _('No events.') }}</p>{% endfor %}{% endfor %}</div>
+  {% else %}
+    <h1>{{ p.title }}</h1>
+    <div class="grid {{ 'week' if view in ('week', '5day') else 'month' }}" style="grid-template-columns:repeat({{ p.cols }}, minmax(0, 1fr))">
+      {% for d in p.dow %}<div class="dow">{{ d }}</div>{% endfor %}
+      {% for week in p.weeks %}{% for day in week %}
+      <div class="day{% if view == 'month' and not day.in_month %} out{% endif %}"><div class="num">{{ day.date.day }}</div>{% for it in day["items"] %}{{ item(it, view != 'month') }}{% endfor %}</div>
+      {% endfor %}{% endfor %}
+    </div>
+  {% endif %}
+</section>
+{% endfor %}
+</body>
+</html>
