@@ -1,3 +1,6 @@
 .env
 data/
 __pycache__/
+
+# the tests' made-up calendars are kept (data/ above is for local installs)
+!tests/data/

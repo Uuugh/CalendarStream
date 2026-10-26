@@ -28,7 +28,7 @@ or add events with rules, and walks you through setup.
 <p align="center">
   <img src="docs/screenshots/sources-light.png" alt="Calendars: United CCS+ Calendar Sync expanded (Site Address, Username, password, upload, its rules) and a work calendar feed (light theme)" width="49%">
   <img src="docs/screenshots/sources-dark.png" alt="The same in the dark theme" width="49%"><br><br>
-  <img src="docs/screenshots/destinations-light.png" alt="Feeds: the Google account, a Google calendar and a calendar feed with its dates, sources, feed link and subscribe page (light theme)" width="49%">
+  <img src="docs/screenshots/destinations-light.png" alt="Feeds: a Google calendar and a calendar feed with its buttons, dates, sources and feed link and subscribe page (light theme)" width="49%">
   <img src="docs/screenshots/destinations-dark.png" alt="The same in the dark theme" width="49%"><br><br>
   <img src="docs/screenshots/rules-light.png" alt="All Rules: color and emoji rules, a Create event rule and the two predefined rules, highest priority first, with the calendars each applies to and its handle (light theme)" width="49%">
   <img src="docs/screenshots/rules-dark.png" alt="The same in the dark theme" width="49%"><br><br>
@@ -77,11 +77,15 @@ Then open the address it printed:
 1. **Create your login** with the setup code.
 2. **Calendars → +** → **United CCS+**, then enter your CCS+ Username (UID)
    and Calendar Sync password. (Or add any calendar feed.)
-3. **Feeds → +**: it first asks for the public `https://` address; check the
-   spelling, because Google sends you back to exactly this address. Name the destination, then add:
-   - a **Google calendar** (recommended): in the **Google account** box, follow the step-by-step
-     guide in order. Publish the app, or add yourself as a test user, **before** pressing Connect; or
-   - a **Calendar feed**, and press **Add to Google Calendar** to subscribe to it instead.
+3. Optional, for Google Calendar kept in sync within seconds (with your rule colors and reminders):
+   **☰ Settings → Google Calendar sync**, and follow its step-by-step guide in order. Publish the app,
+   or add yourself as a test user, **before** pressing Connect. It needs the public `https://`
+   address (check the spelling: Google sends you back to exactly this address).
+4. **Feeds → +** (it first asks for the public address), name it, then add:
+   - **Google Calendar**: kept in sync through Google Calendar sync when that's set up; otherwise a
+     feed your Google account subscribes to (press **Add to Google Calendar**); or
+   - **Apple, Outlook or another app**: a feed link (press **Add to Apple / Outlook**, or copy the
+     link into any calendar app).
 
 ## Settings
 
@@ -201,10 +205,17 @@ logins or setup codes lock an address out for 15 minutes.
     what becomes of its events: keep them in a Local calendar (same name and color, in its place),
     add them to another calendar, or delete them.
 - **Feeds** (**+** adds one; the first asks for the public address): what other apps subscribe to,
-  independent of the calendars: **Google calendars** (Autosync; one **Google account** box signs in for all of them)
-  and **Calendar feeds** (a feed link and a shareable subscribe page each), as many as you like.
-  Each is a module with the same 50 px header as a calendar's (name over kind, its calendars and
-  dates, status; the Google account's has **Sync Now**), and
+  independent of the calendars, as many as you like:
+  - **Google Calendar**: with **Google Calendar sync** set up (☰ Settings: the one Google sign-in for
+    all of them), a calendar of its own in Google, kept up to date within seconds, with your rule
+    colors and reminders, and **Sync Now** in its header. Without it, a feed your Google account
+    subscribes to (Google re-reads it every few hours and shows it in one color).
+  - **Apple, Outlook or another app**: a feed link.
+
+  A feed's module leads with its buttons, **Add to Google Calendar**, **Add to Apple / Outlook** and
+  **Open subscribe page** (a page to share it), then its **Feed link** with Copy, for any other app
+  or if a button doesn't work. Each is a module with the same 50 px header as a calendar's (name over
+  kind, its calendars and dates, status), and
   **▸ Expand for Details or to Edit Configuration ◂** opens the rest: the name, a **Start** and
   **End** date (empty = no limit), the calendars it gets, a feed's links, and Remove / Cancel | Save. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
   part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
@@ -276,7 +287,7 @@ for access to **calendars it created** and your e-mail address, so it can't see 
 - Each event gets the nearest Google event color (Tomato, Basil, Peacock…) to its own color, its
   rules' color or its calendar's color; each calendar's name follows its destination's.
   Removing a destination leaves its calendar in Google unless you tick "Also delete it in Google".
-- Changes reach Google within seconds. A daily check (or the Google account's **Sync Now**) puts back events changed or
+- Changes reach Google within seconds. A daily check (or **Sync Now** on a Google calendar) puts back events changed or
   deleted in Google and makes a new calendar if it was deleted.
 - **Instant updates from Google:** with a public `https://` address, CalendarStream asks Google to
   notify it (a webhook to `/google/notify`) whenever one of its calendars changes there, and puts back
@@ -295,6 +306,12 @@ to a feed in Google, remove that calendar, or you'll see everything twice.
 **Feeds on Android:** Google's Android app can't add a calendar by link, and a calendar added by
 link on calendar.google.com stays hidden on the phone until it's turned on there: in the app,
 **Settings →** the calendar **→ Sync**. The subscribe page explains this on Android and iPhone.
+
+## Tests
+
+`tests/run.sh` runs the test suites (one per version, most with a real browser) against a
+Postgres of your choice; see [tests/README.md](tests/README.md). How work on CalendarStream is done
+(versions, betas, reviews, the theme) is in [AGENTS.md](AGENTS.md) and [build_rules/](build_rules).
 
 ## Updating
 

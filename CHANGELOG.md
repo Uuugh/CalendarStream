@@ -9,7 +9,42 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.3**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.4**
+
+## 0.2.8-beta.4 — 2026-10-26
+
+### Added
+- **F1** **Google Calendar sync** moved from Feeds into **☰ Settings**: the step-by-step guide, Client ID
+  and secret, Connect / Disconnect, the account and its last sync. **Feeds → + → Google Calendar** is
+  then a calendar kept in sync through the Google API when Google Calendar sync is set up, and
+  otherwise a feed for your Google account to subscribe to (with a pointer to Settings for colors,
+  reminders and updates within seconds). **Sync Now** for Google is on each Google calendar's module.
+- **F2** A feed's module leads with its buttons, **Add to Google Calendar** (first for a Google feed),
+  **Add to Apple / Outlook** and **Open subscribe page**, then the **Feed link** with Copy, for any
+  other calendar app or if a button doesn't work. "+ → Calendar feed" is now **Apple, Outlook or
+  another app**.
+- **F3** The test suites are in the repository (`tests/`, with `tests/run.sh` and a README), using the
+  made-up demo schedule only.
+- **F4** How work is done here moved into `AGENTS.md` (for any agent) and `build_rules/` (basics,
+  deploy, review, theme, roadmap); `CLAUDE.md` now loads the basics and points to the rest. Every
+  EOF runs the tests and pip-audit before a beta is published; Deploy step a runs the tests, step b
+  all three scans.
+
+### Changed
+- **F5** Caching: the page's stylesheet and script are now files the browser keeps for the version
+  (sent compressed), instead of being inside every page (and every in-place save); the fonts are
+  kept a year; an unchanged feed answers "304 Not Modified"; an event's tools (Close, reminders,
+  edit, duplicate, delete) are made when it's opened, from one copy in the page. The page is about
+  a third smaller, the calendar much more.
+- **#1** (security) FastAPI 0.162 and Starlette 1.10 (from 0.115 and 0.46.2): fixes Starlette's
+  known problems (pip-audit: 7 advisories, among them one that let anyone tie up the server with a
+  crafted Range header on `/static`).
+
+### Fixed
+- If the database wasn't ready within 10 seconds at start-up, CalendarStream kept retrying a
+  connection that could never open, and stopped after a minute.
+- After the FastAPI upgrade, a field sent empty (a calendar's note cleared, a feed's End date, an
+  empty Site Address) was read as "not sent"; those are read as sent again.
 
 ## 0.2.8-beta.3 — 2026-10-25
 

@@ -97,13 +97,21 @@ LOG_KEEP = 1000  # activity-log rows to keep
 
 class Store:
     def __init__(self, dsn: str):
-        self.pool = ConnectionPool(dsn, min_size=1, max_size=4, open=False, kwargs={"autocommit": True})
+        self.dsn = dsn
+        self.pool = self._new_pool()
+
+    def _new_pool(self) -> ConnectionPool:
+        return ConnectionPool(self.dsn, min_size=1, max_size=4, open=False, kwargs={"autocommit": True})
 
     def open(self, wait_s: int = 60):
         """Connect (retrying while the database container starts) and create tables."""
         deadline = time.time() + wait_s
         while True:
             try:
+                # A pool that didn't get a connection in time is closed and can't be opened again,
+                # so each try gets a new one (0.2.8-beta.4: before, every retry failed at once).
+                if self.pool.closed:
+                    self.pool = self._new_pool()
                 self.pool.open(wait=True, timeout=10)
                 with self.pool.connection() as c:
                     c.execute(SCHEMA)

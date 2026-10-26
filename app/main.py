@@ -3,6 +3,8 @@ Google sync, update checks)."""
 from __future__ import annotations
 
 import asyncio
+import gzip
+import hashlib
 import calendar as pycal
 import json
 import os
@@ -109,7 +111,9 @@ def destinations(kind: str | None = None) -> list[dict]:
             continue
         found.append({"id": d["id"], "type": d["type"], "name": " ".join(str(d.get("name") or "").split())[:100] or "CalendarStream",
                       "sources": [x for x in d.get("sources") or [] if x in ids], "token": str(d.get("token") or ""),
-                      "start": _iso_day(d.get("start")), "end": _iso_day(d.get("end"))})
+                      "start": _iso_day(d.get("start")), "end": _iso_day(d.get("end")),
+                      # a feed made by + Google Calendar while Google Calendar sync wasn't set up (0.2.8-beta.4)
+                      "for": "google" if d["type"] == "feed" and d.get("for") == "google" else ""})
     return found
 
 
@@ -126,7 +130,7 @@ def destination(did: str) -> dict | None:
 
 
 def save_destinations(found: list[dict]):
-    store.set("destinations", [{k: d.get(k, "") for k in ("id", "type", "name", "sources", "token", "start", "end")} for d in found])
+    store.set("destinations", [{k: d.get(k, "") for k in ("id", "type", "name", "sources", "token", "start", "end", "for")} for d in found])
 
 
 def new_did() -> str:
@@ -1170,6 +1174,12 @@ async def protect(request: Request, call_next):
     response.headers.setdefault("Content-Security-Policy", "frame-ancestors 'self'")
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("Referrer-Policy", "no-referrer")
+    # Caching (0.2.8-beta.4): files whose address names the version (?v=…, /assets/…-<version>-…) never
+    # change, so browsers keep them a year; other static files (the fonts) a day, then ask again.
+    path = request.url.path
+    if path.startswith(("/static/", "/assets/")) and response.status_code == 200:
+        versioned = request.query_params.get("v") == __version__ or path.startswith(f"/assets/page-{__version__}-")
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable" if versioned else "public, max-age=86400"
     return response
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 # Material Symbols for every page: {{ icon_sprite() }} once at the top of <body>, then {{ icon("delete") }}
@@ -1177,6 +1187,42 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 templates.env.globals.update(icon=icons.svg, icon_mask=icons.mask, icon_sprite=icons.sprite)
 # The fonts (IBM Plex Sans and Mono): served from here, so pages never load anything from elsewhere.
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
+
+
+# --- The status page's stylesheet and script, cached (0.2.8-beta.4) -----------------------------------
+# They used to be inside every page (about 150 KB, sent again on each load and each in-place save). Now
+# they're files the browser keeps: the stylesheet as it is, the script made once per language (its words
+# are translated). Both are sent compressed when the browser accepts it: they hold no secrets, so
+# compressing them is safe (the pages themselves, which hold the form token, are not compressed).
+_ASSETS: dict[str, tuple[bytes, bytes]] = {}
+
+
+def _asset(key: str, make) -> tuple[bytes, bytes]:
+    if key not in _ASSETS:
+        raw = make()
+        _ASSETS[key] = (raw, gzip.compress(raw, 9))
+    return _ASSETS[key]
+
+
+def _send_asset(request: Request, key: str, make, media_type: str) -> Response:
+    raw, packed = _asset(key, make)
+    if "gzip" in request.headers.get("accept-encoding", ""):
+        return Response(packed, media_type=media_type, headers={"Content-Encoding": "gzip", "Vary": "Accept-Encoding"})
+    return Response(raw, media_type=media_type, headers={"Vary": "Accept-Encoding"})
+
+
+@app.get("/assets/app.css")
+def app_css(request: Request):
+    return _send_asset(request, "app.css", lambda: (Path(__file__).parent / "static" / "app.css").read_bytes(), "text/css; charset=utf-8")
+
+
+@app.get("/assets/page-{version}-{lang}.js")
+def page_js(request: Request, version: str, lang: str):
+    if version != __version__ or lang not in i18n.LANGS:
+        raise HTTPException(404)
+    make = lambda: templates.env.get_template("page.js").render(
+        _=lambda text, **kw: i18n.tr(lang, text, **kw), lang=lang).encode()
+    return _send_asset(request, f"page-{lang}.js", make, "text/javascript; charset=utf-8")
 
 
 @app.exception_handler(HTTPException)
@@ -1943,6 +1989,11 @@ async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="typ
     check_csrf(csrf)
     if type_ not in DESTINATION_TYPES:
         raise HTTPException(400, "Unknown kind of destination.")
+    # + Google Calendar (0.2.8-beta.4): kept in sync through the Google API when Google Calendar sync is
+    # set up in Settings; otherwise a feed for the Google account to subscribe to.
+    made_for = ""
+    if type_ == "google" and not google.configured:
+        type_, made_for = "feed", "google"
     if public.strip():
         try:
             store.set("public_url", normalise_public_url(public))
@@ -1955,9 +2006,9 @@ async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="typ
     name = " ".join(name.split())[:100] or first_named_calendar()
     did = new_did()
     found.append({"id": did, "type": type_, "name": name, "sources": source_ids(),
-                  "token": secrets.token_urlsafe(24) if type_ == "feed" else ""})
+                  "token": secrets.token_urlsafe(24) if type_ == "feed" else "", "for": made_for})
     save_destinations(found)
-    state.record("info", f"Destination added: {DESTINATION_TYPES[type_]} \"{name}\"")
+    state.record("info", f"Destination added: {'Google Calendar (feed)' if made_for else DESTINATION_TYPES[type_]} \"{name}\"")
     if type_ == "google":
         request_google_sync(full=True)
     return RedirectResponse(f"/#dest-{did}", status_code=303)
@@ -1970,12 +2021,20 @@ def _did(did: str) -> dict:
     return d
 
 
+async def sent_fields(request: Request, *names: str) -> list[str | None]:
+    """Form fields as sent: "" when sent empty (e.g. a note cleared), None when not sent at all. (FastAPI
+    reads an empty field as None for `str | None`, which can't tell the two apart.)"""
+    form = await request.form()
+    return [str(form[n]) if n in form else None for n in names]
+
+
 @app.post("/destinations/update", dependencies=[Depends(gui_auth)])
-async def update_destination(csrf: str = Form(""), did: str = Form(""), name: str = Form(""),
+async def update_destination(request: Request, csrf: str = Form(""), did: str = Form(""), name: str = Form(""),
                              sources_: list[str] = Form([], alias="sources"), start: str | None = Form(None),
                              end: str | None = Form(None)):
     """A destination's name, the sources it gets and its dates (Start / End; empty = no limit)."""
     check_csrf(csrf)
+    start, end = await sent_fields(request, "start", "end")
     d = _did(did)
     if start is not None or end is not None:
         d["start"], d["end"] = _iso_day(start), _iso_day(end)
@@ -2090,6 +2149,9 @@ def change_login(request: Request, csrf: str = Form(""), current: str = Form("")
     return RedirectResponse("/", status_code=303)
 
 
+GOOGLE_SETTINGS = "/?menu=settings#googlesync"      # Google Calendar sync is in ☰ Settings (0.2.8-beta.4)
+
+
 def _back_to(back: str, anchor: str) -> str:
     """Where a dashboard form returns to: its own box. (`back` is accepted from older pages and ignored:
     the logins no longer appear in Settings.)"""
@@ -2102,6 +2164,7 @@ async def set_ccs_login(request: Request, csrf: str = Form(""), uid: str = Form(
     """Save the CCS+ Site Address (the Calendar Sync link; empty = United's), UID and Calendar Sync
     password, then download straight away."""
     check_csrf(csrf)
+    (url,) = await sent_fields(request, "url")
     if url is not None:
         url = url.strip()
         if not url or url == DEFAULT_CALENDAR_URL:
@@ -2245,11 +2308,12 @@ def _source_name_color(sid: str, name: str | None, color: str, color_default: st
 
 
 @app.post("/feed/tags", dependencies=[Depends(gui_auth)])
-async def set_tags(csrf: str = Form(""), sid: str = Form("ccs"), name: str | None = Form(None),
+async def set_tags(request: Request, csrf: str = Form(""), sid: str = Form("ccs"), name: str | None = Form(None),
                    color: str = Form(""), color_default: str = Form(""), note: str | None = Form(None)):
     """Save a calendar module's header: its name, color and note (fields while it's expanded). Its rules
     are changed in the rule dialog and moved in place (/rules/…)."""
     check_csrf(csrf)
+    name, note = await sent_fields(request, "name", "note")
     sid = _sid(sid)
     notes = _source_name_color(sid, name, color, color_default, note)
     if notes:
@@ -3005,7 +3069,7 @@ async def set_public_url(csrf: str = Form(""), url: str = Form(""), action: str 
             raise HTTPException(400, "Enter the address people use to reach this page, e.g. https://cal.example.com")
         store.set("public_url", value)
         state.record("info", f"Public address set to {value}")
-    return RedirectResponse("/#dest-google", status_code=303)
+    return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
 
 
 # --- Admin e-mail (Settings) -------------------------------------------------------
@@ -3063,7 +3127,7 @@ async def google_client(request: Request, csrf: str = Form(""), client_id: str =
         check = await google.check_client(google_redirect_uri(request))
         state.record("info" if check["ok"] else "warn",
                      f"Google OAuth client saved ({google.client_id.split('.')[0][:12]}…): {check['message']}")
-    return RedirectResponse(_back_to(back, "dest-google"), status_code=303)
+    return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
 
 
 @app.post("/google/connect", dependencies=[Depends(gui_auth)])
@@ -3100,7 +3164,7 @@ async def google_callback(state_: str = Query("", alias="state"), code: str = ""
     except GoogleError as e:
         google.record_error(str(e))
         state.record("error", f"Google: {e}")
-    return RedirectResponse("/#dest-google", status_code=303)
+    return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
 
 
 @app.post("/google/disconnect", dependencies=[Depends(gui_auth)])
@@ -3108,7 +3172,7 @@ async def google_disconnect(csrf: str = Form(""), delete: str = Form("")):
     """Stop syncing: optionally delete CalendarStream's calendar, then remove its access in Google."""
     check_csrf(csrf)
     if not google.connected:
-        return RedirectResponse("/#dest-google", status_code=303)
+        return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
     email = google.info().get("email") or "your account"
     async with google_job.lock:      # not in the middle of a sync
         await google.stop_watch(sorted({d["id"] for d in destinations("google")} | set(google.calendar_sids())))
@@ -3118,7 +3182,7 @@ async def google_disconnect(csrf: str = Form(""), delete: str = Form("")):
     what = "and its calendar deleted" if delete == "1" and not any("calendar" in n for n in notes) else ""
     state.record("warn" if notes else "info", f"Google Calendar disconnected ({email}) {what}".strip()
                  + ("; " + "; ".join(notes) if notes else ""))
-    return RedirectResponse("/#dest-google", status_code=303)
+    return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
 
 
 @app.post("/google/notify")
@@ -3144,7 +3208,7 @@ async def google_sync_now(request: Request, csrf: str = Form("")):
     await asyncio.sleep(0.5)
     if _is_async(request):
         return {"ok": True}
-    return RedirectResponse("/#dest-google", status_code=303)
+    return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
 
 
 @app.get("/subscribe/{token}")
@@ -3242,7 +3306,13 @@ def calendar(token: str, request: Request):
     note_feed_read(request.headers.get("user-agent", ""), d["id"])
     color = calendar_color(d["sources"][0]) if len(d["sources"]) == 1 else ""
     ics = build_feed(dest_events(d), d["name"], settings.timezone, color)
-    return Response(ics, media_type="text/calendar; charset=utf-8", headers={"Cache-Control": "no-cache"})
+    # An unchanged feed answers "304 Not Modified" (0.2.8-beta.4): calendar apps that ask with the tag
+    # they were given last time don't download it all again.
+    tag = '"' + hashlib.sha256(ics).hexdigest()[:32] + '"'
+    headers = {"Cache-Control": "no-cache", "ETag": tag}
+    if tag in [t.strip() for t in request.headers.get("if-none-match", "").split(",")]:
+        return Response(status_code=304, headers=headers)
+    return Response(ics, media_type="text/calendar; charset=utf-8", headers=headers)
 
 
 @app.get("/healthz")
