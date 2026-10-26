@@ -3,9 +3,10 @@
 Read before changing how the page looks.
 
 - The rules, measured from the page itself, are in the **CalendarStream Theme Rules** picture:
-  `build_rules/CalendarStream_Theme_Rules.png` (light and dark side by side). Part 1 names the page's parts
-  (section, section header, module, module header, color box, status lines, status box, Sync Now,
-  handle, Expand / Close line, rule line, count box…); part 2 gives the rules.
+  `build_rules/CalendarStream_Theme_Rules_Light.png` and `…_Dark.png`. Part 1 is the whole page with
+  its parts numbered and named (top bar, calendar, sections, section header, module, module header,
+  subsection, fields, instruction tile, Expand and Close bars, rule line, footer…); part 2 gives the
+  rules.
 - In short: IBM Plex Sans (IBM Plex Mono for what's typed or copied exactly), Material Symbols
   icons only, rounded rectangles only (8 px controls, 12 px sections and modules; no pills), 50 px
   module headers, 34 px controls, 5 px between modules and groups, colors only from the tokens in

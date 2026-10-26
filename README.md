@@ -161,7 +161,7 @@ logins or setup codes lock an address out for 15 minutes.
   on controls, 12 px on sections and modules); nothing is pill-shaped. The fonts and icons come with
   CalendarStream, so the page never loads anything from elsewhere. The **CalendarStream Theme
   Rules** picture names the page's parts and gives every rule, measured from the page itself:
-  [build_rules/CalendarStream_Theme_Rules.png](build_rules/CalendarStream_Theme_Rules.png) (light and dark side by side)
+  [light](build_rules/CalendarStream_Theme_Rules_Light.png) · [dark](build_rules/CalendarStream_Theme_Rules_Dark.png)
   (redrawn whenever the theme changes).
 - A small **(?)**, raised right after the word it explains like a superscript, explains it: point at it, or click (tap)
   it to keep it open.
