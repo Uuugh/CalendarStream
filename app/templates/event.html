@@ -13,6 +13,10 @@
   body.embed { background:var(--card) }
   body.embed main { max-width:none; padding:0 2px 8px }
   body.embed h1 { display:none }
+  .linkbox { margin-top:14px; padding:10px 12px; border:1px solid var(--line); border-radius:var(--r) }
+  .linkbox > label { display:flex; align-items:center; gap:4px; margin-top:0 }
+  .linkopts { display:flex; flex-wrap:wrap; gap:4px 18px; margin-top:6px }
+  .iconbtn.linkbtn.on { color:var(--accent); background:var(--runbg) }
   body.embed form.card { border:0; border-radius:0; padding:0; background:transparent }
   .backbtn { display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 10px 0 6px; border:1px solid var(--line); border-radius:var(--r);
              color:var(--accent); text-decoration:none; font-weight:600; background:var(--card) }
@@ -137,6 +141,19 @@
     <label for="description">{{ _('Notes') }}</label>
     <textarea id="description" name="description" maxlength="4000">{{ e.description }}</textarea>
 
+    {# Linked to another event (F3.2): the link icon below opens it. This event is deleted and/or moved with the other one. #}
+    <div class="linkbox" id="linkbox"{% if not link %} hidden{% endif %}>
+      <label for="link_to">{{ icon("link", 16) }} {{ _('Linked to') }}</label>
+      <select id="link_to" name="link_to" class="zone">
+        <option value="">{{ _('(not linked)') }}</option>
+        {% for x in link_choices %}<option value="{{ x.uid }}"{% if link and link.to == x.uid %} selected{% endif %}>{{ x.label }}{% if sources|length > 1 %} ({{ x.calendar }}){% endif %}</option>{% endfor %}
+      </select>
+      <div class="linkopts">
+        <label class="inline"><input type="checkbox" name="link_delete" value="1"{% if not link or link.delete %} checked{% endif %}> {{ _('Delete with it') }}</label>
+        <label class="inline"><input type="checkbox" name="link_move" value="1"{% if not link or link.move %} checked{% endif %}> {{ _('Move with it') }}</label>
+      </div>
+    </div>
+
     {% if e.origin == "united" and not is_new %}
     <label class="inline" style="margin-top:14px"><input type="checkbox" name="hidden" value="1" {% if e.hidden %}checked{% endif %}>
       {{ _('Hide from Google Calendar <span class="muted">(stays visible here, struck through)</span>') }}</label>
@@ -154,6 +171,8 @@
           {% for n, h in colors %}<label title="{{ n }}"><input type="radio" name="color" value="{{ h }}" data-c="{{ h }}" data-name="{{ n }}" {% if e.color == h %}checked{% endif %}><span class="sw" style="--c:{{ h }}"></span></label>{% endfor %}
         </div>
       </details>
+      <button type="button" class="iconbtn linkbtn{% if link %} on{% endif %}" id="linkbtn" aria-controls="linkbox" aria-expanded="{{ 'true' if link else 'false' }}"
+              title="{{ _('Link to another event (delete or move with it)') }}" aria-label="{{ _('Link to another event') }}">{{ icon("link", 18) }}</button>
       {% if not is_new %}
       {# Duplicate and delete, next to the color #}
       <a class="iconbtn" href="/event?copy={{ e.uid|urlencode }}&month={{ month }}" title="{{ _('Duplicate') }}" aria-label="{{ _('Duplicate') }}">{{ copy_icon }}</a>
@@ -344,6 +363,16 @@ if (delForm) delForm.addEventListener('submit', function (e) { if (!confirm(T.de
 {% if embed %}document.querySelectorAll('.evcancel').forEach(function (a) {
   a.addEventListener('click', function (e) { e.preventDefault(); parent.postMessage('calendarstream:event-close', location.origin); });
 });{% endif %}
+// The link icon (F3.2) shows or hides "Linked to"; hiding it while nothing is chosen leaves no link.
+(function () {
+  var btn = document.getElementById('linkbtn'), box = document.getElementById('linkbox'), pick = document.getElementById('link_to');
+  if (!btn || !box) return;
+  btn.addEventListener('click', function () {
+    box.hidden = !box.hidden; btn.setAttribute('aria-expanded', String(!box.hidden));
+    if (!box.hidden) pick.focus();
+  });
+  pick.addEventListener('change', function () { btn.classList.toggle('on', !!pick.value); });
+})();
 </script>
 </body>
 </html>

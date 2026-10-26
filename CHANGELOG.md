@@ -9,7 +9,86 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.2**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.3**
+
+## 0.2.8-beta.3 — 2026-10-25
+
+Three request lists, merged into one beta (the third continues the numbering: F5–F10, I3–I7).
+
+### Added
+- **F1.1** The **theme rules** picture ([light](docs/theme-rules-light.png) ·
+  [dark](docs/theme-rules-dark.png)) is kept in the repository and redrawn whenever the theme
+  changes; it now also shows the handles, pop-ups and drop-downs.
+- **F3.1** **Removing a calendar** asks what becomes of its events: **keep them in a Local
+  calendar** (same name and color, in its place, in its feeds, with its own rules; the default),
+  **add them to another calendar**, or **delete them**.
+- **F3.2** **Linked events:** the link icon on the event page links an event to another one (events
+  within three weeks, in any calendar), with **Delete with it** and **Move with it** (e.g. a drive
+  to the airport that follows its trip). The event's details on the calendar say what it's linked to.
+- **F5** Settings → Updates: an **Auto-update** tick box, left of Check now: with the updater, a newer
+  version of your release (stable or beta) is installed by itself (once per version; greyed out
+  without the updater).
+- **F1.4** The theme rules picture is now **docs/CalendarStream_Theme_Rules.png** (and
+  **…_Dark.png**), titled "CalendarStream Theme Rules", and starts with the page itself, its parts
+  numbered and named (section, section header, module, module header, color box, status lines,
+  status box, Sync Now, handle, Expand / Close line, rule line, count box…).
+- **F4.2** **Conflicting rules:** when a lower rule can never set a color, an emoji or a time change
+  because a higher one matches the same events (for some of the same calendars), or two rules are
+  the same, All Rules says so (and "n to check" beside its title), with what can be done: **Put it
+  first**, **Take the color (emoji, time) out of it**, **Merge them**, or **Keep as is** (not shown
+  again).
+
+### Changed
+- **F1.2** While **Sync Now** syncs (and says Synced / Failed), Healthy goes away and the button
+  fills the status box, its state in the middle. The rest works as before.
+- **F1.3** Every **(?)** sits right after the word it explains; the calendar key's and a feed's
+  Start / End (?) were at the right of their row.
+- **F2** Settings:
+  - **F2.1** The theme's spacing (5 px between groups and titles) and its saving rules: Public
+    address and Admin e-mail show **✓ Saved** until you type, then **✕ | ✓**, like the login.
+  - **F2.2** When a newer version is out, **Upgrade** replaces **Check now** (it runs Update now, or
+    without the updater links to how to update).
+- **F3.3** A calendar's status lines ("Last check was successful @ 20:10", "0 events added here")
+  are on the right, beside its status.
+- **F3.4** A calendar's color box changes its color only while the module is expanded, like its title
+  and note.
+- **F4.1** **Apply to** is a drop-down of the calendars, each with its color. A rule made in a
+  calendar starts with that calendar; one made in All Rules with All calendars.
+- **F4.3** Choosing a **)** with no **(** before it adds the **(** on the first line of its group (the
+  rule's first line at the top), which flashes.
+- **F4.4** A line's brackets end with the chosen **)** first, then the grey one.
+- **F6** A rule's calendars badge (in a calendar's rules and in All Rules) is in the color of the
+  calendar it applies to, in stripes of each calendar's color when it applies to several, and white
+  for All calendars.
+- **F7** **All Rules** looks like a module: its (?) right after the title, then **+** and a box with
+  the number of rules on the right (green, or yellow with "n to check" while a rule conflicts), and
+  an **Expand for Details** / **Close** line instead of the ▸. **How rules work** moved from under
+  the rules to the bottom of the rule dialog.
+- **F8** Theme: a section title's (?) is raised right after the title; **Sync Now**'s words are
+  centered in it, and it grows over the status box and shrinks back smoothly (it no longer jumps
+  when the module's header is refreshed).
+- **F9** **Event Templates** looks the same way: Expand / Close line, and "**2 Templates**" in a box
+  on the right.
+- **F10** **Activities and Logs** opens only from its Expand line (a click on its header no longer
+  opens it); the latest line sits on the right of its header, by Healthy.
+
+### Fixed
+- **I1** Rule dialog: **Change → to a length of** didn't show its length field (and **Create event →
+  New event…** didn't show its fields).
+- **I2** A calendar module's rules didn't list the shared rules that apply to it: rules converted
+  from earlier versions that every calendar used were kept for those calendars only, so the Local
+  calendar (and calendars added later) didn't get them. They're now for All calendars.
+- A new feed with no name and the Google calendar name suggested are no longer "Local".
+- **I3** The calendar key, the feeds' calendar colors and the rule badges follow a calendar's new
+  color straight away.
+- **I4** A second (and later) color change on a calendar module wasn't saved.
+- **I5** Settings are saved in place: only Settings (and what depends on them, such as the feed
+  links) are redrawn, without reloading the page. (A new status-page password still reloads it,
+  as the browser must sign in again.)
+- **I6** Settings follow the theme's layout: Check for updates is a label over its menu, with
+  Auto-update and Check now (or Upgrade) beside it, all 34 px.
+- Saving Public address or Check for updates in place went to the wrong address (a button named
+  "action" hid the form's address).
 
 ## 0.2.8-beta.2 — 2026-10-25
 

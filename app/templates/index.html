@@ -66,14 +66,21 @@
   .menu[hidden] { display:none }
   .menu .title { font-weight:700; font-size:14px; margin-bottom:4px }
   /* Each Settings section in its own outlined block. */
-  .menu .mgroup { border:1px solid var(--line); border-radius:var(--r); margin-top:10px; padding:10px 12px; font-size:13px; background:var(--card) }
+  .menu .mgroup { border:1px solid var(--line); border-radius:var(--rbox); margin-top:5px; padding:10px 12px; font-size:13px; background:var(--card) }
   .menu .pair > .ghost, .menu .pair > button { margin-left:0 } .menu .pair > button:last-child { margin-left:auto }
-  .menu .mgroup p { margin:0 0 8px }
-  .menu .mhead { display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px; margin-bottom:6px }
+  .menu .mgroup p { margin:0 0 5px }
+  .menu .mhead { display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px; margin-bottom:5px }
   .menu .merr { background:var(--badbg); color:var(--bad); border-radius:var(--r); padding:6px 10px }
   .menu .mnote { color:var(--muted); font-size:12px }
   .menu code { overflow-wrap:anywhere }
-  .menu label { display:flex; align-items:center; gap:6px; margin:0 0 8px }
+  .menu label { display:flex; align-items:center; gap:6px; margin:0 0 2px }
+  .menu .upgradebtn { display:inline-flex; align-items:center; gap:4px; height:34px; padding:0 12px }
+  /* Updates (beta.3): the label over the menu, like the other fields; Auto-update and Check now beside it */
+  .menu .pair.updrow { align-items:flex-end; flex-wrap:nowrap }
+  .menu .pair.updrow label.fld { flex:1 1 auto }
+  .menu .pair.updrow select { width:100%; height:34px }
+  .menu .autoupd { flex:0 0 auto; height:34px; margin:0; font-size:13px; font-weight:600; white-space:nowrap }
+  .menu .autoupd input:disabled + * , .menu .autoupd:has(input:disabled) { color:var(--muted) }
   /* The menu scrolls when taller than the window. */
   .menu { max-height:calc(100vh - 80px); overflow-y:auto }
 
@@ -342,7 +349,7 @@
   .helpdot { position:relative; top:-.45em; display:inline-flex; flex:0 0 auto; align-self:center; margin-left:1px; width:15px; height:15px;
              color:var(--muted); cursor:help; font-style:normal; font-weight:400; letter-spacing:0; line-height:1; vertical-align:baseline }
   .helpdot > svg.mi { display:block }
-  .legend .helpdot { margin-left:auto; top:0 }
+  .legend .helpdot { margin-left:-6px }       /* right after the key's last words, like every (?) */
   .mhead > .helpdot, .bigtitle > .helpdot { margin-left:-7px }          /* right after the word, despite the row's gap */
   .section > .shead > .helpdot, .cardhead > .helpdot { margin-left:-4px }
   .helpdot:hover, .helpdot:focus-visible, .helpdot.open { color:var(--accent); outline:none }
@@ -437,6 +444,11 @@
   .rulebox .rulelabel { flex:1; min-width:0; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
   .rulebox .rulelabel .swatch { width:14px; height:12px }
   .rulebox .ruleused { font-size:12px; color:var(--muted); white-space:nowrap }
+  /* A rule's calendars badge in their colors (beta.3) */
+  .rulebox .ruleused.calbadge { height:22px; line-height:20px; padding:0 8px; border:1px solid var(--line); border-radius:6px; font-size:11px; font-weight:700; overflow:hidden; text-overflow:ellipsis; max-width:40% }
+  .calbadge[data-cal="all"] { background:#fff !important; color:#1f2937 !important; border-color:var(--line) !important }
+  .calbadge[data-cal="one"] { background:color-mix(in srgb, var(--c1) 22%, var(--card)) !important; color:color-mix(in srgb, var(--c1) 70%, var(--text)) !important; border-color:transparent !important }
+  .calbadge[data-cal="many"] { color:var(--text) !important; border-color:transparent !important }
   .rulebox button, .rulebox form button { height:30px; width:30px; padding:0; border:0; border-radius:var(--r); color:var(--muted); background:transparent }
   .rulebox button:hover { background:var(--soft); color:var(--accent) } .rulebox .delrule:hover, .rulebox .delpick:hover { color:var(--bad) }
   .rulebox form { margin:0 }
@@ -564,7 +576,7 @@
   select option, select optgroup { background:var(--card); color:var(--text) }
   /* Bottom line: Remove on the left, Cancel and Save on the right */
   .srcfoot { justify-content:flex-end }
-  .srcfoot .removeform { margin-right:auto }
+  .srcfoot .removeform { margin-right:auto } .srcfoot .removecal { margin-right:auto }
   /* + Add a calendar source: the presets */
   .presets { display:flex; gap:6px; flex-wrap:wrap }
   .presets .preset { height:30px; padding:0 12px; font-size:13px; background:transparent; color:var(--text); border:1px solid var(--line) }
@@ -637,12 +649,27 @@
   .statusbox.warn { border-color:color-mix(in srgb, var(--warn) 35%, var(--line)); background:var(--warnbg) }
   .statusbox.run { border-color:color-mix(in srgb, var(--run) 35%, var(--line)); background:var(--runbg) }
   .statusbox .chip { background:transparent; height:18px; padding:0 }
-  .statusbox .syncform { display:block; margin:0 }
+  .statusbox .syncform { margin:0 }
   /* Sync Now → Syncing… → Synced (a green pulse) or Failed (a yellow pulse) → Sync Now */
-  button.syncnow { width:100%; height:22px; padding:0 6px; font-size:12.5px; border-radius:6px; transition:background-color .2s, color .2s }
-  .syncnow .sn { display:none; align-items:center; gap:3px }
+  button.syncnow { width:100%; height:22px; padding:0 6px; font-size:12.5px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+                   transition:background-color .25s, color .25s }
+  .syncnow .sn { display:none; align-items:center; justify-content:center; gap:3px; white-space:nowrap }
   .syncnow[data-state="idle"] .sn.idle, .syncnow[data-state="syncing"] .sn.syncing,
-  .syncnow[data-state="done"] .sn.done, .syncnow[data-state="fail"] .sn.fail { display:inline-flex }
+  .syncnow[data-state="done"] .sn.done, .syncnow[data-state="fail"] .sn.fail { display:inline-flex; animation:sn-in .25s ease-out }
+  @keyframes sn-in { from { opacity:0 } to { opacity:1 } }
+  /* While it syncs (and says Synced / Failed), the button grows over the whole status box, its words in
+     the middle, and Healthy fades out under it; then it shrinks back (0.2.8-beta.3). */
+  .module .statusbox:has(.syncform) { position:relative }
+  .statusbox .chip { transition:opacity .25s }
+  .statusbox .syncform { position:absolute; left:3px; right:3px; bottom:3px; top:calc(100% - 25px); transition:top .25s ease }
+  .statusbox .syncform button.syncnow { height:100% }
+  .statusbox.instant .syncform, .statusbox.instant .chip { transition:none }
+  .statusbox:has(.syncnow:not([data-state="idle"])) .chip { opacity:0 }
+  .statusbox:has(.syncnow:not([data-state="idle"])) .syncform { top:3px }
+  .statusbox:has(.syncnow:not([data-state="idle"])) button.syncnow { font-size:13px }
+  /* (the chip keeps its place at the top while Sync Now sits at the bottom) */
+  .module .statusbox:has(.syncform) { justify-content:flex-start }
+  .module .statusbox:has(.syncform) > .chip { margin-top:1px }
   .syncnow[data-state="syncing"] { background:var(--card); color:var(--run); opacity:1 }
   .syncnow[data-state="done"] { background:var(--ok); color:var(--card); opacity:1; animation:pulse-ok 1.1s ease-out 2 }
   .syncnow[data-state="fail"] { background:var(--warn); color:var(--card); opacity:1; animation:pulse-warn 1.1s ease-out 2 }
@@ -713,8 +740,11 @@
   .deflabel { display:block; width:max-content; margin:0 0 0 auto; height:22px; line-height:22px; padding:0 8px; border-radius:6px; font-size:12px; font-weight:700;
               color:var(--accent); background:var(--runbg) }
   .module .srcright .srcnext { justify-self:end; text-align:right }
+  /* A calendar's two status lines ("Last check was successful @ 20:10", "0 events added here") on the right, by its status (0.2.8-beta.3) */
+  .box.src .srcright { justify-items:end } .box.src .srcright p { text-align:right }
   .bad-text { color:var(--bad) }
-  .module input.colorpick { cursor:pointer }
+  .module.cfgopen input.colorpick { cursor:pointer }
+  .module:not(.cfgopen) input.colorpick { pointer-events:none }   /* folded: it only shows the color */
   /* Rule lines: the line, then its handle */
   .ruleline { display:flex; align-items:center; gap:4px; margin-top:2px }
   .ruleline > .rulebox { flex:1 1 auto; min-width:0; margin-top:0 }
@@ -762,6 +792,7 @@
   .brk.spare:hover, .brk.spare:focus-visible { color:var(--muted); background:var(--soft) }
   .brk.on { color:var(--text) } .brk.on[data-level="2"] { color:var(--accent) } .brk.on[data-level="3"] { color:var(--warn) }
   .ruleform.unbalanced .brk.on { text-decoration:underline wavy var(--bad) }
+  .brk.flash { animation:brkflash 1.4s ease-out } @keyframes brkflash { 0%, 40% { background:var(--runbg); color:var(--accent) } }   /* the ( added for a lone ) */
   .cjoin { width:auto; min-width:64px } .cdel, .adel, .aadd { width:30px; height:30px; padding:0 }
   .dayset { display:inline-flex; gap:2px; flex-wrap:wrap }
   .dayset .wd { height:30px; padding:0 7px; font-size:12.5px; border:1px solid var(--line); background:var(--card); color:var(--muted); border-radius:6px }
@@ -776,7 +807,32 @@
   .rdfoot .rdremove { margin-right:auto }
   .applyto { display:grid; gap:2px; font-size:12px; font-weight:600; color:var(--muted) }
   .applyto > span { display:flex; align-items:center }   /* (not the (?)'s tip, which shows only when asked) */
-  #ruledialog .applyto select { height:auto; min-width:180px; padding:2px; font-size:13px }
+  /* Rule conflicts (F4.2) */
+  .warn-text { color:var(--warn) }
+  .conflicts { display:grid; gap:5px; margin:0 0 5px }
+  .conflict { padding:8px 10px; border:1px solid color-mix(in srgb, var(--warn) 45%, var(--line)); border-radius:var(--r); background:color-mix(in srgb, var(--warn) 8%, var(--card)) }
+  .conflict p { display:flex; gap:6px; align-items:flex-start; margin:0 0 5px; font-size:13.5px } .conflict p .mi { flex:0 0 auto; color:var(--warn); margin-top:2px }
+  .conflict .fixes { display:flex; flex-wrap:wrap; gap:5px } .conflict .fixes button { height:30px; font-size:13px; padding:0 10px }
+  .ruleline.conflicted .rulebox { border-color:color-mix(in srgb, var(--warn) 60%, var(--line)) }
+  /* Remove a calendar */
+  #removedialog { width:min(520px, calc(100vw - 32px)) }
+  .rmopts { display:grid; gap:5px; margin:5px 0 }
+  .rmopt { display:flex; gap:8px; align-items:flex-start; padding:8px 10px; border:1px solid var(--line); border-radius:var(--r); cursor:pointer }
+  .rmopt:has(input:checked) { border-color:var(--accent); background:var(--runbg) }
+  .rmopt input { margin-top:3px } .rmopt select { display:block; margin-top:5px; height:34px; min-width:220px }
+  #removedialog .eactions { display:flex; justify-content:flex-end; gap:5px; margin-top:12px }
+  button.danger.solid { display:inline-flex; align-items:center; gap:4px; background:var(--bad); color:#fff; border-color:var(--bad) }
+  /* A drop-down of ticks (Apply to): a button with the choice, a menu that opens above it */
+  .dropdown { position:relative }
+  .ddbtn { display:flex; align-items:center; gap:6px; height:34px; min-width:200px; max-width:320px; padding:0 4px 0 10px; font:inherit; font-size:13.5px; font-weight:400;
+           color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:var(--r); text-align:left }
+  .ddbtn .ddsum { flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:4px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis }
+  .ddmenu { position:absolute; z-index:40; bottom:calc(100% + 4px); left:0; min-width:100%; max-height:260px; overflow-y:auto; padding:4px;
+            background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18) }
+  .ddopt { display:flex; align-items:center; gap:8px; height:32px; padding:0 8px; border-radius:6px; font-size:13.5px; font-weight:400; color:var(--text); cursor:pointer; white-space:nowrap }
+  .ddopt:hover { background:var(--soft) }
+  .ddsw { flex:0 0 auto; width:14px; height:14px; border-radius:4px }
+  .ddsw.all { background:conic-gradient(#d50000, #f6bf26, #0b8043, #039be5, #8e24aa, #d50000) }
   .rdmsg { text-align:left }
   /* Events: Close on the left; the bell, ✎, copy and the bin on the right (F2.2) */
   .ev .evtools .evclose { margin-right:auto; font-weight:600 }
@@ -794,10 +850,17 @@
   .ppweekends { display:flex; align-items:center; gap:6px; height:34px; font-size:13.5px }
   #printdialog .eactions { display:flex; justify-content:flex-end; gap:8px }
   /* Activities and Logs: a module-like header (F5) */
-  .modsection > .shead { min-height:50px; cursor:pointer }
+  .modsection > .shead { min-height:50px; cursor:default }      /* only its Expand / Close line opens it (beta.3) */
   .modsection > .shead .bigtitle { flex:0 0 auto }
   .modsection > .shead .statusbox { flex:0 0 132px; width:132px; height:50px; margin-left:auto; display:flex; align-items:stretch; justify-content:center; padding:3px; border:1px solid var(--line); border-radius:var(--r) }
-  .modsection.open > .shead .statusbox { display:none }
+  #activity.open > .shead .statusbox { display:none }
+  /* All Rules and Event Templates (beta.3, F5/F6): + then the count box, on the right */
+  .modsection > .shead .headplus { margin-left:auto }
+  .modsection > .shead .headplus + .statusbox { margin-left:0 }
+  .countbox .chip { font-weight:600 }
+  /* Activities: the latest line on the right, before Healthy */
+  .modsection > .shead .peek.latest { flex:1 1 0; text-align:right; margin-left:auto; padding-right:5px }
+  .modsection > .shead .peek.latest + .statusbox { margin-left:0 }
   .modsection > .shead .statusbox .chip { background:transparent; height:auto }
   .modsection { position:relative }
   .modsection:not(.open) { padding-bottom:12px }
@@ -902,14 +965,15 @@
         {# Right under the page login. "This page" sits inside the box; Save is on the same line. #}
         <div class="mgroup" id="public">
           <div class="mhead">{{ _('Public address') }}{{ help(_('The https:// address people use to reach this page, e.g. <code>https://cal.example.com</code>. Used for the feed and subscribe links and for Google sign-in.'), 'left') }}</div>
-          <form method="post" action="/settings/public-url" class="clientform">
+          {# F2.1 (0.2.8-beta.3): like every field changed in place: ✓ Saved, then ✕ | ✓ while typing #}
+          <form method="post" action="/settings/public-url" class="clientform watch" data-swap="#public|#destinations">
             <input type="hidden" name="csrf" value="{{ csrf }}">
             <div class="pair">
               <div class="inbox">
-                <input type="text" id="publicurl" name="url" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
+                <input type="text" class="code" id="publicurl" name="url" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
                 <button type="button" class="inboxbtn" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
               </div>
-              <button name="action" value="save">{{ _('Save') }}</button>
+              {{ m.okbutton(public.url, _('Saved'), _('Save'), name="action", value="save") }}
             </div>
           </form>
           {% if not public.url %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
@@ -918,12 +982,12 @@
         {# The administrator's e-mail: used in the Google setup guide (support / contact e-mail, test user). #}
         <div class="mgroup" id="admin">
           <div class="mhead">{{ _('Admin e-mail') }}{{ help(_('The administrator’s address. The Google Calendar Autosync guide uses it as the support and contact e-mail and the test user, so use the Gmail account you’ll connect with.'), 'left') }}</div>
-          <form method="post" action="/settings/admin-email" class="clientform">
+          <form method="post" action="/settings/admin-email" class="clientform watch" data-swap="#admin|#dest-google .cfgbody">
             <input type="hidden" name="csrf" value="{{ csrf }}">
             <div class="pair">
-              <input type="email" class="solo" id="adminemail" name="email" value="{{ admin_email }}" maxlength="254" spellcheck="false"
+              <input type="email" class="solo code" id="adminemail" name="email" value="{{ admin_email }}" maxlength="254" spellcheck="false"
                      autocomplete="email" placeholder="you@gmail.com" aria-label="{{ _('Admin e-mail') }}">
-              <button>{{ _('Save') }}</button>
+              {{ m.okbutton(admin_email, _('Saved'), _('Save')) }}
             </div>
           </form>
           {% if not admin_email %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
@@ -939,14 +1003,21 @@
             {% if update.next %}{{ _('Next check at {when}.', when=update.next) }}{% else %}{{ _('Automatic checks are off.') }}{% endif %}
             {% if update.available %}{{ _('Press <b>Update now</b> next to the version at the top.') if update.can_update else _('Run the installer again to update.') }}{% endif %}
             {% if update.info.error %}<span class="bad">{{ msg(update.info.error) }}</span>{% endif %}</p>
-          <form method="post" action="/settings/updates" class="clientform">
-            <input type="hidden" name="csrf" value="{{ csrf }}">
-            <div class="pair inline">
-              <label for="updfreq" class="rowlabel">{{ _('Check for updates') }}</label>
-              <select id="updfreq" name="frequency" onchange="this.form.submit()">
+          {# Saved in place, like the rest of the page: only Updates and the version at the top change (beta.3) #}
+          <form method="post" action="/settings/updates" class="clientform" data-swap="#updates|.topbar .ver">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="autoform" value="1">
+            <div class="pair updrow">
+              <label class="fld" for="updfreq"><span>{{ _('Check for updates') }}</span>
+              <select id="updfreq" name="frequency" onchange="this.form.requestSubmit()">
                 {% for f in update.frequencies %}<option value="{{ f }}"{% if f == update.frequency %} selected{% endif %}>{{ {"hourly": _('Hourly'), "weekly": _('Weekly'), "monthly": _('Monthly'), "never": _('Never')}[f] }}</option>{% endfor %}
-              </select>
-              <button class="ghost" name="action" value="check">{{ _('Check now') }}</button>
+              </select></label>
+              {# Auto-update (beta.3), left of Check now: installs newer versions by itself; needs the updater #}
+              <label class="autoupd" title="{{ _('Install newer versions by themselves (with the updater)') if update.can_update else _('Needs the updater: run the installer again and answer yes to updating from the status page.') }}">
+                <input type="checkbox" name="auto" value="1"{% if update.auto %} checked{% endif %}{% if not update.can_update and not update.auto %} disabled{% endif %} onchange="this.form.requestSubmit()"> {{ _('Auto-update') }}</label>
+              {# F2.2: with a newer version out, Upgrade instead of Check now (the updater, or how to update) #}
+              {% if update.available and update.can_update %}<button type="button" class="upgradebtn">{{ icon("upgrade", 17) }}{{ _('Upgrade') }}</button>
+              {% elif update.available %}<a class="btn upgradebtn" href="https://github.com/Uuugh/CalendarStream#updating" target="_blank" rel="noopener" title="{{ _('Run the installer again to update.') }}">{{ icon("upgrade", 17) }}{{ _('Upgrade') }}</a>
+              {% else %}<button class="ghost" name="action" value="check">{{ _('Check now') }}</button>{% endif %}
             </div>
           </form>
           <p class="mnote" style="margin:6px 0 0">{% if update.updater %}{{ _('Updater: running, so updates can be installed from this page.') }}{% if update.can_update is false %} {{ _('(Not for an exact version in IMAGE_TAG.)') }}{% endif %}
@@ -988,11 +1059,21 @@
 
   {# A rule in a calendar module (F4): what it does, whether it's this calendar's own or shared, ✎ (the
      rule dialog) and the bin (takes it off this calendar), then its handle (priority). #}
+  {% set conflicted = rule_conflicts|map(attribute="b")|list %}
+  {# A rule's calendars badge (beta.3): in the color of the calendar it applies to, stripes of each
+     color for several, white for All calendars (and plain for none yet). #}
+  {% macro badge_style(apply) -%}
+  {%- if apply == 'all' %} data-cal="all"
+  {%- elif apply %}{% set cs = [] %}{% for sid in apply %}{% for x in srcs if x.id == sid %}{% set _ = cs.append(x.color or '#1d4ed8') %}{% endfor %}{% endfor %}
+  {%- if cs|length == 1 %} data-cal="one" style="--c1:{{ cs[0] }}"
+  {%- elif cs %} data-cal="many" style="background:repeating-linear-gradient(135deg{% for c in cs %}, color-mix(in srgb, {{ c }} 28%, var(--card)) {{ loop.index0 * 8 }}px {{ loop.index * 8 }}px{% endfor %})"{% endif %}
+  {%- endif %}
+  {%- endmacro %}
   {% macro src_rule(r, x) -%}
-  <div class="ruleline" data-rule-id="{{ r.id }}" data-sid="{{ x.id }}">
+  <div class="ruleline{% if r.id in conflicted %} conflicted{% endif %}" data-rule-id="{{ r.id }}" data-sid="{{ x.id }}">
     <div class="rulebox srule{% if r.local %} local{% endif %}">
       <span class="rulelabel" title="{{ r.label }}">{{ rule_swatch(r) }}{{ r.label }}</span>
-      <span class="scope {{ 'local' if r.local else 'shared' }}" title="{{ _('A rule for this calendar only') if r.local else _('A rule several calendars use: changing it changes it for all of them') }}">{{ _('This calendar') if r.local else (_('All calendars') if r.apply == 'all' else _('{n} calendars', n=r.apply|length)) }}</span>
+      <span class="scope calbadge {{ 'local' if r.local else 'shared' }}"{{ badge_style(r.apply) }} title="{{ _('A rule for this calendar only') if r.local else _('A rule several calendars use: changing it changes it for all of them') }}">{{ _('This calendar') if r.local else (_('All calendars') if r.apply == 'all' else _('{n} calendars', n=r.apply|length)) }}</span>
       <button type="button" class="ghost editrule" title="{{ _('Change this rule') }}" aria-label="{{ _('Change this rule') }}">{{ icon("edit", 17) }}</button>
       <button type="button" class="ghost unapply" title="{{ _('Take this rule off {name}', name=x.name) }}" aria-label="{{ _('Take this rule off {name}', name=x.name) }}">{{ trash }}</button>
     </div>
@@ -1013,7 +1094,8 @@
 {{ icon("warning", 14) }} {{ _('United changed this event after you edited it') if e.source == 'ccs' else _('The feed changed this event after you edited it') }}{% elif e.edited %}
 {{ icon("edit", 14) }} {{ _('Edited here') }}{% elif e.origin == 'custom' %}
 {{ _('Added here') }}{% elif e.origin == 'rule' %}
-{{ icon("subdirectory_arrow_right", 14) }} {{ _('Added by a rule (change the rule or its event template to change it)') }}{% endif %}{% if srcs|length > 1 %}
+{{ icon("subdirectory_arrow_right", 14) }} {{ _('Added by a rule (change the rule or its event template to change it)') }}{% endif %}{% if e.uid in linked %}
+{{ icon("link", 14) }} {{ _('Linked to “{title}”', title=linked[e.uid]) }}{% endif %}{% if srcs|length > 1 %}
 {{ src_names.get(e.source, '') }}{% endif %}{% if e.description %}
 
 {{ e.description }}{% endif %}
@@ -1100,6 +1182,8 @@
   {# "▸ Configure ◂" under a box's header: opens or folds the rest (cfg-<id>). #}
   {# Folded, "▸ Expand for Details or to Edit Configuration ◂" in the module's bottom border; open, a
      line under its header with "Close" (F1.1). #}
+  {# A section's Expand / Close line (All Rules, Event Templates, Activities and Logs), like a module's #}
+  {% macro sectionline(name, open) %}<div class="cfgline"><button type="button" class="cfgtoggle toggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="{{ name }}-body">{{ icon("arrow_right", 18, "arr l") }}<span class="expandword"><span class="long">{{ _('Expand for Details') }}</span><span class="short">{{ _('Expand') }}</span></span><span class="closeword">{{ _('Close') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>{% endmacro %}
   {% macro cfgline(id, open) %}<div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="cfg-{{ id }}">{{ icon("arrow_right", 18, "arr l") }}<span class="expandword"><span class="long">{{ _('Expand for Details or to Edit Configuration') }}</span><span class="short">{{ _('Expand') }}</span></span><span class="closeword">{{ _('Close') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>{% endmacro %}
   {# Small icons left of the section titles (F1.3). #}
   {% set icons = {"calendars": icon("calendar_month", 24, "secicon"), "feeds": icon("sensors", 24, "secicon"),
@@ -1125,7 +1209,7 @@
             <button type="button" class="preset" data-preset="apple" role="radio" aria-checked="false">{{ _('Apple') }}</button>
             <button type="button" class="preset" data-preset="other" role="radio" aria-checked="true">{{ _('Other') }}</button>
           </div>
-          <form method="post" action="/sources/add" class="opt col presetform" data-for="local" hidden data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata">
+          <form method="post" action="/sources/add" class="opt col presetform" data-for="local" hidden data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="local">
             <div><b>{{ _('Local calendar') }}</b>
               <div class="subtitle">{{ _('A calendar that only holds events you add here: nothing is downloaded. It goes into every feed.') }}</div></div>
@@ -1135,14 +1219,14 @@
             </div>
           </form>
           {% if not has_ccs %}
-          <form method="post" action="/sources/add" class="opt presetform" data-for="ccs" hidden data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata">
+          <form method="post" action="/sources/add" class="opt presetform" data-for="ccs" hidden data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="ccs">
             <div><b>{{ _('United CCS+ Calendar Sync') }}</b>
               <div class="subtitle">{{ _('Your schedule from CCS+, with your Username and Calendar Sync password (entered next, under Configure).') }}</div></div>
             <button>{{ _('Add') }}</button>
           </form>
           {% endif %}
-          <form method="post" action="/sources/add" class="opt col presetform" data-for="google apple other" data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata">
+          <form method="post" action="/sources/add" class="opt col presetform" data-for="google apple other" data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="ics">
             <input type="hidden" name="preset" value="other">
             <div><b data-text-google="{{ _('Google Calendar') }}" data-text-apple="{{ _('Apple Calendar') }}" data-text-other="{{ _('Calendar feed (.ics link)') }}">{{ _('Calendar feed (.ics link)') }}</b>
@@ -1178,8 +1262,8 @@
          and the next check | status over Sync Now. While expanded, the color, title and note are fields
          of the same size. #}
       <div class="srchead">
-        {# Its color, always shown (blue until one is chosen) and always a color picker (I3) #}
-        <input type="color" class="colorpick" form="srcform-{{ x.id }}" value="{{ x.color or '#1d4ed8' }}" aria-label="{{ _('Color') }}" title="{{ _('Color of its events: click to change it') }}">
+        {# Its color, always shown (blue until one is chosen); a color picker while expanded (I3, 0.2.8-beta.3) #}
+        <input type="color" class="colorpick" form="srcform-{{ x.id }}" value="{{ x.color or '#1d4ed8' }}" aria-label="{{ _('Color') }}" title="{{ _('Color of its events (expand to change it)') }}"{% if not x.open %} tabindex="-1"{% endif %}>
         <div class="srcleft">
           <div class="namebox srcname showonly" title="{{ x.name }}">{{ x.name }}</div>
           {% if x.note %}<div class="namebox srcnote showonly" title="{{ x.note }}">{{ x.note }}</div>{% endif %}
@@ -1294,7 +1378,7 @@
         {# The rules this calendar uses, highest priority first: its own above the shared ones (unless
            moved). ✎ opens the rule dialog; the bin takes a rule off this calendar; + Add a rule offers
            the other rules, or a new one. Moving and the bin take effect at once. #}
-        <form class="srcform" id="srcform-{{ x.id }}" method="post" action="/feed/tags" data-swap="#src-{{ x.id }}>.srchead|#cal|#destinations .srcright|#activity">
+        <form class="srcform" id="srcform-{{ x.id }}" method="post" action="/feed/tags" data-swap="#src-{{ x.id }}>.srchead|#cal|#destinations .srcright|#destinations .srcpick .swatch|.box.src .srcrules|#rules .rulelist|#activity|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
           <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
           <input type="hidden" name="color_default" class="colordefault" value="">
         </form>
@@ -1305,7 +1389,7 @@
               <div class="addmenu rulemenu" role="menu" hidden>
                 <button type="button" class="linkbtn newrule" data-sid="{{ x.id }}" role="menuitem">{{ icon("add", 16) }} {{ _('New rule…') }}</button>
                 {% for r in all_rules if x.name not in r.used and r.apply != 'all' %}
-                <form method="post" action="/rules/apply" class="inline" data-swap="#src-{{ x.id }} .rules|#rules .rulelist|#cal|#activity|#ruledata">
+                <form method="post" action="/rules/apply" class="inline" data-swap="#src-{{ x.id }} .rules|#rules .rulelist|#ruleconflicts|#rulecount|#cal|#activity|#ruledata">
                   <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}"><input type="hidden" name="sid" value="{{ x.id }}">
                   <button class="linkbtn" role="menuitem" title="{{ _('Use this rule in {name} too', name=x.name) }}">{{ rule_swatch(r) }}{{ r.label }}</button></form>
                 {% endfor %}
@@ -1316,10 +1400,9 @@
 
         {# The bottom line: Remove on the left (asks first); Cancel and Save on the right. #}
         <div class="srcfoot">
-          <form method="post" action="/sources/remove" class="removeform inline" data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata" data-confirm="{{ _('Remove {name}? Are you sure? Its events and edits are removed, and it’s taken off every feed.', name=x.name) }}">
-            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
-            <button class="ghost danger" title="{{ _('Remove this calendar') }}">{{ trash }} {{ _('Remove') }}</button>
-          </form>
+          {# Remove asks what becomes of its events (F3.1): the remove dialog below #}
+          <button type="button" class="ghost danger removecal" data-sid="{{ x.id }}" data-name="{{ x.name }}" data-local="{{ '1' if local else '' }}"
+                  title="{{ _('Remove this calendar') }}">{{ trash }} {{ _('Remove') }}</button>
           {{ pair("srcform-" ~ x.id) }}
         </div>
       </div>
@@ -1444,8 +1527,7 @@
         <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
         <div class="pair dates">
           <label class="fld"><span>{{ _('Start') }}</span><input type="date" name="start" value="{{ d.start }}" title="{{ _('Empty: no limit') }}"></label>
-          <label class="fld"><span>{{ _('End') }}</span><input type="date" name="end" value="{{ d.end }}" title="{{ _('Empty: no limit') }}"></label>
-          {{ help(_('Only events in these dates go to this feed. Leave one empty for no limit (∞).')) }}
+          <label class="fld"><span>{{ _('End') }}{{ help(_('Only events in these dates go to this feed. Leave one empty for no limit (∞).')) }}</span><input type="date" name="end" value="{{ d.end }}" title="{{ _('Empty: no limit') }}"></label>
         </div>
         <div class="k">{{ _('Calendars') }}{% if feed %}{{ help(_('Each event keeps its calendar’s colors and rules.')) }}{% else %}{{ help(_('Each event keeps its calendar’s colors and rules. Renaming renames the calendar in Google.')) }}{% endif %}</div>
         <div class="srcpicks">
@@ -1513,27 +1595,40 @@
     <p>{{ _('A rule is <b>If</b> one or more conditions, <b>Then</b> one or more things to do. Conditions look at an event’s <b>Text</b> (its title: is, contains, whole word, begins with, ends with, or a regular expression; <b>Aa</b> matches capitals exactly), the <b>Date</b> or <b>Time</b> it starts (is, after, before, between), its <b>Day(s)</b> of the week, or its <b>Length</b> (0 = no end time; “is whole days” = 24 h, 48 h…).') }}</p>
     <p>{{ _('Join conditions with <b>and</b> or <b>or</b> (and binds tighter). Click the grey <b>(</b> and <b>)</b> beside them to group conditions, e.g. (RDO or VAC) and Day(s) is Sat, Sun; a bracket inside another has its own color.') }}</p>
     <p>{{ _('<b>Then</b>: give the event a <b>Color</b>, <b>Add an emoji</b> in front of its title (Google and Outlook show it too), <b>Create an event</b> (from an event template, or a new one) some time before or after it, <b>Change</b> it to all-day or to a length, or <b>Record changes</b> its calendar makes to it (a note on the event and a line in Activities and Logs).') }}</p>
-    <p>{{ _('<b>Priority:</b> higher rules win over lower ones, for a color, an emoji or a time change, even a calendar’s own rules. Drag a rule by its handle (or use ▲ ▼), here or in a calendar, to change it. A new rule applies to every calendar; choose others under <b>Apply to</b> (Ctrl or Shift to choose several).') }}</p>
+    <p>{{ _('<b>Priority:</b> higher rules win over lower ones, for a color, an emoji or a time change, even a calendar’s own rules. Drag a rule by its handle (or use ▲ ▼), here or in a calendar, to change it. A rule made in a calendar applies to that calendar, one made here to every calendar; tick others under <b>Apply to</b>. When a lower rule could never set something (a higher one matches the same events) or two rules are the same, All Rules says so and offers to fix it.') }}</p>
   </details>
   {%- endmacro %}
 
   {# All Rules (F4; Rule Templates before 0.2.8): every rule, highest priority first, each with the
-     calendars it applies to. Folds to just its title (+ stays in the corner). #}
-  <section class="card section{% if sections.rules %} open{% endif %}" id="rules" data-section="rules" aria-labelledby="rulestitle">
+     calendars it applies to. Looks like a module (0.2.8-beta.3, F5): its title and (?), + and a box
+     with the number of rules (green, or yellow while a rule needs checking); Expand / Close below. #}
+  <section class="card section modsection{% if sections.rules %} open{% endif %}" id="rules" data-section="rules" aria-labelledby="rulestitle">
     <div class="shead">
-      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.rules else 'false' }}" aria-controls="rules-body"><span class="bigtitle" id="rulestitle">{{ icons.rules|safe }}{{ _('All Rules') }}</span></button>
-      {{ help(_('Every rule, highest priority first, with the calendars it applies to. Drag a rule by its handle (or use ▲ ▼) to change its priority; ✎ changes it, the copy button makes a copy to change, the bin deletes it.')) }}
-      <span class="peek">{{ _('{n} rules', n=all_rules|length) }}</span>
+      <span class="bigtitle" id="rulestitle">{{ icons.rules|safe }}{{ _('All Rules') }}{{ help(_('Every rule, highest priority first, with the calendars it applies to. Drag a rule by its handle (or use ▲ ▼) to change its priority; ✎ changes it, the copy button makes a copy to change, the bin deletes it. How rules work is at the bottom of the rule dialog.')) }}</span>
       <button type="button" class="ghost plus newrule headplus" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">{{ icon("add", 24) }}</button>
+      <div class="statusbox countbox {{ 'warn' if rule_conflicts else 'good' }}" id="rulecount"{% if rule_conflicts %} title="{{ _('{n} to check', n=rule_conflicts|length) }}"{% endif %}>{{ chip('warn' if rule_conflicts else 'good', (_('1 Rule') if all_rules|length == 1 else _('{n} Rules', n=all_rules|length)) if not rule_conflicts else _('{n} to check', n=rule_conflicts|length)) }}</div>
     </div>
+    {{ sectionline("rules", sections.rules) }}
     <div class="sbody" id="rules-body"{% if not sections.rules %} hidden{% endif %}>
     {% if not all_rules %}<p class="empty">{{ _('No rules yet. Press <b>+</b> to add one.') }}</p>{% endif %}
+    {# Conflicts (F4.2): a lower rule that never gets to set something, or two rules that are the same #}
+    <div id="ruleconflicts" class="conflicts"{% if not rule_conflicts %} hidden{% endif %}>
+      {% for c in rule_conflicts %}
+      <div class="conflict" data-a="{{ c.a }}" data-b="{{ c.b }}">
+        <p>{{ icon("warning", 17) }}<span>{{ c.text }}</span></p>
+        <div class="fixes">{% for how, label in c.fixes %}
+          <form method="post" action="/rules/resolve" class="inline" data-swap="#rules .rulelist|#ruleconflicts|#rulecount|#sources|#cal|#activity|#ruledata">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="key" value="{{ c.key }}"><input type="hidden" name="how" value="{{ how }}">
+            <button class="{{ 'ghost' if how == 'ignore' else 'btn2' }}">{{ label }}</button></form>{% endfor %}</div>
+      </div>
+      {% endfor %}
+    </div>
     <div class="rulelist sortable" data-kind="rule" data-scope="">
       {% for r in all_rules %}
-      <div class="ruleline" data-rule-id="{{ r.id }}">
+      <div class="ruleline{% if r.id in conflicted %} conflicted{% endif %}" data-rule-id="{{ r.id }}">
         <div class="rulebox lib">
           <span class="rulelabel" title="{{ r.label }}">{{ rule_swatch(r) }}{{ r.label }}</span>
-          <span class="ruleused">{{ _('All calendars') if r.apply == 'all' else (r.used|join(', ') if r.used else _('No calendar yet')) }}</span>
+          <span class="ruleused calbadge"{{ badge_style(r.apply) }}>{{ _('All calendars') if r.apply == 'all' else (r.used|join(', ') if r.used else _('No calendar yet')) }}</span>
           <button type="button" class="ghost editrule" title="{{ _('Change this rule') }}" aria-label="{{ _('Change this rule') }}">{{ icon("edit", 17) }}</button>
           <form method="post" action="/rules/clone" class="inline" data-swap="#rules|#activity|#ruledata">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}">
@@ -1546,18 +1641,17 @@
       </div>
       {% endfor %}
     </div>
-    {{ rules_guide() }}
     </div>
   </section>
 
   {# Event Templates: ready-made events for "Add event" rules and for adding events by hand. #}
-  <section class="card section{% if sections.templates %} open{% endif %}" id="templates" data-section="templates" aria-labelledby="tplstitle">
+  <section class="card section modsection{% if sections.templates %} open{% endif %}" id="templates" data-section="templates" aria-labelledby="tplstitle">
     <div class="shead">
-      <button type="button" class="toggle" aria-expanded="{{ 'true' if sections.templates else 'false' }}" aria-controls="templates-body"><span class="bigtitle" id="tplstitle">{{ icons.templates|safe }}{{ _('Event Templates') }}</span></button>
-      {{ help(_('Ready-made events, for rules that add events and for adding an event by hand.')) }}
-      <span class="peek">{{ _('{n} templates', n=templates|length) }}</span>
+      <span class="bigtitle" id="tplstitle">{{ icons.templates|safe }}{{ _('Event Templates') }}{{ help(_('Ready-made events, for rules that add events and for adding an event by hand.')) }}</span>
       <button type="button" class="ghost plus addfirst headplus" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 24) }}</button>
+      <div class="statusbox countbox good" id="tplcount">{{ chip('good', _('1 Template') if templates|length == 1 else _('{n} Templates', n=templates|length)) }}</div>
     </div>
+    {{ sectionline("templates", sections.templates) }}
     <div class="sbody" id="templates-body"{% if not sections.templates %} hidden{% endif %}>
     {% if not templates %}<p class="empty">{{ _('No event templates yet. Press <b>+</b> to add one.') }}</p>{% endif %}
     <form class="editor tagsform" method="post" action="/templates" data-swap="#templates|#rules|#sources|#cal|#activity|#ruledata"{% if not templates %} data-empty{% endif %}>
@@ -1579,10 +1673,10 @@
   <section class="card section modsection{% if sections.activity %} open{% endif %}" id="activity" data-section="activity">
     <div class="shead">
       <span class="bigtitle">{{ icons.activity|safe }}{{ _('Activities and Logs') }}</span>
-      {% if history %}<span class="peek">{{ _('Latest:') }} {{ msg(history[0].msg) }}</span>{% endif %}
+      {% if history %}<span class="peek latest" title="{{ msg(history[0].msg) }}">{{ _('Latest:') }} {{ msg(history[0].msg) }}</span>{% endif %}
       <div class="statusbox {{ 'good' if healthy else 'bad' }}">{{ chip('good' if healthy else 'bad', _('Healthy') if healthy else _('Unhealthy')) }}</div>
     </div>
-    <div class="cfgline"><button type="button" class="cfgtoggle toggle" aria-expanded="{{ 'true' if sections.activity else 'false' }}" aria-controls="activity-body">{{ icon("arrow_right", 18, "arr l") }}<span class="expandword"><span class="long">{{ _('Expand for Details') }}</span><span class="short">{{ _('Expand') }}</span></span><span class="closeword">{{ _('Close') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>
+    {{ sectionline("activity", sections.activity) }}
     <div class="sbody" id="activity-body"{% if not sections.activity %} hidden{% endif %}>
     {# One line per source, then Google. #}
     {% for x in srcs if x.type != "local" %}{% set S = x.s %}
@@ -1657,17 +1751,41 @@
     <div class="conds"></div>
     <div class="lbl">{{ _('Then') }}</div>
     <div class="acts"></div>
-    {{ rules_guide() }}
     <p class="pairfail rdmsg" hidden></p>
     <div class="eactions rdfoot">
       <button type="button" class="ghost danger rdremove">{{ trash }} {{ _('Remove') }}</button>
-      <label class="applyto"><span>{{ _('Apply to') }}{{ help(_('The calendars this rule applies to. Ctrl (⌘ on a Mac) or Shift to choose several. All calendars includes ones you add later.'), 'up right') }}</span>
-        <select class="rdapply" multiple size="{{ [srcs|length + 1, 5]|min }}" aria-label="{{ _('Apply to') }}">
-          <option value="all">{{ _('All calendars') }}</option>
-          {% for x in srcs %}<option value="{{ x.id }}">{{ x.name }}</option>{% endfor %}
-        </select></label>
+      {# Apply to (F4.1, 0.2.8-beta.3): a drop-down of the calendars, each with its color #}
+      <div class="applyto"><span id="rdapplylbl">{{ _('Apply to') }}{{ help(_('The calendars this rule applies to: tick one or several. All calendars includes ones you add later. A rule made in a calendar starts with that calendar; one made in All Rules with All calendars.'), 'up right') }}</span>
+        <div class="dropdown rdapply">
+          <button type="button" class="ddbtn" aria-haspopup="true" aria-expanded="false" aria-labelledby="rdapplylbl"><span class="ddsum"></span>{{ icon("arrow_drop_down", 20) }}</button>
+          <div class="ddmenu" role="group" aria-labelledby="rdapplylbl" hidden>
+            <label class="ddopt"><input type="checkbox" value="all"><span class="ddsw all" aria-hidden="true"></span><span class="ddname">{{ _('All calendars') }}</span></label>
+            {% for x in srcs %}<label class="ddopt"><input type="checkbox" value="{{ x.id }}"><span class="ddsw" style="background:{{ x.color or '#1d4ed8' }}" aria-hidden="true"></span><span class="ddname">{{ x.name }}</span></label>{% endfor %}
+          </div>
+        </div></div>
       {{ pair("ruleform", _('Apply')) }}
     </div>
+    {{ rules_guide() }}{# (F5.1, beta.3: at the bottom of the dialog; no longer under All Rules) #}
+  </form>
+</dialog>
+
+{# Remove a calendar (F3.1, 0.2.8-beta.3): keep its events as a Local calendar, add them to another
+   calendar, or delete them. #}
+<dialog id="removedialog" class="popup" aria-labelledby="rmtitle">
+  <form method="post" action="/sources/remove" id="removeform" data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="">
+    <div class="dlghead"><button type="button" class="ghost iconbtn dlgback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}">{{ icon("arrow_back", 20) }}</button>
+      <div class="title" id="rmtitle" data-text="{{ _('Remove {name}') }}"></div></div>
+    <p class="mnote">{{ _('It’s taken off every feed and its checks stop. Its events:') }}</p>
+    <div class="rmopts">
+      <label class="rmopt rmlocal"><input type="radio" name="keep" value="local" checked> <span><b>{{ _('Keep them in a Local calendar') }}</b><br>
+        <span class="mnote">{{ _('A Local calendar with the same name and color takes its place, with its events as they are now (edits included).') }}</span></span></label>
+      <label class="rmopt"><input type="radio" name="keep" value="merge"> <span><b>{{ _('Add them to another calendar') }}</b>
+        <select name="into" class="rminto" aria-label="{{ _('Calendar') }}">{% for x in srcs %}<option value="{{ x.id }}">{{ x.name }}</option>{% endfor %}</select></span></label>
+      <label class="rmopt"><input type="radio" name="keep" value="delete"> <span><b>{{ _('Delete them') }}</b><br>
+        <span class="mnote">{{ _('Its events, edits and added events go.') }}</span></span></label>
+    </div>
+    <div class="eactions"><button type="button" class="ghost" value="cancel" data-close>{{ _('Cancel') }}</button><button class="danger solid">{{ trash }} {{ _('Remove') }}</button></div>
   </form>
 </dialog>
 
@@ -1790,12 +1908,16 @@ function bindWatch() { each('form.watch', 'watch', function (f) {
     try { data = new FormData(f, e.submitter || undefined); } catch (err) { data = new FormData(f); if (save.name) data.append(save.name, save.value); }
     set('saving');
     var kind = f.dataset.verify;
+    if (!kind && f.dataset.swap) {     // saved in place (Settings, beta.3): only the parts it names are redrawn
+      sendSwap(f, data).catch(function (err) { fail(err.message); });
+      return;
+    }
     if (!kind) {     // nothing to check here: show Saved, then send it
       setTimeout(function () { word.textContent = T.saved; setTimeout(function () { HTMLFormElement.prototype.submit.call(f); }, 450); }, 300);
       return;
     }
     var pause = function (ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); };
-    fetch(f.action, { method: 'POST', body: data, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
+    fetch(f.getAttribute('action'), { method: 'POST', body: data, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw (j.detail || ''); }); })
       .then(function () { word.textContent = T.saved; return pause(600); })
       .then(function () {
@@ -2033,7 +2155,13 @@ function dropdown(btnId, menuId) {
 
 // "This page" fills the public address with the address this page is open at.
 document.getElementById('usethis').addEventListener('click', function () {
-  document.getElementById('publicurl').value = location.origin;
+  var input = document.getElementById('publicurl');
+  input.value = location.origin;
+  input.dispatchEvent(new Event('input', { bubbles: true }));      // shows ✕ | ✓
+});
+// Settings → Upgrade (F2.2): the same as Update now next to the version at the top
+document.querySelectorAll('button.upgradebtn').forEach(function (b) {
+  b.addEventListener('click', function () { var u = document.querySelector('.updslot .updbtn'); if (u) { window.scrollTo(0, 0); u.click(); } });
 });
 
 // Settings menu: opens by itself after Check for updates (?menu=settings). The Disconnect
@@ -2065,6 +2193,9 @@ function initSections() {
     }
     head.addEventListener('click', function (e) {
       if (e.target.closest('form, #editbtn, .helpdot')) return;   // the editor and (?) don't toggle the section
+      // A section that looks like a module (All Rules, Event Templates, Activities and Logs) opens only
+      // from its Expand line (or +), like a module: a click on its header leaves it as it is (beta.3)
+      if (sec.classList.contains('modsection') && !e.target.closest('.headplus')) return;
       if (e.target.closest('.headplus')) { if (!sec.classList.contains('open')) set(true); return; }
       set(!sec.classList.contains('open'));
     });
@@ -2082,14 +2213,22 @@ function setModule(box, open) {
   body.hidden = !open;
   box.classList.toggle('cfgopen', open);
   cfg.setAttribute('aria-expanded', String(open));
+  var pick = box.querySelector('input.colorpick');
+  if (pick) pick.tabIndex = open ? 0 : -1;
   savePref('/ui/section', { section: box.dataset.section, open: open ? '1' : '0' });
 }
 function bindCfg() { each('.box.cfgbox', 'cfg', function (box) {
   box.querySelector('.cfgtoggle').addEventListener('click', function () { setModule(box, !box.classList.contains('cfgopen')); });
-  // The color box is always a color picker (I3): changing it opens the module, so Save is at hand.
+  // The color box changes the calendar's color while the module is expanded (0.2.8-beta.3), like its
+  // title and note; folded, it only shows it.
   var pick = box.querySelector('input.colorpick');
-  if (pick) pick.addEventListener('input', function () { pick.name = 'color'; setModule(box, true); });
+  if (pick) pick.tabIndex = box.classList.contains('cfgopen') ? 0 : -1;
 }); }
+// A changed color is sent with the module's Save. (Listened for on the page, not on the box: the header,
+// color box included, is swapped for a new one after each save, so a second change counts too.)
+document.addEventListener('input', function (e) {
+  if (e.target.matches && e.target.matches('input.colorpick')) e.target.name = 'color';
+});
 bindCfg();
 
 // A module's header: when the long wording ("Downloaded 98 events from feed @ 14:53.", "Next scheduled
@@ -2131,7 +2270,12 @@ function showSyncing(sid) {
 function syncDone(sid, ok) {
   var btn = syncButton(sid);
   if (!btn) return;
+  // The status box was just swapped for a fresh one (at rest): it takes the full-box state at once,
+  // without growing again, so the button stays where it was; it shrinks back smoothly later.
+  var sb = btn.closest('.statusbox');
+  if (sb) sb.classList.add('instant');
   btn.dataset.state = ok ? 'done' : 'fail'; btn.disabled = true;
+  if (sb) { void sb.offsetHeight; requestAnimationFrame(function () { sb.classList.remove('instant'); }); }
   setTimeout(function () { btn.dataset.state = 'idle'; btn.disabled = false; }, 2400);
 }
 function followSync(sid) {
@@ -2161,7 +2305,7 @@ document.addEventListener('submit', function (e) {
   e.preventDefault();
   var sid = f.elements.sid.value;
   showSyncing(sid);
-  fetch(f.action, { method: 'POST', body: new URLSearchParams({ csrf: CSRF, sid: sid }), credentials: 'same-origin',
+  fetch(f.getAttribute('action'), { method: 'POST', body: new URLSearchParams({ csrf: CSRF, sid: sid }), credentials: 'same-origin',
                     headers: { 'X-CS-Async': '1' } }).then(function () { followSync(sid); }, function () { f.submit(); });
 });
 function followRunning() {
@@ -2191,7 +2335,7 @@ document.addEventListener('click', function (e) {
     var body = new URLSearchParams({ csrf: CSRF, id: line.dataset.ruleId, sid: line.dataset.sid, on: '0' });
     line.classList.add('going');
     fetch('/rules/apply', { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
-      .then(function () { return swapIn(location.href, ['#src-' + line.dataset.sid + ' .rules', '#rules .rulelist', '#cal', '#activity', '#ruledata']); })
+      .then(function () { return swapIn(location.href, ['#src-' + line.dataset.sid + ' .rules', '#rules .rulelist', '#ruleconflicts', '#rulecount', '#cal', '#activity', '#ruledata']); })
       .then(function () { RD = JSON.parse(document.getElementById('ruledata').textContent); initCal(); bindAll(); reopenEvents(); });
     return;
   }
@@ -2333,7 +2477,7 @@ function condRow(c) {
 }
 function actFields(a) {
   var t = a.type;
-  if (t === 'color') return '<input type="color" class="aval" value="' + esc(a.color || '#d50000') + '" aria-label="' + esc(RD.t.allDay) + '">';
+  if (t === 'color') return '<input type="color" class="aval" value="' + esc(a.color || '#d50000') + '" aria-label="' + esc(RD.t.color) + '">';
   if (t === 'emoji') return '<input type="text" class="aval emoji" maxlength="16" value="' + esc(a.emoji || '') + '" aria-label="' + esc(RD.t.emoji) + '" placeholder="✈️">'
       + '<span class="emojis">' + RD.emoji.map(function (x) { return '<button type="button" class="ghost emo">' + x + '</button>'; }).join('') + '</span>';
   if (t === 'event') {
@@ -2379,9 +2523,11 @@ function readAct(row) {
   if (a.type === 'emoji') a.emoji = f('.aval').value;
   if (a.type === 'event') {
     a.template = f('.atpl').value; a.offset = minutesOf(f('.aoff').value) || 0; a.when = f('.awhen').value;
-    if (!a.template) { a.title = f('.anew.title').value; a.all_day = f('.anew.allday').checked; a.minutes = minutesOf(f('.anew.minutes').value) || 60; a.location = f('.anew.location').value; }
+    // (just after "New event" is picked its fields aren't there yet: the row is redrawn with them)
+    if (!a.template && f('.anew.title')) { a.title = f('.anew.title').value; a.all_day = f('.anew.allday').checked; a.minutes = minutesOf(f('.anew.minutes').value) || 60; a.location = f('.anew.location').value; }
   }
-  if (a.type === 'change') { a.to = f('.ato').value; if (a.to === 'length') a.minutes = minutesOf(f('.amin').value) || 60; }
+  // (.amin isn't there yet just after "to a length" is picked: the row is redrawn with it)
+  if (a.type === 'change') { a.to = f('.ato').value; if (a.to === 'length') a.minutes = (f('.amin') && minutesOf(f('.amin').value)) || 60; }
   return a;
 }
 // Brackets: each level of nesting in its own color; the last line's and / or adds a line
@@ -2396,6 +2542,21 @@ function drawConds() {
   });
   ruleForm.classList.toggle('unbalanced', depth !== 0);
 }
+// A ")" with no "(" before it to pair with: a "(" is added (and flashes) on the first line of the
+// group it closes, i.e. the first line at the same level of brackets (the rule's first line at the top)
+function pairOpen(row) {
+  var rows = Array.prototype.slice.call(condBox.querySelectorAll('.cond')), i = rows.indexOf(row), d = 0, before = [];
+  rows.forEach(function (r) { before.push(d); d += +r.dataset.open - +r.dataset.close; });
+  var end = before[i] + +row.dataset.open - +row.dataset.close;
+  if (end >= 0) return;                         // it pairs with an earlier "("
+  var j = i;
+  while (j > 0 && before[j - 1] + +rows[j - 1].dataset.open - +rows[j - 1].dataset.close >= before[i] && before[j - 1] >= before[i]) j--;
+  var target = rows[j], n = Math.min(3, +target.dataset.open + 1);
+  target.dataset.open = n;
+  target.querySelector('.brks.open').innerHTML = brackets(n, '(', 'open', RD.t.open);
+  var added = target.querySelectorAll('.brk.on.open'); added = added[added.length - 1];
+  if (added) { added.classList.add('flash'); setTimeout(function () { added.classList.remove('flash'); }, 1500); }
+}
 function drawActs() {
   var rows = actBox.querySelectorAll('.act');
   rows.forEach(function (row, i) { row.querySelector('.aadd').hidden = i < rows.length - 1; row.querySelector('.adel').hidden = rows.length < 2; });
@@ -2409,6 +2570,7 @@ condBox.addEventListener('click', function (e) {
     n = b.classList.contains('spare') ? Math.min(3, n + 1) : n - 1;
     row.dataset[side] = n;
     row.querySelector('.brks.' + side).innerHTML = brackets(n, side === 'open' ? '(' : ')', side, RD.t[side]);
+    if (side === 'close' && b.classList.contains('spare')) pairOpen(row);
     drawConds(); return;
   }
   if (e.target.closest('.casebtn')) { var cb = e.target.closest('.casebtn'); cb.setAttribute('aria-pressed', String(cb.getAttribute('aria-pressed') !== 'true')); return; }
@@ -2461,6 +2623,35 @@ actBox.addEventListener('change', function (e) {
   if (e.target.matches('.atype')) { row.replaceWith(actRow({ type: e.target.value })); drawActs(); }
   else if (e.target.matches('.atpl, .ato')) { var a = readAct(row); if (e.target.matches('.atpl') && !e.target.value) a.title = ''; row.replaceWith(actRow(a)); drawActs(); }
 });
+// Apply to: ticks in a drop-down. "All calendars" and single calendars exclude each other.
+// (The menu is drawn again when calendars are added, renamed or removed, so it's always looked up.)
+var applyBox = ruleForm.querySelector('.rdapply'), applyBtn = applyBox.querySelector('.ddbtn');
+function applyMenuEl() { return applyBox.querySelector('.ddmenu'); }
+function applyChosen() {
+  return Array.prototype.filter.call(applyMenuEl().querySelectorAll('input'), function (i) { return i.checked; }).map(function (i) { return i.value; });
+}
+function drawApply() {
+  var chosen = applyMenuEl().querySelectorAll('input:checked'), sum = applyBtn.querySelector('.ddsum');
+  sum.innerHTML = chosen.length ? Array.prototype.map.call(chosen, function (i) {
+    var o = i.closest('.ddopt'); return o.querySelector('.ddsw').outerHTML + '<span>' + esc(o.querySelector('.ddname').textContent) + '</span>'; }).join('<span class="mnote">,</span>')
+    : '<span class="mnote">' + esc(RD.t.noCalendar) + '</span>';
+}
+function setApply(apply) {
+  applyMenuEl().querySelectorAll('input').forEach(function (i) { i.checked = apply === 'all' ? i.value === 'all' : apply.indexOf(i.value) >= 0; });
+  drawApply(); openApply(false);
+}
+function openApply(on) { applyMenuEl().hidden = !on; applyBtn.setAttribute('aria-expanded', String(on)); }
+applyBtn.addEventListener('click', function () { openApply(applyMenuEl().hidden); });
+applyBox.addEventListener('change', function (e) {
+  var menu = applyMenuEl();
+  if (e.target.value === 'all' && e.target.checked) menu.querySelectorAll('input:not([value="all"])').forEach(function (i) { i.checked = false; });
+  else if (e.target.checked) menu.querySelector('input[value="all"]').checked = false;
+  drawApply();
+});
+ruleDialog.addEventListener('click', function (e) { if (!applyMenuEl().hidden && !applyBox.contains(e.target)) openApply(false); });
+ruleDialog.addEventListener('keydown', function (e) {   // Escape closes the menu first, then the dialog
+  if (e.key === 'Escape' && !applyMenuEl().hidden) { e.preventDefault(); openApply(false); applyBtn.focus(); }
+});
 function openRule(rule, sid) {
   editing = rule;
   var title = document.getElementById('rdtitle');
@@ -2469,8 +2660,8 @@ function openRule(rule, sid) {
   condBox.innerHTML = ''; actBox.innerHTML = '';
   (rule && rule.conds.length ? rule.conds : [null]).forEach(function (c) { condBox.appendChild(condRow(c)); });
   (rule ? rule.actions : [null]).forEach(function (a) { actBox.appendChild(actRow(a)); });
-  var apply = rule ? rule.apply : 'all';      // a new rule applies to every calendar (F4)
-  ruleForm.querySelectorAll('.rdapply option').forEach(function (o) { o.selected = apply === 'all' ? o.value === 'all' : apply.indexOf(o.value) >= 0; });
+  // A new rule made in a calendar applies to that calendar; one made in All Rules to every calendar (F4.1)
+  setApply(rule ? rule.apply : (sid ? [sid] : 'all'));
   ruleForm.querySelector('.rdremove').hidden = !rule;
   ruleForm.querySelector('.rdmsg').hidden = true;
   pairState(ruleForm.querySelector('.pairbtns'), 'idle');
@@ -2483,7 +2674,7 @@ ruleForm.addEventListener('submit', function (e) {
   var conds = Array.prototype.map.call(condBox.querySelectorAll('.cond'), readCond).filter(function (c, i, all) {
     return all.length > 1 || (c.type === 'text' ? c.value.trim() : true); });
   if (ruleForm.classList.contains('unbalanced')) { e.preventDefault(); msg.hidden = false; msg.textContent = {{ _('The brackets don’t pair up: every ( needs a ) after it.')|string|tojson }}; return; }
-  var sel = Array.prototype.filter.call(ruleForm.querySelectorAll('.rdapply option'), function (o) { return o.selected; }).map(function (o) { return o.value; });
+  var sel = applyChosen();
   var rule = { id: editing ? editing.id : '', title: ruleForm.querySelector('.rdname').value, conds: conds,
                actions: Array.prototype.map.call(actBox.querySelectorAll('.act'), readAct),
                apply: sel.indexOf('all') >= 0 ? 'all' : sel };
@@ -2589,7 +2780,7 @@ function swapFrom(html, selectors) {
 }
 function sendSwap(f, body) {
   var sels = (f.dataset.swap || '').split('|').filter(Boolean);
-  return fetch(f.action, { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
+  return fetch(f.getAttribute('action'), { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
     .then(function (r) {
       if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { throw new Error(j.detail || ('HTTP ' + r.status)); });
       var json = (r.headers.get('content-type') || '').indexOf('json') >= 0;
@@ -2692,6 +2883,29 @@ window.addEventListener('message', function (e) {
   swapIn(location.href, ['#cal', '#activity', '.box.src .srcright']).then(function () { initCal(); bindAll(); reopenEvents(); });
 });
 eventDialog.addEventListener('close', function () { eventFrame.src = 'about:blank'; });
+// Remove a calendar (F3.1): what becomes of its events. A Local calendar can't be kept as one; the
+// calendar itself isn't offered to merge into.
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('.removecal');
+  if (!b) return;
+  var dlg = document.getElementById('removedialog'), f = dlg.querySelector('form'), into = f.querySelector('.rminto');
+  f.elements.sid.value = b.dataset.sid;
+  var t = dlg.querySelector('#rmtitle'); t.textContent = t.dataset.text.replace('{name}', b.dataset.name);
+  dlg.querySelector('.rmlocal').hidden = !!b.dataset.local;
+  Array.prototype.forEach.call(into.options, function (o) { o.hidden = o.disabled = o.value === b.dataset.sid; });
+  var first = Array.prototype.find.call(into.options, function (o) { return !o.disabled; });
+  if (first) into.value = first.value;
+  into.closest('.rmopt').hidden = !first;
+  f.querySelector('input[value="' + (b.dataset.local ? (first ? 'merge' : 'delete') : 'local') + '"]').checked = true;
+  dlg.showModal();
+});
+document.querySelectorAll('dialog [data-close]').forEach(function (b) { b.addEventListener('click', function () { b.closest('dialog').close(); }); });
+document.getElementById('removeform').addEventListener('change', function (e) {
+  if (e.target.matches('.rminto')) e.target.closest('.rmopt').querySelector('input[type=radio]').checked = true;
+});
+document.getElementById('removeform').addEventListener('submit', function () {
+  setTimeout(function () { document.getElementById('removedialog').close(); }, 50);
+});
 // The pop-up's title is the page's own heading (Add event, Edit event…), which the page hides when embedded
 eventFrame.addEventListener('load', function () {
   var h = null;
@@ -2778,7 +2992,7 @@ document.querySelectorAll('dialog.popup .dlgback').forEach(function (b) {
     fetch(m[0], { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } }).then(function (r) {
       if (!r.ok) return;
       // the other lists that show the same rules (All Rules, the calendars) and the calendar follow
-      var sel = kind === 'rule' ? ['#rules .rulelist', '.box.src .srcrules', '#cal'] : kind === 'source' ? ['#sources', '#cal'] : [];
+      var sel = kind === 'rule' ? ['#rules .rulelist', '#ruleconflicts', '#rulecount', '.box.src .srcrules', '#cal'] : kind === 'source' ? ['#sources', '#cal'] : [];
       if (sel.length) swapIn(location.href, sel).then(function () { initCal(); bindAll(); reopenEvents(); });
     });
   }

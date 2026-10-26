@@ -18,10 +18,9 @@ NAMES = [
     "add", "alarm", "alarm_on", "arrow_back", "arrow_drop_down", "arrow_drop_up", "arrow_right", "bolt",
     "calendar_month", "cancel", "check", "check_circle", "chevron_left", "chevron_right", "close",
     "content_copy", "contrast", "dark_mode", "delete", "edit", "error", "event_note",
-    "help", "history", "info", "keep", "keep-fill", "keyboard_arrow_down",
-    "keyboard_arrow_up", "language", "light_mode", "location_on", "menu", "print", "progress_activity",
-    "radio_button_unchecked", "rule", "sensors", "subdirectory_arrow_right", "sync", "visibility",
-    "visibility_off", "warning",
+    "help", "history", "info", "language", "light_mode", "link", "link_off", "location_on", "menu", "print",
+    "progress_activity", "radio_button_unchecked", "rule", "sensors", "subdirectory_arrow_right", "sync",
+    "upgrade", "visibility", "visibility_off", "warning",
 ]
 
 

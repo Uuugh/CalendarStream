@@ -27,6 +27,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from . import __version__, i18n, icons
+from . import links as links_mod
 from . import rules as rules_mod
 from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, apply_changes, build_feed,
                       check_calendar, download, parse, parse_feed)
@@ -264,6 +265,28 @@ def migrate_rules():
         save_rules(rules_mod.starters(settings.default_event_type, settings.default_event_hours, settings.allday_24h))
 
 
+def share_converted_rules():
+    """0.2.8-beta.3, once: rules converted in beta.2 that every calendar used were kept for those
+    calendars only, so the Local calendar made after them (and calendars added later) didn't get
+    them. A rule for every calendar but the Local ones becomes a rule for All calendars."""
+    if store.get("rules_shared_b3") or store.get("rules") is None:
+        return
+    others = {x["id"] for x in sources() if x.get("type") != "local"}
+    found = all_rules()
+    for r in found:
+        if r["apply"] != "all" and others and set(r["apply"]) == others:
+            r["apply"] = "all"
+    save_rules(found)
+    store.set("rules_shared_b3", True)
+
+
+def first_named_calendar() -> str:
+    """A new feed's name when none is given: the first calendar that comes from somewhere (not a Local
+    one, which would name every feed "Local")."""
+    named = [x["id"] for x in sources() if x.get("type") != "local"]
+    return calendar_name(named[0]) if named else "CalendarStream"
+
+
 def ensure_local():
     """0.2.8: every install gets a local calendar once, at the top (so it's the default calendar for
     events added here), in every feed. Removed later, it isn't made again."""
@@ -415,7 +438,8 @@ def page(request: Request, name: str, context: dict, status_code: int = 200, lan
                    "frequencies": list(FREQUENCIES), "info": updates.info(), "releases": RELEASES,
                    "checked": _local_time(updates.info().get("checked"), lang),
                    "next": _local_time(iso(updates.next_check(datetime.now(timezone.utc))), lang),
-                   "updater": updater.ready, "can_update": updater.ready and not updater.pinned()}, "version": __version__,
+                   "updater": updater.ready, "can_update": updater.ready and not updater.pinned(),
+                   "auto": auto_update()}, "version": __version__,
     }, status_code=status_code)
 
 
@@ -707,7 +731,79 @@ def publish(raw: bytes | None, sha: str | None = None, sid: str = "ccs") -> tupl
     store.replace_events(events, sid)
     st(sid).event_count = sum(1 for e in events if not e.hidden)
     request_google_sync()
+    follow_links(sid, events)
     return events, previous
+
+
+# --- Linked events (F3.2): see app/links.py -------------------------------------------------------
+
+_following = False
+
+
+def event_links() -> dict[str, dict]:
+    return links_mod.clean(store.get("event_links"))
+
+
+def follow_links(sid: str, events: list[Event]):
+    """After a calendar is built: the events linked to its events follow them (deleted with them, moved
+    with them), and their calendars are built again."""
+    global _following
+    found = event_links()
+    todo = links_mod.plan(found, sid, events)
+    if not todo or _following:    # (a calendar built because of a link: its own links are followed next time)
+        return
+    touched = set()
+    edits = store.get_edits()
+    customs = {c["uid"]: c for c in store.get_customs()}
+    for step in todo:
+        kind, uid = step[0], step[1]
+        if kind == "seen":
+            found[uid]["at"] = step[2]
+            continue
+        if kind == "unlink":
+            found.pop(uid, None)
+            continue
+        e = store.get_event(uid)
+        if e is None or e.origin == "rule":
+            found.pop(uid, None)
+            continue
+        if kind == "delete":
+            if e.origin == "custom":
+                store.delete_custom(uid)
+            else:
+                _hide(e)
+            state.record("info", f"Deleted \"{e.title}\" ({e.start[:10]}) with the event it's linked to")
+            found.pop(uid, None)
+        else:       # move
+            start, end = links_mod.shifted(e.start, e.end, step[2])
+            if e.origin == "custom" and uid in customs:
+                store.set_custom(uid, {**customs[uid], "start": start, "end": end})
+            elif e.origin == "united":
+                original = united_original(uid, e.source)
+                if original:
+                    base = edits.get(uid) or {"title": e.title, "all_day": e.all_day, "location": e.location,
+                                              "description": e.description, "color": e.color, "base": original.fingerprint()}
+                    store.set_edit(uid, {**base, "start": start, "end": end})
+            state.record("info", f"Moved \"{e.title}\" to {start[:16].replace('T', ' ')} with the event it's linked to")
+        touched.add(e.source)
+    store.set("event_links", found)
+    _following = True
+    try:
+        for one in touched:
+            rebuild(one)
+    finally:
+        _following = False
+
+
+def _hide(e: Event):
+    """Hide a source's own event from every destination (deleting it would only bring it back)."""
+    original = united_original(e.uid, e.source)
+    if not original:
+        return
+    edit = store.get_edits().get(e.uid) or {
+        "title": e.title, "start": e.start, "end": e.end, "all_day": e.all_day, "location": e.location,
+        "description": e.description, "color": e.color, "base": original.fingerprint()}
+    store.set_edit(e.uid, {**edit, "hidden": True})
 
 
 def rebuild(sid: str | None = None):
@@ -970,8 +1066,14 @@ def background(coro):
     return task
 
 
+def auto_update() -> bool:
+    """Settings → Updates → Auto-update (beta.3): install a newer version by itself (needs the updater)."""
+    return store.get("update_auto") is True
+
+
 async def update_loop():
-    """Settings → Check for updates: look for a newer version of this install's channel when due."""
+    """Settings → Check for updates: look for a newer version of this install's channel when due, and
+    with Auto-update on (and the updater running), install it."""
     await asyncio.sleep(30)
     while True:
         try:
@@ -979,12 +1081,28 @@ async def update_loop():
                 found = await updates.check()
                 if updates.available() and found.get("newest") != found.get("logged"):
                     state.record("info", f"Update available: CalendarStream {found['newest']} "
-                                         + ("(press Update now next to the version)" if updater.ready and not updater.pinned()
+                                         + ("(Auto-update will install it)" if auto_update() and updater.ready and not updater.pinned()
+                                            else "(press Update now next to the version)" if updater.ready and not updater.pinned()
                                             else "(run the installer again to update)"))
                     store.set("update_check", {**found, "logged": found["newest"]})
+            await auto_install()
         except Exception as e:      # never let this stop the app
             log.warning("Update check failed: %s", e)
         await asyncio.sleep(3600)
+
+
+async def auto_install():
+    """With Auto-update on: ask the updater for a newer version (once per version, so a failing
+    update isn't tried every hour)."""
+    target = updates.available()
+    if not (target and auto_update() and updater.ready and not updater.pinned()) or store.get("update_auto_tried") == target:
+        return
+    store.set("update_auto_tried", target)
+    try:
+        await updater.update()
+        state.record("info", f"Auto-update: updating to CalendarStream {target}: downloading, then restarting")
+    except UpdaterError as e:
+        state.record("warn", f"Auto-update to CalendarStream {target} not started: {e}")
 
 
 async def updater_loop():
@@ -1010,6 +1128,7 @@ async def lifespan(_app):
     migrate_destinations()
     migrate_rules()
     ensure_local()
+    share_converted_rules()
     imported = logins.import_old(settings.username, settings.password, settings.gui_user, settings.gui_password)
     if imported:
         state.record("info", "Imported " + " and ".join(imported) + " from the old secret files. They're "
@@ -1507,7 +1626,7 @@ def rule_js(lang: str) -> dict:
             "emoji": ["✈️", "🏝️", "📚", "🏠", "🚗", "⭐", "❗", "🛌", "🎓", "🎉"],
             "t": {"and": tr("and"), "or": tr("or"), "weeks": tr("weeks"), "days": tr("days"), "hours": tr("hours"),
                   "minutes": tr("minutes"), "caps": tr("Match capitals exactly"), "remove": tr("Take this line out"),
-                  "newEvent": tr("New event…"), "title": tr("Title"), "location": tr("Location"), "allDay": tr("All day"),
+                  "newEvent": tr("New event…"), "noCalendar": tr("No calendar yet"), "color": tr("Color"), "title": tr("Title"), "location": tr("Location"), "allDay": tr("All day"),
                   "length": tr("Length (hours:minutes)"), "time": tr("Time (hours:minutes)"), "allCalendars": tr("All calendars"),
                   "toAllDay": tr("all-day"), "toLength": tr("a length of"), "changeTo": tr("to"), "emoji": tr("Emoji"),
                   "open": tr("Open a bracket here"), "close": tr("Close a bracket here"),
@@ -1534,7 +1653,9 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
         "all_rules": [{**r, "label": rule_label(r, lang),
                        "used": [calendar_name(x) for x in source_ids() if rules_mod.applies(r, x)]} for r in all_rules()],
         "rule_js": rule_js(lang),
-        "default_dest_name": calendar_name(source_ids()[0]) if source_ids() else "CalendarStream",
+        "rule_conflicts": rule_conflicts(lang),
+        "linked": linked_titles(),
+        "default_dest_name": first_named_calendar(),
         "src_names": {x["id"]: x["name"] for x in srcs},
         "has_ccs": "ccs" in source_ids(), "templates": event_templates(), "event_colors": GOOGLE_COLORS.values(),
         "sections": sections, "zone": display_zone(), "zones": ALL_ZONES, "common_zones": COMMON_ZONES,
@@ -1721,12 +1842,30 @@ async def move_destination(request: Request, csrf: str = Form(""), did: str = Fo
 
 
 @app.post("/sources/remove", dependencies=[Depends(gui_auth)])
-async def remove_source(csrf: str = Form(""), sid: str = Form("")):
+async def remove_source(csrf: str = Form(""), sid: str = Form(""), keep: str = Form("delete"), into: str = Form("")):
     """Remove a source: its checks stop, its events and edits go, and it's taken off every
-    destination's list (their calendars stay). CCS+'s UID and Calendar Sync password are forgotten too."""
+    destination's list (their calendars stay). CCS+'s UID and Calendar Sync password are forgotten too.
+    F3.1 (0.2.8-beta.3): its events can be kept first, as a new Local calendar in its place
+    (`keep=local`) or added to another calendar (`keep=merge`, `into`)."""
     check_csrf(csrf)
     sid = _sid(sid)
     name = calendar_name(sid)
+    target = ""
+    if keep == "local" and (source(sid) or {}).get("type") != "local":
+        target = new_local()
+        at = source_ids().index(sid)
+        store.set("sources", sources()[:at] + [{"id": target, "type": "local"}] + sources()[at:])
+        store.set(f"calendar_name:{target}", name)
+        if calendar_color(sid):
+            store.set(f"calendar_color:{target}", calendar_color(sid))
+        save_destinations([{**d, "sources": [target if x == sid else x for x in d["sources"]]} for d in destinations()])
+        save_rules([{**r, "apply": r["apply"] if r["apply"] == "all" else [target if x == sid else x for x in r["apply"]]}
+                    for r in all_rules()])
+    elif keep == "merge" and into in source_ids() and into != sid:
+        target = into
+    elif keep not in ("delete", "local", "merge"):
+        raise HTTPException(400, "Unknown choice.")
+    moved = copy_events(sid, target) if target else 0
     old_rules = all_rules()       # read while it's still a calendar
     stop_source(sid)
     store.set("sources", [x for x in sources() if x["id"] != sid])
@@ -1745,8 +1884,36 @@ async def remove_source(csrf: str = Form(""), sid: str = Form("")):
         state.__init__("ccs")
     else:
         states.pop(sid, None)
-    state.record("warn" if note else "info", f"Calendar source removed: {name}" + (f" ({note})" if note else ""))
+    if target:
+        rebuild(target)
+        note = f"{moved} events kept in {calendar_name(target)}"
+    state.record("info", f"Calendar source removed: {name}" + (f" ({note})" if note else ""))
     return RedirectResponse("/#sources", status_code=303)
+
+
+def copy_events(sid: str, target: str) -> int:
+    """A removed calendar's events (as they are now, with edits; not hidden or rule-made ones) as events
+    added to calendar `target`, keeping their reminders and links. Returns how many."""
+    alarms, found = event_alarms(), event_links()
+    n = 0
+    for e in store.load_events(sid):
+        if e.origin == "rule" or e.hidden:
+            continue
+        uid = e.uid if e.origin == "custom" else f"cs-{secrets.token_hex(8)}@calendar_stream"
+        store.set_custom(uid, {"title": e.title, "start": e.start, "end": e.end, "all_day": e.all_day, "location": e.location,
+                               "description": e.description, "color": e.color, "start_tz": "", "end_tz": "", "source": target})
+        if uid != e.uid:
+            if e.uid in alarms:
+                alarms[uid] = alarms.pop(e.uid)
+            if e.uid in found:
+                found[uid] = found.pop(e.uid)
+        for link in found.values():
+            if link["to"] == e.uid:
+                link.update(to=uid, src=target)
+        n += 1
+    store.set("event_alarms", alarms)
+    store.set("event_links", found)
+    return n
 
 
 @app.post("/sources/url", dependencies=[Depends(gui_auth)])
@@ -1785,9 +1952,7 @@ async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="typ
     found = destinations()
     if len(found) >= 20:
         raise HTTPException(400, "Up to 20 destinations can be added.")
-    # No name: the first calendar that comes from somewhere (not a Local one, which would name every feed "Local")
-    named = [x["id"] for x in sources() if x.get("type") != "local"]
-    name = " ".join(name.split())[:100] or (calendar_name(named[0]) if named else "CalendarStream")
+    name = " ".join(name.split())[:100] or first_named_calendar()
     did = new_did()
     found.append({"id": did, "type": type_, "name": name, "sources": source_ids(),
                   "token": secrets.token_urlsafe(24) if type_ == "feed" else ""})
@@ -2178,6 +2343,68 @@ async def move_rule(request: Request, csrf: str = Form(""), rid: str = Form("", 
     return _rule_done(request, next(r for r in moved if r["id"] == rid))
 
 
+# --- Rule conflicts (F4.2) -----------------------------------------------------------------------
+
+CONFLICT_WHAT = {"color": "color", "emoji": "emoji", "change": "time"}
+
+
+def ignored_conflicts() -> list[str]:
+    return [x for x in store.get("rule_conflicts_ignored") or [] if isinstance(x, str)]
+
+
+def rule_conflicts(lang: str = "en") -> list[dict]:
+    """The rules' conflicts in words, each with what can be done about it (All Rules shows them)."""
+    tr = lambda text, **kw: str(i18n.tr(lang, text, **kw))
+    found, sids = all_rules(), source_ids()
+    by_id = {r["id"]: r for r in found}
+    out = []
+    for c in rules_mod.conflicts(found, sids, set(ignored_conflicts())):
+        a, b = rule_label(by_id[c["a"]], lang), rule_label(by_id[c["b"]], lang)
+        where = "" if len(c["calendars"]) == len(sids) else " " + tr("(in {calendars})", calendars=", ".join(calendar_name(x) for x in c["calendars"]))
+        if c["kind"] == "duplicate":
+            text = tr("“{b}” is the same as “{a}”", a=a, b=b) + where + "."
+            fixes = [("merge", tr("Merge them")), ("ignore", tr("Keep both"))]
+        else:
+            what = tr(CONFLICT_WHAT[c["action"]])
+            text = tr("“{b}” never sets the {what}: “{a}” is above it and matches the same events", a=a, b=b, what=what) + where + "."
+            fixes = [("up", tr("Put “{b}” first", b=b)), ("drop", tr("Take the {what} out of “{b}”", what=what, b=b)), ("ignore", tr("Keep as is"))]
+        out.append({"key": rules_mod.conflict_key(c), "a": c["a"], "b": c["b"], "text": text, "fixes": fixes})
+    return out
+
+
+@app.post("/rules/resolve", dependencies=[Depends(gui_auth)])
+async def resolve_rules(request: Request, csrf: str = Form(""), key: str = Form(""), how: str = Form("")):
+    """Settle a conflict between two rules (All Rules): put the lower rule first, take the action it
+    loses out of it, merge duplicates, or leave them as they are (it's not shown again)."""
+    check_csrf(csrf)
+    found = all_rules()
+    c = next((x for x in rules_mod.conflicts(found, source_ids()) if rules_mod.conflict_key(x) == key), None)
+    if c is None:
+        raise HTTPException(400, "That conflict isn't there any more.")
+    if how not in {"duplicate": ("merge", "ignore"), "shadowed": ("up", "drop", "ignore")}[c["kind"]]:
+        raise HTTPException(400, "Unknown choice.")
+    ids = [r["id"] for r in found]
+    a, b = found[ids.index(c["a"])], found[ids.index(c["b"])]
+    if how == "ignore":
+        store.set("rule_conflicts_ignored", (ignored_conflicts() + [key])[-200:])
+        return _rule_done(request, b)
+    if how == "up":
+        found = rules_mod.move(found, b["id"], before=a["id"])
+    elif how == "merge":
+        found[ids.index(a["id"])] = rules_mod.merge(a, b)
+        found.pop(ids.index(b["id"]))
+    else:
+        left = [x for x in b["actions"] if x["type"] != c["action"]]
+        if left:
+            found[ids.index(b["id"])] = {**b, "actions": left}
+        else:
+            found.pop(ids.index(b["id"]))
+    save_rules(found)
+    rebuild()
+    state.record("info", f"Rule conflict settled ({how}): {rule_label(b)}")
+    return _rule_done(request, a)
+
+
 @app.post("/rules/apply", dependencies=[Depends(gui_auth)])
 async def apply_rule(request: Request, csrf: str = Form(""), rid: str = Form("", alias="id"), sid: str = Form(""),
                      on: str = Form("1")):
@@ -2313,14 +2540,19 @@ async def update_now(csrf: str = Form("")):
 
 
 @app.post("/settings/updates", dependencies=[Depends(gui_auth)])
-async def update_settings(csrf: str = Form(""), frequency: str = Form(""), action: str = Form("save")):
-    """Settings → Check for updates: how often, or check now."""
+async def update_settings(csrf: str = Form(""), frequency: str = Form(""), action: str = Form("save"),
+                          auto: str = Form(""), autoform: str = Form("")):
+    """Settings → Check for updates: how often, Auto-update (the form always sends its tick box, with
+    `autoform`), or check now."""
     check_csrf(csrf)
     if frequency:
         try:
             updates.set_frequency(frequency)
         except ValueError:
             raise HTTPException(400, "Unknown update frequency.")
+    if autoform and (auto == "1") != auto_update():
+        store.set("update_auto", auto == "1")
+        state.record("info", "Auto-update " + ("on: newer versions are installed by themselves" if auto == "1" else "off"))
     if action == "check":
         await updates.check()
     return RedirectResponse("/?menu=settings#updates", status_code=303)
@@ -2499,7 +2731,47 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         "original_range": _range_text(original, *_span(original)[2:], lang) if original else "",
         "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": display_zone(), "embed": embed == "1",
         "default_sid": (source_ids() or [""])[0],
+        "link": event_links().get(uid) if uid else None, "link_choices": link_choices(e, uid, lang),
     }, lang=lang)
+
+
+def link_choices(e: Event, uid: str, lang: str) -> list[dict]:
+    """The events an event can be linked to (F3.2): those within three weeks of it, in every calendar."""
+    try:
+        day = date.fromisoformat(e.start[:10])
+    except ValueError:
+        return []
+    first, last = (day - timedelta(days=21)).isoformat(), (day + timedelta(days=22)).isoformat()
+    d = dates_for(lang)
+    names = {sid: calendar_name(sid) for sid in source_ids()}
+    out = []
+    for x in sorted(store.load_events(), key=lambda x: x.start):
+        if x.uid == uid or x.origin == "rule" or x.hidden or not (first <= x.start[:10] < last):
+            continue
+        when = d.day(date.fromisoformat(x.start[:10])) + ("" if x.all_day else " " + d.clock(datetime.fromisoformat(x.start).astimezone(display_tz())))
+        out.append({"uid": x.uid, "label": f"{when} · {x.title}", "calendar": names.get(x.source, "")})
+    return out[:300]
+
+
+def linked_titles() -> dict[str, str]:
+    """{event ID: the title of the event it's linked to}, for the calendar's event details."""
+    out = {}
+    for uid, link in event_links().items():
+        other = store.get_event(link["to"])
+        if other:
+            out[uid] = other.title
+    return out
+
+
+def save_link(uid: str, to: str, delete: bool, move: bool):
+    """Link an event to another one (or unlink it, with no `to`)."""
+    found = event_links()
+    other = store.get_event(to) if to and to != uid else None
+    if other is None:
+        found.pop(uid, None)
+    else:
+        found[uid] = {"to": other.uid, "src": other.source, "at": other.start, "delete": delete, "move": move}
+    store.set("event_links", found)
 
 
 def _event_back(month: str, embed: str) -> RedirectResponse:
@@ -2582,7 +2854,8 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
                      end_date: str = Form(""), end_time: str = Form(""), location: str = Form(""),
                      description: str = Form(""), hidden: str = Form(""), color: str = Form(""),
                      start_tz: str = Form(""), end_tz: str = Form(""), end_tz_differs: str = Form(""),
-                     source_: str = Form("", alias="source"), embed: str = Form("")):
+                     source_: str = Form("", alias="source"), embed: str = Form(""), link_to: str = Form(""),
+                     link_delete: str = Form(""), link_move: str = Form("")):
     """Save the event page: an edit of a source's event, or an added event (into `source`). end_tz is
     only used when "The end is in a different time zone" is ticked."""
     check_csrf(csrf)
@@ -2596,16 +2869,21 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
         original = united_original(uid, current.source)
         if not original:
             raise HTTPException(404, "That event isn't in the current schedule any more.")
-        store.set_edit(uid, {**data, "hidden": bool(hidden), "base": original.fingerprint()})
-        state.record("info", f"Edited \"{original.title}\" ({original.start[:10]})"
-                     + (" and hid it from Google" if hidden else ""))
+        unchanged = not hidden and uid not in store.get_edits() and all(
+            data[k] == getattr(current, k) for k in ("title", "start", "end", "all_day", "location", "description", "color"))
+        if not unchanged:       # (only its link changed: it isn't marked as edited)
+            store.set_edit(uid, {**data, "hidden": bool(hidden), "base": original.fingerprint()})
+            state.record("info", f"Edited \"{original.title}\" ({original.start[:10]})"
+                         + (" and hid it from Google" if hidden else ""))
         sid = current.source
+        save_link(uid, link_to, bool(link_delete), bool(link_move))
     else:
         sid = current.source if current else (source_ if source_ in source_ids() else (source_ids() or [""])[0])
         if sid not in source_ids():
             raise HTTPException(400, "Add a calendar source first (Calendar Sources → +).")
         new_uid = uid if current else f"cs-{secrets.token_hex(8)}@calendar_stream"
         store.set_custom(new_uid, {**data, "source": sid})
+        save_link(new_uid, link_to, bool(link_delete), bool(link_move))
         state.record("info", f"{'Updated' if current else 'Added'} \"{data['title']}\" ({data['start'][:10]})")
     rebuild(sid)
     state.save()
@@ -2675,13 +2953,9 @@ async def delete_event(request: Request, csrf: str = Form(""), uid: str = Form("
         store.delete_custom(uid)
         state.record("info", f"Deleted \"{e.title}\" ({e.start[:10]})")
     else:
-        original = united_original(uid, e.source)
-        if not original:
+        if not united_original(uid, e.source):
             raise HTTPException(404, "That event isn't in the current schedule any more.")
-        edit = store.get_edits().get(uid) or {
-            "title": e.title, "start": e.start, "end": e.end, "all_day": e.all_day, "location": e.location,
-            "description": e.description, "color": e.color, "base": original.fingerprint()}
-        store.set_edit(uid, {**edit, "hidden": True})
+        _hide(e)
         state.record("info", f"Hid \"{e.title}\" ({e.start[:10]}) from the destinations")
     rebuild(e.source)
     if _is_async(request):

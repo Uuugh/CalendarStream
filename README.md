@@ -131,7 +131,9 @@ logins or setup codes lock an address out for 15 minutes.
   its details: the bell (**reminders**: up to five, from "at the start" to "1 week before", sent to
   Google and written into the feeds), **✎ Edit** (title, times, notes, or hide it), **duplicate**
   and **delete** (a source's own event is hidden instead, since the source would send it again).
-  Click an empty spot on a day (or **+**) to add your own. On a computer, adding and editing an
+  Click an empty spot on a day (or **+**) to add your own. The link icon on the event page links an
+  event to another one (e.g. a drive to the airport to its trip): **Delete with it** and/or **Move
+  with it**. On a computer, adding and editing an
   event (and the rule dialog) open in a pop-up; on a phone they're a full page with a **←** back
   button. New events go into the top calendar (the **Default**). Events can have their own color (one of
   Google's 11), which wins over rules; otherwise all of a calendar's events (timed or all-day) share
@@ -153,8 +155,11 @@ logins or setup codes lock an address out for 15 minutes.
   exactly (links, IDs, the Username, the client ID) in IBM Plex Mono; every icon is a
   [Material Symbol](https://fonts.google.com/icons). Everything is a rounded rectangle (8 px corners
   on controls, 12 px on sections and modules); nothing is pill-shaped. The fonts and icons come with
-  CalendarStream, so the page never loads anything from elsewhere.
-- A small **(?)**, raised after a word like a superscript, explains it: point at it, or click (tap)
+  CalendarStream, so the page never loads anything from elsewhere. The **CalendarStream Theme
+  Rules** picture names the page's parts and gives every rule, measured from the page itself:
+  [light](docs/CalendarStream_Theme_Rules.png) · [dark](docs/CalendarStream_Theme_Rules_Dark.png)
+  (redrawn whenever the theme changes).
+- A small **(?)**, raised right after the word it explains like a superscript, explains it: point at it, or click (tap)
   it to keep it open.
 - Saving, cancelling and removing happen in place: only the parts of the page they change are
   updated, without reloading it. **Cancel | Save** is one 130 px pair at the bottom of a module and
@@ -174,10 +179,10 @@ logins or setup codes lock an address out for 15 minutes.
   **Google** and **Apple** calendars (by their private iCal link, with step-by-step help for finding
   it) and **Other** (any link starting with `webcal://` or ending in `.ics`; repeating events are
   shown from a year back to two years ahead). Each calendar is a **module**. Its header is 50 px
-  tall and is all a folded module shows: its color (the color of its events; click it to change it),
-  its title over its note (e.g. "CCS+ Calendar Sync"), "Last check was successful @ 07:59" (or
-  failed; what changed is in Activities and Logs), and on the right "Next check @ 08:59" beside its
-  status over **Sync Now**, in a box of the same size in every module. **Sync Now** says
+  tall and is all a folded module shows: its color (the color of its events; changed while expanded),
+  its title over its note (e.g. "CCS+ Calendar Sync"), on the right "Last check was successful @
+  07:59" (or failed; what changed is in Activities and Logs) over "Next check @ 08:59", beside its
+  status over **Sync Now** (while it syncs, the button fills the box), in a box of the same size in every module. **Sync Now** says
   **Syncing…** at once, then pulses green (**Synced**) or yellow (**Failed**) and goes back to Sync
   Now; the status, the calendar and the log update in place, without reloading the page.
   **▸ Expand for Details or to Edit Configuration ◂** sits in a folded module's bottom border; it
@@ -192,8 +197,9 @@ logins or setup codes lock an address out for 15 minutes.
     ones), each marked **This calendar**, **All calendars** or **n calendars**. ✎ opens the rule
     dialog; the bin takes the rule off this calendar; the handle changes its priority. **+ Add a
     rule** offers **New rule…** or a rule another calendar uses.
-  - At the bottom, under a line: **Remove** on the left (it asks first), **Cancel | Save** on the
-    right.
+  - At the bottom, under a line: **Remove** on the left, **Cancel | Save** on the right. Remove asks
+    what becomes of its events: keep them in a Local calendar (same name and color, in its place),
+    add them to another calendar, or delete them.
 - **Feeds** (**+** adds one; the first asks for the public address): what other apps subscribe to,
   independent of the calendars: **Google calendars** (Autosync; one **Google account** box signs in for all of them)
   and **Calendar feeds** (a feed link and a shareable subscribe page each), as many as you like.
@@ -203,9 +209,12 @@ logins or setup codes lock an address out for 15 minutes.
   **End** date (empty = no limit), the calendars it gets, a feed's links, and Remove / Cancel | Save. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
   part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
   an old link) and existing subscriptions work again.
-- **All Rules** (folds to its title; **+** stays in the corner): every rule, highest priority first,
-  with the calendars it applies to (**+** or ✎ opens the rule dialog, the copy button makes a copy
-  for no calendar yet, the bin deletes it, the handle changes its priority). A higher rule wins over
+- **All Rules** (looks like a module: its header shows **+** and the number of rules in a box, green,
+  or yellow with "n to check" while a rule conflicts; **Expand for Details** opens it): every rule,
+  highest priority first, with the calendars it applies to in a badge in their colors (stripes for
+  several, white for All calendars). **+** or ✎ opens the rule dialog (with **How rules work** at its
+  bottom), the copy button makes a copy for no calendar yet, the bin deletes it, the handle changes
+  its priority. A higher rule wins over
   a lower one (for a color, an emoji or a time change), even a calendar's own. A rule is
   **If … Then …**:
   - **If** (no lines: every event): **Text** is / contains / whole word / begins with / ends with /
@@ -213,27 +222,36 @@ logins or setup codes lock an address out for 15 minutes.
     range can go past midnight); **Day(s)** is / after / before / between (ctrl- or shift-click for
     several; Fri – Mon goes round the weekend); **Length** is (weeks : days : hours : minutes; 0 =
     no end time) or is whole days. Join lines with **and** / **or** (and goes first); click the grey
-    **(** and **)** to group lines, the outer brackets in a different color.
+    **(** and **)** to group lines, the outer brackets in a different color (a **)** with no **(**
+    gets one on the first line of its group).
   - **Then** (+ adds more): **Color**, **Add emoji to title**, **Create event** (a new one, or from
     an event template, some time before the start, after the start or after the end), **Change**
     (to all-day, with the original time in the notes, or to a length) and **Record changes** (when
     the source changes a matching event, a note on it and a line in Activities and Logs).
-  - **Apply to** (ctrl or shift for several): **All calendars** (also ones you add later) or the
-    ones chosen. A new rule applies to All; changing one keeps its choice. **Remove** deletes it.
+  - **Apply to**: a drop-down of the calendars, each with its color: **All calendars** (also ones
+    you add later) or the ones ticked. A rule made in a calendar starts with that calendar, one
+    made in All Rules with All; changing one keeps its choice. **Remove** deletes it.
+  - **Conflicts:** when a lower rule can never set something (a higher one matches the same events)
+    or two rules are the same, All Rules says so, with the fixes: put it first, take that out of it,
+    merge them, or keep as is.
 
   A new install starts with two rules for every calendar: **Items without an end time** (from
   `DEFAULT_EVENT_HOURS`) and **24-hour events** (shown as all-day; CCS+ writes full days as
   00:01–23:59:59). Rules from earlier versions are converted, in the same order.
-- **Event Templates** (folds to its title; **+** stays in the corner): ready-made events (title, length or all day, location, color) for Add-event
+- **Event Templates** (like All Rules: **+**, "2 Templates" in a box, Expand for Details): ready-made events (title, length or all day, location, color) for Add-event
   rules and for **Start from a template** when adding an event by hand.
-- **Activities and Logs** (a module like the others): each check and what changed, for each source;
-  each source's last download details (for debugging) at the bottom. Folded, it shows **Healthy**,
+- **Activities and Logs** (a module like the others: it opens only from its Expand line): each check
+  and what changed, for each source; each source's last download details (for debugging) at the
+  bottom. Folded, it shows the latest line on the right and **Healthy**,
   or **Unhealthy** while a problem is still there (a calendar failing, a sign-in rejected, Google
   sync failing).
 - **☰ Settings** (a light blue panel): site settings only: the status-page login (with a show-password eye and a
   strength bar, like every password box), the public address, the **admin e-mail** (filled into the
   Google setup guide) and **Check for updates** (hourly, weekly, monthly or never; only versions of
-  your release, stable or beta, are offered, and a newer one shows next to the version at the top).
+  your release, stable or beta, are offered, and a newer one shows next to the version at the top;
+  then **Upgrade** replaces **Check now**), with **Auto-update** beside it (with the updater: newer
+  versions are installed by themselves). Each field shows ✓ until you type, then ✕ | ✓, and saves in
+  place, without reloading the page.
 - **Report a problem / Suggest a feature** at the bottom of the page open a form: what happened (or
   your idea), and tick what to include: the Activities and Logs lines, each source's last download
   details, your device and setup, your contact details, and whether you'd like replies. Private
