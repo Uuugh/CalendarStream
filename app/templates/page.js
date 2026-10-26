@@ -232,15 +232,20 @@ document.addEventListener('keydown', function (e) {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('helpdot')) { e.preventDefault(); e.target.click(); }
 });
 
-// Update now: ask the updater (POST /update/now), then follow along with /api/status. It answers with
-// the old version while the new image downloads, not at all while the container restarts, then with
-// the new version: the pill goes away and the version at the top (and in the footer) changes.
-(function () {
+// Update now (top bar) and Settings → Update: ask the updater (POST /update/now), then follow along
+// with /api/status. It answers with the old version while the new image downloads, not at all while
+// the container restarts, then with the new version: the version at the top (and in the footer)
+// changes and Settings → Updates is drawn again (Up to date, Check now). One listener for the whole
+// page, so the buttons keep working after Settings is redrawn in place (a Check now, a save).
+var updating = false;
+function updateNow() {
   var slot = document.querySelector('.updslot');
-  if (!slot) return;
+  if (!slot || updating) return;
   var btn = slot.querySelector('.updbtn'), text = slot.querySelector('.updtext'), from = slot.dataset.from;
   function show(state, label) { slot.dataset.state = state; text.textContent = label || ''; }
-  function fail(why) { show('failed', T.updateFailed); text.insertAdjacentHTML('afterbegin', ICON.fail); slot.title = why || ''; btn.disabled = false;
+  function settingsBtns(off) { document.querySelectorAll('button.upgradebtn').forEach(function (b) { b.disabled = off; }); }
+  function fail(why) { updating = false; settingsBtns(false);
+                       show('failed', T.updateFailed); text.insertAdjacentHTML('afterbegin', ICON.fail); slot.title = why || ''; btn.disabled = false;
                        setTimeout(function () { if (slot.dataset.state === 'failed') show('ready'); }, 8000); }
   function done(version) {
     document.querySelectorAll('.topbar .curver').forEach(function (a) {
@@ -249,6 +254,11 @@ document.addEventListener('keydown', function (e) {
     var foot = document.querySelector('.foot');
     if (foot) foot.innerHTML = foot.innerHTML.replace('v' + from, 'v' + version);
     document.querySelectorAll('.topbar .newver, .updslot').forEach(function (el) { el.remove(); });
+    // Settings → Updates as the new version sees it (Up to date, Check now)
+    fetch('/?menu=settings', { cache: 'no-store', credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+      .then(function (html) { updating = false; swapFrom(html, ['#updates']); },
+            function () { updating = false; settingsBtns(false); });
   }
   function follow() {
     var started = Date.now(), down = false;
@@ -265,14 +275,19 @@ document.addEventListener('keydown', function (e) {
       }
     })();
   }
-  btn.addEventListener('click', function () {
-    btn.disabled = true; slot.title = ''; show('downloading', T.downloading);
-    fetch('/update/now', { method: 'POST', body: new URLSearchParams({ csrf: CSRF }), credentials: 'same-origin',
-                           headers: { 'X-CS-Async': '1' } })
-      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status)); return j; }); })
-      .then(follow, function (e) { fail(e.message); });
-  });
-})();
+  updating = true; settingsBtns(true);
+  btn.disabled = true; slot.title = ''; show('downloading', T.downloading);
+  fetch('/update/now', { method: 'POST', body: new URLSearchParams({ csrf: CSRF }), credentials: 'same-origin',
+                         headers: { 'X-CS-Async': '1' } })
+    .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status)); return j; }); })
+    .then(follow, function (e) { fail(e.message); });
+}
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('.updslot .updbtn, button.upgradebtn');
+  if (!b || b.disabled) return;
+  if (b.classList.contains('upgradebtn')) window.scrollTo(0, 0);     // Settings → Update: the progress is at the top
+  updateNow();
+});
 
 // Small drop-down menus (settings, language): close on an outside click or Escape.
 function dropdown(btnId, menuId) {
@@ -332,10 +347,6 @@ document.getElementById('usethis').addEventListener('click', function () {
   var input = document.getElementById('publicurl');
   input.value = location.origin;
   input.dispatchEvent(new Event('input', { bubbles: true }));      // shows ✕ | ✓
-});
-// Settings → Upgrade (F2.2): the same as Update now next to the version at the top
-document.querySelectorAll('button.upgradebtn').forEach(function (b) {
-  b.addEventListener('click', function () { var u = document.querySelector('.updslot .updbtn'); if (u) { window.scrollTo(0, 0); u.click(); } });
 });
 
 // Settings menu: opens by itself after Check for updates (?menu=settings). The Disconnect

@@ -113,7 +113,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     with patch.object(main.updates, "available", lambda: "9.9.9"):
         p = c.get("/?menu=settings").text
     menu = p[p.index('id="menu"'):p.index('</header>')]
-    ok("upgradebtn" in menu and ">Check now<" not in menu, "F2.2: a newer version: Upgrade instead of Check now")
+    ok("upgradebtn" in menu and ">Check now<" not in menu, "F2.2: a newer version: Update instead of Check now")
 
     # --- In a browser -------------------------------------------------------------------------
     from playwright.sync_api import sync_playwright

@@ -266,8 +266,9 @@ logins or setup codes lock an address out for 15 minutes.
   Google setup guide), **Google Calendar sync** (Copy in the Client ID box) and **Updates**, laid out
   like a module header: your release (stable or beta versions; only those are offered), when it last
   checked and the next check, and a status box with **Check now** (a newer version also shows next to
-  the version at the top; then **Upgrade** replaces Check now). Under it, **Check for updates**
-  (hourly, weekly, monthly or never) and **Auto-update** (with the updater: newer versions are
+  the version at the top; then **Update** replaces Check now; once it has updated, Settings shows
+  Up to date and Check now again). Under it, **Check for updates** (hourly, weekly, monthly or
+  never) and **Auto-update** (with the updater: newer versions are
   installed by themselves). Each field shows ✓ until you type, then ✕ | ✓, and saves in
   place, without reloading the page.
 - **Report a problem / Suggest a feature** at the bottom of the page open a form: what happened (or

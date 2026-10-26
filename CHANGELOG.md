@@ -9,7 +9,16 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.6**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.7**
+
+## 0.2.8-beta.7 — 2026-10-26
+
+### Fixed
+- **I1.1** ☰ Settings → Updates: the button for a newer version says **Update** (was "Upgrade").
+- **I1.2** Once an update had installed, Settings → Updates still showed "Update available" with a
+  button that did nothing, instead of going back to **Up to date** and **Check now**. After a Check
+  now (Settings is redrawn in place), Update and the top bar's Update now could stop responding.
+  Both buttons now keep working after any redraw, and Updates is redrawn when the new version is in.
 
 ## 0.2.8-beta.6 — 2026-10-26
 
