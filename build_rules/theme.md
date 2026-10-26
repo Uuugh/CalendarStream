@@ -28,6 +28,10 @@ one here.
   right "Next check @ 00:44" and Sync Now. A line with nothing to say is left blank.
 - Status words: "Last synced 00:31" or "Sync failed 00:31", never "Last check was successful @…";
   a feed says "Last read by Google 00:31" (or "Last read …").
+- Every button in a status box (Sync Now, Settings → Check now, any new one) works like Sync Now: it
+  says what it's doing at once (Syncing…, Checking…) and grows over the box, then pulses green (done)
+  or yellow (failed, or something found) for 2.4 s, then shrinks back with the box redrawn. Never a
+  button that gives no sign it was pressed.
 - Module-like sections (All Rules, Event Templates): the count box, then + in the top right corner.
 - A box means you can change it: fixed text (a title, the release channel) is plain text, never in a
   field box. A group that looks like a module but has nothing to fold (Settings → Updates) uses the

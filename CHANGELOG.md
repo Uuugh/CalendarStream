@@ -9,7 +9,19 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.7**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.8**
+
+## 0.2.8-beta.8 — 2026-10-26
+
+### Fixed
+- **I1** ☰ Settings → **Check now** gave no sign it had been pressed: when the answer was the same as
+  before, nothing on the page changed. It now works like Sync Now: **Checking…** at once, growing
+  over the status box, then **Up to date** (a green pulse), **Update found** or **Couldn't check**
+  (a yellow pulse), then back to Check now with Updates redrawn, every time it's pressed.
+
+### Changed
+- **R1** `build_rules/theme.md` → Clarifications: every button in a status box works like Sync Now
+  (also in the Theme Rules pictures).
 
 ## 0.2.8-beta.7 — 2026-10-26
 

@@ -996,6 +996,31 @@ function sendSwap(f, body) {
     })
     .then(function (res) { swapFrom(res.html, sels); return res; });
 }
+// Settings → Check now (0.2.8-beta.8) works like Sync Now: Checking… (at least 0.7 s, so it's seen), then
+// Up to date (a green pulse), Update found (yellow) or Couldn't check (yellow) for 2.4 s; then it shrinks
+// back and Updates (and the version at the top) are redrawn with what the check found.
+function checkNow(f, btn, body) {
+  if (btn.dataset.state !== 'idle') return;
+  var started = Date.now(), sb = btn.closest('.statusbox');
+  btn.dataset.state = 'syncing'; btn.disabled = true;
+  function finish(state, html) {
+    setTimeout(function () {
+      btn.dataset.state = state;
+      setTimeout(function () {
+        btn.dataset.state = 'idle';
+        setTimeout(function () { if (html) swapFrom(html, ['#updates', '.topbar .ver']); else btn.disabled = false; }, 300);
+      }, 2400);
+    }, Math.max(0, 700 - (Date.now() - started)));
+  }
+  fetch(f.getAttribute('action'), { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+    .then(function (html) {
+      var fresh = new DOMParser().parseFromString(html, 'text/html').getElementById('updates');
+      if (!fresh) throw new Error('no answer');
+      finish(fresh.querySelector('.check.bad') ? 'fail' : fresh.querySelector('.upgradebtn') ? 'found' : 'done', html);
+    }, function () { finish('fail', null); });
+  if (sb) sb.title = '';
+}
 // The Cancel | Save pair: the pressed side fills it and says what happened, for 3 seconds.
 function pairState(p, st) {
   if (!p) return;
@@ -1018,6 +1043,7 @@ document.addEventListener('submit', function (e) {
   e.preventDefault();
   var body = new FormData(f), btn = e.submitter, pair = pairFor(f);
   if (btn && btn.name) body.append(btn.name, btn.value);
+  if (btn && btn.classList.contains('checknow')) { checkNow(f, btn, body); return; }
   if (pair) pairState(pair, 'saving');
   var old = f.parentNode && f.parentNode.querySelector('.pairfail:not(.rdmsg)'); if (old) old.remove();   // (the rule dialog keeps its own)
   sendSwap(f, body).then(function (res) {

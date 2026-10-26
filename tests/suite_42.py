@@ -49,7 +49,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         # Check now first: Settings is redrawn in place, Update still works afterwards
         main.store.set("update_check", {"checked": "2026-10-22T00:00:00+00:00", "channel": "beta", "newest": "0.2.7-beta.2"})
         pg.goto("http://127.0.0.1:8099/?menu=settings"); pg.wait_for_timeout(500)
-        pg.click("#updates button.checknow"); pg.wait_for_timeout(1200)
+        pg.click("#updates button.checknow"); pg.wait_for_timeout(4200)
         ok(len(checks) == 1 and pg.locator("#updates button.upgradebtn").count() == 1 and "Update available" in pg.inner_text("#updates"),
            "Check now finds the newer version: Update available, Update")
         pg.click("#updates button.upgradebtn"); pg.wait_for_timeout(600)
@@ -60,7 +60,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(pg.inner_text(".curver") == "v0.2.7-beta.3" and pg.locator(".updslot").count() == 0, "…the new version at the top")
         ok(pg.locator("#updates button.upgradebtn").count() == 0 and pg.locator("#updates button.checknow").count() == 1 and "Up to date" in pg.inner_text("#updates"),
            "I1.2: Settings → Updates goes back to Up to date with Check now")
-        pg.click("#updates button.checknow"); pg.wait_for_timeout(1200)
+        pg.click("#updates button.checknow"); pg.wait_for_timeout(4200)
         ok(len(checks) == 2 and "Up to date" in pg.inner_text("#updates") and pg.locator("#updates button.checknow").count() == 1, "…and Check now works again")
         ok(not errs, f"no script errors {errs}")
         b.close()

@@ -177,7 +177,8 @@
                 {# with a newer version out, Update instead of Check now (the updater, or how to update) #}
                 {% if update.available and update.can_update %}<button type="button" class="upgradebtn">{{ icon("upgrade", 15) }}{{ _('Update') }}</button>
                 {% elif update.available %}<a class="btn upgradebtn" href="https://github.com/Uuugh/CalendarStream#updating" target="_blank" rel="noopener" title="{{ _('Run the installer again to update.') }}">{{ icon("upgrade", 15) }}{{ _('Update') }}</a>
-                {% else %}<button class="checknow" name="action" value="check">{{ _('Check now') }}</button>{% endif %}
+                {% else %}{# Check now works like Sync Now: Checking… → Up to date (green pulse), Update found (yellow) or Couldn't check (yellow) #}
+                <span class="syncform"><button class="syncnow checknow" name="action" value="check" data-state="idle"><span class="sn idle">{{ _('Check now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Checking…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Up to date') }}</span><span class="sn found">{{ icon("upgrade", 14) }}{{ _('Update found') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Couldn’t check') }}</span></button></span>{% endif %}
               </div>
             </div></div>
             <div class="pair updrow">

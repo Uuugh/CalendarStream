@@ -88,7 +88,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             ok(heads and all(h == 50 for h in heads), f"{scheme}: every module header is 50 px tall ({heads})")
             sb = pg.evaluate("""() => [...document.querySelectorAll('.box.module .statusbox')].map(s => { const r = s.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })""")
             ok(sb and all(x == [132, 50] for x in sb), f"{scheme}: one status box size in every module ({sb})")
-            btns = pg.evaluate("""() => [...document.querySelectorAll('.syncnow[data-state="idle"]')].map(s => { const r = s.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })""")
+            btns = pg.evaluate("""() => [...document.querySelectorAll('.syncnow[data-state="idle"]')].filter(s => s.offsetParent).map(s => { const r = s.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })""")
             ok(len(btns) >= 1 and len(set(map(tuple, btns))) == 1, f"F1.1 {scheme}: every (idle) Sync Now is the same rounded rectangle ({btns})")
             # Folded: no line under the header; Expand sits in the bottom border
             fold = pg.evaluate("""() => { const m = document.querySelector('#src-%s'), t = m.querySelector('.cfgtoggle');
