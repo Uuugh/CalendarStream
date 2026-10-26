@@ -30,6 +30,9 @@
 
 ## Deployment Instructions
 
+- Only start a Deploy if enough credits remain to complete it (steps a–f, including likely fix rounds).
+  - Claude can't see the credit balance, so before step a it estimates the Deploy's cost (compared with a typical beta) and asks the Developer to confirm enough credits remain. No confirmation, no Deploy.
+  - If credits run low during a Deploy, finish or undo the current step (never leave it half done), commit and push nothing unfinished, and report where it stopped and what remains.
 - At the start of a step, provide an estimated build time for "Total Time Remaining:" and "Time Remaining in &lt;Step Name&gt;:"
 - If a step produces a finding (a # item or a Developer F/I), then return to step a until the code can flow to the end without a finding.
   - Only changes to code behavior restart at a; comment, naming and docs fixes are made and re-checked in place.
