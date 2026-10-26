@@ -13,12 +13,12 @@ manage it all. See README.md for what it does.
   `rules.py` (the If/Then rules), `gsync.py` (Google), `store.py` (Postgres), `templates/` (pages,
   `page.js`), `static/` (stylesheet, fonts).
 - `tests/`: the test suites and `run.sh` (see tests/README.md).
-- `docs/`: screenshots and the CalendarStream Theme Rules picture.
+- `docs/`: the README's screenshots.
 - `build_rules/`: how work is done here:
   - `basics.md`: words (F, I, R, ?, EOF, STOP…), versions, ground rules. Read first.
   - `deploy.md`: the Deploy steps (a–f).
   - `review.md`: what Reviewers check (Deploy steps a and b).
-  - `theme.md`: how the page looks.
+  - `theme.md`: how the page looks, with the CalendarStream Theme Rules picture beside it.
   - `roadmap.md`: what's planned.
 
 ## Before you push
