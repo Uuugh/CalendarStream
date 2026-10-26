@@ -9,7 +9,47 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.9**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.10**
+
+## 0.2.8-beta.10 — 2026-10-26
+
+### Added
+- **F5** **Two-way sync** with the Google calendars CalendarStream makes (only those): a change made
+  there comes here as if made on the status page, so CCS+ is never touched. An edit of a CCS+ (or
+  other source's) event becomes an edit; an edit of an event added here changes it; an event added in
+  Google goes into a CalendarStream (local) calendar the Google calendar gets; a deletion hides the
+  event (an added one is deleted). A rule's events stay read-only (put back). When both sides
+  changed, the **newest change wins** (logged). **More than 3 deletions at once** wait at the top of
+  Activities and Logs: **Hide them here too** or **Put them back in Google**. Repeating events made
+  in Google aren't copied yet.
+- **F1.2** ☰ Settings → Google Calendar API Sync, when the client is missing or failing, offers two
+  ways to set it up: **Set it up with Claude** (a request to copy into a chat with Claude, who does
+  the Google Cloud steps in your own signed-in browser; with how to link one) and the **Guided
+  setup** (each Google page opens in a window beside CalendarStream; Copy buttons; the client and
+  Connect steps tick themselves, the others are ticked by hand; the current step is marked).
+- **F2.1** An opened event has a **link** icon, which opens it at "Linked to" (Move with it / Delete
+  with it).
+
+### Fixed
+- **I1** An event added here showed the fixed purple "Added here" color instead of its calendar's
+  color, which Google shows. Events now show the color Google shows: their own, their rule's, else
+  their calendar's; "Added here" is gone from the key.
+- Opening or closing a CalendarStream (local) calendar's module wasn't remembered.
+
+### Changed
+- **F1.1** "Google Calendar sync" is now **Google Calendar API Sync**. While it works, Settings shows
+  only a module header (the account; Last synced and instant updates; Connected over Sync Now), with
+  the details under Expand.
+- **F2.2** An opened event: Close on the left, its icons on the right (on a line of their own in a
+  narrow day). The edit pop-up's Notes take the room that's left, and its Cancel | Save is the
+  theme's 130 × 34 pair (Save also when adding).
+- **F3.1** Close's triangles point up.
+- **F3.2** Pop-ups: a darker backdrop (55%) that keeps the page in view, and a 200 ms fade and
+  scale-up (none with reduced motion).
+- **F4** Rule lines with a title also say what the rule does ("Items without an end time → Change
+  length to 1:00").
+- **R1** New Clarifications in `build_rules/theme.md` (Close points up; pop-ups; an opened event's
+  tools; event colors; rule lines), each checked by the theme suite.
 
 ## 0.2.8-beta.9 — 2026-10-26
 

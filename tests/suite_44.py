@@ -128,6 +128,25 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.goto("http://127.0.0.1:8106/?month=2026-10"); pg.wait_for_timeout(400)
         ok(len(main.destinations()) == 1 and pg.evaluate("getComputedStyle(document.querySelector('#destinations .modrow > .handle')).visibility") == "hidden",
            "Clarification 'handles': a lone feed has no handle")
+        # Clarification: Close's triangles point up; Expand's point at the words
+        pg.click("#rules > .cfgline .cfgtoggle"); pg.wait_for_timeout(250)
+        rot = pg.evaluate("""() => getComputedStyle(document.querySelector('#rules > .cfgline .arr')).transform""")
+        ok(rot.startswith("matrix(") and rot.split(",")[1].strip().startswith("-1"), f"Clarification 'Close points up': Close's triangle turned up ({rot})")
+        # Clarification: an opened event: Close on the left, its icons on the right
+        ev = pg.locator("#cal details.ev").first
+        ev.locator("summary").click(); pg.wait_for_timeout(200)
+        r = pg.evaluate("""() => { const d = [...document.querySelectorAll('#cal details.ev')].find(x => x.open), t = d.querySelector('.evtools').getBoundingClientRect(),
+                          c = d.querySelector('.evclose').getBoundingClientRect(), i = d.querySelector('.evicons').getBoundingClientRect();
+                          return [Math.round(c.left - t.left), Math.round(t.right - i.right), d.querySelectorAll('.evicons .evlinkto').length]; }""")
+        ok(r[0] <= 2 and r[1] <= 2 and r[2] == 1, f"Clarification 'event tools': Close at the left, the icons (with Link) at the right {r}")
+        # Clarification: pop-ups: dark backdrop, 200 ms fade and scale-up; the theme's Cancel | Save
+        ev.locator(".evedit").click(); pg.wait_for_timeout(700)
+        bd = pg.evaluate("""() => { const d = document.getElementById('eventdialog'); return [getComputedStyle(d, '::backdrop').backgroundColor, getComputedStyle(d).animationName, getComputedStyle(d).animationDuration]; }""")
+        ok(bd[0] == "rgba(0, 0, 0, 0.55)" and bd[1] == "popin" and bd[2] == "0.2s", f"Clarification 'pop-ups': dark backdrop, 200 ms fade and scale-up {bd}")
+        fr = pg.frame_locator("#eventdialog iframe")
+        pr = fr.locator(".pairbtns").bounding_box()
+        ok(pr and round(pr["width"]) == 130 and round(pr["height"]) == 34, f"…its Cancel | Save is the 130 × 34 pair ({pr})")
+        pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         # Clarification: adding ends with Cancel | Save
         pg.click("#sources .cardhead .plus"); pg.click('#addsrc .preset[data-preset="local"]'); pg.wait_for_timeout(200)
         ok(pg.locator("#addsrc-local .pairbtns .pcancel").is_visible() and pg.locator("#addsrc-local .pairbtns .psave").is_visible()
@@ -140,7 +159,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "+ in the corner": "Module-like sections", "a box means you can change it": "A box means you can change it",
             "Copy": "Copy buttons", "rule colors": "rule's color is one of Google", "Light = Soft": "Light is the Soft palette",
             "status-box buttons": "Every button in a status box", "note": "raised (i)",
-            "Cancel | Save when adding": "Adding something", "reload after an update (suite 42)": "After an update the page reloads"}
+            "Cancel | Save when adding": "Adding something", "reload after an update (suite 42)": "After an update the page reloads",
+            "Close points up": "Close's triangles point up", "pop-ups": "Pop-ups: a dark backdrop", "event tools": "An opened event: Close on the left",
+            "event colors (suite 45)": "Events show the color Google shows", "rule summaries": "Rule lines say what the rule does"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

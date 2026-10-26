@@ -78,11 +78,11 @@ Then open the address it printed:
 2. **Calendars → +** → **United CCS+**, then enter your CCS+ Username (UID)
    and Calendar Sync password. (Or add any calendar feed.)
 3. Optional, for Google Calendar kept in sync within seconds (with your rule colors and reminders):
-   **☰ Settings → Google Calendar sync**, and follow its step-by-step guide in order. Publish the app,
+   **☰ Settings → Google Calendar API Sync**: ask Claude to set it up, or follow its guided setup in order. Publish the app,
    or add yourself as a test user, **before** pressing Connect. It needs the public `https://`
    address (check the spelling: Google sends you back to exactly this address).
 4. **Feeds → +** (it first asks for the public address), name it, then add:
-   - **Google Calendar**: kept in sync through Google Calendar sync when that's set up; otherwise a
+   - **Google Calendar**: kept in sync through Google Calendar API Sync when that's set up; otherwise a
      feed your Google account subscribes to (press **Add to Google Calendar**); or
    - **Apple, Outlook or another app**: a feed link (press **Add to Apple / Outlook**, or copy the
      link into any calendar app).
@@ -131,8 +131,8 @@ logins or setup codes lock an address out for 15 minutes.
   reloading the page). On the right: the **Time Zone** it's shown in (**TZ** when
   space is tight; on this page only, the feeds and Google keep `TZ`), **Month / Week / Day / List**, the **12h / 24h** switch,
   and **Print** (Print Preview, below). Click the title to jump to any month. Click an event to
-  open it; it stays open (also while the calendar is redrawn) until its **Close**. On the right of
-  its details: the bell (**reminders**: up to five, from "at the start" to "1 week before", sent to
+  open it; it stays open (also while the calendar is redrawn) until its **Close** (on the left). On
+  the right of its details: the **link** (opens the event at "Linked to"), the bell (**reminders**: up to five, from "at the start" to "1 week before", sent to
   Google and written into the feeds), **✎ Edit** (title, times, notes, or hide it), **duplicate**
   and **delete** (a source's own event is hidden instead, since the source would send it again).
   Click an empty spot on a day (or **+**) to add your own. The link icon on the event page links an
@@ -211,7 +211,7 @@ logins or setup codes lock an address out for 15 minutes.
     add them to another calendar, or delete them.
 - **Feeds** (**+** adds one; the first asks for the public address): what other apps subscribe to,
   independent of the calendars, as many as you like:
-  - **Google Calendar**: with **Google Calendar sync** set up (☰ Settings: the one Google sign-in for
+  - **Google Calendar**: with **Google Calendar API Sync** set up (☰ Settings: the one Google sign-in for
     all of them), a calendar of its own in Google, kept up to date within seconds, with your rule
     colors and reminders, and **Sync Now** in its header. Without it, a feed your Google account
     subscribes to (Google re-reads it every few hours and shows it in one color).
@@ -266,7 +266,7 @@ logins or setup codes lock an address out for 15 minutes.
   sync failing).
 - **☰ Settings** (a light blue panel): site settings only: the status-page login (with a show-password eye and a
   strength bar, like every password box), the public address, the **admin e-mail** (filled into the
-  Google setup guide), **Google Calendar sync** (laid out like a login, connected or not: Client ID
+  Google setup guide), **Google Calendar API Sync** (laid out like a login, connected or not: Client ID
   with Copy, Client secret, then ✓ Validated or ✓ Connected) and **Updates**, laid out
   like a module header: your release (stable or beta versions; only those are offered), when it last
   checked and the next check, and a status box with **Check now** (like Sync Now: **Checking…**, then
@@ -301,16 +301,29 @@ for access to **calendars it created** and your e-mail address, so it can't see 
 - Each event gets the nearest Google event color (Tomato, Basil, Peacock…) to its own color, its
   rules' color or its calendar's color; each calendar's name follows its destination's.
   Removing a destination leaves its calendar in Google unless you tick "Also delete it in Google".
-- Changes reach Google within seconds. A daily check (or **Sync Now** on a Google calendar) puts back events changed or
-  deleted in Google and makes a new calendar if it was deleted.
+- Changes reach Google within seconds. A daily check (or **Sync Now** on a Google calendar) also makes
+  a new calendar if it was deleted.
+- **Two-way**, for the calendars CalendarStream makes in Google only: a change made there comes back
+  here exactly as if it was made on the status page, so CCS+ itself is never touched. An edit of a
+  CCS+ (or other source's) event becomes an edit here; an edit of an event added here changes it; an
+  event added in Google goes into a CalendarStream (local) calendar that the Google calendar gets; a
+  deletion hides the event (an added one is deleted). A rule's events stay read-only: changed or
+  deleted in Google, they're put back. When both sides changed since the last sync, the newer change
+  wins (the other is noted in Activities and Logs). More than 3 deletions at once wait at the top of
+  Activities and Logs: **Hide them here too** or **Put them back in Google**. Repeating events made
+  in Google aren't copied yet.
 - **Instant updates from Google:** with a public `https://` address, CalendarStream asks Google to
-  notify it (a webhook to `/google/notify`) whenever one of its calendars changes there, and puts back
-  hand edits within seconds instead of at the daily check. Nothing to set up; it needs a valid
+  notify it (a webhook to `/google/notify`) whenever one of its calendars changes there, and brings
+  the changes here within seconds instead of at the daily check. Nothing to set up; it needs a valid
   certificate, and your proxy must let Google's POSTs to `/google/notify` through without a login.
   Without it, the daily check carries on as before.
 
-**Setup:** the Google Calendar Autosync box has a step-by-step guide to creating a free OAuth client in Google
-Cloud. Paste its client ID and secret (checked with Google straight away), then **Connect**. Google
+**Setup:** ☰ Settings → **Google Calendar API Sync** offers two ways to create the free OAuth client
+in Google Cloud: **Set it up with Claude** (a request to copy into a chat with Claude, which does the
+steps in your own signed-in browser through Claude in Chrome or the Claude desktop app's built-in
+browser), or the **Guided setup** (each Google page opens in a window beside CalendarStream, with Copy
+buttons; steps tick themselves off when CalendarStream can confirm them). Once it works, the group is
+just a module header (account, last sync, Connected over Sync Now) with the details under Expand. Paste its client ID and secret (checked with Google straight away), then **Connect**. Google
 warns it "hasn't verified this app" because it's your own: press **Continue** (or **Advanced → Go to
 CalendarStream**), tick the calendar box and press **Continue**. The guide ends with a list of
 Google's error messages and what to do about each.

@@ -660,7 +660,57 @@ class Google:
 
     # --- Keeping the events in step -------------------------------------------------------
 
-    async def sync(self, sid: str, events: list, name: str, color_for, first_day: date, full: bool = False) -> SyncResult:
+    # --- Two-way (0.2.8-beta.10): what changed in Google ------------------------------------
+
+    async def pull(self, sid: str, first_day: date) -> list[dict]:
+        """What was changed in the Google calendar CalendarStream made for a destination since it was
+        last written: CalendarStream's events edited or deleted there, and events added there. Only
+        CalendarStream's own calendar is read; nothing is changed here (main.apply_google_changes does)."""
+        info = self.cal_info(sid)
+        calendar_id = info.get("calendar_id")
+        if not calendar_id or info.get("synced_calendar") != calendar_id:
+            return []
+        tz = ZoneInfo(self.tz_name)
+        cal = f"/calendars/{_quote(calendar_id)}"
+        rows = self.store.google_rows(sid)
+        by_gid = {row["google_id"]: (uid, row) for uid, row in rows.items()}
+        found, page = {}, None
+        start = datetime.combine(first_day, datetime.min.time(), tz).isoformat()
+        while True:
+            params = {"timeMin": start, "showDeleted": "true", "maxResults": "2500"}
+            if page:
+                params["pageToken"] = page
+            data = await self.api("GET", f"{cal}/events", params=params, ok_missing=True)
+            if data is None:
+                return []
+            for ev in data.get("items", []):
+                found[ev["id"]] = ev
+            page = data.get("nextPageToken")
+            if not page:
+                break
+        out = []
+        for gid, ev in found.items():
+            mine = (ev.get("extendedProperties") or {}).get("private", {}).get(MARKER) == "1"
+            if mine:
+                if gid not in by_gid:
+                    continue
+                uid, row = by_gid[gid]
+                if ev.get("status") == "cancelled":
+                    out.append({"kind": "deleted", "uid": uid, "gid": gid})
+                elif _needs_repair(ev, row["synced_at"]):
+                    out.append({"kind": "edited", "uid": uid, "gid": gid, "synced_at": row["synced_at"], **google_fields(ev)})
+            elif ev.get("status") != "cancelled" and not ev.get("recurringEventId"):
+                out.append({"kind": "created", "gid": gid, "repeats": bool(ev.get("recurrence")), **google_fields(ev)})
+        return out
+
+    async def delete_event(self, sid: str, gid: str):
+        """Delete one event from a destination's Google calendar (one added there, once it's copied in)."""
+        calendar_id = self.cal_info(sid).get("calendar_id")
+        if calendar_id:
+            await self.api("DELETE", f"/calendars/{_quote(calendar_id)}/events/{gid}", ok_missing=True)
+
+    async def sync(self, sid: str, events: list, name: str, color_for, first_day: date, full: bool = False,
+                   hold: set | frozenset = frozenset()) -> SyncResult:
         """Write a destination's events (from its sources) to its calendar in Google.
 
         `events` are the published events (calsync.Event); hidden ones are left out. `color_for(event)`
@@ -679,7 +729,7 @@ class Google:
                 self.store.google_forget(source=sid)
                 self._update_cal(sid, synced_calendar=calendar_id)
         try:
-            return await self._sync(sid, calendar_id, events, name, color_for, first_day, tz, full, result)
+            return await self._sync(sid, calendar_id, events, name, color_for, first_day, tz, full, result, hold)
         except CalendarMissing:
             # Deleted in Google since the last check: make a new one and write everything again.
             self._update_cal(sid, calendar_id=None, synced_calendar=None)
@@ -687,9 +737,9 @@ class Google:
             self.store.google_forget(source=sid)
             self._update_cal(sid, synced_calendar=calendar_id)
             result = SyncResult(notes=[f"the calendar {name} was missing in Google, so a new one was made"])
-            return await self._sync(sid, calendar_id, events, name, color_for, first_day, tz, True, result)
+            return await self._sync(sid, calendar_id, events, name, color_for, first_day, tz, True, result, hold)
 
-    async def _sync(self, sid, calendar_id, events, name, color_for, first_day, tz, full, result) -> SyncResult:
+    async def _sync(self, sid, calendar_id, events, name, color_for, first_day, tz, full, result, hold=frozenset()) -> SyncResult:
         cal = f"/calendars/{_quote(calendar_id)}"
         if self.cal_info(sid).get("calendar_name") != name:          # keep the name in step
             if await self.api("PATCH", cal, body={"summary": name}, ok_missing=True) is None:
@@ -703,6 +753,9 @@ class Google:
         writes = 0
 
         for uid, e in wanted.items():
+            if uid in hold:              # deleted in Google, waiting for the person to choose: left as it is
+                result.unchanged += 1
+                continue
             color = color_for(e)
             body = event_body(e, self.tz_name, nearest_color_id(color) if color else "")
             digest, gid, row = _hash(body), body["id"], rows.get(uid)
@@ -777,6 +830,20 @@ class Google:
                 raise CalendarMissing()
         except Conflict:
             await self.api("PUT", f"{cal}/events/{gid}", body=body)
+
+
+def google_fields(ev: dict) -> dict:
+    """A Google event's title, times, place and notes, as CalendarStream keeps them."""
+    start, end = ev.get("start") or {}, ev.get("end") or {}
+    all_day = "date" in start
+    notes = (ev.get("description") or "")
+    if notes.endswith(SYNC_NOTE):
+        notes = notes[: -len(SYNC_NOTE)]
+    return {"title": (ev.get("summary") or "")[:200], "all_day": all_day,
+            "start": start.get("date") if all_day else start.get("dateTime", ""),
+            "end": end.get("date") if all_day else end.get("dateTime", ""),
+            "location": (ev.get("location") or "").strip()[:200], "description": notes.strip()[:4000],
+            "at": ev.get("updated", "")}
 
 
 def _needs_repair(remote: dict | None, synced_at) -> bool:

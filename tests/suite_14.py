@@ -50,7 +50,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     save("test-client.apps.googleusercontent.com", "test-secret")
     ck = main.google.client_check(); p = c.get("/", auth=A).text
     ok(ck.get("ok") is True and "✓" in p and "Google accepted the client ID and secret" in p, "right ID + secret → accepted")
-    ok(p.index('action="/google/client"') < p.index('How to get a client ID and secret') and '<details class="guide" open>\n  <summary>How to get a client ID' not in p, "form above the guide; guide closed")
+    ok(p.index('action="/google/client"') < p.index('Guided setup: a client ID and secret') and '<details class="guide gsteps" open' not in p, "form above the guide; guide closed")
     save("test-client.apps.googleusercontent.com", "wrong")
     p = c.get("/", auth=A).text
     ok(main.google.client_check().get("ok") is False and "Google rejected the client secret" in p and "disabled title" in p, "wrong secret → rejected, Connect disabled")

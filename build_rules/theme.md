@@ -58,5 +58,11 @@ one here.
   out like a login, connected or not.
 - Adding something (+ Add a calendar…) ends with the standard Cancel | Save pair, like editing it.
 - After an update the page reloads, so the new version's script and stylesheet run its parts.
+- Expand / Close lines: ▸ Expand ◂ points at the words; Close's triangles point up.
+- Pop-ups: a dark backdrop (rgba(0,0,0,.55)) that keeps the page in view, and a 200 ms fade and
+  scale-up (none with reduced motion). Every Cancel | Save, pop-ups included, is the 130 × 34 pair.
+- An opened event: Close on the left, its icons (link, reminders, edit, duplicate, delete) on the right.
+- Events show the color Google shows: their own, their rule's, else their calendar's.
+- Rule lines say what the rule does, titled or not ("Items without an end time → Change length to 1:00").
 - A rule's color is one of Google Calendar's 11 event colors; rule lines read "Color ■ (Name)".
 - Light is the Soft palette (warm off-white, muted blue accent), still named Light with its icon.

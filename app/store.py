@@ -186,6 +186,13 @@ class Store:
         with self.pool.connection() as c:
             c.execute("DELETE FROM event_edits WHERE uid = %s", (uid,))
 
+    def changed_at(self, uid: str):
+        """When an event was last changed on the status page (its edit, or the added event), or None."""
+        with self.pool.connection() as c:
+            r = c.execute("SELECT max(t) FROM (SELECT updated_at AS t FROM event_edits WHERE uid = %s "
+                          "UNION ALL SELECT updated_at FROM custom_events WHERE uid = %s) x", (uid, uid)).fetchone()
+        return r[0] if r else None
+
     def get_customs(self) -> list[dict]:
         with self.pool.connection() as c:
             rows = c.execute("SELECT uid, data FROM custom_events ORDER BY created_at").fetchall()

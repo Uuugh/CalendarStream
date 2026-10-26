@@ -10,6 +10,26 @@
 <body>{{ icon_sprite() }}{% import "_macros.html" as m with context %}
   {# (?): an explanation that shows on hover, on focus, or when clicked; raised like a superscript right
      after the word it explains (F1.2). `text` may hold <b>. #}
+  {# Google Calendar API Sync's details once connected (0.2.8-beta.9/10): laid out like a login (the Client ID
+     with Copy, the Client secret saved, ✓ Connected), then the account and calendars, and Disconnect. #}
+  {% macro gdetails() -%}
+  {% set g = google %}
+  <form class="gconnwrap" onsubmit="return false"><div class="pair gconn">
+    <label class="fld" for="gcid"><span>{{ _('Client ID') }}</span>
+      <span class="inbox"><input type="text" class="code" id="gcid" value="{{ g.client_id }}" readonly spellcheck="false"><button type="button" class="inboxbtn copybtn" onclick="copyField('gcid', this)" title="{{ _('Copy') }}" aria-label="{{ _('Copy the Client ID') }}">{{ icon("content_copy", 15) }}</button></span></label>
+    <label class="fld" for="gcsecret"><span>{{ _('Client secret') }}</span>
+      <input type="password" id="gcsecret" readonly placeholder="{{ _('Saved') }}" title="{{ _('Saved encrypted; it’s never shown again. Disconnect to change the client.') }}"></label>
+    <span class="okslot" data-state="ok"><span class="okmark">{{ icon("check_circle", 15) }}{{ _('Connected') }}</span></span>
+  </div></form>
+  {{ m.google_connected(g, "", "f") }}
+  <p class="mnote">{{ _('Events within each Google calendar’s dates are copied, with only the reminders set here (the bell on an event). If you also subscribed to a feed in Google, remove that calendar there, or you’ll see everything twice.') }}</p>
+  <p class="mnote">{{ _('<b>Two-way:</b> changes made in these Google calendars come back here, as if made on this page (CCS+ is never changed): an edit becomes an edit, an event added in Google goes into a CalendarStream calendar, a deleted one is hidden. A rule’s events can’t be changed there. When both sides changed, the newer change wins; more than 3 deletions at once wait for you in Activities and Logs.') }}</p>
+  <form method="post" action="/google/disconnect" class="disconnectform btnrow" data-swap="#googlesync|#destinations|#activity">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label class="mnote" style="flex:1 1 240px;margin:0;text-align:right"><input type="checkbox" name="delete" value="1"> {{ _('Also delete these calendars in Google') }}</label>
+    <button class="ghost">{{ _('Disconnect') }}</button>
+  </form>
+  {%- endmacro %}
   {# A module's note (0.2.8-beta.9): a raised (i) after its name, shown on hover or click, only when there is one #}
   {% macro notedot(text) -%}
   <span class="helpdot notedot" tabindex="0" role="button" aria-label="{{ _('Note') }}" aria-expanded="false">{{ icon("info", 15) }}<span class="helptip" role="tooltip">{{ text }}</span></span>
@@ -142,29 +162,51 @@
         {% elif gvalid %}{% set gcls, glabel = "warn", _('Ready to connect') %}
         {% else %}{% set gcls, glabel = "warn", _('Not set up') %}{% endif %}
         <div class="mgroup" id="googlesync">
-          <div class="mhead">{{ _('Google Calendar sync') }}{{ help(_('Optional. With it, a Google calendar in Feeds is kept up to date by CalendarStream itself: changes within seconds, your rule colors and reminders. Without it, Google subscribes to a feed link instead (it refreshes every few hours, in one color).'), 'left') }}
-            {% if not g.connected or gcls != 'good' %}<span class="gstate">{{ chip(gcls, glabel) }}</span>{% endif %}</div>
+        {% if g.connected and gcls == 'good' %}
+          {# Working (0.2.8-beta.10): only a module header, like Updates (the account; the last sync and
+             instant updates; Connected over Sync Now), the details under Expand. #}
+          <div class="module bare cfgbox{% if sections.googlesync %} cfgopen{% endif %}" data-section="googlesync">
+            <div class="srchead">
+              <div class="srcleft">
+                <div class="namebox srcname">{{ _('Google Calendar API Sync') }}</div>
+                <div class="namebox srcnote" title="{{ g.info.email }}">{{ g.info.email or _('your Google account') }}</div>
+              </div>
+              <div class="srcright">
+                <p class="srcstatus">{% if g.last_sync %}{{ _('Last synced <b>{when}</b>', when=g.last_sync) }}{% else %}&nbsp;{% endif %}</p>
+                <p class="srcnext">{{ _('Instant updates on') if g.watch.on else _('Instant updates off') }}</p>
+              </div>
+              <div class="statusbox good">{{ chip('good', _('Connected')) }}{{ syncbtn("/google/sync", "google", g.running) }}</div>
+            </div>
+            <div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if sections.googlesync else 'false' }}" aria-controls="cfg-googlesync">{{ icon("arrow_right", 18, "arr l") }}<span class="expandword"><span class="long">{{ _('Expand for Details') }}</span><span class="short">{{ _('Expand') }}</span></span><span class="closeword">{{ _('Close') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>
+            <div class="cfgbody" id="cfg-googlesync"{% if not sections.googlesync %} hidden{% endif %}>
+              {{ gdetails() }}
+            </div>
+          </div>
+        {% else %}
+          <div class="mhead">{{ _('Google Calendar API Sync') }}{{ help(_('Optional. With it, a Google calendar in Feeds is kept up to date by CalendarStream itself: changes within seconds, your rule colors and reminders. Without it, Google subscribes to a feed link instead (it refreshes every few hours, in one color).'), 'left') }}
+            <span class="gstate">{{ chip(gcls, glabel) }}</span></div>
           {% if g.info.last_error %}<p class="merr">{{ msg(g.info.last_error) }}</p>{% endif %}
-          {% if g.connected %}
-            {# Connected (0.2.8-beta.9): laid out like a login, as before connecting: the Client ID (with
-               Copy) and the Client secret (saved, never shown again), then the state; Disconnect under them. #}
-            <form class="gconnwrap" onsubmit="return false"><div class="pair gconn">
-              <label class="fld" for="gcid"><span>{{ _('Client ID') }}</span>
-                <span class="inbox"><input type="text" class="code" id="gcid" value="{{ g.client_id }}" readonly spellcheck="false"><button type="button" class="inboxbtn copybtn" onclick="copyField('gcid', this)" title="{{ _('Copy') }}" aria-label="{{ _('Copy the Client ID') }}">{{ icon("content_copy", 15) }}</button></span></label>
-              <label class="fld" for="gcsecret"><span>{{ _('Client secret') }}</span>
-                <input type="password" id="gcsecret" readonly placeholder="{{ _('Saved') }}" title="{{ _('Saved encrypted; it’s never shown again. Disconnect to change the client.') }}"></label>
-              <span class="okslot" data-state="ok"><span class="okmark" title="{{ glabel }}">{{ icon("check_circle", 15) }}{{ _('Connected') }}</span></span>
-            </div></form>
-            {{ m.google_connected(g, name, "f") }}
-            <p class="mnote">{{ _('Events within each Google calendar’s dates are copied, with only the reminders set here (the bell on an event). If you also subscribed to a feed in Google, remove that calendar there, or you’ll see everything twice.') }}</p>
-            <form method="post" action="/google/disconnect" class="disconnectform btnrow" data-swap="#googlesync|#destinations|#activity">
-              <input type="hidden" name="csrf" value="{{ csrf }}">
-              <label class="mnote" style="flex:1 1 240px;margin:0;text-align:right"><input type="checkbox" name="delete" value="1"> {{ _('Also delete these calendars in Google') }}</label>
-              <button class="ghost">{{ _('Disconnect') }}</button>
-            </form>
-          {% else %}
-            {{ m.google_client(g, "f") }}
+          {% if g.connected %}{{ gdetails() }}{% endif %}
+          {% if not gvalid or g.info.last_error %}
+            {# Missing or not working (0.2.8-beta.10): two ways to get a client: Claude does the Google Cloud
+               steps in the person's own browser, or the guided setup below (each step in a window beside
+               this one, ticking itself off when CalendarStream can confirm it). #}
+            <div class="gassist">
+              <div class="gway">
+                <div class="gwayhead">{{ icon("smart_toy", 18) }} {{ _('Set it up with Claude') }}</div>
+                <p class="mnote">{{ _('Claude can do the Google Cloud steps for you in your own signed-in browser (Claude in Chrome, or the Claude desktop app’s built-in browser); you only confirm what Google asks you to. Copy this request into a chat with Claude:') }}</p>
+                <div class="feed gask"><textarea id="gclaude" class="code" readonly rows="4">{{ _('Please set up Google Calendar API Sync for my CalendarStream at {public} in my browser. In Google Cloud Console: create a project named CalendarStream; enable the Google Calendar API; set up Google Auth Platform (app name CalendarStream, audience External, support and contact e-mail {email}) and publish the app, or add {email} as a test user; under Data access add the scope https://www.googleapis.com/auth/calendar.app.created; create an OAuth client (Web application, name CalendarStream) with the authorized redirect URI {redirect}. Then open {public}/?menu=settings#googlesync, paste the Client ID and Client secret into Google Calendar API Sync, press Save, then Connect Google Calendar. Ask me before anything Google asks me to confirm.', public=public.url or public.here, email=g.admin_email or _('my Gmail address'), redirect=g.redirect_uri) }}</textarea>{{ m.copybtn("gclaude") }}</div>
+                <p class="mnote">{{ _('No browser linked to Claude? Add Claude in Chrome (the browser extension), or open the chat in the Claude desktop app, which has a built-in browser.') }}</p>
+              </div>
+              <div class="gway">
+                <div class="gwayhead">{{ icon("checklist", 18) }} {{ _('Guided setup') }}</div>
+                <p class="mnote">{{ _('Each Google page opens in a window beside this one, with Copy buttons for what to paste. Steps tick themselves off when CalendarStream can confirm them; tick the others as you finish them.') }}</p>
+                <button type="button" class="ghost gstart" onclick="var g = document.querySelector('#googlesync details.gsteps'); if (g) { g.open = true; g.scrollIntoView({ behavior: 'smooth', block: 'start' }); }">{{ _('Start the guided setup') }}</button>
+              </div>
+            </div>
           {% endif %}
+          {% if not g.connected %}{{ m.google_client(g, "f") }}{% endif %}
+        {% endif %}
         </div>
 
         {# Check for updates: how often, for this install's channel (beta or stable) only. #}
@@ -268,7 +310,8 @@
   {# One event on the calendar: its title line, and its details (with Edit, Duplicate and Delete) when clicked. #}
   {% macro evitem(it) -%}
         {% set e = it.e %}
-        {% set tc = it.tag_color or (it.src_color if e.origin == 'united' else '') %}
+        {# its color as Google shows it (0.2.8-beta.10): its own or its rule's, else its calendar's #}
+        {% set tc = it.tag_color or it.src_color or '#1d4ed8' %}
         <details data-uid="{{ e.uid }}" class="ev{% if e.all_day %} allday{% endif %}{% if e.origin in ('custom', 'rule') %} custom{% endif %}{% if e.hidden %} hidden{% endif %}{% if tc %} tint{% endif %}"{% if tc %} style="--cal:{{ tc }}"{% endif %}>
           <summary title="{{ e.title }}{% if e.hidden %} ({{ _('hidden from Google') }}){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if e.stale %}<span class="mark" title="{{ _('United changed this since your edit') if e.source == 'ccs' else _('The feed changed this since your edit') }}">{{ icon("warning", 13) }}</span>{% elif e.edited %}<span class="mark" title="{{ _('Edited here') }}">{{ icon("edit", 13) }}</span>{% elif e.origin == 'rule' %}<span class="mark" title="{{ _('Added by a rule') }}">{{ icon("subdirectory_arrow_right", 13) }}</span>{% endif %}{% if e.alarms %}<span class="mark" title="{{ _('Has reminders') }}">{{ icon("alarm_on", 13) }}</span>{% endif %}</summary>
           <div class="body"><b>{{ e.title }}</b>
@@ -283,14 +326,14 @@
 {{ src_names.get(e.source, '') }}{% endif %}{% if e.description %}
 
 {{ e.description }}{% endif %}
-<span class="evtools" data-origin="{{ e.origin }}"{% if e.hidden %} data-hidden="1"{% endif %} data-alarms="{{ e.alarms }}"></span></div>
+<span class="evtools" data-origin="{{ e.origin }}"{% if e.hidden %} data-hidden="1"{% endif %}{% if e.uid in linked %} data-linked="1"{% endif %} data-alarms="{{ e.alarms }}"></span></div>
         </details>
   {%- endmacro %}
 
   <div class="card" id="cal">
   {# An event's tools (Close, reminders, edit, duplicate, delete), made from this when it's opened
      (0.2.8-beta.4): once here instead of in every event, which made up most of the calendar's size. #}
-  <template id="evtoolstpl" data-month="{{ cal.month }}" data-del-custom="{{ _('Delete this event?') }}" data-del-source="{{ _('Delete this event from your destinations? Its source would send it again, so it’s hidden instead (Edit → untick Hide to bring it back).') }}"><button type="button" class="linkbtn evclose">{{ _('Close') }}</button><button type="button" class="evicon evalarm" data-uid="" data-alarms="" title="{{ _('Reminders') }}" aria-label="{{ _('Reminders') }}">{{ icon("alarm", 17) }}</button><a class="evicon evedit" href="" title="{{ _('Edit') }}" aria-label="{{ _('Edit') }}">{{ icon("edit", 17) }}</a><a class="evicon evcopy" href="" title="{{ _('Duplicate') }}" aria-label="{{ _('Duplicate') }}">{{ copy_icon }}</a><form method="post" action="/event/delete" class="evdel" data-swap="#cal|#activity" data-confirm=""><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="uid" value=""><input type="hidden" name="month" value="{{ cal.month }}"><button class="evicon" title="{{ _('Delete') }}" aria-label="{{ _('Delete') }}">{{ trash }}</button></form></template>
+  <template id="evtoolstpl" data-month="{{ cal.month }}" data-del-custom="{{ _('Delete this event?') }}" data-del-source="{{ _('Delete this event from your destinations? Its source would send it again, so it’s hidden instead (Edit → untick Hide to bring it back).') }}"><button type="button" class="linkbtn evclose">{{ _('Close') }}</button><span class="evicons"><a class="evicon evlinkto" href="" title="{{ _('Link to another event (move or delete with it)') }}" aria-label="{{ _('Link to another event') }}">{{ icon("link", 17) }}</a><button type="button" class="evicon evalarm" data-uid="" data-alarms="" title="{{ _('Reminders') }}" aria-label="{{ _('Reminders') }}">{{ icon("alarm", 17) }}</button><a class="evicon evedit" href="" title="{{ _('Edit') }}" aria-label="{{ _('Edit') }}">{{ icon("edit", 17) }}</a><a class="evicon evcopy" href="" title="{{ _('Duplicate') }}" aria-label="{{ _('Duplicate') }}">{{ copy_icon }}</a><form method="post" action="/event/delete" class="evdel" data-swap="#cal|#activity" data-confirm=""><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="uid" value=""><input type="hidden" name="month" value="{{ cal.month }}"><button class="evicon" title="{{ _('Delete') }}" aria-label="{{ _('Delete') }}">{{ trash }}</button></form></span></template>
     {% set step = {"month": (_('Previous month'), _('Next month')), "week": (_('Previous week'), _('Next week')), "day": (_('Previous day'), _('Next day')), "list": (_('Previous month'), _('Next month'))}[cal.view] %}
     <div class="calhead">
       <a class="navbtn" href="?date={{ cal.prev }}" title="{{ step[0] }}" aria-label="{{ step[0] }}">{{ icon("chevron_left", 20) }}</a>
@@ -357,7 +400,7 @@
     {% endif %}
     <div class="legend">
       {# The key: each calendar in its color (when it has one), then "Added here", then the rules' colors. #}
-      {% for x in srcs %}<span style="--sw:color-mix(in srgb, {{ x.color or '#1d4ed8' }} 18%, var(--card))">{{ x.name }}</span>{% endfor %}<span style="--sw:var(--custom)">{{ _('Added here') }}</span>{% for r in all_rules if r.used %}{% for a in r.actions if a.type == 'color' %}<span style="--sw:color-mix(in srgb, {{ a.color }} 18%, var(--card))">{{ r.title or (r.conds[0].value if r.conds and r.conds[0].type == 'text' else r.label) }}</span>{% endfor %}{% endfor %}
+      {% for x in srcs %}<span style="--sw:color-mix(in srgb, {{ x.color or '#1d4ed8' }} 18%, var(--card))">{{ x.name }}</span>{% endfor %}{% for r in all_rules if r.used %}{% for a in r.actions if a.type == 'color' %}<span style="--sw:color-mix(in srgb, {{ a.color }} 18%, var(--card))">{{ r.title or (r.conds[0].value if r.conds and r.conds[0].type == 'text' else r.label) }}</span>{% endfor %}{% endfor %}
       <span class="legendkey" style="--sw:transparent">{{ icon("edit", 14) }} {{ _('edited') }} · {{ icon("warning", 14) }} {{ _('United changed it since') }} · <s>{{ _('struck') }}</s> {{ _('hidden from Google') }}</span>
       {{ help(_('This is the schedule as it’s sent to Google Calendar. Click an event for details or to edit it; click an empty spot on a day (or +) to add one. Changes here never affect CCS+.'), 'right') }}
     </div>
@@ -637,7 +680,7 @@
           <input type="text" id="destname" name="name" class="solo" value="" maxlength="100" placeholder="{{ _('How your calendar will be titled via stream') }}">
           <div class="opt"><div><b>{{ _('Google Calendar') }}</b>
             <div class="subtitle">{% if google.configured %}{{ _('A calendar of its own in your Google account, kept up to date by CalendarStream: changes within seconds, in your rules’ colors, with reminders.') }}
-              {% else %}{{ _('A feed your Google account subscribes to (Google refreshes it every few hours, in one color). Set up Google Calendar sync in ☰ Settings for changes within seconds, colors and reminders.') }}{% endif %}</div></div>
+              {% else %}{{ _('A feed your Google account subscribes to (Google refreshes it every few hours, in one color). Set up Google Calendar API Sync in ☰ Settings for changes within seconds, colors and reminders.') }}{% endif %}</div></div>
             <button name="type" value="google">{{ _('Add') }}</button></div>
           <div class="opt"><div><b>{{ _('Apple, Outlook or another app') }}</b>
             <div class="subtitle">{{ _('A feed link any calendar app can subscribe to, and a page to share it.') }}</div></div>
@@ -708,7 +751,7 @@
           <a class="btn2" href="{{ d.links.page }}" target="_blank">{{ _('Open subscribe page') }}</a>
           {{ help(_('<b>Add to Google Calendar</b> subscribes your signed-in Google account in one click; Google re-reads it on its own schedule (up to 12 hours), keeps the first name it saw and shows it in one color. <b>Add to Apple / Outlook</b> opens your computer’s or phone’s calendar app. <b>Open subscribe page</b>: a page to share with anyone who should see this calendar (no login needed).')) }}
         </div>
-        {% if d.for == 'google' and not g.configured %}<p class="mnote">{{ icon("info", 14) }} {{ _('For your rule colors, reminders and updates within seconds, set up <b>Google Calendar sync</b> in ☰ Settings, then add a Google Calendar again with +.') }}</p>{% endif %}
+        {% if d.for == 'google' and not g.configured %}<p class="mnote">{{ icon("info", 14) }} {{ _('For your rule colors, reminders and updates within seconds, set up <b>Google Calendar API Sync</b> in ☰ Settings, then add a Google Calendar again with +.') }}</p>{% endif %}
         <div class="k">{{ _('Feed link') }}{{ help(_('For any other calendar app, or if a button doesn’t work: copy this link and paste it where the app subscribes to a calendar from a URL (Google Calendar: Other calendars → + → From URL).')) }}</div>
         {{ m.copyfield("feed-" ~ d.id, d.feed) }}
         {% if not d.links.is_public %}<p class="warnline">{{ _('⚠ This isn’t a public HTTPS address yet, so Google can’t load the feed. Set the <b>Public address</b> in Settings (☰).') }}</p>{% endif %}
@@ -730,7 +773,7 @@
       </div>
       {% else %}
       <p class="mnote">{% if d.cal.calendar_id %}{{ _('In Google as <b>{name}</b>', name=d.cal.calendar_name or d.name) }}
-        {% elif g.connected %}{{ _('The calendar is made at the next sync.') }}{% else %}{{ _('Made in Google once Google Calendar sync is connected (☰ Settings).') }}{% endif %}</p>
+        {% elif g.connected %}{{ _('The calendar is made at the next sync.') }}{% else %}{{ _('Made in Google once Google Calendar API Sync is connected (☰ Settings).') }}{% endif %}</p>
       {% endif %}
 
       {# The bottom line, as in a calendar: Remove on the left (asks first), Cancel and Save on the right. #}
@@ -838,6 +881,16 @@
       {% if history %}<span class="peek latest" title="{{ msg(history[0].msg) }}">{{ _('Latest:') }} {{ msg(history[0].msg) }}</span>{% endif %}
       <div class="statusbox {{ 'good' if healthy else 'bad' }}">{{ chip('good' if healthy else 'bad', _('Healthy') if healthy else _('Unhealthy')) }}</div>
     </div>
+    {% if google_held %}
+    {# Deleted in Google, more than a few at once (0.2.8-beta.10): kept until the person chooses #}
+    <form method="post" action="/google/held" class="heldbox" data-swap="#activity|#cal|#destinations">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <p>{{ icon("warning", 16) }} <b>{{ _('{n} events were deleted in Google at once.', n=google_held|length) }}</b>
+        {{ _('They stay in Google and here until you choose:') }}</p>
+      <ul>{% for uid, h in google_held.items() %}<li>{{ h.title }} <span class="muted">{{ h.start[:10] }}</span></li>{% endfor %}</ul>
+      <div class="btnrow"><button class="ghost" name="action" value="restore">{{ _('Put them back in Google') }}</button><button name="action" value="hide">{{ _('Hide them here too') }}</button></div>
+    </form>
+    {% endif %}
     {{ sectionline("activity", sections.activity) }}
     <div class="sbody" id="activity-body"{% if not sections.activity %} hidden{% endif %}>
     {# One line per source, then Google. #}

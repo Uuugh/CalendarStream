@@ -31,7 +31,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     d = main.destinations()[-1]
     ok(d["type"] == "feed" and d["for"] == "google", "+ Google Calendar without Google Calendar sync: a feed for Google")
     p0 = c.get("/").text
-    ok("set up <b>Google Calendar sync</b>" in p0, "…which points to Google Calendar sync in Settings")
+    ok("set up <b>Google Calendar API Sync</b>" in p0, "…which points to Google Calendar sync in Settings")
     wid = seed.demo(c, csrf, main)
     p = c.get("/").text
     # caching: the stylesheet and script are files
@@ -61,7 +61,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # Google Calendar sync in Settings
     ok('id="dest-google"' not in p and 'id="googlesync"' in p and p.index('id="googlesync"') < p.index("</header>") and 'action="/google/client"' in p.split('id="googlesync"')[1][:20000],
        "Google Calendar sync is in Settings, not in Feeds")
-    ok("Google Calendar Feed" in p and "Add to Apple / Outlook" in p and "set up <b>Google Calendar sync</b>" not in p, "the Google feed's module; no pointer once Google Calendar sync is set up")
+    ok("Google Calendar Feed" in p and "Add to Apple / Outlook" in p and "set up <b>Google Calendar API Sync</b>" not in p, "the Google feed's module; no pointer once Google Calendar sync is set up")
     sub = p[p.index(f'id="dest-{d["id"]}"'):]; sub = sub[:sub.index('class="srcfoot"')]
     ok(sub.index("Add to Google Calendar") < sub.index("Add to Apple / Outlook") < sub.index("Feed link"), "…Add to Google Calendar first, the feed link last")
     main.store.set("google_client", {"id": "123-abc.apps.googleusercontent.com", "secret": main.google._seal("s"),

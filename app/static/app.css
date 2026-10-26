@@ -90,7 +90,7 @@
   .section > .shead .toggle { display:inline-flex; align-items:center; gap:8px; background:transparent; color:var(--muted);
                               border:0; padding:0; font:inherit; cursor:pointer }
   .section > .shead .toggle::before { transition:transform .15s }
-  .section.open > .shead .toggle::before { transform:rotate(90deg) }
+  .section.open > .shead .toggle::before { transform:rotate(-90deg) }
   .section.open > .shead { margin-bottom:14px }
   .section > .sbody[hidden] { display:none }
   .section .peek { font-size:13px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 }
@@ -590,7 +590,6 @@
   .debuglinks .k { margin:0 }
   /* Report a problem / Suggest a feature */
   #reportdialog { border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); color:var(--text); padding:18px; width:min(620px, calc(100vw - 32px)) }
-  #reportdialog::backdrop { background:rgba(0,0,0,.45) }
   #reportdialog .title { font-weight:700; font-size:16px }
   #reportdialog .lbl { display:block; font-size:12px; color:var(--muted); font-weight:600; margin:12px 0 4px }
   #reportdialog input[type=text], #reportdialog textarea { width:100%; font:inherit; font-size:14px; padding:6px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
@@ -697,7 +696,7 @@
   .cfgline .cfgtoggle:hover { color:var(--accent) }
   .cfgtoggle .arr { color:var(--muted); transition:transform .15s }
   .cfgtoggle .arr.r { transform:rotate(180deg) }
-  .cfgtoggle[aria-expanded="true"] .arr { transform:rotate(90deg) }
+  .cfgtoggle[aria-expanded="true"] .arr { transform:rotate(-90deg) }      /* Close: the triangles point up (0.2.8-beta.10) */
   .module .cfgbody { margin-top:5px }
   @container (max-width:540px) {
     .module .srchead .long { display:none } .module .srchead .short { display:inline }
@@ -778,7 +777,13 @@
                  max-height:calc(100vh - 32px); overflow:auto }
   dialog.popup.big { width:min(980px, calc(100vw - 32px)); height:calc(100vh - 48px); display:flex; flex-direction:column; gap:5px }
   dialog.popup:not([open]) { display:none }
-  dialog.popup::backdrop { background:rgba(0,0,0,.45) }
+  /* Pop-ups (0.2.8-beta.10): a dark backdrop that keeps the page in view, and a 200 ms fade and scale-up */
+  dialog.popup::backdrop, #reportdialog::backdrop { background:rgba(0,0,0,.55) }
+  dialog.popup[open], #reportdialog[open] { animation:popin .2s ease-out }
+  dialog.popup[open]::backdrop, #reportdialog[open]::backdrop { animation:popfade .2s ease-out }
+  @keyframes popin { from { opacity:0; transform:scale(.96) } to { opacity:1; transform:none } }
+  @keyframes popfade { from { opacity:0 } to { opacity:1 } }
+  @media (prefers-reduced-motion:reduce) { dialog.popup[open], #reportdialog[open], dialog.popup[open]::backdrop, #reportdialog[open]::backdrop { animation:none } }
   .dlghead { display:flex; align-items:center; gap:5px; margin:0 0 5px }
   .dlghead .title { font-weight:700; font-size:18px }
   .dlgback { width:34px; height:34px; padding:0 }
@@ -850,6 +855,9 @@
   .rdmsg { text-align:left }
   /* Events: Close on the left; the bell, ✎, copy and the bin on the right (F2.2) */
   .ev .evtools .evclose { margin-right:auto; font-weight:600 }
+  /* (0.2.8-beta.10) the icons on the right, on a line of their own when the event is narrow */
+  .ev .evtools { flex-wrap:wrap; justify-content:space-between; row-gap:2px }
+  .ev .evtools .evicons { display:inline-flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:2px; margin-left:auto; max-width:100% }
   .ev .evtools .evicon.on { color:var(--accent) }
   .alarmpop { position:absolute; z-index:40; width:240px; padding:12px; border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); box-shadow:0 10px 30px rgba(0,0,0,.2) }
   .alarmpop .title { display:flex; align-items:center; font-weight:700; font-size:14px; margin-bottom:5px }
@@ -917,3 +925,23 @@
 #rules .rulelist > .ruleline > .handle { flex-basis:14px; width:14px }
 #rules .rulelist > .ruleline > .handle .hmove { width:14px }
 .gconnwrap { margin-bottom:6px }
+
+/* Settings → Google Calendar API Sync (0.2.8-beta.10): the two ways to set it up, and the guided steps */
+.menu .gassist { display:grid; gap:5px; margin:6px 0 }
+.menu .gway { border:1px solid var(--line); border-radius:var(--r); padding:8px 10px; background:var(--bg) }
+.menu .gwayhead { display:flex; align-items:center; gap:6px; font-weight:700; font-size:13.5px; margin-bottom:3px }
+.menu .gask { display:flex; gap:4px; align-items:flex-start; margin:4px 0 }
+.menu .gask textarea { flex:1 1 auto; min-width:0; font:12px/1.45 var(--mono); padding:6px 8px; border:1px solid var(--line); border-radius:var(--r);
+                       background:var(--card); color:var(--text); resize:vertical }
+details.gsteps ol { padding-left:0; list-style:none; counter-reset:gstep }
+details.gsteps ol > li { position:relative; padding:6px 8px 6px 30px; border-radius:var(--r); counter-increment:gstep }
+details.gsteps ol > li > .steptick { position:absolute; left:6px; top:8px; margin:0; width:16px; height:16px; accent-color:var(--ok) }
+details.gsteps ol > li.current { background:var(--runbg); outline:1px solid color-mix(in srgb, var(--run) 35%, var(--line)) }
+details.gsteps ol > li.done { color:var(--muted) }
+.menu .module.bare .cfgline { margin-top:2px }
+/* Deleted in Google, waiting for a choice (0.2.8-beta.10) */
+.heldbox { margin:8px 0 4px; padding:10px 12px; border:1px solid color-mix(in srgb, var(--warn) 35%, var(--line)); border-radius:var(--r); background:var(--warnbg); font-size:13.5px }
+.heldbox p { margin:0 0 4px; display:flex; align-items:center; gap:6px; flex-wrap:wrap }
+.heldbox ul { margin:0 0 6px; padding-left:22px; max-height:140px; overflow:auto }
+.heldbox .btnrow { display:flex; justify-content:flex-end; gap:8px }
+

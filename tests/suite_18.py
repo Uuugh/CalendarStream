@@ -40,7 +40,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(re.search(r'<p class="check bad"><svg[^>]*>.*?</svg> CCS\+ rejected the Username or Calendar Sync password', p) is not None, "rejection shown next to the boxes")
     main.state.last_auth_ok = True; p = c.get("/").text
     ok(re.search(r'<span class="okslot" data-state="ok">\s*<span class="okmark" title="Validated: CCS\+ sign-in"><svg[^>]*>.*?</svg>Validated</span>', p) is not None, "✓ Validated when CCS+ accepts (Save and Cancel appear when typing)")
-    ok("Google Calendar Autosync" in p and 'id="fcid"' in p and 'id="scid"' not in p and "How to get a client ID and secret" in p, "Autosync client form on the dashboard only, with its guide")
+    ok("Google Calendar Autosync" in p and 'id="fcid"' in p and 'id="scid"' not in p and "Guided setup: a client ID and secret" in p, "Autosync client form on the dashboard only, with its guide")
     feed = p[p.index('id="destinations"'):]
     ok('id="dest-google"' not in feed and feed.index('class="box module cfgbox dest') < feed.index("Add to Apple / Outlook") < feed.index("Open subscribe page") < feed.index("Feed link"), "0.2.8-beta.4: Feeds: the feed's buttons first (with the share page), its link last; Google Calendar sync is in Settings")
     ok("subscribes your signed-in Google account" in p and "opens your computer’s or phone’s calendar app" in p and "a page to share with anyone" in p, "the buttons are explained")

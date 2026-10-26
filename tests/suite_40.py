@@ -28,7 +28,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     p = c.get("/?menu=settings").text
     # F2: rule lines
     ok('“RDO” → Color <span class="swatch" style="--c:#d50000" aria-hidden="true"></span> (Tomato)' in p, "F2: a rule line reads Color ■ (Tomato)")
-    ok(re.search(r'<span class="rulelabel" title="Drive to the airport">Drive to the airport</span>', p) is not None, "…a rule with a title shows its title")
+    ok(re.search(r'<span class="rulelabel" title="Drive to the airport">Drive to the airport → ', p) is not None, "…a rule with a title shows its title (and, from beta.10, what it does)")
     # F3/F4: + after the count box
     for sec, box in (("rules", "rulecount"), ("templates", "tplcount")):
         head = p[p.index(f'id="{sec}" '):]; head = head[:head.index('class="cfgline"')]

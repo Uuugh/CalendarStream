@@ -3,7 +3,7 @@
 var PAGE = JSON.parse(document.getElementById('pagedata').textContent);
 // Texts used by the scripts below, in the page's language.
 var T = {
-  copied: {{ _('Copied')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }},
+  copied: {{ _('Copied')|string|tojson }}, stepAuto: {{ _('Ticks itself when CalendarStream can confirm it')|string|tojson }}, stepDone: {{ _('Step done')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }},
   saved: {{ _('Saved')|string|tojson }}, verifying: {{ _('Verifying…')|string|tojson }},
   validated: {{ _('Validated')|string|tojson }}, verifyFailed: {{ _('Failed')|string|tojson }},
   disconnect: {{ _('Disconnect Google Calendar?')|string|tojson }},
@@ -291,6 +291,49 @@ document.addEventListener('click', function (e) {
   updateNow();
 });
 
+// Settings → Google Calendar API Sync → Guided setup (0.2.8-beta.10): a tick on each step (the client
+// steps, 6 and 7, tick themselves once Google accepted the client, step 8 once connected; the others are
+// ticked by hand and remembered in this browser), the first unticked step marked as the current one,
+// and Google's pages opened in a window beside this one.
+function bindGuide() { each('details.gsteps', 'gsteps', function (g) {
+  var key = 'cs-gsteps', done = {};
+  try { done = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (err) { done = {}; }
+  var auto = { 6: g.dataset.valid === '1', 7: g.dataset.valid === '1', 8: g.dataset.connected === '1' };
+  var steps = g.querySelectorAll('li[data-step]');
+  function mark() {
+    var current = null;
+    steps.forEach(function (li) {
+      var n = li.dataset.step, on = !!(auto[n] || done[n]), box = li.querySelector('.steptick');
+      box.checked = on; li.classList.toggle('done', on);
+      li.classList.remove('current');
+      if (!on && !current) current = li;
+    });
+    if (current) current.classList.add('current');
+  }
+  steps.forEach(function (li) {
+    var n = li.dataset.step, box = document.createElement('input');
+    box.type = 'checkbox'; box.className = 'steptick';
+    if (auto[n] !== undefined) { box.disabled = true; box.title = T.stepAuto; }
+    box.setAttribute('aria-label', T.stepDone + ' ' + n);
+    box.addEventListener('change', function () {
+      done[n] = box.checked;
+      try { localStorage.setItem(key, JSON.stringify(done)); } catch (err) { /* private window: kept for this visit */ }
+      mark();
+    });
+    li.insertBefore(box, li.firstChild);
+  });
+  mark();
+  // Google's pages: in a window beside this one (the right half of the screen)
+  g.querySelectorAll('a[href^="https://console.cloud.google.com"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var w = Math.round((screen.availWidth || 1400) / 2), h = screen.availHeight || 900;
+      var win = window.open(a.href, 'csgoogle', 'popup,width=' + w + ',height=' + h + ',left=' + w + ',top=0');
+      if (win) { e.preventDefault(); win.focus(); }
+    });
+  });
+}); }
+bindGuide();
+
 // Small drop-down menus (settings, language): close on an outside click or Escape.
 function dropdown(btnId, menuId) {
   var btn = document.getElementById(btnId), menu = document.getElementById(menuId);
@@ -404,7 +447,7 @@ function setModule(box, open) {
   if (pick) pick.tabIndex = open ? 0 : -1;
   savePref('/ui/section', { section: box.dataset.section, open: open ? '1' : '0' });
 }
-function bindCfg() { each('.box.cfgbox', 'cfg', function (box) {
+function bindCfg() { each('.box.cfgbox, .module.bare.cfgbox', 'cfg', function (box) {
   box.querySelector('.cfgtoggle').addEventListener('click', function () { setModule(box, !box.classList.contains('cfgopen')); });
   // The color box changes the calendar's color while the module is expanded (0.2.8-beta.3), like its
   // title and note; folded, it only shows it.
@@ -970,7 +1013,7 @@ each('[data-fill]', 'fill', function (b) {
 // back; everything else (what's being typed elsewhere, open boxes, the scroll) stays as it is.
 function bindAll() {
   RD = JSON.parse(document.getElementById('ruledata').textContent);     // the rules, as now saved
-  bindWatch(); bindFiles(); bindCfg(); bindSrc(); bindPresets(); bindTags(); bindAdd(); bindConfirm();
+  bindWatch(); bindFiles(); bindCfg(); bindSrc(); bindPresets(); bindTags(); bindAdd(); bindConfirm(); bindGuide();
   each('[data-fill]', 'fill', function (b) { b.addEventListener('click', function () { document.getElementById(b.dataset.fill).value = location.origin; }); });
   each('.disconnectform', 'disconnect', function (f) { f.addEventListener('submit', function (e) { if (!confirm(T.disconnect)) e.preventDefault(); }); });
   initSections();
@@ -1108,6 +1151,9 @@ function fillTools(d) {
   if (box.dataset.alarms) { bell.classList.add('on'); var use = bell.querySelector('use'); if (use) use.setAttribute('href', '#mi-alarm_on'); }
   var edit = box.querySelector('.evedit');
   if (origin === 'rule') edit.remove(); else edit.href = '/event?uid=' + q + '&month=' + month;
+  // Link (0.2.8-beta.10): the event's pop-up, opened at "Linked to" (a rule's events can't be linked)
+  var lk = box.querySelector('.evlinkto');
+  if (origin === 'rule') lk.remove(); else { lk.href = '/event?uid=' + q + '&month=' + month + '&link=1'; if (box.dataset.linked) lk.classList.add('on'); }
   box.querySelector('.evcopy').href = '/event?copy=' + q + '&month=' + month;
   var del = box.querySelector('.evdel');
   if (origin === 'rule' || box.dataset.hidden) del.remove();

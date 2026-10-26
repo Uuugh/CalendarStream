@@ -137,7 +137,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
         type_time("#start_time", "23:00")
         # layout: color bottom-left, Cancel/Save bottom-right
         form = pg.locator("form.card").bounding_box(); cp = pg.locator("#colorpick summary").bounding_box()
-        save = pg.locator(".actions.bottom button:not(.linkbtn)").bounding_box(); cancel = pg.locator(".actions.bottom a.ghostbtn").bounding_box()
+        save = pg.locator(".actions.bottom .pairbtns .psave").bounding_box(); cancel = pg.locator(".actions.bottom .pairbtns .pcancel").bounding_box()
         ok(cp["x"] - form["x"] < 30 and form["x"] + form["width"] - (save["x"] + save["width"]) < 30 and cancel["x"] < save["x"] and abs(cp["y"] - save["y"]) < 10,
            "color at bottom left; Cancel, Save at bottom right")
         pg.click("#colorpick summary"); pg.click(".palette label[title=Tomato]"); pg.wait_for_timeout(50)

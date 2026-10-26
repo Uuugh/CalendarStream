@@ -124,7 +124,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok("calendar renamed" in log(1)[0], f"activity log: {log(1)[0]}")
     ok(gsync.nearest_color_id("#33b679") == "2" and gsync.nearest_color_id("#1e88e5") == "7", "nearest Google color")
 
-    # Changes made by hand in Google: left until a full check, which repairs them
+    # Changes made by hand in Google: left until a full check, which brings them here (two-way, 0.2.8-beta.10)
     cid = GI()["calendar_id"]
     k1, k2 = list(live())[:2]
     S["events"][cid][k1]["status"] = "cancelled"
@@ -137,9 +137,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     good, writes = sync()
     ok(writes == [], "normal sync doesn't look at Google's copy")
     good, writes = sync(full=True)
-    ok(live()[k1]["status"] == "confirmed" and live()[k2]["summary"] != "changed by hand", "full check repairs deleted and changed events")
-    ok("stray00001" not in live() and "personal01" in live(), "removes CalendarStream's strays, keeps events made by hand")
-    ok("2 repaired" in log(1)[0] and "1 removed" in log(1)[0], f"activity log: {log(1)[0]}")
+    ok(k1 not in live() and live()[k2]["summary"] == "changed by hand", "full check: a deletion in Google stays deleted (hidden here), a hand edit stays (an edit here)")
+    ok("stray00001" not in live() and "personal01" in live(), "removes CalendarStream's strays, keeps events made by hand (no CalendarStream calendar to put them in)")
+    ok("removed" in log(1)[0] and any("was deleted in Google, so it's hidden here" in m for m in log(6)) and any("was changed in Google" in m for m in log(6)), f"activity log: {log(6)}")
 
     # Next month: October's events stay in Google but aren't tracked any more
     before = set(live())

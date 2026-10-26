@@ -22,7 +22,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(post(bad).status_code == 400, f"F1: refused {bad!r}")
     ok(post(" pilot@gmail.com ").status_code == 303 and main.admin_email() == "pilot@gmail.com", "F1: saved, trimmed")
     p = c.get("/", auth=A).text
-    g = p[p.index("How to get a client ID and secret"):]
+    g = p[p.index("Guided setup: a client ID and secret"):]
     ok(g.count("<code>pilot@gmail.com</code>") >= 3, "F1: guide uses it (support, contact e-mail, test user)")
     ok("&lt;code&gt;" not in g, "F1: not escaped twice")
     post("")

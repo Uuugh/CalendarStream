@@ -2,7 +2,7 @@
 
 Read when planning a version.
 
-0.2 = more sources and destinations
+0.2 = more sources and destinations (0.2.8-beta.10: two-way sync with the Google calendars CalendarStream makes)
 
 0.3 Backups
 

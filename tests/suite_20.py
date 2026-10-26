@@ -55,7 +55,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(c.post("/google/notify", headers=hdr).status_code == 200 and main.google_job.wake.is_set() and main.google_job.full, "change notice: full check requested (no login needed)")
     full = main.google_job.full; main.google_job.full = False
     run(main.google_sync_once(full))
-    ok(S["events"][cid][gid]["summary"] != "changed by hand", "the hand edit is put back")
+    uid = next(r for r, row in main.store.google_rows(DID()).items() if row["google_id"] == gid)
+    ok(S["events"][cid][gid]["summary"] == "changed by hand" and main.store.get_event(uid).title == "changed by hand",
+       "two-way (0.2.8-beta.10): the hand edit comes here (an edit; CCS+ untouched)")
     ok(main.google.watch_info(DID()).get("last_notice") and "Last notice from Google" in c.get("/", auth=A).text, "last notice shown")
     # renewal
     old = main.google.watch_info(DID())["id"]

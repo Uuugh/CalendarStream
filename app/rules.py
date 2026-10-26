@@ -636,6 +636,11 @@ def action_text(a: dict, tr, color_name, templates: dict[str, dict]) -> str:
     return tr("Record changes")
 
 
+def actions_text(rule: dict, tr, color_name, templates: dict[str, dict]) -> str:
+    """What a rule does, in a few words ('Change to all-day; Color (Tomato)')."""
+    return "; ".join(action_text(a, tr, color_name, templates) for a in rule["actions"])
+
+
 def label(rule: dict, tr, color_name, templates: dict[str, dict]) -> str:
     """A rule in one line: its title, else 'If … → …'."""
     if rule["title"]:

@@ -44,7 +44,7 @@ with patch.object(main, "loop", noop), TestClient(main.app) as c:
         assert r.status_code == 303, r.text
         page = c.get("/", auth=A).text
     if len(sys.argv) > 2 and sys.argv[2] == "unconfigured":
-        ok("How to get a client ID and secret (step by step)" in page and 'action="/google/connect"' not in page, "unconfigured: guide shown, no Connect")
+        ok("Guided setup: a client ID and secret, step by step" in page and 'action="/google/connect"' not in page, "unconfigured: guide shown, no Connect")
         ok(c.post("/google/connect", auth=A, data={"csrf": csrf}).status_code == 400, "unconfigured: connect refused")
         bad = c.post("/google/client", auth=A, data={"csrf": csrf, "client_id": "nonsense", "client_secret": "x"})
         ok(bad.status_code == 400 and "client ID" in bad.text, "client ID checked")

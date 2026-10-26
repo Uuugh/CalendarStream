@@ -260,11 +260,13 @@ def _swatch(color: str) -> str:
 
 def rule_label_html(r: dict, lang: str = "en") -> Markup:
     """The rule's line on the page (0.2.8-beta.5): each color's swatch right after the word Color, its
-    name in brackets ("Color ■ (Tomato)"); a rule with a title has its first color's swatch before it."""
+    name in brackets ("Color ■ (Tomato)"). A rule with a title also says what it does (0.2.8-beta.10):
+    "Items without an end time → Change to all-day"."""
     text = rule_label(r, lang)
     colors = [a["color"] for a in r["actions"] if a["type"] == "color"]
-    if r["title"]:
-        return Markup((_swatch(colors[0]) + " " if colors else "") + str(escape(text)))
+    if r["title"] and r["actions"]:
+        tr = lambda t, **kw: str(i18n.tr(lang, t, **kw))
+        text += " → " + rules_mod.actions_text(r, tr, color_name, {t["id"]: t for t in event_templates()})
     html = str(escape(text))
     word = str(escape(str(i18n.tr(lang, "Color"))))
     for c in dict.fromkeys(colors):
@@ -432,7 +434,7 @@ def event_templates() -> list[dict]:
 
 # Collapsible sections on the status page, and whether each starts open. The open/closed state
 # is saved in the database so it's the same in every browser.
-SECTIONS = {"status": True, "activity": False, "rules": False, "templates": False}
+SECTIONS = {"status": True, "activity": False, "rules": False, "templates": False, "googlesync": False}
 
 
 def section_state() -> dict:
@@ -653,6 +655,117 @@ def sync_window_start() -> date:
     return now().date().replace(day=1)
 
 
+# --- Two-way sync (0.2.8-beta.10) -------------------------------------------------------
+# Only the calendars CalendarStream makes in Google. A change made there becomes a change here, exactly
+# like making it on the status page (CCS+ itself is never touched): an edit of a source's event is an
+# edit, one of an added event changes it; an event added in Google goes into a CalendarStream (local)
+# calendar; a deletion hides the event (an added one is deleted). A rule's events stay read-only (put
+# back). When both sides changed, the newest change wins; more than GOOGLE_DELETE_LIMIT deletions in
+# one go wait for the person to choose (Activities and Logs).
+
+GOOGLE_DELETE_LIMIT = 3
+_FIELDS = ("title", "start", "end", "all_day", "location", "description")
+
+
+def google_held() -> dict:
+    """{uid: {dest, title, start}}: events deleted in Google that wait for the person's choice."""
+    found = store.get("google_pending_deletes")
+    return found if isinstance(found, dict) else {}
+
+
+def _same_time(a: str, b: str) -> bool:
+    if a == b:
+        return True
+    try:
+        return datetime.fromisoformat(a) == datetime.fromisoformat(b)
+    except ValueError:
+        return False
+
+
+async def apply_google_changes(d: dict, changes: list[dict]) -> list[str]:
+    """Make the changes found in a destination's Google calendar here. Returns the log lines."""
+    lines, touched = [], set()
+    customs = {c["uid"]: c for c in store.get_customs()}
+    edits = store.get_edits()
+    held = google_held()
+    restoring = set(store.get("google_restoring") or [])       # "Put them back": not deletions any more
+    def still_here(uid):
+        e = store.get_event(uid)
+        return e is not None and not e.hidden
+    deleted = [c for c in changes if c["kind"] == "deleted" and c["uid"] not in held and c["uid"] not in restoring and still_here(c["uid"])]
+    if len(deleted) > GOOGLE_DELETE_LIMIT:
+        for c in deleted:
+            e = store.get_event(c["uid"])
+            held[c["uid"]] = {"dest": d["id"], "title": e.title if e else "", "start": e.start if e else ""}
+        store.set("google_pending_deletes", held)
+        state.record("warn", f"Google: {len(deleted)} events were deleted in Google at once. They're kept until you "
+                             "choose, at the top of Activities and Logs, whether to hide them here too or put them back")
+        deleted = []
+    for c in deleted:
+        e = store.get_event(c["uid"])
+        if e is None:
+            continue
+        if e.origin == "rule":
+            lines.append(f"\"{e.title}\" is made by a rule, so it was put back")
+            continue
+        if e.origin == "custom":
+            store.delete_custom(e.uid)
+        else:
+            _hide(e)
+        lines.append(f"\"{e.title}\" ({e.start[:10]}) was deleted in Google, so it's hidden here")
+        touched.add(e.source)
+    for c in (c for c in changes if c["kind"] == "edited"):
+        e = store.get_event(c["uid"])
+        if e is None or c["uid"] in held:
+            continue
+        new = {k: c[k] for k in _FIELDS}
+        if all((_same_time(new[k], getattr(e, k)) if k in ("start", "end") else new[k] == getattr(e, k)) for k in _FIELDS):
+            continue                      # only its color or reminders changed there: put back
+        if e.origin == "rule":
+            lines.append(f"\"{e.title}\" is made by a rule, so Google's change was undone")
+            continue
+        local_at = store.changed_at(e.uid)
+        try:
+            remote_at = datetime.fromisoformat(c["at"].replace("Z", "+00:00"))
+        except ValueError:
+            remote_at = None
+        if local_at and local_at > c["synced_at"] and (remote_at is None or local_at > remote_at):
+            lines.append(f"\"{e.title}\" was changed here and in Google; the newer change, here, was kept")
+            continue
+        if e.origin == "custom" and e.uid in customs:
+            store.set_custom(e.uid, {**customs[e.uid], **new})
+        else:
+            original = united_original(e.uid, e.source)
+            if not original:
+                continue
+            base = edits.get(e.uid) or {"title": e.title, "start": e.start, "end": e.end, "all_day": e.all_day,
+                                        "location": e.location, "description": e.description, "color": e.color,
+                                        "base": original.fingerprint()}
+            store.set_edit(e.uid, {**base, **new})
+        lines.append(f"\"{new['title']}\" ({new['start'][:10]}) was changed in Google; the change is saved here")
+        touched.add(e.source)
+    locals_ = [sid for sid in d["sources"] if (source(sid) or {}).get("type") == "local"]
+    told = set(store.get("google_left_alone") or [])        # events added in Google that can't come here: said once
+    for c in (c for c in changes if c["kind"] == "created"):
+        if c["repeats"] or not locals_:
+            if c["gid"] not in told:
+                lines.append(f"\"{c['title']}\" was added in Google, but " + ("repeating events can't be copied here yet" if c["repeats"]
+                             else "this calendar gets no CalendarStream calendar to put it in") + "; it's left as it is in Google")
+                told.add(c["gid"])
+                store.set("google_left_alone", sorted(told)[-500:])
+            continue
+        uid = f"cs-{secrets.token_hex(8)}@calendar_stream"
+        store.set_custom(uid, {**{k: c[k] for k in _FIELDS}, "color": "", "source": locals_[0]})
+        await google.delete_event(d["id"], c["gid"])    # it comes back as CalendarStream's own copy
+        lines.append(f"\"{c['title']}\" ({c['start'][:10]}) was added in Google; it's now in {calendar_name(locals_[0])}")
+        touched.add(locals_[0])
+    for sid in touched:
+        rebuild(sid)
+    if touched:
+        state.save()
+    return lines
+
+
 async def google_sync_once(full: bool) -> bool:
     """Run one sync. Returns False if it failed."""
     async with google_job.lock:
@@ -664,7 +777,15 @@ async def google_sync_once(full: bool) -> bool:
             color_for = event_colorer()
             for d in dests:
                 first = date.fromisoformat(d["start"]) if d.get("start") else EARLIEST
-                result = await google.sync(d["id"], dest_events(d), d["name"], color_for, first, full)
+                if full:          # two-way: what changed in Google comes here first (0.2.8-beta.10)
+                    lines = await apply_google_changes(d, await google.pull(d["id"], first))
+                    who = "Google" if len(dests) == 1 else f"Google, {d['name']}"
+                    for line in lines:
+                        state.record("info", f"{who}: {line}")
+                result = await google.sync(d["id"], dest_events(d), d["name"], color_for, first, full,
+                                           hold=frozenset(google_held()))
+                if full and store.get("google_restoring"):
+                    store.set("google_restoring", [])      # put back in Google by this sync
                 if result.changed or result.notes:
                     who = "Google" if len(dests) == 1 else f"Google, {d['name']}"
                     state.record("info", f"{who}: {result.summary()}"
@@ -1722,7 +1843,7 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
                        "used": [calendar_name(x) for x in source_ids() if rules_mod.applies(r, x)]} for r in all_rules()],
         "rule_js": rule_js(lang),
         "rule_conflicts": rule_conflicts(lang),
-        "linked": linked_titles(),
+        "linked": linked_titles(), "google_held": google_held(),
         "default_dest_name": first_named_calendar(),
         "src_names": {x["id"]: x["name"] for x in srcs},
         "has_ccs": "ccs" in source_ids(), "templates": event_templates(), "event_colors": GOOGLE_COLORS.values(),
@@ -2556,7 +2677,7 @@ async def set_templates(csrf: str = Form(""), tpl_id: list[str] = Form([]), tpl_
 async def set_section(csrf: str = Form(""), section: str = Form(""), open_: str = Form("", alias="open")):
     """Remember whether a status-page section is open (the page sends this when it's toggled)."""
     check_csrf(csrf)
-    if section not in SECTIONS and not re.fullmatch(r"src:(ccs|f[0-9a-f]{6})|dest:(google|d[0-9a-f]{6})", section):
+    if section not in SECTIONS and not re.fullmatch(r"src:(ccs|[fl][0-9a-f]{6})|dest:(google|d[0-9a-f]{6})", section):
         raise HTTPException(400, "Unknown section.")
     saved = store.get("ui_sections") or {}
     saved[section] = open_ == "1"
@@ -2778,9 +2899,10 @@ def _saved_zones(uid: str) -> tuple[str, str]:
 
 @app.get("/event", dependencies=[Depends(gui_auth)])
 def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="date"), month: str | None = None,
-               copy: str = "", embed: str = ""):
+               copy: str = "", embed: str = "", link: str = ""):
     """The event page: edit an event (uid), add one on `date`, or add a copy of one (`copy`). With
-    `embed`, it's shown in a pop-up on the status page (0.2.8: on a computer; a phone opens the page)."""
+    `embed`, it's shown in a pop-up on the status page (0.2.8: on a computer; a phone opens the page);
+    with `link`, opened at "Linked to" (the event's Link icon, 0.2.8-beta.10)."""
     if copy:
         found = store.get_event(copy)
         if not found:
@@ -2825,7 +2947,7 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         "original_range": _range_text(original, *_span(original)[2:], lang) if original else "",
         "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": display_zone(), "embed": embed == "1",
         "default_sid": (source_ids() or [""])[0],
-        "link": event_links().get(uid) if uid else None, "link_choices": link_choices(e, uid, lang),
+        "link": event_links().get(uid) if uid else None, "link_choices": link_choices(e, uid, lang), "open_link": link == "1",
     }, lang=lang)
 
 
@@ -3195,6 +3317,37 @@ async def google_callback(state_: str = Query("", alias="state"), code: str = ""
         google.record_error(str(e))
         state.record("error", f"Google: {e}")
     return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
+
+
+@app.post("/google/held", dependencies=[Depends(gui_auth)])
+async def google_held_choice(csrf: str = Form(""), action: str = Form("")):
+    """Events deleted in Google, more than GOOGLE_DELETE_LIMIT at once (0.2.8-beta.10): hide them here too,
+    or put them back in Google."""
+    check_csrf(csrf)
+    held = google_held()
+    if action not in ("hide", "restore"):
+        raise HTTPException(400, "Choose Hide or Put back.")
+    touched = set()
+    if action == "hide":
+        for uid in held:
+            e = store.get_event(uid)
+            if e is None or e.origin == "rule":
+                continue
+            if e.origin == "custom":
+                store.delete_custom(uid)
+            else:
+                _hide(e)
+            touched.add(e.source)
+    store.set("google_pending_deletes", {})
+    if action == "restore":
+        store.set("google_restoring", sorted(held))
+    state.record("info", f"Google: {len(held)} events deleted in Google were "
+                 + ("hidden here too" if action == "hide" else "put back in Google"))
+    for sid in touched:
+        rebuild(sid)
+    state.save()
+    request_google_sync(full=True)
+    return RedirectResponse("/#activity", status_code=303)
 
 
 @app.post("/google/disconnect", dependencies=[Depends(gui_auth)])

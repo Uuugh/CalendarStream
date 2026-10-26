@@ -17,7 +17,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         p = c.get("/", auth=A).text
         ok("but this page is open at <b>css.example.com</b>" in p and "<b>ccs.example.com</b>" in p, "a misspelled public address is pointed out")
         ok("back to <code>https://ccs.example.com/google/callback</code>" in p, "Connect names the redirect URI Google will use")
-        g = p[p.index("How to get a client ID and secret"):]
+        g = p[p.index("Guided setup: a client ID and secret"):]
         order = [g.find(s) for s in ("Before you start", "Create a project", "Turn on the Calendar API", "Set up the sign-in screen",
                                     "Allow calendar access", "Let yourself sign in", "Create the client", "Copy both keys now", "Connect.</b>")]
         ok(all(i >= 0 for i in order) and order == sorted(order), f"guide steps in order, test users before the client {order}")
