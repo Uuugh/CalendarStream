@@ -732,6 +732,10 @@
   .handle .hgrip:active { cursor:grabbing }
   .dragging { opacity:.55 }
   /* No ▲ on the first, no ▼ on the last (child selectors: a module's rule lines have their own order) */
+  /* Module handles sit in the section's right margin (18 px), so modules are as wide as the section header */
+  .sortable.modules > .modrow { gap:2px; margin-right:-16px }
+  .sortable.modules > .modrow > .handle { flex-basis:14px; width:14px }
+  .sortable.modules > .modrow > .handle .hmove { width:14px }
   .sortable > .modrow:first-child > .handle .hmove[data-dir="up"], .sortable > .modrow:last-child > .handle .hmove[data-dir="down"],
   .sortable > .ruleline:first-child > .handle .hmove[data-dir="up"], .sortable > .ruleline:last-child > .handle .hmove[data-dir="down"] { visibility:hidden }
   /* Expand / Close */

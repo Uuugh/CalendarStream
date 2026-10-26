@@ -9,7 +9,19 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.5**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.6**
+
+## 0.2.8-beta.6 — 2026-10-26
+
+### Changed
+- **I1** A module's handle (▲ ☰ ▼) sits in its section's right margin instead of taking room beside
+  the module: calendars and feeds are now as wide as their section header (their right edge lines
+  up with the +).
+- **R1** `build_rules/theme.md` has a **Clarifications** list: the Developer's decisions about how the
+  page looks (the handles, the module header layout, the status words, + in the corner, a box only
+  for what can be changed, Copy inside its field, rule colors, Light = Soft). The Theme Rules
+  pictures show it as part 2's last card, read from theme.md each time they're drawn; part 2's
+  module and handle rules were updated to match.
 
 ## 0.2.8-beta.5 — 2026-10-26
 

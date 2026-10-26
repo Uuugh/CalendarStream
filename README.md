@@ -170,7 +170,8 @@ logins or setup codes lock an address out for 15 minutes.
   (**Cancel | Apply** in the rule dialog); the pressed side fills it and says **Cancelled** or
   **Saved** for 3 seconds, and a module's Cancel also closes it. A field changed in place (a login,
   a link) gets **✕ | ✓** icons instead.
-- **Handles:** to the right of every module and rule line, **▲ ☰ ▼**: drag it by **☰**, or press ▲ ▼,
+- **Handles:** to the right of every module and rule line, **▲ ☰ ▼** (a module's sits in the section's
+  right margin, so modules are as wide as the section header): drag it by **☰**, or press ▲ ▼,
   to change the order (of the calendars, the feeds, or the rules' priority). It's saved at once.
 - Spacing: 10 px between sections, 5 px between the modules in a section (14 px under a folded one,
   for its Expand line) and around subsection titles (Automatic Upload, Manual Upload, Rules), 2 px
