@@ -9,7 +9,18 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.12**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.13**
+
+## 0.2.8-beta.13 — 2026-10-26
+
+### Fixed
+- **I1** The two Update now buttons (the top bar's and ☰ Settings → Updates') weren't in step: the top
+  bar said Downloading… then Restarting… while Settings said Updating…, and they ended at different
+  times. Now whichever is pressed, both show the same words at the same moment (**Downloading…**,
+  **Restarting…**, then **Updated** or **Update failed**) and go back together.
+- **R1** Theme rules: **one action, one state**: the same action in more than one place (Update now;
+  Sync Now for Google in Feeds and in Settings) shows the same progress, in the same words, in every
+  copy at once. Checked by the tests (suite 47).
 
 ## 0.2.8-beta.12 — 2026-10-26
 

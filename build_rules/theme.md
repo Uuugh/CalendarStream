@@ -78,6 +78,9 @@ one here.
   group that works shows everything at once, nothing under Expand: its header (like Updates), its
   credentials row, and its Remove (red, lower left, like a module's) with its options beside it; the
   explanations go in its (?).
+- One action, one state: when the same action appears in more than one place (Update now in the top
+  bar and in Settings; Sync Now for Google in Feeds and in Settings), pressing any copy shows the same
+  progress, in the same words, in every copy at once, and they all end together.
 - A row of settings that belong together is one line (Check for updates [Hourly] ☐ Auto-update).
 - Google calendars say "Next push instantaneous" (each change goes at once).
 - A rule's color is one of Google Calendar's 11 event colors; rule lines read "Color ■ (Name)".

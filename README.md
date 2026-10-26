@@ -274,7 +274,8 @@ logins or setup codes lock an address out for 15 minutes.
   Google setup guide), **Google Calendar API Sync** (laid out like a login, connected or not: Client ID
   with Copy, Client secret, then ✓ Validated or ✓ Connected) and **Updates**, laid out
   like a module header: your release (stable or beta versions; only those are offered), when it last
-  checked and the next check, and a status box with **Check now** or **Update now** (like Sync Now: **Checking…** or **Updating…**, then
+  checked and the next check, and a status box with **Check now** or **Update now** (like Sync Now: **Checking…**, or for an
+  update **Downloading…** and **Restarting…**, the same words as the top bar's Update now, then
   **Up to date** in green, or **Update found** / **Couldn't check** in yellow; a newer version also
   shows next to the version at the top; then **Update** replaces Check now; once it has updated,
   Settings shows Up to date and Check now again). Under it, on one line, **Check for updates** (hourly,

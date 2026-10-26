@@ -8,7 +8,7 @@ var T = {
   validated: {{ _('Validated')|string|tojson }}, verifyFailed: {{ _('Failed')|string|tojson }},
   disconnect: {{ _('Disconnect Google Calendar?')|string|tojson }},
   downloading: {{ _('Downloading…')|string|tojson }}, restarting: {{ _('Restarting…')|string|tojson }},
-  updateFailed: {{ _('Update failed')|string|tojson }}, updateSlow: {{ _('It’s taking longer than expected; check the updater container’s log.')|string|tojson }},
+  updateFailed: {{ _('Update failed')|string|tojson }}, updated: {{ _('Updated')|string|tojson }}, updateSlow: {{ _('It’s taking longer than expected; check the updater container’s log.')|string|tojson }},
   syncing: {{ _('Syncing…')|string|tojson }}, saving: {{ _('Saving…')|string|tojson }},
   copiedReport: {{ _('Report copied')|string|tojson }}, longReport: {{ _('The report is long, so GitHub gets the start of it; the whole report is copied: paste it into the issue.')|string|tojson }},
   failed: {{ _('Failed')|string|tojson }}
@@ -285,23 +285,29 @@ function updateNow() {
   var slot = document.querySelector('.updslot');
   if (!slot || updating) return;
   var btn = slot.querySelector('.updbtn'), text = slot.querySelector('.updtext'), from = slot.dataset.from;
-  function show(state, label) { slot.dataset.state = state; text.textContent = label || ''; }
-  // Settings → Update now shows the same progress, like Sync Now (0.2.8-beta.11)
-  function settingsBtns(state) { document.querySelectorAll('button.upgradebtn').forEach(function (b) {
+  // One action, one state (0.2.8-beta.13): the top bar's Update now and Settings → Update now always show
+  // the same words at the same moment (Downloading…, Restarting…, then Updated or Update failed), and
+  // end together.
+  function settingsBtns(state, label) { document.querySelectorAll('button.upgradebtn').forEach(function (b) {
     b.dataset.state = state; b.disabled = state === 'syncing';
-    if (state === 'fail') setTimeout(function () { if (b.dataset.state === 'fail') { b.dataset.state = 'idle'; b.disabled = false; } }, 2400);
+    var words = b.querySelector('.sn.' + (state === 'syncing' ? 'syncing' : state) + ' .snword');
+    if (words && label) words.textContent = label;
   }); }
-  function fail(why) { updating = false; settingsBtns('fail');
+  function show(state, label) {
+    slot.dataset.state = state; text.textContent = label || '';
+    settingsBtns({ downloading: 'syncing', restarting: 'syncing', failed: 'fail', done: 'done' }[state] || 'idle', label);
+  }
+  function fail(why) { updating = false;
                        show('failed', T.updateFailed); text.insertAdjacentHTML('afterbegin', ICON.fail); slot.title = why || ''; btn.disabled = false;
-                       setTimeout(function () { if (slot.dataset.state === 'failed') show('ready'); }, 8000); }
+                       setTimeout(function () { if (slot.dataset.state === 'failed') show('ready'); }, 2400); }
   function done(version) {
     document.querySelectorAll('.topbar .curver').forEach(function (a) {
       a.textContent = 'v' + version; a.href = a.href.replace(/\/v[^\/]*$/, '/v' + version);
     });
     var foot = document.querySelector('.foot');
     if (foot) foot.innerHTML = foot.innerHTML.replace('v' + from, 'v' + version);
-    document.querySelectorAll('.topbar .newver, .updslot').forEach(function (el) { el.remove(); });
-    settingsBtns('done');
+    document.querySelectorAll('.topbar .newver').forEach(function (el) { el.remove(); });
+    show('done', T.updated);
     // The page is reloaded (0.2.8-beta.9) so the new version's script and stylesheet are the ones
     // running: drawn in place, its parts would be run by the old ones. Settings stays open if it was.
     var menu = document.getElementById('menu'), inSettings = menu && !menu.hidden;
@@ -325,7 +331,7 @@ function updateNow() {
       }
     })();
   }
-  updating = true; settingsBtns('syncing');
+  updating = true;
   btn.disabled = true; slot.title = ''; show('downloading', T.downloading);
   fetch('/update/now', { method: 'POST', body: new URLSearchParams({ csrf: CSRF }), credentials: 'same-origin',
                          headers: { 'X-CS-Async': '1' } })

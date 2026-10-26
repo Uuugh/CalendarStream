@@ -168,7 +168,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "event colors (suite 45)": "Events show the color Google shows", "rule summaries": "Rule lines say what the rule does",
             "fields (suite 46: 34 px, layout)": "Fields everywhere, pop-ups included", "+ in a corner (suite 46)": "Every section's + is in a corner",
             "credentials trash (suite 46)": "A credentials row", "one line of settings (suite 46)": "A row of settings that belong together",
-            "next push (suite 46)": "Next push instantaneous"}
+            "next push (suite 46)": "Next push instantaneous", "one action, one state (suite 47)": "One action, one state",
+            "a working Settings group shows everything (suite 47)": "A Settings"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

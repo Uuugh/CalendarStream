@@ -37,6 +37,7 @@
   .updslot[data-state="downloading"] .updmsg { color:var(--warn); background:var(--warnbg) }
   .updslot[data-state="restarting"] .updmsg { color:var(--run); background:var(--runbg) }
   .updslot[data-state="failed"] .updmsg { color:var(--bad); background:var(--badbg) }
+  .updslot[data-state="done"] .updmsg { color:var(--ok); background:var(--okbg) }  .updslot[data-state="done"] .updbar { display:none }
   /* A moving bar along the bottom: the updater doesn't report how far the download is. */
   .updslot .updbar { position:absolute; left:0; right:0; bottom:0; height:3px; overflow:hidden }
   .updslot[data-state="failed"] .updbar { display:none }
