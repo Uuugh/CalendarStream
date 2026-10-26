@@ -27,7 +27,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     p = c.get("/").text
     ok('placeholder="How your calendar will be titled via stream"' in p, "F4.2: the Name's hint")
     ok('<span class="long">Time Zone</span><span class="short" title="Time Zone">TZ</span>' in p, "F2.1: Time Zone (TZ when tight)")
-    ok('<span class="long">Last check was successful @ ' in p and '<span class="short">Checked @ ' in p, "F3: shorter wording when the box is narrow (0.2.7-beta.5: Check every sits under Configure)")
+    ok('<p class="srcstatus">Last synced <b>' in p, "F3 (0.2.8-beta.5): the status line is short everywhere: Last synced (time)")
     ok("<span>Username</span>" in p and "<span>UID</span>" not in p, "F3.3: Username")
     order = [m.group(1) for m in re.finditer(r'<section class="card[^"]*" id="([a-z]+)"', p)]
     ok(order == ["sources", "destinations", "rules", "templates", "activity"], f"F5/F6/F7: section order ({order})")
@@ -64,10 +64,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                 ok(round(pg.locator("#src-ccs .okslot").bounding_box()["width"]) == 80, "F3.4: ✓ Validated is half as wide (80px)")
                 pg.click("#menubtn"); pg.wait_for_timeout(150)
                 bg = pg.evaluate("getComputedStyle(document.getElementById('menu')).backgroundColor")
-                ok(bg == "rgb(232, 239, 255)", f"F1.1: Settings opens in light blue ({bg})")
+                ok(bg in ("rgb(232, 239, 255)", "rgb(238, 241, 247)"), f"F1.1: Settings opens in light blue (the Soft light palette, 0.2.8-beta.5) ({bg})")
             if w == 390:
                 ok(pg.is_visible(".tzlabel .short") and not pg.is_visible(".tzlabel .long"), "F2.1: TZ on a phone")
-                ok(pg.is_visible("#src-ccs .srcstatus .short") and not pg.is_visible("#src-ccs .srcstatus .long"), "F3: the short status line on a phone")
+                ok(pg.is_visible("#src-ccs .srcstatus") and "Last synced" in pg.inner_text("#src-ccs .srcstatus"), "F3: the status line on a phone")
         b.close()
     srv.should_exit = True
 print("FAILS", fails)

@@ -624,7 +624,7 @@ def cond_text(c: dict, tr) -> str:
 
 def action_text(a: dict, tr, color_name, templates: dict[str, dict]) -> str:
     if a["type"] == "color":
-        return f"{tr('Color')} {color_name(a['color'])}"
+        return f"{tr('Color')} ({color_name(a['color'])})"       # the page puts its swatch before the brackets
     if a["type"] == "emoji":
         return f"{a['emoji']} {tr('in front of the title')}"
     if a["type"] == "event":

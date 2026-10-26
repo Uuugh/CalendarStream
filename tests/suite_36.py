@@ -93,8 +93,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(main.source(L)["type"] == "local" and main.calendar_name(L) == "Local" and L in main.destinations("feed")[0]["sources"] and L in main.destinations("feed")[-1]["sources"], "Local: at the top, in the feeds")
     p = c.get("/?month=2026-10").text
     top = p[p.index(f'id="src-{L}"'):p.index('id="src-ccs"')]
-    ok('class="deflabel"' in top and p.count('class="deflabel"') == 1 and "Events added here" in top and "syncnow" not in top and "0 events added here" in top,
-       "F3.2/F3.3: Local is the Default calendar (the label), no Sync Now, its count")
+    ok('class="deflabel"' in top and p.count('class="deflabel"') == 1 and "Events added here" in top and "syncnow" not in top and "events added here</p>" not in top,
+       "F3.2/F3.3: Local is the Default calendar (the label), no Sync Now, empty status lines (beta.5)")
     r = post("/event/save", month="2026-10", title="Dentist", start_date="2026-10-14", start_time="15:00", end_date="2026-10-14", end_time="16:00")
     dentist = next(e for e in main.store.load_events() if e.title == "Dentist")
     ok(r.status_code == 303 and dentist.source == L, "a new event goes into the top calendar")

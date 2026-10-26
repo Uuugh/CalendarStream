@@ -25,7 +25,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     c.post("/setup/upload", auth=A, data={"csrf": csrf}, files={"file": ("Calendar.ics", open(os.path.join(HERE, "data", "Demo.ics"), "rb").read().replace(
         b"END:VCALENDAR", b"BEGIN:VEVENT\r\nUID:sick-1\r\nDTSTART;TZID=America/New_York:20261019T000100\r\nDTEND;TZID=America/New_York:20261019T235959\r\nSUMMARY:SCK\r\nEND:VEVENT\r\nEND:VCALENDAR"))})
     p = c.get("/", auth=A).text
-    ok(re.search(r'<span class="long">Last check was successful @ <b>[^<]+</b></span><span class="short">Checked @ <b>[^<]+</b></span>', p) is not None, "0.2.8 (F3.5): header: Last check was successful @ time")
+    ok(re.search(r'<p class="srcstatus">Last synced <b>[^<]+</b></p>', p) is not None, "0.2.8-beta.5: header: Last synced (time)")
     ok('id="cfg-ccs" hidden' in p, "Configure folded once healthy")
     ok(re.search(r'<svg class="mi arr l"[^>]*>.*?</svg><span class="expandword"><span class="long">Expand for Details or to Edit Configuration</span><span class="short">Expand</span></span><span class="closeword">Close</span><svg class="mi arr r"', p) is not None
        and 'class="statusbox good"' in p and ">Sync Now<" in p, "> Expand < (Close when open), status box with Sync Now")

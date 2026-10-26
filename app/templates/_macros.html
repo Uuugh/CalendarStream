@@ -67,9 +67,11 @@
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <input type="hidden" name="back" value="{{ back }}">
   <div class="pair">
+    {# Laid out like a login (0.2.8-beta.5): the ID as the username, with Copy in its box; the secret as
+       the password (saved, never shown again, so it can't be copied back out). #}
     <label class="fld" for="{{ p }}cid"><span>{{ _('Client ID') }}</span>
-      <input type="text" class="code" id="{{ p }}cid" name="client_id" value="{{ g.client_id }}" spellcheck="false" required
-             placeholder="1234…apps.googleusercontent.com"></label>
+      <span class="inbox"><input type="text" class="code" id="{{ p }}cid" name="client_id" value="{{ g.client_id }}" spellcheck="false" required
+             placeholder="1234…apps.googleusercontent.com">{% if g.client_id %}<button type="button" class="inboxbtn copybtn" onclick="copyField('{{ p }}cid', this)" title="{{ _('Copy') }}" aria-label="{{ _('Copy the Client ID') }}">{{ icon("content_copy", 15) }}</button>{% endif %}</span></label>
     <label class="fld" for="{{ p }}csecret"><span>{{ _('Client secret') }}</span>
       <input type="password" id="{{ p }}csecret" name="client_secret" spellcheck="false" autocomplete="new-password"
              placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else 'GOCSPX-…' }}" {% if not g.has_secret %}required{% endif %}></label>

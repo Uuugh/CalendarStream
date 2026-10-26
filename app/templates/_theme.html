@@ -10,6 +10,7 @@
   --ok:#4ade80; --okbg:#0f2a20; --bad:#f87171; --badbg:#2d1414; --warn:#fbbf24; --warnbg:#2b2110;
   --run:#93b4ff; --runbg:#14203d; --accent:#93b4ff; --onaccent:#0f1218;
   --ev:#1a2a4d; --evtext:#c7d7fe; --allday:#12301f; --alldaytext:#bbf7d0; --custom:#2e1a47; --customtext:#e9d5ff;
+  --tint:18%; --tinttext:70%;
   color-scheme:dark;
 {%- endset %}
 <style>
@@ -30,10 +31,13 @@
                unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF }
   {% endfor %}
   :root {
-    --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec; --soft:#f2f4f7;
-    --ok:#12805c; --okbg:#e6f6ef; --bad:#b42318; --badbg:#fdecea; --warn:#a15c07; --warnbg:#fef4e2;
-    --run:#1d4ed8; --runbg:#e8efff; --accent:#1d4ed8; --onaccent:#fff;
-    --ev:#e8efff; --evtext:#1e3a8a; --allday:#e6f6ef; --alldaytext:#14532d; --custom:#f3e8ff; --customtext:#5b21b6;
+    {# Light is the "Soft" palette (0.2.8-beta.5): warm off-white, lighter lines, softer text, a calm slate
+       blue, paler status colors and event tints. Dark keeps its own (dark_tokens). #}
+    --bg:#f7f6f3; --card:#fdfcfa; --text:#2b2f36; --muted:#7a8291; --line:#e8e4de; --soft:#f1efeb;
+    --ok:#2f7d62; --okbg:#eef5f0; --bad:#b4483c; --badbg:#faeeeb; --warn:#946a24; --warnbg:#faf3e6;
+    --run:#40609c; --runbg:#eef1f7; --accent:#40609c; --onaccent:#fff;
+    --ev:#eef1f7; --evtext:#2f4a7d; --allday:#eef5f0; --alldaytext:#2b5a46; --custom:#f4eef8; --customtext:#5e3f7a;
+    --tint:12%; --tinttext:60%;
     --font:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
     --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
     --r:8px; --rbox:12px;

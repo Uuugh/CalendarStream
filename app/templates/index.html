@@ -156,34 +156,43 @@
         </div>
 
         {# Check for updates: how often, for this install's channel (beta or stable) only. #}
+        {# Updates (0.2.8-beta.5) laid out like a module header, with nothing to expand: its title over the
+           channel, the state over the next check (on the right), and the status box: the state over
+           Check now (or Upgrade). Under it, how often to check and Auto-update, changed in place. #}
+        {% set ucls, ulabel = ("warn", _('Update available')) if update.available else (("good", _('Up to date')) if update.info.newest else ("run", _('Not checked'))) %}
         <div class="mgroup" id="updates">
-          <div class="mhead">{{ _('Updates') }}</div>
-          {# "Subscribed to beta versions (Up to date). Next check at 10:19." above the frequency and Check now. #}
-          <p class="mnote" style="margin:0 0 6px">
-            {{ _('Subscribed to beta versions') if update.channel == 'beta' else _('Subscribed to stable versions') }}
-            ({% if update.available %}<b>{{ _('version {v} available', v=update.available) }}</b>{% elif update.info.newest %}{{ _('Up to date') }}{% else %}{{ _('not checked yet') }}{% endif %}).
-            {% if update.next %}{{ _('Next check at {when}.', when=update.next) }}{% else %}{{ _('Automatic checks are off.') }}{% endif %}
-            {% if update.available %}{{ _('Press <b>Update now</b> next to the version at the top.') if update.can_update else _('Run the installer again to update.') }}{% endif %}
-            {% if update.info.error %}<span class="bad">{{ msg(update.info.error) }}</span>{% endif %}</p>
-          {# Saved in place, like the rest of the page: only Updates and the version at the top change (beta.3) #}
           <form method="post" action="/settings/updates" class="clientform" data-swap="#updates|.topbar .ver">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="autoform" value="1">
+            <div class="module bare"><div class="srchead">
+              <div class="srcleft">
+                <div class="namebox srcname">{{ _('Updates') }}</div>
+                <div class="namebox srcnote">{{ _('Beta versions') if update.channel == 'beta' else _('Stable versions') }}</div>
+              </div>
+              <div class="srcright">
+                <p class="srcstatus">{% if update.available %}{{ _('Version <b>{v}</b> is out', v=update.available) }}{% elif update.checked %}{{ _('Checked <b>{when}</b>', when=update.checked) }}{% else %}&nbsp;{% endif %}</p>
+                <p class="srcnext">{% if update.next %}{{ _('Next check @ {when}', when=update.next) }}{% else %}{{ _('Automatic checks are off') }}{% endif %}</p>
+              </div>
+              <div class="statusbox {{ ucls }}">
+                {{ chip(ucls, ulabel) }}
+                {# with a newer version out, Upgrade instead of Check now (the updater, or how to update) #}
+                {% if update.available and update.can_update %}<button type="button" class="upgradebtn">{{ icon("upgrade", 15) }}{{ _('Upgrade') }}</button>
+                {% elif update.available %}<a class="btn upgradebtn" href="https://github.com/Uuugh/CalendarStream#updating" target="_blank" rel="noopener" title="{{ _('Run the installer again to update.') }}">{{ icon("upgrade", 15) }}{{ _('Upgrade') }}</a>
+                {% else %}<button class="checknow" name="action" value="check">{{ _('Check now') }}</button>{% endif %}
+              </div>
+            </div></div>
             <div class="pair updrow">
               <label class="fld" for="updfreq"><span>{{ _('Check for updates') }}</span>
               <select id="updfreq" name="frequency" onchange="this.form.requestSubmit()">
                 {% for f in update.frequencies %}<option value="{{ f }}"{% if f == update.frequency %} selected{% endif %}>{{ {"hourly": _('Hourly'), "weekly": _('Weekly'), "monthly": _('Monthly'), "never": _('Never')}[f] }}</option>{% endfor %}
               </select></label>
-              {# Auto-update (beta.3), left of Check now: installs newer versions by itself; needs the updater #}
+              {# Auto-update: installs newer versions by itself; needs the updater #}
               <label class="autoupd" title="{{ _('Install newer versions by themselves (with the updater)') if update.can_update else _('Needs the updater: run the installer again and answer yes to updating from the status page.') }}">
                 <input type="checkbox" name="auto" value="1"{% if update.auto %} checked{% endif %}{% if not update.can_update and not update.auto %} disabled{% endif %} onchange="this.form.requestSubmit()"> {{ _('Auto-update') }}</label>
-              {# F2.2: with a newer version out, Upgrade instead of Check now (the updater, or how to update) #}
-              {% if update.available and update.can_update %}<button type="button" class="upgradebtn">{{ icon("upgrade", 17) }}{{ _('Upgrade') }}</button>
-              {% elif update.available %}<a class="btn upgradebtn" href="https://github.com/Uuugh/CalendarStream#updating" target="_blank" rel="noopener" title="{{ _('Run the installer again to update.') }}">{{ icon("upgrade", 17) }}{{ _('Upgrade') }}</a>
-              {% else %}<button class="ghost" name="action" value="check">{{ _('Check now') }}</button>{% endif %}
             </div>
+            {% if update.info.error %}<p class="check bad">{{ icon("cancel", 15) }} {{ msg(update.info.error) }}</p>{% endif %}
+            {% if not update.updater %}<p class="mnote" style="margin:5px 0 0">{{ _('To update from this page (Upgrade, Auto-update), run the installer again and answer yes to updating from the status page.') }}</p>
+            {% elif update.can_update is false %}<p class="mnote" style="margin:5px 0 0">{{ _('This install runs an exact version (IMAGE_TAG): update it with the installer.') }}</p>{% endif %}
           </form>
-          <p class="mnote" style="margin:6px 0 0">{% if update.updater %}{{ _('Updater: running, so updates can be installed from this page.') }}{% if update.can_update is false %} {{ _('(Not for an exact version in IMAGE_TAG.)') }}{% endif %}
-            {% else %}{{ _('Updater: not set up. To update from this page, run the installer again and answer yes to updating from the status page.') }}{% endif %}</p>
         </div>
       </div>
     </div>
@@ -234,7 +243,7 @@
   {% macro src_rule(r, x) -%}
   <div class="ruleline{% if r.id in conflicted %} conflicted{% endif %}" data-rule-id="{{ r.id }}" data-sid="{{ x.id }}">
     <div class="rulebox srule{% if r.local %} local{% endif %}">
-      <span class="rulelabel" title="{{ r.label }}">{{ rule_swatch(r) }}{{ r.label }}</span>
+      <span class="rulelabel" title="{{ r.label }}">{{ r.html }}</span>
       <span class="scope calbadge {{ 'local' if r.local else 'shared' }}"{{ badge_style(r.apply) }} title="{{ _('A rule for this calendar only') if r.local else _('A rule several calendars use: changing it changes it for all of them') }}">{{ _('This calendar') if r.local else (_('All calendars') if r.apply == 'all' else _('{n} calendars', n=r.apply|length)) }}</span>
       <button type="button" class="ghost editrule" title="{{ _('Change this rule') }}" aria-label="{{ _('Change this rule') }}">{{ icon("edit", 17) }}</button>
       <button type="button" class="ghost unapply" title="{{ _('Take this rule off {name}', name=x.name) }}" aria-label="{{ _('Take this rule off {name}', name=x.name) }}">{{ trash }}</button>
@@ -438,9 +447,11 @@
         {# "Last check was successful @ 14:34" over "Next check @ 14:49" (on the right, beside Sync Now);
            what each download changed is in Activities and Logs (F3.5, F3.6) #}
         <div class="srcright">
-          {% if local %}<p class="srcstatus">{{ _('{n} events added here', n=x.added) }}</p><p class="srcnext">&nbsp;</p>
+          {# The standard header (0.2.8-beta.5), the same for calendars and feeds: "Last synced 00:31" over
+             "Next check @ 00:44", on the right by the status box; a line with nothing to say is left empty. #}
+          {% if local %}<p class="srcstatus">&nbsp;</p><p class="srcnext">&nbsp;</p>
           {% else %}
-          <p class="srcstatus">{% if x.last_check == "ok" %}<span class="long">{{ _('Last check was successful @ <b>{when}</b>', when=x.check_when) }}</span><span class="short">{{ _('Checked @ <b>{when}</b>', when=x.check_when) }}</span>{% elif x.last_check == "failed" %}<span class="bad-text"><span class="long">{{ _('Last check failed @ <b>{when}</b>', when=x.check_when) }}</span><span class="short">{{ _('Failed @ <b>{when}</b>', when=x.check_when) }}</span></span>{% else %}{{ msg(S.message) or _('Not checked yet') }}{% endif %}</p>
+          <p class="srcstatus">{% if x.last_check == "ok" %}{{ _('Last synced <b>{when}</b>', when=x.check_when) }}{% elif x.last_check == "failed" %}<span class="bad-text">{{ _('Sync failed <b>{when}</b>', when=x.check_when) }}</span>{% elif S.message %}{{ msg(S.message) }}{% else %}&nbsp;{% endif %}</p>
           <p class="srcnext">{% if x.next_when and S.status not in ("paused", "setup") %}{{ _('Next check @ {when}', when=x.next_when) }}{% elif S.status == "paused" %}{{ _('Automatic checks paused') }}{% else %}&nbsp;{% endif %}</p>
           {% endif %}
         </div>
@@ -556,7 +567,7 @@
                 {% for r in all_rules if x.name not in r.used and r.apply != 'all' %}
                 <form method="post" action="/rules/apply" class="inline" data-swap="#src-{{ x.id }} .rules|#rules .rulelist|#ruleconflicts|#rulecount|#cal|#activity|#ruledata">
                   <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}"><input type="hidden" name="sid" value="{{ x.id }}">
-                  <button class="linkbtn" role="menuitem" title="{{ _('Use this rule in {name} too', name=x.name) }}">{{ rule_swatch(r) }}{{ r.label }}</button></form>
+                  <button class="linkbtn" role="menuitem" title="{{ _('Use this rule in {name} too', name=x.name) }}">{{ r.html }}</button></form>
                 {% endfor %}
               </div>
             </div></div>
@@ -635,9 +646,10 @@
           <div class="namebox srcnote">{{ (_('Google Calendar · feed') if d.for == 'google' else _('Calendar feed')) if feed else _('Google calendar') }}</div>
         </div>
         <div class="srcright">
-          <p class="destsum">{{ d.names|join(', ') if d.names else _('No sources') }}
-            · {% if d.start or d.end %}{{ d.start or '∞' }} – {{ d.end or '∞' }}{% else %}<span class="long">{{ _('All dates') }}</span><span class="short">∞</span>{% endif %}</p>
-          {% if not feed and d.cal.calendar_id and d.last_sync %}<p class="destsum">{{ _('{n} events', n=d.cal.events or 0) }} · {{ _('last synced {when}', when=d.last_sync) }}</p>{% endif %}
+          {# The standard header (0.2.8-beta.5): what it got last, over what's next (empty when nothing) #}
+          <p class="srcstatus" title="{{ d.names|join(', ') if d.names else _('No sources') }}">{% if feed %}{% if d.reads.google %}{{ _('Last read by Google <b>{when}</b>', when=d.reads.google) }}{% elif d.reads.other %}{{ _('Last read <b>{when}</b>', when=d.reads.other) }}{% else %}&nbsp;{% endif %}
+            {% elif d.last_sync %}{{ _('Last synced <b>{when}</b>', when=d.last_sync) }}{% else %}&nbsp;{% endif %}</p>
+          <p class="srcnext">&nbsp;</p>
         </div>
         <div class="statusbox {{ dcls }}">{{ chip(dcls, dlabel) }}{% if not feed and g.connected %}{{ syncbtn("/google/sync", "google", g.running) }}{% endif %}</div>
       </div>
@@ -730,8 +742,8 @@
   <section class="card section modsection{% if sections.rules %} open{% endif %}" id="rules" data-section="rules" aria-labelledby="rulestitle">
     <div class="shead">
       <span class="bigtitle" id="rulestitle">{{ icons.rules|safe }}{{ _('All Rules') }}{{ help(_('Every rule, highest priority first, with the calendars it applies to. Drag a rule by its handle (or use ▲ ▼) to change its priority; ✎ changes it, the copy button makes a copy to change, the bin deletes it. How rules work is at the bottom of the rule dialog.')) }}</span>
-      <button type="button" class="ghost plus newrule headplus" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">{{ icon("add", 24) }}</button>
       <div class="statusbox countbox {{ 'warn' if rule_conflicts else 'good' }}" id="rulecount"{% if rule_conflicts %} title="{{ _('{n} to check', n=rule_conflicts|length) }}"{% endif %}>{{ chip('warn' if rule_conflicts else 'good', (_('1 Rule') if all_rules|length == 1 else _('{n} Rules', n=all_rules|length)) if not rule_conflicts else _('{n} to check', n=rule_conflicts|length)) }}</div>
+      <button type="button" class="ghost plus newrule headplus" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">{{ icon("add", 24) }}</button>
     </div>
     {{ sectionline("rules", sections.rules) }}
     <div class="sbody" id="rules-body"{% if not sections.rules %} hidden{% endif %}>
@@ -752,7 +764,7 @@
       {% for r in all_rules %}
       <div class="ruleline{% if r.id in conflicted %} conflicted{% endif %}" data-rule-id="{{ r.id }}">
         <div class="rulebox lib">
-          <span class="rulelabel" title="{{ r.label }}">{{ rule_swatch(r) }}{{ r.label }}</span>
+          <span class="rulelabel" title="{{ r.label }}">{{ r.html }}</span>
           <span class="ruleused calbadge"{{ badge_style(r.apply) }}>{{ _('All calendars') if r.apply == 'all' else (r.used|join(', ') if r.used else _('No calendar yet')) }}</span>
           <button type="button" class="ghost editrule" title="{{ _('Change this rule') }}" aria-label="{{ _('Change this rule') }}">{{ icon("edit", 17) }}</button>
           <form method="post" action="/rules/clone" class="inline" data-swap="#rules|#activity|#ruledata">
@@ -773,8 +785,8 @@
   <section class="card section modsection{% if sections.templates %} open{% endif %}" id="templates" data-section="templates" aria-labelledby="tplstitle">
     <div class="shead">
       <span class="bigtitle" id="tplstitle">{{ icons.templates|safe }}{{ _('Event Templates') }}{{ help(_('Ready-made events, for rules that add events and for adding an event by hand.')) }}</span>
-      <button type="button" class="ghost plus addfirst headplus" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 24) }}</button>
       <div class="statusbox countbox good" id="tplcount">{{ chip('good', _('1 Template') if templates|length == 1 else _('{n} Templates', n=templates|length)) }}</div>
+      <button type="button" class="ghost plus addfirst headplus" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 24) }}</button>
     </div>
     {{ sectionline("templates", sections.templates) }}
     <div class="sbody" id="templates-body"{% if not sections.templates %} hidden{% endif %}>

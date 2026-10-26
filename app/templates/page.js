@@ -656,7 +656,12 @@ function condRow(c) {
 }
 function actFields(a) {
   var t = a.type;
-  if (t === 'color') return '<input type="color" class="aval" value="' + esc(a.color || '#d50000') + '" aria-label="' + esc(RD.t.color) + '">';
+  if (t === 'color') {      // one of Google's 11 colors (0.2.8-beta.5); an older rule's own color shows as the nearest
+    var cur = nearestPalette(a.color || RD.palette[0][0]);
+    return '<input type="hidden" class="aval" value="' + esc(cur) + '"><span class="palette" role="radiogroup" aria-label="' + esc(RD.t.color) + '">'
+      + RD.palette.map(function (p) { return '<button type="button" class="pal" role="radio" data-c="' + esc(p[0]) + '" title="' + esc(p[1]) + '" aria-label="' + esc(p[1])
+        + '" aria-checked="' + (p[0] === cur) + '" style="--c:' + esc(p[0]) + '"></button>'; }).join('') + '</span>';
+  }
   if (t === 'emoji') return '<input type="text" class="aval emoji" maxlength="16" value="' + esc(a.emoji || '') + '" aria-label="' + esc(RD.t.emoji) + '" placeholder="✈️">'
       + '<span class="emojis">' + RD.emoji.map(function (x) { return '<button type="button" class="ghost emo">' + x + '</button>'; }).join('') + '</span>';
   if (t === 'event') {
@@ -671,6 +676,14 @@ function actFields(a) {
       + '</option><option value="length"' + (a.to === 'length' ? ' selected' : '') + '>' + esc(RD.t.toLength) + '</option></select>'
       + (a.to === 'length' ? '<input type="text" class="amin dur" value="' + hm(a.minutes || 60) + '" title="' + esc(RD.t.length) + '">' : '');
   return '';
+}
+function nearestPalette(hex) {
+  function rgb(h) { return [1, 3, 5].map(function (i) { return parseInt(h.substr(i, 2), 16); }); }
+  if (!/^#[0-9a-f]{6}$/i.test(hex || '')) return RD.palette[0][0];
+  var c = rgb(hex), best = RD.palette[0][0], dist = Infinity;
+  RD.palette.forEach(function (p) { var q = rgb(p[0]), d = (c[0] - q[0]) * (c[0] - q[0]) + (c[1] - q[1]) * (c[1] - q[1]) + (c[2] - q[2]) * (c[2] - q[2]);
+    if (d < dist) { dist = d; best = p[0]; } });
+  return best;
 }
 function actRow(a) {
   a = a || { type: 'color', color: '#d50000' };
@@ -795,6 +808,9 @@ actBox.addEventListener('click', function (e) {
   if (e.target.closest('.adel')) { row.remove(); drawActs(); return; }
   var emo = e.target.closest('.emo');
   if (emo) row.querySelector('.aval.emoji').value = emo.textContent;
+  var pal = e.target.closest('.pal');
+  if (pal) { row.querySelector('.aval').value = pal.dataset.c;
+             row.querySelectorAll('.pal').forEach(function (b) { b.setAttribute('aria-checked', String(b === pal)); }); }
 });
 actBox.addEventListener('change', function (e) {
   var row = e.target.closest('.act');

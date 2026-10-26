@@ -34,7 +34,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     c.post("/settings/updates", auth=A, data={"csrf": csrf, "action": "check"})
     ok(asked[-1] == "STABLE" and not main.updates.available(), "stable install: checks STABLE; beta 9.9.9 not offered")
     p = c.get("/", auth=A).text
-    ok('class="newver"' not in p and "Subscribed to stable versions" in p and "(Up to date)." in p and "Next check at" in p, "stable: no (version) in the title; 'Up to date'")
+    ok('class="newver"' not in p and ">Stable versions<" in p and ">Up to date<" in p and "Next check @" in p, "stable: no (version) in the title; 'Up to date'")
     REMOTE["STABLE"] = "9.2.0\n"
     c.post("/settings/updates", auth=A, data={"csrf": csrf, "action": "check"})
     p = c.get("/", auth=A).text
@@ -44,7 +44,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(main.updates.info() == {}, "switching channel forgets the other channel's answer")
     c.post("/settings/updates", auth=A, data={"csrf": csrf, "action": "check"})
     p = c.get("/", auth=A).text
-    ok(asked[-1] == "VERSION" and main.updates.available() == "9.9.9" and "(v9.9.9 is available)" in p and "Subscribed to beta versions" in p and "version 9.9.9 available" in p, "beta install: checks VERSION; 9.9.9 offered")
+    ok(asked[-1] == "VERSION" and main.updates.available() == "9.9.9" and "(v9.9.9 is available)" in p and ">Beta versions<" in p and "Version <b>9.9.9</b> is out" in p, "beta install: checks VERSION; 9.9.9 offered")
     os.environ["IMAGE_TAG"] = "0.1.9"
     ok(U.channel() == "stable", "a pinned version follows stable")
     # frequency

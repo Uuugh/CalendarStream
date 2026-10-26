@@ -26,6 +26,7 @@ from fastapi.exception_handlers import http_exception_handler as default_http_er
 from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
+from markupsafe import Markup, escape
 from fastapi.templating import Jinja2Templates
 
 from . import __version__, i18n, icons
@@ -248,9 +249,28 @@ def color_name(color: str) -> str:
 
 
 def rule_label(r: dict, lang: str = "en") -> str:
-    """A rule in one line: its title, else e.g. 'Text contains “RDO” → Color Tomato'."""
+    """A rule in one line: its title, else e.g. 'Text contains “RDO” → Color (Tomato)'."""
     tr = lambda text, **kw: str(i18n.tr(lang, text, **kw))
     return rules_mod.label(r, tr, color_name, {t["id"]: t for t in event_templates()})
+
+
+def _swatch(color: str) -> str:
+    return f'<span class="swatch" style="--c:{escape(color)}" aria-hidden="true"></span>'
+
+
+def rule_label_html(r: dict, lang: str = "en") -> Markup:
+    """The rule's line on the page (0.2.8-beta.5): each color's swatch right after the word Color, its
+    name in brackets ("Color ■ (Tomato)"); a rule with a title has its first color's swatch before it."""
+    text = rule_label(r, lang)
+    colors = [a["color"] for a in r["actions"] if a["type"] == "color"]
+    if r["title"]:
+        return Markup((_swatch(colors[0]) + " " if colors else "") + str(escape(text)))
+    html = str(escape(text))
+    word = str(escape(str(i18n.tr(lang, "Color"))))
+    for c in dict.fromkeys(colors):
+        piece = str(escape(f"({color_name(c)})"))
+        html = html.replace(f"{word} {piece}", f"{word} {_swatch(c)} {piece}", 1)
+    return Markup(html)
 
 
 def migrate_rules():
@@ -1618,7 +1638,7 @@ def source_view(request: Request, sid: str, lang: str, sections: dict) -> dict:
                           if (S.last_success or S.last_attempt) else "",
             "added": sum(1 for c in customs_for(sid)),
             # its rules, highest priority first (its own ones first, unless moved)
-            "rules": [{**r, "label": rule_label(r, lang), "local": rules_mod.is_local(r, sid)} for r in source_rules(sid)],
+            "rules": [{**r, "label": rule_label(r, lang), "html": rule_label_html(r, lang), "local": rules_mod.is_local(r, sid)} for r in source_rules(sid)],
             "preset": (source(sid) or {}).get("preset", "other"), "next_when": dates_for(lang).when(S.next_run, now().date()) if S.next_run else "",
             # the note under the title: as set (even empty), else the kind of calendar
             "note": store.get(skey(sid, "note")) if store.get(skey(sid, "note")) is not None else default_note(sid)}
@@ -1670,6 +1690,8 @@ def rule_js(lang: str) -> dict:
             "days": [tr(d) for d in rules_mod.DAY_NAMES],
             "calendars": [[sid, calendar_name(sid)] for sid in source_ids()],
             "emoji": ["✈️", "🏝️", "📚", "🏠", "🚗", "⭐", "❗", "🛌", "🎓", "🎉"],
+            # Google's 11 event colors: a rule's Color is one of them (0.2.8-beta.5), as an event's is
+            "palette": [[hexc, str(i18n.tr(lang, name))] for name, hexc in GOOGLE_COLORS.values()],
             "t": {"and": tr("and"), "or": tr("or"), "weeks": tr("weeks"), "days": tr("days"), "hours": tr("hours"),
                   "minutes": tr("minutes"), "caps": tr("Match capitals exactly"), "remove": tr("Take this line out"),
                   "newEvent": tr("New event…"), "noCalendar": tr("No calendar yet"), "color": tr("Color"), "title": tr("Title"), "location": tr("Location"), "allDay": tr("All day"),
@@ -1696,7 +1718,7 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
         "csrf": CSRF_TOKEN, "name": calendar_name(), "srcs": srcs,
         "dests": [dest_view(request, d, lang, sections) for d in destinations()], "dest_types": DESTINATION_TYPES,
         # every rule, highest priority first, with its label and calendars (All Rules; "+ Add a rule")
-        "all_rules": [{**r, "label": rule_label(r, lang),
+        "all_rules": [{**r, "label": rule_label(r, lang), "html": rule_label_html(r, lang),
                        "used": [calendar_name(x) for x in source_ids() if rules_mod.applies(r, x)]} for r in all_rules()],
         "rule_js": rule_js(lang),
         "rule_conflicts": rule_conflicts(lang),

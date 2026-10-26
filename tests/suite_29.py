@@ -37,11 +37,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     main.migrate_rules()
     eff = main.source_rules("ccs")
     words = [main.rule_label(r) for r in eff]
-    ok(len(eff) == 3 and "“RDO” → Color Tomato" in words[0] and "“VAC” → Color Basil" in words[1] and eff[2]["actions"] == [{"type": "change", "to": "length", "minutes": 120}]
+    ok(len(eff) == 3 and "“RDO” → Color (Tomato)" in words[0] and "“VAC” → Color (Basil)" in words[1] and eff[2]["actions"] == [{"type": "change", "to": "length", "minutes": 120}]
        and all(r["apply"] == ["ccs"] for r in eff), f"0.2.5 → 0.2.8: own rules, then templates, then items without an end (2:00); 24-hour events kept ({words})")
     ok(main.store.get("calendar_tags") is None and main.store.get("defaults") is None, "the old settings are gone")
     p = c.get("/", auth=A).text
-    ok("“RDO” → Color Tomato" in p and re.search(r'<span class="ruleused calbadge" data-cal="one" style="--c1:#[0-9a-f]{6}">United CCS Schedule</span>', p) is not None, "All Rules lists them, with who uses them")
+    ok("(Tomato)" in p and re.search(r'<span class="ruleused calbadge" data-cal="one" style="--c1:#[0-9a-f]{6}">United CCS Schedule</span>', p) is not None, "All Rules lists them, with who uses them")
     # Note (F3.1)
     r = post("/feed/tags", sid="ccs", name="United Airlines Schedule", note="Base EWR")
     p = c.get("/", auth=A).text

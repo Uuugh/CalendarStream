@@ -29,9 +29,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(main.admin_email() == "", "F1: empty removes it")
     ok(len(re.findall(r'<input[^>]*data-strength', p)) == 2 and "_pwfield" not in p and "function level(pw, min)" in p, "F2: strength bar on the chosen passwords (page login, CCS+)")
     ok("Show password" in p, "F2: eye button script")
-    ok("Subscribed to stable versions" in p and "(not checked yet)." in p and "Next check at" in p, "F6.3: one line: channel, state, next check")
+    ok(">Stable versions<" in p and ">Not checked<" in p and "Next check @" in p, "F6.3 (beta.5: as a module header): channel, state, next check")
     main.updates.set_frequency("never")
     p = c.get("/", auth=A).text
-    ok("Automatic checks are off." in p, "F6.3: never → off")
+    ok("Automatic checks are off" in p, "F6.3: never → off")
     ok(main.store.get("public_url_imported") is True and main.public_url() == "", "F6.1: nothing to import from an empty PUBLIC_URL")
 print("FAILS", fails)

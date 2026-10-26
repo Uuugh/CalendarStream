@@ -53,7 +53,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     seed.rule(c, csrf, "", [seed.text("RDO")], [{"type": "color", "color": "#d50000"}], ["ccs"])
     seed.rule(c, csrf, "", [seed.text("LSR")], [{"type": "color", "color": "#0b8043"}], ["ccs"])
     p = c.get("/?month=2026-10").text
-    ok("“RDO” → Color Tomato" in p and "“LSR” → Color Basil" in p and "--sw:color-mix(in srgb, #d50000" in p, "i3: rules saved, shown in Rules, the source and the key")
+    ok("“RDO” → Color <span class=\"swatch\" style=\"--c:#d50000\" aria-hidden=\"true\"></span> (Tomato)" in p and "“LSR” → Color <span class=\"swatch\" style=\"--c:#0b8043\" aria-hidden=\"true\"></span> (Basil)" in p and "--sw:color-mix(in srgb, #d50000" in p, "i3: rules saved, shown in Rules, the source and the key")
     ok("United Airlines Schedule" in p, "i2: name saved")
     ok('class="pin"' not in p and 'class="linkbtn evclose"' in p and 'evalarm' in p and 'data-add="/event?date=2026-10-' in p, "0.2.8: Close and the bell instead of the pin; add-on-click days")
 

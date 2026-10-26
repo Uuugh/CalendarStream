@@ -57,7 +57,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     dup = seed.rule(c, csrf, "", [seed.text("rdo")], [{"type": "color", "color": "#0b8043"}], ["ccs"])
     p = c.get("/").text
     box = p[p.index('id="ruleconflicts"'):]; box = box[:box.index('<div class="rulelist')]
-    ok("never sets the color" in box and "Put “Text whole word “rdo” → Color Basil” first" in box and "Keep as is" in box and "to check" in p,
+    ok("never sets the color" in box and "Put “Text whole word “rdo” → Color (Basil)” first" in box and "Keep as is" in box and "to check" in p,
        "All Rules says the new RDO color never shows, with what to do")
     key = re.search(r'name="key" value="([^"]+)"', box)[1]
     ok(post("/rules/resolve", key=key, how="up").status_code == 303 and [r["id"] for r in main.source_rules("ccs")][0] == dup, "Put it first: it moves above")

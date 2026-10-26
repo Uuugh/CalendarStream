@@ -37,7 +37,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(main.updater.ready, "F1.1: the updater is found (its /livez answers)")
     p = c.get("/").text
     ok('class="updslot" data-state="ready" data-from="0.2.7-beta.2" data-to="0.2.7-beta.3"' in p and ">Update now</button>" in p, "F1.2: Update now next to (v0.2.7-beta.3 is available)")
-    ok("Updater: running" in p, "Settings says the updater is running")
+    ok("Updater: running" not in p and "run the installer again and answer yes to updating" not in p, "0.2.8-beta.5: with the updater, Settings doesn't need to say so")
     r = c.post("/update/now", data={"csrf": csrf}, headers={"X-CS-Async": "1"})
     path, q, auth = asked[-1]
     ok(r.status_code == 200 and r.json()["to"] == "0.2.7-beta.3" and path == "/v1/update" and q == {"image": ["ghcr.io/uuugh/calendarstream"], "async": ["true"]} and auth == "Bearer sekret-token",
@@ -78,6 +78,6 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     fake.shutdown()
     asyncio.run(main.updater.probe())
     p = c.get("/").text
-    ok(not main.updater.ready and 'class="updslot"' not in p and "Updater: not set up" in p, "no updater running: no Update now; Settings says how to add it")
+    ok(not main.updater.ready and 'class="updslot"' not in p and "To update from this page (Upgrade, Auto-update), run the installer again" in p, "no updater running: no Update now; Settings says how to add it")
     srv.should_exit = True
 print("FAILS", fails)

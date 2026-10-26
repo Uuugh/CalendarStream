@@ -9,7 +9,43 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.4**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.5**
+
+## 0.2.8-beta.5 — 2026-10-26
+
+### Added
+- **F1.1** ☰ Settings → Google Calendar sync: a **Copy** button inside the Client ID box, laid out like
+  the Status-page login's Password box (the button sits in the field). The client secret has no Copy:
+  once saved it's sealed and never sent back to the page.
+- **F7** Light mode now uses the softer palette (warm off-white background, quieter lines, muted
+  blue accent and gentler event colors). It keeps the name **Light** and its icon; Dark is unchanged.
+
+### Changed
+- **I1** A rule's **Color** picks from Google Calendar's 11 event colors (Tomato, Flamingo, … Graphite)
+  instead of a free color picker, so a rule's color is always one Google can show. A rule saved
+  earlier with another color shows the nearest of the 11 when it's opened.
+- **F1.2** ☰ Settings → **Updates** is laid out like a module header, always open: Updates and the
+  channel (Stable or Beta versions) on the left, "Checked …" / "Next check @ …" on the right, then
+  the status box (Up to date, Update available or Not checked) with **Check now** or **Upgrade**.
+  Under it, **Check for updates** and **Auto-update** are changed in place.
+- **F2** Rule lines everywhere read **Color ■ (Name)**: the color block right after "Color", the
+  color's name in parentheses (e.g. "RDO" → Color ■ (Tomato)).
+- **F3** **All Rules**: the + is in the top right corner, after the count box.
+- **F4** **Event Templates**: the + is in the top right corner, after the count box.
+- **F5** A calendar's header says **Last synced 00:31** (or **Sync failed 00:31**) instead of "Last
+  check was successful @ 00:31"; feeds use the same words.
+- **F6** Calendar and feed module headers share one layout: line 1, the color (calendars only), the
+  name, then on the right the last sync and the status box (Healthy…); line 2, the note, then on the
+  right "Next check @ …" and Sync Now. A line with nothing to say is left blank (Local has no sync,
+  a feed has no next check). A feed shows **Last read by Google …** or **Last read …** (when an app
+  last fetched it); a Google calendar **Last synced …**. A feed's calendars and dates moved into
+  the header's tooltip.
+- **R1** The CalendarStream Theme Rules pictures (`build_rules/`, Light and Dark) show the whole
+  page with each part named where it is, a module open in every section, and the Close bar.
+
+### Removed
+- **F1.3** "Updater: running, so updates can be installed from this page." It said nothing the
+  Upgrade and Auto-update controls don't; a note remains only when the updater isn't set up.
 
 ## 0.2.8-beta.4 — 2026-10-26
 

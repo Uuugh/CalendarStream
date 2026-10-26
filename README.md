@@ -184,8 +184,9 @@ logins or setup codes lock an address out for 15 minutes.
   it) and **Other** (any link starting with `webcal://` or ending in `.ics`; repeating events are
   shown from a year back to two years ahead). Each calendar is a **module**. Its header is 50 px
   tall and is all a folded module shows: its color (the color of its events; changed while expanded),
-  its title over its note (e.g. "CCS+ Calendar Sync"), on the right "Last check was successful @
-  07:59" (or failed; what changed is in Activities and Logs) over "Next check @ 08:59", beside its
+  its title over its note (e.g. "CCS+ Calendar Sync"), on the right "Last synced 07:59" (or "Sync
+  failed 07:59"; what changed is in Activities and Logs) over "Next check @ 08:59" (a line with
+  nothing to say, like Local's, is left blank), beside its
   status over **Sync Now** (while it syncs, the button fills the box), in a box of the same size in every module. **Sync Now** says
   **Syncing…** at once, then pulses green (**Synced**) or yellow (**Failed**) and goes back to Sync
   Now; the status, the calendar and the log update in place, without reloading the page.
@@ -214,14 +215,16 @@ logins or setup codes lock an address out for 15 minutes.
 
   A feed's module leads with its buttons, **Add to Google Calendar**, **Add to Apple / Outlook** and
   **Open subscribe page** (a page to share it), then its **Feed link** with Copy, for any other app
-  or if a button doesn't work. Each is a module with the same 50 px header as a calendar's (name over
-  kind, its calendars and dates, status), and
+  or if a button doesn't work. Each is a module with the same 50 px header as a calendar's: name over
+  kind, then on the right "Last read by Google 07:59" (or "Last read …", when an app last fetched
+  it; a Google calendar says "Last synced …"), with its calendars and dates in the tooltip, and its
+  status; and
   **▸ Expand for Details or to Edit Configuration ◂** opens the rest: the name, a **Start** and
   **End** date (empty = no limit), the calendars it gets, a feed's links, and Remove / Cancel | Save. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
   part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
   an old link) and existing subscriptions work again.
-- **All Rules** (looks like a module: its header shows **+** and the number of rules in a box, green,
-  or yellow with "n to check" while a rule conflicts; **Expand for Details** opens it): every rule,
+- **All Rules** (looks like a module: its header shows the number of rules in a box, green, or
+  yellow with "n to check" while a rule conflicts, with **+** in the top right corner; **Expand for Details** opens it): every rule,
   highest priority first, with the calendars it applies to in a badge in their colors (stripes for
   several, white for All calendars). **+** or ✎ opens the rule dialog (with **How rules work** at its
   bottom), the copy button makes a copy for no calendar yet, the bin deletes it, the handle changes
@@ -235,7 +238,8 @@ logins or setup codes lock an address out for 15 minutes.
     no end time) or is whole days. Join lines with **and** / **or** (and goes first); click the grey
     **(** and **)** to group lines, the outer brackets in a different color (a **)** with no **(**
     gets one on the first line of its group).
-  - **Then** (+ adds more): **Color**, **Add emoji to title**, **Create event** (a new one, or from
+  - **Then** (+ adds more): **Color** (one of Google Calendar's 11 event colors, so Google can always
+    show it; rule lines read "Color ■ (Tomato)"), **Add emoji to title**, **Create event** (a new one, or from
     an event template, some time before the start, after the start or after the end), **Change**
     (to all-day, with the original time in the notes, or to a length) and **Record changes** (when
     the source changes a matching event, a note on it and a line in Activities and Logs).
@@ -249,7 +253,7 @@ logins or setup codes lock an address out for 15 minutes.
   A new install starts with two rules for every calendar: **Items without an end time** (from
   `DEFAULT_EVENT_HOURS`) and **24-hour events** (shown as all-day; CCS+ writes full days as
   00:01–23:59:59). Rules from earlier versions are converted, in the same order.
-- **Event Templates** (like All Rules: **+**, "2 Templates" in a box, Expand for Details): ready-made events (title, length or all day, location, color) for Add-event
+- **Event Templates** (like All Rules: "2 Templates" in a box, **+** in the top right corner, Expand for Details): ready-made events (title, length or all day, location, color) for Add-event
   rules and for **Start from a template** when adding an event by hand.
 - **Activities and Logs** (a module like the others: it opens only from its Expand line): each check
   and what changed, for each source; each source's last download details (for debugging) at the
@@ -258,10 +262,12 @@ logins or setup codes lock an address out for 15 minutes.
   sync failing).
 - **☰ Settings** (a light blue panel): site settings only: the status-page login (with a show-password eye and a
   strength bar, like every password box), the public address, the **admin e-mail** (filled into the
-  Google setup guide) and **Check for updates** (hourly, weekly, monthly or never; only versions of
-  your release, stable or beta, are offered, and a newer one shows next to the version at the top;
-  then **Upgrade** replaces **Check now**), with **Auto-update** beside it (with the updater: newer
-  versions are installed by themselves). Each field shows ✓ until you type, then ✕ | ✓, and saves in
+  Google setup guide), **Google Calendar sync** (Copy in the Client ID box) and **Updates**, laid out
+  like a module header: your release (stable or beta versions; only those are offered), when it last
+  checked and the next check, and a status box with **Check now** (a newer version also shows next to
+  the version at the top; then **Upgrade** replaces Check now). Under it, **Check for updates**
+  (hourly, weekly, monthly or never) and **Auto-update** (with the updater: newer versions are
+  installed by themselves). Each field shows ✓ until you type, then ✕ | ✓, and saves in
   place, without reloading the page.
 - **Report a problem / Suggest a feature** at the bottom of the page open a form: what happened (or
   your idea), and tick what to include: the Activities and Logs lines, each source's last download
@@ -270,7 +276,8 @@ logins or setup codes lock an address out for 15 minutes.
   a preview shows exactly what's sent. **Open on GitHub** fills in a new issue there (its page is
   the link to follow it, and GitHub notifies you of replies); without a GitHub account, **Copy** or
   **Download** the report instead.
-- **Language** (the globe, left of the Light / Dark / System theme switch): English, Español, Français,
+- **Language** (the globe, left of the Light / Dark / System theme switch; Light is a soft, warm
+  palette): English, Español, Français,
   Deutsch, Português and Vlaams, or Automatic (the browser's language). Everything on the page is
   translated, including status messages and the activity log; event titles stay as United sends
   them. The shareable subscribe page uses each visitor's browser language.
