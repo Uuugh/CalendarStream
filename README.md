@@ -327,8 +327,10 @@ for access to **calendars it created** and your e-mail address, so it can't see 
 in Google Cloud: **Set it up with Claude** (a request to copy into a chat with Claude, which does the
 steps in your own signed-in browser through Claude in Chrome or the Claude desktop app's built-in
 browser), or the **Guided setup** (each Google page opens in a window beside CalendarStream, with Copy
-buttons; steps tick themselves off when CalendarStream can confirm them). Once it works, the group is
-just a module header (account, last sync, Connected over Sync Now) with the details under Expand. Paste its client ID and secret (checked with Google straight away), then **Connect**. Google
+buttons; steps tick themselves off when CalendarStream can confirm them). Once it works, the group
+shows a module header (account, last sync, Connected over Sync Now), the credentials row (ending with
+a trash that deletes them, after asking) and **Remove** (disconnects, after asking; tick "Also delete
+these calendars in Google" beside it), with nothing under Expand. Paste its client ID and secret (checked with Google straight away), then **Connect**. Google
 warns it "hasn't verified this app" because it's your own: press **Continue** (or **Advanced → Go to
 CalendarStream**), tick the calendar box and press **Continue**. The guide ends with a list of
 Google's error messages and what to do about each.

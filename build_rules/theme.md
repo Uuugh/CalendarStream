@@ -74,7 +74,10 @@ one here.
   Location beside the event's color, link and duplicate; Starts | Ends, each with its Time under it).
 - Every section's + is in a corner: the top right (Calendars, Feeds, the calendar), or the bottom right
   of an open module-like section. The calendar's search icon sits left of its Time Zone.
-- A credentials row (Client ID / secret) ends with a trash, which asks before deleting.
+- A credentials row (Client ID / secret) ends with a trash, which asks before deleting. A Settings
+  group that works shows everything at once, nothing under Expand: its header (like Updates), its
+  credentials row, and its Remove (red, lower left, like a module's) with its options beside it; the
+  explanations go in its (?).
 - A row of settings that belong together is one line (Check for updates [Hourly] ☐ Auto-update).
 - Google calendars say "Next push instantaneous" (each change goes at once).
 - A rule's color is one of Google Calendar's 11 event colors; rule lines read "Color ■ (Name)".

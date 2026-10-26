@@ -132,7 +132,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     asyncio.run(main.google_sync_once(False))
     ok(S["calendars"][cal_a]["summary"] == "Everything (Google)", "renaming a destination renames its Google calendar")
     p = c.get("/", auth=A).text
-    ok("Google account" in p and "Calendars in Google:" in p and "<b>Flying</b>" in p and p.count('class="box module cfgbox dest') == 4, "one Google account box, four destination boxes")
+    ok("Google account" in p and "Calendars in Google: Flying" in p and p.count('class="box module cfgbox dest') == 4, "one Google account box, four destination boxes")
     # Removing a source takes it off every list; calendars stay
     r = post("/sources/remove", sid=sid)
     ok(r.status_code == 303 and main.source_ids() == [L, "ccs"] and main.store.event_count(sid) == 0, "source removed with its events")

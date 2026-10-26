@@ -9,7 +9,21 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.11**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.12**
+
+## 0.2.8-beta.12 — 2026-10-26
+
+### Fixed
+- **I1** ☰ Settings → Google Calendar API Sync, while it works: the credentials and Disconnect were
+  under an Expand line that didn't show (it was drawn outside the menu), so the trash couldn't be
+  reached. Now nothing is hidden: the header (account; Last synced and instant updates; Connected
+  over Sync Now), then the credentials row (Client ID with Copy, Client secret, ✓ Connected, the
+  trash), then a red **Remove** in the lower left (it disconnects, after asking) with **Also delete
+  these calendars in Google** beside it. The explanations moved into the (?), the calendars and the
+  last notice from Google into the header's tooltips.
+- **I2** The theme rules gained: the status box is a multi-button (an overall status over the action
+  that updates it, CCS+'s Healthy over Sync Now the model); a Settings group that works shows
+  everything, nothing under Expand.
 
 ## 0.2.8-beta.11 — 2026-10-26
 

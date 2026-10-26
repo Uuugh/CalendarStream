@@ -35,7 +35,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     c.get(cb.path + "?" + cb.query, auth=A, follow_redirects=False)
     ok(main.google.connected, "connected")
     p = c.get("/", auth=A).text
-    ok("Instant updates from Google: off" in p and "starts with the next sync" in p, "before the first sync: off, starts with the next sync")
+    ok("Instant updates off" in p and "starts with the next sync" in p, "before the first sync: off, starts with the next sync (in the tooltip)")
     ok(run(main.google_sync_once(True)), "first sync")
     w = main.google.watch_info(DID()); cid = GI()["calendar_id"]
     ch = S["channels"].get(w.get("id"), {})
@@ -43,7 +43,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(w.get("token") and ch["token"] not in str(w), "secret token stored encrypted")
     ok(any("instant updates turned on" in h["msg"] for h in main.store.recent_log(10)), "logged: instant updates turned on")
     p = c.get("/", auth=A).text
-    ok("Instant updates from Google: on." in p, "page: instant updates on")
+    ok("Instant updates on" in p, "page: instant updates on")
     # a hand edit in Google, then the notification
     gid = next(k for k, v in S["events"][cid].items() if v.get("status") != "cancelled")
     S["events"][cid][gid]["summary"] = "changed by hand"; S["events"][cid][gid]["updated"] = "2099-01-01T00:00:00Z"
@@ -78,7 +78,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     warns = [h for h in main.store.recent_log(20) if "aren't available" in h["msg"]]
     ok(len(warns) == 1, "refused: logged once")
     p = c.get("/", auth=A).text
-    ok("Instant updates from Google: off" in p and "daily check" in p, "page: off, with the reason")
+    ok("Instant updates off" in p and "daily check" in p, "page: off, with the reason (in the tooltip)")
     ok(run(main.google_sync_once(False)), "Autosync still works when refused")
     S["refuse_watch"] = False
     main.google._update_watch(DID(), tried=(datetime.now(timezone.utc) - timedelta(hours=7)).isoformat())

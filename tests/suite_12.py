@@ -81,7 +81,7 @@ with patch.object(main, "loop", noop), TestClient(main.app) as c:
     refresh = next(iter(S["refresh"]))
     ok(refresh not in str(saved) and saved.get("v") == 1, "refresh token stored encrypted")
     p = c.get("/?menu=google", auth=A).text
-    ok("Connected as <b>pilot@example.com</b>" in p, "the Google box shows the account")
+    ok('title="pilot@example.com">pilot@example.com</div>' in p, "the Google box shows the account (in its header, beta.12)")
     ok(c.post("/google/client", auth=A, data={"csrf": csrf, "client_id": "new-1.apps.googleusercontent.com", "client_secret": "z"}).status_code == 400,
        "client can't change while connected")
     log = [h["msg"] for h in main.store.recent_log(5)]

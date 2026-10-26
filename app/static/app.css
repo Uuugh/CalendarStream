@@ -942,6 +942,11 @@ details.gsteps ol > li > .steptick { position:absolute; left:6px; top:8px; margi
 details.gsteps ol > li.current { background:var(--runbg); outline:1px solid color-mix(in srgb, var(--run) 35%, var(--line)) }
 details.gsteps ol > li.done { color:var(--muted) }
 .menu .module.bare .cfgline { margin-top:2px }
+/* A folded Settings group (Google Calendar API Sync while it works): its Expand line sits in the
+   group's bottom border, as a module's does; it was placed against the whole menu, off the screen */
+.menu .mgroup { position:relative }
+.menu .module.bare .srcname .helpdot { margin-left:1px }
+.menu #googlesync .gconnwrap { margin-top:6px }
 /* Deleted in Google, waiting for a choice (0.2.8-beta.10) */
 .heldbox { margin:8px 0 4px; padding:10px 12px; border:1px solid color-mix(in srgb, var(--warn) 35%, var(--line)); border-radius:var(--r); background:var(--warnbg); font-size:13.5px }
 .heldbox p { margin:0 0 4px; display:flex; align-items:center; gap:6px; flex-wrap:wrap }
@@ -960,4 +965,8 @@ details.gsteps ol > li.done { color:var(--muted) }
 .calsearch .qdate { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; color:var(--muted) }
 .calhead { position:relative; padding-right:46px }
 .calhead .calplus { position:absolute; top:0; right:0 }     /* always the top right corner, even when the controls wrap */
+/* Google Calendar API Sync's Remove (0.2.8-beta.12): lower left, like a module's, the tick beside it */
+.menu .gremoverow { display:flex; align-items:center; justify-content:flex-start; gap:10px; margin-top:6px }
+.menu .gremoverow button.danger { display:inline-flex; align-items:center; gap:4px; height:34px; padding:0 12px }
+.menu .gremoverow label.mnote { margin:0; display:inline-flex; align-items:center; gap:6px }
 

@@ -12,7 +12,7 @@
      after the word it explains (F1.2). `text` may hold <b>. #}
   {# Google Calendar API Sync's details once connected (0.2.8-beta.9/10): laid out like a login (the Client ID
      with Copy, the Client secret saved, ✓ Connected), then the account and calendars, and Disconnect. #}
-  {% macro gdetails() -%}
+  {% macro gdetails(gcls='good') -%}
   {% set g = google %}
   <form class="gconnwrap" onsubmit="return false"><div class="pair gconn">
     <label class="fld" for="gcid"><span>{{ _('Client ID') }}</span>
@@ -25,13 +25,13 @@
   {# the trash at the end of the credentials (0.2.8-beta.11): asks first #}
   <form method="post" action="/google/client" id="gremove" data-swap="#googlesync|#destinations|#activity" data-confirm="{{ _('Delete the Google client ID and secret? CalendarStream disconnects from Google first; its calendars stay in Google.') }}">
     <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="action" value="remove"></form>
-  {{ m.google_connected(g, "", "f") }}
-  <p class="mnote">{{ _('Events within each Google calendar’s dates are copied, with only the reminders set here (the bell on an event). If you also subscribed to a feed in Google, remove that calendar there, or you’ll see everything twice.') }}</p>
-  <p class="mnote">{{ _('<b>Two-way:</b> changes made in these Google calendars come back here, as if made on this page (CCS+ is never changed): an edit becomes an edit, an event added in Google goes into a CalendarStream calendar, a deleted one is hidden. A rule’s events can’t be changed there. When both sides changed, the newer change wins; more than 3 deletions at once wait for you in Activities and Logs.') }}</p>
-  <form method="post" action="/google/disconnect" class="disconnectform btnrow" data-swap="#googlesync|#destinations|#activity">
+  {% if gcls != 'good' %}{{ m.google_connected(g, "", "f") }}{% endif %}
+  {# Remove (0.2.8-beta.12), in the lower left like a module's: disconnects Google (asks first), with
+     "Also delete these calendars in Google" beside it #}
+  <form method="post" action="/google/disconnect" class="disconnectform gremoverow" data-swap="#googlesync|#destinations|#activity">
     <input type="hidden" name="csrf" value="{{ csrf }}">
-    <label class="mnote" style="flex:1 1 240px;margin:0;text-align:right"><input type="checkbox" name="delete" value="1"> {{ _('Also delete these calendars in Google') }}</label>
-    <button class="ghost">{{ _('Disconnect') }}</button>
+    <button class="ghost danger" title="{{ _('Disconnect Google Calendar') }}">{{ trash }} {{ _('Remove') }}</button>
+    <label class="mnote"><input type="checkbox" name="delete" value="1"> {{ _('Also delete these calendars in Google') }}</label>
   </form>
   {%- endmacro %}
   {# A module's note (0.2.8-beta.9): a raised (i) after its name, shown on hover or click, only when there is one #}
@@ -167,30 +167,28 @@
         {% else %}{% set gcls, glabel = "warn", _('Not set up') %}{% endif %}
         <div class="mgroup" id="googlesync">
         {% if g.connected and gcls == 'good' %}
-          {# Working (0.2.8-beta.10): only a module header, like Updates (the account; the last sync and
-             instant updates; Connected over Sync Now), the details under Expand. #}
-          <div class="module bare cfgbox{% if sections.googlesync %} cfgopen{% endif %}" data-section="googlesync">
+          {# Working (0.2.8-beta.12): nothing hidden. A module header like Updates (the account; the last
+             sync and instant updates; Connected over Sync Now), then the credentials laid out like a login,
+             ending with the trash, then Disconnect. The explanations are in the (?). #}
+          <div class="module bare">
             <div class="srchead">
               <div class="srcleft">
-                <div class="namebox srcname">{{ _('Google Calendar API Sync') }}</div>
+                <div class="namebox srcname">{{ _('Google Calendar API Sync') }}{{ help(_('Each Google calendar in Feeds is kept up to date by CalendarStream: events within its dates, with only the reminders set here (the bell on an event). Two-way: changes made in these Google calendars come back here, as if made on this page (CCS+ is never changed); a rule’s events can’t be changed there; when both sides changed, the newer change wins; more than 3 deletions at once wait for you in Activities and Logs. If you also subscribed to a feed in Google, remove that calendar there, or you’ll see everything twice.'), 'left') }}</div>
                 <div class="namebox srcnote" title="{{ g.info.email }}">{{ g.info.email or _('your Google account') }}</div>
               </div>
               <div class="srcright">
-                <p class="srcstatus">{% if g.last_sync %}{{ _('Last synced <b>{when}</b>', when=g.last_sync) }}{% else %}&nbsp;{% endif %}</p>
-                <p class="srcnext">{{ _('Instant updates on') if g.watch.on else _('Instant updates off') }}</p>
+                <p class="srcstatus" title="{{ _('Calendars in Google:') }} {% for c in g.calendars %}{{ c.calendar_name or c.name }}{% if c.events is defined %} ({{ _('{n} events', n=c.events or 0) }}){% endif %}{{ ', ' if not loop.last }}{% endfor %}">{% if g.last_sync %}{{ _('Last synced <b>{when}</b>', when=g.last_sync) }}{% else %}{{ _('Not synced yet') }}{% endif %}</p>
+                <p class="srcnext" title="{% if g.watch.on %}{{ _('Changes made in Google come here within seconds.') }}{% if g.watch.last %} {{ _('Last notice from Google: {when}.', when=g.watch.last) }}{% endif %}{% else %}{{ msg(g.watch.why) if g.watch.why else '' }}. {{ _('Changes made in Google come here at the daily check.') }}{% endif %}">{{ _('Instant updates on') if g.watch.on else _('Instant updates off') }}</p>
               </div>
               <div class="statusbox good">{{ chip('good', _('Connected')) }}{{ syncbtn("/google/sync", "google", g.running) }}</div>
             </div>
-            <div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if sections.googlesync else 'false' }}" aria-controls="cfg-googlesync">{{ icon("arrow_right", 18, "arr l") }}<span class="expandword"><span class="long">{{ _('Expand for Details') }}</span><span class="short">{{ _('Expand') }}</span></span><span class="closeword">{{ _('Close') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>
-            <div class="cfgbody" id="cfg-googlesync"{% if not sections.googlesync %} hidden{% endif %}>
-              {{ gdetails() }}
-            </div>
           </div>
+          {{ gdetails() }}
         {% else %}
           <div class="mhead">{{ _('Google Calendar API Sync') }}{{ help(_('Optional. With it, a Google calendar in Feeds is kept up to date by CalendarStream itself: changes within seconds, your rule colors and reminders. Without it, Google subscribes to a feed link instead (it refreshes every few hours, in one color).'), 'left') }}
             <span class="gstate">{{ chip(gcls, glabel) }}</span></div>
           {% if g.info.last_error %}<p class="merr">{{ msg(g.info.last_error) }}</p>{% endif %}
-          {% if g.connected %}{{ gdetails() }}{% endif %}
+          {% if g.connected %}{{ gdetails(gcls) }}{% endif %}
           {% if not gvalid or g.info.last_error %}
             {# Missing or not working (0.2.8-beta.10): two ways to get a client: Claude does the Google Cloud
                steps in the person's own browser, or the guided setup below (each step in a window beside
