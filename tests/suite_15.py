@@ -15,7 +15,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     if env:
         ok(f'value="{env}"' in p and main.store.get("public_url") == env and "PUBLIC_URL" not in p.split('id="menu"')[1].split("</header>")[0], "F6.1: PUBLIC_URL from .env moved into Settings once")
     else:
-        ok("Not set yet." in p and "Set the <b>Public address</b> in Settings" in p, "unset: warnings point to Settings")
+        ok("Not set yet." in p and "☰ Settings › <b>Public address</b>" in p, "unset: warnings point to Settings")
     post = lambda **d: c.post("/settings/public-url", auth=A, data={"csrf": csrf, **d}, follow_redirects=False)
     r = post(url="cal.example.org/")
     ok(r.status_code == 303 and main.public_url() == "https://cal.example.org", "bare host → https://, slash dropped")

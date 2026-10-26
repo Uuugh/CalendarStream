@@ -9,7 +9,55 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.13**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.14**
+
+## 0.2.8-beta.14 — 2026-10-26
+
+### Added
+- **F1** ☰ Settings → Google Calendar API Sync: **Connect** in one straight line instead of Save,
+  Validate and Connect in turn. One button in the status box goes **Saving… → Checking… → Checking
+  address… → Opening Google…** and on to Google's sign-in. The first step that fails stops it
+  (**Stopped**), and the line under it says what to fix as a click path, with **Copy** and **Open**
+  buttons (e.g. Google Cloud › Clients › CalendarStream › Authorized redirect URIs › + Add URI › the
+  address › Save › wait 5 min › Connect).
+- **F2** The redirect address is checked with Google for real (Google's sign-in page is asked, without
+  signing in): a missing address shows **Address missing** before you're sent to Google's error page.
+  The guided setup's step 6 ticks itself only once Google confirms the address, and the "Set it up with
+  Claude" request asks for it to be added while the client is created. (CalendarStream can't add the
+  address to your client itself: Google offers no way to do that from an app.)
+- **F3** Disconnecting, reconnecting and starting over, tested end to end: reconnect with the same client
+  → the same Google calendar, no duplicate events; delete the client and set up a new one → a new
+  calendar (Google only lets an app see the calendars it made), with the old one named in the log so
+  you can delete it by hand; the Google feed says **Not connected** while disconnected, without errors.
+
+### Changed
+- **F4** One look per meaning, everywhere: **green** = done or OK; the **pressed** look (blue words on
+  the box) = in action or waiting on you (Syncing…, Checking…, Downloading…, Restarting…, Update found,
+  Update available, Ready to connect, Not checked, Not set up, Not connected, Not read yet, Setup
+  needed, Paused, rule conflicts); **amber** = a problem outside CalendarStream (United, Google, GitHub,
+  the internet); **red** = CalendarStream itself failed (Update failed, **Internal error**, a new status
+  for an unexpected error while syncing a calendar); **blue** fills = buttons only.
+- **F5** Words on the page are click paths and short lines (e.g. "calendar.google.com › Settings › the
+  calendar › Integrate calendar › Secret address in iCal format"), not paragraphs: about 90 texts were
+  trimmed, the guides, the guided Google setup and its troubleshooting, the add menus, feeds, rules,
+  the report and the event pop-up included. The explanations stay in the (?).
+- **R1** The theme rules (build_rules/theme.md and the Theme Rules pictures) are spelled out for anyone
+  reviewing a change: the tokens; the one-look-per-meaning table with every status word; every
+  transition with its trigger, style, duration, easing, hold and reduced-motion behaviour; the flows of
+  Sync Now, Check now, Update now and Connect, frame by frame; and the click-path rule. Every written
+  rule names its picture card. New Clarifications: one look per meaning; in-page instructions are click
+  paths. The theme suite (suite 44) fails a status word in the wrong look, or a sentence on the page
+  longer than 20 words.
+- With reduced motion (the device's setting), status boxes, Expand / Close and Save no longer grow,
+  slide or fade: each state simply replaces the last.
+
+### Fixed
+- **I1** Update now (top bar and ☰ Settings): the two copies now use the same words, colors and ending;
+  the top bar's pill no longer blinks blank when pressed (only its words change); and on the way back
+  the button shrinks first and then the status word fades in, instead of the box fading through itself.
+- **I2** Connecting again after a disconnect (with the client's redirect address missing at Google) ended
+  on Google's "Error 400: redirect_uri_mismatch" page with no hint here: Connect now stops before Google
+  with the address to add and buttons to copy it and open the client (F1, F2).
 
 ## 0.2.8-beta.13 — 2026-10-26
 

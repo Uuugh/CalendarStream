@@ -20,7 +20,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
-from urllib.parse import quote, urlencode
+from urllib.parse import parse_qs, quote, urlencode, urlparse
 
 import httpx
 
@@ -268,6 +268,40 @@ class Google:
             self._save_check(None, f"Google gave an unexpected answer ({error or r.status_code})")
         return self.client_check()
 
+    async def check_redirect(self, redirect_uri: str) -> bool | None:
+        """Does Google accept `redirect_uri` for the saved client (0.2.8-beta.14)? Asks for Google's sign-in
+        page the way Connect does, without following it: Google answers with its sign-in page (a
+        redirect) when the address is on the client's list, and with its "Error 400:
+        redirect_uri_mismatch" page (or a redirect to its error page saying so) when it isn't. True,
+        False, or None when Google's answer doesn't say. Saved with the client's check."""
+        url = AUTH_URL + "?" + urlencode({
+            "client_id": self.client_id, "redirect_uri": redirect_uri, "response_type": "code",
+            "scope": " ".join(SCOPES), "access_type": "offline", "prompt": "consent", "state": "calendarstream-check",
+            "code_challenge": _b64url(hashlib.sha256(b"calendarstream-check").digest()), "code_challenge_method": "S256"})
+        try:
+            async with httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False) as client:
+                r = await client.get(url)
+        except httpx.HTTPError:
+            return None
+        where = r.headers.get("location", "")
+        said = r.text[:200000] + " " + where
+        for value in parse_qs(urlparse(where).query).get("authError", []):     # Google's error page: base64
+            try:
+                said += " " + base64.urlsafe_b64decode(value + "=" * (-len(value) % 4)).decode("latin-1")
+            except ValueError:
+                pass
+        if "redirect_uri_mismatch" in said:
+            ok = False
+        elif any(word in said for word in ("invalid_client", "deleted_client", "unauthorized_client")):
+            ok = None                # the client itself: check_client says what's wrong
+        elif r.status_code in (200, 302, 303) and "/signin/oauth/error" not in where:
+            ok = True
+        else:
+            ok = None
+        check = self.client_check()
+        self._save_check(check.get("ok"), check.get("message", ""), redirect_uri, ok)
+        return ok
+
     def clear_client(self):
         self.store.delete("google_client")
         self._client = None
@@ -428,7 +462,7 @@ class Google:
             previous = {}
             self.store.set("google", {})
         self._save_refresh_token(refresh)
-        self._save_check(True, "Google accepted the client ID and secret")
+        self._save_check(True, "Google accepted the client ID and secret", redirect_uri, True)   # signed in: both proven
         self._access = (tokens["access_token"], time.monotonic() + int(tokens.get("expires_in", 3600)) - 60)
         self._update_info(email=email, connected_at=datetime.now(timezone.utc).isoformat(), last_error=None)
         return self.info()
@@ -509,16 +543,28 @@ class Google:
 
     async def ensure_calendar(self, sid: str, name: str, calendar_id: str | None = None) -> str:
         """Use a source's calendar if it still exists in Google, otherwise create it."""
-        calendar_id = calendar_id or self.cal_info(sid).get("calendar_id")
+        info = self.cal_info(sid)
+        calendar_id = calendar_id or info.get("calendar_id")
+        unreachable = False
         if calendar_id:
-            found = await self.api("GET", f"/calendars/{_quote(calendar_id)}", ok_missing=True)
+            try:
+                found = await self.api("GET", f"/calendars/{_quote(calendar_id)}", ok_missing=True)
+            except GoogleError as e:
+                if "403" not in str(e):
+                    raise
+                found, unreachable = None, True    # made with another client: Google won't show it to this one
             if found is not None:
-                self._update_cal(sid, calendar_id=calendar_id, calendar_name=found.get("summary", name), created=False)
+                self._update_cal(sid, calendar_id=calendar_id, calendar_name=found.get("summary", name), created=False,
+                                 client=info.get("client") or self.client_id)
                 return calendar_id
+            # (0.2.8-beta.14) a calendar made with an earlier client can't be reached with this one: Google
+            # only shows an app the calendars it made. A new one is made; the old one is named in the log.
+            if unreachable or (info.get("client") and info.get("client") != self.client_id):
+                self._update_cal(sid, replaced=info.get("calendar_name") or name)
         made = await self.api("POST", "/calendars", body={
             "summary": name, "timeZone": self.tz_name,
             "description": CALENDAR_DESCRIPTION})
-        self._update_cal(sid, calendar_id=made["id"], calendar_name=made.get("summary", name), created=True)
+        self._update_cal(sid, calendar_id=made["id"], calendar_name=made.get("summary", name), created=True, client=self.client_id)
         return made["id"]
 
     async def delete_calendar(self, sid: str) -> str:
@@ -680,7 +726,12 @@ class Google:
             params = {"timeMin": start, "showDeleted": "true", "maxResults": "2500"}
             if page:
                 params["pageToken"] = page
-            data = await self.api("GET", f"{cal}/events", params=params, ok_missing=True)
+            try:
+                data = await self.api("GET", f"{cal}/events", params=params, ok_missing=True)
+            except GoogleError as e:
+                if "403" in str(e):      # made with another client: nothing to bring from it
+                    return []
+                raise
             if data is None:
                 return []
             for ev in data.get("items", []):
@@ -728,6 +779,12 @@ class Google:
             if self.cal_info(sid).get("synced_calendar") != calendar_id:
                 self.store.google_forget(source=sid)
                 self._update_cal(sid, synced_calendar=calendar_id)
+            old = self.cal_info(sid).get("replaced")
+            if old:
+                self._update_cal(sid, replaced=None)
+                result.notes.append(f"the calendar \"{old}\" made with the earlier Google client can't be reached with this "
+                                    "one (Google only lets an app see the calendars it made), so a new one was made; "
+                                    f"delete the old \"{old}\" in Google Calendar by hand")
         try:
             return await self._sync(sid, calendar_id, events, name, color_for, first_day, tz, full, result, hold)
         except CalendarMissing:

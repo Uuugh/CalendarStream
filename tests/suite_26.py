@@ -89,7 +89,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(r.status_code == 303 and any(x.title == "Lunch" and x.origin == "custom" for x in main.store.load_events(sid)), "an added event goes into the chosen calendar")
     # Destinations: independent of sources, each with its own list; the first asks for the public address
     p = c.get("/", auth=A).text
-    ok('name="public" value="https://cal.example.com"' in p and "You can change it later in ☰ Settings" in p, "the first destination asks for the public address (this page filled in)")
+    ok('name="public" value="https://cal.example.com"' in p and "(☰ Settings changes it later)" in p, "the first destination asks for the public address (this page filled in)")
     ok(post("/destinations/add", type="feed", name="Everything", public="cal.example.com").status_code == 303
        and main.public_url() == "https://cal.example.com", "+ feed, public address saved")
     every = main.destinations("feed")[0]
@@ -132,7 +132,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     asyncio.run(main.google_sync_once(False))
     ok(S["calendars"][cal_a]["summary"] == "Everything (Google)", "renaming a destination renames its Google calendar")
     p = c.get("/", auth=A).text
-    ok("Google account" in p and "Calendars in Google: Flying" in p and p.count('class="box module cfgbox dest') == 4, "one Google account box, four destination boxes")
+    ok('id="googlesync"' in p and "Calendars in Google: Flying" in p and p.count('class="box module cfgbox dest') == 4, "one Google account box, four destination boxes")
     # Removing a source takes it off every list; calendars stay
     r = post("/sources/remove", sid=sid)
     ok(r.status_code == 303 and main.source_ids() == [L, "ccs"] and main.store.event_count(sid) == 0, "source removed with its events")

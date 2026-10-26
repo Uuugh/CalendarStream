@@ -32,7 +32,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     body = p[p.index('id="src-ccs"'):]
     ok('id="cfg-ccs" hidden' not in p and body.index('action="/setup/ccs"') < body.index('action="/setup/interval"'), "0.2: the CCS+ source box is open, with its login")
     ok(p.count('action="/setup/ccs"') == 1 and 'id="ccsmenu"' not in p, "CCS+ login only on the dashboard (not in Settings)")
-    ok("to start downloading the schedule:" in p, "setup note above the boxes")
+    ok("(not your CCS login):" in p, "setup note above the boxes")
     ok(re.search(r'<button class="syncnow" data-state="idle" disabled><span class="sn idle">Sync Now', p) is not None, "Sync now disabled until the login is entered")
     r = c.post("/setup/ccs", data={"csrf": csrf, "uid": "U123456", "password": "pw12345", "back": "menu"})
     ok(r.status_code == 303 and r.headers["location"] == "/#src-ccs", "saving returns to the CCS+ box")
@@ -40,10 +40,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(re.search(r'<p class="check bad"><svg[^>]*>.*?</svg> CCS\+ rejected the Username or Calendar Sync password', p) is not None, "rejection shown next to the boxes")
     main.state.last_auth_ok = True; p = c.get("/").text
     ok(re.search(r'<span class="okslot" data-state="ok">\s*<span class="okmark" title="Validated: CCS\+ sign-in"><svg[^>]*>.*?</svg>Validated</span>', p) is not None, "✓ Validated when CCS+ accepts (Save and Cancel appear when typing)")
-    ok("Google Calendar Autosync" in p and 'id="fcid"' in p and 'id="scid"' not in p and "Guided setup: a client ID and secret" in p, "Autosync client form on the dashboard only, with its guide")
+    ok("Google Calendar API Sync" in p and 'id="fcid"' in p and 'id="scid"' not in p and "Guided setup: a client ID and secret" in p, "Autosync client form on the dashboard only, with its guide")
     feed = p[p.index('id="destinations"'):]
     ok('id="dest-google"' not in feed and feed.index('class="box module cfgbox dest') < feed.index("Add to Apple / Outlook") < feed.index("Open subscribe page") < feed.index("Feed link"), "0.2.8-beta.4: Feeds: the feed's buttons first (with the share page), its link last; Google Calendar sync is in Settings")
-    ok("subscribes your signed-in Google account" in p and "opens your computer’s or phone’s calendar app" in p and "a page to share with anyone" in p, "the buttons are explained")
+    ok("<b>Add to Google Calendar</b>: one click" in p and "opens your calendar app" in p and "share it (no login needed)" in p, "the buttons are explained")
     ok(p.count('class="copybtn"') >= 3 and ">Copy<" not in p, f"copy buttons are icons ({p.count('class=\"copybtn\"')})")
     ok('class="linkbtn reportbtn" data-kind="bug"' in p and 'data-kind="idea"' in p and 'id="reportdialog"' in p, "footer: report a problem / suggest a feature")
     ok("Upload Calendar.ics by hand</label>" in p and 'class="filebtn' in p, "upload row with a styled file button")

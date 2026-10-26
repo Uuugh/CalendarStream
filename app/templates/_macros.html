@@ -1,6 +1,11 @@
 {# Pieces of the status page, kept here to keep index.html short. Import with context, so `_` and `csrf`
    are available: {% import "_macros.html" as m with context %} #}
 
+{# A status chip (as index.html's): an icon for its state and a word or two. #}
+{% macro chip(cls, text) -%}
+<span class="chip {{ cls }}" title="{{ text }}">{{ icon({"good": "check_circle", "warn": "warning", "bad": "error", "run": "sync"}.get(cls, "info"), 15) }}<span class="chiptext">{{ text }}</span></span>
+{%- endmacro %}
+
 {# A copy button (Material Symbols "content_copy"). #}
 {% macro copybtn(target) -%}
 <button type="button" class="copybtn" onclick="copyField('{{ target }}', this)" title="{{ _('Copy') }}" aria-label="{{ _('Copy') }}">{{ icon("content_copy", 17) }}</button>
@@ -60,56 +65,46 @@
 {# The Google OAuth client for Autosync: client ID and secret, the check result, Connect, and
    the step-by-step guide (closed). `p` prefixes element IDs. #}
 {% macro google_client(g, p, back="", desc="") -%}
-{# Like the CCS+ login: the two boxes side by side, then "✓ Validated" once Google accepted them, or
-   Save when they're missing, being edited or were rejected. `desc` (optional) goes under the boxes. #}
+{# Connect in one straight line (0.2.8-beta.14): the credentials laid out like a login, then a status box
+   (the theme's multi-button): its state over Connect. Connect saves what's typed, checks the client with
+   Google, checks this page's address with Google, then opens Google's sign-in, showing each step in the
+   box; it stops at the first that fails and says, under the row, what to fix (with Copy / Open). #}
 {% set valid = g.configured and g.check.ok %}
-<form method="post" action="/google/client" class="clientform watch" data-verify="google" autocomplete="off">
-  <input type="hidden" name="csrf" value="{{ csrf }}">
-  <input type="hidden" name="back" value="{{ back }}">
+{% set addr_ok = g.check.redirect_ok and g.check.redirect_uri == g.redirect_uri %}
+{# amber: Google refused (outside CalendarStream); the pressed look: waiting on you #}
+{% if g.redirect_missing %}{% set bcls, blabel = "warn", _('Address missing') %}
+{% elif g.check.ok == false %}{% set bcls, blabel = "warn", _('Client rejected') %}
+{% elif valid %}{% set bcls, blabel = "run", _('Ready to connect') %}
+{% else %}{% set bcls, blabel = "run", _('Not set up') %}{% endif %}
+<form class="clientform gconnect" id="{{ p }}gform" onsubmit="return false" autocomplete="off" data-uri="{{ g.redirect_uri if g.redirect_ok else '' }}">
   <div class="pair">
-    {# Laid out like a login (0.2.8-beta.5): the ID as the username, with Copy in its box; the secret as
-       the password (saved, never shown again, so it can't be copied back out). #}
     <label class="fld" for="{{ p }}cid"><span>{{ _('Client ID') }}</span>
-      <span class="inbox"><input type="text" class="code" id="{{ p }}cid" name="client_id" value="{{ g.client_id }}" spellcheck="false" required
+      <span class="inbox"><input type="text" class="code" id="{{ p }}cid" name="client_id" value="{{ g.client_id }}" spellcheck="false"
              placeholder="1234…apps.googleusercontent.com">{% if g.client_id %}<button type="button" class="inboxbtn copybtn" onclick="copyField('{{ p }}cid', this)" title="{{ _('Copy') }}" aria-label="{{ _('Copy the Client ID') }}">{{ icon("content_copy", 15) }}</button>{% endif %}</span></label>
     <label class="fld" for="{{ p }}csecret"><span>{{ _('Client secret') }}</span>
       <input type="password" id="{{ p }}csecret" name="client_secret" spellcheck="false" autocomplete="new-password"
-             placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else 'GOCSPX-…' }}" {% if not g.has_secret %}required{% endif %}></label>
-    {{ okbutton(valid, _('Validated'), _('Save'), _('Validated: Client ID & Client secret'), "action", "save") }}
+             placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else 'GOCSPX-…' }}"></label>
+    <div class="statusbox gbox {{ bcls }}">{{ chip(bcls, blabel) }}<span class="syncform"><button type="button" class="syncnow gconnectbtn" data-state="idle"><span class="sn idle">{{ _('Connect') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}<span class="snword">{{ _('Saving…') }}</span></span><span class="sn done">{{ icon("check", 14) }}<span class="snword">{{ _('Opening Google…') }}</span></span><span class="sn fail">{{ icon("warning", 14) }}<span class="snword">{{ _('Stopped') }}</span></span></button></span></div>
     {% if g.configured %}<button type="submit" form="{{ p }}gremove" class="ghost credtrash" formnovalidate title="{{ _('Delete the client ID and secret') }}" aria-label="{{ _('Delete the client ID and secret') }}">{{ trash }}</button>{% endif %}
   </div>
-  {% if g.redirect_missing %}
-    <p class="check bad">{{ icon("cancel", 15) }} {{ msg("Google doesn't list " ~ g.redirect_uri ~ " under Authorised redirect URIs; add it to the client in Google Cloud") }}
-      <button class="ghost" name="action" value="check" formnovalidate style="margin-left:8px">{{ _('Check again') }}</button></p>
-  {% endif %}
-  {% if g.configured and not valid %}
-    {% set ck = g.check %}
-    <p class="check {{ 'bad' if ck.ok == false else 'unknown' }}">
-      {% if ck.ok == false %}{{ icon("cancel", 15) }}{% else %}{{ icon("help", 15) }}{% endif %}
-      {{ msg(ck.message) if ck.message else _('Not checked yet') }}{% if g.checked_at %} <span class="muted">({{ g.checked_at }})</span>{% endif %}{% if ck.ok == false %}. {{ _('Check both values and save again.') }}{% endif %}
-    </p>
-    <div class="eactions" style="margin-top:6px">
-      <button class="ghost" name="action" value="remove" formnovalidate>{{ _('Remove') }}</button>
-      <button class="ghost" name="action" value="check" formnovalidate>{{ _('Check again') }}</button>
-    </div>
-  {% endif %}
+  {# what stopped Connect, and the way to fix it #}
+  <div class="gstepmsg check bad"{% if not (g.redirect_missing or g.check.ok == false) %} hidden{% endif %}>
+    <span class="gstepicon">{{ icon("warning", 15) }}</span>
+    <span class="gsteptext">{% if g.redirect_missing %}{{ _('Address not on your client: Google Cloud › Clients › CalendarStream › Authorized redirect URIs › + Add URI › {uri} › Save › wait 5 min › Connect.', uri=g.redirect_uri) }}{% elif g.check.ok == false %}{{ msg(g.check.message) }}: {{ _('Google Cloud › Clients › CalendarStream › copy both again › Connect.') }}{% endif %}</span>
+    <span class="gstepfix">
+      <button type="button" class="ghost gcopyaddr"{% if not g.redirect_missing %} hidden{% endif %} onclick="navigator.clipboard && navigator.clipboard.writeText(this.closest('form').dataset.uri); this.textContent = T.copied">{{ _('Copy the address') }}</button>
+      <a class="btn ghostbtn gopenclient" href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener"{% if not (g.redirect_missing or g.check.ok == false) %} hidden{% endif %}>{{ _('Open your client in Google Cloud') }}</a>
+    </span>
+  </div>
   {% if desc %}<p class="mnote" style="margin:6px 0 0">{{ desc }}</p>{% endif %}
 </form>
 {% if g.configured %}<form method="post" action="/google/client" id="{{ p }}gremove" data-confirm="{{ _('Delete the Google client ID and secret?') }}">
   <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="action" value="remove"></form>{% endif %}
 {% if g.host_mismatch %}
-  <p class="warnline">{{ _('Your <b>Public address</b> is <b>{public}</b>, but this page is open at <b>{here}</b>. Google sends you back to the Public address, so check the spelling (☰ Settings).', public=g.host_mismatch[0], here=g.host_mismatch[1]) }}</p>
+  <p class="warnline">{{ _('<b>Public address</b> <b>{public}</b> ≠ this page <b>{here}</b>: Google returns to the Public address › check its spelling (☰ Settings).', public=g.host_mismatch[0], here=g.host_mismatch[1]) }}</p>
 {% endif %}
-{% if g.configured and g.redirect_ok %}
-  <div class="btnrow">
-    <p class="mnote">{{ _('Connect sends you to Google and back to <code>{uri}</code>, which must be listed under <b>Authorized redirect URIs</b> on your client (step 6). Sign in with the Gmail account from step 5. If Google says <i>“Google hasn’t verified this app”</i>, that’s normal for your own app: press <b>Continue</b> (or <b>Advanced</b> → <b>Go to CalendarStream</b>), tick the calendar box and press <b>Continue</b>.', uri=g.redirect_uri) }}</p>
-    <form method="post" action="/google/connect" class="connect">
-      <input type="hidden" name="csrf" value="{{ csrf }}">
-      <button{% if g.check.ok == false %} disabled title="{{ _('Google rejected the client: fix it first') }}"{% elif g.redirect_missing %} disabled title="{{ _('Add the redirect URI in Google Cloud first') }}"{% endif %}>{{ _('Connect Google Calendar') }}</button>
-    </form>
-  </div>
-{% elif not g.redirect_ok %}
-  <p class="merr">{{ _('First set the <b>Public address</b> in Settings (☰) to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>
+{% if not g.redirect_ok %}
+  <p class="merr">{{ _('First: ☰ Settings › <b>Public address</b> › this page’s https:// address › Save.') }}</p>
 {% endif %}
 {# The guide, in the order Google needs it: everything (including Publish / test users) before Connect. #}
 {# The admin e-mail (☰ Settings) fills in the e-mail fields; without one, "yours" and a pointer to Settings. #}
@@ -117,37 +112,41 @@
 {# The guided setup (0.2.8-beta.10): open until the client is set up; each step has a tick (the client and
    Connect steps tick themselves; the others are ticked by hand and remembered in this browser), the
    first unticked one is marked as the current step, and Google's pages open in a window beside this one. #}
-<details class="guide gsteps"{% if not (g.configured and g.check.ok) %} open{% endif %} data-valid="{{ 1 if (g.configured and g.check.ok) else 0 }}" data-connected="{{ 1 if g.connected else 0 }}">
+<details class="guide gsteps"{% if not (g.configured and g.check.ok and g.check.redirect_ok) %} open{% endif %} data-valid="{{ 1 if (g.configured and g.check.ok) else 0 }}"
+         data-address="{{ 1 if (g.check.redirect_ok and g.check.redirect_uri == g.redirect_uri) else 0 }}" data-connected="{{ 1 if g.connected else 0 }}">
   <summary>{{ _('Guided setup: a client ID and secret, step by step') }}</summary>
-  <p class="mnote" style="margin-top:8px">{{ _('<b>Before you start:</b> ☰ Settings → <b>Public address</b> must match, letter for letter, the address in your browser’s address bar right now. Google sends you back there.') }}</p>
+  <p class="mnote" style="margin-top:8px">{{ _('<b>First:</b> ☰ Settings › <b>Public address</b> = this page’s address, letter for letter.') }}</p>
   <ol>
-    <li data-step="1">{{ _('<b>Create a project.</b> Open <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Create a project</a>. Project name: <code>CalendarStream</code> › <b>Create</b>.') }}
-      <br><span class="muted">{{ _('✓ The project menu at the top left of Google Cloud now shows “CalendarStream”. Every link below opens the project shown there; if it shows another one, click it and choose CalendarStream.') }}</span></li>
-    <li data-step="2">{{ _('<b>Turn on the Calendar API.</b> Open <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" rel="noopener">Google Calendar API</a> › <b>Enable</b>.') }}
+    <li data-step="1">{{ _('<b>Project:</b> <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">Create a project</a> › Name: <code>CalendarStream</code> › <b>Create</b>.') }}
+      <br><span class="muted">{{ _('✓ Top left shows “CalendarStream” (else click it › CalendarStream).') }}</span></li>
+    <li data-step="2">{{ _('<b>Calendar API:</b> <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" rel="noopener">Google Calendar API</a> › <b>Enable</b>.') }}
       <br><span class="muted">{{ _('✓ You now see “API Enabled”.') }}</span></li>
-    <li data-step="3">{{ _('<b>Set up the sign-in screen.</b> Open <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> › <b>Get started</b> (if you see a dashboard instead, this is already done). App name: <code>CalendarStream</code>, support e-mail: {email} › <b>Next</b> › Audience: <b>External</b> › <b>Next</b> › contact e-mail: {email} › <b>Next</b> › agree › <b>Create</b>. Don’t upload a logo: that makes Google review the app.', email=email) }}
+    <li data-step="3">{{ _('<b>Sign-in screen:</b> <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> › <b>Get started</b> › App name: <code>CalendarStream</code> › support e-mail: {email} › <b>Next</b> › <b>External</b> › <b>Next</b> › contact: {email} › <b>Next</b> › agree › <b>Create</b>. (No logo: it triggers a review.)', email=email) }}
       <br><span class="muted">{{ _('✓ The menu on the left now shows Branding, Audience, Clients and Data access.') }}</span></li>
-    <li data-step="4">{{ _('<b>Allow calendar access.</b> Open <a href="https://console.cloud.google.com/auth/scopes" target="_blank" rel="noopener">Data access</a> › <b>Add or remove scopes</b> › under “Manually add scopes”, paste') }}
+    <li data-step="4">{{ _('<b>Calendar access:</b> <a href="https://console.cloud.google.com/auth/scopes" target="_blank" rel="noopener">Data access</a> › <b>Add or remove scopes</b> › Manually add scopes:') }}
       {{ copyfield(p ~ "scope", "https://www.googleapis.com/auth/calendar.app.created") }}
-      {{ _('› <b>Add to table</b> › <b>Update</b> › <b>Save</b>.') }}</li>
-    <li data-step="5">{{ _('<b>Let yourself sign in. Do this now, or Connect fails with “403 access_denied”.</b> Open <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a> › <b>Publish app</b> › <b>Confirm</b>.') }}
-      <br><span class="muted">{% if g.admin_email %}{{ _('Can’t publish (the button is greyed out)? On the same page, under <b>Test users</b>, press <b>+ Add users</b>, enter {email} (or the Gmail address you’ll connect with, if different), and press <b>Save</b>. In Testing, Google makes you press Connect again every 7 days.', email=email) }}
-        {%- else %}{{ _('Can’t publish (the button is greyed out)? On the same page, under <b>Test users</b>, press <b>+ Add users</b>, enter the Gmail address you’ll connect with, and press <b>Save</b>. In Testing, Google makes you press Connect again every 7 days.') }}{% endif %}</span></li>
-    <li data-step="6">{{ _('<b>Create the client.</b> Open <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a> › <b>Create client</b> › Application type: <b>Web application</b> › Name: <code>CalendarStream</code>. Leave <b>Authorized JavaScript origins</b> empty; under <b>Authorized redirect URIs</b> press <b>+ Add URI</b> and paste this (use the copy button, don’t type it):') }}
+      {{ _('› <b>Add to table</b> › <b>Update</b> › <b>Save</b>.') }}
+      <br><span class="muted">{{ _('✓ Your non-sensitive scopes list calendar.app.created.') }}</span></li>
+    <li data-step="5">{{ _('<b>Let yourself in</b> (else 403 access_denied): <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a> › <b>Publish app</b> › <b>Confirm</b>.') }}
+      <br><span class="muted">{% if g.admin_email %}{{ _('Greyed out? <b>Test users</b> › <b>+ Add users</b> › {email} › <b>Save</b> (Testing: Connect again every 7 days).', email=email) }}
+        {%- else %}{{ _('Greyed out? <b>Test users</b> › <b>+ Add users</b> › your Gmail › <b>Save</b> (Testing: Connect again every 7 days).') }}{% endif %}</span></li>
+    <li data-step="6">{{ _('<b>Client:</b> <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a> › <b>Create client</b> › <b>Web application</b> › Name: <code>CalendarStream</code> › <b>Authorized redirect URIs</b> › <b>+ Add URI</b> › paste:') }}
       {% if g.redirect_ok %}{{ copyfield(p ~ "redirect", g.redirect_uri) }}
-      {{ _('› <b>Create</b>.') }}{% else %}<p class="merr">{{ _('First set the <b>Public address</b> in Settings (☰) to this page’s https:// address: Google only sends you back to https:// addresses.') }}</p>{% endif %}</li>
-    <li data-step="7">{{ _('<b>Copy both keys now.</b> Google shows the <b>Client secret only once</b>, in a pop-up. Copy the Client ID and the Client secret into the boxes above and press <b>Save</b>.') }}
-      <br><span class="muted">{{ _('✓ You now see “✓ Validated”. Closed the pop-up already? Open Clients › CalendarStream › <b>Add secret</b>.') }}</span></li>
-    <li data-step="8">{{ _('<b>Connect.</b> Wait about 5 minutes (Google can take that long to apply changes), then press <b>Connect Google Calendar</b> above.') }}</li>
+      {{ _('› <b>Create</b>.') }}
+      <br><span class="muted">{{ _('✓ Ticks itself once Google confirms the address (at Connect).') }}</span>{% else %}<p class="merr">{{ _('First: ☰ Settings › <b>Public address</b> › this page’s https:// address › Save.') }}</p>{% endif %}</li>
+    <li data-step="7">{{ _('<b>Keys:</b> copy the Client ID and Client secret into the boxes above (the secret shows only once).') }}
+      <br><span class="muted">{{ _('Pop-up closed? Clients › CalendarStream › <b>Add secret</b>.') }}</span></li>
+    <li data-step="8">{{ _('<b>Connect</b> (above). Google can take 5 min to apply changes.') }}
+      <br><span class="muted">{{ _('✓ The status box says Connected.') }}</span></li>
   </ol>
   <p class="h4">{{ _('If Google shows an error') }}</p>
   <ul class="trouble">
-    <li>{{ _('<b>Error 400: redirect_uri_mismatch</b>: open Clients › CalendarStream › <b>Authorized redirect URIs</b> (not JavaScript origins) › <b>+ Add URI</b> › paste the address from step 6 › <b>Save</b>, and wait 5 minutes. If that address is misspelled, fix ☰ Settings → Public address first.') }}</li>
-    <li>{{ _('<b>Error 403: access_denied</b> (“has not completed the Google verification process”, “developer-approved testers”): step 5: publish the app, or add the exact Gmail address you sign in with under <b>Test users</b>.') }}</li>
-    <li>{{ _('<b>“Google hasn’t verified this app”</b>: not an error. Press <b>Continue</b> (or <b>Advanced</b> › <b>Go to CalendarStream</b>).') }}</li>
-    <li>{{ _('<b>Error 401: invalid_client</b>: the ID or secret is wrong or from another project. Copy both again, or make a new secret with Clients › CalendarStream › <b>Add secret</b>.') }}</li>
-    <li>{{ _('<b>Error 401: deleted_client</b>: the client was deleted (Google deletes clients unused for 6 months). Restore it on the Clients page within 30 days, or do step 6 again.') }}</li>
-    <li>{{ _('<b>Asked to Connect again after a week</b>: the app is still in Testing. Publish it (step 5).') }}</li>
+    <li>{{ _('<b>400 redirect_uri_mismatch</b>: Clients › CalendarStream › <b>Authorized redirect URIs</b> › <b>+ Add URI</b> › step 6’s address › <b>Save</b> › wait 5 min.') }}</li>
+    <li>{{ _('<b>403 access_denied</b>: step 5 (publish, or your Gmail under <b>Test users</b>).') }}</li>
+    <li>{{ _('<b>“Google hasn’t verified this app”</b>: normal › <b>Continue</b> (or <b>Advanced</b> › <b>Go to CalendarStream</b>).') }}</li>
+    <li>{{ _('<b>401 invalid_client</b>: wrong ID or secret › copy both again (or Clients › CalendarStream › <b>Add secret</b>).') }}</li>
+    <li>{{ _('<b>401 deleted_client</b>: Clients › restore it (within 30 days), or step 6 again.') }}</li>
+    <li>{{ _('<b>Connect again every week</b>: still Testing › step 5 (publish).') }}</li>
   </ul>
 </details>
 {%- endmacro %}
@@ -161,7 +160,7 @@
   {% else %}{{ _('Not synced yet.') }}{% endif %}</p>
 {% set w = g.watch %}
 <p class="mnote">{% if w.on %}{{ icon("bolt", 15) }} {{ _('<b>Instant updates from Google: on.</b> Changes made in Google come here within seconds.') }}{% if w.last %} {{ _('Last notice from Google: {when}.', when=w.last) }}{% endif %}
-  {% else %}{{ _('<b>Instant updates from Google: off</b> ({why}). Changes made in Google come here at the daily check.', why=msg(w.why)) }}{% endif %}</p>
+  {% else %}{{ _('<b>Instant updates: off</b> ({why}): Google’s changes come at the daily check.', why=msg(w.why)) }}{% endif %}</p>
 {%- endmacro %}
 
 {# One rule row (Rules box of a source): the title to match and how, then what to do: give it a color,

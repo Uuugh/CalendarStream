@@ -31,7 +31,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     d = main.destinations()[-1]
     ok(d["type"] == "feed" and d["for"] == "google", "+ Google Calendar without Google Calendar sync: a feed for Google")
     p0 = c.get("/").text
-    ok("set up <b>Google Calendar API Sync</b>" in p0, "…which points to Google Calendar sync in Settings")
+    ok("☰ Settings › <b>Google Calendar API Sync</b>" in p0, "…which points to Google Calendar sync in Settings")
     wid = seed.demo(c, csrf, main)
     p = c.get("/").text
     # caching: the stylesheet and script are files
@@ -94,7 +94,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(rule_ev.locator(".evtools .evedit").count() == 0 and rule_ev.locator(".evtools .evdel").count() == 0 and rule_ev.locator(".evtools .evcopy").count() == 1,
            "…a rule's event: no edit or delete")
         pg.click("#menubtn"); pg.wait_for_timeout(200)
-        ok(pg.is_visible("#googlesync") and pg.is_visible("#googlesync .gstate .chip"), "Settings shows Google Calendar sync and its state")
+        ok(pg.is_visible("#googlesync") and pg.locator("#googlesync .gstate .chip:visible, #googlesync .gbox .chip:visible").count() > 0, "Settings shows Google Calendar sync and its state")
         ok(not errs, f"no script errors {errs}")
         b.close()
     srv.should_exit = True

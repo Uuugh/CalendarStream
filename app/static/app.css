@@ -33,8 +33,9 @@
   .updslot > * { display:none }
   .updslot[data-state="ready"] .updbtn { display:inline-flex; height:24px; padding:0 10px; font-size:12px; border-radius:var(--r) }
   .updslot .updmsg { position:relative; width:100%; align-items:center; justify-content:center; padding:0 10px; font-size:12px; font-weight:700; white-space:nowrap }
-  .updslot:not([data-state="ready"]) .updmsg { display:inline-flex; animation:slotfade .3s ease }
-  .updslot[data-state="downloading"] .updmsg { color:var(--warn); background:var(--warnbg) }
+  .updslot:not([data-state="ready"]) .updmsg { display:inline-flex }
+  .updslot:not([data-state="ready"]) .updmsg .updtext { animation:sn-in .25s ease-out }     /* only the words fade in: no blank moment (beta.14) */
+  .updslot[data-state="downloading"] .updmsg { color:var(--run); background:var(--runbg) }  /* working: the pressed look, like Restarting… */
   .updslot[data-state="restarting"] .updmsg { color:var(--run); background:var(--runbg) }
   .updslot[data-state="failed"] .updmsg { color:var(--bad); background:var(--badbg) }
   .updslot[data-state="done"] .updmsg { color:var(--ok); background:var(--okbg) }  .updslot[data-state="done"] .updbar { display:none }
@@ -669,11 +670,11 @@
   /* While it syncs (and says Synced / Failed), the button grows over the whole status box, its words in
      the middle, and Healthy fades out under it; then it shrinks back (0.2.8-beta.3). */
   .module .statusbox:has(.syncform) { position:relative }
-  .statusbox .chip { transition:opacity .25s }
+  .statusbox .chip { transition:opacity .2s ease .25s }    /* back: after the button has shrunk (0.25 s), then fades in (0.2 s) */
   .statusbox .syncform { position:absolute; left:3px; right:3px; bottom:3px; top:calc(100% - 25px); transition:top .25s ease }
   .statusbox .syncform button.syncnow { height:100% }
   .statusbox.instant .syncform, .statusbox.instant .chip { transition:none }
-  .statusbox:has(.syncnow:not([data-state="idle"])) .chip { opacity:0 }
+  .statusbox:has(.syncnow:not([data-state="idle"])) .chip { opacity:0; transition-delay:0s }   /* pressed: fades out at once, under the growing button */
   .statusbox:has(.syncnow:not([data-state="idle"])) .syncform { top:3px }
   .statusbox:has(.syncnow:not([data-state="idle"])) button.syncnow { font-size:13px }
   /* (the chip keeps its place at the top while Sync Now sits at the bottom) */
@@ -682,8 +683,12 @@
   .syncnow[data-state="syncing"] { background:var(--card); color:var(--run); opacity:1 }
   .syncnow[data-state="done"] { background:var(--ok); color:var(--card); opacity:1; animation:pulse-ok 1.1s ease-out 2 }
   .syncnow[data-state="fail"] { background:var(--warn); color:var(--card); opacity:1; animation:pulse-warn 1.1s ease-out 2 }
+  /* (0.2.8-beta.14) red: CalendarStream itself failed (amber is a problem outside it: Google, GitHub, United, the internet) */
+  .syncnow[data-state="fail"][data-cause="inside"] { background:var(--bad); animation:pulse-bad 1.1s ease-out 2 }
   @keyframes pulse-ok { from { box-shadow:0 0 0 0 color-mix(in srgb, var(--ok) 70%, transparent) } to { box-shadow:0 0 0 9px transparent } }
   @keyframes pulse-warn { from { box-shadow:0 0 0 0 color-mix(in srgb, var(--warn) 70%, transparent) } to { box-shadow:0 0 0 9px transparent } }
+  @keyframes pulse-bad { from { box-shadow:0 0 0 0 color-mix(in srgb, var(--bad) 70%, transparent) } to { box-shadow:0 0 0 9px transparent } }
+  @keyframes pulse-run { from { box-shadow:0 0 0 0 color-mix(in srgb, var(--run) 60%, transparent) } to { box-shadow:0 0 0 9px transparent } }
   svg.spin { animation:spin 1s linear infinite }
   @keyframes spin { to { transform:rotate(360deg) } }
   @media (prefers-reduced-motion:reduce) { svg.spin, .syncnow { animation:none !important } }
@@ -917,7 +922,7 @@
 /* Check now is a Sync Now (0.2.8-beta.8): at the bottom of the box, growing over it while it checks */
 .menu .module.bare .statusbox:has(.syncform) { justify-content:flex-start }
 .syncnow[data-state="found"] .sn.found { display:inline-flex; animation:sn-in .25s ease-out }
-.syncnow[data-state="found"] { background:var(--warn); color:var(--card); opacity:1; animation:pulse-warn 1.1s ease-out 2 }
+.syncnow[data-state="found"] { background:var(--card); color:var(--run); opacity:1; animation:pulse-run 1.1s ease-out 2 }   /* waiting on you: the pressed look (beta.14) */
 .menu .module.bare .srcleft { flex:0 1 210px; min-width:0; display:grid; gap:2px }
 .menu .module.bare .namebox { background:none; border-color:transparent; padding-left:0 } /* fixed text, not fields */
 .menu .module.bare .srcnote { font-weight:400; color:var(--muted) }
@@ -970,4 +975,18 @@ details.gsteps ol > li.done { color:var(--muted) }
 .menu .gremoverow { display:flex; align-items:center; justify-content:flex-start; gap:10px; margin-top:6px }
 .menu .gremoverow button.danger { display:inline-flex; align-items:center; gap:4px; height:34px; padding:0 12px }
 .menu .gremoverow label.mnote { margin:0; display:inline-flex; align-items:center; gap:6px }
+/* Google Calendar API Sync → Connect (0.2.8-beta.14): a status box at the end of the credentials row */
+.menu .gconnect .pair { align-items:flex-end }
+.menu .gconnect .gbox { flex:0 0 132px; width:132px; height:50px; display:flex; flex-direction:column; justify-content:flex-start; gap:2px; padding:3px;
+                        border:1px solid var(--line); border-radius:var(--r); position:relative; box-sizing:border-box }
+.menu .gconnect .gbox .chip { background:transparent; height:18px; padding:0; justify-content:center; margin-top:1px }
+.menu .gstepmsg { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:6px 0 0 }
+.menu .gstepmsg[hidden] { display:none }
+.menu .gstepmsg .gsteptext { flex:1 1 220px }
+.menu .gstepmsg .gstepfix { display:inline-flex; gap:6px; flex-wrap:wrap }
 
+/* Reduced motion (beta.14): nothing slides, grows, fades or pulses; every state change is instant */
+@media (prefers-reduced-motion:reduce) {
+  .statusbox .syncform, .statusbox .chip, .cfgtoggle .arr, .section > .shead .toggle::before, .okslot *, .pairbtns *, button.syncnow, .clockswitch button span { transition:none !important }
+  .syncnow .sn, .updslot .updtext, .okslot *, .brk.flash { animation:none !important }
+}

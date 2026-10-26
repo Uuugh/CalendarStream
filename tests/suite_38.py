@@ -44,7 +44,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # a conflict turns the box yellow
     seed.rule(c, csrf, "Two again", [seed.text("XYZ")], [{"type": "color", "color": "#d50000"}], ["ccs", wid])
     p = c.get("/").text
-    ok(re.search(r'<div class="statusbox countbox warn" id="rulecount" title="\d to check">', p) is not None, "…yellow with “n to check” while a rule needs checking")
+    ok(re.search(r'<div class="statusbox countbox run" id="rulecount" title="\d to check">', p) is not None, "…the pressed look (waiting on you, beta.14) with “n to check” while a rule needs checking")
     # Auto-update
     ok('name="auto" value="1" disabled' in p, "Auto-update: off and greyed without the updater")
     main.updater.ready = True

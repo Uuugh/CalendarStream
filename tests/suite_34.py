@@ -25,7 +25,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     p = c.get("/").text
     ok('id="sourcestitle"><svg class="mi secicon"' in p and ">Calendars<" in p and "Feeds" in p and p.count('class="mi secicon"') == 5, f"({p.count('class=\"mi secicon\"')}) F1.3/F3.1/F4: section icons; Calendars and Feeds")
     ok("Expand for Details or to Edit Configuration" in p and '<span class="short">Expand</span>' in p and "Configure" not in re.sub(r"<[^>]+>", "", p.split('id="sources"')[1]).split("All Rules")[0], "F1.2: Expand for Details or to Edit Configuration")
-    ok('class="helpdot' in p and "What other apps can subscribe to" in p and 'class=&#34;' not in p, "F1.1: explanations behind (?)")
+    ok('class="helpdot' in p and "What other apps get" in p and 'class=&#34;' not in p, "F1.1: explanations behind (?)")
     key = p.split('class="legend"')[1].split("</div>")[0]
     ok(">Timed<" not in key and ">All-day<" not in key, "I1: no Timed / All-day in the key")
     ok('class="iconbtn printbtn"' in p and "@media print" in c.get("/assets/app.css").text, "F2.1: Print")

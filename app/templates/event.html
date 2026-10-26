@@ -106,7 +106,7 @@
 
   {% if original %}
     {% if e.stale %}
-    <div class="note warn">{% if src_type == "ccs" %}{{ _('<b>United changed this event after you edited it.</b> Their current version is below. Save to keep your edit, or use <b>Revert to United’s version</b>.') }}{% else %}{{ _('<b>The feed changed this event after you edited it.</b> Its current version is below. Save to keep your edit, or use <b>Revert to the feed’s version</b>.') }}{% endif %}</div>
+    <div class="note warn">{% if src_type == "ccs" %}{{ _('<b>United changed this event since your edit.</b> Theirs is below: <b>Save</b> keeps yours · <b>Revert to United’s version</b> takes theirs.') }}{% else %}{{ _('<b>The feed changed this event since your edit.</b> Its version is below: <b>Save</b> keeps yours · <b>Revert to the feed’s version</b> takes its.') }}{% endif %}</div>
     {% endif %}
     <div class="note">{% if src_type == "ccs" %}{{ _('<b>United’s version</b> (from CCS+)') }}{% else %}{{ _('<b>The feed’s version</b> (from {name})', name=src_name) }}{% endif %}{% if not e.edited %} — {{ _('not edited yet') }}{% endif %}<br>
       <span class="orig">{{ original.title }} · {{ original_range }}{% if original.location %} · {{ original.location }}{% endif %}</span></div>
@@ -237,7 +237,7 @@
   {% endif %}
 </main>
 <script>
-var T = { del: {{ (_('Delete this event?') if e.origin == "custom" else _('Delete this event from your destinations? Its source would send it again, so it’s hidden instead (Edit → untick Hide to bring it back).'))|string|tojson }},
+var T = { del: {{ (_('Delete this event?') if e.origin == "custom" else _('Hide this event from your feeds? (Its source would send it back. Undo: Edit › untick Hide.)'))|string|tojson }},
           badTime: {{ _('Type a time like 9:30, 9:30pm or 21:30.')|string|tojson }}, zone: {{ _('Time zone')|string|tojson }},
           startZone: {{ _('Start time zone')|string|tojson }} };
 var delForm = document.getElementById('deleteform');

@@ -78,6 +78,6 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     fake.shutdown()
     asyncio.run(main.updater.probe())
     p = c.get("/").text
-    ok(not main.updater.ready and 'class="updslot"' not in p and "To update from this page (Update, Auto-update), run the installer again" in p, "no updater running: no Update now; Settings says how to add it")
+    ok(not main.updater.ready and 'class="updslot"' not in p and "To update from here: run the installer again" in p, "no updater running: no Update now; Settings says how to add it")
     srv.should_exit = True
 print("FAILS", fails)

@@ -3,7 +3,7 @@
 var PAGE = JSON.parse(document.getElementById('pagedata').textContent);
 // Texts used by the scripts below, in the page's language.
 var T = {
-  copied: {{ _('Copied')|string|tojson }}, stepAuto: {{ _('Ticks itself when CalendarStream can confirm it')|string|tojson }}, stepDone: {{ _('Step done')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }},
+  copied: {{ _('Copied')|string|tojson }}, gSaving: {{ _('Saving…')|string|tojson }}, gChecking: {{ _('Checking…')|string|tojson }}, gAddress: {{ _('Checking address…')|string|tojson }}, gOpening: {{ _('Opening Google…')|string|tojson }}, stepAuto: {{ _('Ticks itself when CalendarStream can confirm it')|string|tojson }}, stepDone: {{ _('Step done')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }},
   saved: {{ _('Saved')|string|tojson }}, verifying: {{ _('Verifying…')|string|tojson }},
   validated: {{ _('Validated')|string|tojson }}, verifyFailed: {{ _('Failed')|string|tojson }},
   disconnect: {{ _('Disconnect Google Calendar?')|string|tojson }},
@@ -290,6 +290,7 @@ function updateNow() {
   // end together.
   function settingsBtns(state, label) { document.querySelectorAll('button.upgradebtn').forEach(function (b) {
     b.dataset.state = state; b.disabled = state === 'syncing';
+    if (state === 'fail') b.dataset.cause = 'inside'; else delete b.dataset.cause;   // CalendarStream's updater failed: red (beta.14)
     var words = b.querySelector('.sn.' + (state === 'syncing' ? 'syncing' : state) + ' .snword');
     if (words && label) words.textContent = label;
   }); }
@@ -348,10 +349,44 @@ document.addEventListener('click', function (e) {
 // steps, 6 and 7, tick themselves once Google accepted the client, step 8 once connected; the others are
 // ticked by hand and remembered in this browser), the first unticked step marked as the current one,
 // and Google's pages opened in a window beside this one.
+// Google Calendar API Sync → Connect, one straight line (0.2.8-beta.14): Saving…, Checking…, Checking
+// address…, then Google's sign-in. Each step is asked of the server in turn and shown in the status box
+// (the theme's multi-button); the first that fails stops it: the box pulses Stopped and the line under
+// the row says what to fix, with Copy and Open buttons. Pressing Connect again starts over.
+document.addEventListener('click', function (e) {
+  var btn = e.target.closest('.gconnectbtn');
+  if (!btn || btn.dataset.state !== 'idle') return;
+  var f = btn.closest('form'), box = f.querySelector('.gstepmsg'), words = btn.querySelector('.sn.syncing .snword');
+  var steps = [['save', T.gSaving], ['client', T.gChecking], ['address', T.gAddress], ['go', T.gOpening]];
+  box.hidden = true; btn.dataset.state = 'syncing'; btn.disabled = true;
+  function stopped(j) {
+    btn.dataset.state = 'fail';
+    f.querySelector('.gsteptext').textContent = j.message || T.failed;
+    f.querySelector('.gcopyaddr').hidden = !(j.fix && j.fix.copy);
+    f.querySelector('.gopenclient').hidden = !(j.fix && j.fix.open);
+    box.hidden = false;
+    setTimeout(function () { btn.dataset.state = 'idle'; btn.disabled = false; }, 2400);
+  }
+  (function next(i) {
+    var step = steps[i], started = Date.now();
+    words.textContent = step[1];
+    var body = new URLSearchParams({ csrf: CSRF, step: step[0], client_id: f.elements.client_id.value, client_secret: f.elements.client_secret.value });
+    fetch('/google/step', { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        setTimeout(function () {
+          if (!j.ok) { stopped(j); return; }
+          if (step[0] === 'go') { btn.dataset.state = 'done'; setTimeout(function () { location.href = j.url; }, 400); return; }
+          next(i + 1);
+        }, Math.max(0, 500 - (Date.now() - started)));      // each step stays long enough to read
+      }, function () { stopped({}); });
+  })(0);
+});
+
 function bindGuide() { each('details.gsteps', 'gsteps', function (g) {
   var key = 'cs-gsteps', done = {};
   try { done = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (err) { done = {}; }
-  var auto = { 6: g.dataset.valid === '1', 7: g.dataset.valid === '1', 8: g.dataset.connected === '1' };
+  var auto = { 6: g.dataset.address === '1', 7: g.dataset.valid === '1', 8: g.dataset.connected === '1' };   // 6: Google accepts the address (beta.14)
   var steps = g.querySelectorAll('li[data-step]');
   function mark() {
     var current = null;
@@ -561,6 +596,8 @@ function syncDone(sid, ok) {
     var sb = btn.closest('.statusbox');
     if (sb) sb.classList.add('instant');
     btn.dataset.state = ok ? 'done' : 'fail'; btn.disabled = true;
+    // red when CalendarStream itself failed (its fresh box says so), amber when the trouble is outside it (beta.14)
+    if (!ok && sb && sb.classList.contains('bad')) btn.dataset.cause = 'inside'; else delete btn.dataset.cause;
     if (sb) { void sb.offsetHeight; requestAnimationFrame(function () { sb.classList.remove('instant'); }); }
     setTimeout(function () { btn.dataset.state = 'idle'; btn.disabled = false; }, 2400);
   });

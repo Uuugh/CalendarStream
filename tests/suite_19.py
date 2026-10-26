@@ -78,11 +78,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
                                      "check": {"ok": True, "message": "Google accepted the client ID and secret", "at": "2026-10-20T20:00:00+00:00"}})
     main.google._client = None
     p = c.get("/").text
-    ok(len(re.findall(r'title="Validated: Client ID & Client secret"><svg[^>]*>.*?</svg>Validated</span>', p)) == 1 and 'value="123-abc.apps.googleusercontent.com"' in p, "valid Google client: boxes shown, ✓ Validated to their right")
-    ok('action="/google/connect"' in p, "Connect stays outside the fold")
+    ok("Ready to connect" in p and 'class="statusbox gbox run"' in p and 'value="123-abc.apps.googleusercontent.com"' in p, "valid Google client: boxes shown, Ready to connect over Connect (0.2.8-beta.14)")
+    ok("gconnectbtn" in p, "Connect stays outside the fold")
     main.store.set("google_client", {**main.store.get("google_client"), "check": {"ok": False, "message": "Google rejected the client ID", "at": "2026-10-20T20:00:00+00:00"}})
     p = c.get("/").text
-    ok("Check both values and save again" in p and re.search(r'<span class="okslot" data-state="needs">\s*<span class="okmark" title="Validated: Client ID & Client secret">', p) is not None, "F1.2: rejected client: Save instead of ✓, with the error")
+    ok("Client rejected" in p and 'class="statusbox gbox warn"' in p and "Google rejected the client ID" in p, "F1.2: rejected client: Client rejected (amber), with the error")
     main.store.delete("google_client")
 
     # Tag Colors: own block under the health bar, own save route

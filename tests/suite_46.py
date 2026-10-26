@@ -36,7 +36,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         fh = p[p.index(f'id="dest-{f["id"]}"'):]; fh = fh[:fh.index('class="cfgline"')]
         ok("Next push" not in fh, "…a calendar feed doesn't (the app reads it when it chooses)")
         gs = p[p.index('id="googlesync"'):]; gs = gs[:gs.index('id="updates"')]
-        ok('class="ghost credtrash"' in gs and 'id="gremove"' in gs and 'data-confirm="Delete the Google client ID and secret?' in gs,
+        ok('class="ghost credtrash"' in gs and 'id="gremove"' in gs and 'data-confirm="Delete the client ID and secret?' in gs,
            "F2.3: the connected credentials end with a trash that asks first")
     p = c.get("/?menu=settings").text
     ud = p[p.index('id="updates"'):]; ud = ud[:ud.index("</form>")]

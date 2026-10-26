@@ -1114,7 +1114,7 @@ async def run_once(manual: bool = False, sid: str = "ccs"):
         state.status, state.message = "error", str(e)
         state.record("error", f"Download failed: {e}")
     except Exception as e:
-        state.status, state.message = "error", f"{type(e).__name__}: {e}"
+        state.status, state.message = "internal", f"{type(e).__name__}: {e}"     # CalendarStream itself failed: red (beta.14)
         state.record("error", f"Unexpected error: {state.message}")
     finally:
         state.running = False
@@ -1147,7 +1147,7 @@ async def run_feed(sid: str):
         S.status, S.message = "error", str(e)
         S.record("error", f"Download failed: {e}")
     except Exception as e:
-        S.status, S.message = "error", f"{type(e).__name__}: {e}"
+        S.status, S.message = "internal", f"{type(e).__name__}: {e}"
         S.record("error", f"Unexpected error: {S.message}")
     finally:
         S.running = False
@@ -1893,7 +1893,7 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
         "public": {"url": public_url(), "here": (lambda u: u if u.startswith("https://") else "")(str(request.base_url).rstrip("/"))},
         "page_user": logins.page_user, "admin_email": admin_email(), "trash": TRASH_ICON, "copy_icon": COPY_ICON,
         # Activities and Logs, folded: Healthy unless a problem in the log is still there
-        "healthy": not any(st(sid).status in ("auth_failed", "blocked", "error", "paused") for sid in source_ids())
+        "healthy": not any(st(sid).status in ("auth_failed", "blocked", "error", "internal", "paused") for sid in source_ids())
                    and not (google.connected and google.info().get("last_error")),
         "print_prefs": print_prefs(), "print_views": PRINT_VIEWS,
         "alarm_choices": [(m, alarm_text(m, lang)) for m in ALARM_CHOICES],
@@ -3326,6 +3326,55 @@ async def google_client(request: Request, csrf: str = Form(""), client_id: str =
         state.record("info" if check["ok"] else "warn",
                      f"Google OAuth client saved ({google.client_id.split('.')[0][:12]}…): {check['message']}")
     return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
+
+
+GOOGLE_CLIENTS_PAGE = "https://console.cloud.google.com/auth/clients"
+
+
+@app.post("/google/step", dependencies=[Depends(gui_auth)])
+async def google_step(request: Request, csrf: str = Form(""), step: str = Form(""), client_id: str = Form(""),
+                      client_secret: str = Form("")):
+    """Connect, one straight line (0.2.8-beta.14): the page runs these steps in order, showing each in
+    the status box (Saving…, Checking…, Checking address…), and stops at the first that fails, saying
+    what to fix: "save" (the ID and secret typed, if any), "client" (Google accepts them), "address"
+    (Google accepts this page's /google/callback for the client), "go" (Google's sign-in page)."""
+    check_csrf(csrf)
+    view = google_view(request)
+    uri = view["redirect_uri"]
+    def stop(message: str, **fix):
+        return JSONResponse({"ok": False, "step": step, "message": message, "fix": fix})
+    if google.connected:
+        return stop("Already connected.")
+    if step == "save":
+        if client_id.strip() and (client_id.strip() != google.client_id or client_secret.strip()):
+            try:
+                google.save_client(client_id, client_secret)
+            except GoogleError as e:
+                return stop(str(e))
+            google.record_error("")
+            state.record("info", f"Google OAuth client saved ({google.client_id.split('.')[0][:12]}…)")
+        if not google.configured:
+            return stop("Client ID and Client secret: from Google Cloud › Clients › CalendarStream (Guided setup, below).", guide=True)
+        return JSONResponse({"ok": True, "step": step})
+    if step == "client":
+        check = await google.check_client(uri)
+        if check.get("ok") is False:
+            return stop(f"{check['message']}: Google Cloud › Clients › CalendarStream › copy both again › Connect.", open=GOOGLE_CLIENTS_PAGE)
+        if check.get("ok") is None:
+            return stop(check.get("message") or "Couldn't check the client with Google.", retry=True)
+        return JSONResponse({"ok": True, "step": step})
+    if step == "address":
+        if not view["redirect_ok"]:
+            return stop("☰ Settings › Public address: this page's https:// address › Save › Connect.")
+        ok = await google.check_redirect(uri)
+        if ok is False:
+            state.record("warn", f"Google doesn't list {uri} under the client's Authorized redirect URIs")
+            return stop(f"Address not on your client: Google Cloud › Clients › CalendarStream › Authorized redirect URIs › "
+                        f"+ Add URI › {uri} › Save › wait 5 min › Connect.", copy=uri, open=GOOGLE_CLIENTS_PAGE)
+        return JSONResponse({"ok": True, "step": step, "confirmed": ok is True})
+    if step == "go":
+        return JSONResponse({"ok": True, "step": step, "url": google.sign_in_url(uri)})
+    raise HTTPException(400, "Unknown step.")
 
 
 @app.post("/google/connect", dependencies=[Depends(gui_auth)])

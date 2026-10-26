@@ -43,18 +43,19 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         r = asyncio.run(main.google.check_client("https://css.uuugh.com/google/callback"))
         ok(r["ok"] is True and r["redirect_ok"] is False, "redirect_uri_mismatch: ID and secret ✓, redirect URI ✗")
         p = c.get("/", auth=A).text
-        ok(re.search(r'</svg>Validated</span>', p) is not None and ("doesn&#39;t list https://css.uuugh.com/google/callback" in p or "doesn't list https://css.uuugh.com/google/callback" in p)
-           and "Check both values" not in p, "page: ✓ Validated, plus a red line with the exact URI to add (no 'check both values')")
-        ok(re.search(r'<button disabled title="Add the redirect URI in Google Cloud first">Connect Google Calendar', p) is not None, "Connect disabled, saying why")
+        ok("Address missing" in p and "Authorized redirect URIs › + Add URI › https://css.uuugh.com/google/callback" in p
+           and "Check both values" not in p, "page: Address missing, and the line under the row with the exact URI to add (beta.14)")
+        ok('<button type="button" class="ghost gcopyaddr" onclick' in p and 'class="btn ghostbtn gopenclient"' in p and 'gopenclient" href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener" hidden' not in p,
+           "…with Copy the address and Open your client")
         c.post("/settings/public-url", auth=A, data={"csrf": csrf, "url": "https://other.example.com", "action": "save"})
         p = c.get("/", auth=A).text
-        ok("doesn't list" not in p and "doesn&#39;t list" not in p, "a check of another address doesn't count")
+        ok("Address missing" not in p, "a check of another address doesn't count")
         c.post("/settings/public-url", auth=A, data={"csrf": csrf, "url": "https://css.uuugh.com", "action": "save"})
         C.body = {"error": "invalid_grant"}
         r = asyncio.run(main.google.check_client("https://css.uuugh.com/google/callback"))
         ok(r["ok"] is True, "invalid_grant → ✓ (ID, secret and redirect accepted)")
     p = c.get("/", auth=A).text
-    ok("doesn't list" not in p and "doesn&#39;t list" not in p and re.search(r'<button>Connect Google Calendar', p) is not None, "after a good check: Connect on")
+    ok("doesn’t list" not in p and "doesn&#39;t list" not in p and "Ready to connect" in p and 'class="syncnow gconnectbtn"' in p, "after a good check: Ready to connect")
     ok([normalise_public_url(v) for v in ("https://x.com/a",)] == ["https://x.com/a"], "paths kept")
     for bad in ("http:/example.com", "https://x.com/a;b"):
         try: normalise_public_url(bad); ok(False, f"{bad} refused")
@@ -66,7 +67,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # Guide hides an unusable redirect URI
     c.post("/settings/public-url", auth=A, data={"csrf": csrf, "url": "https://192.168.1.5", "action": "save"})
     p = c.get("/", auth=A).text
-    ok("https://192.168.1.5/google/callback" not in p and "First set the <b>Public address</b> in Settings" in p, "an https IP address: no redirect URI shown, asks for the public address")
+    ok("https://192.168.1.5/google/callback" not in p and "First: ☰ Settings › <b>Public address</b>" in p, "an https IP address: no redirect URI shown, asks for the public address")
     c.post("/settings/public-url", auth=A, data={"csrf": csrf, "url": "https://printer.local", "action": "save"})
     p = c.get("/", auth=A).text
     ok("https://printer.local/google/callback" not in p, "a .local address isn't offered to Google")

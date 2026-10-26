@@ -55,7 +55,7 @@ with patch.object(main, "loop", noop), TestClient(main.app) as c:
         saved = main.store.get("google_client")
         ok(saved["id"] == "123456789012-abcdef.apps.googleusercontent.com" and "GOCSPX-shh" not in str(saved), "secret stored encrypted")
         page = c.get("/", auth=A).text
-        ok("GOCSPX-shh" not in page and "Saved (leave empty to keep it)" in page and 'action="/google/connect"' in page, "secret never shown; Connect appears")
+        ok("GOCSPX-shh" not in page and "Saved (leave empty to keep it)" in page and 'gconnectbtn' in page, "secret never shown; Connect appears")
         c.post("/google/client", auth=A, data={"csrf": csrf, "client_id": "987654321098-zyxwvu.apps.googleusercontent.com", "client_secret": ""})
         main.google._client = None
         ok(main.google.client() == ("987654321098-zyxwvu.apps.googleusercontent.com", "GOCSPX-shh"), "empty secret keeps the saved one")
@@ -64,7 +64,7 @@ with patch.object(main, "loop", noop), TestClient(main.app) as c:
         log = " | ".join(h["msg"] for h in main.store.recent_log(10))
         ok("GOCSPX" not in log, "secret never logged")
         sys.exit()
-    ok('action="/google/connect"' in page and "http://localhost/google/callback" in page, "Connect button and redirect URI shown")
+    ok('class="syncnow gconnectbtn"' in page and "http://localhost/google/callback" in page, "Connect (one button, beta.14) and the redirect URI shown")
     ok(c.post("/google/connect", auth=A, data={"csrf": "x"}).status_code == 400, "connect needs CSRF")
     ok(c.post("/google/connect", data={"csrf": csrf}).status_code == 401, "connect needs the status-page login")
     ok(c.get("/google/callback?state=x&code=y").status_code == 401, "callback needs the status-page login")

@@ -53,7 +53,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(p.index('action="/google/client"') < p.index('Guided setup: a client ID and secret') and '<details class="guide gsteps" open' not in p, "form above the guide; guide closed")
     save("test-client.apps.googleusercontent.com", "wrong")
     p = c.get("/", auth=A).text
-    ok(main.google.client_check().get("ok") is False and "Google rejected the client secret" in p and "disabled title" in p, "wrong secret → rejected, Connect disabled")
+    ok(main.google.client_check().get("ok") is False and "Google rejected the client secret" in p and "Client rejected" in p and '<div class="gstepmsg check bad">' in p, "wrong secret → rejected, said under the row (beta.14: Connect stops there)")
     save("999999999999-nope.apps.googleusercontent.com", "test-secret")
     ok("doesn't know this client ID" in main.google.client_check().get("message", ""), "unknown ID reported")
     save("test-client.apps.googleusercontent.com", "test-secret")

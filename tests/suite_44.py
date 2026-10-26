@@ -24,6 +24,23 @@ async def fake_check():
     r = {"checked": datetime.now(timezone.utc).isoformat(), "channel": "beta", "newest": main.__version__}
     main.store.set("update_check", r); return r
 CLAR = open(os.path.join(os.path.dirname(HERE), "build_rules", "theme.md")).read().split("## Clarifications", 1)[1]
+# One look per meaning (beta.14): every status word and the look it must have (theme.md, section 2). A word not
+# listed here fails: add it, with its meaning, to theme.md and here.
+MEANING = {"good": r"Healthy|Connected|In Google|Read by Google|Up to date|\d+ Rules?|\d+ Templates?",
+           "run": r"Syncing…|Starting|Paused|Setup needed|Ready to connect|Not set up|Not checked|Update available|Not connected|Not read yet|\d+ to check",
+           "warn": r"Sign-in rejected|Blocked|Error|Address missing|Client rejected|Sync problem|Unhealthy",
+           "bad": r"Internal error|Sync problem|Update failed"}
+# Words on the page (beta.14): click paths and short lines; no sentence over 20 words outside the (?) help
+WORDS = r"""() => {
+  const body = document.body.cloneNode(true);
+  body.querySelectorAll('.helptip, #cal, .logwin, script, style, template, select, textarea, code, input').forEach(e => e.remove());
+  const long = [];
+  body.querySelectorAll('p, li, summary, label, .mnote, .gsteptext, .note, h3, dd, td').forEach(e => {
+    if (e.querySelector('p, li, ul, ol, div')) return;
+    e.textContent.split(/(?<=[.!?])\s+|\s+›\s+|\s+·\s+|\n/).forEach(x => { x = x.replace(/\s+/g, ' ').trim(); if (x.split(' ').length > 20) long.push(x); });
+  });
+  return {long: [...new Set(long)], chips: [...document.querySelectorAll('.chip')].map(c => [c.textContent.trim(), (c.className.match(/\b(good|warn|bad|run)\b/) || [''])[0]])};
+}"""
 
 # What the page must look like: measured in the browser
 MEASURE = """() => {
@@ -123,6 +140,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                     # Clarification: a box means you can change it (Updates' title and channel are plain text)
                     bx = pg.evaluate("""() => [...document.querySelectorAll('#updates .srcleft > *')].map(e => getComputedStyle(e).borderTopColor + '|' + getComputedStyle(e).backgroundColor)""")
                     ok(all(x.endswith("rgba(0, 0, 0, 0)") for x in bx), f"[{tag}] Clarification 'a box means you can change it': Updates' fixed text has no box {bx}")
+                    # Clarification: one look per meaning; in-page words are click paths
+                    wd = pg.evaluate(WORDS)
+                    wrong = [(t, k) for t, k in wd["chips"] if not re.fullmatch(MEANING.get(k, "(?!)"), t)]
+                    ok(wd["chips"] and not wrong, f"[{tag}] Clarification 'one look per meaning': each status word has its meaning's look (wrong: {wrong})")
+                    ok(not wd["long"], f"[{tag}] Clarification 'click paths': no sentence over 20 words on the page (outside the (?)) {wd['long']}")
                 pg.close()
         # Clarification: no handle with nothing to reorder (one feed)
         for d in main.destinations()[1:]:
@@ -169,7 +191,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "fields (suite 46: 34 px, layout)": "Fields everywhere, pop-ups included", "+ in a corner (suite 46)": "Every section's + is in a corner",
             "credentials trash (suite 46)": "A credentials row", "one line of settings (suite 46)": "A row of settings that belong together",
             "next push (suite 46)": "Next push instantaneous", "one action, one state (suite 47)": "One action, one state",
-            "a working Settings group shows everything (suite 47)": "A Settings"}
+            "a working Settings group shows everything (suite 47)": "A Settings",
+            "one look per meaning": "One look per meaning", "click paths": "In-page instructions are click paths"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

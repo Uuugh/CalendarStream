@@ -197,8 +197,8 @@ logins or setup codes lock an address out for 15 minutes.
   it); on the right "Last synced 07:59" (or "Sync failed 07:59"; what changed is in Activities and
   Logs) over "Next check @ 08:59" (a line with nothing to say, like Local's, is left blank), beside its
   status over **Sync Now** (while it syncs, the button fills the box), in a box of the same size in every module. **Sync Now** says
-  **Syncing…** at once, then pulses green (**Synced**) or yellow (**Failed**) and goes back to Sync
-  Now; the status, the calendar and the log update in place, without reloading the page.
+  **Syncing…** at once, then pulses green (**Synced**), amber (**Failed**: United, Google or the
+  internet said no) or red (CalendarStream itself failed) and goes back to Sync Now; the status, the calendar and the log update in place, without reloading the page.
   **▸ Expand for Details or to Edit Configuration ◂** sits in a folded module's bottom border; it
   opens the rest (it opens by itself when something needs doing) and becomes a **Close** line under
   the header, turns the name into a field of the same size, and shows the **Note** field:
@@ -233,7 +233,7 @@ logins or setup codes lock an address out for 15 minutes.
   part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
   an old link) and existing subscriptions work again.
 - **All Rules** (looks like a module: its header shows the number of rules in a box, green, or
-  yellow with "n to check" while a rule conflicts; **Expand for Details** opens it, with **+** in its bottom right corner): every rule,
+  in the pressed look (waiting on you) with "n to check" while a rule conflicts; **Expand for Details** opens it, with **+** in its bottom right corner): every rule,
   highest priority first, with the calendars it applies to in a badge in their colors (stripes for
   several, white for All calendars). **+** or ✎ opens the rule dialog (with **How rules work** at its
   bottom), the copy button makes a copy for no calendar yet, the bin deletes it, the handle changes
@@ -272,11 +272,12 @@ logins or setup codes lock an address out for 15 minutes.
 - **☰ Settings** (a light blue panel): site settings only: the status-page login (with a show-password eye and a
   strength bar, like every password box), the public address, the **admin e-mail** (filled into the
   Google setup guide), **Google Calendar API Sync** (laid out like a login, connected or not: Client ID
-  with Copy, Client secret, then ✓ Validated or ✓ Connected) and **Updates**, laid out
+  with Copy, Client secret, and one **Connect** button that saves, checks the client and the redirect
+  address with Google, then opens Google's sign-in, stopping with the fix as a click path) and **Updates**, laid out
   like a module header: your release (stable or beta versions; only those are offered), when it last
   checked and the next check, and a status box with **Check now** or **Update now** (like Sync Now: **Checking…**, or for an
   update **Downloading…** and **Restarting…**, the same words as the top bar's Update now, then
-  **Up to date** in green, or **Update found** / **Couldn't check** in yellow; a newer version also
+  **Up to date** in green, **Update found** in the pressed look (waiting on you) or **Couldn't check** in amber; a newer version also
   shows next to the version at the top; then **Update** replaces Check now; once it has updated,
   Settings shows Up to date and Check now again). Under it, on one line, **Check for updates** (hourly,
   weekly, monthly or never) and **Auto-update** (with the updater: newer versions are installed by
@@ -331,7 +332,13 @@ browser), or the **Guided setup** (each Google page opens in a window beside Cal
 buttons; steps tick themselves off when CalendarStream can confirm them). Once it works, the group
 shows a module header (account, last sync, Connected over Sync Now), the credentials row (ending with
 a trash that deletes them, after asking) and **Remove** (disconnects, after asking; tick "Also delete
-these calendars in Google" beside it), with nothing under Expand. Paste its client ID and secret (checked with Google straight away), then **Connect**. Google
+these calendars in Google" beside it), with nothing under Expand. Paste its client ID and secret, then **Connect**: Saving… › Checking… ›
+Checking address… › Google's sign-in. If the client or its redirect address isn't right, it stops there
+and says what to fix (Google Cloud › Clients › CalendarStream › Authorized redirect URIs › + Add URI ›
+Save), with Copy and Open buttons; the guided setup's step 6 ticks itself once Google confirms the
+address. Disconnect and Connect again: the same Google calendar, no duplicates. A new client (after
+deleting the old one) makes a new calendar, since Google only lets an app see its own; the log names
+the old one to delete by hand. Google
 warns it "hasn't verified this app" because it's your own: press **Continue** (or **Advanced → Go to
 CalendarStream**), tick the calendar box and press **Continue**. The guide ends with a list of
 Google's error messages and what to do about each.
