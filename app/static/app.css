@@ -69,7 +69,8 @@
   .menu label { display:flex; align-items:center; gap:6px; margin:0 0 2px }
   .menu .upgradebtn { display:inline-flex; align-items:center; gap:4px; height:34px; padding:0 12px }
   /* Updates (beta.3): the label over the menu, like the other fields; Auto-update and Check now beside it */
-  .menu .pair.updrow { align-items:flex-end; flex-wrap:nowrap }
+  .menu .pair.updrow { align-items:center; flex-wrap:nowrap; gap:8px }
+  .menu .pair.updrow .rowlabel { flex:0 0 auto; font-size:13px; font-weight:600 } .menu .pair.updrow select { flex:1 1 auto; width:auto }
   .menu .pair.updrow label.fld { flex:1 1 auto }
   .menu .pair.updrow select { width:100%; height:34px }
   .menu .autoupd { flex:0 0 auto; height:34px; margin:0; font-size:13px; font-weight:600; white-space:nowrap }
@@ -187,10 +188,10 @@
   .ev.hidden summary { text-decoration:line-through; opacity:.55 }
   .ev .mark { margin-left:3px; font-size:11px }
   .ev .edit { display:inline-block; font-weight:600 }
-  .ev .evtools { display:flex; align-items:center; gap:4px; margin-top:6px; white-space:normal }
+  .ev .evtools { display:flex; align-items:center; gap:3px; margin-top:5px; white-space:normal }
   .ev .evtools .edit { margin-right:auto }
   .ev .evtools form { margin:0; display:inline }
-  .ev .evicon { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; padding:0; border:0; border-radius:6px;
+  .ev .evicon { display:inline-flex; align-items:center; justify-content:center; width:25px; height:25px; padding:0; border:0; border-radius:6px;
                 background:transparent; color:var(--muted); cursor:pointer }
   .ev .evicon:hover { background:var(--soft); color:var(--accent) } .ev .evdel .evicon:hover { color:var(--bad) }
   .dayhead { display:flex; align-items:center; justify-content:space-between }
@@ -856,8 +857,10 @@
   /* Events: Close on the left; the bell, ✎, copy and the bin on the right (F2.2) */
   .ev .evtools .evclose { margin-right:auto; font-weight:600 }
   /* (0.2.8-beta.10) the icons on the right, on a line of their own when the event is narrow */
-  .ev .evtools { flex-wrap:wrap; justify-content:space-between; row-gap:2px }
-  .ev .evtools .evicons { display:inline-flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:2px; margin-left:auto; max-width:100% }
+  .ev .evtools { flex-wrap:wrap-reverse; justify-content:space-between; align-items:center; row-gap:1px }   /* narrow: the icons go above Close (beta.11) */
+  /* the icons right-aligned (0.2.8-beta.11): in a narrow day they take whole lines above Close (the
+     tools wrap in reverse), each line flush right, never under Close */
+  .ev .evtools .evicons { display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:1px; margin-left:auto; flex:1 1 auto; max-width:100% }
   .ev .evtools .evicon.on { color:var(--accent) }
   .alarmpop { position:absolute; z-index:40; width:240px; padding:12px; border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); box-shadow:0 10px 30px rgba(0,0,0,.2) }
   .alarmpop .title { display:flex; align-items:center; font-weight:700; font-size:14px; margin-bottom:5px }
@@ -878,7 +881,8 @@
   #activity.open > .shead .statusbox { display:none }
   /* All Rules and Event Templates (beta.3, F5/F6): + then the count box, on the right */
   /* + in the top right corner, after the count box (0.2.8-beta.5), as in Calendars and Feeds */
-  .modsection > .shead .statusbox + .headplus { margin-left:5px; align-self:flex-start }
+  .modsection > .shead .countbox { margin-left:auto }      /* the count box at the top right; + at the bottom right (0.2.8-beta.11) */
+  .modsection .sfoot { display:flex; justify-content:flex-end; margin-top:5px }
   .countbox .chip { font-weight:600 }
   /* Activities: the latest line on the right, before Healthy */
   .modsection > .shead .peek.latest { flex:1 1 0; text-align:right; margin-left:auto; padding-right:5px }
@@ -916,7 +920,6 @@
 .menu .module.bare .srcleft { flex:0 1 210px; min-width:0; display:grid; gap:2px }
 .menu .module.bare .namebox { background:none; border-color:transparent; padding-left:0 } /* fixed text, not fields */
 .menu .module.bare .srcnote { font-weight:400; color:var(--muted) }
-.menu .pair.updrow { align-items:flex-end }
 
 /* 0.2.8-beta.9: no handle where there's nothing to reorder (one module, one rule) */
 .sortable > .modrow:only-child > .handle, .sortable > .ruleline:only-child > .handle, .rulelist > .ruleline:only-child > .handle { visibility:hidden }
@@ -944,4 +947,17 @@ details.gsteps ol > li.done { color:var(--muted) }
 .heldbox p { margin:0 0 4px; display:flex; align-items:center; gap:6px; flex-wrap:wrap }
 .heldbox ul { margin:0 0 6px; padding-left:22px; max-height:140px; overflow:auto }
 .heldbox .btnrow { display:flex; justify-content:flex-end; gap:8px }
+/* the trash at the end of a credentials row (0.2.8-beta.11) */
+.menu .credtrash { flex:0 0 34px; width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); align-self:flex-end }
+.menu .credtrash:hover { color:var(--bad) }
+/* The calendar's search line and its + (0.2.8-beta.11) */
+.calsearch { display:flex; flex-wrap:wrap; align-items:center; gap:5px 8px; margin:5px 0 8px }
+.calsearch[hidden] { display:none }
+.calsearch .inbox { flex:1 1 220px; min-width:0 }
+.calsearch input[type=search], .calsearch select, .calsearch input[type=date] { height:34px; font:13px var(--font); padding:0 8px; border:1px solid var(--line);
+                                                                               border-radius:var(--r); background:var(--bg); color:var(--text); box-sizing:border-box }
+.calsearch input[type=search] { width:100% }
+.calsearch .qdate { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; color:var(--muted) }
+.calhead { position:relative; padding-right:46px }
+.calhead .calplus { position:absolute; top:0; right:0 }     /* always the top right corner, even when the controls wrap */
 

@@ -20,7 +20,7 @@ NAMES = [
     "content_copy", "contrast", "dark_mode", "delete", "edit", "error", "event_note",
     "help", "history", "info", "language", "light_mode", "link", "link_off", "location_on", "menu", "print",
     "progress_activity", "radio_button_unchecked", "rule", "sensors", "subdirectory_arrow_right", "sync",
-    "smart_toy", "checklist", "swap_horiz", "upgrade", "visibility", "visibility_off", "warning",
+    "smart_toy", "checklist", "swap_horiz", "map", "search", "upgrade", "visibility", "visibility_off", "warning",
 ]
 
 

@@ -9,7 +9,43 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.10**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.11**
+
+## 0.2.8-beta.11 — 2026-10-26
+
+### Added
+- **F4.1** The calendar has a **+** in its top right corner, like the other sections (adds an event).
+- **F4.2** **Search**: the search icon (left of Time Zone) opens a search line: words found in titles,
+  places and notes, one calendar or all, From and To (a year back to a year ahead when empty). Matches
+  are listed by day as you type; ✕ closes it and brings the calendar back.
+- **F3.4** The event pop-up's Location has a **map** button: it opens the place in Google Maps, to
+  check it or find it.
+- **F2.3** ☰ Settings → Google Calendar API Sync: the credentials row (Client ID, Client secret)
+  ends with a **trash**, which asks first ("Delete the Google client ID and secret?"); while
+  connected, it disconnects first (CalendarStream's calendars stay in Google).
+
+### Changed
+- **F1** A Google calendar's header says **Next push instantaneous** (each change goes at once).
+- **F2.1** ☰ Settings → Updates: **Check for updates [Hourly ▾] ☐ Auto-update** on one line.
+- **F2.2** ☰ Settings → **Update now** works like Sync Now: **Updating…** over the status box,
+  then **Updated** (the page then reloads) or **Failed**. "Upgrade" has been gone since beta.9; a page
+  still showing it is an older page: reload it.
+- **F3** The event pop-up, laid out to the theme: **Calendar | Title** (the calendar as plain text
+  when it can't be changed); the color, link, duplicate and delete beside **Location**, under the
+  calendar; **All-day** and **The end is in a different time zone** on one line, above the times;
+  **Starts | Ends**, each with its **Time** under it; the end is always **Ends** (no "Last day");
+  "times in …" is gone; every field 34 px with a 12 px label, 2 px apart; Cancel | Save the theme's
+  pair.
+- **F5** **All Rules** and **Event Templates**: + moved out of the header, to the bottom right
+  corner of the open section; Event Templates' Save is now the theme's Cancel | Save.
+- **R1** New Clarifications in `build_rules/theme.md` (fields; + in a corner; the credentials trash;
+  one line of settings; Next push instantaneous; an opened event's Close in the bottom left corner),
+  each checked by the tests.
+
+### Fixed
+- **I2** An opened event in a narrow day: Close stays in the bottom left corner, and the icons go
+  right-aligned on a line above it (they used to wrap under Close).
+- The opened event's icons are 1 px smaller (25 px), with 1 px less space around them.
 
 ## 0.2.8-beta.10 — 2026-10-26
 

@@ -76,6 +76,7 @@
       <input type="password" id="{{ p }}csecret" name="client_secret" spellcheck="false" autocomplete="new-password"
              placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else 'GOCSPX-…' }}" {% if not g.has_secret %}required{% endif %}></label>
     {{ okbutton(valid, _('Validated'), _('Save'), _('Validated: Client ID & Client secret'), "action", "save") }}
+    {% if g.configured %}<button type="submit" form="{{ p }}gremove" class="ghost credtrash" formnovalidate title="{{ _('Delete the client ID and secret') }}" aria-label="{{ _('Delete the client ID and secret') }}">{{ trash }}</button>{% endif %}
   </div>
   {% if g.redirect_missing %}
     <p class="check bad">{{ icon("cancel", 15) }} {{ msg("Google doesn't list " ~ g.redirect_uri ~ " under Authorised redirect URIs; add it to the client in Google Cloud") }}
@@ -94,6 +95,8 @@
   {% endif %}
   {% if desc %}<p class="mnote" style="margin:6px 0 0">{{ desc }}</p>{% endif %}
 </form>
+{% if g.configured %}<form method="post" action="/google/client" id="{{ p }}gremove" data-confirm="{{ _('Delete the Google client ID and secret?') }}">
+  <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="action" value="remove"></form>{% endif %}
 {% if g.host_mismatch %}
   <p class="warnline">{{ _('Your <b>Public address</b> is <b>{public}</b>, but this page is open at <b>{here}</b>. Google sends you back to the Public address, so check the spelling (☰ Settings).', public=g.host_mismatch[0], here=g.host_mismatch[1]) }}</p>
 {% endif %}

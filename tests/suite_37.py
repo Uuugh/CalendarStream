@@ -169,7 +169,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         order = pg.locator("#ruledialog .cond").nth(1).locator(".brks.close .brk").evaluate_all("bs => bs.map(b => b.classList.contains('on') ? 'on' : 'spare')")
         ok(order == ["on", "spare"], f"the line ends with the chosen ) then the grey one ({order})")
         pg.keyboard.press("Escape"); pg.wait_for_timeout(100)
-        pg.click("#rules .newrule.headplus"); pg.wait_for_timeout(150)
+        pg.click("#rules .sfoot .newrule"); pg.wait_for_timeout(150)
         ok(pg.eval_on_selector_all("#ruledialog .rdapply input:checked", "i => i.map(x => x.value)") == ["all"], "a rule made in All Rules starts with All calendars")
         pg.keyboard.press("Escape")
         # F3.1: the remove dialog

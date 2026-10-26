@@ -43,7 +43,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
            f"12h/24h slider keeps its size, knob inside the track ({box['width']:.0f}x{box['height']:.0f})")
         dot = pg.locator(".legend .helpdot").bounding_box()
         ok(round(dot["height"]) == 15, "legend help dot: one 15 px help icon (F1.2, 0.2.8)")
-        ok(sw.get_attribute("aria-checked") == "false" and "9:45am" in pg.content() and cal["x"] + cal["width"] - (box["x"] + box["width"]) < 130, "12h/24h switch at the top right (Print beside it), 12-hour by default (English)")
+        ok(sw.get_attribute("aria-checked") == "false" and "9:45am" in pg.content() and cal["x"] + cal["width"] - (box["x"] + box["width"]) < 180, "12h/24h switch at the top right (Print and + beside it), 12-hour by default (English)")
         sw.click(); pg.wait_for_load_state(); pg.wait_for_timeout(600)
         ok(main.ui_clock() == "24" and pg.locator("#clockswitch").get_attribute("aria-checked") == "true" and "09:45–16:15" in pg.content(), "switch → 24-hour, saved, calendar redrawn")
         pg.locator("#clockswitch").click(); pg.wait_for_timeout(600)

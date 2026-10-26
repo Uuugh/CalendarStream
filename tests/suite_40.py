@@ -32,7 +32,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # F3/F4: + after the count box
     for sec, box in (("rules", "rulecount"), ("templates", "tplcount")):
         head = p[p.index(f'id="{sec}" '):]; head = head[:head.index('class="cfgline"')]
-        ok(head.index(f'id="{box}"') < head.index("headplus"), f"F3/F4: {sec}: + after the count box, in the corner")
+        sect = p[p.index(f'id="{sec}" '):]; sect = sect[:sect.index("</section>")]
+        ok(f'id="{box}"' in head and "plus" not in head and 'class="sfoot"><button type="button" class="ghost plus' in sect, f"F3/F4 (beta.11): {sec}: the count box in the header, + at the bottom right")
     # F5/F6: headers
     ccs = p[p.index('id="src-ccs"'):]; ccs = ccs[:ccs.index('class="cfgline"')]
     ok(re.search(r'<p class="srcstatus">Last synced <b>[^<]+</b></p>', ccs) is not None and "Last check was" not in p, "F5: a calendar's header: Last synced (time)")
@@ -56,7 +57,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto("http://127.0.0.1:8096/?month=2026-10"); pg.wait_for_timeout(500)
         # I1: the rule dialog's Color is one of Google's 11
-        pg.click("#rules > .cfgline .cfgtoggle"); pg.click("#rules .newrule.headplus"); pg.wait_for_timeout(200)
+        pg.click("#rules > .cfgline .cfgtoggle"); pg.click("#rules .sfoot .newrule"); pg.wait_for_timeout(200)
         pal = pg.locator("#ruledialog .act .pal")
         ok(pal.count() == 11 and pg.locator("#ruledialog .act input[type=color]").count() == 0, "I1: Color offers Google's 11 colors, no free color picker")
         pg.fill("#ruledialog .cond .cval", "SIM")

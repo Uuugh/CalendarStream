@@ -138,8 +138,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
         # layout: color bottom-left, Cancel/Save bottom-right
         form = pg.locator("form.card").bounding_box(); cp = pg.locator("#colorpick summary").bounding_box()
         save = pg.locator(".actions.bottom .pairbtns .psave").bounding_box(); cancel = pg.locator(".actions.bottom .pairbtns .pcancel").bounding_box()
-        ok(cp["x"] - form["x"] < 30 and form["x"] + form["width"] - (save["x"] + save["width"]) < 30 and cancel["x"] < save["x"] and abs(cp["y"] - save["y"]) < 10,
-           "color at bottom left; Cancel, Save at bottom right")
+        loc = pg.locator("#location").bounding_box()
+        ok(cp["x"] - form["x"] < 30 and abs(cp["y"] - loc["y"]) < 20 and form["x"] + form["width"] - (save["x"] + save["width"]) < 30 and cancel["x"] < save["x"] and save["y"] > loc["y"],
+           "color beside Location (0.2.8-beta.11); Cancel | Save at bottom right")
         pg.click("#colorpick summary"); pg.click(".palette label[title=Tomato]"); pg.wait_for_timeout(50)
         ok(pg.inner_text("#colorname") == "Tomato" and not pg.eval_on_selector("#colorpick", "d => d.open"), "picking a color shows it and closes the palette")
         # a different end time zone: 9:00am New York → 10:00am Los Angeles (4 h)

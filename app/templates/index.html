@@ -20,7 +20,11 @@
     <label class="fld" for="gcsecret"><span>{{ _('Client secret') }}</span>
       <input type="password" id="gcsecret" readonly placeholder="{{ _('Saved') }}" title="{{ _('Saved encrypted; it’s never shown again. Disconnect to change the client.') }}"></label>
     <span class="okslot" data-state="ok"><span class="okmark">{{ icon("check_circle", 15) }}{{ _('Connected') }}</span></span>
+    <button type="submit" form="gremove" class="ghost credtrash" title="{{ _('Delete the client ID and secret') }}" aria-label="{{ _('Delete the client ID and secret') }}">{{ trash }}</button>
   </div></form>
+  {# the trash at the end of the credentials (0.2.8-beta.11): asks first #}
+  <form method="post" action="/google/client" id="gremove" data-swap="#googlesync|#destinations|#activity" data-confirm="{{ _('Delete the Google client ID and secret? CalendarStream disconnects from Google first; its calendars stay in Google.') }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="action" value="remove"></form>
   {{ m.google_connected(g, "", "f") }}
   <p class="mnote">{{ _('Events within each Google calendar’s dates are copied, with only the reminders set here (the bell on an event). If you also subscribed to a feed in Google, remove that calendar there, or you’ll see everything twice.') }}</p>
   <p class="mnote">{{ _('<b>Two-way:</b> changes made in these Google calendars come back here, as if made on this page (CCS+ is never changed): an edit becomes an edit, an event added in Google goes into a CalendarStream calendar, a deleted one is hidden. A rule’s events can’t be changed there. When both sides changed, the newer change wins; more than 3 deletions at once wait for you in Activities and Logs.') }}</p>
@@ -229,17 +233,19 @@
               <div class="statusbox {{ ucls }}">
                 {{ chip(ucls, ulabel) }}
                 {# with a newer version out, Update instead of Check now (the updater, or how to update) #}
-                {% if update.available and update.can_update %}<button type="button" class="upgradebtn">{{ icon("upgrade", 15) }}{{ _('Update now') }}</button>
+                {# Update now works like Sync Now (0.2.8-beta.11): Updating… while it downloads and restarts, then Updated (or Failed) #}
+                {% if update.available and update.can_update %}<span class="syncform"><button type="button" class="syncnow upgradebtn" data-state="idle"><span class="sn idle">{{ icon("upgrade", 14) }}{{ _('Update now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Updating…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Updated') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Failed') }}</span></button></span>
                 {% elif update.available %}<a class="btn upgradebtn" href="https://github.com/Uuugh/CalendarStream#updating" target="_blank" rel="noopener" title="{{ _('Run the installer again to update.') }}">{{ icon("upgrade", 15) }}{{ _('Update now') }}</a>
                 {% else %}{# Check now works like Sync Now: Checking… → Up to date (green pulse), Update found (yellow) or Couldn't check (yellow) #}
                 <span class="syncform"><button class="syncnow checknow" name="action" value="check" data-state="idle"><span class="sn idle">{{ _('Check now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Checking…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Up to date') }}</span><span class="sn found">{{ icon("upgrade", 14) }}{{ _('Update found') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Couldn’t check') }}</span></button></span>{% endif %}
               </div>
             </div></div>
-            <div class="pair updrow">
-              <label class="fld" for="updfreq"><span>{{ _('Check for updates') }}</span>
+            {# one line (0.2.8-beta.11): Check for updates [Hourly ▾] ☐ Auto-update #}
+            <div class="pair inline updrow">
+              <label class="rowlabel" for="updfreq">{{ _('Check for updates') }}</label>
               <select id="updfreq" name="frequency" onchange="this.form.requestSubmit()">
                 {% for f in update.frequencies %}<option value="{{ f }}"{% if f == update.frequency %} selected{% endif %}>{{ {"hourly": _('Hourly'), "weekly": _('Weekly'), "monthly": _('Monthly'), "never": _('Never')}[f] }}</option>{% endfor %}
-              </select></label>
+              </select>
               {# Auto-update: installs newer versions by itself; needs the updater #}
               <label class="autoupd" title="{{ _('Install newer versions by themselves (with the updater)') if update.can_update else _('Needs the updater: run the installer again and answer yes to updating from the status page.') }}">
                 <input type="checkbox" name="auto" value="1"{% if update.auto %} checked{% endif %}{% if not update.can_update and not update.auto %} disabled{% endif %} onchange="this.form.requestSubmit()"> {{ _('Auto-update') }}</label>
@@ -354,6 +360,9 @@
       </div>
       {# On the right: the time zone (this page only), the view, and the 12h / 24h switch. #}
       <div class="calright">
+        {# Search (0.2.8-beta.11): opens the search line under this row #}
+        <button type="button" class="iconbtn searchbtn" id="searchbtn" aria-controls="calsearch" aria-expanded="{{ 'true' if cal.search else 'false' }}"
+                title="{{ _('Search the calendar') }}" aria-label="{{ _('Search the calendar') }}">{{ icon("search", 18) }}</button>
         <label class="tzlabel" for="tzpick"><span class="long">{{ _('Time Zone') }}</span><span class="short" title="{{ _('Time Zone') }}">{{ _('TZ') }}</span></label>
         <select id="tzpick" class="tzpick" aria-label="{{ _('Time zone') }}" title="{{ _('Show the calendar in another time zone (only on this page; the feed and Google are unchanged)') }}">
           <optgroup label="{{ _('Common') }}">{% for z in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
@@ -373,8 +382,20 @@
         {# Print Preview (F2.1): the view, dates, weekends and light or dark to print, with a preview. #}
         <button type="button" class="iconbtn printbtn" id="printbtn" title="{{ _('Print the calendar') }}" aria-label="{{ _('Print the calendar') }}">
           {{ icon("print", 18) }}</button>
+        {# + in the top right corner, like every section's (0.2.8-beta.11): add an event #}
+        <button type="button" class="ghost plus calplus" data-add="/event?date={{ cal.today.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event') }}" aria-label="{{ _('Add an event') }}">{{ icon("add", 24) }}</button>
       </div>
     </div>
+    {# The search line (0.2.8-beta.11): words, which calendar, from and to, and ✕ to close it #}
+    <form class="calsearch" id="calsearch" role="search" onsubmit="return false"{% if not cal.search %} hidden{% endif %}>
+      <span class="inbox"><input type="search" id="calq" name="q" value="{{ cal.search.q if cal.search else '' }}" maxlength="100" autocomplete="off"
+             placeholder="{{ _('Search titles, places and notes') }}" aria-label="{{ _('Search') }}"></span>
+      <select name="qsrc" aria-label="{{ _('Calendar') }}"><option value="">{{ _('All calendars') }}</option>{% for x in srcs %}<option value="{{ x.id }}"{% if cal.search and cal.search.src == x.id %} selected{% endif %}>{{ x.name }}</option>{% endfor %}</select>
+      <label class="qdate">{{ _('From') }} <input type="date" name="qfrom" value="{{ cal.search['from'] if cal.search else '' }}"></label>
+      <label class="qdate">{{ _('To') }} <input type="date" name="qto" value="{{ cal.search.to if cal.search else '' }}"></label>
+      <button type="button" class="iconbtn" id="calqclose" title="{{ _('Close the search') }}" aria-label="{{ _('Close the search') }}">{{ icon("close", 18) }}</button>
+    </form>
+    <div id="calbody">
     {% if cal.view in ("month", "week") %}
     <div class="scroll"><div class="month{% if cal.view == 'week' %} weekgrid{% endif %}">
       {% for d in cal.dow %}<div class="dow">{{ d }}</div>{% endfor %}
@@ -395,9 +416,10 @@
           <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">{{ icon("add", 16) }}</a></div>
         <div class="aitems">{% for it in day["items"] %}{{ evitem(it) }}{% else %}<p class="muted">{{ _('No events.') }}</p>{% endfor %}</div>
       </div>
-      {% else %}<p class="muted">{{ _('No events this month.') }}</p>{% endfor %}
+      {% else %}<p class="muted">{{ _('Nothing found.') if cal.search else _('No events this month.') }}</p>{% endfor %}
     </div>
     {% endif %}
+    </div>
     <div class="legend">
       {# The key: each calendar in its color (when it has one), then "Added here", then the rules' colors. #}
       {% for x in srcs %}<span style="--sw:color-mix(in srgb, {{ x.color or '#1d4ed8' }} 18%, var(--card))">{{ x.name }}</span>{% endfor %}{% for r in all_rules if r.used %}{% for a in r.actions if a.type == 'color' %}<span style="--sw:color-mix(in srgb, {{ a.color }} 18%, var(--card))">{{ r.title or (r.conds[0].value if r.conds and r.conds[0].type == 'text' else r.label) }}</span>{% endfor %}{% endfor %}
@@ -717,7 +739,8 @@
           {# The standard header (0.2.8-beta.5): what it got last, over what's next (empty when nothing) #}
           <p class="srcstatus" title="{{ d.names|join(', ') if d.names else _('No sources') }}">{% if feed %}{% if d.reads.google %}{{ _('Last read by Google <b>{when}</b>', when=d.reads.google) }}{% elif d.reads.other %}{{ _('Last read <b>{when}</b>', when=d.reads.other) }}{% else %}&nbsp;{% endif %}
             {% elif d.last_sync %}{{ _('Last synced <b>{when}</b>', when=d.last_sync) }}{% else %}&nbsp;{% endif %}</p>
-          <p class="srcnext">&nbsp;</p>
+          {# a Google calendar gets each change at once (0.2.8-beta.11); a feed is read when the app chooses #}
+          <p class="srcnext">{% if not feed and g.connected %}{{ _('Next push instantaneous') }}{% else %}&nbsp;{% endif %}</p>
         </div>
         <div class="statusbox {{ dcls }}">{{ chip(dcls, dlabel) }}{% if not feed and g.connected %}{{ syncbtn("/google/sync", "google", g.running) }}{% endif %}</div>
       </div>
@@ -811,7 +834,6 @@
     <div class="shead">
       <span class="bigtitle" id="rulestitle">{{ icons.rules|safe }}{{ _('All Rules') }}{{ help(_('Every rule, highest priority first, with the calendars it applies to. Drag a rule by its handle (or use ▲ ▼) to change its priority; ✎ changes it, the copy button makes a copy to change, the bin deletes it. How rules work is at the bottom of the rule dialog.')) }}</span>
       <div class="statusbox countbox {{ 'warn' if rule_conflicts else 'good' }}" id="rulecount"{% if rule_conflicts %} title="{{ _('{n} to check', n=rule_conflicts|length) }}"{% endif %}>{{ chip('warn' if rule_conflicts else 'good', (_('1 Rule') if all_rules|length == 1 else _('{n} Rules', n=all_rules|length)) if not rule_conflicts else _('{n} to check', n=rule_conflicts|length)) }}</div>
-      <button type="button" class="ghost plus newrule headplus" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">{{ icon("add", 24) }}</button>
     </div>
     {{ sectionline("rules", sections.rules) }}
     <div class="sbody" id="rules-body"{% if not sections.rules %} hidden{% endif %}>
@@ -846,6 +868,8 @@
       </div>
       {% endfor %}
     </div>
+    {# + in the bottom right corner (0.2.8-beta.11) #}
+    <div class="sfoot"><button type="button" class="ghost plus newrule" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">{{ icon("add", 24) }}</button></div>
     </div>
   </section>
 
@@ -854,20 +878,21 @@
     <div class="shead">
       <span class="bigtitle" id="tplstitle">{{ icons.templates|safe }}{{ _('Event Templates') }}{{ help(_('Ready-made events, for rules that add events and for adding an event by hand.')) }}</span>
       <div class="statusbox countbox good" id="tplcount">{{ chip('good', _('1 Template') if templates|length == 1 else _('{n} Templates', n=templates|length)) }}</div>
-      <button type="button" class="ghost plus addfirst headplus" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 24) }}</button>
     </div>
     {{ sectionline("templates", sections.templates) }}
     <div class="sbody" id="templates-body"{% if not sections.templates %} hidden{% endif %}>
     {% if not templates %}<p class="empty">{{ _('No event templates yet. Press <b>+</b> to add one.') }}</p>{% endif %}
-    <form class="editor tagsform" method="post" action="/templates" data-swap="#templates|#rules|#sources|#cal|#activity|#ruledata"{% if not templates %} data-empty{% endif %}>
+    <form class="editor tagsform" id="tplform" method="post" action="/templates" data-swap="#templates|#rules|#sources|#cal|#activity|#ruledata"{% if not templates %} data-empty{% endif %}>
       <input type="hidden" name="csrf" value="{{ csrf }}">
       <template class="rowtpl">{{ m.template_row({"id": "", "title": "", "all_day": false, "minutes": 60, "location": "", "color": ""}, event_colors, trash) }}</template>
       <div class="tagrows">{% for t in templates %}{{ m.template_row(t, event_colors, trash) }}{% endfor %}</div>
       <div class="btnrow tagfoot"{% if not templates %} hidden{% endif %}>
         <p class="mnote">{{ _('Length as hours:minutes, e.g. 1:30.') }}</p>
-        <button>{{ _('Save') }}</button>
+        {{ pair("tplform") }}
       </div>
     </form>
+    {# + in the bottom right corner (0.2.8-beta.11) #}
+    <div class="sfoot"><button type="button" class="ghost plus addfirst" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 24) }}</button></div>
     </div>
   </section>
 

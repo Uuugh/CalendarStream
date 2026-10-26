@@ -191,7 +191,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok("view=month" in pg.locator("#printdialog iframe").get_attribute("src"), "…and redraws when changed")
         pg.keyboard.press("Escape")
         # the rule dialog: brackets, day buttons, Then +
-        pg.click("#rules .toggle"); pg.click("#rules .newrule.headplus"); pg.wait_for_timeout(200)
+        pg.click("#rules .toggle"); pg.click("#rules .sfoot .newrule"); pg.wait_for_timeout(200)
         ok(pg.evaluate("[...document.querySelectorAll('.helptip')].every(t => !t.offsetParent)"), "no (?) explanation shows until asked (the page and the rule dialog)")
         pg.select_option("#ruledialog .cond .ctype", "days"); pg.wait_for_timeout(100)
         pg.click("#ruledialog .cond .wd[data-d='5']"); pg.click("#ruledialog .cond .wd[data-d='6']", modifiers=["Control"])
@@ -203,7 +203,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(new["conds"][0]["days"] == [5, 6] and [a["type"] for a in new["actions"]] == ["color", "emoji"] and new["apply"] == "all", f"a rule: Day(s) is Sat, Sun (ctrl-click) → color, emoji ({new['conds']})")
         # phone: dialogs fill the screen; the event page has its Back button
         pg.set_viewport_size({"width": 390, "height": 800}); pg.wait_for_timeout(200)
-        pg.click("#rules .newrule.headplus"); pg.wait_for_timeout(200)
+        pg.click("#rules .sfoot .newrule"); pg.wait_for_timeout(200)
         box = pg.locator("#ruledialog").bounding_box()
         ok(round(box["width"]) == 390 and pg.is_visible("#ruledialog .dlgback"), f"phone: the rule dialog is a full page with ← ({box['width']:.0f})")
         pg.click("#ruledialog .dlgback"); pg.wait_for_timeout(100)

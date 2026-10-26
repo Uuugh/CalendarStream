@@ -184,6 +184,49 @@ function initCal() {
   });
 }
 initCal();
+// The calendar's search (0.2.8-beta.11): the search icon opens the line under the header; typing (or a
+// filter) shows what matches, listed by day, in place of the calendar; ✕ closes it and brings the
+// calendar back. Only the results and the title are redrawn, so the words being typed stay put.
+(function () {
+  var timer = null, last = '';
+  function form() { return document.getElementById('calsearch'); }
+  function show(url) {
+    return swapIn(url, ['#calbody', '#monthbtn']).then(function () { initCal(); bindAll(); reopenEvents(); });
+  }
+  function run() {
+    var f = form(), q = f.elements.q.value.trim();
+    var u = new URL('/', location.href);
+    if (q) {
+      u.searchParams.set('q', q);
+      ['qsrc', 'qfrom', 'qto'].forEach(function (k) { if (f.elements[k].value) u.searchParams.set(k, f.elements[k].value); });
+    } else {
+      var here = new URL(location.href); ['date', 'month'].forEach(function (k) { if (here.searchParams.get(k)) u.searchParams.set(k, here.searchParams.get(k)); });
+    }
+    if (u.toString() === last) return;
+    last = u.toString(); show(last);
+  }
+  function close() {
+    var f = form(); f.hidden = true; f.reset(); f.elements.q.value = '';
+    document.getElementById('searchbtn').setAttribute('aria-expanded', 'false');
+    last = ''; run();
+  }
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('#searchbtn')) {
+      var f = form(), open = f.hidden;
+      if (!open) { close(); return; }
+      f.hidden = false; e.target.closest('#searchbtn').setAttribute('aria-expanded', 'true'); f.elements.q.focus();
+    }
+    if (e.target.closest('#calqclose')) close();
+    var plus = e.target.closest('.calplus');
+    if (plus) openEvent(plus.dataset.add);
+  });
+  document.addEventListener('input', function (e) {
+    if (!e.target.closest || !e.target.closest('#calsearch')) return;
+    clearTimeout(timer); timer = setTimeout(run, 300);
+  });
+  document.addEventListener('change', function (e) { if (e.target.closest && e.target.closest('#calsearch')) run(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && e.target.closest && e.target.closest('#calsearch')) close(); });
+})();
 // ‹ › and Today swap the calendar in too (a click with Ctrl or ⌘ still opens a new tab).
 document.addEventListener('click', function (e) {
   var a = e.target.closest('#cal .calhead a.navbtn');
@@ -243,8 +286,12 @@ function updateNow() {
   if (!slot || updating) return;
   var btn = slot.querySelector('.updbtn'), text = slot.querySelector('.updtext'), from = slot.dataset.from;
   function show(state, label) { slot.dataset.state = state; text.textContent = label || ''; }
-  function settingsBtns(off) { document.querySelectorAll('button.upgradebtn').forEach(function (b) { b.disabled = off; }); }
-  function fail(why) { updating = false; settingsBtns(false);
+  // Settings → Update now shows the same progress, like Sync Now (0.2.8-beta.11)
+  function settingsBtns(state) { document.querySelectorAll('button.upgradebtn').forEach(function (b) {
+    b.dataset.state = state; b.disabled = state === 'syncing';
+    if (state === 'fail') setTimeout(function () { if (b.dataset.state === 'fail') { b.dataset.state = 'idle'; b.disabled = false; } }, 2400);
+  }); }
+  function fail(why) { updating = false; settingsBtns('fail');
                        show('failed', T.updateFailed); text.insertAdjacentHTML('afterbegin', ICON.fail); slot.title = why || ''; btn.disabled = false;
                        setTimeout(function () { if (slot.dataset.state === 'failed') show('ready'); }, 8000); }
   function done(version) {
@@ -254,6 +301,7 @@ function updateNow() {
     var foot = document.querySelector('.foot');
     if (foot) foot.innerHTML = foot.innerHTML.replace('v' + from, 'v' + version);
     document.querySelectorAll('.topbar .newver, .updslot').forEach(function (el) { el.remove(); });
+    settingsBtns('done');
     // The page is reloaded (0.2.8-beta.9) so the new version's script and stylesheet are the ones
     // running: drawn in place, its parts would be run by the old ones. Settings stays open if it was.
     var menu = document.getElementById('menu'), inSettings = menu && !menu.hidden;
@@ -277,7 +325,7 @@ function updateNow() {
       }
     })();
   }
-  updating = true; settingsBtns(true);
+  updating = true; settingsBtns('syncing');
   btn.disabled = true; slot.title = ''; show('downloading', T.downloading);
   fetch('/update/now', { method: 'POST', body: new URLSearchParams({ csrf: CSRF }), credentials: 'same-origin',
                          headers: { 'X-CS-Async': '1' } })
@@ -287,7 +335,6 @@ function updateNow() {
 document.addEventListener('click', function (e) {
   var b = e.target.closest && e.target.closest('.updslot .updbtn, button.upgradebtn');
   if (!b || b.disabled) return;
-  if (b.classList.contains('upgradebtn')) window.scrollTo(0, 0);     // Settings → Update: the progress is at the top
   updateNow();
 });
 

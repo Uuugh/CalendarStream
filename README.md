@@ -135,13 +135,18 @@ logins or setup codes lock an address out for 15 minutes.
   the right of its details: the **link** (opens the event at "Linked to"), the bell (**reminders**: up to five, from "at the start" to "1 week before", sent to
   Google and written into the feeds), **✎ Edit** (title, times, notes, or hide it), **duplicate**
   and **delete** (a source's own event is hidden instead, since the source would send it again).
-  Click an empty spot on a day (or **+**) to add your own. The link icon on the event page links an
-  event to another one (e.g. a drive to the airport to its trip): **Delete with it** and/or **Move
-  with it**. On a computer, adding and editing an
+  Click an empty spot on a day, a day's **+**, or the **+** in the calendar's top right corner to add
+  your own. The event pop-up: **Calendar | Title**; the color, link, duplicate and delete beside
+  **Location** (with a map button that opens the place in Google Maps); **All-day** and **The end is in
+  a different time zone**; **Starts | Ends**, each with its time under it; Notes; **Cancel | Save**. The
+  link links an event to another one (e.g. a drive to the airport to its trip): **Delete with it**
+  and/or **Move with it**. The **search** icon (left of Time Zone) opens a search line: words found in
+  titles, places and notes, one calendar or all, from and to (a year back to a year ahead when empty);
+  matches are listed by day while you type, and ✕ brings the calendar back. On a computer, adding and editing an
   event (and the rule dialog) open in a pop-up; on a phone they're a full page with a **←** back
   button. New events go into the top calendar (the **Default**). Events can have their own color (one of
   Google's 11), which wins over rules; otherwise all of a calendar's events (timed or all-day) share
-  its color. The key under the calendar lists each calendar, "Added here" and the rules' colors.
+  its color, which is also the color Google shows. The key under the calendar lists each calendar and the rules' colors.
   Edits survive new downloads; ✎ marks an edited event, ⚠ one its source changed since. Nothing is
   ever changed in CCS+.
 - **Print Preview:** the pages as they'll print, with **Print**. Choose **Itinerary**, **Day**,
@@ -228,7 +233,7 @@ logins or setup codes lock an address out for 15 minutes.
   part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
   an old link) and existing subscriptions work again.
 - **All Rules** (looks like a module: its header shows the number of rules in a box, green, or
-  yellow with "n to check" while a rule conflicts, with **+** in the top right corner; **Expand for Details** opens it): every rule,
+  yellow with "n to check" while a rule conflicts; **Expand for Details** opens it, with **+** in its bottom right corner): every rule,
   highest priority first, with the calendars it applies to in a badge in their colors (stripes for
   several, white for All calendars). **+** or ✎ opens the rule dialog (with **How rules work** at its
   bottom), the copy button makes a copy for no calendar yet, the bin deletes it, the handle changes
@@ -257,7 +262,7 @@ logins or setup codes lock an address out for 15 minutes.
   A new install starts with two rules for every calendar: **Items without an end time** (from
   `DEFAULT_EVENT_HOURS`) and **24-hour events** (shown as all-day; CCS+ writes full days as
   00:01–23:59:59). Rules from earlier versions are converted, in the same order.
-- **Event Templates** (like All Rules: "2 Templates" in a box, **+** in the top right corner, Expand for Details): ready-made events (title, length or all day, location, color) for Add-event
+- **Event Templates** (like All Rules: "2 Templates" in a box, Expand for Details, **+** in the bottom right corner, Cancel | Save): ready-made events (title, length or all day, location, color) for Add-event
   rules and for **Start from a template** when adding an event by hand.
 - **Activities and Logs** (a module like the others: it opens only from its Expand line): each check
   and what changed, for each source; each source's last download details (for debugging) at the
@@ -269,12 +274,12 @@ logins or setup codes lock an address out for 15 minutes.
   Google setup guide), **Google Calendar API Sync** (laid out like a login, connected or not: Client ID
   with Copy, Client secret, then ✓ Validated or ✓ Connected) and **Updates**, laid out
   like a module header: your release (stable or beta versions; only those are offered), when it last
-  checked and the next check, and a status box with **Check now** (like Sync Now: **Checking…**, then
+  checked and the next check, and a status box with **Check now** or **Update now** (like Sync Now: **Checking…** or **Updating…**, then
   **Up to date** in green, or **Update found** / **Couldn't check** in yellow; a newer version also
   shows next to the version at the top; then **Update** replaces Check now; once it has updated,
-  Settings shows Up to date and Check now again). Under it, **Check for updates** (hourly, weekly, monthly or
-  never) and **Auto-update** (with the updater: newer versions are
-  installed by themselves). Each field shows ✓ until you type, then ✕ | ✓, and saves in
+  Settings shows Up to date and Check now again). Under it, on one line, **Check for updates** (hourly,
+  weekly, monthly or never) and **Auto-update** (with the updater: newer versions are installed by
+  themselves). The Google credentials row ends with a trash, which asks before deleting them. Each field shows ✓ until you type, then ✕ | ✓, and saves in
   place, without reloading the page.
 - **Report a problem / Suggest a feature** at the bottom of the page open a form: what happened (or
   your idea), and tick what to include: the Activities and Logs lines, each source's last download

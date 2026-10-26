@@ -112,7 +112,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok("Apple Calendar" in pg.inner_text('.presetform[data-for~="other"] b') and pg.input_value('.presetform[data-for~="other"] input[name=preset]') == "apple", "F2.3.1: the Apple preset")
         pg.keyboard.press("Escape")
         # folding sections
-        ok(pg.locator("#rules-body[hidden]").count() == 1 and pg.locator("#templates-body[hidden]").count() == 1 and pg.is_visible("#rules .headplus"), "F3.1/F4.1: Rule and Event Templates fold to their title, + in the corner")
+        ok(pg.locator("#rules-body[hidden]").count() == 1 and pg.locator("#templates-body[hidden]").count() == 1 and pg.locator("#rules > .shead .plus").count() == 0, "F3.1/F4.1: Rule and Event Templates fold to their title (+ at the bottom right when open, beta.11), + in the corner")
         # report form
         pg.click(".reportbtn[data-kind=bug]"); pg.wait_for_timeout(800)
         pg.fill("#rpwhat", "The calendar is empty")

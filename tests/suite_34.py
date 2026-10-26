@@ -91,7 +91,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         # F3.2/F3.3
         ok(pg.evaluate("getComputedStyle(document.querySelector('#src-ccs .srcfoot')).borderTopStyle") == "solid", "F3.2: a line above Remove / Cancel / Save")
         # the rule dialog: Cancel | Apply, saving in the background
-        pg.click("#rules .toggle"); pg.click("#rules .newrule.headplus"); pg.wait_for_timeout(200)
+        pg.click("#rules .toggle"); pg.click("#rules .sfoot .newrule"); pg.wait_for_timeout(200)
         pg.fill("#ruledialog .cond .cval", "SIM"); pg.click("#ruledialog .psave"); pg.wait_for_timeout(1500)
         ok(any(c.get("value") == "SIM" for r in main.all_rules() for c in r["conds"]) and not loads and "SIM" in pg.inner_text("#rules .rulelist"), "F1.5: the rule dialog saves without reloading; All Rules shows it")
         ok(not errs, f"no script errors {errs}")

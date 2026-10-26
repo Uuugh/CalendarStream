@@ -39,7 +39,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     main.store.set("update_check", {"checked": "2026-10-22T00:00:00+00:00", "channel": "beta", "newest": "0.2.7-beta.3"})
     ok(main.updater.ready, "the stand-in updater is found")
     ud = c.get("/?menu=settings").text; ud = ud[ud.index('id="updates"'):]; ud = ud[:ud.index("</form>")]
-    ok(re.search(r'<button type="button" class="upgradebtn">.*?Update now</button>', ud) is not None and "Upgrade" not in ud, "I1.1: Settings → Updates says Update now (like the top bar), not Upgrade")
+    ok(re.search(r'<button type="button" class="syncnow upgradebtn" data-state="idle"><span class="sn idle">.*?Update now</span>', ud) is not None and "Upgrade" not in ud, "I1.1: Settings → Updates says Update now (like the top bar), not Upgrade")
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         b = pw.chromium.launch()
@@ -53,7 +53,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(len(checks) == 1 and pg.locator("#updates button.upgradebtn").count() == 1 and "Update available" in pg.inner_text("#updates"),
            "Check now finds the newer version: Update available, Update")
         pg.click("#updates button.upgradebtn"); pg.wait_for_timeout(600)
-        ok(pg.get_attribute(".updslot", "data-state") == "downloading" and pg.locator("#updates button.upgradebtn").is_disabled(),
+        ok(pg.get_attribute(".updslot", "data-state") == "downloading" and pg.locator("#updates button.upgradebtn").is_disabled() and pg.get_attribute("#updates button.upgradebtn", "data-state") == "syncing",
            "I1.2: Update works after the redraw (Downloading… at the top; Update waits)")
         U.__version__ = main.__version__ = "0.2.7-beta.3"          # the restarted container
         pg.wait_for_timeout(3500)

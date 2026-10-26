@@ -37,7 +37,7 @@ MEASURE = """() => {
   // handles in the section's right margin: modules (Calendars, Feeds) and All Rules' lines
   document.querySelectorAll('.sortable.modules > .modrow, #rules .rulelist > .ruleline').forEach(row => {
     const sec = row.closest('section'), h = row.querySelector(':scope > .handle'), box = row.firstElementChild;
-    const plus = sec.querySelector('.cardhead .plus, .shead .headplus');
+    const plus = sec.querySelector('.cardhead .plus, .shead .countbox');
     if (!vis(row)) return;
     out.margins.push([sec.id, Math.round(R(box).right), Math.round(R(plus).right), Math.round(R(h).left), Math.round(R(h).right), Math.round(R(sec).right)]);
   });
@@ -96,11 +96,12 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                     ok(m["bg"] == "#f7f6f3", f"[{tag}] Clarification 'Light = Soft': --bg {m['bg']}")
                 ok(not errs, f"[{tag}] no script errors {errs}")
                 if w > 600 and scheme == "light":
-                    # Clarification: + in the top right corner of module-like sections, after the count box
+                    # Clarification: module-like sections: the count box top right, + bottom right (beta.11)
                     for sec, box in (("#rules", "#rulecount"), ("#templates", "#tplcount")):
-                        r = pg.evaluate(f"""() => {{ const s = document.querySelector('{sec}').getBoundingClientRect(), p = document.querySelector('{sec} > .shead .headplus').getBoundingClientRect(),
-                                         b = document.querySelector('{box}').getBoundingClientRect(); return [s.right - p.right, p.left - b.right, p.top - s.top]; }}""")
-                        ok(17 <= r[0] <= 21 and 0 <= r[1] <= 12 and r[2] < 30, f"[{tag}] Clarification '+ in the corner': {sec} + after the count box, top right {r}")
+                        r = pg.evaluate(f"""() => {{ const s = document.querySelector('{sec}').getBoundingClientRect(), p = document.querySelector('{sec} .sfoot .plus').getBoundingClientRect(),
+                                         b = document.querySelector('{box}').getBoundingClientRect(); return [s.right - p.right, s.bottom - p.bottom, s.right - b.right, b.top - s.top, document.querySelectorAll('{sec} > .shead .plus').length]; }}""")
+                        ok(17 <= r[0] <= 21 and r[1] <= 21 and 17 <= r[2] <= 21 and r[3] < 30 and r[4] == 0,
+                           f"[{tag}] Clarification '+ in the corner': {sec} count box top right, + bottom right, none in the header {r}")
                     # Clarification: a note is a raised (i) after the name, only when there is one
                     ok(pg.locator(f"#src-{wid} .nameline .notedot").count() == 1 and pg.locator("#src-ccs .nameline .notedot").count() == 0,
                        f"[{tag}] Clarification 'note': (i) after the name only when there's a note")
@@ -137,8 +138,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ev.locator("summary").click(); pg.wait_for_timeout(200)
         r = pg.evaluate("""() => { const d = [...document.querySelectorAll('#cal details.ev')].find(x => x.open), t = d.querySelector('.evtools').getBoundingClientRect(),
                           c = d.querySelector('.evclose').getBoundingClientRect(), i = d.querySelector('.evicons').getBoundingClientRect();
-                          return [Math.round(c.left - t.left), Math.round(t.right - i.right), d.querySelectorAll('.evicons .evlinkto').length]; }""")
-        ok(r[0] <= 2 and r[1] <= 2 and r[2] == 1, f"Clarification 'event tools': Close at the left, the icons (with Link) at the right {r}")
+                          return [Math.round(c.left - t.left), Math.round(t.right - i.right), d.querySelectorAll('.evicons .evlinkto').length,
+                                  Math.abs((i.top + i.bottom) / 2 - (c.top + c.bottom) / 2) <= 3 || i.bottom <= c.top + 1]; }""")
+        ok(r[0] <= 2 and r[1] <= 2 and r[2] == 1 and r[3], f"Clarification 'event tools': Close at the bottom left, the icons (with Link) at the right, beside it or on a line above {r}")
         # Clarification: pop-ups: dark backdrop, 200 ms fade and scale-up; the theme's Cancel | Save
         ev.locator(".evedit").click(); pg.wait_for_timeout(700)
         bd = pg.evaluate("""() => { const d = document.getElementById('eventdialog'); return [getComputedStyle(d, '::backdrop').backgroundColor, getComputedStyle(d).animationName, getComputedStyle(d).animationDuration]; }""")
@@ -160,8 +162,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "Copy": "Copy buttons", "rule colors": "rule's color is one of Google", "Light = Soft": "Light is the Soft palette",
             "status-box buttons": "Every button in a status box", "note": "raised (i)",
             "Cancel | Save when adding": "Adding something", "reload after an update (suite 42)": "After an update the page reloads",
-            "Close points up": "Close's triangles point up", "pop-ups": "Pop-ups: a dark backdrop", "event tools": "An opened event: Close on the left",
-            "event colors (suite 45)": "Events show the color Google shows", "rule summaries": "Rule lines say what the rule does"}
+            "Close points up": "Close's triangles point up", "pop-ups": "Pop-ups: a dark backdrop", "event tools": "An opened event: Close in the bottom left",
+            "event colors (suite 45)": "Events show the color Google shows", "rule summaries": "Rule lines say what the rule does",
+            "fields (suite 46: 34 px, layout)": "Fields everywhere, pop-ups included", "+ in a corner (suite 46)": "Every section's + is in a corner",
+            "credentials trash (suite 46)": "A credentials row", "one line of settings (suite 46)": "A row of settings that belong together",
+            "next push (suite 46)": "Next push instantaneous"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

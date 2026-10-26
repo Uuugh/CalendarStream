@@ -1799,6 +1799,14 @@ def _parse_day(value: str | None, month: str | None) -> date:
     return today
 
 
+def _opt_day(value: str) -> date | None:
+    try:
+        d = date.fromisoformat(value)
+        return d if 2000 <= d.year <= 2100 else None
+    except ValueError:
+        return None
+
+
 def rule_js(lang: str) -> dict:
     """What the rule dialog's script needs: every rule as saved, and the choices, in the page's language."""
     tr = lambda text: str(i18n.tr(lang, text))
@@ -1822,11 +1830,40 @@ def rule_js(lang: str) -> dict:
                   "noEnd": tr("0 = no end time")}}
 
 
+def cal_search(events: list[Event], q: str, src: str, first: date | None, last: date | None, lang: str = "en") -> dict:
+    """The calendar's search (0.2.8-beta.11): the events whose title, place or notes contain `q` (any
+    case), in one calendar or all, between two days (a year back to a year ahead when not given),
+    listed by day like the List view."""
+    today = now().astimezone(display_tz()).date()
+    first, last = first or today - timedelta(days=365), last or today + timedelta(days=365)
+    if last < first:
+        first, last = last, first
+    words = q.casefold().split()
+    found = [e for e in events if (not src or e.source == src)
+             and all(w in f"{e.title} {e.location} {e.description}".casefold() for w in words)]
+    out = cal_view(found, "list", first, lang)
+    tz = display_tz()
+    # every matching day from `first` to `last` (cal_view's list covers one month)
+    by_day = {}
+    for e in found:
+        d0, d1, s, t = _span(e, tz)
+        if d1 < first or d0 > last:
+            continue
+        by_day.setdefault(d0 if d0 >= first else first, []).append(e)
+    days = []
+    for d in sorted(by_day):
+        one = cal_view(by_day[d], "day", d, lang)["days"]
+        days += [x for x in one if x["items"]]
+    n = sum(len(x["items"]) for x in days)
+    return {**out, "days": days, "count": n, "search": {"q": q, "src": src, "from": first.isoformat(), "to": last.isoformat()},
+            "title": str(i18n.tr(lang, "{n} found", n=n))}
+
+
 @app.get("/", dependencies=[Depends(gui_auth)])
 def index(request: Request, month: str | None = None, date_: str | None = Query(None, alias="date"),
-          view: str | None = None):
+          view: str | None = None, q: str = "", qsrc: str = "", qfrom: str = "", qto: str = ""):
     """The status page. `view` shows the calendar in another view this time only (phones open on the
-    list until a view has been chosen)."""
+    list until a view has been chosen); `q` (with `qsrc`, `qfrom`, `qto`) searches it (0.2.8-beta.11)."""
     events = store.load_events()
     ref = _parse_day(date_, month)
     history = [{**h, "time": h["time"].astimezone(TZ)} for h in store.recent_log(100)]
@@ -1834,7 +1871,9 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
     sections = section_state()
     srcs = [source_view(request, sid, lang, sections) for sid in source_ids()]
     return page(request, "index.html", {
-        "s": state, "cfg": settings, "history": history, "cal": cal_view(events, view if view in VIEWS else ui_view(), ref, lang), "views": VIEWS,
+        "s": state, "cfg": settings, "history": history,
+        "cal": (cal_search(events, q.strip()[:100], qsrc if qsrc in source_ids() else "", _opt_day(qfrom), _opt_day(qto), lang)
+                if q.strip() else cal_view(events, view if view in VIEWS else ui_view(), ref, lang)), "views": VIEWS,
         "view_explicit": store.get("ui_view") in VIEWS,
         "csrf": CSRF_TOKEN, "name": calendar_name(), "srcs": srcs,
         "dests": [dest_view(request, d, lang, sections) for d in destinations()], "dest_types": DESTINATION_TYPES,
@@ -3259,7 +3298,14 @@ async def google_client(request: Request, csrf: str = Form(""), client_id: str =
     """Save or remove the Google OAuth client (Google Calendar Autosync box). The secret is stored encrypted and
     never shown again. It can't change while connected: the sign-in belongs to that client."""
     check_csrf(csrf)
-    if google.connected:
+    if google.connected and action == "remove":
+        # the trash at the end of the credentials (0.2.8-beta.11, confirmed in the page): disconnect first
+        # (CalendarStream's calendars stay in Google), then delete the client
+        async with google_job.lock:
+            await google.stop_watch(sorted({d["id"] for d in destinations("google")} | set(google.calendar_sids())))
+            await google.disconnect(delete_calendar=False)
+        state.record("info", "Google Calendar disconnected to delete the OAuth client")
+    elif google.connected:
         raise HTTPException(400, "Disconnect Google Calendar before changing the OAuth client.")
     if action == "remove":
         google.clear_client()
