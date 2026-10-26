@@ -115,8 +115,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                         pg.wait_for_timeout(4000)
                     pg.click("#menubtn"); pg.wait_for_timeout(300)
                     for n in (1, 2):
-                        pg.click("#updates .checknow"); pg.wait_for_timeout(150)
-                        ok(pg.get_attribute("#updates .checknow", "data-state") == "syncing", f"[{tag}] Check now press {n}: Checking… at once")
+                        pg.click("#updates .checknow"); pg.wait_for_timeout(350)
+                        fade = pg.evaluate("getComputedStyle(document.querySelector('#updates .statusbox .chip')).opacity")
+                        ok(pg.get_attribute("#updates .checknow", "data-state") == "syncing" and float(fade) < 0.1,
+                           f"[{tag}] Check now press {n}: Checking… at once, the status word faded under it (multi-button, {fade})")
                         pg.wait_for_timeout(3800)
                     # Clarification: a box means you can change it (Updates' title and channel are plain text)
                     bx = pg.evaluate("""() => [...document.querySelectorAll('#updates .srcleft > *')].map(e => getComputedStyle(e).borderTopColor + '|' + getComputedStyle(e).backgroundColor)""")
@@ -160,7 +162,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     keys = {"handles": "Module handles", "module headers": "module headers share one layout", "status words": "Status words",
             "+ in the corner": "Module-like sections", "a box means you can change it": "A box means you can change it",
             "Copy": "Copy buttons", "rule colors": "rule's color is one of Google", "Light = Soft": "Light is the Soft palette",
-            "status-box buttons": "Every button in a status box", "note": "raised (i)",
+            "status-box buttons": "The status box is a multi-button", "note": "raised (i)",
             "Cancel | Save when adding": "Adding something", "reload after an update (suite 42)": "After an update the page reloads",
             "Close points up": "Close's triangles point up", "pop-ups": "Pop-ups: a dark backdrop", "event tools": "An opened event: Close in the bottom left",
             "event colors (suite 45)": "Events show the color Google shows", "rule summaries": "Rule lines say what the rule does",

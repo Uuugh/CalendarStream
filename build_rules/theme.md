@@ -46,10 +46,13 @@ one here.
   left blank.
 - Status words: "Last synced 00:31" or "Sync failed 00:31", never "Last check was successful @…";
   a feed says "Last read by Google 00:31" (or "Last read …"); Settings → Updates "Last checked 00:31".
-- Every button in a status box (Sync Now, Settings → Check now, any new one) works like Sync Now: it
-  says what it's doing at once (Syncing…, Checking…) and grows over the box, then pulses green (done)
-  or yellow (failed, or something found) for 2.4 s, then shrinks back with the box redrawn. Never a
-  button that gives no sign it was pressed.
+- The status box is a multi-button: an overall status over the action that updates it ("Healthy" over
+  Sync Now on United Airlines CCS+ is the model). Wherever an overall status and its update share a
+  box, it works the same: every button in a status box (Sync Now, Settings → Check now, Update now,
+  any new one) says what it's doing at once (Syncing…, Checking…, Updating…) and grows over the box
+  as the status word fades, then pulses green (done) or yellow (failed, or something found) for
+  2.4 s, then shrinks back with the box redrawn to the new status. Never a button that gives no sign
+  it was pressed, and never a status left showing while its update runs.
 - Module-like sections (All Rules, Event Templates): the count box in the top right corner; + in the
   bottom right corner of the open section.
 - A box means you can change it: fixed text (a title, the release channel) is plain text, never in a
