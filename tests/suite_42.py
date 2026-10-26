@@ -39,7 +39,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     main.store.set("update_check", {"checked": "2026-10-22T00:00:00+00:00", "channel": "beta", "newest": "0.2.7-beta.3"})
     ok(main.updater.ready, "the stand-in updater is found")
     ud = c.get("/?menu=settings").text; ud = ud[ud.index('id="updates"'):]; ud = ud[:ud.index("</form>")]
-    ok(re.search(r'<button type="button" class="upgradebtn">.*?Update</button>', ud) is not None and "Upgrade" not in ud, "I1.1: Settings → Updates says Update, not Upgrade")
+    ok(re.search(r'<button type="button" class="upgradebtn">.*?Update now</button>', ud) is not None and "Upgrade" not in ud, "I1.1: Settings → Updates says Update now (like the top bar), not Upgrade")
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         b = pw.chromium.launch()

@@ -29,6 +29,8 @@ Always loaded (imported by CLAUDE.md). These words have these meanings in every 
     Claude confirms the new version with the Developer before proceeding.
   - Before a beta is published (every EOF):
     - `tests/run.sh` passes (suite 17, translations, waits for Deploy step d). New behavior gets tests in a new suite (the next number).
+    - Anything on the page that changed follows build_rules/theme.md (look and interaction), checked
+      by the theme suite (suite 44): each Clarification has a check there, added in the same beta.
     - `pip-audit -r requirements.txt` finds nothing; anything it finds is fixed in that beta, or reported to the Developer.
 - Deploy/deploy = Start Deployment Instructions (build_rules/deploy.md)
 - STOP/stop/s/WAIT/wait/w = Stop all work. No commit or push. No time / credits / tokens should be spent until the Developer says to continue.

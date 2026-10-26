@@ -45,5 +45,5 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # Note (F3.1)
     r = post("/feed/tags", sid="ccs", name="United Airlines Schedule", note="Base EWR")
     p = c.get("/", auth=A).text
-    ok(main.calendar_name() == "United Airlines Schedule" and '<div class="namebox srcnote showonly" title="Base EWR">Base EWR</div>' in p, "F2.2/F3.1: title and note saved from the source's header")
+    ok(main.calendar_name() == "United Airlines Schedule" and re.search(r'class="helpdot notedot"[^>]*>.*?<span class="helptip" role="tooltip">Base EWR</span>', p) is not None, "F2.2/F3.1: title and note saved from the source's header")
 print("FAILS", fails)

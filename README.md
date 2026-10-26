@@ -170,30 +170,33 @@ logins or setup codes lock an address out for 15 minutes.
   (**Cancel | Apply** in the rule dialog); the pressed side fills it and says **Cancelled** or
   **Saved** for 3 seconds, and a module's Cancel also closes it. A field changed in place (a login,
   a link) gets **✕ | ✓** icons instead.
-- **Handles:** to the right of every module and rule line, **▲ ☰ ▼** (a module's sits in the section's
-  right margin, so modules are as wide as the section header): drag it by **☰**, or press ▲ ▼,
+- **Handles:** to the right of every module and rule line, **▲ ☰ ▼** (a module's, and an All Rules
+  line's, sits in the section's right margin, so they're as wide as the section header; none when
+  there's only one): drag it by **☰**, or press ▲ ▼,
   to change the order (of the calendars, the feeds, or the rules' priority). It's saved at once.
 - Spacing: 10 px between sections, 5 px between the modules in a section (14 px under a folded one,
   for its Expand line) and around subsection titles (Automatic Upload, Manual Upload, Rules), 2 px
   between everything else; text boxes and rule lines are 34 px rounded rectangles; instruction tiles
   ("How to …") keep their own size.
-- **Calendars** (**+** adds one). A new install has one **Local** calendar: it holds the events you
-  add here, and you can add more (**+ → Local calendar**). The top calendar is the **Default** (the
+- **Calendars** (**+** adds one, ending with Cancel | Save). A new install has one **CalendarStream**
+  calendar (named Local): it holds the events you add here, and you can add more (**+ →
+  CalendarStream**). The top calendar is the **Default** (the
   one new events go into; its expanded module says so); remove it or move another above it, and the
   next becomes the Default. Other presets: **United CCS+** (once),
   **Google** and **Apple** calendars (by their private iCal link, with step-by-step help for finding
   it) and **Other** (any link starting with `webcal://` or ending in `.ics`; repeating events are
   shown from a year back to two years ahead). Each calendar is a **module**. Its header is 50 px
   tall and is all a folded module shows: its color (the color of its events; changed while expanded),
-  its title over its note (e.g. "CCS+ Calendar Sync"), on the right "Last synced 07:59" (or "Sync
-  failed 07:59"; what changed is in Activities and Logs) over "Next check @ 08:59" (a line with
-  nothing to say, like Local's, is left blank), beside its
+  its kind (fixed: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar or Calendar
+  Feed) over its name, with a raised **(i)** after the name when it has a note (point at it to read
+  it); on the right "Last synced 07:59" (or "Sync failed 07:59"; what changed is in Activities and
+  Logs) over "Next check @ 08:59" (a line with nothing to say, like Local's, is left blank), beside its
   status over **Sync Now** (while it syncs, the button fills the box), in a box of the same size in every module. **Sync Now** says
   **Syncing…** at once, then pulses green (**Synced**) or yellow (**Failed**) and goes back to Sync
   Now; the status, the calendar and the log update in place, without reloading the page.
   **▸ Expand for Details or to Edit Configuration ◂** sits in a folded module's bottom border; it
   opens the rest (it opens by itself when something needs doing) and becomes a **Close** line under
-  the header, and turns the title and note into fields of the same size:
+  the header, turns the name into a field of the same size, and shows the **Note** field:
   - **Automatic Upload:** the **Site Address** with **Check every … min** beside it, CCS+'s
     **Username** (your UID) and password (**✓ Validated** until you type; then **✕ | ✓** (Cancel and
     Save), and ✓ shows Saved → Verifying… → ✓ Validated or ✗ Failed, with the reason under the boxes),
@@ -263,7 +266,8 @@ logins or setup codes lock an address out for 15 minutes.
   sync failing).
 - **☰ Settings** (a light blue panel): site settings only: the status-page login (with a show-password eye and a
   strength bar, like every password box), the public address, the **admin e-mail** (filled into the
-  Google setup guide), **Google Calendar sync** (Copy in the Client ID box) and **Updates**, laid out
+  Google setup guide), **Google Calendar sync** (laid out like a login, connected or not: Client ID
+  with Copy, Client secret, then ✓ Validated or ✓ Connected) and **Updates**, laid out
   like a module header: your release (stable or beta versions; only those are offered), when it last
   checked and the next check, and a status box with **Check now** (like Sync Now: **Checking…**, then
   **Up to date** in green, or **Update found** / **Couldn't check** in yellow; a newer version also

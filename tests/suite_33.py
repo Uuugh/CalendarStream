@@ -31,15 +31,16 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     post("/sources/add", type="ics", preset="google", url="https://calendar.google.com/calendar/ical/x/private-abc/basic.ics", name="Family")
     gid = main.source_ids()[-1]
     p = c.get("/").text
-    ok(main.source(gid)["preset"] == "google" and '<div class="namebox srcnote showonly" title="Google Calendar">Google Calendar</div>' in p and "How to get your Google Calendar’s secret address" in p and "How to enable Google Calendar" in p,
+    ok(main.source(gid)["preset"] == "google" and '<div class="srckind" title="Google Calendar">Google Calendar</div>' in p and "How to get your Google Calendar’s secret address" in p and "How to enable Google Calendar" in p,
        "F2.3.1: the Google preset: its note and step-by-step help")
-    ok('<div class="namebox srcnote showonly" title="CCS+ Calendar Sync">CCS+ Calendar Sync</div>' in p, "F2.3.3: 'CCS+ Calendar Sync' is the CCS+ source's note")
+    ok('<div class="srckind" title="United Airlines CCS+">United Airlines CCS+</div>' in p and "notedot" not in p.split('id="src-ccs"')[1].split('class="srcright"')[0],
+       "F2.3.3 (beta.9): the CCS+ module's kind is United Airlines CCS+; no note until one is written")
     ok(">How to enable CCS+</p>" in p and ">Accomplished</p>" in p, "F2.1.4.1: How to enable CCS+ | Accomplished")
     q = p[p.index('id="src-ccs"'):]
     i_auto, i_man, i_rules = q.index(">Automatic Upload<"), q.index(">Manual Upload<"), q.index('class="cfghead">Rules<')
     ok(i_auto < q.index('id="interval-ccs"') < i_man < i_rules, "F2.1.1/F2.1.2: Automatic Upload (with Check every), then Manual Upload, then Rules")
     post("/feed/tags", sid="ccs", note="", name="United CCS Schedule")
-    ok('<div class="srcnote showonly">' not in c.get("/").text.split('id="src-ccs"')[1].split('class="srcright"')[0], "F2.3.3: the note can be emptied like any other")
+    ok('notedot' not in c.get("/").text.split('id="src-ccs"')[1].split('class="srcright"')[0], "F2.3.3: the note can be emptied like any other")
     # 0.2.8 (F4): one rule, applied to the calendars chosen in its Apply to; changing it changes it for each
     import json, seed
     rdo = seed.rule(c, csrf, "", [seed.text("RDO")], [{"type": "color", "color": "#d50000"}], ["ccs", gid])

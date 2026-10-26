@@ -15,6 +15,20 @@ Read before changing how the page looks.
   language). Both are cached by the browser for a version, so change them, never inline copies.
 - When the theme changes, redraw the picture (Deploy step e at the latest) and update this file.
 
+## Enforced by tests
+
+The theme defines one consistent look **and interaction**; it is checked, not just described.
+
+- `tests/suite_44.py` (the theme suite) checks the whole page, light and dark, against the rules here:
+  each Clarification below has at least one check in it. A new Clarification gets its check in the
+  same beta; a change that breaks one fails `tests/run.sh`, so it can't be published.
+- Every page change is checked in the states the Developer sees, not only on a fresh page: after the
+  change's own action, after an in-place redraw (a Save, Check now, Sync Now), after an update, on a
+  phone (390 px) and in dark.
+- Before writing any new part, Claude reads this file and finds the existing part it should behave
+  like (a status-box button → Sync Now; a field row → the login; a list → handles); a new part copies
+  that part's look and interaction instead of inventing its own.
+
 ## Clarifications
 
 The Developer's decisions about how the page looks. Always keep them: every change follows them, and
@@ -22,12 +36,16 @@ the picture's part 2 shows this list (it's read from here when the picture is dr
 one here.
 
 - Module handles (▲ ☰ ▼) sit in the section's right margin: they take up no extra space, and modules
-  are as wide as the section header (their right edge lines up with its +).
-- Calendar and feed module headers share one layout. Line 1: the color (calendars only), the name,
-  then on the right "Last synced 00:31" and the status box (Healthy…). Line 2: the note, then on the
-  right "Next check @ 00:44" and Sync Now. A line with nothing to say is left blank.
+  (and All Rules' lines) are as wide as the section header (their right edge lines up with its +).
+  No handle where there's nothing to reorder (a list of one).
+- Calendar and feed module headers share one layout. Line 1: the color (calendars only), the module's
+  kind (fixed text, 17 px, 15 on a phone where it may take two lines: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar,
+  Calendar Feed…), then on the right "Last synced 00:31" and the status box (Healthy…). Line 2: its
+  name (a field while expanded) with a raised (i) after it when it has a note (the note is changed
+  under Close), then on the right "Next check @ 00:44" and Sync Now. A line with nothing to say is
+  left blank.
 - Status words: "Last synced 00:31" or "Sync failed 00:31", never "Last check was successful @…";
-  a feed says "Last read by Google 00:31" (or "Last read …").
+  a feed says "Last read by Google 00:31" (or "Last read …"); Settings → Updates "Last checked 00:31".
 - Every button in a status box (Sync Now, Settings → Check now, any new one) works like Sync Now: it
   says what it's doing at once (Syncing…, Checking…) and grows over the box, then pulses green (done)
   or yellow (failed, or something found) for 2.4 s, then shrinks back with the box redrawn. Never a
@@ -36,6 +54,9 @@ one here.
 - A box means you can change it: fixed text (a title, the release channel) is plain text, never in a
   field box. A group that looks like a module but has nothing to fold (Settings → Updates) uses the
   module header layout, always open, with no Expand.
-- Copy buttons sit inside their field, like the password box's eye.
+- Copy buttons sit inside their field, like the password box's eye. Client ID / secret pairs are laid
+  out like a login, connected or not.
+- Adding something (+ Add a calendar…) ends with the standard Cancel | Save pair, like editing it.
+- After an update the page reloads, so the new version's script and stylesheet run its parts.
 - A rule's color is one of Google Calendar's 11 event colors; rule lines read "Color ■ (Name)".
 - Light is the Soft palette (warm off-white, muted blue accent), still named Light with its icon.

@@ -14,6 +14,9 @@ finding with its file and line, what goes wrong, and how much it matters; number
 - Comments: Are the comments clear and useful?
 - Style: Does the code follow our style guides? PEP 8 and PEP 257 (Python), Google HTML/CSS and JavaScript style guides; ruff runs automatically.
 - Documentation: Did the author also update relevant documentation (README.md, CHANGELOG.md, build_rules/)?
+- Theme: Does every changed part of the page look and behave like the existing part it resembles
+  (build_rules/theme.md and its Clarifications)? Does the theme suite (suite 44) check each
+  Clarification, and did it pass?
 
 ## b. Security Review
 

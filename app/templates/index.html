@@ -10,6 +10,10 @@
 <body>{{ icon_sprite() }}{% import "_macros.html" as m with context %}
   {# (?): an explanation that shows on hover, on focus, or when clicked; raised like a superscript right
      after the word it explains (F1.2). `text` may hold <b>. #}
+  {# A module's note (0.2.8-beta.9): a raised (i) after its name, shown on hover or click, only when there is one #}
+  {% macro notedot(text) -%}
+  <span class="helpdot notedot" tabindex="0" role="button" aria-label="{{ _('Note') }}" aria-expanded="false">{{ icon("info", 15) }}<span class="helptip" role="tooltip">{{ text }}</span></span>
+  {%- endmacro %}
   {% macro help(text, pos="") -%}
   <span class="helpdot{% if pos %} {{ pos }}{% endif %}" tabindex="0" role="button" aria-label="{{ _('Help') }}" aria-expanded="false">{{ icon("help", 15) }}<span class="helptip" role="tooltip">{{ text }}</span></span>
   {%- endmacro %}
@@ -139,15 +143,23 @@
         {% else %}{% set gcls, glabel = "warn", _('Not set up') %}{% endif %}
         <div class="mgroup" id="googlesync">
           <div class="mhead">{{ _('Google Calendar sync') }}{{ help(_('Optional. With it, a Google calendar in Feeds is kept up to date by CalendarStream itself: changes within seconds, your rule colors and reminders. Without it, Google subscribes to a feed link instead (it refreshes every few hours, in one color).'), 'left') }}
-            <span class="gstate">{{ chip(gcls, glabel) }}</span></div>
+            {% if not g.connected or gcls != 'good' %}<span class="gstate">{{ chip(gcls, glabel) }}</span>{% endif %}</div>
           {% if g.info.last_error %}<p class="merr">{{ msg(g.info.last_error) }}</p>{% endif %}
           {% if g.connected %}
+            {# Connected (0.2.8-beta.9): laid out like a login, as before connecting: the Client ID (with
+               Copy) and the Client secret (saved, never shown again), then the state; Disconnect under them. #}
+            <form class="gconnwrap" onsubmit="return false"><div class="pair gconn">
+              <label class="fld" for="gcid"><span>{{ _('Client ID') }}</span>
+                <span class="inbox"><input type="text" class="code" id="gcid" value="{{ g.client_id }}" readonly spellcheck="false"><button type="button" class="inboxbtn copybtn" onclick="copyField('gcid', this)" title="{{ _('Copy') }}" aria-label="{{ _('Copy the Client ID') }}">{{ icon("content_copy", 15) }}</button></span></label>
+              <label class="fld" for="gcsecret"><span>{{ _('Client secret') }}</span>
+                <input type="password" id="gcsecret" readonly placeholder="{{ _('Saved') }}" title="{{ _('Saved encrypted; it’s never shown again. Disconnect to change the client.') }}"></label>
+              <span class="okslot" data-state="ok"><span class="okmark" title="{{ glabel }}">{{ icon("check_circle", 15) }}{{ _('Connected') }}</span></span>
+            </div></form>
             {{ m.google_connected(g, name, "f") }}
             <p class="mnote">{{ _('Events within each Google calendar’s dates are copied, with only the reminders set here (the bell on an event). If you also subscribed to a feed in Google, remove that calendar there, or you’ll see everything twice.') }}</p>
             <form method="post" action="/google/disconnect" class="disconnectform btnrow" data-swap="#googlesync|#destinations|#activity">
               <input type="hidden" name="csrf" value="{{ csrf }}">
-              <label class="mnote" style="flex:1 1 240px;margin:0"><input type="checkbox" name="delete" value="1"> {{ _('Also delete these calendars in Google') }}
-                · {{ _('OAuth client: <code>{client}…</code>', client=g.client_id.split(".")[0][:24]) }}</label>
+              <label class="mnote" style="flex:1 1 240px;margin:0;text-align:right"><input type="checkbox" name="delete" value="1"> {{ _('Also delete these calendars in Google') }}</label>
               <button class="ghost">{{ _('Disconnect') }}</button>
             </form>
           {% else %}
@@ -169,14 +181,14 @@
                 <div class="namebox srcnote">{{ _('Beta versions') if update.channel == 'beta' else _('Stable versions') }}</div>
               </div>
               <div class="srcright">
-                <p class="srcstatus">{% if update.available %}{{ _('Version <b>{v}</b> is out', v=update.available) }}{% elif update.checked %}{{ _('Checked <b>{when}</b>', when=update.checked) }}{% else %}&nbsp;{% endif %}</p>
+                <p class="srcstatus">{% if update.available %}{{ _('Version <b>{v}</b> is out', v=update.available) }}{% elif update.checked %}{{ _('Last checked <b>{when}</b>', when=update.checked) }}{% else %}&nbsp;{% endif %}</p>
                 <p class="srcnext">{% if update.next %}{{ _('Next check @ {when}', when=update.next) }}{% else %}{{ _('Automatic checks are off') }}{% endif %}</p>
               </div>
               <div class="statusbox {{ ucls }}">
                 {{ chip(ucls, ulabel) }}
                 {# with a newer version out, Update instead of Check now (the updater, or how to update) #}
-                {% if update.available and update.can_update %}<button type="button" class="upgradebtn">{{ icon("upgrade", 15) }}{{ _('Update') }}</button>
-                {% elif update.available %}<a class="btn upgradebtn" href="https://github.com/Uuugh/CalendarStream#updating" target="_blank" rel="noopener" title="{{ _('Run the installer again to update.') }}">{{ icon("upgrade", 15) }}{{ _('Update') }}</a>
+                {% if update.available and update.can_update %}<button type="button" class="upgradebtn">{{ icon("upgrade", 15) }}{{ _('Update now') }}</button>
+                {% elif update.available %}<a class="btn upgradebtn" href="https://github.com/Uuugh/CalendarStream#updating" target="_blank" rel="noopener" title="{{ _('Run the installer again to update.') }}">{{ icon("upgrade", 15) }}{{ _('Update now') }}</a>
                 {% else %}{# Check now works like Sync Now: Checking… → Up to date (green pulse), Update found (yellow) or Couldn't check (yellow) #}
                 <span class="syncform"><button class="syncnow checknow" name="action" value="check" data-state="idle"><span class="sn idle">{{ _('Check now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Checking…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Up to date') }}</span><span class="sn found">{{ icon("upgrade", 14) }}{{ _('Update found') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Couldn’t check') }}</span></button></span>{% endif %}
               </div>
@@ -378,30 +390,30 @@
           <div class="title">{{ _('Add a calendar') }}</div>
           {# Presets: United CCS+ (once), Google, Apple, or any other calendar link. #}
           <div class="presets" role="radiogroup" aria-label="{{ _('Kind of calendar') }}">
-            <button type="button" class="preset" data-preset="local" role="radio" aria-checked="false">{{ _('Local') }}</button>
+            <button type="button" class="preset" data-preset="local" role="radio" aria-checked="false">{{ _('CalendarStream') }}</button>
             {% if not has_ccs %}<button type="button" class="preset" data-preset="ccs" role="radio" aria-checked="false">{{ _('United CCS+') }}</button>{% endif %}
             <button type="button" class="preset" data-preset="google" role="radio" aria-checked="false">{{ _('Google') }}</button>
             <button type="button" class="preset" data-preset="apple" role="radio" aria-checked="false">{{ _('Apple') }}</button>
             <button type="button" class="preset" data-preset="other" role="radio" aria-checked="true">{{ _('Other') }}</button>
           </div>
-          <form method="post" action="/sources/add" class="opt col presetform" data-for="local" hidden data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
+          <form method="post" action="/sources/add" class="opt col presetform" id="addsrc-local" data-for="local" hidden data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="local">
-            <div><b>{{ _('Local calendar') }}</b>
+            <div><b>{{ _('CalendarStream') }}</b>
               <div class="subtitle">{{ _('A calendar that only holds events you add here: nothing is downloaded. It goes into every feed.') }}</div></div>
             <div class="pair">
-              <label class="fld"><span>{{ _('Title') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Personal') }}"></label>
-              <button>{{ _('Add') }}</button>
+              <label class="fld"><span>{{ _('Name') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Personal') }}"></label>
+              {{ pair("addsrc-local") }}
             </div>
           </form>
           {% if not has_ccs %}
-          <form method="post" action="/sources/add" class="opt presetform" data-for="ccs" hidden data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
+          <form method="post" action="/sources/add" class="opt presetform" id="addsrc-ccs" data-for="ccs" hidden data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="ccs">
             <div><b>{{ _('United CCS+ Calendar Sync') }}</b>
               <div class="subtitle">{{ _('Your schedule from CCS+, with your Username and Calendar Sync password (entered next, under Configure).') }}</div></div>
-            <button>{{ _('Add') }}</button>
+            {{ pair("addsrc-ccs") }}
           </form>
           {% endif %}
-          <form method="post" action="/sources/add" class="opt col presetform" data-for="google apple other" data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
+          <form method="post" action="/sources/add" class="opt col presetform" id="addsrc-feed" data-for="google apple other" data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="ics">
             <input type="hidden" name="preset" value="other">
             <div><b data-text-google="{{ _('Google Calendar') }}" data-text-apple="{{ _('Apple Calendar') }}" data-text-other="{{ _('Calendar feed (.ics link)') }}">{{ _('Calendar feed (.ics link)') }}</b>
@@ -409,12 +421,12 @@
                    data-text-apple="{{ _('Its public link (webcal://…): Calendar → ⓘ next to the calendar → Public Calendar → Share Link. Step-by-step help follows under Configure.') }}"
                    data-text-other="{{ _('Add any calendar with a link starting with webcal:// or ending in .ics') }}">{{ _('Add any calendar with a link starting with webcal:// or ending in .ics') }}</div></div>
             <div class="pair">
-              <label class="fld"><span>{{ _('Title') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Work') }}"></label>
+              <label class="fld"><span>{{ _('Name') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Work') }}"></label>
               <label class="fld"><span>{{ _('Link') }}</span><input name="url" class="code" required spellcheck="false" placeholder="https://… / webcal://…"></label>
             </div>
             <div class="pair">
-              <label class="fld"><span>{{ _('Note') }}</span><input name="note" maxlength="120" placeholder="{{ _('A short message that will appear under the source title') }}"></label>
-              <button>{{ _('Add') }}</button>
+              <label class="fld"><span>{{ _('Note') }}</span><input name="note" maxlength="120" placeholder="{{ _('Optional: shown as (i) after the name') }}"></label>
+              {{ pair("addsrc-feed") }}
             </div>
           </form>
         </div>
@@ -439,11 +451,16 @@
       <div class="srchead">
         {# Its color, always shown (blue until one is chosen); a color picker while expanded (I3, 0.2.8-beta.3) #}
         <input type="color" class="colorpick" form="srcform-{{ x.id }}" value="{{ x.color or '#1d4ed8' }}" aria-label="{{ _('Color') }}" title="{{ _('Color of its events (expand to change it)') }}"{% if not x.open %} tabindex="-1"{% endif %}>
+        {# The module (0.2.8-beta.9): its kind (fixed) over its name (a field while expanded) and, when it
+           has a note, a raised (i) showing it; the note is changed under Close. #}
+        {% set kind = _('CalendarStream') if local else (_('United Airlines CCS+') if ccs else {'google': _('Google Calendar'), 'apple': _('Apple Calendar')}.get(x.preset, _('Calendar Feed'))) %}
         <div class="srcleft">
-          <div class="namebox srcname showonly" title="{{ x.name }}">{{ x.name }}</div>
-          {% if x.note %}<div class="namebox srcnote showonly" title="{{ x.note }}">{{ x.note }}</div>{% endif %}
-          <input type="text" class="namebox nameinput editonly" form="srcform-{{ x.id }}" name="name" value="{{ x.name }}" maxlength="100" aria-label="{{ _('Title') }}" placeholder="{{ _('Title') }}">
-          <input type="text" class="namebox noteinput editonly" form="srcform-{{ x.id }}" name="note" value="{{ x.note }}" maxlength="120" aria-label="{{ _('Note') }}" placeholder="{{ _('Note (shown under the title)') }}">
+          <div class="srckind" title="{{ kind }}">{{ kind }}</div>
+          <div class="nameline">
+            <div class="namebox srcname showonly" title="{{ x.name }}">{{ x.name }}</div>
+            <input type="text" class="namebox nameinput editonly" form="srcform-{{ x.id }}" name="name" value="{{ x.name }}" maxlength="100" aria-label="{{ _('Name') }}" placeholder="{{ _('Name') }}">
+            {% if x.note %}{{ notedot(x.note) }}{% endif %}
+          </div>
         </div>
         {# "Last check was successful @ 14:34" over "Next check @ 14:49" (on the right, beside Sync Now);
            what each download changed is in Activities and Logs (F3.5, F3.6) #}
@@ -465,6 +482,10 @@
       {{ cfgline(x.id, x.open) }}
       <div class="cfgbody" id="cfg-{{ x.id }}"{% if not x.open %} hidden{% endif %}>
         {% if x.default %}<div class="deflabel" title="{{ _('Events you add here go to this calendar unless you choose another') }}">{{ _('Default') }}</div>{% endif %}
+        {# (a form of its own only for the field styles: the note is saved with the module's Cancel | Save) #}
+        <form class="notewrap" onsubmit="return false"><div class="pair notepair">
+          <label class="fld"><span>{{ _('Note') }}</span><input type="text" class="noteinput" form="srcform-{{ x.id }}" name="note" value="{{ x.note }}" maxlength="120" placeholder="{{ _('Optional: shown as (i) after the name') }}"></label>
+        </div></form>
         {% if not local %}
         {# How often it's checked: beside the Site Address #}
         {% set interval %}<form class="intervalform cfgside" method="post" action="/setup/interval" data-swap="#src-{{ x.id }}>.srchead|#activity">
@@ -641,10 +662,13 @@
       {# The module header, as a calendar's: name over kind | which calendars and dates | status. While
          expanded the name is a field. #}
       <div class="srchead">
+        {% set kind = (_('Google Calendar Feed') if d.for == 'google' else _('Calendar Feed')) if feed else _('Google Calendar') %}
         <div class="srcleft">
-          <div class="namebox srcname showonly" title="{{ d.name }}">{{ d.name }}</div>
-          <input type="text" class="namebox nameinput editonly" form="destform-{{ d.id }}" name="name" value="{{ d.name }}" maxlength="100" required aria-label="{{ _('Name') }}" placeholder="{{ _('Name') }}">
-          <div class="namebox srcnote">{{ (_('Google Calendar · feed') if d.for == 'google' else _('Calendar feed')) if feed else _('Google calendar') }}</div>
+          <div class="srckind" title="{{ kind }}">{{ kind }}</div>
+          <div class="nameline">
+            <div class="namebox srcname showonly" title="{{ d.name }}">{{ d.name }}</div>
+            <input type="text" class="namebox nameinput editonly" form="destform-{{ d.id }}" name="name" value="{{ d.name }}" maxlength="100" required aria-label="{{ _('Name') }}" placeholder="{{ _('Name') }}">
+          </div>
         </div>
         <div class="srcright">
           {# The standard header (0.2.8-beta.5): what it got last, over what's next (empty when nothing) #}

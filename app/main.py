@@ -1641,7 +1641,7 @@ def source_view(request: Request, sid: str, lang: str, sections: dict) -> dict:
             "rules": [{**r, "label": rule_label(r, lang), "html": rule_label_html(r, lang), "local": rules_mod.is_local(r, sid)} for r in source_rules(sid)],
             "preset": (source(sid) or {}).get("preset", "other"), "next_when": dates_for(lang).when(S.next_run, now().date()) if S.next_run else "",
             # the note under the title: as set (even empty), else the kind of calendar
-            "note": store.get(skey(sid, "note")) if store.get(skey(sid, "note")) is not None else default_note(sid)}
+            "note": source_note(sid)}
     if sid == "ccs":
         view["setup"] = {
             "uid": logins.ccs()[0], "has_password": bool(logins.ccs()[1]), "configured": logins.ccs_configured,
@@ -1819,8 +1819,16 @@ def _feed_link(url: str) -> str:
 SOURCE_PRESETS = {"google": "Google Calendar", "apple": "Apple Calendar", "other": "Calendar feed"}
 
 
+def source_note(sid: str) -> str:
+    """A calendar's own note (0.2.8-beta.9: shown as a raised (i) after its name), or "" when it has none.
+    The header's first line now says what kind of calendar it is, so the old default notes (which said
+    that, and were saved by any Save) count as no note."""
+    note = store.get(skey(sid, "note")) or ""
+    return "" if note.strip() == default_note(sid) else note
+
+
 def default_note(sid: str) -> str:
-    """The note under a source's title until one is set: what kind of calendar it is."""
+    """What kind of calendar it is, as the note said until 0.2.8-beta.9 (to recognise old saved notes)."""
     x = source(sid) or {}
     if x.get("type") == "ccs":
         return "CCS+ Calendar Sync"

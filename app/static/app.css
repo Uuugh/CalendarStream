@@ -632,7 +632,14 @@
   .module .srcleft { flex:0 1 270px; min-width:0; display:grid; grid-auto-rows:24px; gap:2px; align-content:center }
   .module .namebox { display:block; width:100%; min-width:0; height:24px; margin:0; padding:0 8px; border:1px solid var(--line); border-radius:6px;
                      background:var(--bg); color:var(--text); font:600 12.5px/22px var(--font); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-  .module .namebox.srcname, .module .namebox.nameinput { font-size:14px; font-weight:700 }
+  .module .namebox.srcname, .module .namebox.nameinput { font-size:14px; font-weight:600 }
+  /* (0.2.8-beta.9) line 1: the module's kind, fixed text at the module-title size; line 2: its name (a
+     field while expanded) and, with a note, a raised (i) right after it */
+  .module .srckind { font-size:17px; font-weight:700; line-height:24px; padding-left:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .module .nameline { display:flex; align-items:center; min-width:0; gap:0 }
+  .module .nameline > .namebox { flex:1 1 auto; width:auto }
+  .module .nameline > .notedot { margin-left:2px; top:-.35em }
+  .module .notewrap { margin:0 0 5px } .module .notepair { max-width:540px; margin-top:0 }
   .module .editonly { display:none } .module.cfgopen .editonly { display:block } .module.cfgopen .showonly { display:none !important }
   .sections .module input.namebox { height:24px; line-height:22px }
   .module input.namebox:focus { outline:2px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset:0 }
@@ -696,7 +703,9 @@
     .module .srchead .long { display:none } .module .srchead .short { display:inline }
     /* narrow: the 50 px row keeps the title and status; the two status lines go under it */
     .module .srchead { height:auto; min-height:50px; flex-wrap:wrap; row-gap:4px }
-    .module .srcleft { flex:1 1 0 }
+    .module .srcleft { flex:1 1 0; grid-auto-rows:auto }
+    /* the kind may take two lines here rather than be cut off (0.2.8-beta.9) */
+    .module .srckind { font-size:15px; line-height:19px; white-space:normal; overflow:visible }
     .module .statusbox { order:2 }
     .module .srcright { order:3; flex:1 1 100% }
   }
@@ -900,3 +909,11 @@
 .menu .module.bare .namebox { background:none; border-color:transparent; padding-left:0 } /* fixed text, not fields */
 .menu .module.bare .srcnote { font-weight:400; color:var(--muted) }
 .menu .pair.updrow { align-items:flex-end }
+
+/* 0.2.8-beta.9: no handle where there's nothing to reorder (one module, one rule) */
+.sortable > .modrow:only-child > .handle, .sortable > .ruleline:only-child > .handle, .rulelist > .ruleline:only-child > .handle { visibility:hidden }
+/* All Rules: the rule lines' handles sit in the section's right margin, like the modules' */
+#rules .rulelist > .ruleline { gap:2px; margin-right:-16px }
+#rules .rulelist > .ruleline > .handle { flex-basis:14px; width:14px }
+#rules .rulelist > .ruleline > .handle .hmove { width:14px }
+.gconnwrap { margin-bottom:6px }

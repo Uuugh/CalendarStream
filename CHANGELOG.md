@@ -9,7 +9,41 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.8**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.9**
+
+## 0.2.8-beta.9 — 2026-10-26
+
+### Fixed
+- **I1.1** The top bar and ☰ Settings → Updates both say **Update now**.
+- **I1.2** After an update, the page kept running the previous version's script and stylesheet:
+  Settings → Check now then gave no sign it was pressed and sat over the status. The page now
+  reloads once the new version is in (Settings stays open). Updating *to* this version still runs the
+  old page: reload it once after that update.
+
+### Changed
+- **F1.1** Calendar and feed module headers: line 1 is the module's kind, fixed text in a larger font
+  (17 px): **CalendarStream** (was Local), **United Airlines CCS+**, **Google Calendar**, **Apple
+  Calendar**, **Calendar Feed**, **Google Calendar Feed**; line 2 its name (a field while expanded).
+  On a phone the kind may take two lines rather than be cut off.
+- **F1.2** A note shows as a raised **(i)** after the name, only when there is one; it's changed in a
+  **Note** field under Close. The old default notes ("CCS+ Calendar Sync", "Events added here"…),
+  which said what the kind now says, count as no note.
+- **F1.3** No handle (▲ ☰ ▼) where there's nothing to reorder: a list of one module or one rule.
+- **F2** **+ Add a calendar** ends with the standard **Cancel | Save** (was Add); Cancel closes it. The
+  "Local" choice is now **CalendarStream**.
+- **F3** **All Rules**: the rule lines' handles sit in the section's right margin, like the modules', so
+  the lines are as wide as the header. (Read from "Event Templates", whose lines have no handles; the
+  All Rules heading above it was empty.)
+- **F4** ☰ Settings → Google Calendar sync, once connected, is laid out like a login, as before
+  connecting: **Client ID** (with Copy) and **Client secret** (Saved), then **✓ Connected**; under
+  them the account, the last sync and instant updates; **Also delete these calendars in Google** beside
+  **Disconnect**. The small "OAuth client" box is gone.
+- **F5** Settings → Updates says **Last checked 10:45** (was "Checked"), like Last synced.
+- **R1** The theme is enforced by tests: `tests/suite_44.py` (the theme suite) checks the whole page,
+  light and dark, computer and phone, against `build_rules/theme.md`, with a check for each
+  Clarification; theme.md ("Enforced by tests"), basics.md (EOF checklist) and review.md (Reviewers)
+  say so. New Clarifications: the module header (kind over name, (i) note), no handle for a list of
+  one, Cancel | Save when adding, Client ID / secret laid out like a login, a reload after an update.
 
 ## 0.2.8-beta.8 — 2026-10-26
 

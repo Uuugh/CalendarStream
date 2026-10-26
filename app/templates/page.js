@@ -235,7 +235,7 @@ document.addEventListener('keydown', function (e) {
 // Update now (top bar) and Settings → Update: ask the updater (POST /update/now), then follow along
 // with /api/status. It answers with the old version while the new image downloads, not at all while
 // the container restarts, then with the new version: the version at the top (and in the footer)
-// changes and Settings → Updates is drawn again (Up to date, Check now). One listener for the whole
+// changes and the page reloads with the new version. One listener for the whole
 // page, so the buttons keep working after Settings is redrawn in place (a Check now, a save).
 var updating = false;
 function updateNow() {
@@ -254,11 +254,13 @@ function updateNow() {
     var foot = document.querySelector('.foot');
     if (foot) foot.innerHTML = foot.innerHTML.replace('v' + from, 'v' + version);
     document.querySelectorAll('.topbar .newver, .updslot').forEach(function (el) { el.remove(); });
-    // Settings → Updates as the new version sees it (Up to date, Check now)
-    fetch('/?menu=settings', { cache: 'no-store', credentials: 'same-origin' })
-      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
-      .then(function (html) { updating = false; swapFrom(html, ['#updates']); },
-            function () { updating = false; settingsBtns(false); });
+    // The page is reloaded (0.2.8-beta.9) so the new version's script and stylesheet are the ones
+    // running: drawn in place, its parts would be run by the old ones. Settings stays open if it was.
+    var menu = document.getElementById('menu'), inSettings = menu && !menu.hidden;
+    setTimeout(function () {
+      if (inSettings && !/[?&]menu=settings/.test(location.search)) location.href = '/?menu=settings#updates';
+      else location.reload();
+    }, 800);
   }
   function follow() {
     var started = Date.now(), down = false;
@@ -1069,6 +1071,9 @@ document.addEventListener('click', function (e) {
   var old = p.parentNode.querySelector('.pairfail:not(.rdmsg)'); if (old) old.remove();
   if (f && formId(f) === 'ruleform') { pairState(p, 'cancelled'); setTimeout(function () { ruleDialog.close(); }, 700); return; }
   flashPair(p, 'cancelled');
+  // In + Add a calendar (0.2.8-beta.9), Cancel closes the menu once it has shown "Cancelled"
+  var menu = c.closest('.addmenu');
+  if (menu) setTimeout(function () { menu.hidden = true; var b = menu.closest('.addwrap').querySelector('.plus'); if (b) b.setAttribute('aria-expanded', 'false'); }, 700);
   // Cancel also folds the module (F1.1), once it has shown "Cancelled"
   var box = c.closest('.box.cfgbox');
   if (box) setTimeout(function () { setModule(box, false); }, 700);

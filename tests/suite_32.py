@@ -64,11 +64,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.click(".updbtn"); pg.wait_for_timeout(500)
         pg.screenshot(path=os.path.join(tempfile.gettempdir(), "cs-upd_down.png"), clip={"x": 0, "y": 0, "width": 700, "height": 60})
         ok(pg.get_attribute(".updslot", "data-state") == "downloading" and "Downloading" in pg.inner_text(".updslot") and pg.is_visible(".updbar i"), "F1.2: Downloading… with a moving bar")
-        main.__version__ = "0.2.7-beta.3"          # the restarted container
+        main.__version__ = U.__version__ = "0.2.7-beta.3"          # the restarted container (the page reloads, beta.9)
         pg.wait_for_timeout(3000)
         ok(pg.locator(".updslot").count() == 0 and pg.locator(".newver").count() == 0 and pg.inner_text(".curver") == "v0.2.7-beta.3"
            and pg.get_attribute(".curver", "href").endswith("/tag/v0.2.7-beta.3") and "v0.2.7-beta.3" in pg.inner_text(".foot"), "F1.2: when it's back: blank, and the version reads v0.2.7-beta.3")
-        main.__version__ = "0.2.7-beta.2"
+        main.__version__ = U.__version__ = "0.2.7-beta.2"
         open(tok.name, "w").write("other")
         pg.goto("http://127.0.0.1:8098/"); pg.wait_for_timeout(300)
         pg.click(".updbtn"); pg.wait_for_timeout(800)
