@@ -1,0 +1,11 @@
+name: calendarstream_core
+description: Platform-independent CalendarStream event model and iCalendar output.
+version: 0.0.1
+publish_to: none
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+dependencies:
+  crypto: ^3.0.6
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.25.8

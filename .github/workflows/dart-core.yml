@@ -1,0 +1,29 @@
+name: Dart migration core checks
+
+on:
+  push:
+    branches: [flutter-migration-v0.2.8-beta.4]
+    paths:
+      - 'dart/**'
+      - '.github/workflows/dart-core.yml'
+  pull_request:
+    paths:
+      - 'dart/**'
+      - '.github/workflows/dart-core.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dart/calendarstream_core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+      - run: dart pub get
+      - run: dart format lib test
+      - run: dart analyze
+      - run: dart test
