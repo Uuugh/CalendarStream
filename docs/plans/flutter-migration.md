@@ -68,3 +68,16 @@ encryption, CSRF and dependencies. Do not substitute guesses for results.
 
 **Status:** The branch is a migration workspace, not a published Docker
 image. A Docker tag will be supplied only after a real build and verification.
+
+## Upstream changes after the migration baseline
+
+As of 2026-10-27, `main` has advanced through `0.2.8-beta.14`
+(13 commits beyond the `beta.4` baseline). These changes include
+**two-way Google Calendar sync** (introduced in `beta.10`), additional
+theme rules, event colors, and changes to the settings and update UI.
+Do not silently omit them from the parity target.
+
+The migration remains anchored at the Developer-requested `beta.4`
+commit. Before claiming feature parity, review and integrate the newer
+upstream changes on the migration branch with explicit regression tests.
+Do not merge or modify `main` as part of that process.
