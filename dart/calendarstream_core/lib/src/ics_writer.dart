@@ -106,7 +106,7 @@ class IcsWriter {
 
   String _escape(String value) {
     return value
-        .replaceAll(r'\', r'\\')
+        .replaceAll('\\', '\\\\')
         .replaceAll('\r\n', '\n')
         .replaceAll('\r', '\n')
         .replaceAll('\n', r'\n')
