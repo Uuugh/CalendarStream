@@ -13,7 +13,7 @@ Read when the Developer says Deploy. Reviewers get build_rules/review.md.
 - At the start of a step, provide an estimated build time for "Total Time Remaining:" and "Time Remaining in &lt;Step Name&gt;:"
 - If a step produces a finding (a # item or a Developer F/I), then return to step a until the code can flow to the end without a finding.
   - Only changes to code behavior restart at a; comment, naming and docs fixes are made and re-checked in place.
-  - Each round of fixes is published as the next beta (like a plain "EOF", e.g. beta.4 → beta.5), and the Developer tests that beta in step c. The release (f) is made from the last beta.
+  - Each round of fixes is published as the next beta (like a plain "GO", e.g. beta.4 → beta.5), and the Developer tests that beta in step c. The release (f) is made from the last beta.
   - Number review findings #1, #2… within the deploy, for the CHANGELOG.
 - Notify the Developer if stuck on a step for more than 5 minutes, or in a loop for more than 10 minutes.
 
@@ -43,5 +43,5 @@ Read when the Developer says Deploy. Reviewers get build_rules/review.md.
 **f. Release (tagged latest), only after Developer approval in step c**
 - Drop the last beta's suffix (x.y.z-beta.N → x.y.z). The release is the approved code plus the translations (d) and documentation (e).
 - Tag vx.y.z, publish the image as :x.y.z and :latest, and set STABLE to x.y.z.
-- CHANGELOG.md: gather the version's beta entries under one x.y.z heading, with a sub-heading per beta (beta.1, beta.2…), since F/I/R numbers restart at each EOF. This becomes the notes of its GitHub Release, published as Latest (not a pre-release).
-- Report the release and the next EOF's version (x.y.(z+1)-beta.1).
+- CHANGELOG.md: gather the version's beta entries under one x.y.z heading, with a sub-heading per beta (beta.1, beta.2…), since F/I/R numbers restart at each GO. This becomes the notes of its GitHub Release, published as Latest (not a pre-release).
+- Report the release and the next GO's version (x.y.(z+1)-beta.1).

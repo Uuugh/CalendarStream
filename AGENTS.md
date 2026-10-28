@@ -15,7 +15,7 @@ manage it all. See README.md for what it does.
 - `tests/`: the test suites and `run.sh` (see tests/README.md).
 - `docs/`: the README's screenshots.
 - `build_rules/`: how work is done here:
-  - `basics.md`: words (F, I, R, ?, EOF, STOP…), versions, ground rules. Read first.
+  - `basics.md`: words (F, I, R, ?, GO (or EOF), STOP…), versions, ground rules. Read first.
   - `deploy.md`: the Deploy steps (a–f).
   - `review.md`: what Reviewers check (Deploy steps a and b).
   - `theme.md`: how the page looks, with the CalendarStream Theme Rules picture beside it.

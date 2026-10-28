@@ -12,22 +12,24 @@ Always loaded (imported by CLAUDE.md). These words have these meanings in every 
 - I#/i# = Issue
 - R#/r# = README file / Documentation
 - ? = Developer has a question for Claude. This is not an input; the Developer wants Claude's suggestion. It might then become an input
-- Sub-items are numbered F1.1, F1.2… Numbers start again with each EOF.
+- Sub-items are numbered F1.1, F1.2… Numbers start again with each GO.
 - Software versioning (semver): Major.minor.patch[-beta.N]
   - Betas carry a suffix: 0.2.7-beta.1, 0.2.7-beta.2, …
   - Deploy releases the last beta without its suffix (0.2.7-beta.4 → 0.2.7) and tags it latest.
   - Documentation-only changes (README, CLAUDE.md, AGENTS.md, build_rules/) don't change the version.
-- EOF = Begin processing inputs, and set the new version (each one tagged beta):
+- GO = Begin processing inputs, and set the new version (each one tagged beta). GO counts only in capitals, as the
+  whole message or its last word ("1 build. GO"), so a "go" in ordinary words or dictation never starts a build.
+  EOF is an alias that still works the same (EOF, EOF b, EOF m, EOF M).
   - Tidy Developer F/I/R before they're published in CHANGELOG.md: spelling, grammar and numbering.
   - Correct Developer dictation slips (e.g. "Texas" → "text is", "safe" → "Save", "subscription" → "subsection") and advise Developer which reading Claude took.
-  - "EOF" next beta of the same version (0.2.7-beta.1 → 0.2.7-beta.2);
+  - "GO" next beta of the same version (0.2.7-beta.1 → 0.2.7-beta.2);
     after a Deploy, starts the next patch (0.2.7 → 0.2.8-beta.1).
-  - "EOF b" starts the next patch (0.2.7-beta.3 → 0.2.8-beta.1).
-  - "EOF m" starts the next minor (0.2.8-beta.2 → 0.3.0-beta.1).
+  - "GO b" starts the next patch (0.2.7-beta.3 → 0.2.8-beta.1).
+  - "GO m" starts the next minor (0.2.8-beta.2 → 0.3.0-beta.1).
     Claude confirms the new version with the Developer before proceeding.
-  - "EOF M" starts the next major (0.3.1-beta.1 → 1.0.0-beta.1).
+  - "GO M" starts the next major (0.3.1-beta.1 → 1.0.0-beta.1).
     Claude confirms the new version with the Developer before proceeding.
-  - Before a beta is published (every EOF):
+  - Before a beta is published (every GO):
     - `tests/run.sh` passes (suite 17, translations, waits for Deploy step d). New behavior gets tests in a new suite (the next number).
     - Anything on the page that changed follows build_rules/theme.md (look and interaction), checked
       by the theme suite (suite 44): each Clarification has a check there, added in the same beta.
