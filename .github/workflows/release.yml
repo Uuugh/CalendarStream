@@ -70,7 +70,12 @@ jobs:
           else
             CHANGED="$(git ls-files)"
           fi
-          echo "$CHANGED" | grep -qx 'VERSION' && echo "version_changed=true" >> "$GITHUB_OUTPUT" || echo "version_changed=false" >> "$GITHUB_OUTPUT"
+          # a new VERSION, or one whose beta was stopped before it was tagged (e.g. by the trivy gate): built (again)
+          if echo "$CHANGED" | grep -qx 'VERSION' || ! git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "version_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "version_changed=false" >> "$GITHUB_OUTPUT"
+          fi
           if [ -f STABLE ] && echo "$CHANGED" | grep -qxE 'STABLE|\.github/workflows/release\.yml'; then
             STABLE="$(tr -d '[:space:]' < STABLE)"; check "$STABLE"
             echo "stable=$STABLE" >> "$GITHUB_OUTPUT"; echo "stable_changed=true" >> "$GITHUB_OUTPUT"
