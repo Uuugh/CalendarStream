@@ -46,5 +46,5 @@ beta = wf[wf.index("trivy gate"):]
 ok(wf.index("trivy gate") < wf.index("Tag v<VERSION> and move beta") < wf.index("Build and push image"),
    "F1: the trivy scan comes before the tag and the published image")
 ok(re.search(r"aquasecurity/trivy-action@[0-9a-f]{40}", wf) and "severity: HIGH,CRITICAL" in beta and "ignore-unfixed: true" in beta
-   and 'exit-code: "1"' in beta, "F1: pinned to a commit; stops the beta on a fixable High or Critical only")
+   and "exit 1" in beta and "::error title=trivy gate" in beta, "F1: pinned to a commit; stops the beta on a fixable High or Critical only")
 print("FAILED:", fails) if fails else print("ALL PASSED")

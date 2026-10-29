@@ -48,6 +48,7 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 - **I1** The image has pip 26.1.2 or newer.
 - **I2** The image's Debian packages are upgraded when it's built.
 - **I3** The release workflow's actions run on Node 24 (checkout v6, the Docker actions v4 / v7).
+  The trivy gate lists each blocking finding in the run's summary and as an annotation on the run's page.
 
 ### Fixed
 - **I4** A second Google module made its calendar in the first module's Google account before it was connected:

@@ -114,15 +114,29 @@ jobs:
           exit-code: "0"
       - name: trivy summary
         run: |
-          { echo "## trivy: calendarstream $VERSION"; echo '```'; cat trivy.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-      - name: trivy gate (fixable High or Critical stops the beta)
+          { echo "## trivy: calendarstream $VERSION"; echo '```'; head -c 600000 trivy.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"     # (a summary over 1 MB isn't shown at all)
+      - name: trivy gate scan (fixable High or Critical)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25   # v0.36.0
         with:
           image-ref: calendarstream-scan:${{ env.VERSION }}
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          exit-code: "1"
+          format: json
+          output: trivy-gate.json
+          exit-code: "0"
           skip-setup-trivy: true
+      # The gate itself (0.2.8-beta.17): each blocking finding is listed in the run's summary and as an annotation,
+      # so it can be read on the run's page (and through the API) without opening the logs; any one stops the beta.
+      - name: trivy gate (fixable High or Critical stops the beta)
+        run: |
+          set -euo pipefail
+          jq -r '.Results[]? | .Target as $t | .Vulnerabilities[]? | "\(.Severity) \(.VulnerabilityID) \(.PkgName) \(.InstalledVersion) → fixed in \(.FixedVersion) (\($t))"' trivy-gate.json | sort -u > gate.txt
+          n=$(wc -l < gate.txt)
+          { echo "## trivy gate: $n fixable High or Critical"; echo '```'; cat gate.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$n" -gt 0 ]; then
+            echo "::error title=trivy gate: $n fixable High or Critical::$(head -60 gate.txt | sed ':a;N;$!ba;s/\n/%0A/g')"
+            exit 1
+          fi
 
       - name: Tag v<VERSION> and move beta
         run: |
