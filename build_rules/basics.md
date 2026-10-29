@@ -48,12 +48,12 @@ ordinary talk or dictation never starts anything. They end the message, with the
 - REVIEW = A review by the Reviewer (build_rules/review.md): REVIEW runs both (a Programming, b Security), REVIEW a
   or REVIEW b one. With a review issue open, REVIEW to Claude means "your turn: read the issue now"; the
   Developer sends REVIEW to the Reviewer (ChatGPT) to start its turn. A REVIEW covers the changes since the last
-  review (the `reviewed` tag).
+  review (the `reviewed` branch).
 - AUDIT = A check of the whole app against the rules, one GitHub issue per area, the same rounds as a review
   (build_rules/review.md). AUDIT runs every area; AUDIT with an area runs one: rules, google, calendars,
   database, security, page. A Deploy includes one.
 - APPROVE = The Developer's sign-off wherever the rules ask for it: a rules change (Claude then moves the
-  `review-rules` tag, build_rules/review.md), Deploy step c.
+  `review-rules` branch, build_rules/review.md), Deploy step c.
 - MENU = Claude shows the keywords (what each does and its options), every waiting F, I and R, what's waiting on
   the Developer (an APPROVE, whose turn an open review is), and the likely next step.
 - STOP / WAIT = Stop all work. No commit or push. No time / credits / tokens should be spent until the Developer says to continue.

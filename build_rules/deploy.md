@@ -21,11 +21,11 @@ Read when the Developer says DEPLOY. Steps a and b are a REVIEW and an AUDIT (bu
 ## Steps
 
 **a. Programming Review:** REVIEW a: the Reviewer reviews the changes since the last review in a review issue, following build_rules/review.md (a. Programming Review). The AUDIT (every area, both checklists) runs alongside steps a and b, in the same hand-offs.
-- The Reviewer only receives the repo and the diff since the last review (the `reviewed` tag), not Claude's notes or conversation.
+- The Reviewer only receives the repo and the diff since the last review (the `reviewed` branch), not Claude's notes or conversation.
 - `tests/run.sh` must pass; the Reviewer reads the suites that cover the diff.
 
 **b. Security Review:** REVIEW b: the Reviewer reviews the code in a review issue, following build_rules/review.md (b. Security Review).
-- The Reviewer only receives the repo and the diff since the last review (the `reviewed` tag), not Claude's notes or conversation.
+- The Reviewer only receives the repo and the diff since the last review (the `reviewed` branch), not Claude's notes or conversation.
 - Claude runs all three scans and puts their results in the issue's first post: `pip-audit -r requirements.txt`, `bandit -r app`, and `trivy image` on the beta's image (`ghcr.io/uuugh/calendarstream:beta`).
 
 **c. Testing**
