@@ -113,7 +113,10 @@ with patch.object(calsync, "MAX_FEED_EVENTS", 10):
                                 date(2026, 1, 1), date(2027, 1, 1))
 everything, _ = calsync.parse_feed(b"BEGIN:VCALENDAR\nVERSION:2.0\n" + many + b"\nEND:VCALENDAR", "UTC", calsync.Defaults(), "f000002",
                                    date(2026, 1, 1), date(2027, 1, 1))
-ok(len(got) == 10 and [e.uid for e in got] == [e.uid for e in everything[:10]], "#4.2: an oversized feed in reverse order keeps its earliest events")
+# (round 2: named outright) the file lists E0 (Dec 28) first and E59 (Oct 25) last; the 10 earliest are E50–E59
+earliest = {f"e{n}" for n in range(50, 60)}
+ok(len(everything) == 60 and len(got) == 10 and {e.uid.split("/")[1] for e in got} == earliest and [e.uid for e in got] == [e.uid for e in everything[:10]],
+   f"#4.2: an oversized feed in reverse order keeps its earliest events (E50–E59 of 60: {sorted(e.title for e in got)})")
 
 # #6.2: a pinned version's own files
 inst = open(os.path.join(ROOT, "install.sh")).read()
