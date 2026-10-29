@@ -7,7 +7,7 @@ Always loaded (imported by CLAUDE.md). These words have these meanings in every 
 - Developer = the human user
 - Claude = the AI working on the project in the current session
 - Author = whoever wrote the code being reviewed
-- Reviewer = a separate AI agent running a review step
+- Reviewer = a separate AI, from another vendor than Claude (ChatGPT for now), running a review (build_rules/review.md)
 - F#/f# = Feature Request
 - I#/i# = Issue
 - R#/r# = README file / Documentation
@@ -17,9 +17,15 @@ Always loaded (imported by CLAUDE.md). These words have these meanings in every 
   - Betas carry a suffix: 0.2.7-beta.1, 0.2.7-beta.2, …
   - Deploy releases the last beta without its suffix (0.2.7-beta.4 → 0.2.7) and tags it latest.
   - Documentation-only changes (README, CLAUDE.md, AGENTS.md, build_rules/) don't change the version.
-- GO = Begin processing inputs, and set the new version (each one tagged beta). GO counts only in capitals, as the
-  whole message or its last word ("1 build. GO"), so a "go" in ordinary words or dictation never starts a build.
-  EOF is an alias that still works the same (EOF, EOF b, EOF m, EOF M).
+- GO = Begin processing inputs, and set the new version (each one tagged beta). GO counts only in capitals, and GO
+  with its options ends the message ("1 build. GO", "1 build. GO b FI"), so a "go" in ordinary words or dictation
+  never starts a build. EOF is an alias that still works the same (EOF, EOF b, EOF m, EOF M).
+  - Before any GO, Claude lists every waiting F, I and R, the ones this GO leaves too, so the Developer's
+    messages keep the record if a session ends.
+  - GO works on every waiting input. GO with F, I and/or R works on exactly those kinds (GO R: documentation and
+    rules only); the rest stay listed and waiting. The options go in any order, with or without spaces, F/I/R in
+    either case: GO b FI = GO FI b = GO F I b = GO b F I. (Only b, m and M choose the version, and m ≠ M.)
+  - Only R (documentation): the version doesn't change.
   - Tidy Developer F/I/R before they're published in CHANGELOG.md: spelling, grammar and numbering.
   - Correct Developer dictation slips (e.g. "Texas" → "text is", "safe" → "Save", "subscription" → "subsection") and advise Developer which reading Claude took.
   - "GO" next beta of the same version (0.2.7-beta.1 → 0.2.7-beta.2);
@@ -35,6 +41,11 @@ Always loaded (imported by CLAUDE.md). These words have these meanings in every 
       by the theme suite (suite 44): each Clarification has a check there, added in the same beta.
     - `pip-audit -r requirements.txt` finds nothing; anything it finds is fixed in that beta, or reported to the Developer.
 - Deploy/deploy = Start Deployment Instructions (build_rules/deploy.md)
+- REVIEW = A review by the Reviewer (build_rules/review.md): REVIEW runs both (a Programming, b Security), REVIEW a
+  or REVIEW b one. With a review issue open, REVIEW to Claude means "your turn: read the issue now"; the
+  Developer sends REVIEW to the Reviewer (ChatGPT) to start its turn. Capitals only, ending the message, like GO.
+- APPROVE = The Developer's sign-off wherever the rules ask for it: a rules change (Claude then moves the
+  `review-rules` tag, build_rules/review.md), Deploy step c. Capitals only, ending the message, like GO.
 - STOP/stop/s/WAIT/wait/w = Stop all work. No commit or push. No time / credits / tokens should be spent until the Developer says to continue.
 
 ## Ground rules
