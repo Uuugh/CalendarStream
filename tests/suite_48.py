@@ -44,7 +44,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             j = step(s, **extra)
             if not j["ok"]:
                 return j
-        back = G.get(j["url"], follow_redirects=False); cb = urlparse(back.headers["location"])
+        # (0.2.8-beta.17) Turn on stops at Ready: the first account (an install from before) signs in here
+        url = j["url"] or c.post("/google/connect", data={"csrf": csrf}, follow_redirects=False).headers["location"]
+        back = G.get(url, follow_redirects=False); cb = urlparse(back.headers["location"])
         c.get(cb.path + "?" + cb.query, follow_redirects=False)
         return {"ok": main.google.connected}
     def cals():

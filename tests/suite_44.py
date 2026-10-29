@@ -26,8 +26,8 @@ async def fake_check():
 CLAR = open(os.path.join(os.path.dirname(HERE), "build_rules", "theme.md")).read().split("## Clarifications", 1)[1]
 # One look per meaning (beta.14): every status word and the look it must have (theme.md, section 2). A word not
 # listed here fails: add it, with its meaning, to theme.md and here.
-MEANING = {"good": r"Healthy|Connected|In Google|Read by Google|Up to date|\d+ Rules?|\d+ Templates?",
-           "run": r"Syncing…|Starting|Paused|Setup needed|Ready to connect|Not set up|Not checked|Update available|Not connected|Not read yet|\d+ to check",
+MEANING = {"good": r"Healthy|Connected|Ready|In Google|Read by Google|Up to date|\d+ Rules?|\d+ Templates?",
+           "run": r"Syncing…|Starting|Paused|Setup needed|Ready to connect|Ready to turn on|Not set up|Not checked|Update available|Not connected|Invited|Not read yet|\d+ to check",
            "warn": r"Sign-in rejected|Blocked|Error|Address missing|Client rejected|Sync problem|Unhealthy",
            "bad": r"Internal error|Sync problem|Update failed"}
 # Words on the page (beta.14): click paths and short lines; no sentence over 20 words outside the (?) help
@@ -197,7 +197,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                     document.querySelectorAll('.box.module').length, document.querySelectorAll('.box.module .nameline .notedot').length,
                     document.querySelectorAll('input[type=color]').length,
                     [...document.querySelectorAll('.palpop')].every(p => p.querySelectorAll('.pal:not(.nocolor)').length === 11),
-                    [...document.querySelectorAll('main input[type=date]')].every(i => i.closest('.daterange') && i.closest('.daterange').querySelector('.rangeall')),
+                    [...document.querySelectorAll('main input[type=date]')].every(i => (i.closest('.daterange') && i.closest('.daterange').querySelector('.rangeall')) || i.closest('.destdates')),
                     [...document.querySelectorAll('.box.src .cfgbody')].every(c => { const f = c.querySelector('form.importrow'); return f && f.querySelector('.filefield') && f.lastElementChild.tagName === 'BUTTON'; })]; }""")
         ok(r[0] == "2px" and r[1] == "5px" and r[2] == "9px", f"Clarification '2 px border': modules have a 2 px border, 1 px less padding {r[:3]}")
         ok(r[3] in ("rgba(0, 0, 0, 0)", "transparent") and r[4] == "rgba(0, 0, 0, 0)", f"Clarification 'label': a folded module's label is plain text {r[3:5]}")
@@ -213,10 +213,12 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.click("#rules > .cfgline .cfgtoggle") if pg.locator("#rules .sfoot .newrule").is_hidden() else None
         pg.click("#rules .sfoot .newrule"); pg.wait_for_timeout(300)
         pg.evaluate("() => { const s = document.querySelector('#ruledialog .atype'); s.value = 'emoji'; s.dispatchEvent(new Event('change', {bubbles:true})); }")
-        pg.click("#ruledialog .emomore"); pg.wait_for_timeout(700)
-        r = pg.evaluate("""() => { const g = document.querySelector('#ruledialog .emogrid'), cs = getComputedStyle(g), p = document.querySelector('#ruledialog .emopick');
-            return [cs.gridTemplateColumns.split(' ').length, cs.overflowY, p.firstElementChild.classList.contains('emosearch'), g.querySelectorAll('.emo').length]; }""")
-        ok(r[0] == 10 and r[1] == "auto" and r[2] and r[3] > 1000, f"Clarification 'emoji': ten a line, scrolling, a search on top {r}")
+        pg.click("#ruledialog .emofind"); pg.wait_for_timeout(700)
+        r = pg.evaluate("""() => { const g = document.querySelector('#ruledialog .emogrid'), cs = getComputedStyle(g), f = document.querySelector('#ruledialog .emofind'), fs = getComputedStyle(f);
+            return [cs.gridTemplateColumns.split(' ').length, cs.overflowY, f.placeholder, g.querySelectorAll('.emo').length,
+                    parseFloat(fs.borderTopLeftRadius) < parseFloat(fs.height) / 2 - 0.5]; }""")
+        ok(r[0] == 10 and r[1] == "auto" and r[2] == "Search for more emojis" and r[3] > 1000 and r[4],
+           f"Clarification 'emoji': ten a line, scrolling, opened from a rounded search field (0.2.8-beta.17) {r}")
         pg.evaluate("document.getElementById('ruledialog').close()")
         # a deleted event: struck through, greyed, where, Restore
         uid = pg.locator("#cal details.ev:not(.custom)").first.get_attribute("data-uid")

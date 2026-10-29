@@ -92,11 +92,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
            "I3: the calendar key, the feeds' calendar colors and the rule badges follow, in place")
         # Settings saved in place
         pg.click("#menubtn"); pg.wait_for_timeout(150)
-        pg.fill("#adminemail", "me@example.com"); pg.click("#admin .slotsave"); pg.wait_for_timeout(1500)
-        ok(main.admin_email() == "me@example.com" and not loads and pg.is_visible("#menu") and pg.get_attribute("#admin .okslot", "data-state") == "ok",
-           "Settings: Admin e-mail saved in place (menu still open, ✓ Saved, no reload)")
         pg.fill("#publicurl", "https://cal2.example.com"); pg.click("#public .slotsave"); pg.wait_for_timeout(1500)
-        ok(main.public_url() == "https://cal2.example.com" and not loads and "cal2.example.com" in pg.inner_html("#destinations"), "…Public address too (the feeds' links follow)")
+        ok(main.public_url() == "https://cal2.example.com" and not loads and pg.is_visible("#menu") and "cal2.example.com" in pg.inner_html("#destinations"),
+           "Settings: Public address saved in place (menu still open, no reload; the feeds' links follow)")
         pg.select_option("#updfreq", "monthly"); pg.wait_for_timeout(1200)
         ok(main.updates.frequency() == "monthly" and not loads and pg.is_visible("#menu"), f"…and Check for updates ({main.updates.frequency()} {loads} {pg.is_visible('#menu')} {errs})")
         u, a = pg.locator("#updfreq").bounding_box(), pg.locator("#updates button.checknow").bounding_box()

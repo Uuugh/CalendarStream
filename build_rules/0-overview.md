@@ -6,7 +6,7 @@ Always loaded (imported by CLAUDE.md). The whole picture on one page; each step'
 
 | Step | Command | Who | What happens | Details |
 |---|---|---|---|---|
-| 0. Overview | **MENU** | Claude | Shows this table, every waiting F, I and R, what's waiting on the Developer, and the likely next step. | this file |
+| 0. Overview | **MENU** | Claude | Opens the CalendarStream Menu page beside the chat: the commands (each copies on a tap), every waiting F, I and R, what's waiting on the Developer, and the likely next step. Claude keeps the page up to date, so MENU only opens it. | this file |
 | 1. Plan | **PLAN** | Developer › Claude | The Developer gives F, I, R and ?; PLAN shows the waiting list and what Claude would do for each, so it's corrected before it's built. | 1-plan.md |
 | 2. Build | **BUILD** `[F\|f I\|i R\|r] [b m M]` | Claude | Builds the waiting inputs as the next beta: tests, publishes, reports. | 2-build.md |
 | 3. Test (optional) | **TEST** | Developer + Claude, together | The Developer tries the beta in a browser and Claude follows along: each TEST, Claude looks at the page, its console and requests, and problems are talked through and written up as I items. | 3-test.md |

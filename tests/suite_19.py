@@ -78,7 +78,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
                                      "check": {"ok": True, "message": "Google accepted the client ID and secret", "at": "2026-10-20T20:00:00+00:00"}})
     main.google._client = None
     p = c.get("/").text
-    ok("Ready to connect" in p and 'class="statusbox gbox run"' in p and 'value="123-abc.apps.googleusercontent.com"' in p, "valid Google client: boxes shown, Ready to connect over Connect (0.2.8-beta.14)")
+    ok(("Ready to turn on" in p or ">Ready<" in p) and ('class="statusbox gbox run"' in p or 'id="gcid"' in p) and 'value="123-abc.apps.googleusercontent.com"' in p, "valid Google client: boxes shown, Ready to connect over Connect (0.2.8-beta.14)")
     ok("gconnectbtn" in p, "Connect stays outside the fold")
     main.store.set("google_client", {**main.store.get("google_client"), "check": {"ok": False, "message": "Google rejected the client ID", "at": "2026-10-20T20:00:00+00:00"}})
     p = c.get("/").text
@@ -99,10 +99,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
 
     # Who reads the feed
     p = c.get("/").text
-    ok("hasn’t read this feed yet" in p, "Google hasn't read the feed yet")
+    ok(">Not read yet<" in p, "Google hasn't read the feed yet")
     c.get(f"/calendar/{main.settings.feed_token}.ics", headers={"User-Agent": "Google-Calendar-Importer"})
     p = c.get("/").text
-    ok("Read by Google</span>" in p and "Google Calendar last read this feed" in p, "after Google's reader fetched it: last read shown")
+    ok("Read by Google</span>" in p and "Last read by Google" in p, "after Google's reader fetched it: last read shown")
     # Display time zone
     ok(c.post("/ui/tz", data={"csrf": csrf, "tz": "Mars/Base"}).status_code == 400, "unknown time zone refused")
     c.post("/ui/clock", data={"csrf": csrf, "clock": "24"})

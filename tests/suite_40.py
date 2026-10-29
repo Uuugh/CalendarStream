@@ -43,7 +43,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     fh = p[p.index(f'id="dest-{feed["id"]}"'):]; fh = fh[:fh.index('class="cfgline"')]
     ok("Last read by Google <b>" in fh and "All dates" not in fh, "F6: a feed's header: Last read by Google (time) on the right, the same layout")
     # F1: Settings
-    ok('onclick="copyField(\'fcid\', this)"' in p, "F1.1: Copy in the Client ID box")
+    ok('onclick="copyField(\'fcid\', this)"' in p or 'onclick="copyField(\'gcid\', this)"' in p, "F1.1: Copy in the Client ID box (beta.17: also when Ready)")
     ud = p[p.index('id="updates"'):]; ud = ud[:ud.index("</form>")]
     ok('class="module bare"' in ud and ">Updates<" in ud and 'namebox srcnote">' in ud and 'class="statusbox' in ud and "Check now" in ud and "Updater: running" not in p,
        "F1.2/F1.3: Updates as a module header (title, channel, state, status box with Check now); no updater note")

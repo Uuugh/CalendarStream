@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="{{ html_lang }}"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>{{ _('Calendar invite') }} · CalendarStream</title>
+{% include "_theme.html" %}
+{# An invite (0.2.8-beta.17, F1): the page someone opens from a Google module's one-time link. No login: the
+   link is the permission, and all it can do is sign their Google account in for that one calendar. #}
+<style>
+  * { box-sizing:border-box }
+  body { margin:0; font:15px/1.5 var(--font); background:var(--bg); color:var(--text) }
+  main { max-width:440px; margin:0 auto; padding:64px 16px 48px }
+  h1 { font-size:22px; margin:0 0 16px }
+  .card { background:var(--card); border:2px solid var(--line); border-radius:var(--rbox); padding:18px; display:grid; gap:12px }
+  p { margin:0 } .note { color:var(--muted); font-size:13.5px }
+  button { width:100%; height:34px; font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:var(--r); cursor:pointer }
+  .err { display:flex; align-items:center; gap:6px; background:var(--warnbg); color:var(--warn); border-radius:var(--r); padding:8px 10px; font-size:13.5px }
+  .ok { display:flex; align-items:center; gap:6px; background:var(--okbg); color:var(--ok); border-radius:var(--r); padding:8px 10px; font-weight:600 }
+</style>
+</head>
+<body>{{ icon_sprite() }}<main>
+  <h1>CalendarStream</h1>
+  <div class="card">
+    {% if error %}<div class="err">{{ icon("warning", 16) }} {{ msg(error) }}</div>{% endif %}
+    {% if done %}
+      <div class="ok">{{ icon("check_circle", 16) }} {{ _('Done') }}</div>
+      <p>{{ _('<b>{name}</b> is now in your Google Calendar, and stays up to date. You can close this page.', name=name) }}</p>
+    {% elif token %}
+      <p>{{ _('You’re invited to get the calendar <b>{name}</b> in your Google Calendar.', name=name) }}</p>
+      <form method="post" action="/invite/{{ token }}">
+        <input type="hidden" name="form" value="{{ form }}">
+        <button>{{ _('Continue with Google') }}</button>
+      </form>
+      <p class="note">{{ _('Google asks you to sign in and allow CalendarStream to make and keep this one calendar. “Google hasn’t verified this app”? › Continue. Your password stays with Google.') }}</p>
+    {% endif %}
+  </div>
+</main>
+</body>
+</html>

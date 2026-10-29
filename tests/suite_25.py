@@ -15,8 +15,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         TestClient(main.app, base_url="https://cal.example.com") as c:
     main.google.save_client("123456789012-abcdefghijklmnopqrstuvwxyz012345.apps.googleusercontent.com", "GOCSPX-test")
     p = c.get("/", auth=A).text; csrf = re.search(r'name="csrf" value="([^"]+)"', p)[1]
-    ok('id="adminemail" name="email" value=""' in p and p.index('id="googlesync"') < p.index('id="admin"'), "F1: Admin e-mail in the Google Calendar API Sync block (0.2.8-beta.15), not set")
-    ok("set ☰ Settings → <b>Admin e-mail</b>" in p, "F1: the guide points to it while it isn't set")
+    # (0.2.8-beta.17, F13) ☰ Settings sets up the API only: no Admin e-mail there; the guide says "your Gmail"
+    ok('id="adminemail"' not in p and "Admin e-mail" not in p, "F1 (beta.17): no Admin e-mail in ☰ Settings")
+    ok("support e-mail: your Gmail" in p, "F1: the guide says your Gmail while none is set")
     post = lambda e: c.post("/settings/admin-email", auth=A, data={"csrf": csrf, "email": e}, follow_redirects=False)
     for bad in ("nope", "a@b", "<x>@y.com", "a b@c.com"):
         ok(post(bad).status_code == 400, f"F1: refused {bad!r}")

@@ -117,6 +117,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     post("/destinations/update", did=flying["id"], name="Flying", sources=["ccs"])
     post("/destinations/add", type="google", name="All of it")
     allofit = main.destinations("google")[1]
+    for d in (flying, allofit):       # (0.2.8-beta.17: a new module has an account of its own; these two go on the first one)
+        post("/google/account", did=d["id"], action="first")
+    flying, allofit = main.destinations("google")
     r = post("/google/connect")
     back = G.get(r.headers["location"], follow_redirects=False); cb = urlparse(back.headers["location"])
     c.get(cb.path + "?" + cb.query, auth=A, follow_redirects=False)

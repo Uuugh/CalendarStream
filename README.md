@@ -78,14 +78,15 @@ Then open the address it printed:
 2. **Calendars → +** → **United CCS+**, then enter your CCS+ Username (UID)
    and Calendar Sync password. (Or add any calendar feed.)
 3. Optional, for Google Calendar kept in sync within seconds (with your rule colors and reminders):
-   **☰ Settings → Google Calendar API Sync**: ask Claude to set it up, or follow its guided setup in order. Publish the app,
-   or add yourself as a test user, **before** pressing Connect. It needs the public `https://`
-   address (check the spelling: Google sends you back to exactly this address).
-4. **Feeds → +** (it first asks for the public address), name it, then add:
-   - **Google Calendar**: kept in sync through Google Calendar API Sync when that's set up; otherwise a
-     feed your Google account subscribes to (press **Add to Google Calendar**); or
-   - **Apple, Outlook or another app**: a feed link (press **Add to Apple / Outlook**, or copy the
-     link into any calendar app).
+   **☰ Settings → Google Calendar API Sync** (the admin turns it on once): ask Claude to set it up, or follow
+   its guided setup in order. Publish the app, or add each person as a test user, **before** pressing
+   **Turn on**. It needs the public `https://` address (check the spelling: Google sends you back to
+   exactly this address).
+4. **Feeds → +** (it first asks for the public address), pick the module, then fill it in:
+   - **Calendar Feed**: a link any calendar app subscribes to: **Add to Google Calendar**, **Add to
+     Apple Calendar**, **Add to Outlook**, **Send to…** someone, or copy the link into any other app; or
+   - **Google 1-way Sync** / **Google 2-way Sync** (with Google Calendar API Sync on): **Connect me**, or
+     **Invite someone** to get it in their own Google Calendar.
 
 ## Settings
 
@@ -175,7 +176,7 @@ logins or setup codes lock an address out for 15 minutes.
   a centred pop-up, with the page dimmed and out of focus behind it.
 - **Colors:** one palette everywhere, Google Calendar's 11 event colors, in a color box (calendars, feeds,
   rules, templates, events), so what you pick is what Google shows. **Emoji:** the common ones, and every
-  emoji in a picker (ten a line, with a search).
+  emoji through "Search for more emojis" (ten a line, filtered as you type).
 - Saving, cancelling and removing happen in place: only the parts of the page they change are
   updated, without reloading it. **Cancel | Save** is one 130 px pair at the bottom of a module and
   (**Cancel | Apply** in the rule dialog); the pressed side fills it and says **Cancelled** or
@@ -226,27 +227,32 @@ logins or setup codes lock an address out for 15 minutes.
     feed and rule. History › Undo brings a removed calendar back, CCS+'s sign-in included.
 - **Feeds** (**+** adds one; the first asks for the public address): what other apps subscribe to,
   independent of the calendars, as many as you like:
-  - **Google 2-way Sync**: with **Google Calendar API Sync** set up (☰ Settings), a calendar of its own in
-    Google, kept up to date within seconds, with your rule colors and reminders, and **Sync Now** in its
-    header; changes made there come back here.
+  - **Calendar Feed**: a link any calendar app subscribes to (Google, Apple, Outlook and most others re-read it
+    a few times a day, in one color): **Add to Google Calendar**, **Add to Apple Calendar**, **Add to Outlook**
+    (each opens that app with the link), **Send to…** (e-mail, a text message, your device's share menu, or
+    copy), or copy the link from its field for any other app. The link is the address (a drop-down of every
+    public address in ☰ Settings, ending in **+ Add a domain**), `/calendar/`, the **stream name** and `.ics`:
+    after a reinstall, or removing a feed by mistake, type the old stream name (or paste a whole old link) ›
+    Save, and existing subscriptions work again. It's checked on Save, so two feeds never share one.
+  - **Google 2-way Sync** (needs **Google Calendar API Sync**, which the admin turns on in ☰ Settings; dimmed
+    until then): a calendar of its own in Google, kept up to date within seconds, with your rule colors and
+    reminders, and **Sync Now** in its header; changes made there come back here.
   - **Google 1-way Sync**: the same, written by CalendarStream only (changes made in Google are put back).
-  - Each Google module uses the account in ☰ Settings, or **a Gmail of its own** (Connect another Gmail), so
-    feeds can go to different people. Its color box sets the calendar's color in Google.
-  - **Google Calendar (feed)**: a feed your Google account subscribes to (Google re-reads it every few
-    hours and shows it in one color).
-  - **Apple, Outlook or another app**: a feed link.
+  - Each Google module has its own Google account: **Connect me** (sign in to Google yourself) or **Invite
+    someone** (a one-time link, good for 7 days, to send them: they open it, continue with Google, and the
+    calendar is made in their account; no CalendarStream login and no password shared; **Withdraw** ends it).
+    Nothing is made in Google until it's connected. Its color box sets the calendar's color in Google.
 
-  A feed's module leads with its buttons, **Add to Google Calendar**, **Add to Apple / Outlook** and
-  **Open subscribe page** (a page to share it), then its **Feed link** with Copy, for any other app
-  or if a button doesn't work. Each is a module with the same 50 px header as a calendar's: name over
-  kind, then on the right "Last read by Google 07:59" (or "Last read …", when an app last fetched
-  it; a Google calendar says "Last synced …"), with its calendars and dates in the tooltip, and its
-  status; and
-  **▸ Expand for Details or to Edit Configuration ◂** opens the rest: the label, **Start | End | All**
-  and the calendars it gets on one line, a feed's links, and Remove / Cancel | Save. A Google module's
-  Remove asks whether to delete its calendar from Google Calendar too, or leave it there. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
-  part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
-  an old link) and existing subscriptions work again.
+  **+** picks the module first, then shows that module in a pop-up to fill in. Every feed module is laid out
+  alike, with the same 50 px header as a calendar's: kind over the label and, after it, your note in the (i)
+  (while expanded, "Note (optional)" in a rounded box that starts with the (i)); on the right "Last read by
+  Google 07:59" (or "Last read …"; a Google calendar says "Last synced …") and its status. **▸ Expand for
+  Details or to Edit Configuration ◂** opens the rest: the feed link, the **Account**, **Include** (its
+  calendars on the left, its dates on the right, From over To, empty = all), Remove / Cancel | Save, and
+  **Information & Instructions**: a table of what each module does (its own column lit) and how to. Save
+  checks everything: a field to fix is outlined in amber, with what's wrong. A Google module's Remove asks
+  whether to delete its calendar from Google Calendar too, or leave it there. Every event keeps its source's
+  colors and rules.
 - **All Rules** (looks like a module: its header shows the number of rules in a box, green, or
   in the pressed look (waiting on you) with "n to check" while a rule conflicts; **Expand for Details** opens it, with **+** in its bottom right corner): every rule,
   highest priority first, with the calendars it applies to in a badge in their colors (stripes for
@@ -295,10 +301,12 @@ logins or setup codes lock an address out for 15 minutes.
 - **Signing in:** the page's own sign-in page (user name and password); a session lasts 30 days, and
   changing the login signs every browser out.
 - **☰ Settings** (a light blue panel): site settings only: **Administrator** (the login, with a
-  show-password eye and a strength bar, like every password box, and **Sign out**), the public address,
-  **Google Calendar API Sync** (with the **admin e-mail** the setup guide uses; laid out like a login, connected or not: Client ID
-  with Copy, Client secret, and one **Connect** button that saves, checks the client and the redirect
-  address with Google, then opens Google's sign-in, stopping with the fix as a click path) and **Updates**, laid out
+  show-password eye and a strength bar, like every password box, and **Sign out**), the public address (and
+  **More addresses**, for other domains this page is reached at: each editable, **+** for another; a feed's
+  link can use any of them), **Google Calendar API Sync** (for the admin, laid out like a login: Client ID
+  with Copy, Client secret, and one **Turn on** button that saves and checks the client and the redirect
+  address with Google, then says **Ready**, stopping with the fix as a click path; no Gmail is signed in
+  here: each Google module in Feeds connects its own) and **Updates**, laid out
   like a module header: your release (stable or beta versions; only those are offered), when it last
   checked and the next check, and a status box with **Check now** or **Update now** (like Sync Now: **Checking…**, or for an
   update **Downloading…** and **Restarting…**, the same words as the top bar's Update now, then
@@ -358,11 +366,11 @@ browser), or the **Guided setup** (each Google page opens in a window beside Cal
 buttons; steps tick themselves off when CalendarStream can confirm them). Once it works, the group
 shows a module header (account, last sync, Connected over Sync Now), the credentials row (ending with
 a trash that deletes them, after asking) and **Remove** (disconnects, after asking; tick "Also delete
-these calendars in Google" beside it), with nothing under Expand. Paste its client ID and secret, then **Connect**: Saving… › Checking… ›
-Checking address… › Google's sign-in. If the client or its redirect address isn't right, it stops there
+these calendars in Google" beside it), with nothing under Expand. Paste its client ID and secret, then **Turn on**: Saving… › Checking… ›
+Checking address… › Ready; then each Google module in Feeds connects its own account. If the client or its redirect address isn't right, it stops there
 and says what to fix (Google Cloud › Clients › CalendarStream › Authorized redirect URIs › + Add URI ›
 Save), with Copy and Open buttons; the guided setup's step 6 ticks itself once Google confirms the
-address. Disconnect and Connect again: the same Google calendar, no duplicates. A new client (after
+address. A module disconnected and connected again: the same Google calendar, no duplicates. A new client (after
 deleting the old one) makes a new calendar, since Google only lets an app see its own; the log names
 the old one to delete by hand. Google
 warns it "hasn't verified this app" because it's your own: press **Continue** (or **Advanced → Go to

@@ -4,7 +4,13 @@ Read when planning a version.
 
 0.2 = more sources and destinations (0.2.8-beta.10: two-way sync with the Google calendars CalendarStream makes)
 
-0.3 Backups
+0.3 Backups, and more two-way calendars
+- Backups.
+- Outlook 1-way Sync and Outlook 2-way Sync (Microsoft Graph): a "Microsoft API" module in ☰ Settings (an app
+  registered once in Microsoft's Azure portal), then Connect me / Invite someone in each module, like Google.
+- Apple iCloud 2-way Sync (CalDAV): each person makes an app-specific password at account.apple.com and enters it
+  on an invite page (kept encrypted); iCloud is checked every few minutes, since it sends no change notices.
+- Claude reminds the Developer of these at the first PLAN of 0.3.
 
 0.4 Additional Users
 - Login via authentik.

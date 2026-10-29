@@ -58,6 +58,10 @@ CALENDAR_DESCRIPTION = ("Kept up to date by CalendarStream. "
 CAL_KEYS = ("calendar_id", "calendar_name", "synced_calendar", "created", "last_sync", "events")
 
 
+
+class _SkipRevoke(Exception):
+    """Internal: disconnect without revoking the grant in Google."""
+
 class GoogleError(Exception):
     """Something went wrong talking to Google; the message is shown on the status page."""
 
@@ -596,9 +600,11 @@ class Google:
 
     # --- Disconnecting ------------------------------------------------------------------------
 
-    async def disconnect(self, delete_calendar: bool) -> list[str]:
+    async def disconnect(self, delete_calendar: bool, revoke: bool = True) -> list[str]:
         """Optionally delete CalendarStream's calendar, revoke the sign-in in Google and forget it.
-        The local sign-in is always forgotten; returns notes on anything Google didn't confirm."""
+        The local sign-in is always forgotten; returns notes on anything Google didn't confirm. revoke=False
+        (0.2.8-beta.17, I5): only forget it here. Google revokes a whole grant, so revoking one sign-in of a
+        Gmail also signs out every other module using the same Gmail."""
         notes = []
         if delete_calendar:
             for sid in self.calendar_sids():
@@ -611,6 +617,8 @@ class Google:
                     notes.append(f"a calendar wasn't deleted ({e})")
         info = self.info()
         try:
+            if not revoke:
+                raise _SkipRevoke
             token = self._refresh_token()
             async with httpx.AsyncClient(timeout=TIMEOUT) as client:
                 r = await client.post(REVOKE_URL, data={"token": token})
@@ -620,6 +628,8 @@ class Google:
         except (GoogleError, httpx.HTTPError):
             notes.append("couldn't reach Google to remove access; remove CalendarStream at "
                          "myaccount.google.com/permissions")
+        except _SkipRevoke:
+            pass
         self.store.delete(self._token_key)
         self._access = None
         # Keep the calendar IDs (unless deleted) so reconnecting the same account reuses those calendars.

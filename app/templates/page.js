@@ -3,7 +3,7 @@
 var PAGE = JSON.parse(document.getElementById('pagedata').textContent);
 // Texts used by the scripts below, in the page's language.
 var T = {
-  copied: {{ _('Copied')|string|tojson }}, gSaving: {{ _('Saving…')|string|tojson }}, gChecking: {{ _('Checking…')|string|tojson }}, gAddress: {{ _('Checking address…')|string|tojson }}, gOpening: {{ _('Opening Google…')|string|tojson }}, stepAuto: {{ _('Ticks itself when CalendarStream can confirm it')|string|tojson }}, stepDone: {{ _('Step done')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }},
+  copied: {{ _('Copied')|string|tojson }}, gSaving: {{ _('Saving…')|string|tojson }}, gChecking: {{ _('Checking…')|string|tojson }}, gAddress: {{ _('Checking address…')|string|tojson }}, gOpening: {{ _('Turning on…')|string|tojson }}, stepAuto: {{ _('Ticks itself when CalendarStream can confirm it')|string|tojson }}, stepDone: {{ _('Step done')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }},
   saved: {{ _('Saved')|string|tojson }}, verifying: {{ _('Verifying…')|string|tojson }},
   validated: {{ _('Validated')|string|tojson }}, verifyFailed: {{ _('Failed')|string|tojson }},
   disconnect: {{ _('Disconnect Google Calendar?')|string|tojson }},
@@ -406,7 +406,7 @@ document.addEventListener('click', function (e) {
       .then(function (j) {
         setTimeout(function () {
           if (!j.ok) { stopped(j); return; }
-          if (step[0] === 'go') { btn.dataset.state = 'done'; setTimeout(function () { location.href = j.url; }, 400); return; }
+          if (step[0] === 'go') { btn.dataset.state = 'done'; setTimeout(function () { location.href = j.url || '/?menu=settings#googlesync'; }, 400); return; }
           next(i + 1);
         }, Math.max(0, 500 - (Date.now() - started)));      // each step stays long enough to read
       }, function () { stopped({}); });
@@ -927,19 +927,24 @@ function actFields(a) {
       + RD.palette.map(function (p) { return '<button type="button" class="pal" role="radio" data-c="' + esc(p[0]) + '" title="' + esc(p[1]) + '" aria-label="' + esc(p[1])
         + '" aria-checked="' + (p[0] === cur) + '" style="--c:' + esc(p[0]) + '"></button>'; }).join('') + '</span>';
   }
-  // Emoji (0.2.8-beta.15): the field, the common ones, and ☺+ for every emoji (10 a line, a search on top)
+  // Emoji: the field, the common ones, then a search field for every emoji (0.2.8-beta.17, was a face+ button):
+  // typing in it (or clicking it) opens the full list under the line, ten a line, filtered as you type
   if (t === 'emoji') return '<input type="text" class="aval emoji" maxlength="16" value="' + esc(a.emoji || '') + '" aria-label="' + esc(RD.t.emoji) + '" placeholder="✈️">'
-      + '<span class="emojis">' + RD.emoji.map(function (x) { return '<button type="button" class="ghost emo">' + x + '</button>'; }).join('')
-      + '<button type="button" class="ghost emomore" aria-expanded="false" title="' + esc(RD.t.moreEmoji) + '" aria-label="' + esc(RD.t.moreEmoji) + '">' + {{ icon("add_reaction", 18)|string|tojson }} + '</button></span>'
-      + '<div class="emopick" hidden><input type="search" class="emosearch" placeholder="' + esc(RD.t.searchEmoji) + '" aria-label="' + esc(RD.t.searchEmoji) + '">'
-      + '<div class="emogrid" role="listbox" aria-label="' + esc(RD.t.emoji) + '"></div></div>';
+      + '<span class="emojis">' + RD.emoji.map(function (x) { return '<button type="button" class="ghost emo">' + x + '</button>'; }).join('') + '</span>'
+      + '<input type="search" class="emofind" placeholder="' + esc(RD.t.searchEmoji) + '" aria-label="' + esc(RD.t.searchEmoji) + '" aria-expanded="false" autocomplete="off">'
+      + '<div class="emopick" hidden><div class="emogrid" role="listbox" aria-label="' + esc(RD.t.emoji) + '"></div></div>';
+  // Create event (0.2.8-beta.17, I6): read as a sentence, in groups that wrap whole, never field by field:
+  // [template or New event…] [Title] [All day] lasting [1:00] · at [Location] · [0:00] [before the start]
   if (t === 'event') {
-    var isNew = !a.template, h = '<select class="atpl">' + opts(RD.templates, a.template) + '<option value=""' + (isNew ? ' selected' : '') + '>' + esc(RD.t.newEvent) + '</option></select>';
-    if (isNew) h += '<input type="text" class="anew title" maxlength="200" value="' + esc(a.title || '') + '" placeholder="' + esc(RD.t.title) + '">'
-      + '<label class="mnote"><input type="checkbox" class="anew allday"' + (a.all_day ? ' checked' : '') + '> ' + esc(RD.t.allDay) + '</label>'
-      + '<input type="text" class="anew minutes dur" value="' + hm(a.minutes || 60) + '" title="' + esc(RD.t.length) + '">'
-      + '<input type="text" class="anew location" maxlength="200" value="' + esc(a.location || '') + '" placeholder="' + esc(RD.t.location) + '">';
-    return h + '<input type="text" class="aoff dur" value="' + hm(a.offset || 0) + '" title="' + esc(RD.t.time) + '"><select class="awhen">' + opts(RD.when, a.when || 'before_start') + '</select>';
+    var isNew = !a.template, h = '<span class="evpart"><select class="atpl" aria-label="' + esc(RD.t.newEvent) + '">' + opts(RD.templates, a.template)
+      + '<option value=""' + (isNew ? ' selected' : '') + '>' + esc(RD.t.newEvent) + '</option></select>';
+    if (isNew) h += '<input type="text" class="anew title" maxlength="200" value="' + esc(a.title || '') + '" placeholder="' + esc(RD.t.title) + '" aria-label="' + esc(RD.t.title) + '"></span>'
+      + '<span class="evpart"><label class="mnote"><input type="checkbox" class="anew allday"' + (a.all_day ? ' checked' : '') + '> ' + esc(RD.t.allDay) + '</label>'
+      + '<span class="mnote">' + esc(RD.t.lasting) + '</span><input type="text" class="anew minutes dur" value="' + hm(a.minutes || 60) + '" title="' + esc(RD.t.length) + '" aria-label="' + esc(RD.t.length) + '"></span>'
+      + '<span class="evpart"><span class="mnote">' + esc(RD.t.at) + '</span><input type="text" class="anew location" maxlength="200" value="' + esc(a.location || '') + '" placeholder="' + esc(RD.t.location) + '" aria-label="' + esc(RD.t.location) + '"></span>';
+    else h += '</span>';
+    return h + '<span class="evpart"><input type="text" class="aoff dur" value="' + hm(a.offset || 0) + '" title="' + esc(RD.t.time) + '" aria-label="' + esc(RD.t.time) + '">'
+      + '<select class="awhen">' + opts(RD.when, a.when || 'before_start') + '</select></span>';
   }
   if (t === 'change') return '<span class="mnote">' + esc(RD.t.changeTo) + '</span><select class="ato"><option value="allday"' + (a.to === 'allday' ? ' selected' : '') + '>' + esc(RD.t.toAllDay)
       + '</option><option value="length"' + (a.to === 'length' ? ' selected' : '') + '>' + esc(RD.t.toLength) + '</option></select>'
@@ -1092,8 +1097,9 @@ actBox.addEventListener('click', function (e) {
   if (e.target.closest('.aadd')) { var a = actRow({ type: 'emoji', emoji: '' }); actBox.appendChild(a); drawActs(); return; }
   if (e.target.closest('.adel')) { row.remove(); drawActs(); return; }
   var emo = e.target.closest('.emo');
-  if (emo) { row.querySelector('.aval.emoji').value = emo.textContent; var pk = row.querySelector('.emopick'); if (pk && !pk.hidden) emoOpen(row, false); }
-  if (e.target.closest('.emomore')) { emoOpen(row, row.querySelector('.emopick').hidden); return; }
+  if (emo) { row.querySelector('.aval.emoji').value = emo.textContent; var pk = row.querySelector('.emopick');
+             if (pk && !pk.hidden) { row.querySelector('.emofind').value = ''; emoOpen(row, false); } }
+  if (e.target.closest('.emofind')) { emoOpen(row, true); return; }
   var pal = e.target.closest('.pal');
   if (pal) { row.querySelector('.aval').value = pal.dataset.c;
              row.querySelectorAll('.pal').forEach(function (b) { b.setAttribute('aria-checked', String(b === pal)); }); }
@@ -1101,11 +1107,11 @@ actBox.addEventListener('click', function (e) {
 // Every emoji (0.2.8-beta.15): loaded once, the first time the picker opens
 var emojiData = null;
 function emoOpen(row, on) {
-  var pk = row.querySelector('.emopick'), btn = row.querySelector('.emomore');
-  pk.hidden = !on; btn.setAttribute('aria-expanded', String(on));
+  var pk = row.querySelector('.emopick'), find = row.querySelector('.emofind');
+  pk.hidden = !on; find.setAttribute('aria-expanded', String(on));
   if (!on) return;
   (emojiData || (emojiData = fetch('/static/emoji.json?v=' + encodeURIComponent(RD.version), { credentials: 'same-origin' }).then(function (r) { return r.json(); })))
-    .then(function (d) { emoDraw(row, d, ''); pk.querySelector('.emosearch').focus(); });
+    .then(function (d) { emoDraw(row, d, find.value); });
 }
 function emoDraw(row, d, q) {
   q = q.trim().toLowerCase();
@@ -1118,9 +1124,15 @@ function emoDraw(row, d, q) {
   grid.innerHTML = html || '<p class="mnote">' + esc(RD.t.noEmoji) + '</p>';
 }
 actBox.addEventListener('input', function (e) {
-  if (!e.target.matches('.emosearch')) return;
+  if (!e.target.matches('.emofind')) return;
   var row = e.target.closest('.act');
-  emojiData.then(function (d) { emoDraw(row, d, e.target.value); });
+  if (row.querySelector('.emopick').hidden) emoOpen(row, true);
+  else emojiData.then(function (d) { emoDraw(row, d, e.target.value); });
+});
+actBox.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape' && e.target.matches('.emofind') && !e.target.closest('.act').querySelector('.emopick').hidden) {
+    e.preventDefault(); e.stopPropagation(); e.target.value = ''; emoOpen(e.target.closest('.act'), false);
+  }
 });
 actBox.addEventListener('change', function (e) {
   var row = e.target.closest('.act');
@@ -1330,7 +1342,7 @@ function sendSwap(f, body) {
   var sels = (f.dataset.swap || '').split('|').filter(Boolean);
   return fetch(f.getAttribute('action'), { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
     .then(function (r) {
-      if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { var er = new Error(j.detail || ('HTTP ' + r.status)); er.status = r.status; throw er; });
+      if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { var er = new Error(j.detail || ('HTTP ' + r.status)); er.status = r.status; er.fields = r.headers.get('X-CS-Fields') || ''; throw er; });
       var json = (r.headers.get('content-type') || '').indexOf('json') >= 0;
       // a JSON answer (the rule dialog's): the page is fetched for the swap
       return (json ? fetch(location.pathname + location.search, { cache: 'no-store', credentials: 'same-origin' }) : Promise.resolve(r))
@@ -1382,8 +1394,11 @@ function pairFor(f) { return formId(f) ? document.querySelector('.pairbtns[data-
 document.addEventListener('submit', function (e) {
   var f = e.target;
   if (e.defaultPrevented || !f.matches || !f.matches('form[data-swap]')) return;
+  var btn = e.submitter;
+  if (btn && btn.name === 'then' && btn.value === 'connect') return;     // Connect me goes on to Google's sign-in
   e.preventDefault();
-  var body = new FormData(f), btn = e.submitter, pair = pairFor(f);
+  var body = new FormData(f), pair = pairFor(f);
+  clearFix(f);
   if (btn && btn.name) body.append(btn.name, btn.value);
   if (btn && btn.classList.contains('checknow')) { checkNow(f, btn, body); return; }
   if (pair) pairState(pair, 'saving');
@@ -1398,6 +1413,7 @@ document.addEventListener('submit', function (e) {
   }, function (err) {
     // amber when what was typed was refused (4xx: waiting on you); red when CalendarStream itself failed
     var inside = !err.status || err.status >= 500;
+    if (err.fields) markFix(f, err.fields);
     if (pair) {
       if (inside) pair.dataset.cause = 'inside'; else delete pair.dataset.cause;
       pairState(pair, 'failed');
@@ -1723,3 +1739,131 @@ document.querySelectorAll('dialog.popup .dlgback').forEach(function (b) {
   });
 })();
 
+// Save checks (0.2.8-beta.17, F8): a refused Save names its fields (X-CS-Fields); they're outlined in amber
+// until changed. "url2" is the third field named url.
+function fieldsOf(f, name) {
+  var m = /^(.*?)(\d+)$/.exec(name), all = Array.prototype.filter.call(f.elements, function (x) { return x.name === (m ? m[1] : name); });
+  return m ? (all[+m[2]] ? [all[+m[2]]] : []) : all;
+}
+function markFix(f, names) {
+  var first = null;
+  names.split(',').filter(Boolean).forEach(function (n) {
+    fieldsOf(f, n).forEach(function (x) { x.classList.add('needsfix'); x.setAttribute('aria-invalid', 'true'); first = first || x; });
+  });
+  if (first) first.focus();
+}
+function clearFix(f) {
+  Array.prototype.forEach.call(f.elements, function (x) { x.classList.remove('needsfix'); x.removeAttribute('aria-invalid'); });
+}
+document.addEventListener('input', function (e) {
+  if (e.target.classList && e.target.classList.contains('needsfix')) { e.target.classList.remove('needsfix'); e.target.removeAttribute('aria-invalid'); }
+});
+
+// Copy a text (not a field's): the Clipboard API, or a hidden box and execCommand on plain-HTTP pages.
+function copyText(text, btn) {
+  var icon = btn.innerHTML;
+  function done(msg) { btn.textContent = msg || T.copied; btn.classList.add('done'); setTimeout(function () { btn.innerHTML = icon; btn.classList.remove('done'); }, 1800); }
+  function fallback() {
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    ta.remove(); done(ok ? T.copied : T.pressCtrlC);
+  }
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { done(); }, fallback);
+  else fallback();
+}
+
+// Feeds (0.2.8-beta.17)
+(function () {
+  // + › step 1 picks the module (F7); step 2 is that module in a pop-up. The account line is the same for both
+  // Google modules; Information & Instructions is each one's own.
+  function showKind(type) {
+    var d2 = document.getElementById('adddest2'), f = document.getElementById('adddest');
+    if (!d2 || !f) return;
+    var group = type === 'feed' ? 'feed' : 'google', info = type === 'google' ? 'google2' : type;
+    f.elements.type.value = type;
+    var k = d2.querySelector('.addkind'); k.textContent = k.dataset[type] || k.textContent;
+    d2.querySelectorAll('.addfor').forEach(function (b) {
+      var on = b.dataset.for === group || b.dataset.for === info;
+      b.hidden = !on;
+      b.querySelectorAll('input, select, button').forEach(function (x) { x.disabled = !on; });
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target : null; if (!t) return;
+    var pick = t.closest('.pickdest');
+    if (pick && !pick.disabled) {
+      document.getElementById('adddestpop').close();
+      showKind(pick.dataset.type);
+      var d2 = document.getElementById('adddest2'); d2.showModal();
+      var n = d2.querySelector('.nameinput'); if (n) n.focus();
+      return;
+    }
+    if (t.closest('.adddestback')) {
+      document.getElementById('adddest2').close();
+      document.getElementById('adddestpop').showModal();
+      return;
+    }
+    // The feed link's copy (F10): address + /calendar/ + stream name + .ics, as now typed
+    var cp = t.closest('.feedcopy');
+    if (cp) {
+      var fl = cp.closest('.feedlink'), st = fl.querySelector('.fstream');
+      if (!st.value.trim()) { st.focus(); return; }
+      copyText(fl.querySelector('.fbase').value + '/calendar/' + st.value.trim() + '.ics', cp);
+      return;
+    }
+    // Send to… (F6): e-mail, a text message, the device's share menu, or copy
+    var sb = t.closest('.sendbtn');
+    if (sb) {
+      var menu = sb.parentNode.querySelector('.sendmenu'), open = menu.hidden;
+      closeSend();
+      if (open) {
+        menu.hidden = false; sb.setAttribute('aria-expanded', 'true');
+        menu.querySelector('.sendshare').hidden = !navigator.share;
+      }
+      return;
+    }
+    var sh = t.closest('.sendshare');
+    if (sh) {
+      var b = sh.closest('.sendto').querySelector('.sendbtn');
+      navigator.share({ title: b.dataset.title, text: b.dataset.text, url: b.dataset.url }).catch(function () {});
+      closeSend(); return;
+    }
+    var sc = t.closest('.sendcopy');
+    if (sc) { copyText(sc.closest('.sendto').querySelector('.sendbtn').dataset.url, sc); setTimeout(closeSend, 1200); return; }
+    if (!t.closest('.sendmenu')) closeSend();
+    // ☰ Settings › More addresses (F11): + adds a row; the trash takes one out (Save keeps it)
+    var add = t.closest('.extraadd');
+    if (add) {
+      var form = add.closest('form'), rows = form.querySelector('.extrarows');
+      rows.appendChild(form.querySelector('.extratpl').content.cloneNode(true));
+      rows.lastElementChild.querySelector('input').focus();
+      return;
+    }
+    var del = t.closest('.extradel');
+    if (del) del.closest('.extrarow').remove();
+  });
+  function closeSend() {
+    document.querySelectorAll('.sendmenu:not([hidden])').forEach(function (m) {
+      m.hidden = true; m.parentNode.querySelector('.sendbtn').setAttribute('aria-expanded', 'false');
+    });
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSend(); });
+  // The address drop-down's last choice, + Add a domain, opens ☰ Settings › Public address
+  document.addEventListener('focusin', function (e) { if (e.target.matches && e.target.matches('.fbase')) e.target.dataset.was = e.target.value; });
+  document.addEventListener('change', function (e) {
+    var s = e.target;
+    if (!s.matches || !s.matches('.fbase') || s.value !== '+add') return;
+    s.value = s.dataset.was || (s.options[0] && s.options[0].value) || '';
+    location.href = '/?menu=settings#public';
+  });
+  // Enter in the add pop-up is Save (not Connect me, the form's first button)
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || !e.target.form || e.target.form.id !== 'adddest' || e.target.tagName !== 'INPUT') return;
+    e.preventDefault(); e.target.form.requestSubmit(e.target.form.querySelector('.psave'));
+  });
+  // Cancel in the add pop-up starts it over: Calendar Feed, nothing typed
+  document.addEventListener('close', function (e) {
+    if (e.target.id === 'adddest2') { var f = document.getElementById('adddest'); f.reset(); clearFix(f); }
+  }, true);
+})();

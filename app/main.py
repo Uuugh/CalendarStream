@@ -20,7 +20,7 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from itertools import zip_longest
 from pathlib import Path
-from urllib.parse import quote, unquote, urlencode, urlparse
+from urllib.parse import parse_qs, quote, unquote, urlencode, urlparse
 from zoneinfo import ZoneInfo, available_timezones
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
@@ -97,6 +97,14 @@ def dest_google(d: dict) -> Google:
 def google_accounts() -> list[str]:
     """The accounts in use: the first, and any a Google module uses."""
     return list(dict.fromkeys([""] + [d.get("account", "") for d in destinations("google")]))
+
+
+def _shared_grant(g: Google) -> bool:
+    """Another account here is signed in with the same Gmail (0.2.8-beta.17, I5). Google keeps one grant per
+    Gmail, so revoking this sign-in would sign the other out too: it's only forgotten here."""
+    email = (g.info().get("email") or "").lower()
+    return bool(email) and any(x is not g and x.connected and (x.info().get("email") or "").lower() == email
+                               for x in [google_for(a) for a in google_accounts()])
 logins = Logins(store, box)
 updates = Updates(store)
 updater = Updater()     # the optional updater container behind "Update now"
@@ -168,7 +176,10 @@ def destinations(kind: str | None = None) -> list[dict]:
                       # 1-way (written by CalendarStream only; changes made in Google are put back), and its color
                       "account": str(d.get("account") or "") if ACCOUNT_RE.match(str(d.get("account") or "")) else "",
                       "oneway": bool(d.get("oneway")) and d["type"] == "google",
-                      "color": str(d.get("color") or "").lower() if COLOR_RE.match(str(d.get("color") or "")) else ""})
+                      "color": str(d.get("color") or "").lower() if COLOR_RE.match(str(d.get("color") or "")) else "",
+                      # 0.2.8-beta.17: its note (in the header's (i)), and a Calendar Feed's address (one of ☰ Settings')
+                      "note": " ".join(str(d.get("note") or "").split())[:300],
+                      "base": str(d.get("base") or "") if d["type"] == "feed" else ""})
     return found
 
 
@@ -186,7 +197,7 @@ def destination(did: str) -> dict | None:
 
 def save_destinations(found: list[dict]):
     store.set("destinations", [{k: d.get(k, "") for k in ("id", "type", "name", "sources", "token", "start", "end", "for",
-                                                          "account", "oneway", "color")} for d in found])
+                                                          "account", "oneway", "color", "note", "base")} for d in found])
 
 
 def new_did() -> str:
@@ -666,10 +677,11 @@ MODULE_ABOUT = {"local": "Only the events you add here. Goes into every feed.",
                 "google": "A Google calendar, read from its secret iCal address.",
                 "apple": "An Apple calendar, read from its public link.",
                 "feed": "A calendar read from its link (.ics).",
-                "gdest": "A Google calendar of its own: changes within seconds, rule colors, reminders.",
-                "gdest1": "A Google calendar of its own, written by CalendarStream only: changes within seconds, rule colors, reminders.",
-                "gfeed": "A feed link your Google account subscribes to: refreshed every few hours, one color.",
-                "ffeed": "A link that Apple Calendar, Outlook and others subscribe to, with a page to share it."}
+                "gdest": "The same as Google 1-way Sync, and changes made in Google come back here.",
+                "gdest1": "CalendarStream writes into a Google calendar within seconds, with rule colors and reminders.",
+                "gfeed": "A link any calendar app subscribes to: Google, Apple, Outlook, or send it to someone.",
+                "ffeed": "A link any calendar app subscribes to: Google, Apple, Outlook, or send it to someone.",
+                "apioff": "Needs Google Calendar API Sync, which your admin turns on in ☰ Settings."}
 
 SOURCE_BASES = ("calendar_name", "calendar_color", "calendar_tags", "rule_subs", "defaults", "note", "sync_interval",
                 "http_cache", "status", "feed_reads")
@@ -1643,7 +1655,8 @@ async def http_error(request: Request, exc: HTTPException):
             lang = lang_for(request)
         except Exception:
             lang = "en"
-        return JSONResponse({"detail": str(i18n.message(lang, str(exc.detail)))}, status_code=exc.status_code)
+        return JSONResponse({"detail": str(i18n.message(lang, str(exc.detail)))}, status_code=exc.status_code,
+                            headers=getattr(exc, "headers", None))      # (X-CS-Fields: the fields to outline)
     wants_page = "text/html" in request.headers.get("accept", "") and not request.url.path.startswith("/api/")
     if exc.status_code in (303, 401) or not wants_page:
         return await default_http_error(request, exc)
@@ -1848,19 +1861,36 @@ def base_url(request: Request) -> str:
     return public_url() or str(request.base_url).rstrip("/")
 
 
-def feed_url(request: Request, token: str) -> str:
-    return f"{base_url(request)}/calendar/{token}.ics"
+def public_addresses() -> list[str]:
+    """Every public address (0.2.8-beta.17, F11): the main one (☰ Settings › Public addresses, first; Google's
+    sign-in and notices use it), then any others a feed's link can use instead."""
+    extra = [x for x in (store.get("public_urls_extra") or []) if isinstance(x, str)]
+    return list(dict.fromkeys([x for x in [public_url(), *extra] if x]))
 
 
-def subscribe_links(request: Request, token: str) -> dict:
-    feed = feed_url(request, token)
+def dest_base(request: Request, d: dict | None = None) -> str:
+    """The address a feed's links use: the one chosen in its Feed link (if it's still one of the public
+    addresses), else the main one."""
+    chosen = (d or {}).get("base") or ""
+    return chosen if chosen in public_addresses() else base_url(request)
+
+
+def feed_url(request: Request, token: str, base: str = "") -> str:
+    return f"{base or base_url(request)}/calendar/{token}.ics"
+
+
+def subscribe_links(request: Request, token: str, base: str = "", name: str = "") -> dict:
+    base = base or base_url(request)
+    feed = feed_url(request, token, base)
     return {
         "feed": feed,
         # Opens Google Calendar's "add this calendar?" prompt. Google expects the feed as webcal://.
         "google": "https://calendar.google.com/calendar/r?cid=" + quote("webcal://" + feed.split("://", 1)[1], safe=""),
-        # webcal:// hands the feed to Apple Calendar / Outlook / the phone's default calendar app.
+        # webcal:// hands the feed to Apple Calendar (and the phone's own calendar app).
         "webcal": "webcal://" + feed.split("://", 1)[1],
-        "page": f"{base_url(request)}/subscribe/{token}",
+        # Outlook on the web's "Subscribe from web" (0.2.8-beta.17)
+        "outlook": "https://outlook.live.com/calendar/0/addfromweb?" + urlencode({"url": feed, "name": name or "CalendarStream"}),
+        "page": f"{base}/subscribe/{token}",
         "is_public": feed.startswith("https://") and not any(
             h in feed for h in ("localhost", "127.0.0.1", "testserver")),
     }
@@ -2089,13 +2119,15 @@ def dest_view(request: Request, d: dict, lang: str, sections: dict) -> dict:
     """One destination's box on the status page ("open": its Configure part, as last left)."""
     view = {**d, "names": [calendar_name(x) for x in d["sources"]], "open": sections.get(f"dest:{d['id']}", False)}
     if d["type"] == "feed":
-        view.update(feed=feed_url(request, d["token"]), links=subscribe_links(request, d["token"]),
-                    reads=feed_reads(lang, d["id"]))
+        base = dest_base(request, d)
+        view.update(feed=feed_url(request, d["token"], base), links=subscribe_links(request, d["token"], base, d["name"]),
+                    reads=feed_reads(lang, d["id"]), base=base)
     else:
         g = dest_google(d)
         cal = g.cal_info(d["id"])
         view.update(cal=cal, last_sync=_local_time(cal.get("last_sync"), lang), connected=g.connected,
-                    email=g.info().get("email", ""), error=g.info().get("last_error", ""), own_account=bool(d["account"]))
+                    email=g.info().get("email", ""), error=g.info().get("last_error", ""), own_account=bool(d["account"]),
+                    invite=invite_view(request, d["id"], lang))
     return view
 
 
@@ -2152,7 +2184,8 @@ def rule_js(lang: str) -> dict:
                   "open": tr("Open a bracket here"), "close": tr("Close a bracket here"),
                   "noEnd": tr("0 = no end time"), "editSamples": tr("Change the titles to test"),
                   "matchCount": tr("{n} of {total} match"), "andAdd": tr("and: another line"), "orAdd": tr("or: another line"),
-                  "moreEmoji": tr("Every emoji"), "searchEmoji": tr("Search emoji"), "noEmoji": tr("No emoji with that name")},
+                  "searchEmoji": tr("Search for more emojis"), "noEmoji": tr("No emoji with that name"),
+                  "lasting": tr("lasting"), "at": tr("at")},
             "version": __version__}
 
 
@@ -2229,7 +2262,9 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
         "google": google_view(request, lang), "open_menu": request.query_params.get("menu") == "settings",
         # The first destination offers this page's address as the public one, if it's https:// (an
         # http://<IP>:8080 address would break Google sign-in, as the old installer default did).
-        "public": {"url": public_url(), "here": (lambda u: u if u.startswith("https://") else "")(str(request.base_url).rstrip("/"))},
+        "public": {"url": public_url(), "here": (lambda u: u if u.startswith("https://") else "")(str(request.base_url).rstrip("/")),
+                   "extra": public_addresses()[1:], "all": public_addresses() or [base_url(request)]},
+        "api_on": api_on(),
         "page_user": logins.page_user, "admin_email": admin_email(), "trash": TRASH_ICON, "copy_icon": COPY_ICON,
         # History, Undo & Logs, folded: Healthy unless a problem in the log is still there
         "healthy": not any(st(sid).status in ("auth_failed", "blocked", "error", "internal", "paused") for sid in source_ids())
@@ -2640,23 +2675,58 @@ async def set_source_url(request: Request, csrf: str = Form(""), sid: str = Form
     return RedirectResponse(f"/#src-{sid}", status_code=303)
 
 
+class FieldError(HTTPException):
+    """A refused Save that names the fields to fix (0.2.8-beta.17, F8): the page outlines them in amber."""
+    def __init__(self, message: str, *fields: str):
+        super().__init__(400, message, headers={"X-CS-Fields": ",".join(fields)})
+
+
+def api_on() -> bool:
+    """Google Calendar API Sync is set up (☰ Settings): the Google feed modules can be added and connected."""
+    return google.configured and google.client_check().get("ok") is not False
+
+
+def _stream_value(stream: str, did: str = "") -> str:
+    """A stream name typed (or a whole old feed link pasted), checked: the format, and that no other feed uses it."""
+    value = stream.strip()
+    m = re.search(r"/(?:calendar|subscribe)/([A-Za-z0-9_-]+?)(?:\.ics)?/?$", value)
+    if m:
+        value = m.group(1)
+    if not STREAM_RE.match(value):
+        raise FieldError("A stream name is 16 to 128 letters, digits, - or _ (or paste a whole old feed link).", "stream")
+    if any(x["token"] == value for x in destinations("feed") if x["id"] != did):
+        raise FieldError("Another feed already uses that stream name.", "stream")
+    return value
+
+
+def _dest_dates(d: dict, start: str | None, end: str | None):
+    if start is not None or end is not None:
+        d["start"], d["end"] = _iso_day(start), _iso_day(end)
+        if (start or "").strip() and not d["start"]:
+            raise FieldError("Check the date.", "start")
+        if (end or "").strip() and not d["end"]:
+            raise FieldError("Check the date.", "end")
+        if d["start"] and d["end"] and d["end"] < d["start"]:
+            raise FieldError("The end is before the start.", "end")
+
+
 @app.post("/destinations/add", dependencies=[Depends(gui_auth)])
-async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="type"), name: str = Form(""),
-                          public: str = Form("")):
-    """Calendar Destinations → +: a Google calendar, or a calendar feed, getting every source's events
-    to start with (the list can be changed in its box). The first one asks for the public address
-    (it can be changed later in ☰ Settings)."""
+async def add_destination(request: Request, csrf: str = Form(""), type_: str = Form("", alias="type"), name: str = Form(""),
+                          public: str = Form(""), note: str = Form(""), stream: str = Form(""), base: str = Form(""),
+                          then: str = Form("")):
+    """Feeds › + (0.2.8-beta.17): step 1 picks the module, step 2 is the module itself in a pop-up: its label
+    and note, a Calendar Feed's link (a stream name typed brings back an old link), the calendars and dates
+    (every calendar unless chosen), then Save. A Google module gets an account of its own: nothing is made
+    in Google until it's connected (`then`: connect = Connect me, invite = Invite someone, right after)."""
     check_csrf(csrf)
     ch = Change()
-    # 0.2.8-beta.15: google (Google 2-way Sync), google1 (Google 1-way Sync), gfeed (Google Calendar (feed): a
-    # link Google subscribes to), feed (any app). Without Google Calendar API Sync, a Google one is a feed.
+    form = await request.form()
     oneway = type_ == "google1"
-    made_for = "google" if type_ == "gfeed" else ""
-    type_ = {"google1": "google", "gfeed": "feed"}.get(type_, type_)
+    type_ = {"google1": "google", "gfeed": "feed"}.get(type_, type_)     # (gfeed: from before beta.17, now a Calendar Feed)
     if type_ not in DESTINATION_TYPES:
         raise HTTPException(400, "Unknown kind of destination.")
-    if type_ == "google" and not google.configured:
-        type_, made_for, oneway = "feed", "google", False
+    if type_ == "google" and not api_on():
+        raise HTTPException(400, "Needs Google Calendar API Sync, which your admin turns on in ☰ Settings.")
     if public.strip():
         try:
             store.set("public_url", normalise_public_url(public))
@@ -2668,13 +2738,27 @@ async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="typ
         raise HTTPException(400, "Up to 20 destinations can be added.")
     name = " ".join(name.split())[:100] or first_named_calendar()
     did = new_did()
-    found.append({"id": did, "type": type_, "name": name, "sources": source_ids(),
-                  "token": secrets.token_urlsafe(24) if type_ == "feed" else "", "for": made_for, "oneway": oneway})
+    d = {"id": did, "type": type_, "name": name, "oneway": oneway, "note": " ".join(note.split())[:300],
+         "sources": [x for x in source_ids() if x in form.getlist("sources")] if "sources" in form else source_ids(),
+         "token": (_stream_value(stream) if stream.strip() else secrets.token_urlsafe(24)) if type_ == "feed" else "",
+         "base": base if base in public_addresses() else "",
+         # (I4) a Google module's own account, signed in with Connect me or an invite; never the one from before beta.17
+         "account": "a" + secrets.token_hex(3) if type_ == "google" else ""}
+    start, end = await sent_fields(request, "start", "end")
+    _dest_dates(d, start, end)
+    found.append(d)
     save_destinations(found)
-    kind = "Google Calendar (feed)" if made_for else ("Google 1-way Sync" if oneway else DESTINATION_TYPES[type_])
+    kind = ("Google 1-way Sync" if oneway else "Google 2-way Sync") if type_ == "google" else "Calendar Feed"
     ch.done("Feed", f"Destination added: {kind} \"{name}\"")
-    if type_ == "google":
-        request_google_sync(full=True)
+    if type_ == "google" and then == "connect":
+        view = google_view(request)
+        if view["redirect_ok"]:
+            return RedirectResponse(google_for(d["account"]).sign_in_url(view["redirect_uri"]), status_code=303)
+    if type_ == "google" and then == "invite":
+        make_invite(d)
+        saved = store.get("ui_sections") or {}
+        saved[f"dest:{did}"] = True             # open, so the invite link is there to send
+        store.set("ui_sections", saved)
     return RedirectResponse(f"/#dest-{did}", status_code=303)
 
 
@@ -2696,17 +2780,20 @@ async def sent_fields(request: Request, *names: str) -> list[str | None]:
 async def update_destination(request: Request, csrf: str = Form(""), did: str = Form(""), name: str = Form(""),
                              sources_: list[str] = Form([], alias="sources"), start: str | None = Form(None),
                              end: str | None = Form(None), color: str = Form("")):
-    """A destination's name, the sources it gets and its dates (Start / End; empty = no limit)."""
+    """A destination's name and note, the sources it gets and its dates (empty = no limit); a Calendar Feed's
+    address and stream name too (0.2.8-beta.17). A refusal names the fields to fix."""
     check_csrf(csrf)
     ch = Change()
-    start, end = await sent_fields(request, "start", "end")
+    start, end, note, stream, base = await sent_fields(request, "start", "end", "note", "stream", "base")
     d = _did(did)
-    if start is not None or end is not None:
-        d["start"], d["end"] = _iso_day(start), _iso_day(end)
-        if (start or "").strip() and not d["start"] or (end or "").strip() and not d["end"]:
-            raise HTTPException(400, "Check the dates.")
-        if d["start"] and d["end"] and d["end"] < d["start"]:
-            raise HTTPException(400, "The end is before the start.")
+    _dest_dates(d, start, end)
+    if note is not None:
+        d["note"] = " ".join(note.split())[:300]
+    if d["type"] == "feed" and stream is not None and stream.strip() and stream.strip() != d["token"]:
+        d["token"] = _stream_value(stream, did)
+        state.record("info", f"Stream name of \"{d['name']}\" changed; links with the old name no longer work")
+    if d["type"] == "feed" and base is not None:
+        d["base"] = base if base in public_addresses() else ""
     d["name"] = " ".join(name.split())[:100] or d["name"]
     d["sources"] = [x for x in source_ids() if x in sources_]
     if color:
@@ -2740,6 +2827,11 @@ async def remove_destination(csrf: str = Form(""), did: str = Form(""), delete: 
                 if g.connected:
                     await g.stop_watch([did])
                 g.forget_calendar(did)
+            # its own account goes with it, unless another module uses it; a Gmail another account also signed in
+            # with keeps its grant in Google (I5: revoking it would sign those out too)
+            if d["account"] and not any(x["account"] == d["account"] for x in destinations("google") if x["id"] != did) and g.connected:
+                await g.disconnect(delete_calendar=False, revoke=not _shared_grant(g))
+            forget_invites(did)
     else:
         store.delete(f"feed_reads:{did}")
     save_destinations([x for x in destinations() if x["id"] != did])
@@ -3918,6 +4010,30 @@ async def set_public_url(csrf: str = Form(""), url: str = Form(""), action: str 
     return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
 
 
+@app.post("/settings/public-extra", dependencies=[Depends(gui_auth)])
+async def set_public_extra(request: Request, csrf: str = Form("")):
+    """☰ Settings › Public addresses (0.2.8-beta.17, F11): more addresses people reach this page at, under the
+    main one, each editable, + for another. The main one is for Google's sign-in and notices; a Calendar
+    Feed's link can use any of them. An address left empty is taken out."""
+    check_csrf(csrf)
+    form = await request.form()
+    found, bad = [], []
+    for i, url in enumerate(form.getlist("url")):
+        url = str(url).strip()
+        if not url:
+            continue
+        try:
+            found.append(normalise_public_url(url))
+        except ValueError:
+            bad.append(f"url{i}")
+    if bad:
+        raise FieldError("Enter the address people use to reach this page, e.g. https://cal.example.com", *bad)
+    found = [x for x in dict.fromkeys(found) if x != public_url()]
+    store.set("public_urls_extra", found)
+    state.record("info", "More public addresses: " + (", ".join(found) or "none"), kind="Settings")
+    return RedirectResponse(GOOGLE_SETTINGS.replace("#googlesync", "#public"), status_code=303)
+
+
 # --- Admin e-mail (Settings) -------------------------------------------------------
 
 EMAIL_RE = re.compile(r"^[^@\s<>\"']{1,64}@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$")
@@ -4017,21 +4133,23 @@ async def google_step(request: Request, csrf: str = Form(""), step: str = Form("
     if step == "client":
         check = await google.check_client(uri)
         if check.get("ok") is False:
-            return stop(f"{check['message']}: Google Cloud › Clients › CalendarStream › copy both again › Connect.", open=GOOGLE_CLIENTS_PAGE)
+            return stop(f"{check['message']}: Google Cloud › Clients › CalendarStream › copy both again › Turn on.", open=GOOGLE_CLIENTS_PAGE)
         if check.get("ok") is None:
             return stop(check.get("message") or "Couldn't check the client with Google.", retry=True)
         return JSONResponse({"ok": True, "step": step})
     if step == "address":
         if not view["redirect_ok"]:
-            return stop("☰ Settings › Public address: this page's https:// address › Save › Connect.")
+            return stop("☰ Settings › Public address: this page's https:// address › Save › Turn on.")
         ok = await google.check_redirect(uri)
         if ok is False:
             state.record("warn", f"Google doesn't list {uri} under the client's Authorized redirect URIs")
             return stop(f"Address not on your client: Google Cloud › Clients › CalendarStream › Authorized redirect URIs › "
-                        f"+ Add URI › {uri} › Save › wait 5 min › Connect.", copy=uri, open=GOOGLE_CLIENTS_PAGE)
+                        f"+ Add URI › {uri} › Save › wait 5 min › Turn on.", copy=uri, open=GOOGLE_CLIENTS_PAGE)
         return JSONResponse({"ok": True, "step": step, "confirmed": ok is True})
     if step == "go":
-        return JSONResponse({"ok": True, "step": step, "url": google.sign_in_url(uri)})
+        # 0.2.8-beta.17 (F13): ☰ Settings sets up the API only; each Google module connects its own account
+        state.record("info", "Google Calendar API Sync is ready: the Google modules can be added in Feeds", kind="Google")
+        return JSONResponse({"ok": True, "step": step, "url": ""})
     raise HTTPException(400, "Unknown step.")
 
 
@@ -4047,9 +4165,20 @@ async def google_connect(request: Request, csrf: str = Form("")):
     return RedirectResponse(google.sign_in_url(view["redirect_uri"]), status_code=303)
 
 
-@app.get("/google/callback", dependencies=[Depends(gui_auth)])
-async def google_callback(state_: str = Query("", alias="state"), code: str = "", error: str = ""):
+def callback_auth(request: Request, creds: HTTPBasicCredentials | None = Depends(basic)):
+    """Google's sign-in comes back here: the status page's login, except for an invited person's sign-in
+    (0.2.8-beta.17), whose single-use state from the invite page is the permission."""
+    if request.query_params.get("state", "") in _invite_states:
+        return
+    gui_auth(request, creds)
+
+
+@app.get("/google/callback", dependencies=[Depends(callback_auth)])
+async def google_callback(request: Request, state_: str = Query("", alias="state"), code: str = "", error: str = ""):
     """Google sends the browser back here after the consent page, with a one-time code."""
+    invited = _invite_states.pop(state_, None)
+    if invited is not None:
+        return await _invite_finish(request, invited, state_, code, error)
     try:
         if error or not code:
             raise GoogleError("Google sign-in was cancelled or refused. If Google said the app is only for "
@@ -4087,9 +4216,13 @@ async def google_account(request: Request, csrf: str = Form(""), did: str = Form
         raise HTTPException(400, "Only a Google module has a Google account.")
     view = google_view(request)
     found = destinations()
-    if action == "first" or (action == "disconnect" and not d["account"]):
-        if action == "disconnect":
-            raise HTTPException(400, "That's the first account: disconnect it in ☰ Settings › Google Calendar API Sync.")
+    if action == "disconnect" and not d["account"]:
+        # (0.2.8-beta.17) a module from before, on the first account: it gets an account of its own, not
+        # connected; the first account (and every other module on it) stays signed in
+        save_destinations([{**x, "account": "a" + secrets.token_hex(3)} if x["id"] == did else x for x in found])
+        state.record("info", f"Google, {d['name']}: disconnected (the account stays signed in for the others)", kind="Google")
+        return RedirectResponse(f"/#dest-{did}", status_code=303)
+    if action == "first":
         save_destinations([{**x, "account": ""} if x["id"] == did else x for x in found])
         state.record("info", f"Google, {d['name']}: back on the first Google account", kind="Google")
         request_google_sync(full=True)
@@ -4098,13 +4231,12 @@ async def google_account(request: Request, csrf: str = Form(""), did: str = Form
         g = dest_google(d)
         async with google_job.lock:
             await g.stop_watch([did])
-            notes = await g.disconnect(delete_calendar=False)
-        save_destinations([{**x, "account": ""} if x["account"] == d["account"] else x for x in found])
+            notes = await g.disconnect(delete_calendar=False, revoke=not _shared_grant(g))
         state.record("warn" if notes else "info", f"Google, {d['name']}: {g.info().get('email') or 'its account'} disconnected"
                      + ("; " + "; ".join(notes) if notes else ""), kind="Google")
         return RedirectResponse(f"/#dest-{did}", status_code=303)
     if not view["configured"] or not view["redirect_ok"]:
-        raise HTTPException(400, "First: ☰ Settings › Google Calendar API Sync › Connect.")
+        raise HTTPException(400, "Needs Google Calendar API Sync, which your admin turns on in ☰ Settings.")
     account = d["account"] or "a" + secrets.token_hex(3)
     save_destinations([{**x, "account": account} if x["id"] == did else x for x in found])
     return RedirectResponse(google_for(account).sign_in_url(view["redirect_uri"]), status_code=303)
@@ -4271,3 +4403,125 @@ def health():
         log.warning("Health check: database unavailable: %s", e)
         raise HTTPException(503, "database unavailable")
     return {"ok": True}
+
+
+
+# --- Invite someone (0.2.8-beta.17, F1) -------------------------------------------------------
+# A Google module can go to someone else's Google Calendar without their password: an invite is a one-time
+# link (7 days) to a page where they sign in to Google themselves; the module's calendar is then made in
+# their account. The page needs no login: the unguessable, single-use link is the permission, and the only
+# thing it can do is sign that one module's account in. kv "google_invites": token -> {did, account, expires}.
+
+INVITE_DAYS = 7
+_invite_states: dict[str, str] = {}      # Google sign-in state -> invite token, while the invited person signs in
+
+
+def _invites() -> dict:
+    now_ = now().timestamp()
+    found = {t: v for t, v in (store.get("google_invites") or {}).items() if v.get("expires", 0) > now_}
+    return found
+
+
+def make_invite(d: dict) -> str:
+    found = _invites()
+    found = {t: v for t, v in found.items() if v["did"] != d["id"]}       # one live invite per module
+    token = secrets.token_urlsafe(24)
+    found[token] = {"did": d["id"], "account": d["account"], "expires": now().timestamp() + INVITE_DAYS * 86400}
+    store.set("google_invites", found)
+    state.record("info", f"Google, {d['name']}: invite made (works once, for {INVITE_DAYS} days)", kind="Google")
+    return token
+
+
+def forget_invites(did: str):
+    store.set("google_invites", {t: v for t, v in _invites().items() if v["did"] != did})
+
+
+def invite_view(request: Request, did: str, lang: str) -> dict:
+    for token, v in _invites().items():
+        if v["did"] == did:
+            until = datetime.fromtimestamp(v["expires"], tz=TZ)
+            return {"url": f"{base_url(request)}/invite/{token}", "until": dates_for(lang).short(until.date())}
+    return {}
+
+
+def _invite(token: str) -> dict:
+    v = _invites().get(token) if re.fullmatch(r"[A-Za-z0-9_-]{20,64}", token or "") else None
+    d = destination(v["did"]) if v else None
+    if not v or not d or d["type"] != "google" or d["account"] != v["account"]:
+        raise HTTPException(404, "This invite has been used, has expired, or was withdrawn. Ask for a new one.")
+    return {**v, "dest": d}
+
+
+def _invite_form_token(token: str) -> str:
+    return hmac.new(_session_key(), b"invite\0" + token.encode(), hashlib.sha256).hexdigest()[:32]
+
+
+@app.post("/google/invite", dependencies=[Depends(gui_auth)])
+async def google_invite(request: Request, csrf: str = Form(""), did: str = Form(""), action: str = Form("make")):
+    """Invite someone (a Google module): make its one-time link, or withdraw it (`action=withdraw`)."""
+    check_csrf(csrf)
+    d = _did(did)
+    if d["type"] != "google":
+        raise HTTPException(400, "Only a Google module can invite someone.")
+    if not api_on():
+        raise HTTPException(400, "Needs Google Calendar API Sync, which your admin turns on in ☰ Settings.")
+    if action == "withdraw":
+        forget_invites(did)
+        state.record("info", f"Google, {d['name']}: invite withdrawn", kind="Google")
+    else:
+        if not d["account"]:       # a module from before beta.17 on the shared account: it gets its own now
+            d["account"] = "a" + secrets.token_hex(3)
+            save_destinations([d if x["id"] == did else x for x in destinations()])
+        make_invite(d)
+    return RedirectResponse(f"/#dest-{did}", status_code=303)
+
+
+@app.get("/invite/{token}")
+def invite_page(request: Request, token: str):
+    """The page an invited person opens: what they're invited to, and Continue with Google."""
+    try:
+        inv = _invite(token)
+    except HTTPException as e:
+        return page(request, "invite.html", {"error": e.detail, "token": "", "name": "", "form": ""}, status_code=404)
+    return page(request, "invite.html", {"error": "", "token": token, "name": inv["dest"]["name"],
+                                         "form": _invite_form_token(token), "done": False})
+
+
+@app.post("/invite/{token}")
+def invite_go(request: Request, token: str, form: str = Form("")):
+    """Continue with Google: Google's sign-in page, for this module's account only."""
+    inv = _invite(token)
+    if not secrets.compare_digest(form.encode(), _invite_form_token(token).encode()):
+        raise HTTPException(400, "This page has expired. Open the invite link again.")
+    view = google_view(request)
+    if not api_on() or not view["redirect_ok"]:
+        raise HTTPException(400, "CalendarStream can't sign anyone in to Google right now. Let the person who invited you know.")
+    g = google_for(inv["account"])
+    url = g.sign_in_url(view["redirect_uri"])
+    state_ = parse_qs(urlparse(url).query).get("state", [""])[0]
+    while len(_invite_states) >= 50:          # (kept small: each Continue adds one until Google sends them back)
+        _invite_states.pop(next(iter(_invite_states)))
+    _invite_states[state_] = token
+    return RedirectResponse(url, status_code=303)
+
+
+async def _invite_finish(request: Request, token: str, state_: str, code: str, error: str):
+    """An invited person is back from Google: their account is signed in for the module, its calendar is
+    made in their Google Calendar, and the invite is used up."""
+    try:
+        inv = _invite(token)
+    except HTTPException as e:
+        return page(request, "invite.html", {"error": e.detail, "token": "", "name": "", "form": ""}, status_code=404)
+    d, g = inv["dest"], google_for(inv["account"])
+    try:
+        if error or not code:
+            raise GoogleError("Google sign-in was cancelled. Open the invite link again to try once more.")
+        async with google_job.lock:
+            info = await g.finish_sign_in(state_, code)
+            await g.ensure_calendar(d["id"], d["name"])
+        forget_invites(d["id"])
+        state.record("info", f"Google, {d['name']}: {info.get('email') or 'the invited account'} connected through an invite", kind="Google")
+        request_google_sync(full=True)
+    except GoogleError as e:
+        return page(request, "invite.html", {"error": str(e), "token": token, "name": d["name"], "form": _invite_form_token(token)}, status_code=400)
+    return page(request, "invite.html", {"error": "", "token": "", "name": d["name"], "form": "", "done": True})

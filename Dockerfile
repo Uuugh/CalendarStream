@@ -8,12 +8,14 @@ LABEL org.opencontainers.image.source="https://github.com/Uuugh/CalendarStream" 
       org.opencontainers.image.description="Republishes a United CCS+ Calendar Sync schedule as a Google Calendar feed"
 
 # curl does the downloads from CCS+ (United's Akamai protection answers curl normally)
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
+# Debian's security fixes are applied at every build (I2, 0.2.8-beta.17), not only when the base image is renewed
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends curl ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY requirements.txt .
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt
+# pip itself is upgraded first: the base image's pip had known vulnerabilities (trivy, 0.2.8-beta.16)
+RUN --mount=type=cache,target=/root/.cache/pip pip install --upgrade "pip>=26.1.2" && pip install -r requirements.txt
 
 COPY VERSION ./VERSION
 COPY app ./app

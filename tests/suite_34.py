@@ -41,7 +41,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                                    return [getComputedStyle(t).backgroundColor, getComputedStyle(a).backgroundColor]; }""")
         ok(bg[0] == bg[1], f"I1: timed and all-day events in one shade ({bg})")
         # F1.1: (?) opens on click and closes with Escape
-        dot = pg.locator("#destinations .cardhead .helpdot")
+        dot = pg.locator("#destinations .cardhead h2 .helpdot")
         dot.click(); pg.wait_for_timeout(100)
         ok(pg.is_visible("#destinations .cardhead .helptip"), "F1.1: (?) opens on click")
         pg.mouse.move(5, 5); pg.keyboard.press("Escape"); pg.wait_for_timeout(100)

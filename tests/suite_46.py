@@ -43,7 +43,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(re.search(r'<div class="pair inline updrow">\s*<label class="rowlabel" for="updfreq">Check for updates</label>\s*<select id="updfreq"', ud) is not None and "autoupd" in ud,
        "F2.1: Check for updates, its menu and Auto-update on one line")
     gs = p[p.index('id="googlesync"'):]; gs = gs[:gs.index('id="updates"')]
-    ok('form="fgremove" class="ghost credtrash"' in gs and 'id="fgremove"' in gs, "F2.3: the credentials before connecting end with a trash too")
+    ok(('form="fgremove" class="ghost credtrash"' in gs and 'id="fgremove"' in gs) or ('form="gremove" class="ghost credtrash"' in gs and 'id="gremove"' in gs),
+       "F2.3: the credentials before connecting (beta.17: or Ready) end with a trash too")
     r = c.post("/google/client", data={"csrf": csrf, "action": "remove"}, follow_redirects=False)
     ok(r.status_code == 303 and not main.google.configured, "…which deletes the client ID and secret")
     # F4: search

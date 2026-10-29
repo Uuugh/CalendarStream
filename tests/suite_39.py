@@ -27,11 +27,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     post = lambda path, **d: c.post(path, data={"csrf": csrf, **d})
     # + Google Calendar before Google Calendar sync is set up: a feed for Google
     main.store.set("public_url", "https://cal.example.com")
-    post("/destinations/add", type="google", name="Flying")
-    d = main.destinations()[-1]
-    ok(d["type"] == "feed" and d["for"] == "google", "+ Google Calendar without Google Calendar sync: a feed for Google")
+    # (0.2.8-beta.17, F13) a Google module without Google Calendar API Sync: dimmed in the picker, and refused
+    r = post("/destinations/add", type="google", name="Flying")
+    ok(r.status_code == 400 and not any(x["name"] == "Flying" for x in main.destinations()), "+ a Google module without Google Calendar API Sync: refused")
     p0 = c.get("/").text
-    ok("☰ Settings › <b>Google Calendar API Sync</b>" in p0, "…which points to Google Calendar sync in Settings")
+    ok("Needs Google Calendar API Sync, which your admin turns on in ☰ Settings." in p0, "…which points to Google Calendar API Sync in Settings")
     wid = seed.demo(c, csrf, main)
     p = c.get("/").text
     # caching: the stylesheet and script are files
@@ -61,9 +61,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # Google Calendar sync in Settings
     ok('id="dest-google"' not in p and 'id="googlesync"' in p and p.index('id="googlesync"') < p.index("</header>") and 'action="/google/client"' in p.split('id="googlesync"')[1][:20000],
        "Google Calendar sync is in Settings, not in Feeds")
-    ok("Google Calendar (feed)" in p and "Add to Apple / Outlook" in p and "set up <b>Google Calendar API Sync</b>" not in p, "the Google feed's module; no pointer once Google Calendar sync is set up")
+    ok("Add to Google Calendar" in p and "Add to Apple Calendar" in p and "Add to Outlook" in p, "a Calendar Feed's module: Add to Google, Apple, Outlook (beta.17)")
+    d = main.destinations("feed")[-1]
     sub = p[p.index(f'id="dest-{d["id"]}"'):]; sub = sub[:sub.index('class="srcfoot"')]
-    ok(sub.index("Add to Google Calendar") < sub.index("Add to Apple / Outlook") < sub.index("Feed link"), "…Add to Google Calendar first, the feed link last")
+    ok(sub.index("Feed link") < sub.index("Add to Google Calendar") < sub.index("Add to Apple Calendar") < sub.index("Add to Outlook"),
+       "…the feed link, then the buttons beside it: Google, Apple, Outlook (beta.17)")
     main.store.set("google_client", {"id": "123-abc.apps.googleusercontent.com", "secret": main.google._seal("s"),
                                      "check": {"ok": True, "message": "", "at": "2026-10-20T20:00:00+00:00", "redirect_ok": True}})
     main.google._client = None

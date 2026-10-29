@@ -9,7 +9,57 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.16**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.17**
+
+## 0.2.8-beta.17 — 2026-10-29
+
+### Added
+- **F1** **Invite someone** (Google 1-way and 2-way Sync): a one-time link (7 days) to send to the person whose
+  Google Calendar should get the calendar. They open it (no CalendarStream login needed), continue with Google,
+  and the calendar is made in their account; you never need their password. Withdraw ends it.
+- **F5** A Calendar Feed's **stream name** is a field in its link: type an old one (or paste a whole old link) ›
+  Save to bring old subscriptions back. It's checked on Save, so two feeds never share one.
+- **F6** **Add to Google Calendar**, **Add to Apple Calendar**, **Add to Outlook** and **Send to…** (e-mail, a text
+  message, your device's share menu, or copy), all the same size, in their apps' colors.
+- **F8** Every module is checked on Save: the fields to fix are outlined in amber, with what's wrong.
+- **F10** The feed link's address is a drop-down of every public address, ending in **+ Add a domain**; the copy
+  icon sits inside the field, after .ics.
+- **F11** ☰ Settings › Public address › **More addresses**: other addresses this page is reached at, always
+  editable, **+** for another.
+
+### Changed
+- **F2** A new Google module has no account filled in: **Connect me** or **Invite someone**.
+- **F3** The account line is above the dates.
+- **F4** Every feed module is laid out alike: the link, the account, then **Include** (its calendars on the left;
+  its dates on the right, From over To, empty = all), Cancel | Save, and **Information & Instructions** below it:
+  a table of what each module does (this one's column lit) and how to.
+- **F7** **+ Add a feed** in two steps: pick the module (Calendar Feed, Google 1-way Sync, Google 2-way Sync), then
+  fill in the module itself, in a pop-up.
+- **F9** **Google Calendar (feed)** is now part of **Calendar Feed** (Add to Google Calendar); Google 1-way Sync stays
+  separate.
+- **F12** A module's **note** is in its header, after the label: "Note (optional)", in a rounded box that starts
+  with its (i), so the (i) doesn't move.
+- **F13** ☰ Settings has only **Google Calendar API Sync**, for the admin (**Turn on**, then Ready): no Gmail and no
+  administrator's e-mail there. Each Google module connects its own account. While the API is off, the Google
+  modules are dimmed in the picker and the table: "Needs Google Calendar API Sync, which your admin turns on in
+  ☰ Settings."
+- **F14** In a rule, each action's **+** sits outside the rules box, in the same place; the ✕ column stays aligned.
+- **F15** Emoji: a rounded **Search for more emojis** field replaces the face+ button.
+- **I1** The image has pip 26.1.2 or newer.
+- **I2** The image's Debian packages are upgraded when it's built.
+- **I3** The release workflow's actions run on Node 24 (checkout v6, the Docker actions v4 / v7).
+
+### Fixed
+- **I4** A second Google module made its calendar in the first module's Google account before it was connected:
+  a new module makes nothing until its own account is connected.
+- **I5** Removing a Google module could disconnect the others signed in with the same Gmail (Google revokes a
+  whole Gmail's access at once): it's now only forgotten here when another module still uses that Gmail.
+- **I6** A rule's **Create event** line wrapped into a jumble: it sits in tidy groups (the template and title ·
+  All day, lasting … · at the place · when).
+
+### Build rules
+- **R1** Roadmap 0.3 adds **Outlook 1-way / 2-way Sync** (Microsoft Graph) and **Apple iCloud 2-way Sync** (CalDAV).
+- **R2** MENU opens the CalendarStream Menu page, which Claude keeps up to date.
 
 ## 0.2.8-beta.16 — 2026-10-29
 

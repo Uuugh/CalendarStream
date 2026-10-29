@@ -19,7 +19,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok('value="https://ccs.example.com/google/callback"' in p, "the guide names the redirect URI Google will use (to copy)")
         g = p[p.index("Guided setup: a client ID and secret"):]
         order = [g.find(s) for s in ("<b>First:</b>", "<b>Project:</b>", "<b>Calendar API:</b>", "<b>Sign-in screen:</b>",
-                                    "<b>Calendar access:</b>", "<b>Let yourself in</b>", "<b>Client:</b>", "<b>Keys:</b>", "<b>Connect</b> (above)")]
+                                    "<b>Calendar access:</b>", "<b>Let yourself in</b>", "<b>Client:</b>", "<b>Keys:</b>", "<b>Turn on</b> (above)")]
         ok(all(i >= 0 for i in order) and order == sorted(order), f"guide steps in order, test users before the client {order}")
         ok(g.count("✓ ") >= 5, "the guide has checkpoints")
         ok("If Google shows an error" in g and "redirect_uri_mismatch" in g and "access_denied" in g and "invalid_client" in g, "the guide lists Google's errors")

@@ -64,7 +64,8 @@ with patch.object(main, "loop", noop), TestClient(main.app) as c:
         log = " | ".join(h["msg"] for h in main.store.recent_log(10))
         ok("GOCSPX" not in log, "secret never logged")
         sys.exit()
-    ok('class="syncnow gconnectbtn"' in page and "http://localhost/google/callback" in page, "Connect (one button, beta.14) and the redirect URI shown")
+    # (0.2.8-beta.17) ☰ Settings turns the API on (Turn on, then Ready); each Google module signs in its own account
+    ok('class="syncnow gconnectbtn"' in page or ('id="gcid"' in page and ">Ready<" in page), "Turn on (one button), or Ready once Google accepted the client")
     ok(c.post("/google/connect", auth=A, data={"csrf": "x"}).status_code == 400, "connect needs CSRF")
     ok(c.post("/google/connect", data={"csrf": csrf}).status_code == 401, "connect needs the status-page login")
     ok(c.get("/google/callback?state=x&code=y").status_code == 401, "callback needs the status-page login")
@@ -81,7 +82,7 @@ with patch.object(main, "loop", noop), TestClient(main.app) as c:
     refresh = next(iter(S["refresh"]))
     ok(refresh not in str(saved) and saved.get("v") == 1, "refresh token stored encrypted")
     p = c.get("/?menu=google", auth=A).text
-    ok('title="pilot@example.com">pilot@example.com</div>' in p, "the Google box shows the account (in its header, beta.12)")
+    ok("pilot@example.com" in p, "the account is shown (beta.17: in its Google module)")
     ok(c.post("/google/client", auth=A, data={"csrf": csrf, "client_id": "new-1.apps.googleusercontent.com", "client_secret": "z"}).status_code == 400,
        "client can't change while connected")
     log = [h["msg"] for h in main.store.recent_log(5)]

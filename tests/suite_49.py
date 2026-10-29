@@ -186,6 +186,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     c.post("/destinations/add", data={"csrf": csrf, "type": "google1", "name": "One way"})
     two, one = (next(d for d in main.destinations("google") if d["name"] == n) for n in ("Two way", "One way"))
     ok(one["oneway"] and not two["oneway"], "+ Google 1-way Sync and Google 2-way Sync")
+    for d in (two, one):        # (0.2.8-beta.17: a new module has an account of its own; these two go on the first one)
+        c.post("/google/account", data={"csrf": csrf, "did": d["id"], "action": "first"})
+    two, one = (next(d for d in main.destinations("google") if d["name"] == n) for n in ("Two way", "One way"))
     c.post("/destinations/update", data={"csrf": csrf, "did": two["id"], "name": "Two way", "sources": ["ccs"], "color": "#0b8043"})
     ok(run(main.google_sync_once(True)), "both synced")
     cal2 = main.google.cal_info(two["id"])["calendar_id"]; cal1 = main.google.cal_info(one["id"])["calendar_id"]

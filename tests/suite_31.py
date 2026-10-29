@@ -25,7 +25,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     feeds = main.destinations("feed")
     ok(feeds[-1]["name"] == main.calendar_name("ccs"), "F4.2: an empty Name gets the source's name")
     p = c.get("/").text
-    ok('placeholder="How your calendar will be titled via stream"' in p, "F4.2: the Name's hint")
+    ok('class="namebox nameinput" name="name" maxlength="100" aria-label="Label" placeholder="Label"' in p, "F4.2: the Name's hint (beta.17: Label, as in the module)")
     ok('<span class="long">Time Zone</span><span class="short" title="Time Zone">TZ</span>' in p, "F2.1: Time Zone (TZ when tight)")
     ok('<p class="srcstatus">Last synced <b>' in p, "F3 (0.2.8-beta.5): the status line is short everywhere: Last synced (time)")
     ok("<span>Username</span>" in p and "<span>UID</span>" not in p, "F3.3: Username")

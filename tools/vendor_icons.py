@@ -22,6 +22,7 @@ NAMES = [
     "progress_activity", "radio_button_unchecked", "rule", "sensors", "subdirectory_arrow_right", "sync",
     "smart_toy", "checklist", "swap_horiz", "map", "search", "upgrade", "visibility", "visibility_off", "warning",
     "add_reaction", "undo", "redo", "upload_file", "download", "filter_list", "terminal", "logout",
+    "send", "mail", "sms", "share",
 ]
 
 
