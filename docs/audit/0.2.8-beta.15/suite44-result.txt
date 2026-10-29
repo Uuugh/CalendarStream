@@ -1,0 +1,68 @@
+PASS [light 1230px] no sideways scroll
+PASS [light 1230px] module headers are 50 px (on a phone at least 50, the status lines under) [['src-l5a378f', 50], ['src-ccs', 50], ['src-fa3427e', 50], ['dest-d6e1d4d', 50], ['dest-dfc6ddd', 50], ['dest-d967cd1', 50], ['dest-de3415a', 50]]
+PASS [light 1230px] Clarification 'module headers': the kind (fixed text, 17 px (15 on a phone), no box) over the name [['src-l5a378f', True, 17, 'none', False], ['src-ccs', True, 17, 'none', False], ['src-fa3427e', True, 17, 'none', False], ['dest-d6e1d4d', True, 17, 'none', False], ['dest-dfc6ddd', True, 17, 'none', False], ['dest-d967cd1', True, 17, 'none', False], ['dest-de3415a', True, 17, 'none', False]]
+PASS [light 1230px] Clarification 'handles': modules and All Rules' lines as wide as the header (up to its +), handles in the margin [['sources', 1100, 1100, 1102, 1116, 1119], ['sources', 1100, 1100, 1102, 1116, 1119], ['sources', 1100, 1100, 1102, 1116, 1119], ['destinations', 1100, 1100, 1102, 1116, 1119], ['destinations', 1100, 1100, 1102, 1116, 1119], ['destinations', 1100, 1100, 1102, 1116, 1119], ['destinations', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119]]
+PASS [light 1230px] no handle where there's nothing to reorder []
+PASS [light 1230px] Clarification 'status-box buttons': each is a Sync Now (its states) [['fgform', 'syncnow gconnectbtn', 4], ['updates', 'syncnow checknow', 5], ['src-ccs', 'syncnow', 4], ['src-fa3427e', 'syncnow', 4]]
+PASS [light 1230px] Clarification 'status words': Last synced / Sync failed / Last read / Last checked ['', '', 'Last synced 1:05am', 'Last synced 1:05am', '', '', '', '']
+PASS [light 1230px] Clarification 'Copy': inside its field [['fgform', True], ['googlesync', True], ['googlesync', True], ['cfg-dest-d6e1d4d', True], ['cfg-dest-de3415a', True]]
+PASS [light 1230px] Clarification 'Light = Soft': --bg #f7f6f3
+PASS [light 1230px] no script errors []
+PASS [light 1230px] Clarification '+ in the corner': #rules count box top right, + bottom right, none in the header [19, 19, 19, 19, 0]
+PASS [light 1230px] Clarification '+ in the corner': #templates count box top right, + bottom right, none in the header [19, 19, 19, 19, 0]
+PASS [light 1230px] Clarification 'note': the (i) after the label says what it is, then the note when there is one
+PASS [light 1230px] Clarification 'rule colors': Color ■ (Name)
+PASS [light 1230px] Sync Now press 1: answers at once (syncing)
+PASS [light 1230px] Sync Now press 2: answers at once (syncing)
+PASS [light 1230px] Check now press 1: Checking… at once, the status word faded under it (multi-button, 0)
+PASS [light 1230px] Check now press 2: Checking… at once, the status word faded under it (multi-button, 0)
+PASS [light 1230px] Clarification 'a box means you can change it': Updates' fixed text has no box ['rgba(0, 0, 0, 0)|rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)|rgba(0, 0, 0, 0)']
+PASS [light 1230px] Clarification 'one look per meaning': each status word has its meaning's look (wrong: [])
+PASS [light 1230px] Clarification 'click paths': no sentence over 20 words on the page (outside the (?)) []
+PASS [light 390px] no sideways scroll
+PASS [light 390px] module headers are 50 px (on a phone at least 50, the status lines under) [['src-l5a378f', 96], ['src-ccs', 110], ['src-fa3427e', 96], ['dest-d6e1d4d', 96], ['dest-dfc6ddd', 110], ['dest-d967cd1', 110], ['dest-de3415a', 96]]
+PASS [light 390px] Clarification 'module headers': the kind (fixed text, 17 px (15 on a phone), no box) over the name [['src-l5a378f', True, 15, 'none', False], ['src-ccs', True, 15, 'none', False], ['src-fa3427e', True, 15, 'none', False], ['dest-d6e1d4d', True, 15, 'none', False], ['dest-dfc6ddd', True, 15, 'none', False], ['dest-d967cd1', True, 15, 'none', False], ['dest-de3415a', True, 15, 'none', False]]
+PASS [light 390px] no handle where there's nothing to reorder []
+PASS [light 390px] Clarification 'status-box buttons': each is a Sync Now (its states) [['fgform', 'syncnow gconnectbtn', 4], ['updates', 'syncnow checknow', 5], ['src-ccs', 'syncnow', 4], ['src-fa3427e', 'syncnow', 4]]
+PASS [light 390px] Clarification 'status words': Last synced / Sync failed / Last read / Last checked ['Last checked 1:05am', '', 'Last synced 1:05am', 'Last synced 1:05am', '', '', '', '']
+PASS [light 390px] Clarification 'Copy': inside its field [['fgform', True], ['googlesync', True], ['googlesync', True], ['cfg-dest-d6e1d4d', True], ['cfg-dest-de3415a', True]]
+PASS [light 390px] Clarification 'Light = Soft': --bg #f7f6f3
+PASS [light 390px] no script errors []
+PASS [dark 1230px] no sideways scroll
+PASS [dark 1230px] module headers are 50 px (on a phone at least 50, the status lines under) [['src-l5a378f', 50], ['src-ccs', 50], ['src-fa3427e', 50], ['dest-d6e1d4d', 50], ['dest-dfc6ddd', 50], ['dest-d967cd1', 50], ['dest-de3415a', 50]]
+PASS [dark 1230px] Clarification 'module headers': the kind (fixed text, 17 px (15 on a phone), no box) over the name [['src-l5a378f', True, 17, 'none', False], ['src-ccs', True, 17, 'none', False], ['src-fa3427e', True, 17, 'none', False], ['dest-d6e1d4d', True, 17, 'none', False], ['dest-dfc6ddd', True, 17, 'none', False], ['dest-d967cd1', True, 17, 'none', False], ['dest-de3415a', True, 17, 'none', False]]
+PASS [dark 1230px] Clarification 'handles': modules and All Rules' lines as wide as the header (up to its +), handles in the margin [['sources', 1100, 1100, 1102, 1116, 1119], ['sources', 1100, 1100, 1102, 1116, 1119], ['sources', 1100, 1100, 1102, 1116, 1119], ['destinations', 1100, 1100, 1102, 1116, 1119], ['destinations', 1100, 1100, 1102, 1116, 1119], ['destinations', 1100, 1100, 1102, 1116, 1119], ['destinations', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119], ['rules', 1100, 1100, 1102, 1116, 1119]]
+PASS [dark 1230px] no handle where there's nothing to reorder []
+PASS [dark 1230px] Clarification 'status-box buttons': each is a Sync Now (its states) [['fgform', 'syncnow gconnectbtn', 4], ['updates', 'syncnow checknow', 5], ['src-ccs', 'syncnow', 4], ['src-fa3427e', 'syncnow', 4]]
+PASS [dark 1230px] Clarification 'status words': Last synced / Sync failed / Last read / Last checked ['Last checked 1:05am', '', 'Last synced 1:05am', 'Last synced 1:05am', '', '', '', '']
+PASS [dark 1230px] Clarification 'Copy': inside its field [['fgform', True], ['googlesync', True], ['googlesync', True], ['cfg-dest-d6e1d4d', True], ['cfg-dest-de3415a', True]]
+PASS [dark 1230px] no script errors []
+PASS [dark 390px] no sideways scroll
+PASS [dark 390px] module headers are 50 px (on a phone at least 50, the status lines under) [['src-l5a378f', 96], ['src-ccs', 110], ['src-fa3427e', 96], ['dest-d6e1d4d', 96], ['dest-dfc6ddd', 110], ['dest-d967cd1', 110], ['dest-de3415a', 96]]
+PASS [dark 390px] Clarification 'module headers': the kind (fixed text, 17 px (15 on a phone), no box) over the name [['src-l5a378f', True, 15, 'none', False], ['src-ccs', True, 15, 'none', False], ['src-fa3427e', True, 15, 'none', False], ['dest-d6e1d4d', True, 15, 'none', False], ['dest-dfc6ddd', True, 15, 'none', False], ['dest-d967cd1', True, 15, 'none', False], ['dest-de3415a', True, 15, 'none', False]]
+PASS [dark 390px] no handle where there's nothing to reorder []
+PASS [dark 390px] Clarification 'status-box buttons': each is a Sync Now (its states) [['fgform', 'syncnow gconnectbtn', 4], ['updates', 'syncnow checknow', 5], ['src-ccs', 'syncnow', 4], ['src-fa3427e', 'syncnow', 4]]
+PASS [dark 390px] Clarification 'status words': Last synced / Sync failed / Last read / Last checked ['Last checked 1:05am', '', 'Last synced 1:05am', 'Last synced 1:05am', '', '', '', '']
+PASS [dark 390px] Clarification 'Copy': inside its field [['fgform', True], ['googlesync', True], ['googlesync', True], ['cfg-dest-d6e1d4d', True], ['cfg-dest-de3415a', True]]
+PASS [dark 390px] no script errors []
+PASS Clarification 'handles': a lone feed has no handle
+PASS Clarification 'Close points up': Close's triangle turned up (matrix(0, -1, 1, 0, 0, 0))
+PASS Clarification 'event tools': Close at the bottom left, the icons (with Link) at the right, beside it or on a line above [0, 0, 1, True]
+PASS Clarification 'pop-ups': dark backdrop, 200 ms fade and scale-up ['rgba(0, 0, 0, 0.55)', 'popin', '0.2s']
+PASS …its Cancel | Save is the 130 × 34 pair ({'x': 954, 'y': 739, 'width': 130, 'height': 34})
+PASS Clarification 'Cancel | Save when adding': + Add a calendar ends with Cancel | Save
+PASS …Cancel closes it
+PASS Clarification '+ pop-ups': #sources .cardhead .plus opens a centred pop-up, the page blurred behind [True, True, 'blur(2px)']
+PASS Clarification '+ pop-ups': #destinations .cardhead .plus opens a centred pop-up, the page blurred behind [True, True, 'blur(2px)']
+PASS …Event Templates' + too
+PASS Clarification '2 px border': modules have a 2 px border, 1 px less padding ['2px', '5px', '9px']
+PASS Clarification 'label': a folded module's label is plain text ['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)']
+PASS Clarification '(i) is info': every module has its (i) after the label (4 of 4)
+PASS Clarification 'one palette': no free color picker; every color box offers Google's 11 [0, True]
+PASS Clarification 'date ranges': every date range on the page has From | To | All
+PASS Clarification 'import row': every calendar has the import row (heading, file field, …, the button last)
+PASS Clarification 'no browser dialogs': no alert / confirm / prompt in the page's scripts
+PASS Clarification 'one look per meaning': a pop-up's red choice is a red fill ('danger solid') or red words ('ghost danger'), never red on blue
+PASS Clarification 'emoji': ten a line, scrolling, a search on top [10, 'auto', True, 1536]
+PASS Clarification 'deleted events': struck through, greyed, where, Restore [True, 'line-through', 'grayscale(0.85)', True, 'Deleted in CalendarStream · 2026-10-29 01:05']
+PASS every Clarification in theme.md has a check in this suite (none unchecked: [])
