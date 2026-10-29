@@ -300,8 +300,8 @@ logins or setup codes lock an address out for 15 minutes.
   still there (a calendar failing, a sign-in rejected, Google sync failing).
 - **Signing in:** the page's own sign-in page (user name and password); a session lasts 30 days, and
   changing the login signs every browser out. Five wrong tries from one address lock it out for 15 minutes; 50 from many addresses
-  together make every new browser wait 15 minutes (one signed in here in the last 7 days still gets in), and
-  History says so. Locked out yourself? Restart CalendarStream (`docker compose restart`) to clear it.
+  together make every new browser wait 15 minutes, except on your own network (a local address such as
+  192.168.x.x, or the IP your domain points at) and browsers signed in here in the last 7 days; History says so. Locked out yourself? Restart CalendarStream (`docker compose restart`) to clear it.
 - **☰ Settings** (a light blue panel): site settings only: **Administrator** (the login, with a
   show-password eye and a strength bar, like every password box, and **Sign out**), the public address (and
   **More addresses**, for other domains this page is reached at: each editable, **+** for another; a feed's

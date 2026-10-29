@@ -79,7 +79,19 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             pass
     ok(sum("failed sign-ins from many addresses" in m and "Restart CalendarStream" in m for m in log(30)) == 1,
        "#6.1: reaching the limit for all addresses says so once in History, with the way back in")
-    main._global_failures.clear()
+    # (the Developer's decision, review #6.1) local addresses and the IP the domain points at still get in
+    def blocked(ip):
+        try:
+            main._check_lockout(ip); return False
+        except Exception as e:
+            return getattr(e, "status_code", 0) == 429
+    main._domain_ips.update(at=None, ips=set())
+    with patch.object(main.socket, "getaddrinfo", lambda host, port: [(2, 1, 6, "", ("198.51.100.99", 0))]):
+        ok(blocked("198.51.100.7"), "#6.1: over the limit, a new outside address waits")
+        ok(not blocked("192.168.1.20") and not blocked("10.0.0.5") and not blocked("127.0.0.1") and not blocked("fd00::5"),
+           "#6.1: a local address (192.168.x.x, 10.x, this machine, IPv6 local) still gets in")
+        ok(not blocked("198.51.100.99"), "#6.1: the IP the public address's domain points at still gets in")
+    main._global_failures.clear(); main._domain_ips.update(at=None, ips=set())
 
 # #4.1: a moved occurrence keeps its key (its RECURRENCE-ID), so its edits stay
 FEED = b"""BEGIN:VCALENDAR

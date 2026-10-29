@@ -27,6 +27,9 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 - **#4.1** An occurrence of a repeating event that a feed moved lost its edits here: it keeps them (its key is
   its original start). One already moved before this version gets its edits back only if made again.
 - **#4.2** A feed over 5,000 events could keep later ones and drop near ones: the earliest are kept.
+- **#6.1** 50 failed sign-ins from many addresses could keep you out too: your own network (a local address such as
+  192.168.x.x, or the IP your domain points at) always gets in, so you can sign in and read History; History says
+  when the limit is reached.
 - **#6.2** Installing an exact older version took docker-compose.yml from the newest: it takes that version's.
 - **#7.1** The import row's dates hid their From / To labels: they show beside the dates.
 - **#7.2** A view setting (time zone, 12/24 h, language) that failed to save looked saved: a pop-up says so.

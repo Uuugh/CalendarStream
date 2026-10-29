@@ -6,6 +6,7 @@ import asyncio
 import gzip
 import hashlib
 import hmac
+import ipaddress
 import calendar as pycal
 import json
 import os
@@ -13,6 +14,7 @@ import logging
 import platform
 import re
 import secrets
+import socket
 import threading
 from collections import deque
 from contextlib import asynccontextmanager
@@ -1689,7 +1691,37 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "?"
 
 
+_LOCAL_NETS = [ipaddress.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "127.0.0.0/8",
+                                                  "169.254.0.0/16", "::1/128", "fc00::/7", "fe80::/10")]
+_domain_ips: dict = {"at": None, "ips": set()}    # the public addresses' own IPs, looked up at most every 10 minutes
+
+
+def _own_network(ip: str) -> bool:
+    """An address the limit for all addresses together never shuts out (review #6.1, the Developer's decision): a
+    local one (192.168.x.x, 10.x, 172.16–31.x, this machine, IPv6 local) or the IP a public address's domain
+    points at (the owner's own connection, when CalendarStream is reached at home through it)."""
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return False
+    if any(addr in net for net in _LOCAL_NETS if net.version == addr.version):
+        return True
+    if _domain_ips["at"] is None or now() - _domain_ips["at"] > timedelta(minutes=10):
+        found = set()
+        for url in public_addresses():
+            host = urlparse(url).hostname
+            if not host:
+                continue
+            try:
+                found |= {i[4][0] for i in socket.getaddrinfo(host, None)}
+            except OSError:
+                pass
+        _domain_ips.update(at=now(), ips=found)
+    return ip in _domain_ips["ips"]
+
+
 def _check_lockout(ip: str):
+    own = _own_network(ip)       # (looked up before the lock: it may ask DNS)
     with _failures_lock:
         locked_until = _gui_failures.get(ip, [0, None])[1]
         if locked_until and now() < locked_until:
@@ -1701,7 +1733,7 @@ def _check_lockout(ip: str):
         while _global_failures and _global_failures[0] < cutoff:
             _global_failures.pop(0)
         trusted = _good_ips.get(ip)
-        if len(_global_failures) >= GLOBAL_MAX_FAILURES and not (trusted and now() - trusted < GOOD_IP_FOR):
+        if len(_global_failures) >= GLOBAL_MAX_FAILURES and not own and not (trusted and now() - trusted < GOOD_IP_FOR):
             raise HTTPException(429, "Too many failed attempts. Try again later.")
 
 
@@ -1717,8 +1749,8 @@ def _count_failure(ip: str, what: str = "logins"):
         _gui_failures[ip] = [0 if locked else count, locked]
     if everyone:     # (review #6.1) said once, with the way back in
         state.record("warn", f"{GLOBAL_MAX_FAILURES} failed sign-ins from many addresses in {int(GUI_LOCKOUT.total_seconds() // 60)} min: "
-                     "new browsers wait 15 minutes; one signed in here in the last 7 days still gets in. "
-                     "Locked out yourself? Restart CalendarStream (docker compose restart) to clear it.", kind="Settings")
+                     "new browsers wait 15 minutes, except on your own network (a local address, or the IP your domain points at) "
+                     "and ones signed in here in the last 7 days. Locked out yourself? Restart CalendarStream (docker compose restart).", kind="Settings")
     if locked:
         state.record("warn", f"Status page locked for {ip} after {GUI_MAX_FAILURES} failed {what}")
         raise HTTPException(429, "Too many failed attempts. Try again later.")
