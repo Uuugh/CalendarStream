@@ -771,7 +771,7 @@ class Google:
                 uid, row = by_gid[gid]
                 if ev.get("status") == "cancelled":
                     out.append({"kind": "deleted", "uid": uid, "gid": gid})
-                elif _needs_repair(ev, row["synced_at"]):
+                elif _needs_repair(ev, row):
                     out.append({"kind": "edited", "uid": uid, "gid": gid, "synced_at": row["synced_at"], **google_fields(ev)})
             elif ev.get("status") != "cancelled" and not ev.get("recurringEventId"):
                 out.append({"kind": "created", "gid": gid, "repeats": bool(ev.get("recurrence")), **google_fields(ev)})
@@ -840,20 +840,20 @@ class Google:
             body = event_body(e, self.tz_name, nearest_color_id(color) if color else "")
             digest, gid, row = _hash(body), body["id"], rows.get(uid)
             same = row and row["hash"] == digest
-            if same and (remote is None or not _needs_repair(remote.get(gid), row["synced_at"])):
+            if same and (remote is None or not _needs_repair(remote.get(gid), row)):
                 result.unchanged += 1
                 continue
             if writes >= MAX_WRITES:
                 result.more = True
                 continue
-            await self._put_event(cal, gid, body, known=bool(row) or bool(remote and gid in remote))
+            stamp = await self._put_event(cal, gid, body, known=bool(row) or bool(remote and gid in remote))
             if same:
                 result.repaired += 1
             elif row:
                 result.updated += 1
             else:
                 result.added += 1
-            self.store.google_saved(uid, gid, digest, e.end, sid)
+            self.store.google_saved(uid, gid, digest, e.end, sid, stamp)
             writes += 1
 
         wanted_ids = {event_id(uid) for uid in wanted}
@@ -871,10 +871,14 @@ class Google:
 
         if remote:   # events CalendarStream wrote that it no longer knows about (e.g. a lost database)
             for gid, ev in remote.items():
-                if gid not in wanted_ids and ev.get("status") != "cancelled" and writes < MAX_WRITES:
-                    await self.api("DELETE", f"{cal}/events/{gid}", ok_missing=True)
-                    result.removed += 1
-                    writes += 1
+                if gid in wanted_ids or ev.get("status") == "cancelled":
+                    continue
+                if writes >= MAX_WRITES:      # (review #3.2) the rest waits for the next sync, and says so
+                    result.more = True
+                    break
+                await self.api("DELETE", f"{cal}/events/{gid}", ok_missing=True)
+                result.removed += 1
+                writes += 1
 
         when = datetime.now(timezone.utc).isoformat()
         self._update_cal(sid, last_sync=when, events=len(wanted))
@@ -899,17 +903,21 @@ class Google:
             if not page:
                 return found
 
-    async def _put_event(self, cal: str, gid: str, body: dict, known: bool):
-        """Create or replace one event. Its ID is fixed, so this never makes duplicates: Google answers
-        409 to a second insert (including for a deleted event, which a replace brings back)."""
+    async def _put_event(self, cal: str, gid: str, body: dict, known: bool) -> str:
+        """Create or replace one event; returns Google's "updated" time on the copy written. Its ID is fixed, so
+        this never makes duplicates: Google answers 409 to a second insert (including for a deleted event,
+        which a replace brings back)."""
         if known:
-            if await self.api("PUT", f"{cal}/events/{gid}", body=body, ok_missing=True) is not None:
-                return
+            done = await self.api("PUT", f"{cal}/events/{gid}", body=body, ok_missing=True)
+            if done is not None:
+                return str(done.get("updated") or "")
         try:
-            if await self.api("POST", f"{cal}/events", body=body, ok_missing=True) is None:
+            done = await self.api("POST", f"{cal}/events", body=body, ok_missing=True)
+            if done is None:
                 raise CalendarMissing()
         except Conflict:
-            await self.api("PUT", f"{cal}/events/{gid}", body=body)
+            done = await self.api("PUT", f"{cal}/events/{gid}", body=body)
+        return str((done or {}).get("updated") or "")
 
 
 def google_fields(ev: dict) -> dict:
@@ -926,15 +934,20 @@ def google_fields(ev: dict) -> dict:
             "at": ev.get("updated", "")}
 
 
-def _needs_repair(remote: dict | None, synced_at) -> bool:
-    """Whether Google's copy was deleted or changed by hand after CalendarStream last wrote it."""
+def _needs_repair(remote: dict | None, row: dict) -> bool:
+    """Whether Google's copy was deleted or changed by hand after CalendarStream last wrote it. Google changes
+    an event's "updated" time on every change, so a copy whose time isn't the one our write got was changed
+    there, however soon after (review #3.1). A row from before 0.2.8-beta.18 has no time kept: then by the
+    clock, allowing 30 s between the two clocks."""
     if remote is None or remote.get("status") == "cancelled":
         return True
+    if row.get("remote_updated"):
+        return str(remote.get("updated") or "") != row["remote_updated"]
     try:
         updated = datetime.fromisoformat(remote["updated"].replace("Z", "+00:00"))
     except (KeyError, ValueError):
         return False
-    return updated > synced_at + timedelta(seconds=30)
+    return updated > row["synced_at"] + timedelta(seconds=30)
 
 
 def _error_reason(r: httpx.Response) -> str:

@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS google_events (
     synced_at  timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE google_events ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'ccs';  -- which Google calendar (destination ID)
+ALTER TABLE google_events ADD COLUMN IF NOT EXISTS remote_updated text NOT NULL DEFAULT '';  -- Google's "updated" of our last write (review #3.1)
 -- 0.2.1: an event can be in several Google calendars, so the key is the event and the calendar
 DO $$ BEGIN
   IF (SELECT count(*) FROM information_schema.key_column_usage
@@ -274,15 +275,18 @@ class Store:
     def google_rows(self, source: str = "ccs") -> dict[str, dict]:
         """uid -> {google_id, hash, ends, synced_at} for the events last written to one Google calendar."""
         with self.pool.connection() as c:
-            rows = c.execute("SELECT uid, google_id, hash, ends, synced_at FROM google_events WHERE source = %s",
+            rows = c.execute("SELECT uid, google_id, hash, ends, synced_at, remote_updated FROM google_events WHERE source = %s",
                              (source,)).fetchall()
-        return {r[0]: {"google_id": r[1], "hash": r[2], "ends": r[3], "synced_at": r[4]} for r in rows}
+        return {r[0]: {"google_id": r[1], "hash": r[2], "ends": r[3], "synced_at": r[4], "remote_updated": r[5]} for r in rows}
 
-    def google_saved(self, uid: str, google_id: str, hash_: str, ends: str, source: str = "ccs"):
+    def google_saved(self, uid: str, google_id: str, hash_: str, ends: str, source: str = "ccs", remote_updated: str = ""):
+        """`remote_updated`: Google's "updated" time on the copy just written, so a later change there is told
+        from our own write exactly (not by the clock)."""
         with self.pool.connection() as c:
-            c.execute("INSERT INTO google_events (uid, google_id, hash, ends, source) VALUES (%s, %s, %s, %s, %s) "
+            c.execute("INSERT INTO google_events (uid, google_id, hash, ends, source, remote_updated) VALUES (%s, %s, %s, %s, %s, %s) "
                       "ON CONFLICT (uid, source) DO UPDATE SET google_id = EXCLUDED.google_id, hash = EXCLUDED.hash, "
-                      "ends = EXCLUDED.ends, synced_at = now()", (uid, google_id, hash_, ends, source))
+                      "ends = EXCLUDED.ends, remote_updated = EXCLUDED.remote_updated, synced_at = now()",
+                      (uid, google_id, hash_, ends, source, remote_updated or ""))
 
     def google_rekey(self, old: str, new: str):
         with self.pool.connection() as c:

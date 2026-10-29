@@ -73,8 +73,15 @@ IP="$(this_ip)"
 # The only two files the server needs; the app itself is a ready-made image.
 # docker-compose.yml is always refreshed; an existing .env (your settings) is kept, apart from the
 # answers above, which are written into it.
-curl -fsSL "$REPO/docker-compose.yml" -o docker-compose.yml
-[ -f .env ] || curl -fsSL "$REPO/.env.default" -o .env
+# (review #6.2) an exact version gets the files from that version's own tag, so a pinned install never gets a
+# docker-compose.yml from a newer version; latest and beta get main's.
+case "$IMAGE_TAG" in
+  latest|beta) FILES="$REPO" ;;
+  *) FILES="https://raw.githubusercontent.com/Uuugh/CalendarStream/v$IMAGE_TAG" ;;
+esac
+curl -fsSL "$FILES/docker-compose.yml" -o docker-compose.yml \
+  || { echo "Couldn't download version $IMAGE_TAG's docker-compose.yml: is $IMAGE_TAG a released version?" >&2; exit 1; }
+[ -f .env ] || curl -fsSL "$FILES/.env.default" -o .env
 chmod 600 .env   # it can hold secrets (e.g. FEED_TOKEN)
 set_env() {   # $1 = name, $2 = value ("sed -i.bak" works with both GNU and macOS sed)
   local v; v="$(printf '%s' "$2" | sed 's/[\\|&]/\\&/g')"   # escape \ | & for the replacement

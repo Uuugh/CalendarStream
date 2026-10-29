@@ -328,9 +328,10 @@ MAX_FEED_EVENTS = 5000   # occurrences kept from one feed (a daily event over th
 
 def parse_feed(raw: bytes, tz_name: str, defaults: Defaults, source: str, first: date, last: date):
     """Read a calendar feed (any .ics link). Repeating events are expanded into their occurrences
-    between `first` and `last`. Each event's UID is "<source>/<UID>" (plus "/<start>" for an
-    occurrence of a repeating event), so feeds can't collide with each other or with CCS+.
-    Returns (events, content hash)."""
+    between `first` and `last`. Each event's UID is "<source>/<UID>" (plus "/<its original start>" for an
+    occurrence of a repeating event: its RECURRENCE-ID, so an occurrence the feed moves keeps its edits; review
+    #4.1), so feeds can't collide with each other or with CCS+. Over MAX_FEED_EVENTS, the earliest are kept
+    (review #4.2). Returns (events, content hash)."""
     import recurring_ical_events
     tz = ZoneInfo(tz_name)
     try:
@@ -345,17 +346,16 @@ def parse_feed(raw: bytes, tz_name: str, defaults: Defaults, source: str, first:
             continue
         uid = str(ev.get("UID", "")) or hashlib.sha1(f"{ev.get('DTSTART')}|{ev.get('SUMMARY')}".encode()).hexdigest()
         repeats = "RRULE" in ev or "RDATE" in ev or "RECURRENCE-ID" in ev
-        key = f"{source}/{uid}" + (f"/{ev['DTSTART'].dt.isoformat()}" if repeats and "DTSTART" in ev else "")
+        when = ev.get("RECURRENCE-ID") or ev.get("DTSTART")
+        key = f"{source}/{uid}" + (f"/{when.dt.isoformat()}" if repeats and when is not None else "")
         if key in seen:
             continue
         seen.add(key)
         e = _event(ev, tz, defaults, uid=key, source=source)
         if e:
             events.append(e)
-        if len(events) >= MAX_FEED_EVENTS:
-            break
-    events.sort(key=lambda e: e.start)
-    return events, hashlib.sha256(raw).hexdigest()
+    events.sort(key=lambda e: e.start)          # (sorted before the limit, so it never drops the near ones)
+    return events[:MAX_FEED_EVENTS], hashlib.sha256(raw).hexdigest()
 
 
 def apply_changes(base: list[Event], edits: dict, customs: list[dict], source: str) -> list[Event]:

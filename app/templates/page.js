@@ -12,7 +12,7 @@ var T = {
   syncing: {{ _('Syncing…')|string|tojson }}, saving: {{ _('Saving…')|string|tojson }},
   copiedReport: {{ _('Report copied')|string|tojson }}, longReport: {{ _('The report is long, so GitHub gets the start of it; the whole report is copied: paste it into the issue.')|string|tojson }},
   alreadyHere: {{ _('Already in this calendar ({n} of {total})')|string|tojson }},
-  failed: {{ _('Failed')|string|tojson }}, ok: {{ _('OK')|string|tojson }}, cancel: {{ _('Cancel')|string|tojson }}, yes: {{ _('Yes')|string|tojson }}
+  failed: {{ _('Failed')|string|tojson }}, prefFailed: {{ _('That setting wasn’t saved: CalendarStream couldn’t be reached, or refused it. Try again.')|string|tojson }}, ok: {{ _('OK')|string|tojson }}, cancel: {{ _('Cancel')|string|tojson }}, yes: {{ _('Yes')|string|tojson }}
 };
 
 // Icons the scripts put next to a message (Material Symbols).
@@ -281,9 +281,13 @@ document.addEventListener('keydown', function (e) { if (e.key === 'Escape') clos
 
 // Save a status-page preference in the database (so every browser and login matches).
 // Fire-and-forget unless a callback is given: if it fails, the page still works.
+// A view setting saved at once (review #7.2): `then` runs only once it's saved; a refusal or a lost connection
+// says so in a pop-up, and the page stays as it is.
 function savePref(path, fields, then) {
   var body = new URLSearchParams(Object.assign({ csrf: CSRF }, fields));
-  fetch(path, { method: 'POST', body: body, credentials: 'same-origin' }).then(then || function () {}, then || function () {});
+  fetch(path, { method: 'POST', body: body, credentials: 'same-origin' })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); if (then) then(); })
+    .catch(function () { tell(T.prefFailed); });
 }
 var CSRF = PAGE.csrf;
 

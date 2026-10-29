@@ -1711,9 +1711,14 @@ def _count_failure(ip: str, what: str = "logins"):
             for key in [k for k, (_, until) in list(_gui_failures.items()) if not until or until < now()][:5_000]:
                 _gui_failures.pop(key, None)
         _global_failures.append(now())
+        everyone = len(_global_failures) == GLOBAL_MAX_FAILURES     # the moment the limit for all addresses is reached
         count = _gui_failures.get(ip, [0, None])[0] + 1
         locked = now() + GUI_LOCKOUT if count >= GUI_MAX_FAILURES else None
         _gui_failures[ip] = [0 if locked else count, locked]
+    if everyone:     # (review #6.1) said once, with the way back in
+        state.record("warn", f"{GLOBAL_MAX_FAILURES} failed sign-ins from many addresses in {int(GUI_LOCKOUT.total_seconds() // 60)} min: "
+                     "new browsers wait 15 minutes; one signed in here in the last 7 days still gets in. "
+                     "Locked out yourself? Restart CalendarStream (docker compose restart) to clear it.", kind="Settings")
     if locked:
         state.record("warn", f"Status page locked for {ip} after {GUI_MAX_FAILURES} failed {what}")
         raise HTTPException(429, "Too many failed attempts. Try again later.")

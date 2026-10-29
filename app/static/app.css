@@ -1066,7 +1066,8 @@ details.gsteps ol > li.done { color:var(--muted) }
 .daterange input[type=date] { height:34px }
 .daterange input[type=date].off { opacity:.45; pointer-events:none }
 .allbox { display:inline-flex; align-items:center; gap:4px; height:34px; font-size:13.5px; white-space:nowrap }
-.importrow .daterange .fld > span { display:none }        /* (in the import line, the dates say From / To in their tooltips) */
+.importrow .daterange { align-items:center }
+.importrow .daterange .fld { display:flex; align-items:center; gap:4px }   /* (review #7.1) From / To beside their dates, on one line */
 /* The remove pop-up (beta.15) */
 #removedialog .rmopts { display:grid; gap:6px; margin:6px 0 }
 #removedialog .rmopt { display:flex; align-items:center; gap:6px; flex-wrap:wrap }
