@@ -2,7 +2,7 @@
 # Runs CalendarStream's test suites, each against a fresh database. Prints only the failures, then a
 # summary; exits 1 if any suite failed.
 #
-#   tests/run.sh              every suite except 17 (translations: run at Deploy, step d)
+#   tests/run.sh              every suite except 17 (translations: run in the Deploy, build_rules/5-deploy.md)
 #   tests/run.sh 26 39        just these
 #   tests/run.sh all          every suite, translations included
 #

@@ -9,7 +9,7 @@ card of the **CalendarStream Theme Rules** picture that shows it.
   a module open in every section. **Part 2** is numbered cards; "Picture 2·5" below means part 2, card 5.
 - The stylesheet is `app/static/app.css`, the script `app/templates/page.js` (made once per language),
   the color tokens `app/templates/_theme.html`. Change those, never inline copies.
-- When the theme changes, update this file and redraw the picture (Deploy step e at the latest). A rule
+- When the theme changes, update this file and redraw the picture (at the latest in the Deploy's documentation part, 5-deploy.md). A rule
   here with no card, or a card with no rule, is a mistake: fix whichever is missing.
 
 ## 1. Tokens

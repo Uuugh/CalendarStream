@@ -6,7 +6,7 @@ prints `PASS …` / `FAIL …` lines. Most also drive a real browser (Playwright
 the page: layouts, in-place saving, pop-ups, phone widths, light and dark.
 
 ```bash
-tests/run.sh            # every suite except 17 (translations, run at Deploy step d)
+tests/run.sh            # every suite except 17 (translations, run in the Deploy: build_rules/5-deploy.md)
 tests/run.sh 26 39      # some suites
 tests/run.sh all        # all of them
 ```

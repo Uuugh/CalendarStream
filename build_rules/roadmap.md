@@ -24,5 +24,5 @@ Read when planning a version.
 
 ## Low findings
 
-Low findings from audits (build_rules/review.md), done when that code is next changed. Each: the audit
+Low findings from whole-app reviews (build_rules/4-review.md), done when that code is next changed. Each: the audit
 issue, #N, file:line, what to do. Taken off when done.
