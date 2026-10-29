@@ -19,6 +19,18 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 - **#2** A rule with more than 12 conditions or 6 actions was cut off when saved (or refused with the wrong
   message): it's refused, saying why ("Up to 12 conditions in a rule.").
 
+### Fixed (the beta.15 audit: #3 Google, #4 Calendars, #6 Security, #7 Page; #5 Database had none)
+- **#3.1** An event changed in Google within 30 seconds of a sync could be missed: each write keeps Google's own
+  "updated" time, so any later change there is seen.
+- **#3.2** When a sync reached its write limit while removing events CalendarStream no longer knows, it didn't
+  say there was more: it does ("more at the next sync").
+- **#4.1** An occurrence of a repeating event that a feed moved lost its edits here: it keeps them (its key is
+  its original start). One already moved before this version gets its edits back only if made again.
+- **#4.2** A feed over 5,000 events could keep later ones and drop near ones: the earliest are kept.
+- **#6.2** Installing an exact older version took docker-compose.yml from the newest: it takes that version's.
+- **#7.1** The import row's dates hid their From / To labels: they show beside the dates.
+- **#7.2** A view setting (time zone, 12/24 h, language) that failed to save looked saved: a pop-up says so.
+
 ## 0.2.8-beta.17 — 2026-10-29
 
 ### Added
