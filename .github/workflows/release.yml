@@ -14,7 +14,7 @@ name: Release
 on:
   push:
     branches: [main]
-    paths: [VERSION, STABLE, .github/workflows/release.yml]
+    paths: [VERSION, STABLE, Dockerfile, requirements.txt, .github/workflows/release.yml]   # (a version is built only once: when it has no tag yet)
   workflow_dispatch:
     inputs:
       stable_version:
