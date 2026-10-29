@@ -43,6 +43,8 @@ from datetime import date, datetime, timedelta
 from datetime import time as dtime
 from zoneinfo import ZoneInfo
 
+import regex as rxe     # (0.2.8-beta.18, review #2.1) a regex engine with a time limit
+
 from .calsync import Event
 
 COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -51,6 +53,9 @@ SID_RE = re.compile(r"^(ccs|[fl][0-9a-f]{6})$")
 MAX_RULES, MAX_CONDS, MAX_ACTIONS, MAX_BRACKETS = 60, 12, 6, 3
 MAX_TEXT, MAX_REGEX, MAX_TITLE, MAX_EMOJI = 200, 100, 80, 16
 MAX_OFFSET, MAX_LENGTH = 7 * 24 * 60, 52 * 7 * 24 * 60      # minutes
+# A typed regex or pattern gets this long per event (seconds); one that takes longer counts as no match, and is
+# skipped for the rest of that run, so a pathological pattern like (a|aa)+$ can't stall a sync.
+REGEX_TIMEOUT = 0.05
 ALLDAY_TOLERANCE = timedelta(minutes=5)     # CCS+ writes whole days as 00:01–23:59:59
 
 COND_TYPES = {"text": "Title", "any": "Any text", "date": "Date", "time": "Time", "days": "Day(s)", "length": "Length"}
@@ -140,8 +145,8 @@ def pattern_error(value: str, op: str) -> str:
     if op != "regex":
         return ""
     try:
-        re.compile(value)
-    except re.error as e:
+        rxe.compile(value)
+    except rxe.error as e:
         where = f" (at character {e.pos + 1})" if e.pos is not None else ""
         return f"Not a valid regex: {e.msg}{where}."
     return ""
@@ -156,7 +161,10 @@ def test_text(value: str, op: str, case: bool, samples: list[str]) -> dict:
     rx = _text_regex({"value": value, "op": op, "case": case})
     results = []
     for text in samples[:30]:
-        m = rx.search(text)
+        try:
+            m = rx.search(text, timeout=REGEX_TIMEOUT)
+        except TimeoutError:
+            return {"error": "Too slow: this pattern takes too long to check (simplify the repeats, e.g. (a|aa)+).", "results": []}
         results.append({"text": text, "match": m is not None, "span": [m.start(), m.end()] if m else []})
     return {"error": "", "results": results}
 
@@ -214,6 +222,11 @@ def normalize(raw, sids: list[str] | None = None, templates: set[str] | None = N
             err = pattern_error(str(c.get("value") or "").strip(), c.get("op"))
             if err:
                 return bad(err)
+    # (review #2.2) more than the page offers is refused when saving, never cut off without a word
+    if strict and len([c for c in raw.get("conds") or [] if c]) > MAX_CONDS:
+        return bad(f"Up to {MAX_CONDS} conditions in a rule.")
+    if strict and len([a for a in raw.get("actions") or [] if a]) > MAX_ACTIONS:
+        return bad(f"Up to {MAX_ACTIONS} actions in a rule.")
     conds = [c for c in (_cond(c) for c in (raw.get("conds") or [])[:MAX_CONDS]) if c]
     if strict and len(conds) != len([c for c in raw.get("conds") or [] if c]):
         return bad("Fill in every condition (or take the empty ones out).")
@@ -413,13 +426,15 @@ def starters(no_end_type: str, no_end_hours: float, allday_24h: bool) -> list[di
 
 # --- Matching ---------------------------------------------------------------------------------
 
-def _text_regex(c: dict) -> re.Pattern:
+def _text_regex(c: dict):
+    """The condition as a compiled pattern. A typed regex or wildcard pattern uses the `regex` engine, so its
+    searches can be given a time limit (REGEX_TIMEOUT); the fixed kinds are escaped text, safe with `re`."""
     value = c["value"]
     flags = 0 if c["case"] else re.IGNORECASE
     if c["op"] == "regex":
-        return re.compile(value, flags)
+        return rxe.compile(value, rxe.IGNORECASE if not c["case"] else 0)
     if c["op"] == "pattern":
-        return re.compile(wildcard(value), flags | re.DOTALL)
+        return rxe.compile(wildcard(value), (0 if c["case"] else rxe.IGNORECASE) | rxe.DOTALL)
     v = re.escape(value)
     return re.compile({"is": r"^\s*" + v + r"\s*$", "contains": v, "word": r"(?<!\w)" + v + r"(?!\w)",
                        "begins": r"^\s*" + v, "ends": v + r"\s*$"}[c["op"]], flags)
@@ -427,7 +442,19 @@ def _text_regex(c: dict) -> re.Pattern:
 
 def _text_test(c: dict):
     rx, field = _text_regex(c), "title" if c["type"] == "text" else "text"
-    return lambda e, info: rx.search(info[field]) is not None
+    if c["op"] not in ("regex", "pattern"):
+        return lambda e, info: rx.search(info[field]) is not None
+    slow = []          # set once a search ran out of time: the condition then matches nothing for this run
+
+    def test(e, info):
+        if slow:
+            return False
+        try:
+            return rx.search(info[field], timeout=REGEX_TIMEOUT) is not None
+        except TimeoutError:
+            slow.append(True)
+            return False
+    return test
 
 
 def _range_test(op: str, a, b, wrap: bool = False):

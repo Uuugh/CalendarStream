@@ -10,3 +10,4 @@ tzdata
 httpx==0.28.*
 cryptography>=44,<51
 recurring-ical-events>=3.3,<4
+regex>=2025.9.1        # 0.2.8-beta.18: rules' typed regex / patterns with a time limit (review #2.1)
