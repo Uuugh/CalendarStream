@@ -11,6 +11,14 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 
 **Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.17**
 
+## 0.2.8-beta.18 (next; not published yet)
+
+### Fixed (review #2, Rules)
+- **#1** A typed regex or wildcard pattern like `(a|aa)+$` could stall a sync on a long near-match: each gets 0.05 s
+  per event; one that runs out matches nothing for the rest of that run, and the regex test box says "Too slow".
+- **#2** A rule with more than 12 conditions or 6 actions was cut off when saved (or refused with the wrong
+  message): it's refused, saying why ("Up to 12 conditions in a rule.").
+
 ## 0.2.8-beta.17 — 2026-10-29
 
 ### Added
