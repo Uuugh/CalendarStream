@@ -9,7 +9,26 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.15**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.16**
+
+## 0.2.8-beta.16 — 2026-10-29
+
+### Added
+- **F1** Every beta's image is scanned with **trivy** before it's tagged or published: a fixable High or Critical
+  vulnerability stops the beta; the full report is in the release run's summary.
+
+### Fixed
+- **I1** A Google module's Remove pop-up said "delete **the** Flying from Google Calendar": it names the calendar
+  as it is ("delete Flying from Google Calendar").
+- **I2** A deleted event also said "Edited here": it only says where it was deleted, with Restore.
+
+### Build rules
+- **R1** The build rules are numbered steps, one command each: 0 MENU, 1 PLAN, 2 BUILD (GO and EOF still work),
+  3 TEST (optional: the Developer tries a beta in a browser and Claude follows along), 4 REVIEW (Claude and
+  ChatGPT take turns; the Developer decides what's still disputed), 5 DEPLOY. A step in progress uses only
+  what existed when it started.
+- **R2** Review screenshots live on the `review-files` branch, not on main; reviews use three labels, for whose
+  turn it is; trivy's result comes from the BUILD.
 
 ## 0.2.8-beta.15 — 2026-10-28
 

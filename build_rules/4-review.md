@@ -24,16 +24,19 @@ Claude answers; the Developer decides anything still disputed. Each REVIEW after
   review uses the rules as they were when it started: its first post names that commit, and the Reviewer reads
   this file there, never at the code under review.
 - `review-rules` and `reviewed` are markers, not working branches: nothing is committed to them; Claude only
-  moves them forward to a commit on main.
+  moves them forward to a commit on main. `review-files` holds the reviews' screenshots, off main.
+- The labels say whose turn it is: `review:awaiting-reviewer`, `review:awaiting-claude`,
+  `review:awaiting-developer`. What's being checked is in the issue's title and first post.
 
 ## How a review runs
 
-1. **REVIEW.** Claude runs what the Reviewer can't: `tests/run.sh`, the scans (`pip-audit -r requirements.txt`,
-   `bandit -r app`, `trivy image ghcr.io/uuugh/calendarstream:beta`) and, when the page is in scope, fresh
-   screenshots (light, dark, a phone, any pop-up that changed) with the theme suite's result (suite 44).
+1. **REVIEW.** Claude runs what the Reviewer can't: `tests/run.sh` and the scans (`pip-audit -r requirements.txt`,
+   `bandit -r app`; trivy's result is the release workflow's scan of that beta, 2-build.md). When the page is in
+   scope: fresh screenshots (light, dark, a phone, any pop-up that changed), committed to the `review-files`
+   branch (never main), with the theme suite's result (suite 44).
 2. Claude opens the issues:
-   - title `Review a (Programming): v<version>`, `Review b (Security): v<version>` or `Audit <area>: v<version>`;
-   - labels `review:programming`, `review:security` or `review:audit`, and `review:awaiting-reviewer`;
+   - title `Review a (Programming): v<version>`, `Review b (Security): v<version>` or `Review <area>: v<version>`;
+   - the label `review:awaiting-reviewer`;
    - a neutral first post: the version; the code (the range BASE..HEAD as commit IDs, BASE = `reviewed`; or,
      for an area, HEAD and the area's files); the rules (this file and its commit); the checklist; the test and
      scan results; for the page, the screenshots and suite 44's result. No reasons or defence: the code, its
@@ -67,10 +70,10 @@ final say on anything you and Claude don't agree on.
 **Each run** (when the Developer sends you REVIEW):
 1. Find open issues in Uuugh/CalendarStream opened by Uuugh with the label `review:awaiting-reviewer`. Ignore
    every other issue. If there are none, tell the Developer so and post nothing.
-2. Its first post says what to check: `review:programming` (the commit range, checklist a below),
-   `review:security` (the commit range, checklist b, the scan results) or `review:audit` (one area at one commit,
-   both checklists, and: does it do what README.md says; for the page, does it keep to theme.md, with the
-   screenshots and suite 44's result). Check exactly that code, not the latest.
+2. Its title and first post say what to check: Review a (the commit range, checklist a below), Review b (the
+   commit range, checklist b, the scan results) or Review <area> (one area at one commit, both checklists, and:
+   does it do what README.md says; for the page, does it keep to theme.md, with the screenshots and suite 44's
+   result). Check exactly that code, not the latest.
 3. If you haven't posted findings in this issue yet, do round 1; if you have, round 2.
 
 **Round 1, findings:**
@@ -122,5 +125,5 @@ final say on anything you and Claude don't agree on.
   - downloads of calendar links (`app/calsync.py`): https only, redirects, size and time limits, no credentials sent to other hosts;
   - secrets (passwords, the Google client secret and tokens) stay encrypted at rest and out of logs, reports and pages;
   - anything a user types that ends up in a page is escaped.
-- Automated scans (run by Claude, their results in the issue's first post): `pip-audit -r requirements.txt`, `bandit -r app`, `trivy image ghcr.io/uuugh/calendarstream:beta`.
+- Automated scans (their results in the issue's first post): `pip-audit -r requirements.txt` and `bandit -r app` (run by Claude), trivy (the release workflow's scan of the beta's image).
 - A scanner's finding that doesn't apply is explained, not just dismissed.

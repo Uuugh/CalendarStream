@@ -87,7 +87,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # --- Deleted events: struck through, Restore, gone when their Undo pops off ------------------------
     trip = next(x for x in main.store.load_events(lid) if "E1234" in x.title)
     post("/event/delete", uid=trip.uid)
-    p = page()
+    p = c.get(f"/?date={trip.start[:10]}", headers={"accept": "text/html"}).text   # its month (3 days ahead can be next month)
     ok(re.search(rf'data-uid="{re.escape(trip.uid)}" class="ev[^"]*deleted', p) and "Deleted in CalendarStream" in p and "/event/restore" in p,
        "a deleted event stays, struck through, saying where, with Restore")
     post("/event/restore", uid=trip.uid)

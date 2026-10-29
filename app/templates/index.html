@@ -362,12 +362,12 @@
         {# deleted (0.2.8-beta.15): struck through and greyed, saying where, with Restore, until its Undo pops off #}
         {% set dl = e.deleted.split('|') if e.deleted else [] %}
         <details data-uid="{{ e.uid }}" class="ev{% if e.all_day %} allday{% endif %}{% if e.origin in ('custom', 'rule') %} custom{% endif %}{% if e.hidden %} hidden{% endif %}{% if dl %} deleted{% endif %}{% if tc %} tint{% endif %}"{% if tc %} style="--cal:{{ tc }}"{% endif %}>
-          <summary title="{{ e.title }}{% if dl %} ({{ deleted_where.get(dl[0], '') }}){% elif e.hidden %} ({{ _('hidden from Google') }}){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if e.stale %}<span class="mark" title="{{ _('United changed this since your edit') if e.source == 'ccs' else _('The feed changed this since your edit') }}">{{ icon("warning", 13) }}</span>{% elif e.edited %}<span class="mark" title="{{ _('Edited here') }}">{{ icon("edit", 13) }}</span>{% elif e.origin == 'rule' %}<span class="mark" title="{{ _('Added by a rule') }}">{{ icon("subdirectory_arrow_right", 13) }}</span>{% endif %}{% if e.alarms %}<span class="mark" title="{{ _('Has reminders') }}">{{ icon("alarm_on", 13) }}</span>{% endif %}</summary>
+          <summary title="{{ e.title }}{% if dl %} ({{ deleted_where.get(dl[0], '') }}){% elif e.hidden %} ({{ _('hidden from Google') }}){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if dl %}{% elif e.stale %}<span class="mark" title="{{ _('United changed this since your edit') if e.source == 'ccs' else _('The feed changed this since your edit') }}">{{ icon("warning", 13) }}</span>{% elif e.edited %}<span class="mark" title="{{ _('Edited here') }}">{{ icon("edit", 13) }}</span>{% elif e.origin == 'rule' %}<span class="mark" title="{{ _('Added by a rule') }}">{{ icon("subdirectory_arrow_right", 13) }}</span>{% endif %}{% if e.alarms %}<span class="mark" title="{{ _('Has reminders') }}">{{ icon("alarm_on", 13) }}</span>{% endif %}</summary>
           <div class="body"><b>{{ e.title }}</b>
 {{ it.range }}{% if e.location %}
 {{ icon("location_on", 14) }} {{ e.location }}{% endif %}{% if dl %}
 <span class="delnote">{{ deleted_where.get(dl[0], '') }} · {{ dl[1][:10] if dl|length > 1 }} {{ dl[1][11:16] if dl|length > 1 }}</span>{% elif e.hidden %}
-{{ _('Hidden from Google Calendar') }}{% endif %}{% if e.stale %}
+{{ _('Hidden from Google Calendar') }}{% endif %}{% if dl %}{% elif e.stale %}
 {{ icon("warning", 14) }} {{ _('United changed this event after you edited it') if e.source == 'ccs' else _('The feed changed this event after you edited it') }}{% elif e.edited %}
 {{ icon("edit", 14) }} {{ _('Edited here') }}{% elif e.origin == 'custom' %}
 {{ _('Added here') }}{% if e.source != 'ccs' and srcs|selectattr('id', 'equalto', e.source)|selectattr('type', 'ne', 'local')|list %} {{ _('(not in the calendar it’s from)') }}{% elif e.source == 'ccs' %} {{ _('(not in United’s schedule)') }}{% endif %}{% elif e.origin == 'rule' %}
@@ -878,8 +878,8 @@
         </form>
         {% else %}<form method="post" action="/destinations/remove" class="removeform inline gremovemod" id="destremove-{{ d.id }}" data-swap="#destinations|#activity"
               data-ask="{{ _('Are you certain you’d like to remove this Google Calendar module from CalendarStream?') }}"
-              data-yesdel="{{ _('Yes. Remove the module, and delete the {name} from Google Calendar', name=d.cal.calendar_name or d.name) }}"
-              data-yeskeep="{{ _('Yes. Remove the module, but leave the {name} on Google Calendar', name=d.cal.calendar_name or d.name) }}"
+              data-yesdel="{{ _('Yes. Remove the module, and delete {name} from Google Calendar', name=d.cal.calendar_name or d.name) }}"
+              data-yeskeep="{{ _('Yes. Remove the module, but leave {name} on Google Calendar', name=d.cal.calendar_name or d.name) }}"
               data-no="{{ _('No, I changed my mind') }}">
           <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}"><input type="hidden" name="delete" value="">
           <button class="ghost danger" title="{{ _('Remove this feed') }}">{{ trash }} {{ _('Remove') }}</button>

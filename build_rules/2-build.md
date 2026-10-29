@@ -29,6 +29,8 @@ Documentation-only changes (README, CLAUDE.md, AGENTS.md, build_rules/) don't ch
   (suite 44): each Clarification has a check there, added in the same beta.
 - `pip-audit -r requirements.txt` finds nothing; anything it finds is fixed in that beta, or reported to the
   Developer.
+- The release workflow's trivy scan of the image finds no fixable High or Critical vulnerability (it stops the
+  beta before anything is published); the rest of its report is read and passed on in Claude's report.
 - CHANGELOG.md has the beta's entry (its F, I and R, tidied); README.md matches what changed.
 - The Developer's real data appears nowhere (0-overview.md, Ground rules).
 
