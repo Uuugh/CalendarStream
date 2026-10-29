@@ -1,6 +1,6 @@
 # Deploy
 
-Read when the Developer says Deploy. Steps a and b are a REVIEW (build_rules/review.md).
+Read when the Developer says DEPLOY. Steps a and b are a REVIEW and an AUDIT (build_rules/review.md).
 
 ## Before starting
 
@@ -11,7 +11,7 @@ Read when the Developer says Deploy. Steps a and b are a REVIEW (build_rules/rev
 ## How the steps run
 
 - At the start of a step, provide an estimated build time for "Total Time Remaining:" and "Time Remaining in &lt;Step Name&gt;:"
-- Reviews (a, b) run once each, as build_rules/review.md says: the Reviewer's findings, Claude's reply, the
+- Reviews (a, b) and the audit run once each, as build_rules/review.md says: the Reviewer's findings, Claude's reply, the
   Reviewer's answer, then the Developer's vote on anything still disputed. They don't restart.
   - Accepted findings and the Developer's votes are fixed; a change of code behavior is published as the next beta (like a plain "GO", e.g. beta.4 → beta.5), and the Developer tests that beta in step c. Comment, naming and docs fixes are made in place. The release (f) is made from the last beta.
   - A Developer F/I in step c is fixed as the next beta and returns to step a.
@@ -20,12 +20,12 @@ Read when the Developer says Deploy. Steps a and b are a REVIEW (build_rules/rev
 
 ## Steps
 
-**a. Programming Review:** REVIEW a: the Reviewer reviews the code in a review issue, following build_rules/review.md (a. Programming Review).
-- The Reviewer only receives the repo and the diff since the last stable release, not Claude's notes or conversation.
+**a. Programming Review:** REVIEW a: the Reviewer reviews the changes since the last review in a review issue, following build_rules/review.md (a. Programming Review). The AUDIT (every area, both checklists) runs alongside steps a and b, in the same hand-offs.
+- The Reviewer only receives the repo and the diff since the last review (the `reviewed` tag), not Claude's notes or conversation.
 - `tests/run.sh` must pass; the Reviewer reads the suites that cover the diff.
 
 **b. Security Review:** REVIEW b: the Reviewer reviews the code in a review issue, following build_rules/review.md (b. Security Review).
-- The Reviewer only receives the repo and the diff since the last stable release, not Claude's notes or conversation.
+- The Reviewer only receives the repo and the diff since the last review (the `reviewed` tag), not Claude's notes or conversation.
 - Claude runs all three scans and puts their results in the issue's first post: `pip-audit -r requirements.txt`, `bandit -r app`, and `trivy image` on the beta's image (`ghcr.io/uuugh/calendarstream:beta`).
 
 **c. Testing**

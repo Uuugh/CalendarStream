@@ -2,6 +2,10 @@
 
 Always loaded (imported by CLAUDE.md). These words have these meanings in every request.
 
+Keywords (GO, REVIEW, AUDIT, APPROVE, DEPLOY, MENU, STOP, WAIT) count only in capitals, so the same word in
+ordinary talk or dictation never starts anything. They end the message, with their options ("1 build. GO",
+"GO b FI", "AUDIT page"); STOP and WAIT count anywhere in a message. MENU lists them all.
+
 ## Definitions
 
 - Developer = the human user
@@ -40,13 +44,19 @@ Always loaded (imported by CLAUDE.md). These words have these meanings in every 
     - Anything on the page that changed follows build_rules/theme.md (look and interaction), checked
       by the theme suite (suite 44): each Clarification has a check there, added in the same beta.
     - `pip-audit -r requirements.txt` finds nothing; anything it finds is fixed in that beta, or reported to the Developer.
-- Deploy/deploy = Start Deployment Instructions (build_rules/deploy.md)
+- DEPLOY = Start Deployment Instructions (build_rules/deploy.md)
 - REVIEW = A review by the Reviewer (build_rules/review.md): REVIEW runs both (a Programming, b Security), REVIEW a
   or REVIEW b one. With a review issue open, REVIEW to Claude means "your turn: read the issue now"; the
-  Developer sends REVIEW to the Reviewer (ChatGPT) to start its turn. Capitals only, ending the message, like GO.
+  Developer sends REVIEW to the Reviewer (ChatGPT) to start its turn. A REVIEW covers the changes since the last
+  review (the `reviewed` tag).
+- AUDIT = A check of the whole app against the rules, one GitHub issue per area, the same rounds as a review
+  (build_rules/review.md). AUDIT runs every area; AUDIT with an area runs one: rules, google, calendars,
+  database, security, page. A Deploy includes one.
 - APPROVE = The Developer's sign-off wherever the rules ask for it: a rules change (Claude then moves the
-  `review-rules` tag, build_rules/review.md), Deploy step c. Capitals only, ending the message, like GO.
-- STOP/stop/s/WAIT/wait/w = Stop all work. No commit or push. No time / credits / tokens should be spent until the Developer says to continue.
+  `review-rules` tag, build_rules/review.md), Deploy step c.
+- MENU = Claude shows the keywords (what each does and its options), every waiting F, I and R, what's waiting on
+  the Developer (an APPROVE, whose turn an open review is), and the likely next step.
+- STOP / WAIT = Stop all work. No commit or push. No time / credits / tokens should be spent until the Developer says to continue.
 
 ## Ground rules
 

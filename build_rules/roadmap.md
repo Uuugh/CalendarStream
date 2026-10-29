@@ -21,3 +21,8 @@ Read when planning a version.
   - settings allows options for (Apprise library): email, ntfy, Pushover, Telegram and others
 
 0.6 Theming
+
+## Low findings
+
+Low findings from audits (build_rules/review.md), done when that code is next changed. Each: the audit
+issue, #N, file:line, what to do. Taken off when done.
