@@ -54,6 +54,7 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS color  text NOT NULL DEFAULT '';   -
 ALTER TABLE events ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'ccs'; -- which calendar source it's from
 ALTER TABLE events ADD COLUMN IF NOT EXISTS alarms text NOT NULL DEFAULT '';      -- 0.2.8: reminders, minutes before ("15,60")
 ALTER TABLE events ADD COLUMN IF NOT EXISTS rule_color text NOT NULL DEFAULT '';  -- 0.2.8: the color its rules give it
+ALTER TABLE events ADD COLUMN IF NOT EXISTS deleted text NOT NULL DEFAULT '';     -- 0.2.8-beta.15: deleted (kept struck through until its Undo pops off)
 -- What was last written to Google Calendar for each event (see gsync.py)
 CREATE TABLE IF NOT EXISTS google_events (
     uid        text PRIMARY KEY,            -- CalendarStream / CCS+ event UID
@@ -90,6 +91,11 @@ CREATE TABLE IF NOT EXISTS activity_log (
     msg   text NOT NULL
 );
 CREATE INDEX IF NOT EXISTS activity_log_time ON activity_log (time DESC);
+-- 0.2.8-beta.15: History, Undo & Logs. A line's type (Calendar, Rule, Event…), and for a change that can be
+-- undone, what was there before and after it ("undo") and whether it's done or undone ("state")
+ALTER TABLE activity_log ADD COLUMN IF NOT EXISTS kind  text NOT NULL DEFAULT '';
+ALTER TABLE activity_log ADD COLUMN IF NOT EXISTS undo  jsonb;
+ALTER TABLE activity_log ADD COLUMN IF NOT EXISTS state text NOT NULL DEFAULT '';
 """
 
 LOG_KEEP = 1000  # activity-log rows to keep
@@ -143,7 +149,7 @@ class Store:
 
     # --- events ------------------------------------------------------------
     _COLS = ('title, start, "end", all_day, location, description, uid, origin, edited, stale, hidden, free, color, source, '
-             'alarms, rule_color')
+             'alarms, rule_color, deleted')
 
     def replace_events(self, events: list[Event], source: str = "ccs"):
         """Swap in a source's new set of events in one transaction, so the feed never sees a half-written set."""
@@ -152,10 +158,10 @@ class Store:
                 c.execute("DELETE FROM events WHERE source = %s", (source,))
                 with c.cursor() as cur:
                     cur.executemany(
-                        f"INSERT INTO events ({self._COLS}) VALUES ({', '.join(['%s'] * 16)}) "
+                        f"INSERT INTO events ({self._COLS}) VALUES ({', '.join(['%s'] * 17)}) "
                         "ON CONFLICT (uid) DO NOTHING",
                         [(e.title, e.start, e.end, e.all_day, e.location, e.description, e.uid,
-                          e.origin, e.edited, e.stale, e.hidden, e.free, e.color, source, e.alarms, e.rule_color) for e in events])
+                          e.origin, e.edited, e.stale, e.hidden, e.free, e.color, source, e.alarms, e.rule_color, e.deleted) for e in events])
 
     def load_events(self, source: str | None = None) -> list[Event]:
         """All events, or one source's."""
@@ -213,6 +219,12 @@ class Store:
             if source is None:
                 return c.execute("SELECT count(*) FROM events").fetchone()[0]
             return c.execute("SELECT count(*) FROM events WHERE source = %s", (source,)).fetchone()[0]
+
+    def event_sources(self) -> list[str]:
+        """The calendars that have events stored (added ones included)."""
+        with self.pool.connection() as c:
+            rows = c.execute("SELECT DISTINCT source FROM events UNION SELECT DISTINCT coalesce(data->>'source', 'ccs') FROM custom_events").fetchall()
+        return [r[0] for r in rows]
 
     def forget_source(self, source: str):
         """Remove everything kept for a removed source: its events, edits, added events and files."""
@@ -289,18 +301,149 @@ class Store:
             else:
                 c.execute("DELETE FROM google_events")
 
-    # --- activity log ------------------------------------------------------
+    # --- activity log: History, Undo & Logs -----------------------------------
 
-    def add_log(self, level: str, msg: str):
+    def add_log(self, level: str, msg: str, kind: str = "", undo: dict | None = None, stack: bool = True) -> int:
+        """A line of history; with `undo` ({"before", "after"} snapshots) it can be undone (0.2.8-beta.15).
+        A new change that can be undone drops what was undone before it: it can't be redone any more.
+        `stack=False` (something done outside CalendarStream: deleted in Google, removed by United) keeps
+        the undo data, so its events stay restorable until it pops off, but puts no Undo on the stack."""
+        stacked = undo is not None and stack
         with self.pool.connection() as c:
-            c.execute("INSERT INTO activity_log (level, msg) VALUES (%s, %s)", (level, msg))
+            if stacked:
+                c.execute("UPDATE activity_log SET undo = NULL, state = '' WHERE state = 'undone'")
+            row = c.execute("INSERT INTO activity_log (level, msg, kind, undo, state) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                            (level, msg, kind, Jsonb(undo) if undo is not None else None, "done" if stacked else "")).fetchone()
             c.execute("DELETE FROM activity_log WHERE id <= (SELECT max(id) FROM activity_log) - %s", (LOG_KEEP,))
+        return row[0]
 
-    def recent_log(self, limit: int = 100) -> list[dict]:
+    def recent_log(self, limit: int = 100, kind: str = "", words: str = "", since: datetime | None = None) -> list[dict]:
+        """The newest lines first, optionally of one type, containing some words, or since a time."""
+        where, args = [], []
+        if kind:
+            where.append("kind = %s"); args.append(kind)
+        if words:
+            where.append("msg ILIKE %s"); args.append("%" + words.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%")
+        if since:
+            where.append("time >= %s"); args.append(since)
+        # nosec B608: only the fixed conditions above are joined in; every value is a parameter
+        sql = ("SELECT id, time, level, msg, kind, state FROM activity_log" + (" WHERE " + " AND ".join(where) if where else "")  # nosec B608
+               + " ORDER BY id DESC LIMIT %s")
         with self.pool.connection() as c:
-            rows = c.execute("SELECT time, level, msg FROM activity_log ORDER BY id DESC LIMIT %s",
-                             (limit,)).fetchall()
-        return [{"time": t, "level": lvl, "msg": m} for t, lvl, m in rows]
+            rows = c.execute(sql, (*args, limit)).fetchall()
+        return [{"id": i, "time": t, "level": lvl, "msg": m, "kind": k, "state": st} for i, t, lvl, m, k, st in rows]
+
+    def undo_entry(self, entry_id: int) -> dict | None:
+        with self.pool.connection() as c:
+            row = c.execute("SELECT id, msg, kind, undo, state FROM activity_log WHERE id = %s AND undo IS NOT NULL",
+                            (entry_id,)).fetchone()
+        return {"id": row[0], "msg": row[1], "kind": row[2], "undo": row[3], "state": row[4]} if row else None
+
+    def undo_stack(self) -> tuple[int | None, int | None]:
+        """The line Undo would undo (the newest done one) and the one Redo would redo (the oldest undone
+        one newer than it): a stack, so the newest change is always undone first."""
+        with self.pool.connection() as c:
+            top = c.execute("SELECT max(id) FROM activity_log WHERE state = 'done'").fetchone()[0]
+            redo = c.execute("SELECT min(id) FROM activity_log WHERE state = 'undone' AND id > coalesce(%s, 0)", (top,)).fetchone()[0]
+        return top, redo
+
+    def undo_payloads(self, kind: str) -> list[dict]:
+        """The undo data of every change of one type still kept (e.g. "deleted")."""
+        with self.pool.connection() as c:
+            rows = c.execute("SELECT undo FROM activity_log WHERE undo IS NOT NULL AND undo->>'type' = %s", (kind,)).fetchall()
+        return [r[0] for r in rows]
+
+    def forget_deleted(self, uid: str):
+        """An event restored on its own: no longer part of its deletion's Undo (the line stays)."""
+        with self.pool.connection() as c:
+            rows = c.execute("SELECT id, undo FROM activity_log WHERE undo IS NOT NULL AND undo->>'type' = 'deleted' "
+                             "AND undo->'uids' ? %s", (uid,)).fetchall()
+            for entry_id, undo in rows:
+                left = [u for u in undo["uids"] if u != uid]
+                if left:
+                    c.execute("UPDATE activity_log SET undo = %s WHERE id = %s", (Jsonb({**undo, "uids": left}), entry_id))
+                else:
+                    c.execute("UPDATE activity_log SET undo = NULL, state = '' WHERE id = %s", (entry_id,))
+
+    def set_undo_state(self, entry_id: int, state: str):
+        with self.pool.connection() as c:
+            c.execute("UPDATE activity_log SET state = %s WHERE id = %s", (state, entry_id))
+
+    def trim_undo(self, keep: int) -> int:
+        """Keep what's needed to undo or redo the newest `keep` changes; the older ones pop off (their
+        snapshots, with any sign-in kept for them, are forgotten). Returns how many popped off."""
+        with self.pool.connection() as c:
+            rows = c.execute("SELECT id FROM activity_log WHERE undo IS NOT NULL ORDER BY id DESC OFFSET %s", (keep,)).fetchall()
+            if rows:
+                c.execute("UPDATE activity_log SET undo = NULL, state = '' WHERE id = ANY(%s)", ([r[0] for r in rows],))
+        return len(rows)
+
+    # --- snapshots for Undo (0.2.8-beta.15) ------------------------------------
+    # What a change touches, as it was: settings (kv keys) and, for whole calendars, their events, edits,
+    # added events and downloaded file. Restoring one puts exactly that back.
+
+    def snapshot(self, keys: list[str], sources: list[str] = (), uids: list[str] = ()) -> dict:
+        import base64
+        with self.pool.connection() as c:
+            kv = {k: None for k in keys}
+            for k, v in c.execute("SELECT key, value FROM kv WHERE key = ANY(%s)", (list(keys),)).fetchall():
+                kv[k] = v
+            snap = {"kv": kv, "sources": {}, "uids": {}}
+            for sid in sources:
+                events = [list(r) for r in c.execute(f"SELECT {self._COLS} FROM events WHERE source = %s", (sid,)).fetchall()]  # nosec B608: fixed columns
+                ids = [r[6] for r in events]
+                edits = dict(c.execute("SELECT uid, data FROM event_edits WHERE uid = ANY(%s)", (ids,)).fetchall()) if ids else {}
+                customs = dict(c.execute("SELECT uid, data FROM custom_events WHERE coalesce(data->>'source', 'ccs') = %s",
+                                         (sid,)).fetchall())
+                name = "source" if sid == "ccs" else f"source:{sid}"
+                f = c.execute("SELECT content, content_type, sha256 FROM calendar_files WHERE name = %s", (name,)).fetchone()
+                snap["sources"][sid] = {"events": events, "edits": edits, "customs": customs,
+                                        "file": [base64.b64encode(bytes(f[0])).decode(), f[1], f[2]] if f else None}
+            for uid in uids:
+                e = c.execute("SELECT data FROM event_edits WHERE uid = %s", (uid,)).fetchone()
+                cu = c.execute("SELECT data FROM custom_events WHERE uid = %s", (uid,)).fetchone()
+                snap["uids"][uid] = {"edit": e[0] if e else None, "custom": cu[0] if cu else None}
+        return snap
+
+    def restore(self, snap: dict):
+        """Put a snapshot back, in one transaction (the events are rebuilt from it by the app)."""
+        import base64
+        with self.pool.connection() as c, c.transaction():
+            for k, v in (snap.get("kv") or {}).items():
+                if v is None:
+                    c.execute("DELETE FROM kv WHERE key = %s", (k,))
+                else:
+                    c.execute("""INSERT INTO kv (key, value) VALUES (%s, %s)
+                                 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()""", (k, Jsonb(v)))
+            for sid, part in (snap.get("sources") or {}).items():
+                old = [r[0] for r in c.execute("SELECT uid FROM events WHERE source = %s", (sid,)).fetchall()]
+                if old:
+                    c.execute("DELETE FROM event_edits WHERE uid = ANY(%s)", (old,))
+                c.execute("DELETE FROM events WHERE source = %s", (sid,))
+                c.execute("DELETE FROM custom_events WHERE coalesce(data->>'source', 'ccs') = %s", (sid,))
+                with c.cursor() as cur:
+                    if part["events"]:
+                        cur.executemany(f"INSERT INTO events ({self._COLS}) VALUES ({', '.join(['%s'] * 17)}) ON CONFLICT (uid) DO NOTHING",  # nosec B608: fixed columns
+                                        [tuple(r) for r in part["events"]])
+                    for uid, data in part["edits"].items():
+                        cur.execute("INSERT INTO event_edits (uid, data) VALUES (%s, %s) ON CONFLICT (uid) DO UPDATE SET data = EXCLUDED.data",
+                                    (uid, Jsonb(data)))
+                    for uid, data in part["customs"].items():
+                        cur.execute("INSERT INTO custom_events (uid, data) VALUES (%s, %s) ON CONFLICT (uid) DO UPDATE SET data = EXCLUDED.data",
+                                    (uid, Jsonb(data)))
+                name = "source" if sid == "ccs" else f"source:{sid}"
+                c.execute("DELETE FROM calendar_files WHERE name = %s", (name,))
+                if part.get("file"):
+                    content, ctype, sha = part["file"]
+                    c.execute("INSERT INTO calendar_files (name, content, content_type, sha256) VALUES (%s, %s, %s, %s)",
+                              (name, base64.b64decode(content), ctype, sha))
+            for uid, part in (snap.get("uids") or {}).items():
+                for table, value in (("event_edits", part["edit"]), ("custom_events", part["custom"])):   # the two fixed tables
+                    if value is None:
+                        c.execute(f"DELETE FROM {table} WHERE uid = %s", (uid,))  # nosec B608
+                    else:
+                        c.execute(f"INSERT INTO {table} (uid, data) VALUES (%s, %s) ON CONFLICT (uid) DO UPDATE SET data = EXCLUDED.data",  # nosec B608
+                                  (uid, Jsonb(value)))
 
 
 def iso(d: datetime | None):

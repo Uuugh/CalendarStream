@@ -75,7 +75,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     with sync_playwright() as pw:
         b = pw.chromium.launch()
         for scheme in ("light", "dark"):
-            pg = b.new_page(viewport={"width": 1400, "height": 900}, color_scheme=scheme, http_credentials={"username": "t", "password": "password1"})
+            pg = b.new_page(viewport={"width": 1400, "height": 900}, color_scheme=scheme, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
             errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
             pg.goto("http://127.0.0.1:8097/?view=month"); pg.wait_for_timeout(600)
             fam = pg.evaluate("getComputedStyle(document.body).fontFamily")
@@ -106,7 +106,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             ok(pg.locator("svg.mi").count() > 20 and pg.evaluate("[...document.querySelectorAll('svg')].every(s => s.querySelector(':scope > use[href^=\"#mi-\"]') || s.querySelector(':scope > symbol[id^=\"mi-\"]'))"), f"{scheme}: every icon on the page is a Material Symbol")
             ok(not errs, f"{scheme}: no script errors {errs}")
             pg.close()
-        pg = b.new_page(viewport={"width": 1400, "height": 900}, http_credentials={"username": "t", "password": "password1"})
+        pg = b.new_page(viewport={"width": 1400, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         loads = []; pg.on("load", lambda: loads.append(1))
         pg.goto("http://127.0.0.1:8097/?view=month"); pg.wait_for_timeout(500); loads.clear()

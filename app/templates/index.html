@@ -26,17 +26,55 @@
   <form method="post" action="/google/client" id="gremove" data-swap="#googlesync|#destinations|#activity" data-confirm="{{ _('Delete the client ID and secret? (Disconnects first; your calendars stay in Google.)') }}">
     <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="action" value="remove"></form>
   {% if gcls != 'good' %}{{ m.google_connected(g, "", "f") }}{% endif %}
-  {# Remove (0.2.8-beta.12), in the lower left like a module's: disconnects Google (asks first), with
-     "Also delete these calendars in Google" beside it #}
-  <form method="post" action="/google/disconnect" class="disconnectform gremoverow" data-swap="#googlesync|#destinations|#activity">
-    <input type="hidden" name="csrf" value="{{ csrf }}">
+  {# Remove (0.2.8-beta.12), in the lower left like a module's: disconnects Google. It asks in a pop-up
+     (0.2.8-beta.15), like a Google module's Remove: delete the calendars in Google too, or leave them. #}
+  <form method="post" action="/google/disconnect" class="gremoverow gremovemod" data-swap="#googlesync|#destinations|#activity"
+        data-ask="{{ _('Are you certain you’d like to remove Google Calendar API Sync from CalendarStream?') }}"
+        data-yesdel="{{ _('Yes. Disconnect, and delete CalendarStream’s calendars from Google Calendar') }}"
+        data-yeskeep="{{ _('Yes. Disconnect, but leave the calendars on Google Calendar') }}"
+        data-no="{{ _('No, I changed my mind') }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="delete" value="">
     <button class="ghost danger" title="{{ _('Disconnect Google Calendar') }}">{{ trash }} {{ _('Remove') }}</button>
-    <label class="mnote"><input type="checkbox" name="delete" value="1"> {{ _('Also delete these calendars in Google') }}</label>
   </form>
   {%- endmacro %}
-  {# A module's note (0.2.8-beta.9): a raised (i) after its name, shown on hover or click, only when there is one #}
-  {% macro notedot(text) -%}
-  <span class="helpdot notedot" tabindex="0" role="button" aria-label="{{ _('Note') }}" aria-expanded="false">{{ icon("info", 15) }}<span class="helptip" role="tooltip">{{ text }}</span></span>
+  {# A module's info (0.2.8-beta.15): a raised (i) after its label, shown on hover or click: what the module is,
+     then its note when it has one. (i) is info; (?) is help (how to). #}
+  {% macro notedot(about, note="") -%}
+  <span class="helpdot notedot" tabindex="0" role="button" aria-label="{{ _('Info') }}" aria-expanded="false">{{ icon("info", 15) }}<span class="helptip" role="tooltip">{{ about }}{% if note %}{% if about %}<br>{% endif %}<b>{{ _('Note:') }}</b> {{ note }}{% endif %}</span></span>
+  {%- endmacro %}
+
+  {# The color box (0.2.8-beta.15): one palette everywhere, Google Calendar's 11 colors (what Google shows for
+     an event); a click (while the module is expanded) opens it. The choice is sent with `form`'s Save. #}
+  {% macro colorbox(form, value, title, open=true) -%}
+  {% set c = value or '#3f51b5' %}
+  <span class="colorbox"><button type="button" class="colorpick" style="--c:{{ c }}" aria-haspopup="true" aria-expanded="false" aria-label="{{ _('Color') }}" title="{{ title }}"{% if not open %} tabindex="-1"{% endif %}></button>
+    <input type="hidden" class="colorval" form="{{ form }}" value="{{ c }}" data-default="{{ c }}">
+    <span class="palpop" role="radiogroup" aria-label="{{ _('Color') }}" hidden>{% for n, h in palette %}<button type="button" class="pal" role="radio" data-c="{{ h }}" title="{{ _(n) }}" aria-label="{{ _(n) }}" aria-checked="{{ 'true' if h == c else 'false' }}" style="--c:{{ h }}"></button>{% endfor %}</span></span>
+  {%- endmacro %}
+
+  {# Import .ics (0.2.8-beta.15), the one layout for every calendar: the heading, the file (it fills the line),
+     the dates (All unless chosen) and the button on the right. CCS+'s is Manual Upload: it replaces the
+     schedule, so it has no dates. #}
+  {% macro importrow(x, manual=false) -%}
+  <form class="importrow{% if manual %} uploadform{% endif %}" method="post" action="{{ '/setup/upload' if manual else '/sources/import' }}" enctype="multipart/form-data"
+        {% if manual %}data-swap="#src-ccs>.srchead|#cal|#activity"{% else %}data-sid="{{ x.id }}"{% endif %}>
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
+    <h3 class="cfghead">{{ _('Manual Upload') if manual else _('Import') }}</h3>
+    <label class="filefield">{{ icon("upload_file", 18) }}<input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}"><span class="filename" data-none="{{ _('Choose Calendar.ics…') }}">{{ _('Choose Calendar.ics…') }}</span></label>
+    {% if not manual %}{{ daterange("start", "end", "", "") }}{% endif %}
+    <button class="ghost">{{ _('Upload & publish') if manual else _('Import') }}</button>
+  </form>
+  {%- endmacro %}
+
+  {# A date range (0.2.8-beta.15): From | To with All; All (the default when both are empty) clears the dates
+     (still sent, empty: every date) and they can't be typed in until it's unticked. #}
+  {% macro daterange(a, b, va, vb, la=none, lb=none, allon=none) -%}
+  {% set all = (not va and not vb) if allon is none else allon %}
+  <span class="daterange">
+    <label class="fld"><span>{{ la or _('From') }}</span><input type="date" name="{{ a }}" value="{{ va }}" title="{{ la or _('From') }}"{% if all %} readonly class="off"{% endif %}></label>
+    <label class="fld"><span>{{ lb or _('To') }}</span><input type="date" name="{{ b }}" value="{{ vb }}" title="{{ lb or _('To') }}"{% if all %} readonly class="off"{% endif %}></label>
+    <label class="allbox"><input type="checkbox" class="rangeall"{% if all %} checked{% endif %}> {{ _('All') }}</label>
+  </span>
   {%- endmacro %}
   {% macro help(text, pos="") -%}
   <span class="helpdot{% if pos %} {{ pos }}{% endif %}" tabindex="0" role="button" aria-label="{{ _('Help') }}" aria-expanded="false">{{ icon("help", 15) }}<span class="helptip" role="tooltip">{{ text }}</span></span>
@@ -104,7 +142,7 @@
         {# Laid out like the other logins; "✓ Signed in" until something is typed, then the
            current password (and the new one again) are asked for and Save appears. #}
         <div class="mgroup" id="pagelogin">
-          <div class="mhead">{{ _('Status-page login') }}</div>
+          <div class="mhead">{{ _('Administrator') }}</div>
           <form method="post" action="/settings/login" class="clientform watch" autocomplete="off">
             <input type="hidden" name="csrf" value="{{ csrf }}">
             <div class="pair">
@@ -120,8 +158,10 @@
               <label class="fld" for="lconf"><span>{{ _('New password again') }}</span>
                 <input type="password" id="lconf" name="confirm" minlength="8" autocomplete="new-password"></label>
             </div>
-            <p class="mnote more" style="margin:6px 0 0" hidden>{{ _('Your browser will then ask for the new login.') }}</p>
+            <p class="mnote more" style="margin:6px 0 0" hidden>{{ _('Then sign in again with the new login.') }}</p>
           </form>
+          <form method="post" action="/logout" class="signout"><input type="hidden" name="csrf" value="{{ csrf }}">
+            <button class="ghost">{{ icon("logout", 16) }} {{ _('Sign out') }}</button></form>
         </div>
 
         {# Right under the page login. "This page" sits inside the box; Save is on the same line. #}
@@ -141,20 +181,6 @@
           {% if not public.url %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
         </div>
 
-        {# The administrator's e-mail: used in the Google setup guide (support / contact e-mail, test user). #}
-        <div class="mgroup" id="admin">
-          <div class="mhead">{{ _('Admin e-mail') }}{{ help(_('The administrator’s address: the guided Google setup uses it as support e-mail, contact and test user. Use the Gmail you’ll connect with.'), 'left') }}</div>
-          <form method="post" action="/settings/admin-email" class="clientform watch" data-swap="#admin|#googlesync">
-            <input type="hidden" name="csrf" value="{{ csrf }}">
-            <div class="pair">
-              <input type="email" class="solo code" id="adminemail" name="email" value="{{ admin_email }}" maxlength="254" spellcheck="false"
-                     autocomplete="email" placeholder="you@gmail.com" aria-label="{{ _('Admin e-mail') }}">
-              {{ m.okbutton(admin_email, _('Saved'), _('Save')) }}
-            </div>
-          </form>
-          {% if not admin_email %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
-        </div>
-
         {# Google Calendar sync (0.2.8-beta.4, moved here from Feeds): the one Google sign-in every Google
            calendar in Feeds uses: the client ID and secret (with the step-by-step guide), Connect /
            Disconnect, the account and its last sync. Without it, + Google Calendar in Feeds makes a feed
@@ -167,6 +193,19 @@
         {% elif g.connected %}{% set gcls, glabel = "good", _('Connected') %}
         {% elif gvalid %}{% set gcls, glabel = "run", _('Ready to connect') %}
         {% else %}{% set gcls, glabel = "run", _('Not set up') %}{% endif %}
+        {# The administrator's e-mail (0.2.8-beta.15: here, where it's used): the guided setup's support and
+           contact e-mail and test user #}
+        {% macro adminmail() -%}
+        <form method="post" action="/settings/admin-email" class="clientform watch adminmail" id="admin" data-swap="#googlesync">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <div class="pair">
+            <label class="fld"><span>{{ _('Admin e-mail') }}{{ help(_('The guided setup uses it as support e-mail, contact and test user. Use the Gmail you’ll connect with.'), 'left') }}</span>
+              <input type="email" class="code" id="adminemail" name="email" value="{{ admin_email }}" maxlength="254" spellcheck="false"
+                     autocomplete="email" placeholder="you@gmail.com" aria-label="{{ _('Admin e-mail') }}"></label>
+            {{ m.okbutton(admin_email, _('Saved'), _('Save')) }}
+          </div>
+        </form>
+        {%- endmacro %}
         <div class="mgroup" id="googlesync">
         {% if g.connected and gcls == 'good' %}
           {# Working (0.2.8-beta.12): nothing hidden. A module header like Updates (the account; the last
@@ -175,7 +214,7 @@
           <div class="module bare">
             <div class="srchead">
               <div class="srcleft">
-                <div class="namebox srcname">{{ _('Google Calendar API Sync') }}{{ help(_('Keeps each Google calendar in Feeds up to date: its dates, the reminders set here (🔔). Two-way: Google changes come back here (never to CCS+) · a rule’s events can’t be changed there · both changed: newer wins · more than 3 deletions wait in Activities and Logs. Also subscribed to a feed in Google? Remove it there, or you’ll see everything twice.'), 'left') }}</div>
+                <div class="namebox srcname">{{ _('Google Calendar API Sync') }}{{ help(_('Keeps each Google calendar in Feeds up to date: its dates, the reminders set here (🔔). Two-way: Google changes come back here (never to CCS+) · a rule’s events can’t be changed there · both changed: newer wins · a deletion there is struck through here (Restore, or History › Undo). Also subscribed to a feed in Google? Remove it there, or you’ll see everything twice.'), 'left') }}</div>
                 <div class="namebox srcnote" title="{{ g.info.email }}">{{ g.info.email or _('your Google account') }}</div>
               </div>
               <div class="srcright">
@@ -185,11 +224,13 @@
               <div class="statusbox good">{{ chip('good', _('Connected')) }}{{ syncbtn("/google/sync", "google", g.running) }}</div>
             </div>
           </div>
-          {{ gdetails() }}
+          {{ adminmail() }}
+          {{ gdetails() }}{# Remove stays in the lower left #}
         {% else %}
           <div class="mhead">{{ _('Google Calendar API Sync') }}{{ help(_('Optional. With it: changes within seconds, rule colors, reminders. Without it: Google subscribes to a feed link (every few hours, one color).') ~ ' ' ~ _('Connect: checks your client and address with Google › Google sign-in. “Google hasn’t verified this app” is normal › Continue (or Advanced › Go to CalendarStream) › tick the calendar › Continue.'), 'left') }}
             {% if g.connected %}<span class="gstate">{{ chip(gcls, glabel) }}</span>{% endif %}</div>
           {% if g.info.last_error %}<p class="merr">{{ msg(g.info.last_error) }}</p>{% endif %}
+          {{ adminmail() }}
           {% if g.connected %}{{ gdetails(gcls) }}{% endif %}
           {% if not gvalid or g.info.last_error %}
             {# Missing or not working (0.2.8-beta.10): two ways to get a client: Claude does the Google Cloud
@@ -318,28 +359,32 @@
         {% set e = it.e %}
         {# its color as Google shows it (0.2.8-beta.10): its own or its rule's, else its calendar's #}
         {% set tc = it.tag_color or it.src_color or '#1d4ed8' %}
-        <details data-uid="{{ e.uid }}" class="ev{% if e.all_day %} allday{% endif %}{% if e.origin in ('custom', 'rule') %} custom{% endif %}{% if e.hidden %} hidden{% endif %}{% if tc %} tint{% endif %}"{% if tc %} style="--cal:{{ tc }}"{% endif %}>
-          <summary title="{{ e.title }}{% if e.hidden %} ({{ _('hidden from Google') }}){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if e.stale %}<span class="mark" title="{{ _('United changed this since your edit') if e.source == 'ccs' else _('The feed changed this since your edit') }}">{{ icon("warning", 13) }}</span>{% elif e.edited %}<span class="mark" title="{{ _('Edited here') }}">{{ icon("edit", 13) }}</span>{% elif e.origin == 'rule' %}<span class="mark" title="{{ _('Added by a rule') }}">{{ icon("subdirectory_arrow_right", 13) }}</span>{% endif %}{% if e.alarms %}<span class="mark" title="{{ _('Has reminders') }}">{{ icon("alarm_on", 13) }}</span>{% endif %}</summary>
+        {# deleted (0.2.8-beta.15): struck through and greyed, saying where, with Restore, until its Undo pops off #}
+        {% set dl = e.deleted.split('|') if e.deleted else [] %}
+        <details data-uid="{{ e.uid }}" class="ev{% if e.all_day %} allday{% endif %}{% if e.origin in ('custom', 'rule') %} custom{% endif %}{% if e.hidden %} hidden{% endif %}{% if dl %} deleted{% endif %}{% if tc %} tint{% endif %}"{% if tc %} style="--cal:{{ tc }}"{% endif %}>
+          <summary title="{{ e.title }}{% if dl %} ({{ deleted_where.get(dl[0], '') }}){% elif e.hidden %} ({{ _('hidden from Google') }}){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if e.stale %}<span class="mark" title="{{ _('United changed this since your edit') if e.source == 'ccs' else _('The feed changed this since your edit') }}">{{ icon("warning", 13) }}</span>{% elif e.edited %}<span class="mark" title="{{ _('Edited here') }}">{{ icon("edit", 13) }}</span>{% elif e.origin == 'rule' %}<span class="mark" title="{{ _('Added by a rule') }}">{{ icon("subdirectory_arrow_right", 13) }}</span>{% endif %}{% if e.alarms %}<span class="mark" title="{{ _('Has reminders') }}">{{ icon("alarm_on", 13) }}</span>{% endif %}</summary>
           <div class="body"><b>{{ e.title }}</b>
 {{ it.range }}{% if e.location %}
-{{ icon("location_on", 14) }} {{ e.location }}{% endif %}{% if e.hidden %}
+{{ icon("location_on", 14) }} {{ e.location }}{% endif %}{% if dl %}
+<span class="delnote">{{ deleted_where.get(dl[0], '') }} · {{ dl[1][:10] if dl|length > 1 }} {{ dl[1][11:16] if dl|length > 1 }}</span>{% elif e.hidden %}
 {{ _('Hidden from Google Calendar') }}{% endif %}{% if e.stale %}
 {{ icon("warning", 14) }} {{ _('United changed this event after you edited it') if e.source == 'ccs' else _('The feed changed this event after you edited it') }}{% elif e.edited %}
 {{ icon("edit", 14) }} {{ _('Edited here') }}{% elif e.origin == 'custom' %}
-{{ _('Added here') }}{% elif e.origin == 'rule' %}
+{{ _('Added here') }}{% if e.source != 'ccs' and srcs|selectattr('id', 'equalto', e.source)|selectattr('type', 'ne', 'local')|list %} {{ _('(not in the calendar it’s from)') }}{% elif e.source == 'ccs' %} {{ _('(not in United’s schedule)') }}{% endif %}{% elif e.origin == 'rule' %}
 {{ icon("subdirectory_arrow_right", 14) }} {{ _('Added by a rule (change the rule or its event template to change it)') }}{% endif %}{% if e.uid in linked %}
 {{ icon("link", 14) }} {{ _('Linked to “{title}”', title=linked[e.uid]) }}{% endif %}{% if srcs|length > 1 %}
 {{ src_names.get(e.source, '') }}{% endif %}{% if e.description %}
 
 {{ e.description }}{% endif %}
-<span class="evtools" data-origin="{{ e.origin }}"{% if e.hidden %} data-hidden="1"{% endif %}{% if e.uid in linked %} data-linked="1"{% endif %} data-alarms="{{ e.alarms }}"></span></div>
+{% if dl %}<form method="post" action="/event/restore" class="inline evrestore" data-swap="#cal|#activity"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="uid" value="{{ e.uid }}"><button class="ghost">{{ icon("undo", 15) }} {{ _('Restore') }}</button></form>{% endif %}
+<span class="evtools" data-origin="{{ e.origin }}"{% if e.hidden %} data-hidden="1"{% endif %}{% if dl %} data-deleted="1"{% endif %}{% if e.uid in linked %} data-linked="1"{% endif %} data-alarms="{{ e.alarms }}"></span></div>
         </details>
   {%- endmacro %}
 
   <div class="card" id="cal">
   {# An event's tools (Close, reminders, edit, duplicate, delete), made from this when it's opened
      (0.2.8-beta.4): once here instead of in every event, which made up most of the calendar's size. #}
-  <template id="evtoolstpl" data-month="{{ cal.month }}" data-del-custom="{{ _('Delete this event?') }}" data-del-source="{{ _('Hide this event from your feeds? (Its source would send it back. Undo: Edit › untick Hide.)') }}"><button type="button" class="linkbtn evclose">{{ _('Close') }}</button><span class="evicons"><a class="evicon evlinkto" href="" title="{{ _('Link to another event (move or delete with it)') }}" aria-label="{{ _('Link to another event') }}">{{ icon("link", 17) }}</a><button type="button" class="evicon evalarm" data-uid="" data-alarms="" title="{{ _('Reminders') }}" aria-label="{{ _('Reminders') }}">{{ icon("alarm", 17) }}</button><a class="evicon evedit" href="" title="{{ _('Edit') }}" aria-label="{{ _('Edit') }}">{{ icon("edit", 17) }}</a><a class="evicon evcopy" href="" title="{{ _('Duplicate') }}" aria-label="{{ _('Duplicate') }}">{{ copy_icon }}</a><form method="post" action="/event/delete" class="evdel" data-swap="#cal|#activity" data-confirm=""><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="uid" value=""><input type="hidden" name="month" value="{{ cal.month }}"><button class="evicon" title="{{ _('Delete') }}" aria-label="{{ _('Delete') }}">{{ trash }}</button></form></span></template>
+  <template id="evtoolstpl" data-month="{{ cal.month }}" data-del-custom="{{ _('Delete this event? (Restore, or History › Undo, brings it back.)') }}" data-del-source="{{ _('Delete this event? (Restore, or History › Undo, brings it back.)') }}"><button type="button" class="linkbtn evclose">{{ _('Close') }}</button><span class="evicons"><a class="evicon evlinkto" href="" title="{{ _('Link to another event (move or delete with it)') }}" aria-label="{{ _('Link to another event') }}">{{ icon("link", 17) }}</a><button type="button" class="evicon evalarm" data-uid="" data-alarms="" title="{{ _('Reminders') }}" aria-label="{{ _('Reminders') }}">{{ icon("alarm", 17) }}</button><a class="evicon evedit" href="" title="{{ _('Edit') }}" aria-label="{{ _('Edit') }}">{{ icon("edit", 17) }}</a><a class="evicon evcopy" href="" title="{{ _('Duplicate') }}" aria-label="{{ _('Duplicate') }}">{{ copy_icon }}</a><form method="post" action="/event/delete" class="evdel" data-swap="#cal|#activity" data-confirm=""><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="uid" value=""><input type="hidden" name="month" value="{{ cal.month }}"><button class="evicon" title="{{ _('Delete') }}" aria-label="{{ _('Delete') }}">{{ trash }}</button></form></span></template>
     {% set step = {"month": (_('Previous month'), _('Next month')), "week": (_('Previous week'), _('Next week')), "day": (_('Previous day'), _('Next day')), "list": (_('Previous month'), _('Next month'))}[cal.view] %}
     <div class="calhead">
       <a class="navbtn" href="?date={{ cal.prev }}" title="{{ step[0] }}" aria-label="{{ step[0] }}">{{ icon("chevron_left", 20) }}</a>
@@ -391,8 +436,7 @@
       <span class="inbox"><input type="search" id="calq" name="q" value="{{ cal.search.q if cal.search else '' }}" maxlength="100" autocomplete="off"
              placeholder="{{ _('Search titles, places and notes') }}" aria-label="{{ _('Search') }}"></span>
       <select name="qsrc" aria-label="{{ _('Calendar') }}"><option value="">{{ _('All calendars') }}</option>{% for x in srcs %}<option value="{{ x.id }}"{% if cal.search and cal.search.src == x.id %} selected{% endif %}>{{ x.name }}</option>{% endfor %}</select>
-      <label class="qdate">{{ _('From') }} <input type="date" name="qfrom" value="{{ cal.search['from'] if cal.search else '' }}"></label>
-      <label class="qdate">{{ _('To') }} <input type="date" name="qto" value="{{ cal.search.to if cal.search else '' }}"></label>
+      {{ daterange("qfrom", "qto", cal.search['from'] if cal.search else '', cal.search.to if cal.search else '') }}
       <button type="button" class="iconbtn" id="calqclose" title="{{ _('Close the search') }}" aria-label="{{ _('Close the search') }}">{{ icon("close", 18) }}</button>
     </form>
     <div id="calbody">
@@ -423,7 +467,7 @@
     <div class="legend">
       {# The key: each calendar in its color (when it has one), then "Added here", then the rules' colors. #}
       {% for x in srcs %}<span style="--sw:color-mix(in srgb, {{ x.color or '#1d4ed8' }} 18%, var(--card))">{{ x.name }}</span>{% endfor %}{% for r in all_rules if r.used %}{% for a in r.actions if a.type == 'color' %}<span style="--sw:color-mix(in srgb, {{ a.color }} 18%, var(--card))">{{ r.title or (r.conds[0].value if r.conds and r.conds[0].type == 'text' else r.label) }}</span>{% endfor %}{% endfor %}
-      <span class="legendkey" style="--sw:transparent">{{ icon("edit", 14) }} {{ _('edited') }} · {{ icon("warning", 14) }} {{ _('United changed it since') }} · <s>{{ _('struck') }}</s> {{ _('hidden from Google') }}</span>
+      <span class="legendkey" style="--sw:transparent">{{ icon("edit", 14) }} {{ _('edited') }} · {{ icon("warning", 14) }} {{ _('United changed it since') }} · <s>{{ _('struck') }}</s> {{ _('hidden from Google') }} · <s class="legdel">{{ _('struck, grey') }}</s> {{ _('deleted (Restore, or History › Undo)') }}</span>
       {{ help(_('The schedule as sent to your feeds. Event › details or edit · empty spot (or +) › add one. Never changes CCS+.'), 'right') }}
     </div>
   </div>
@@ -434,7 +478,7 @@
   {# "▸ Configure ◂" under a box's header: opens or folds the rest (cfg-<id>). #}
   {# Folded, "▸ Expand for Details or to Edit Configuration ◂" in the module's bottom border; open, a
      line under its header with "Close" (F1.1). #}
-  {# A section's Expand / Close line (All Rules, Event Templates, Activities and Logs), like a module's #}
+  {# A section's Expand / Close line (All Rules, Event Templates, History), like a module's #}
   {% macro sectionline(name, open) %}<div class="cfgline"><button type="button" class="cfgtoggle toggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="{{ name }}-body">{{ icon("arrow_right", 18, "arr l") }}<span class="expandword"><span class="long">{{ _('Expand for Details') }}</span><span class="short">{{ _('Expand') }}</span></span><span class="closeword">{{ _('Close') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>{% endmacro %}
   {% macro cfgline(id, open) %}<div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="cfg-{{ id }}">{{ icon("arrow_right", 18, "arr l") }}<span class="expandword"><span class="long">{{ _('Expand for Details or to Edit Configuration') }}</span><span class="short">{{ _('Expand') }}</span></span><span class="closeword">{{ _('Close') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>{% endmacro %}
   {# Small icons left of the section titles (F1.3). #}
@@ -451,7 +495,8 @@
       <div class="addwrap">
         <button type="button" class="ghost plus" aria-haspopup="dialog" aria-expanded="false" aria-controls="addsrc"
                 title="{{ _('Add a calendar') }}" aria-label="{{ _('Add a calendar') }}">{{ icon("add", 24) }}</button>
-        <div class="addmenu" id="addsrc" role="dialog" aria-label="{{ _('Add a calendar') }}" hidden>
+        {# + opens a centred pop-up (0.2.8-beta.15), the page dimmed and out of focus behind it #}
+        <dialog class="popup addpop addbody" id="addsrc" aria-label="{{ _('Add a calendar') }}">
           <div class="title">{{ _('Add a calendar') }}</div>
           {# Presets: United CCS+ (once), Google, Apple, or any other calendar link. #}
           <div class="presets" role="radiogroup" aria-label="{{ _('Kind of calendar') }}">
@@ -466,7 +511,7 @@
             <div><b>{{ _('CalendarStream') }}</b>
               <div class="subtitle">{{ _('Only the events you add here. Goes into every feed.') }}</div></div>
             <div class="pair">
-              <label class="fld"><span>{{ _('Name') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Personal') }}"></label>
+              <label class="fld"><span>{{ _('Label') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Personal') }}"></label>
               {{ pair("addsrc-local") }}
             </div>
           </form>
@@ -486,15 +531,15 @@
                    data-text-apple="{{ _('Calendar › ⓘ by the calendar › Public Calendar › Share Link.') }}"
                    data-text-other="{{ _('Add any calendar with a link starting with webcal:// or ending in .ics') }}">{{ _('Add any calendar with a link starting with webcal:// or ending in .ics') }}</div></div>
             <div class="pair">
-              <label class="fld"><span>{{ _('Name') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Work') }}"></label>
+              <label class="fld"><span>{{ _('Label') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Work') }}"></label>
               <label class="fld"><span>{{ _('Link') }}</span><input name="url" class="code" required spellcheck="false" placeholder="https://… / webcal://…"></label>
             </div>
             <div class="pair">
-              <label class="fld"><span>{{ _('Note') }}</span><input name="note" maxlength="120" placeholder="{{ _('Optional: shown as (i) after the name') }}"></label>
+              <label class="fld"><span>{{ _('Note') }}</span><input name="note" maxlength="120" placeholder="{{ _('Optional: shown in the (i) after the label') }}"></label>
               {{ pair("addsrc-feed") }}
             </div>
           </form>
-        </div>
+        </dialog>
       </div>
     </div>
     {% if not srcs %}<p class="empty">{{ _('No calendars yet. <b>+</b> adds one: CCS+, Google, Apple or any feed.') }}</p>{% endif %}
@@ -517,7 +562,7 @@
          of the same size. #}
       <div class="srchead">
         {# Its color, always shown (blue until one is chosen); a color picker while expanded (I3, 0.2.8-beta.3) #}
-        <input type="color" class="colorpick" form="srcform-{{ x.id }}" value="{{ x.color or '#1d4ed8' }}" aria-label="{{ _('Color') }}" title="{{ _('Color of its events (expand to change it)') }}"{% if not x.open %} tabindex="-1"{% endif %}>
+        {{ colorbox("srcform-" ~ x.id, x.color, _('Color of its events (expand to change it)'), x.open) }}
         {# The module (0.2.8-beta.9): its kind (fixed) over its name (a field while expanded) and, when it
            has a note, a raised (i) showing it; the note is changed under Close. #}
         {% set kind = _('CalendarStream') if local else (_('United Airlines CCS+') if ccs else {'google': _('Google Calendar'), 'apple': _('Apple Calendar')}.get(x.preset, _('Calendar Feed'))) %}
@@ -525,12 +570,12 @@
           <div class="srckind" title="{{ kind }}">{{ kind }}</div>
           <div class="nameline">
             <div class="namebox srcname showonly" title="{{ x.name }}">{{ x.name }}</div>
-            <input type="text" class="namebox nameinput editonly" form="srcform-{{ x.id }}" name="name" value="{{ x.name }}" maxlength="100" aria-label="{{ _('Name') }}" placeholder="{{ _('Name') }}">
-            {% if x.note %}{{ notedot(x.note) }}{% endif %}
+            <input type="text" class="namebox nameinput editonly" form="srcform-{{ x.id }}" name="name" value="{{ x.name }}" maxlength="100" aria-label="{{ _('Label') }}" placeholder="{{ _('Label') }}">
+            {{ notedot(about.get(x.preset or x.type, about.feed), x.note) }}
           </div>
         </div>
         {# "Last check was successful @ 14:34" over "Next check @ 14:49" (on the right, beside Sync Now);
-           what each download changed is in Activities and Logs (F3.5, F3.6) #}
+           what each download changed is in History, Undo & Logs (F3.5, F3.6) #}
         <div class="srcright">
           {# The standard header (0.2.8-beta.5), the same for calendars and feeds: "Last synced 00:31" over
              "Next check @ 00:44", on the right by the status box; a line with nothing to say is left empty. #}
@@ -551,7 +596,7 @@
         {% if x.default %}<div class="deflabel" title="{{ _('Events you add here go to this calendar unless you choose another') }}">{{ _('Default') }}</div>{% endif %}
         {# (a form of its own only for the field styles: the note is saved with the module's Cancel | Save) #}
         <form class="notewrap" onsubmit="return false"><div class="pair notepair">
-          <label class="fld"><span>{{ _('Note') }}</span><input type="text" class="noteinput" form="srcform-{{ x.id }}" name="note" value="{{ x.note }}" maxlength="120" placeholder="{{ _('Optional: shown as (i) after the name') }}"></label>
+          <label class="fld"><span>{{ _('Note') }}</span><input type="text" class="noteinput" form="srcform-{{ x.id }}" name="note" value="{{ x.note }}" maxlength="120" placeholder="{{ _('Optional: shown in the (i) after the label') }}"></label>
         </div></form>
         {% if not local %}
         {# How often it's checked: beside the Site Address #}
@@ -587,13 +632,7 @@
         {{ setupguide(_('How to get a Calendar Sync link, ID and secret (step by step)'), _('How to enable CCS+'), howto, done, help_open,
                       _('* The password is stored encrypted and never shown again; leave its box empty to keep it.')) }}
 
-        <h3 class="cfghead">{{ _('Manual Upload') }}</h3>
-        <form class="uploadform" method="post" action="/setup/upload" enctype="multipart/form-data" data-swap="#src-ccs>.srchead|#cal|#activity">
-          <input type="hidden" name="csrf" value="{{ csrf }}">
-          <label title="{{ _('Calendar Sync link › sign in (Username + Calendar Sync password) › upload the file it downloads. Automatic checks keep running.') }}">{{ _('Upload Calendar.ics by hand') }}</label>
-          <label class="filebtn ghostbtn"><input name="file" type="file" accept=".ics,text/calendar" required aria-label="{{ _('Calendar.ics file') }}"><span data-none="{{ _('Choose Calendar.ics…') }}">{{ _('Choose Calendar.ics…') }}</span></label>
-          <button class="ghost">{{ _('Upload & publish') }}</button>
-        </form>
+        {{ importrow(x, manual=true) }}
       {% else %}
         {# A feed source (Google, Apple or any .ics link): its link, saved like a login (✓ until it's changed) #}
         <div class="cfggrid">
@@ -640,6 +679,8 @@
       {% endif %}
         {% endif %}{# not local #}
 
+        {% if not ccs %}{{ importrow(x) }}{% endif %}
+
         {# The rules this calendar uses, highest priority first: its own above the shared ones (unless
            moved). ✎ opens the rule dialog; the bin takes a rule off this calendar; + Add a rule offers
            the other rules, or a new one. Moving and the bin take effect at once. #}
@@ -649,25 +690,33 @@
         </form>
         <div class="rules" id="rules-{{ x.id }}">
           <div class="cfgheadrow"><h3 class="cfghead">{{ _('Rules') }}{{ help(_('This calendar’s rules. Higher wins (color, emoji, time). Handle or ▲ ▼ › priority · ✎ edits (every calendar it applies to) · bin › off this calendar.')) }}</h3>
+            {# Add a rule (0.2.8-beta.15): straight to the new rule pop-up; a menu only when other calendars'
+               rules could be used here too #}
+            {% set reusable = [] %}{% for r in all_rules if x.name not in r.used and r.apply != 'all' %}{% if reusable.append(r) %}{% endif %}{% endfor %}
+            {% if not reusable %}<button type="button" class="ghost addrule newrule" data-sid="{{ x.id }}">{{ icon("add", 17) }}{{ _('Add a rule') }}</button>
+            {% else %}
             <div class="addwrap">
               <button type="button" class="ghost addrule" aria-haspopup="menu" aria-expanded="false" data-sid="{{ x.id }}">{{ icon("add", 17) }}{{ _('Add a rule') }}</button>
               <div class="addmenu rulemenu" role="menu" hidden>
                 <button type="button" class="linkbtn newrule" data-sid="{{ x.id }}" role="menuitem">{{ icon("add", 16) }} {{ _('New rule…') }}</button>
-                {% for r in all_rules if x.name not in r.used and r.apply != 'all' %}
+                {% for r in reusable %}
                 <form method="post" action="/rules/apply" class="inline" data-swap="#src-{{ x.id }} .rules|#rules .rulelist|#ruleconflicts|#rulecount|#cal|#activity|#ruledata">
                   <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}"><input type="hidden" name="sid" value="{{ x.id }}">
                   <button class="linkbtn" role="menuitem" title="{{ _('Use this rule in {name} too', name=x.name) }}">{{ r.html }}</button></form>
                 {% endfor %}
               </div>
-            </div></div>
+            </div>{% endif %}</div>
           <div class="srcrules sortable" data-kind="rule" data-scope="{{ x.id }}">{% for r in x.rules %}{{ src_rule(r, x) }}{% else %}<p class="mnote norules">{{ _('No rules yet.') }}</p>{% endfor %}</div>
         </div>
 
         {# The bottom line: Remove on the left (asks first); Cancel and Save on the right. #}
         <div class="srcfoot">
-          {# Remove asks what becomes of its events (F3.1): the remove dialog below #}
-          <button type="button" class="ghost danger removecal" data-sid="{{ x.id }}" data-name="{{ x.name }}" data-local="{{ '1' if local else '' }}"
-                  title="{{ _('Remove this calendar') }}">{{ trash }} {{ _('Remove') }}</button>
+          {# Remove asks what becomes of its events: the remove dialog below. The last CalendarStream calendar
+             is emptied instead (0.2.8-beta.15): there's always one, on top. #}
+          {% set emptyonly = local and srcs|selectattr("type", "equalto", "local")|list|length == 1 %}
+          {% set own = x.rules|selectattr("local")|list %}
+          <button type="button" class="ghost danger removecal" data-sid="{{ x.id }}" data-name="{{ x.name }}" data-empty="{{ '1' if emptyonly else '' }}"
+                  data-rules="{{ own|length }}" title="{{ _('Empty this calendar') if emptyonly else _('Remove this calendar') }}">{{ trash }} {{ _('Empty') if emptyonly else _('Remove') }}</button>
           {{ pair("srcform-" ~ x.id) }}
         </div>
       </div>
@@ -684,9 +733,10 @@
       <h2 class="bigtitle" id="deststitle">{{ icons.feeds|safe }}{{ _('Feeds') }}
         {{ help(_('What other apps get: a Google calendar kept up to date, or a feed link (Apple, Outlook, others) with a page to share.')) }}</h2>
       <div class="addwrap">
-        <button type="button" class="ghost plus" aria-haspopup="dialog" aria-expanded="false" aria-controls="adddest"
+        <button type="button" class="ghost plus" aria-haspopup="dialog" aria-expanded="false" aria-controls="adddestpop"
                 title="{{ _('Add a feed') }}" aria-label="{{ _('Add a feed') }}">{{ icon("add", 24) }}</button>
-        <form class="addmenu" id="adddest" role="dialog" aria-label="{{ _('Add a feed') }}" method="post" action="/destinations/add" hidden data-swap="#destinations|#activity">
+        <dialog class="popup addpop" id="adddestpop" aria-label="{{ _('Add a feed') }}">
+        <form class="addmenu" id="adddest" method="post" action="/destinations/add" data-swap="#destinations|#activity">
           <input type="hidden" name="csrf" value="{{ csrf }}">
           <div class="title">{{ _('Add a feed') }}</div>
           {% if not public.url %}
@@ -700,17 +750,27 @@
             <p class="mnote">{{ _('This page’s https:// address, e.g. <code>https://cal.example.com</code> (☰ Settings changes it later).') }}</p>
           </div>
           {% endif %}
-          <label class="lbl" for="destname">{{ _('Name') }}</label>
+          <label class="lbl" for="destname">{{ _('Label') }}</label>
           <input type="text" id="destname" name="name" class="solo" value="" maxlength="100" placeholder="{{ _('How your calendar will be titled via stream') }}">
-          <div class="opt"><div><b>{{ _('Google Calendar') }}</b>
-            <div class="subtitle">{% if google.configured %}{{ _('A Google calendar of its own: changes within seconds, rule colors, reminders.') }}
-              {% else %}{{ _('A feed Google subscribes to: refreshed every few hours, one color. For more: ☰ Settings › Google Calendar API Sync.') }}{% endif %}</div></div>
+          {# (0.2.8-beta.15) Google 2-way Sync and Google 1-way Sync with Google Calendar API Sync; Google Calendar (feed) always #}
+          {% if google.configured %}
+          <div class="opt"><div><b>{{ _('Google 2-way Sync') }}</b>
+            <div class="subtitle">{{ _('A Google calendar of its own: changes within seconds, both ways.') }}</div></div>
             <button name="type" value="google">{{ _('Add') }}</button></div>
+          <div class="opt"><div><b>{{ _('Google 1-way Sync') }}</b>
+            <div class="subtitle">{{ _('A Google calendar of its own, written by CalendarStream only.') }}</div></div>
+            <button name="type" value="google1">{{ _('Add') }}</button></div>
+          {% endif %}
+          <div class="opt"><div><b>{{ _('Google Calendar (feed)') }}</b>
+            <div class="subtitle">{{ _('A feed Google subscribes to: every few hours, one color.') }}{% if not google.configured %} {{ _('More: ☰ Settings › Google Calendar API Sync.') }}{% endif %}</div></div>
+            <button name="type" value="gfeed">{{ _('Add') }}</button></div>
           <div class="opt"><div><b>{{ _('Apple, Outlook or another app') }}</b>
             <div class="subtitle">{{ _('A feed link any calendar app can subscribe to, and a page to share it.') }}</div></div>
             <button name="type" value="feed">{{ _('Add') }}</button></div>
           <p class="mnote">{{ _('It gets every source to start with; choose which in its box.') }}</p>
+          <div class="eactions"><button type="button" class="ghost" data-close>{{ _('Cancel') }}</button></div>
         </form>
+        </dialog>
       </div>
     </div>
     {% if not dests %}<p class="empty">{{ _('No feeds yet. <b>+</b> adds a Google calendar or a feed link.') }}</p>{% endif %}
@@ -719,22 +779,25 @@
     <div class="sortable modules" data-kind="dest">
     {% for d in dests %}
     {% set feed = d.type == "feed" %}
+    {# (0.2.8-beta.15) each Google module's own account: connected or not, its last problem #}
     {% if feed %}{% set dcls, dlabel = ("good", _('Read by Google')) if d.reads.google else ("run", _('Not read yet')) %}
-    {% elif not g.connected %}{% set dcls, dlabel = "run", _('Not connected') %}
-    {% elif g.info.last_error %}{% set dcls, dlabel = ("bad" if g.info.last_error.startswith("Google sync failed") else "warn"), _('Sync problem') %}
-    {% elif d.cal.calendar_id %}{% set dcls, dlabel = "good", _('In Google') %}
+    {% elif not d.connected %}{% set dcls, dlabel = "run", _('Not connected') %}
+    {% elif d.error %}{% set dcls, dlabel = ("bad" if d.error.startswith("Google sync failed") else "warn"), _('Sync problem') %}
+    {% elif d.cal.calendar_id %}{% set dcls, dlabel = "good", _('Connected') %}
     {% else %}{% set dcls, dlabel = "run", _('Starting') %}{% endif %}
     <div class="modrow" data-id="{{ d.id }}">
     <div class="box module cfgbox dest{% if not feed %} gdest{% endif %}{% if d.open %} cfgopen{% endif %}" id="dest-{{ d.id }}" data-section="dest:{{ d.id }}">
       {# The module header, as a calendar's: name over kind | which calendars and dates | status. While
          expanded the name is a field. #}
       <div class="srchead">
-        {% set kind = (_('Google Calendar Feed') if d.for == 'google' else _('Calendar Feed')) if feed else _('Google Calendar') %}
+        {{ colorbox("destform-" ~ d.id, d.color, _('Its color (expand to change it)'), d.open) }}
+        {% set kind = (_('Google Calendar (feed)') if d.for == 'google' else _('Calendar Feed')) if feed else (_('Google 1-way Sync') if d.oneway else _('Google 2-way Sync')) %}
         <div class="srcleft">
           <div class="srckind" title="{{ kind }}">{{ kind }}</div>
           <div class="nameline">
             <div class="namebox srcname showonly" title="{{ d.name }}">{{ d.name }}</div>
-            <input type="text" class="namebox nameinput editonly" form="destform-{{ d.id }}" name="name" value="{{ d.name }}" maxlength="100" required aria-label="{{ _('Name') }}" placeholder="{{ _('Name') }}">
+            <input type="text" class="namebox nameinput editonly" form="destform-{{ d.id }}" name="name" value="{{ d.name }}" maxlength="100" required aria-label="{{ _('Label') }}" placeholder="{{ _('Label') }}">
+            {{ notedot(about.gfeed if d.for == 'google' else about.ffeed) if feed else notedot(about.gdest1 if d.oneway else about.gdest) }}
           </div>
         </div>
         <div class="srcright">
@@ -742,26 +805,24 @@
           <p class="srcstatus" title="{{ d.names|join(', ') if d.names else _('No sources') }}">{% if feed %}{% if d.reads.google %}{{ _('Last read by Google <b>{when}</b>', when=d.reads.google) }}{% elif d.reads.other %}{{ _('Last read <b>{when}</b>', when=d.reads.other) }}{% else %}&nbsp;{% endif %}
             {% elif d.last_sync %}{{ _('Last synced <b>{when}</b>', when=d.last_sync) }}{% else %}&nbsp;{% endif %}</p>
           {# a Google calendar gets each change at once (0.2.8-beta.11); a feed is read when the app chooses #}
-          <p class="srcnext">{% if not feed and g.connected %}{{ _('Next push instantaneous') }}{% else %}&nbsp;{% endif %}</p>
+          <p class="srcnext">{% if not feed and d.connected %}{{ _('Next push instantaneous') }}{% else %}&nbsp;{% endif %}</p>
         </div>
-        <div class="statusbox {{ dcls }}">{{ chip(dcls, dlabel) }}{% if not feed and g.connected %}{{ syncbtn("/google/sync", "google", g.running) }}{% endif %}</div>
+        <div class="statusbox {{ dcls }}">{{ chip(dcls, dlabel) }}{% if not feed and d.connected %}{{ syncbtn("/google/sync", "google", g.running) }}{% endif %}</div>
       </div>
       {{ cfgline("dest-" ~ d.id, d.open) }}
       <div class="cfgbody" id="cfg-dest-{{ d.id }}"{% if not d.open %} hidden{% endif %}>
-      <p class="mnote" style="margin-top:0">{% if feed %}{{ _('A link that Google, Apple Calendar and others can subscribe to, and a page to share it.') }}{% else %}{{ _('A Google calendar of its own: changes within seconds, rule colors, reminders.') }}{% endif %}</p>
-
       {# Which sources it gets, and its dates #}
       <form method="post" action="/destinations/update" class="clientform destform" id="destform-{{ d.id }}" data-swap="#dest-{{ d.id }}|#activity">
         <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
-        <div class="pair dates">
-          <label class="fld"><span>{{ _('Start') }}</span><input type="date" name="start" value="{{ d.start }}" title="{{ _('Empty: no limit') }}"></label>
-          <label class="fld"><span>{{ _('End') }}{{ help(_('Only events in these dates go to this feed. Leave one empty for no limit (∞).')) }}</span><input type="date" name="end" value="{{ d.end }}" title="{{ _('Empty: no limit') }}"></label>
-        </div>
-        <div class="k">{{ _('Calendars') }}{% if feed %}{{ help(_('Each event keeps its calendar’s colors and rules.')) }}{% else %}{{ help(_('Events keep their calendar’s colors and rules. Renaming renames it in Google.')) }}{% endif %}</div>
-        <div class="srcpicks">
-          {% for x in srcs %}<label class="srcpick"><input type="checkbox" name="sources" value="{{ x.id }}"{% if x.id in d.sources %} checked{% endif %}>
-            <span class="swatch" style="--c:{{ x.color or '#1d4ed8' }}" aria-hidden="true"></span> {{ x.name }}</label>{% endfor %}
-          {% if not srcs %}<span class="mnote">{{ _('Add a calendar first.') }}</span>{% endif %}
+        {# (0.2.8-beta.15) its dates (All, or Start | End) and its calendars on one line #}
+        <div class="destline">
+          {{ daterange("start", "end", d.start, d.end, _('Start'), _('End')) }}
+          <div class="destcals"><div class="k">{{ _('Calendars') }}{% if feed %}{{ help(_('Each event keeps its calendar’s colors and rules.')) }}{% else %}{{ help(_('Events keep their calendar’s colors and rules. Renaming renames it in Google.')) }}{% endif %}</div>
+          <div class="srcpicks">
+            {% for x in srcs %}<label class="srcpick"><input type="checkbox" name="sources" value="{{ x.id }}"{% if x.id in d.sources %} checked{% endif %}>
+              <span class="swatch" style="--c:{{ x.color or '#1d4ed8' }}" aria-hidden="true"></span> {{ x.name }}</label>{% endfor %}
+            {% if not srcs %}<span class="mnote">{{ _('Add a calendar first.') }}</span>{% endif %}
+          </div></div>
         </div>
       </form>
 
@@ -797,17 +858,32 @@
         </details>
       </div>
       {% else %}
-      <p class="mnote">{% if d.cal.calendar_id %}{{ _('In Google as <b>{name}</b>', name=d.cal.calendar_name or d.name) }}
-        {% elif g.connected %}{{ _('The calendar is made at the next sync.') }}{% else %}{{ _('Made in Google once Google Calendar API Sync is connected (☰ Settings).') }}{% endif %}</p>
+      {# Its Google account (0.2.8-beta.15): each Google module can go to a different person's Gmail #}
+      <form method="post" action="/google/account" class="gaccount">
+        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
+        <span class="k">{{ _('Google account') }}</span>
+        {% if d.connected %}<span class="gmail"><code>{{ d.email or _('connected') }}</code>{% if not d.own_account %} <span class="mnote">{{ _('(the one in ☰ Settings)') }}</span>{% endif %}</span>{% else %}<span class="mnote">{{ _('not connected') }}</span>{% endif %}
+        {% if google.configured %}<button class="ghost" name="action" value="connect">{{ _('Connect another Gmail') if d.connected and not d.own_account else (_('Connect again') if d.own_account else _('Connect')) }}</button>{% endif %}
+        {% if d.own_account %}<button class="ghost" name="action" value="first">{{ _('Use the one in Settings') }}</button>{% endif %}
+        {% if not d.connected and not d.cal.calendar_id %}<span class="mnote">{{ _('Its calendar is made at the first sync.') }}</span>{% endif %}
+      </form>
       {% endif %}
 
       {# The bottom line, as in a calendar: Remove on the left (asks first), Cancel and Save on the right. #}
       <div class="srcfoot">
-        <form method="post" action="/destinations/remove" class="removeform inline" id="destremove-{{ d.id }}" data-swap="#destinations|#activity" data-confirm="{{ (_('Remove the feed {name}? Are you sure? Its links and subscribe page stop working.', name=d.name) if feed else _('Remove the Google calendar {name}? (It stays in Google unless “Also delete it in Google” is ticked.)', name=d.name)) }}">
+        {# Remove asks in a pop-up (0.2.8-beta.15); a Google module: delete its calendar in Google too, or leave it there #}
+        {% if feed %}<form method="post" action="/destinations/remove" class="removeform inline" id="destremove-{{ d.id }}" data-swap="#destinations|#activity" data-confirm="{{ _('Remove the feed {name}? Its links and subscribe page stop working. (Undo: History.)', name=d.name) }}">
           <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
           <button class="ghost danger" title="{{ _('Remove this feed') }}">{{ trash }} {{ _('Remove') }}</button>
         </form>
-        {% if not feed %}<label class="mnote alsodelete"><input type="checkbox" name="delete" value="1" form="destremove-{{ d.id }}"> {{ _('Also delete it in Google') }}</label>{% endif %}
+        {% else %}<form method="post" action="/destinations/remove" class="removeform inline gremovemod" id="destremove-{{ d.id }}" data-swap="#destinations|#activity"
+              data-ask="{{ _('Are you certain you’d like to remove this Google Calendar module from CalendarStream?') }}"
+              data-yesdel="{{ _('Yes. Remove the module, and delete the {name} from Google Calendar', name=d.cal.calendar_name or d.name) }}"
+              data-yeskeep="{{ _('Yes. Remove the module, but leave the {name} on Google Calendar', name=d.cal.calendar_name or d.name) }}"
+              data-no="{{ _('No, I changed my mind') }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}"><input type="hidden" name="delete" value="">
+          <button class="ghost danger" title="{{ _('Remove this feed') }}">{{ trash }} {{ _('Remove') }}</button>
+        </form>{% endif %}
         {{ pair("destform-" ~ d.id) }}
       </div>
       </div>
@@ -822,8 +898,8 @@
   {# How rules work: under All Rules and at the bottom of the rule dialog. #}
   {% macro rules_guide() -%}
   <details class="guide rulesguide"><summary>{{ _('How rules work') }}</summary>
-    <p>{{ _('<b>If</b> conditions › <b>Then</b> actions. <b>If</b>: <b>Text</b> (is, contains, whole word, begins, ends, regex; <b>Aa</b> = exact capitals) · <b>Date</b> / <b>Time</b> (is, after, before, between) · <b>Day(s)</b> · <b>Length</b> (0 = no end; whole days = 24 h, 48 h…).') }}</p>
-    <p>{{ _('<b>and</b> / <b>or</b> join lines (and first). Grey <b>(</b> <b>)</b> group them: (RDO or VAC) and Day(s) is Sat, Sun.') }}</p>
+    <p>{{ _('<b>If</b> conditions › <b>Then</b> actions. <b>If</b>: <b>Title</b> or <b>Any text</b> (title, place, notes) · is, contains, whole word, begins, ends · matches pattern: <code>*</code> any text, <code>#</code> a digit, <code>?</code> one character · contains regex · <b>Aa</b> = exact capitals · <b>Date</b> / <b>Time</b> (is, after, before, between) · <b>Day(s)</b> · <b>Length</b> (0 = no end; whole days = 24 h, 48 h…).') }}</p>
+    <p>{{ _('<b>&amp;</b> (and) or <b>|</b> (or) › the next line (and first) · <b>✕</b> › takes a line out · grey <b>(</b> <b>)</b> › group lines: (RDO | VAC) &amp; Day(s) is Sat, Sun.') }}</p>
     <p>{{ _('<b>Then</b>: <b>Color</b> · <b>Add emoji</b> (before the title) · <b>Create event</b> (a template or new, before / after it) · <b>Change</b> (all-day or a length) · <b>Record changes</b> (a note + a log line).') }}</p>
     <p>{{ _('<b>Priority:</b> higher wins (color, emoji, time), even over a calendar’s own · ☰ handle or ▲ ▼ changes it · <b>Apply to</b>: which calendars · conflicts: All Rules offers a fix.') }}</p>
   </details>
@@ -894,30 +970,27 @@
       </div>
     </form>
     {# + in the bottom right corner (0.2.8-beta.11) #}
-    <div class="sfoot"><button type="button" class="ghost plus addfirst" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 24) }}</button></div>
+    <div class="sfoot"><button type="button" class="ghost plus opendlg" data-dialog="tpladd" aria-haspopup="dialog" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 24) }}</button></div>
     </div>
   </section>
 
   {% macro t(d) %}{{ dates.when(d, cal.today) if d else _('never') }}{% endmacro %}
-  {# Title first, then the status line, a 5-row scrolling log, and the debug links #}
-  {# Activities and Logs looks like a module (F5): a 50 px header (folded: Healthy, or Unhealthy while a
-     problem in the log is still there), and Expand / Close in its bottom line. #}
+  {# History, Undo & Logs (0.2.8-beta.15; was Activities and Logs): every line with its Time and Type, the
+     changes made on the page with Undo / Redo (a stack: the newest first), a filter, how many changes are
+     remembered, and the container's own log. Folded, its header shows the latest lines. #}
+  {% macro undobtn(h) -%}
+  {% if h.id == undo_top %}<button class="ghost iconbtn undobtn" form="undoform" name="entry" value="{{ h.id }}" title="{{ _('Undo') }}" aria-label="{{ _('Undo') }}">{{ icon("undo", 16) }}</button>
+  {%- elif h.id == redo_next %}<button class="ghost iconbtn undobtn" form="redoform" name="entry" value="{{ h.id }}" title="{{ _('Redo') }}" aria-label="{{ _('Redo') }}">{{ icon("redo", 16) }}</button>{% endif %}
+  {%- endmacro %}
   <section class="card section modsection{% if sections.activity %} open{% endif %}" id="activity" data-section="activity">
+    <form method="post" action="/history/undo" id="undoform" data-swap="#sources|#destinations|#cal|#rules|#templates|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu"><input type="hidden" name="csrf" value="{{ csrf }}"></form>
+    <form method="post" action="/history/undo" id="redoform" data-swap="#sources|#destinations|#cal|#rules|#templates|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="redo" value="1"></form>
     <div class="shead">
-      <span class="bigtitle">{{ icons.activity|safe }}{{ _('Activities and Logs') }}</span>
-      {% if history %}<span class="peek latest" title="{{ msg(history[0].msg) }}">{{ _('Latest:') }} {{ msg(history[0].msg) }}</span>{% endif %}
+      <span class="bigtitle">{{ icons.activity|safe }}{{ _('History, Undo &amp; Logs') }}</span>
+      {# folded: the latest lines that fit, with Undo / Redo where it applies #}
+      {% if history %}<div class="peek latest">{% for h in history[:3] %}<div class="peekline{% if h.state == 'undone' %} undone{% endif %}"><span class="ptime">{{ dates.clock(h.time) }}</span><span class="pmsg" title="{{ msg(h.msg) }}">{{ msg(h.msg) }}</span>{{ undobtn(h) }}</div>{% endfor %}</div>{% endif %}
       <div class="statusbox {{ 'good' if healthy else 'warn' }}">{{ chip('good' if healthy else 'warn', _('Healthy') if healthy else _('Unhealthy')) }}</div>
     </div>
-    {% if google_held %}
-    {# Deleted in Google, more than a few at once (0.2.8-beta.10): kept until the person chooses #}
-    <form method="post" action="/google/held" class="heldbox" data-swap="#activity|#cal|#destinations">
-      <input type="hidden" name="csrf" value="{{ csrf }}">
-      <p>{{ icon("warning", 16) }} <b>{{ _('{n} events were deleted in Google at once.', n=google_held|length) }}</b>
-        {{ _('They stay in Google and here until you choose:') }}</p>
-      <ul>{% for uid, h in google_held.items() %}<li>{{ h.title }} <span class="muted">{{ h.start[:10] }}</span></li>{% endfor %}</ul>
-      <div class="btnrow"><button class="ghost" name="action" value="restore">{{ _('Put them back in Google') }}</button><button name="action" value="hide">{{ _('Hide them here too') }}</button></div>
-    </form>
-    {% endif %}
     {{ sectionline("activity", sections.activity) }}
     <div class="sbody" id="activity-body"{% if not sections.activity %} hidden{% endif %}>
     {# One line per source, then Google. #}
@@ -933,9 +1006,24 @@
     </div>
     {% endfor %}
     {% if google.connected %}<div class="statline"><span><span class="k">Google</span> {% if google.info.last_error %}<b style="color:var(--bad)">{{ icon("cancel", 15) }} {{ _('error') }}</b>{% elif google.running %}<b>{{ _('syncing…') }}</b>{% elif google.last_sync %}<b>{{ google.last_sync }}</b>{% else %}<span class="muted">{{ _('not yet') }}</span>{% endif %}</span></div>{% endif %}
-    {% if history %}<div class="logwin"><table><thead><tr><th style="width:140px">{{ _('Time') }}</th><th>{{ _('Event') }}</th></tr></thead><tbody>
-      {% for h in history %}<tr><td>{{ dates.short(h.time.date()) }} {{ dates.clock(h.time, true) }}</td><td class="lvl-{{ h.level }}">{{ msg(h.msg) }}</td></tr>{% endfor %}
+    {# What to show: a Type, some words, a time #}
+    <div class="histfilter" role="search">
+      {{ icon("filter_list", 18) }}
+      <select class="hfkind" aria-label="{{ _('Type') }}"><option value="">{{ _('Every type') }}</option>{% for k in log_kinds %}<option value="{{ k }}">{{ _(k) }}</option>{% endfor %}</select>
+      <input type="search" class="hfwords" placeholder="{{ _('Words') }}" aria-label="{{ _('Words') }}">
+      <select class="hftime" aria-label="{{ _('Time') }}"><option value="">{{ _('Any time') }}</option><option value="1">{{ _('Last hour') }}</option><option value="24">{{ _('Last 24 hours') }}</option><option value="168">{{ _('Last 7 days') }}</option><option value="720">{{ _('Last 30 days') }}</option></select>
+    </div>
+    {% if history %}<div class="logwin"><table><thead><tr><th class="htime">{{ _('Time') }}</th><th class="htype">{{ _('Type') }}</th><th>{{ _('Event') }}</th><th class="hundo"><span class="vh">{{ _('Undo') }}</span></th></tr></thead><tbody>
+      {% for h in history %}<tr data-kind="{{ h.kind }}" data-at="{{ h.time.timestamp()|int }}"{% if h.state == 'undone' %} class="undone"{% endif %}><td>{{ dates.short(h.time.date()) }} {{ dates.clock(h.time, true) }}</td><td>{{ _(h.kind) if h.kind else '' }}</td><td class="lvl-{{ h.level }}">{{ msg(h.msg) }}{% if h.state == 'undone' %} <span class="muted">({{ _('undone') }})</span>{% endif %}</td><td>{{ undobtn(h) }}</td></tr>{% endfor %}
     </tbody></table></div>{% else %}<p class="muted">{{ _('Nothing yet.') }}</p>{% endif %}
+    <div class="histfoot">
+      <form method="post" action="/history/keep" class="clientform watch keepform" data-swap="#activity">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <label>{{ _('Remember the last') }} <input type="number" name="keep" min="1" max="200" value="{{ undo_keep }}" aria-label="{{ _('Changes remembered for Undo') }}"> {{ _('changes for Undo') }}</label>
+        {{ m.okbutton(true, _('Saved'), _('Save')) }}
+      </form>
+      <a class="btn2 ghostbtn" href="/history/container" target="_blank" rel="noopener">{{ icon("terminal", 16) }} {{ _('Container log') }}</a>
+    </div>
     {# Debugging, at the bottom: each source's last download #}
     {% if srcs|selectattr("has_debug")|list %}<div class="debuglinks"><span class="k">{{ _('Debug (last download):') }}</span>
       {% for x in srcs if x.has_debug %}<span>{% if srcs|length > 1 %}<b>{{ x.name }}</b>: {% endif %}<a href="/debug/{{ 'response' if x.type == 'ccs' else 'response:' ~ x.id }}" target="_blank">{{ _('Response details') }}</a> · <a href="/debug/{{ 'source' if x.type == 'ccs' else 'source:' ~ x.id }}" target="_blank">{{ _('Last calendar file received') }}</a></span>{% endfor %}</div>{% endif %}
@@ -950,6 +1038,12 @@
     <a href="https://github.com/Uuugh/CalendarStream#license--attribution" target="_blank" rel="noopener">{{ _('License & Attribution') }}</a>
   </footer>
 </main>
+{# Questions and notices (0.2.8-beta.15): the page's own pop-up, never the browser's alert / confirm boxes #}
+<dialog id="askdialog" class="popup ask" aria-labelledby="asktext">
+  <p class="asktext" id="asktext"></p>
+  <div class="askchoices"></div>
+</dialog>
+
 {# Report a problem / Suggest a feature: what to include (each part can be left out), a preview with
    private details taken out, then GitHub's new-issue page filled in (the issue's page is the link to
    follow it; GitHub notifies its author). Without a GitHub account: copy or download the report. #}
@@ -962,7 +1056,7 @@
     <textarea id="rpwhat" name="what"></textarea>
     <div class="lbl">{{ _('Include') }}</div>
     <div class="attach">
-      <label><input type="checkbox" name="inc_activity" checked> {{ _('Activities and Logs (the last 60 lines)') }}</label>
+      <label><input type="checkbox" name="inc_activity" checked> {{ _('History, Undo &amp; Logs (the last 60 lines)') }}</label>
       {% for x in srcs %}<label><input type="checkbox" name="inc_src" value="{{ x.id }}"{% if x.s.status not in ("ok", "running") %} checked{% endif %}> {{ _('{name}: last download details', name=x.name) }}</label>{% endfor %}
       <label><input type="checkbox" name="inc_device" checked> {{ _('Device and setup (browser, screen, version, release, server)') }}</label>
       <label><input type="checkbox" name="inc_contact"> {{ _('My contact details:') }} <input type="text" name="contact" placeholder="{{ _('name or e-mail (shown publicly)') }}" style="flex:1"></label>
@@ -989,7 +1083,7 @@
       <div class="title" id="rdtitle" data-new="{{ _('New rule') }}" data-edit="{{ _('Change rule') }}">{{ _('New rule') }}</div></div>
     <label class="lbl" for="rdname">{{ _('Title') }}</label>
     <input type="text" id="rdname" class="rdname" maxlength="80" placeholder="{{ _('Optional, e.g. Days off in red') }}">
-    <div class="lbl rdif">{{ _('If') }}{{ help(_('One condition per line. <b>and</b> / <b>or</b> › another line · grey <b>(</b> <b>)</b> › group (again › ungroup). No lines: every event.')) }}</div>
+    <div class="lbl rdif">{{ _('If') }}</div>
     <div class="conds"></div>
     <div class="lbl">{{ _('Then') }}</div>
     <div class="acts"></div>
@@ -1011,23 +1105,45 @@
   </form>
 </dialog>
 
-{# Remove a calendar (F3.1, 0.2.8-beta.3): keep its events as a Local calendar, add them to another
-   calendar, or delete them. #}
+{# Remove a calendar (0.2.8-beta.15): Merge its events into another calendar (or a new CalendarStream one) or
+   Delete them, with "Download a copy (.ics) first"; with a Merge, its own rules move or go. The last
+   CalendarStream calendar is emptied instead (it stays). Undo: History. #}
 <dialog id="removedialog" class="popup" aria-labelledby="rmtitle">
   <form method="post" action="/sources/remove" id="removeform" data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
     <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="">
     <div class="dlghead"><button type="button" class="ghost iconbtn dlgback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}">{{ icon("arrow_back", 20) }}</button>
-      <div class="title" id="rmtitle" data-text="{{ _('Remove {name}') }}"></div></div>
-    <p class="mnote">{{ _('It’s taken off every feed and its checks stop. Its events:') }}</p>
+      <div class="title" id="rmtitle" data-text="{{ _('Remove {name}') }}" data-empty="{{ _('Empty {name}') }}"></div></div>
+    <p class="mnote rmnote" data-text="{{ _('Off every feed; its checks stop. Its events:') }}" data-empty="{{ _('It stays, in every feed and rule. Its events:') }}"></p>
     <div class="rmopts">
-      <label class="rmopt rmlocal"><input type="radio" name="keep" value="local" checked> <span><b>{{ _('Keep them in a Local calendar') }}</b><br>
-        <span class="mnote">{{ _('A Local calendar with the same name and color takes its place, events as they are (edits included).') }}</span></span></label>
-      <label class="rmopt"><input type="radio" name="keep" value="merge"> <span><b>{{ _('Add them to another calendar') }}</b>
-        <select name="into" class="rminto" aria-label="{{ _('Calendar') }}">{% for x in srcs %}<option value="{{ x.id }}">{{ x.name }}</option>{% endfor %}</select></span></label>
-      <label class="rmopt"><input type="radio" name="keep" value="delete"> <span><b>{{ _('Delete them') }}</b><br>
-        <span class="mnote">{{ _('Its events, edits and added events go.') }}</span></span></label>
+      <label class="rmopt rmmerge"><input type="radio" name="keep" value="merge" checked> <b>{{ _('Merge') }}</b> {{ _('into') }}
+        <select name="into" class="rminto" aria-label="{{ _('Calendar') }}">{% for x in srcs %}<option value="{{ x.id }}">{{ x.name }}</option>{% endfor %}<option value="new">{{ _('A new CalendarStream calendar') }}</option></select></label>
+      <label class="rmopt"><input type="radio" name="keep" value="delete"> <b>{{ _('Delete') }}</b> {{ _('them') }}</label>
     </div>
-    <div class="eactions"><button type="button" class="ghost" value="cancel" data-close>{{ _('Cancel') }}</button><button class="danger solid">{{ trash }} {{ _('Remove') }}</button></div>
+    <div class="rmrules" hidden><span class="rmrulesn" data-one="{{ _('Its rule:') }}" data-many="{{ _('Its {n} rules:') }}"></span>
+      <label><input type="radio" name="rules" value="move" checked> {{ _('Move to') }} <b class="rmtarget"></b></label>
+      <label><input type="radio" name="rules" value="delete"> {{ _('Delete them') }}</label></div>
+    <label class="rmdl"><input type="checkbox" class="rmdownload" checked> {{ _('Download a copy (.ics) first') }}</label>
+    <div class="eactions"><button type="button" class="ghost" value="cancel" data-close>{{ _('Cancel') }}</button><button class="danger solid rmgo" data-text="{{ _('Remove') }}" data-empty="{{ _('Empty') }}">{{ trash }} <span>{{ _('Remove') }}</span></button></div>
+  </form>
+</dialog>
+
+{# Import: an event of the file already in the calendar (0.2.8-beta.15), one at a time #}
+<dialog id="conflictdialog" class="popup ask" aria-labelledby="cfcount">
+  <p class="asktext cfcount" id="cfcount"></p>
+  <dl class="cfpair"><dt>{{ _('There') }}</dt><dd class="cfthere"></dd><dt>{{ _('In the file') }}</dt><dd class="cffile"></dd></dl>
+  <label class="cfrest" hidden><input type="checkbox" class="cfall"> {{ _('Do this for all remaining') }} (<span class="cfleft"></span>)</label>
+  <div class="askchoices"><button type="button" class="ghost cfdelete" title="{{ _('Drop the file’s copy; the one there stays') }}">{{ _('Delete') }}</button><button type="button" class="cfmerge" title="{{ _('The file’s version updates the one there') }}">{{ _('Merge') }}</button></div>
+</dialog>
+
+{# + Add an event template (0.2.8-beta.15): a centred pop-up, like every + #}
+<dialog id="tpladd" class="popup addpop" aria-labelledby="tpladdtitle">
+  <form method="post" action="/templates/add" id="tpladdform" data-swap="#templates|#rules|#sources|#cal|#activity|#ruledata">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="dlghead"><button type="button" class="ghost iconbtn dlgback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}" data-close>{{ icon("arrow_back", 20) }}</button>
+      <div class="title" id="tpladdtitle">{{ _('Add an event template') }}</div></div>
+    <div class="editor">{{ m.template_row({"id": "", "title": "", "all_day": false, "minutes": 60, "location": "", "color": ""}, event_colors, trash) }}</div>
+    <p class="mnote">{{ _('Length as hours:minutes, e.g. 1:30.') }}</p>
+    <div class="eactions">{{ pair("tpladdform") }}</div>
   </form>
 </dialog>
 
@@ -1049,8 +1165,7 @@
       {% for v, label in (("itinerary", _('Itinerary')), ("day", _('Day')), ("5day", _('5-day')), ("week", _('Week')), ("month", _('Month'))) %}<button type="button" data-v="{{ v }}" role="radio" aria-checked="false">{{ label }}</button>{% endfor %}
     </div>
     <label class="ppweekends"><input type="checkbox" name="weekends" checked> {{ _('Include weekends') }}</label>
-    <label class="fld"><span>{{ _('From') }}</span><input type="date" name="start"></label>
-    <label class="fld"><span>{{ _('To') }}</span><input type="date" name="end"></label>
+    {{ daterange("start", "end", "", "", allon=false) }}
     <div class="seg themepick" role="radiogroup" aria-label="{{ _('Colors') }}">
       <button type="button" data-t="light" role="radio" aria-checked="true" title="{{ _('Light') }}">{{ icon("light_mode", 18) }}</button><button type="button" data-t="dark" role="radio" aria-checked="false" title="{{ _('Dark') }}">{{ icon("dark_mode", 18) }}</button>
     </div>

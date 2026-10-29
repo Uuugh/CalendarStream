@@ -165,6 +165,16 @@ async def cal_patch(cid: str, request: Request, authorization: str = Header(""))
     c.update(await request.json()); return c
 
 
+@app.patch("/calendar/v3/users/me/calendarList/{cid}")
+async def calendarlist_patch(cid: str, request: Request, authorization: str = Header("")):
+    """A calendar's color in the person's list (0.2.8-beta.15)."""
+    owner = who(authorization); c = S["calendars"].get(cid)
+    if not c or c["owner"] != owner:
+        return gerr(404, "notFound")
+    body = await request.json()
+    c["backgroundColor"] = body.get("backgroundColor"); return c
+
+
 @app.post("/calendar/v3/calendars/{cid}/events")
 async def ev_insert(cid: str, request: Request, authorization: str = Header("")):
     try:

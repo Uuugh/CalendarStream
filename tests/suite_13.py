@@ -139,7 +139,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     good, writes = sync(full=True)
     ok(k1 not in live() and live()[k2]["summary"] == "changed by hand", "full check: a deletion in Google stays deleted (hidden here), a hand edit stays (an edit here)")
     ok("stray00001" not in live() and "personal01" in live(), "removes CalendarStream's strays, keeps events made by hand (no CalendarStream calendar to put them in)")
-    ok("removed" in log(1)[0] and any("was deleted in Google, so it's hidden here" in m for m in log(6)) and any("was changed in Google" in m for m in log(6)), f"activity log: {log(6)}")
+    ok("removed" in log(1)[0] and any(m.startswith("Deleted in Google Calendar:") for m in log(6)) and any("was changed in Google" in m for m in log(6)), f"activity log: {log(6)}")
 
     # Next month: October's events stay in Google but aren't tracked any more
     before = set(live())

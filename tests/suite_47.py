@@ -40,7 +40,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         b = pw.chromium.launch()
-        pg = b.new_page(viewport={"width": 1230, "height": 900}, http_credentials={"username": "t", "password": "password1"})
+        pg = b.new_page(viewport={"width": 1230, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         for which in ("#updates .upgradebtn", ".updslot .updbtn"):
             open(tok.name, "w").write("sekret-token")
@@ -78,7 +78,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             main.google._client = None
             pg.goto("http://127.0.0.1:8119/?menu=settings"); pg.wait_for_timeout(500)
             ok(pg.locator("#googlesync .cfgline").count() == 0 and pg.is_visible("#googlesync .credtrash") and pg.is_visible("#googlesync .gremoverow button.danger")
-               and pg.is_visible("#googlesync .gremoverow input[name=delete]"), "beta.12: the working Google group: no Expand; the trash, Remove and Also delete all showing")
+               and pg.locator("#googlesync .gremoverow input[type=checkbox]").count() == 0, "beta.12: the working Google group: no Expand; the trash and Remove showing (beta.15: Remove asks in a pop-up, no tick box)")
             r = pg.evaluate("""() => { const g = document.querySelector('#googlesync .gremoverow').getBoundingClientRect(), b = document.querySelector('#googlesync .gremoverow button').getBoundingClientRect(),
                                m = document.getElementById('googlesync').getBoundingClientRect(); return [Math.round(b.left - m.left), Math.round(m.bottom - g.bottom)]; }""")
             ok(r[0] <= 14 and r[1] <= 14, f"…Remove in the lower left {r}")

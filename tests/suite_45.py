@@ -126,31 +126,21 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     sync()
     ok(main.store.get_event(u4.uid).title == "Google newer", "F5: both changed, Google newer: Google wins")
 
-    # 7. more than 3 deletions at once wait for a choice
+    # 7. (0.2.8-beta.15: replaces the held deletions) events deleted in Google stay struck through here, saying
+    #    where, with Restore, however many at once
     many = united[4:8]
     for e in many:
         E()[gsync.event_id(e.uid)]["status"] = "cancelled"; E()[gsync.event_id(e.uid)]["updated"] = later()
     sync()
-    held = main.google_held()
-    ok(set(held) == {e.uid for e in many} and not any(main.store.get_event(e.uid).hidden for e in many), "F5: 4 deleted at once: held, not hidden yet")
-    ok(all(E()[gsync.event_id(e.uid)]["status"] == "cancelled" for e in many), "…and not put back in Google while waiting")
-    p = c.get("/").text
-    ok('class="heldbox"' in p and "4 events were deleted in Google at once." in p and "Put them back in Google" in p and "Hide them here too" in p,
-       "…Activities and Logs asks: put back or hide")
-    sync()
-    ok(set(main.google_held()) == {e.uid for e in many}, "…still waiting after another sync")
-    post("/google/held", action="restore"); sync()
-    ok(not main.google_held() and all(E()[gsync.event_id(e.uid)]["status"] == "confirmed" for e in many), "Put them back: back in Google")
-    for e in many:
-        E()[gsync.event_id(e.uid)]["status"] = "cancelled"; E()[gsync.event_id(e.uid)]["updated"] = later()
-    sync()
-    post("/google/held", action="hide"); sync()
-    ok(not main.google_held() and all(main.store.get_event(e.uid).hidden for e in many), "Hide them here too: hidden")
-    few = united[8:11]
-    for e in few:
-        E()[gsync.event_id(e.uid)]["status"] = "cancelled"; E()[gsync.event_id(e.uid)]["updated"] = later()
-    sync()
-    ok(not main.google_held() and all(main.store.get_event(e.uid).hidden for e in few), "3 deleted at once: hidden without asking")
+    ok(all(main.store.get_event(e.uid).hidden and (main.store.get_event(e.uid).deleted or "").startswith("google|") for e in many),
+       "F5: 4 deleted in Google at once: deleted here too, marked Deleted in Google Calendar")
+    ok(any(h["msg"].startswith("Deleted in Google Calendar:") and h["kind"] == "Google" for h in main.store.recent_log(10)), "…one History line")
+    p = c.get("/?month=2026-10").text
+    ok("Deleted in Google Calendar" in p and 'action="/event/restore"' in p, "…shown struck through, with Restore")
+    post("/event/restore", uid=many[0].uid); sync()
+    ok(not main.store.get_event(many[0].uid).hidden and not main.store.get_event(many[0].uid).deleted
+       and E()[gsync.event_id(many[0].uid)]["status"] == "confirmed", "Restore: back here, and back in Google")
+    ok(all(E()[gsync.event_id(e.uid)]["status"] == "cancelled" for e in many[1:]), "…the others stay deleted")
 
     # I1: an event added here shows its calendar's color, like Google
     main.store.set(f"calendar_color:{L}", "#33b679")

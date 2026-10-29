@@ -158,7 +158,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     lunch = next(x for x in main.store.load_events() if x.title == "Lunch") if any(x.title == "Lunch" for x in main.store.load_events()) else None
     post("/event/save", title="Coffee", start_date="2026-10-13", start_time="9:00", end_date="2026-10-13", end_time="9:30", source="ccs")
     coffee = next(x for x in main.store.load_events("ccs") if x.title == "Coffee")
-    ok(post("/event/delete", uid=coffee.uid).status_code == 303 and main.store.get_event(coffee.uid) is None, "deleting an added event deletes it")
+    gone = lambda: main.store.get_event(coffee.uid)
+    ok(post("/event/delete", uid=coffee.uid).status_code == 303 and (gone() is None or (gone().deleted or "").startswith("calendarstream|")),
+       "deleting an added event deletes it (0.2.8-beta.15: struck through, with Restore, until its Undo is forgotten)")
     # Calendar views
     for v, mark in (("week", 'class="month weekgrid"'), ("day", 'class="agenda"'), ("list", 'class="agenda"'), ("month", 'class="month"')):
         c.post("/ui/view", auth=A, data={"csrf": csrf, "view": v})

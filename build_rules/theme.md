@@ -37,7 +37,8 @@ Every color is a token with a light and a dark value (Picture 2·10). Light is t
 - Icons (Picture 2·3): Material Symbols Rounded, weight 400, only from `app/material_symbols/symbols.json`;
   13–24 px, in the text color. Add new ones with `tools/vendor_icons.py`, never changing existing ones.
 - Sizes: 50 px module headers, 34 px controls (fields, buttons), the 132 × 50 px status box, the
-  130 × 34 px Cancel | Save pair, 5 px between modules and groups.
+  130 × 34 px Cancel | Save pair, 5 px between modules and groups. Modules have a 2 px border (with 1 px
+  less padding all round, so they keep their size); everything else 1 px.
 
 ## 2. One look per meaning
 
@@ -46,9 +47,9 @@ state, a line of text (Picture 2·11). Never pick a color because it looks nice 
 
 | Look | Means | Drawn as | Words that use it (add new ones here) |
 | --- | --- | --- | --- |
-| **Green** | done, OK | `--ok` on `--okbg` (`good`); a done button fills `--ok` with a green pulse | Healthy, Connected, In Google, Read by Google, Up to date, Synced, Updated, N Rules, N Templates |
+| **Green** | done, OK | `--ok` on `--okbg` (`good`); a done button fills `--ok` with a green pulse | Healthy, Connected, Read by Google, Up to date, Synced, Updated, Saved, N Rules, N Templates |
 | **Pressed** | in action, or waiting on you | `--run` words on `--runbg` (`run`); a working button is `--card` with `--run` words | Syncing…, Checking…, Downloading…, Restarting…, Starting, Update found, Update available, Ready to connect, Not checked, Not set up, Not connected, Not read yet, Setup needed, Paused, N to check (rule conflicts) |
-| **Amber** | a problem outside CalendarStream (United, Google, GitHub, the internet) | `--warn` on `--warnbg` (`warn`); a failed button fills `--warn` with an amber pulse | Sign-in rejected, Blocked, Error (a download), Address missing, Client rejected, Sync problem (Google's answer), Couldn't check, Failed, Stopped, Unhealthy |
+| **Amber** | a problem outside CalendarStream (United, Google, GitHub, the internet), or what you typed was refused | `--warn` on `--warnbg` (`warn`); a failed button fills `--warn` with an amber pulse | Sign-in rejected, Blocked, Error (a download), Address missing, Client rejected, Sync problem (Google's answer), Couldn't check, Failed, Stopped, Unhealthy, a refused Save ("Not a valid regex…") |
 | **Red** | CalendarStream itself failed | `--bad` on `--badbg` (`bad`); a failed button fills `--bad` with a red pulse (`data-cause="inside"`) | Internal error, Sync problem (Google sync failed inside), Update failed |
 | **Blue** | you can press it | `--accent` fill, `--onaccent` words | buttons only: never a status |
 
@@ -56,17 +57,37 @@ The theme suite fails any status word whose look isn't in this table.
 
 ## 3. Parts
 
-- **Module** (every calendar and feed, Picture 2·4): a 50 px header is all a folded one shows. Line 1:
-  the color (calendars), the kind (fixed text), "Last synced 00:31" and the status box on the right.
-  Line 2: the name (a field while expanded) with a raised (i) note, "Next check @ 00:44" on the right.
-  Expand sits in the bottom border; open, a Close line sits under the header.
+- **Module** (every calendar and feed, Picture 2·4): a 50 px header is all a folded one shows; a 2 px
+  border. Line 1: the color box, the kind (fixed text), "Last synced 00:31" and the status box on the
+  right. Line 2: the label (plain text; a field of the same size while expanded) with a raised (i), "Next
+  check @ 00:44" on the right. Expand sits in the bottom border; open, a Close line sits under the header.
+- **(i) and (?)** (Pictures 2·4, 2·9): (i) is info, about this module: what it is, then its note when it
+  has one. (?) is help: how to do something. Explanations live in one of them, never on the page.
+- **Color box** (Picture 2·16): one palette everywhere, Google Calendar's 11 colors (what Google shows for
+  an event): calendars, feeds, rules, event templates, events. A click opens it (in a module: while
+  expanded); the choice goes with the module's Save.
+- **Emoji** (Picture 2·16): the common ones beside the field, then ☺+ for every emoji (Unicode up to Emoji
+  13.0, no flags, drawn by the device): ten a line, scrolling, a search on top.
+- **Date range** (Picture 2·17): From | To | ☐ All, in that order, everywhere a range is asked for
+  (search, feeds, Print Preview, Import). All clears the dates and greys them; typing in is done after
+  unticking it. All is what an empty range means.
+- **Import row** (Picture 2·17): the heading, the file field (a file icon and "Choose Calendar.ics…",
+  filling the line), the dates, the button on the right. The same row in every calendar; CCS+'s is
+  Manual Upload (it replaces the schedule, so no dates).
+- **Deleted event** (Picture 2·19): struck through and greyed, saying where it was deleted (CalendarStream,
+  Google Calendar, United, the feed), with Restore, until its Undo pops off History.
+- **History** (Picture 2·19): Time | Type | Event | Undo; a filter (Type, words, time) on top; folded, the
+  latest lines with Undo / Redo where it applies (a stack: newest first). Something done outside
+  CalendarStream (deleted in Google, removed by United) has no Undo icon: Restore is on the event.
 - **Status box** (Picture 2·5): a multi-button, 132 × 50 px: the status chip over the action that
   updates it (Sync Now, Check now, Update now, Connect). Its transitions are in section 4.
 - **Saving** (Picture 2·6): Cancel | Save, 130 × 34 px, at the bottom of what it saves; the pressed side
   fills the pair ("Saved", "Cancelled") for 3 s. A field saved in place shows ✓, then ✕ | ✓ while typing.
 - **Handles** (Picture 2·7): ▲ ☰ ▼ in the section's right margin; none with nothing to reorder.
-- **Pop-ups and drop-downs** (Picture 2·8): 12 px corners, 18 px padding, ← and the title; the whole
-  screen on a phone (≤ 700 px). A choice of calendars is a drop-down of ticks, each with its color.
+- **Pop-ups and drop-downs** (Pictures 2·8, 2·18): 12 px corners, 18 px padding, ← and the title; the
+  whole screen on a phone (≤ 700 px); the page behind dimmed (rgba(0,0,0,.55)) and blurred (2 px). Every +
+  opens one, centred. A question is one too, never the browser's alert / confirm box: its answers on one
+  line, or one under the other when they're sentences. A choice of calendars is a drop-down of ticks.
 - **(?) help** (Picture 2·9): a 15 px icon raised right after the word it explains; hover, focus or a
   click shows it. Explanations live here, not on the page (section 5).
 
@@ -87,7 +108,9 @@ pulses: each state simply replaces the last, with the same words and hold times.
 | Shrink back | after the hold | the button shrinks to the bottom; **then** the new status word fades in (never a fade through the old one) | shrink 0.25 s ease; word 0.2 s after a 0.25 s delay | — |
 | Top-bar Update now | press | only the words change, fading in (never a blank pill); a bar slides under them | words 0.25 s ease-out; bar 1.2 s ease-in-out, repeating | until restarted |
 | Update finished | the new version answers | "Updated" (green), then the page reloads | — | 0.8 s |
-| Pop-up opens | a click that opens one | fade + scale 0.96 → 1; the backdrop (rgba(0,0,0,.55)) fades in | 0.2 s ease-out | — |
+| Pop-up opens | a click that opens one (every +, a question) | fade + scale 0.96 → 1; the backdrop (rgba(0,0,0,.55), the page blurred 2 px) fades in | 0.2 s ease-out | — |
+| Color box / emoji list | a click | opens under it at once | instant | until a choice or a click elsewhere |
+| Regex test box | typing | ✓ / ✕ redrawn | 300 ms after the last key | — |
 | Cancel \| Save | press | the pressed side grows over the pair (flex) and fades its words | 0.3 s ease | 3 s, then idle |
 | Field saved in place | Save | ✓ fades in (`slotfade`) | 0.45 s ease (messages 0.3 s) | until typing |
 | Expand / Close | press | the triangles turn (Close points up) | 0.15 s | — |
@@ -108,6 +131,11 @@ and Settings; Feeds and Settings) shows the same words at the same moment and en
 - **Connect** (Google Calendar API Sync): Connect → Saving… → Checking… → Checking address… → Opening
   Google… → Google's sign-in. The first step that fails stops it: Stopped (amber), and the line under it
   says what to fix as a click path, with Copy and Open.
+- **Remove a calendar**: Merge into [calendar] | Delete, ☐ Download a copy (.ics) first, and with a Merge
+  and rules of its own: Move to [calendar] | Delete them → Remove (the last CalendarStream calendar:
+  Empty). Undo in History.
+- **Import**: Choose Calendar.ics… → dates (All) → Import → each event already there, one at a time:
+  Delete | Merge, ☐ Do this for all remaining → added. Undo in History.
 
 ## 6. Words on the page
 
@@ -142,7 +170,7 @@ one here, with its card.
 - Calendar and feed module headers share one layout. Line 1: the color (calendars only), the module's
   kind (fixed text, 17 px, 15 on a phone where it may take two lines: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar,
   Calendar Feed…), then on the right "Last synced 00:31" and the status box (Healthy…). Line 2: its
-  name (a field while expanded) with a raised (i) after it when it has a note (the note is changed
+  label (plain text; a field while expanded) with a raised (i) after it (what it is, and its note, changed
   under Close), then on the right "Next check @ 00:44" and Sync Now. A line with nothing to say is
   left blank. (Picture 2·4)
 - Status words: "Last synced 00:31" or "Sync failed 00:31", never "Last check was successful @…";
@@ -167,8 +195,9 @@ one here, with its card.
 - Adding something (+ Add a calendar…) ends with the standard Cancel | Save pair, like editing it. (Picture 2·6)
 - After an update the page reloads, so the new version's script and stylesheet run its parts. (Picture 2·13)
 - Expand / Close lines: ▸ Expand ◂ points at the words; Close's triangles point up. (Picture 2·4)
-- Pop-ups: a dark backdrop (rgba(0,0,0,.55)) that keeps the page in view, and a 200 ms fade and
-  scale-up (none with reduced motion). Every Cancel | Save, pop-ups included, is the 130 × 34 pair. (Pictures 2·8, 2·14)
+- Pop-ups: a dark backdrop (rgba(0,0,0,.55)) that keeps the page in view, out of focus (blurred 2 px), and
+  a 200 ms fade and scale-up (none with reduced motion). Every Cancel | Save, pop-ups included, is the
+  130 × 34 pair. (Pictures 2·8, 2·14)
 - An opened event: Close in the bottom left corner, its icons (link, reminders, edit, duplicate,
   delete) on the right; when it's too narrow for one line, the icons go on a line above Close. (Part 1)
 - Events show the color Google shows: their own, their rule's, else their calendar's. (Part 1)
@@ -191,3 +220,15 @@ one here, with its card.
 - Light is the Soft palette (warm off-white, muted blue accent), still named Light with its icon. (Picture 2·10)
 - In-page instructions are click paths (Settings › Google › New Project › Name: CalendarStream › Save),
   not paragraphs, everywhere on the site; the explanations go in the (?). (Picture 2·15)
+- Every date range has All: From | To | ☐ All (search, feeds, Print Preview, Import). (Picture 2·17)
+- No browser alert or confirm boxes: every question and notice is the page's own pop-up. (Picture 2·18)
+- (i) is info (what the module is, then your note); (?) is help (how to). (Pictures 2·4, 2·9)
+- Every + opens a centred pop-up, the page dimmed and out of focus behind it. (Picture 2·18)
+- Modules have a 2 px border, with 1 px less padding all round, so they keep their size. (Picture 2·4)
+- A module's name is its label: plain text until the module is expanded, then a field of the same size. (Picture 2·4)
+- One color palette everywhere: Google Calendar's 11 colors, in the color box. (Picture 2·16)
+- A deleted event stays struck through and greyed, saying where it was deleted, with Restore, until its
+  Undo pops off History. (Picture 2·19)
+- Importing a calendar file is one row in every calendar: heading, the file field filling the line, the
+  dates, the button on the right (CCS+: Manual Upload). (Picture 2·17)
+- Emoji: the common ones, then every emoji in a list of ten a line, scrolling, with a search on top. (Picture 2·16)

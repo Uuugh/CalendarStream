@@ -163,38 +163,6 @@
   {% else %}{{ _('<b>Instant updates: off</b> ({why}): Google’s changes come at the daily check.', why=msg(w.why)) }}{% endif %}</p>
 {%- endmacro %}
 
-{# One rule row (Rules box of a source): the title to match and how, then what to do: give it a color,
-   or add an event from a template some time before/after it. Every row sends every field, so the
-   lists the server gets line up; the fields of the other action are only hidden. #}
-{% macro rule_row(t, templates, modes, actions, whens, trash) -%}
-<div class="row tagrow rulerow" data-action="{{ t.action }}">
-  <input type="hidden" name="rule_id" value="{{ t.id }}">
-  <input type="text" name="tag" value="{{ t.tag }}" placeholder="{{ _('Title has, e.g. RDO') }}" maxlength="40" aria-label="{{ _('Title to match') }}">
-  <select name="tag_mode" aria-label="{{ _('How to match') }}" title="{{ _('How the rule is matched against event titles') }}">
-    {% for k, v in modes.items() %}<option value="{{ k }}"{% if t.mode == k %} selected{% endif %}>{{ _(v) }}</option>{% endfor %}
-  </select>
-  <input type="hidden" name="tag_case" value="{{ '1' if t.case else '' }}">
-  <button type="button" class="ghost casebtn" aria-pressed="{{ 'true' if t.case else 'false' }}" title="{{ _('Match capitals exactly') }}">Aa</button>
-  <span class="arrow" aria-hidden="true">→</span>
-  <select name="rule_action" class="ruleaction" aria-label="{{ _('What to do') }}">
-    {% for k, v in actions.items() %}<option value="{{ k }}"{% if t.action == k %} selected{% endif %}>{{ _(v) }}</option>{% endfor %}
-  </select>
-  <span class="act color"><input type="color" name="tag_color" value="{{ t.color or '#1d4ed8' }}" aria-label="{{ _('Rule color') }}"></span>
-  <span class="act event">
-    <select name="rule_template" aria-label="{{ _('Event template') }}">
-      {% if not templates %}<option value="">{{ _('(add an event template first)') }}</option>{% endif %}
-      {% for x in templates %}<option value="{{ x.id }}"{% if x.id == t.template %} selected{% endif %}>{{ x.title }}</option>{% endfor %}
-    </select>
-    <input type="text" name="rule_offset" class="dur" value="{{ '%d:%02d' % (t.offset // 60, t.offset % 60) }}" aria-label="{{ _('How long before or after (hours:minutes)') }}" title="{{ _('How long before or after (hours:minutes)') }}">
-    <select name="rule_when" aria-label="{{ _('Before or after') }}">
-      {% for k, v in whens.items() %}<option value="{{ k }}"{% if t.when == k %} selected{% endif %}>{{ _(v) }}</option>{% endfor %}
-    </select>
-  </span>
-  <button type="button" class="ghost deltag" title="{{ _('Delete this rule') }}" aria-label="{{ _('Delete this rule') }}">{{ trash }}</button>
-  <button type="button" class="ghost addtag" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">{{ icon("add", 18) }}</button>
-</div>
-{%- endmacro %}
-
 {# One event template row: title, timed (with its length) or all day, location and color. #}
 {% macro template_row(t, colors, trash) -%}
 <div class="row tagrow tplrow" data-kind="{{ 'allday' if t.all_day else 'timed' }}">
@@ -206,10 +174,10 @@
   </select>
   <input type="text" name="tpl_duration" class="dur" value="{{ '%d:%02d' % (t.minutes // 60, t.minutes % 60) }}" aria-label="{{ _('Length (hours:minutes)') }}" title="{{ _('Length (hours:minutes)') }}">
   <input type="text" name="tpl_location" value="{{ t.location }}" placeholder="{{ _('Location') }}" maxlength="200" aria-label="{{ _('Location') }}">
-  <select name="tpl_color" aria-label="{{ _('Event color') }}">
-    <option value="">{{ _('Default color') }}</option>
-    {% for n, h in colors %}<option value="{{ h }}"{% if t.color == h %} selected{% endif %}>{{ n }}</option>{% endfor %}
-  </select>
+  {# its color (0.2.8-beta.15): the color box, Google's 11 colors, or none (its calendar's) #}
+  <span class="colorbox free"><button type="button" class="colorpick{% if not t.color %} nocolor{% endif %}" style="--c:{{ t.color or 'transparent' }}" aria-haspopup="true" aria-expanded="false"
+      aria-label="{{ _('Event color') }}" title="{{ _('Event color') }}"></button><input type="hidden" class="colorval" name="tpl_color" value="{{ t.color }}" data-default="{{ t.color }}">
+    <span class="palpop" role="radiogroup" aria-label="{{ _('Event color') }}" hidden>{% for n, h in colors %}<button type="button" class="pal" role="radio" data-c="{{ h }}" title="{{ _(n) }}" aria-label="{{ _(n) }}" aria-checked="{{ 'true' if t.color == h else 'false' }}" style="--c:{{ h }}"></button>{% endfor %}<button type="button" class="pal nocolor" role="radio" data-c="" title="{{ _('Its calendar’s color') }}" aria-label="{{ _('Its calendar’s color') }}" aria-checked="{{ 'false' if t.color else 'true' }}" style="--c:transparent"></button></span></span>
   <button type="button" class="ghost deltag" title="{{ _('Delete this template') }}" aria-label="{{ _('Delete this template') }}">{{ trash }}</button>
   <button type="button" class="ghost addtag" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 18) }}</button>
 </div>

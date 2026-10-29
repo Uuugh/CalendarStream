@@ -31,7 +31,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok("<span>Username</span>" in p and "<span>UID</span>" not in p, "F3.3: Username")
     order = [m.group(1) for m in re.finditer(r'<section class="card[^"]*" id="([a-z]+)"', p)]
     ok(order == ["sources", "destinations", "rules", "templates", "activity"], f"F5/F6/F7: section order ({order})")
-    ok(re.search(r'id="rulestitle"><svg[^>]*>.*?</svg>All Rules<span class="helpdot', p) and re.search(r'id="tplstitle"><svg[^>]*>.*?</svg>Event Templates<span class="helpdot', p) and ">Activities and Logs</span>" in p, "F5.2/F6/F7.1: section names")
+    ok(re.search(r'id="rulestitle"><svg[^>]*>.*?</svg>All Rules<span class="helpdot', p) and re.search(r'id="tplstitle"><svg[^>]*>.*?</svg>Event Templates<span class="helpdot', p) and ">History, Undo &amp; Logs</span>" in p, "F5.2/F6/F7.1: section names (0.2.8-beta.15: History, Undo & Logs)")
     did = feeds[-1]["id"]
     ok(f'id="dest-{did}" data-section="dest:{did}"' in p and f'aria-controls="cfg-dest-{did}"' in p and f'id="cfg-dest-{did}" hidden' in p, "F4.1: a destination folds under Configure")
     ok(post("/ui/section", section=f"dest:{did}", open="1").status_code == 204 and f'id="cfg-dest-{did}" hidden' not in c.get("/").text, "F4.1: …and stays open once opened")
@@ -40,7 +40,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     with sync_playwright() as pw:
         b = pw.chromium.launch()
         for w in (1400, 900, 390):
-            pg = b.new_page(viewport={"width": w, "height": 900}, http_credentials={"username": "t", "password": "password1"})
+            pg = b.new_page(viewport={"width": w, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
             errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
             pg.goto("http://127.0.0.1:8099/?view=month"); pg.wait_for_timeout(400)
             over = pg.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")

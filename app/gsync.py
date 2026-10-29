@@ -173,10 +173,16 @@ CLIENT_ID_RE = re.compile(r"^[A-Za-z0-9_.-]{10,200}\.apps\.googleusercontent\.co
 
 
 class Google:
-    def __init__(self, store, box: SecretBox, tz_name: str):
+    def __init__(self, store, box: SecretBox, tz_name: str, account: str = ""):
         self.store = store
         self.box = box
-        self._client: tuple[str, str] | None = None              # (client ID, secret), read once
+        # 0.2.8-beta.15: one Google account per instance (each Google module can use its own Gmail); the
+        # first ("") keeps the keys it always had, so installs from before need nothing moved. The OAuth
+        # client is shared by every account.
+        self.account = account
+        self._info_key = "google" + (f":{account}" if account else "")
+        self._token_key = "google_token" + (f":{account}" if account else "")
+        self._client: tuple[str, str] | None = None              # (kept for callers from before; read each time now)
         self.tz_name = tz_name
         self._pending: dict[str, tuple[str, str, float]] = {}   # state -> (PKCE verifier, redirect URI, expiry)
         self._access: tuple[str, float] | None = None            # (access token, expiry)
@@ -186,11 +192,9 @@ class Google:
 
     def client(self) -> tuple[str, str]:
         """The OAuth client ID and secret saved in the Google Calendar Autosync box, or ("", "")."""
-        if self._client is None:
-            saved = self.store.get("google_client") or {}
-            secret = self._unseal(saved["secret"], "") if saved.get("secret") else ""
-            self._client = (saved.get("id", ""), secret)
-        return self._client
+        saved = self.store.get("google_client") or {}      # (read each time: every account shares it)
+        secret = self._unseal(saved["secret"], "") if saved.get("secret") else ""
+        return (saved.get("id", ""), secret)
 
     @property
     def client_id(self) -> str:
@@ -310,7 +314,7 @@ class Google:
     def info(self) -> dict:
         """Saved connection details: email, connected_at, last_sync, last_result, last_error, and each
         source's calendar (see cal_info)."""
-        return self.store.get("google") or {}
+        return self.store.get(self._info_key) or {}
 
     # Each Google destination has a calendar of its own in Google: {calendar_id, calendar_name,
     # synced_calendar, created, last_sync, events}, under "calendars" by the destination's ID. (Before
@@ -332,7 +336,7 @@ class Google:
         cal = {**(cals.get(sid) or {}), **changes}
         cals[sid] = {k: v for k, v in cal.items() if v not in (None, "")}
         info["calendars"] = cals
-        self.store.set("google", info)
+        self.store.set(self._info_key, info)
 
     def rekey(self, old: str, new: str):
         """Give a calendar (its details, tracked events and notifications) a new key: used when the
@@ -346,11 +350,11 @@ class Google:
             for k in CAL_KEYS:
                 if k not in ("last_sync",):
                     whole.pop(k, None)
-            self.store.set("google", whole)
+            self.store.set(self._info_key, whole)
         else:
             whole = self.info()
             (whole.get("calendars") or {}).pop(old, None)
-            self.store.set("google", whole)
+            self.store.set(self._info_key, whole)
         self.store.google_rekey(old, new)
         watch = self.store.get(self._watch_key(old))
         if watch:
@@ -371,21 +375,21 @@ class Google:
             info = self.info()
             for k in CAL_KEYS:
                 info.pop(k, None)
-            self.store.set("google", info)
+            self.store.set(self._info_key, info)
         else:
             info = self.info()
             (info.get("calendars") or {}).pop(sid, None)
-            self.store.set("google", info)
+            self.store.set(self._info_key, info)
         self.store.google_forget(source=sid)
 
     def _update_info(self, **changes):
         info = self.info()
         info.update(changes)
-        self.store.set("google", {k: v for k, v in info.items() if v not in (None, "")})
+        self.store.set(self._info_key, {k: v for k, v in info.items() if v not in (None, "")})
 
     @property
     def connected(self) -> bool:
-        return self.store.get("google_token") is not None
+        return self.store.get(self._token_key) is not None
 
     # --- Encrypted values (the client secret and the refresh token) --------------------
 
@@ -404,10 +408,10 @@ class Google:
                                 "Disconnect and connect again.")
 
     def _save_refresh_token(self, token: str):
-        self.store.set("google_token", self._seal(token))
+        self.store.set(self._token_key, self._seal(token))
 
     def _refresh_token(self) -> str:
-        saved = self.store.get("google_token")
+        saved = self.store.get(self._token_key)
         if not saved:
             raise GoogleError("Google Calendar isn't connected.")
         return self._unseal(saved)
@@ -460,7 +464,7 @@ class Google:
         if previous.get("email") and email and previous["email"] != email:
             # A different account: its calendar is a different one.
             previous = {}
-            self.store.set("google", {})
+            self.store.set(self._info_key, {})
         self._save_refresh_token(refresh)
         self._save_check(True, "Google accepted the client ID and secret", redirect_uri, True)   # signed in: both proven
         self._access = (tokens["access_token"], time.monotonic() + int(tokens.get("expires_in", 3600)) - 60)
@@ -567,6 +571,15 @@ class Google:
         self._update_cal(sid, calendar_id=made["id"], calendar_name=made.get("summary", name), created=True, client=self.client_id)
         return made["id"]
 
+    async def set_color(self, sid: str, color: str):
+        """The calendar's color in the person's Google Calendar (0.2.8-beta.15: a Google module's color box)."""
+        calendar_id = self.cal_info(sid).get("calendar_id")
+        if not calendar_id:
+            return
+        await self.api("PATCH", f"/users/me/calendarList/{_quote(calendar_id)}", params={"colorRgbFormat": "true"},
+                       body={"backgroundColor": color, "foregroundColor": "#ffffff"})
+        self._update_cal(sid, color=color)
+
     async def delete_calendar(self, sid: str) -> str:
         """Delete a destination's calendar in Google (if connected) and forget it. Returns a note
         when Google couldn't be reached ("" otherwise)."""
@@ -607,13 +620,13 @@ class Google:
         except (GoogleError, httpx.HTTPError):
             notes.append("couldn't reach Google to remove access; remove CalendarStream at "
                          "myaccount.google.com/permissions")
-        self.store.delete("google_token")
+        self.store.delete(self._token_key)
         self._access = None
         # Keep the calendar IDs (unless deleted) so reconnecting the same account reuses those calendars.
         info.pop("connected_at", None)
         info.pop("last_error", None)
         info.pop("created", None)
-        self.store.set("google", info)
+        self.store.set(self._info_key, info)
         return notes
 
     def record_error(self, message: str):

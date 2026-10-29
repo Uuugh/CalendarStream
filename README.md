@@ -38,11 +38,11 @@ or add events with rules, and walks you through setup.
   <img src="docs/screenshots/rule-dialog-dark.png" alt="The same in the dark theme" width="45%"><br><br>
   <img src="docs/screenshots/event-light.png" alt="Adding an event: calendar, template, title, times, time zone, location, notes and color (light theme)" width="49%">
   <img src="docs/screenshots/event-dark.png" alt="The same in the dark theme" width="49%"><br><br>
-  <img src="docs/screenshots/settings-light.png" alt="Settings: status-page login, public address, admin e-mail and updates (light theme)" width="40%">
+  <img src="docs/screenshots/settings-light.png" alt="Settings: Administrator, public address, Google Calendar API Sync and updates (light theme)" width="40%">
   <img src="docs/screenshots/settings-dark.png" alt="The same in the dark theme" width="40%"><br><br>
   <img src="docs/screenshots/phone-light.png" alt="On a phone: the list view, with TZ and the view button (light theme)" width="30%">
   <img src="docs/screenshots/phone-dark.png" alt="The same in the dark theme" width="30%"><br><br>
-  <img src="docs/screenshots/activity-light.png" alt="Activities and Logs: each source's last check and the log (light theme)" width="49%">
+  <img src="docs/screenshots/activity-light.png" alt="History, Undo &amp; Logs: each source's last check and the log with its Types and Undo (light theme)" width="49%">
   <img src="docs/screenshots/activity-dark.png" alt="The same in the dark theme" width="49%">
 </p>
 <sub>Made-up demo schedule.</sub>
@@ -151,12 +151,12 @@ logins or setup codes lock an address out for 15 minutes.
   ever changed in CCS+.
 - **Print Preview:** the pages as they'll print, with **Print**. Choose **Itinerary**, **Day**,
   **5-day** (Monday to Friday), **Week** or **Month**, with or without weekends, light or dark, and
-  the dates (From / To); it opens with your last print's choices (or the calendar's view the first
-  time). One page per month, week or day.
+  the dates (From / To, or **All**: the first event to the last); it opens with your last print's
+  choices (or the calendar's view the first time). One page per month, week or day.
 - The page's sections: **Calendar** at the top, then **Calendars**, **Feeds**, **All Rules**,
-  **Event Templates** and **Activities and Logs**, each with a small icon and the same kind of
+  **Event Templates** and **History, Undo & Logs**, each with a small icon and the same kind of
   section title row. On a wide screen they sit in two columns (Calendars | Feeds, All Rules |
-  Event Templates), with Activities and Logs across the full width; on a narrow screen or a phone
+  Event Templates), with History across the full width; on a narrow screen or a phone
   they're one column, the calendar opens on the List view, the view and theme switches become one
   button each that steps through the choices, and long labels get shorter ("Expand", "Check every
   60 min").
@@ -168,8 +168,14 @@ logins or setup codes lock an address out for 15 minutes.
   Rules** picture names the page's parts and gives every rule, measured from the page itself:
   [light](build_rules/CalendarStream_Theme_Rules_Light.png) · [dark](build_rules/CalendarStream_Theme_Rules_Dark.png)
   (redrawn whenever the theme changes).
-- A small **(?)**, raised right after the word it explains like a superscript, explains it: point at it, or click (tap)
-  it to keep it open.
+- A small **(?)**, raised right after the word it explains like a superscript, is help (how to): point at it, or
+  click (tap) it to keep it open. A module's **(i)**, after its label, is info: what it is, then its note.
+- Instructions on the page are click paths ("Google Cloud › Clients › CalendarStream › Save"); the why is in
+  the (?). Questions ("Delete this rule?") are the page's own pop-ups, never the browser's; every **+** opens
+  a centred pop-up, with the page dimmed and out of focus behind it.
+- **Colors:** one palette everywhere, Google Calendar's 11 event colors, in a color box (calendars, feeds,
+  rules, templates, events), so what you pick is what Google shows. **Emoji:** the common ones, and every
+  emoji in a picker (ten a line, with a search).
 - Saving, cancelling and removing happen in place: only the parts of the page they change are
   updated, without reloading it. **Cancel | Save** is one 130 px pair at the bottom of a module and
   (**Cancel | Apply** in the rule dialog); the pressed side fills it and says **Cancelled** or
@@ -183,19 +189,17 @@ logins or setup codes lock an address out for 15 minutes.
   for its Expand line) and around subsection titles (Automatic Upload, Manual Upload, Rules), 2 px
   between everything else; text boxes and rule lines are 34 px rounded rectangles; instruction tiles
   ("How to …") keep their own size.
-- **Calendars** (**+** adds one, ending with Cancel | Save). A new install has one **CalendarStream**
-  calendar (named Local): it holds the events you add here, and you can add more (**+ →
-  CalendarStream**). The top calendar is the **Default** (the
-  one new events go into; its expanded module says so); remove it or move another above it, and the
-  next becomes the Default. Other presets: **United CCS+** (once),
+- **Calendars** (**+** adds one, ending with Cancel | Save). There's always a **CalendarStream**
+  calendar (a new install's is named Local): it holds the events you add here, and you can add more
+  (**+ → CalendarStream**). The top calendar is the **Default** (the one new events go into; its expanded
+  module says so), and it's always a CalendarStream calendar. Other presets: **United CCS+** (once),
   **Google** and **Apple** calendars (by their private iCal link, with step-by-step help for finding
   it) and **Other** (any link starting with `webcal://` or ending in `.ics`; repeating events are
   shown from a year back to two years ahead). Each calendar is a **module**. Its header is 50 px
   tall and is all a folded module shows: its color (the color of its events; changed while expanded),
   its kind (fixed: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar or Calendar
-  Feed) over its name, with a raised **(i)** after the name when it has a note (point at it to read
-  it); on the right "Last synced 07:59" (or "Sync failed 07:59"; what changed is in Activities and
-  Logs) over "Next check @ 08:59" (a line with nothing to say, like Local's, is left blank), beside its
+  Feed) over its label (plain text until expanded), with a raised **(i)** after it (what it is, and its
+  note); on the right "Last synced 07:59" (or "Sync failed 07:59"; what changed is in History) over "Next check @ 08:59" (a line with nothing to say, like Local's, is left blank), beside its
   status over **Sync Now** (while it syncs, the button fills the box), in a box of the same size in every module. **Sync Now** says
   **Syncing…** at once, then pulses green (**Synced**), amber (**Failed**: United, Google or the
   internet said no) or red (CalendarStream itself failed) and goes back to Sync Now; the status, the calendar and the log update in place, without reloading the page.
@@ -206,20 +210,30 @@ logins or setup codes lock an address out for 15 minutes.
     **Username** (your UID) and password (**✓ Validated** until you type; then **✕ | ✓** (Cancel and
     Save), and ✓ shows Saved → Verifying… → ✓ Validated or ✗ Failed, with the reason under the boxes),
     and step-by-step help: how to enable it on the left, what's **Accomplished** on the right.
-  - **Manual Upload** (CCS+): upload Calendar.ics by hand.
+  - **Manual Upload** (CCS+): Calendar.ics, uploaded by hand, replaces the schedule. Every other calendar
+    has **Import** in the same row: the file, **From | To | All**, Import. The events in those dates are
+    added (kept through its downloads, "Added here"); for each one already in it you choose **Merge** (the
+    file's version updates it) or **Delete** (the file's copy is dropped), or the same for all remaining.
   - **Rules:** the rules this calendar uses, highest priority first (its own first, then the shared
     ones), each marked **This calendar**, **All calendars** or **n calendars**. ✎ opens the rule
     dialog; the bin takes the rule off this calendar; the handle changes its priority. **+ Add a
-    rule** offers **New rule…** or a rule another calendar uses.
+    rule** opens the new rule pop-up (with a menu first only when another calendar's rule could be
+    used here too).
   - At the bottom, under a line: **Remove** on the left, **Cancel | Save** on the right. Remove asks
-    what becomes of its events: keep them in a Local calendar (same name and color, in its place),
-    add them to another calendar, or delete them.
+    what becomes of its events: **Merge** them into another calendar (or a new CalendarStream one) or
+    **Delete** them, with **Download a copy (.ics) first**; with a Merge, its own rules **Move to** that
+    calendar or are deleted. The last CalendarStream calendar's trash says **Empty**: it stays, in every
+    feed and rule. History › Undo brings a removed calendar back, CCS+'s sign-in included.
 - **Feeds** (**+** adds one; the first asks for the public address): what other apps subscribe to,
   independent of the calendars, as many as you like:
-  - **Google Calendar**: with **Google Calendar API Sync** set up (☰ Settings: the one Google sign-in for
-    all of them), a calendar of its own in Google, kept up to date within seconds, with your rule
-    colors and reminders, and **Sync Now** in its header. Without it, a feed your Google account
-    subscribes to (Google re-reads it every few hours and shows it in one color).
+  - **Google 2-way Sync**: with **Google Calendar API Sync** set up (☰ Settings), a calendar of its own in
+    Google, kept up to date within seconds, with your rule colors and reminders, and **Sync Now** in its
+    header; changes made there come back here.
+  - **Google 1-way Sync**: the same, written by CalendarStream only (changes made in Google are put back).
+  - Each Google module uses the account in ☰ Settings, or **a Gmail of its own** (Connect another Gmail), so
+    feeds can go to different people. Its color box sets the calendar's color in Google.
+  - **Google Calendar (feed)**: a feed your Google account subscribes to (Google re-reads it every few
+    hours and shows it in one color).
   - **Apple, Outlook or another app**: a feed link.
 
   A feed's module leads with its buttons, **Add to Google Calendar**, **Add to Apple / Outlook** and
@@ -228,8 +242,9 @@ logins or setup codes lock an address out for 15 minutes.
   kind, then on the right "Last read by Google 07:59" (or "Last read …", when an app last fetched
   it; a Google calendar says "Last synced …"), with its calendars and dates in the tooltip, and its
   status; and
-  **▸ Expand for Details or to Edit Configuration ◂** opens the rest: the name, a **Start** and
-  **End** date (empty = no limit), the calendars it gets, a feed's links, and Remove / Cancel | Save. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
+  **▸ Expand for Details or to Edit Configuration ◂** opens the rest: the label, **Start | End | All**
+  and the calendars it gets on one line, a feed's links, and Remove / Cancel | Save. A Google module's
+  Remove asks whether to delete its calendar from Google Calendar too, or leave it there. Every event keeps its source's colors and rules. Each feed has a **stream name**, the secret
   part of its links: after a reinstall, or removing a feed by mistake, enter the old one (or paste
   an old link) and existing subscriptions work again.
 - **All Rules** (looks like a module: its header shows the number of rules in a box, green, or
@@ -240,18 +255,23 @@ logins or setup codes lock an address out for 15 minutes.
   its priority. A higher rule wins over
   a lower one (for a color, an emoji or a time change), even a calendar's own. A rule is
   **If … Then …**:
-  - **If** (no lines: every event): **Text** is / contains / whole word / begins with / ends with /
-    regex (**Aa** for matching case); **Date** and **Time** is / after / before / between (a time
+  - **If** (no lines: every event): **Title** or **Any text** (title, place and notes) is / contains /
+    whole word / begins with / ends with / **matches pattern** (`*` any text, `#` a digit, `?` one
+    character: `*E####`) / **contains regex** (**Aa** for matching case). With a pattern or regex, a test
+    box shows your event titles with ✓ / ✕ and the part that matched as you type, with buttons that put
+    in the pieces (Starts, Ends, Word, Either, Any text, Digits, Space, Optional, Literal); a broken
+    regex says why, and Apply waits. **Date** and **Time** is / after / before / between (a time
     range can go past midnight); **Day(s)** is / after / before / between (ctrl- or shift-click for
     several; Fri – Mon goes round the weekend); **Length** is (weeks : days : hours : minutes; 0 =
-    no end time) or is whole days. Join lines with **and** / **or** (and goes first); click the grey
-    **(** and **)** to group lines, the outer brackets in a different color (a **)** with no **(**
-    gets one on the first line of its group).
+    no end time) or is whole days. Each line ends with **&** (and), **|** (or) and **✕** (take it out);
+    **&** or **|** on the last line adds the next (and goes first); click the grey **(** and **)** to group
+    lines, the outer brackets in a different color (a **)** with no **(** gets one on the first line of
+    its group).
   - **Then** (+ adds more): **Color** (one of Google Calendar's 11 event colors, so Google can always
     show it; rule lines read "Color ■ (Tomato)"), **Add emoji to title**, **Create event** (a new one, or from
     an event template, some time before the start, after the start or after the end), **Change**
     (to all-day, with the original time in the notes, or to a length) and **Record changes** (when
-    the source changes a matching event, a note on it and a line in Activities and Logs).
+    the source changes a matching event, a note on it and a line in History).
   - **Apply to**: a drop-down of the calendars, each with its color: **All calendars** (also ones
     you add later) or the ones ticked. A rule made in a calendar starts with that calendar, one
     made in All Rules with All; changing one keeps its choice. **Remove** deletes it.
@@ -264,14 +284,19 @@ logins or setup codes lock an address out for 15 minutes.
   00:01–23:59:59). Rules from earlier versions are converted, in the same order.
 - **Event Templates** (like All Rules: "2 Templates" in a box, Expand for Details, **+** in the bottom right corner, Cancel | Save): ready-made events (title, length or all day, location, color) for Add-event
   rules and for **Start from a template** when adding an event by hand.
-- **Activities and Logs** (a module like the others: it opens only from its Expand line): each check
-  and what changed, for each source; each source's last download details (for debugging) at the
-  bottom. Folded, it shows the latest line on the right and **Healthy**,
-  or **Unhealthy** while a problem is still there (a calendar failing, a sign-in rejected, Google
-  sync failing).
-- **☰ Settings** (a light blue panel): site settings only: the status-page login (with a show-password eye and a
-  strength bar, like every password box), the public address, the **admin e-mail** (filled into the
-  Google setup guide), **Google Calendar API Sync** (laid out like a login, connected or not: Client ID
+- **History, Undo & Logs** (a module like the others: it opens only from its Expand line): each check
+  and what changed, for each source, then every line as **Time | Type | Event | Undo**, with a filter
+  (a Type, words, a time). Changes made on the page can be **undone** and **redone** (newest first);
+  it remembers the last 20 (you choose how many). A deleted event stays struck through and greyed,
+  saying where it was deleted (here, in Google Calendar, by United, gone from the feed), with
+  **Restore**, until its Undo is forgotten. **Container log** shows what `docker logs` shows. Folded,
+  it shows the latest lines (with Undo / Redo) and **Healthy**, or **Unhealthy** while a problem is
+  still there (a calendar failing, a sign-in rejected, Google sync failing).
+- **Signing in:** the page's own sign-in page (user name and password); a session lasts 30 days, and
+  changing the login signs every browser out.
+- **☰ Settings** (a light blue panel): site settings only: **Administrator** (the login, with a
+  show-password eye and a strength bar, like every password box, and **Sign out**), the public address,
+  **Google Calendar API Sync** (with the **admin e-mail** the setup guide uses; laid out like a login, connected or not: Client ID
   with Copy, Client secret, and one **Connect** button that saves, checks the client and the redirect
   address with Google, then opens Google's sign-in, stopping with the fix as a click path) and **Updates**, laid out
   like a module header: your release (stable or beta versions; only those are offered), when it last
@@ -284,7 +309,7 @@ logins or setup codes lock an address out for 15 minutes.
   themselves). The Google credentials row ends with a trash, which asks before deleting them. Each field shows ✓ until you type, then ✕ | ✓, and saves in
   place, without reloading the page.
 - **Report a problem / Suggest a feature** at the bottom of the page open a form: what happened (or
-  your idea), and tick what to include: the Activities and Logs lines, each source's last download
+  your idea), and tick what to include: the History lines, each source's last download
   details, your device and setup, your contact details, and whether you'd like replies. Private
   details (your Username, links, stream names, e-mail addresses, the public address) are taken out;
   a preview shows exactly what's sent. **Open on GitHub** fills in a new issue there (its page is
@@ -316,9 +341,10 @@ for access to **calendars it created** and your e-mail address, so it can't see 
   event added in Google goes into a CalendarStream (local) calendar that the Google calendar gets; a
   deletion hides the event (an added one is deleted). A rule's events stay read-only: changed or
   deleted in Google, they're put back. When both sides changed since the last sync, the newer change
-  wins (the other is noted in Activities and Logs). More than 3 deletions at once wait at the top of
-  Activities and Logs: **Hide them here too** or **Put them back in Google**. Repeating events made
-  in Google aren't copied yet.
+  wins (the other is noted in History). An event deleted in Google stays here struck through and
+  greyed ("Deleted in Google Calendar"), with **Restore**, until its Undo is forgotten. **Google 1-way
+  Sync** calendars skip all this: what's changed there is put back. Repeating events made in Google
+  aren't copied yet.
 - **Instant updates from Google:** with a public `https://` address, CalendarStream asks Google to
   notify it (a webhook to `/google/notify`) whenever one of its calendars changes there, and brings
   the changes here within seconds instead of at the daily check. Nothing to set up; it needs a valid
@@ -412,7 +438,7 @@ passes it on must include the license and its required notice, which credits the
 Because commercial use isn't allowed, this is "source-available" rather than open source in the
 OSI sense. For commercial use, ask the author via a GitHub issue.
 
-### Third-party fonts and icons
+### Third-party fonts, icons and emoji list
 
 CalendarStream includes these, under their own licenses (a copy of each comes with it):
 
@@ -420,6 +446,7 @@ CalendarStream includes these, under their own licenses (a copy of each comes wi
 | --- | --- | --- | --- |
 | [Material Symbols](https://github.com/google/material-design-icons) (Rounded, weight 400): every icon on the pages | Google | [Apache License 2.0](app/material_symbols/LICENSE) | `app/material_symbols/` |
 | [IBM Plex Sans and IBM Plex Mono](https://github.com/IBM/plex): the pages' fonts | IBM Corp. | [SIL Open Font License 1.1](app/static/fonts/OFL.txt) | `app/static/fonts/` |
+| [unicode-emoji-json](https://github.com/muan/unicode-emoji-json) 0.6.0: the emoji picker's list (names and groups; each device draws the emoji itself) | Mu-An Chiou | [MIT](app/static/emoji-LICENSE.txt) | `app/static/emoji.json` |
 
 The icons are copied from the [`@material-symbols/svg-400`](https://www.npmjs.com/package/@material-symbols/svg-400)
 package by `tools/vendor_icons.py`; the fonts are the `latin` and `latin-ext` files of

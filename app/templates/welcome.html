@@ -35,7 +35,7 @@
       <div class="cmd"><input id="logcmd" readonly onclick="this.select()" value='docker compose logs | grep "setup code"'
         aria-label="{{ _('Command') }}"><button type="button" class="copy" onclick="copyField('logcmd', this)"
         title="{{ _('Copy') }}" aria-label="{{ _('Copy') }}">{{ icon("content_copy", 17) }}</button></div></li>
-    <li>{{ _('Choose a user name and password. Your browser will ask for them from now on.') }}</li>
+    <li>{{ _('Choose a user name and password: you sign in with them from now on.') }}</li>
   </ol>
   <form class="card" method="post" action="/welcome" autocomplete="off">
     {% if error %}<div class="err">{{ msg(error) }}</div>{% endif %}

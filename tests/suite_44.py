@@ -83,7 +83,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         b = pw.chromium.launch()
         for scheme in ("light", "dark"):
             for w in (1230, 390):
-                pg = b.new_page(viewport={"width": w, "height": 900}, color_scheme=scheme, http_credentials={"username": "t", "password": "password1"})
+                pg = b.new_page(viewport={"width": w, "height": 900}, color_scheme=scheme, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
                 errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
                 pg.goto("http://127.0.0.1:8106/?month=2026-10"); pg.wait_for_timeout(500)
                 for t in ("#rules > .cfgline .cfgtoggle", "#templates > .cfgline .cfgtoggle"):
@@ -120,8 +120,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                         ok(17 <= r[0] <= 21 and r[1] <= 21 and 17 <= r[2] <= 21 and r[3] < 30 and r[4] == 0,
                            f"[{tag}] Clarification '+ in the corner': {sec} count box top right, + bottom right, none in the header {r}")
                     # Clarification: a note is a raised (i) after the name, only when there is one
-                    ok(pg.locator(f"#src-{wid} .nameline .notedot").count() == 1 and pg.locator("#src-ccs .nameline .notedot").count() == 0,
-                       f"[{tag}] Clarification 'note': (i) after the name only when there's a note")
+                    ok(pg.locator(f"#src-{wid} .nameline .notedot").count() == 1 and "Shared with the office" in pg.locator(f"#src-{wid} .nameline .helptip").text_content()
+                       and "Note:" not in pg.locator("#src-ccs .nameline .helptip").text_content(),
+                       f"[{tag}] Clarification 'note': the (i) after the label says what it is, then the note when there is one")
                     # Clarification: rule colors (Google's 11) and "Color ■ (Name)"
                     ok(re.search(r'Color <span class="swatch"[^>]*></span> \(Tomato\)', pg.content()) is not None, f"[{tag}] Clarification 'rule colors': Color ■ (Name)")
                     # Interaction: status-box buttons answer at once, and keep answering after in-place redraws
@@ -149,7 +150,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         # Clarification: no handle with nothing to reorder (one feed)
         for d in main.destinations()[1:]:
             c.post("/destinations/remove", data={"csrf": csrf, "did": d["id"]})
-        pg = b.new_page(viewport={"width": 1230, "height": 900}, http_credentials={"username": "t", "password": "password1"})
+        pg = b.new_page(viewport={"width": 1230, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         pg.goto("http://127.0.0.1:8106/?month=2026-10"); pg.wait_for_timeout(400)
         ok(len(main.destinations()) == 1 and pg.evaluate("getComputedStyle(document.querySelector('#destinations .modrow > .handle')).visibility") == "hidden",
            "Clarification 'handles': a lone feed has no handle")
@@ -179,6 +180,52 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
            and pg.locator("#addsrc button", has_text="Add").count() == 0, "Clarification 'Cancel | Save when adding': + Add a calendar ends with Cancel | Save")
         pg.click("#addsrc-local .pcancel"); pg.wait_for_timeout(1000)
         ok(pg.locator("#addsrc").is_hidden(), "…Cancel closes it")
+        # --- 0.2.8-beta.15 Clarifications -----------------------------------------------------------
+        # every + opens a centred pop-up, the page dimmed and blurred behind it
+        for plus, dlg in (("#sources .cardhead .plus", "#addsrc"), ("#destinations .cardhead .plus", "#adddestpop")):
+            pg.click(plus); pg.wait_for_timeout(350)
+            r = pg.evaluate(f"""() => {{ const d = document.querySelector('{dlg}'), b = d.getBoundingClientRect();
+                return [d.open && d.matches(':modal'), Math.abs((b.left + b.right) / 2 - innerWidth / 2) <= 2, getComputedStyle(d, '::backdrop').backdropFilter]; }}""")
+            ok(r[0] and r[1] and "blur" in r[2], f"Clarification '+ pop-ups': {plus} opens a centred pop-up, the page blurred behind {r}")
+            pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
+        pg.click("#templates > .cfgline .cfgtoggle"); pg.wait_for_timeout(200)
+        pg.click("#templates .sfoot .plus"); pg.wait_for_timeout(350)
+        ok(pg.evaluate("document.getElementById('tpladd').matches(':modal')"), "…Event Templates' + too")
+        pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
+        r = pg.evaluate("""() => { const m = document.querySelector('.box.module'), cs = getComputedStyle(m), n = m.querySelector('.srcname');
+            return [cs.borderTopWidth, cs.paddingTop, cs.paddingLeft, getComputedStyle(n).borderTopColor, getComputedStyle(n).backgroundColor,
+                    document.querySelectorAll('.box.module').length, document.querySelectorAll('.box.module .nameline .notedot').length,
+                    document.querySelectorAll('input[type=color]').length,
+                    [...document.querySelectorAll('.palpop')].every(p => p.querySelectorAll('.pal:not(.nocolor)').length === 11),
+                    [...document.querySelectorAll('main input[type=date]')].every(i => i.closest('.daterange') && i.closest('.daterange').querySelector('.rangeall')),
+                    [...document.querySelectorAll('.box.src .cfgbody')].every(c => { const f = c.querySelector('form.importrow'); return f && f.querySelector('.filefield') && f.lastElementChild.tagName === 'BUTTON'; })]; }""")
+        ok(r[0] == "2px" and r[1] == "5px" and r[2] == "9px", f"Clarification '2 px border': modules have a 2 px border, 1 px less padding {r[:3]}")
+        ok(r[3] in ("rgba(0, 0, 0, 0)", "transparent") and r[4] == "rgba(0, 0, 0, 0)", f"Clarification 'label': a folded module's label is plain text {r[3:5]}")
+        ok(r[5] and r[5] == r[6], f"Clarification '(i) is info': every module has its (i) after the label ({r[6]} of {r[5]})")
+        ok(r[7] == 0 and r[8], f"Clarification 'one palette': no free color picker; every color box offers Google's 11 {r[7:9]}")
+        ok(r[9], "Clarification 'date ranges': every date range on the page has From | To | All")
+        ok(r[10], "Clarification 'import row': every calendar has the import row (heading, file field, …, the button last)")
+        src = open(os.path.join(os.path.dirname(HERE), "app", "templates", "page.js")).read() + open(os.path.join(os.path.dirname(HERE), "app", "templates", "event.html")).read()
+        ok(not re.search(r"(?<![\w.])(alert|confirm|prompt)\(", src), "Clarification 'no browser dialogs': no alert / confirm / prompt in the page's scripts")
+        ok("cls: 'danger'" not in src and "cls: 'danger ghost'" not in src,
+           "Clarification 'one look per meaning': a pop-up's red choice is a red fill ('danger solid') or red words ('ghost danger'), never red on blue")
+        # emoji: ten a line, scrolling, a search on top
+        pg.click("#rules > .cfgline .cfgtoggle") if pg.locator("#rules .sfoot .newrule").is_hidden() else None
+        pg.click("#rules .sfoot .newrule"); pg.wait_for_timeout(300)
+        pg.evaluate("() => { const s = document.querySelector('#ruledialog .atype'); s.value = 'emoji'; s.dispatchEvent(new Event('change', {bubbles:true})); }")
+        pg.click("#ruledialog .emomore"); pg.wait_for_timeout(700)
+        r = pg.evaluate("""() => { const g = document.querySelector('#ruledialog .emogrid'), cs = getComputedStyle(g), p = document.querySelector('#ruledialog .emopick');
+            return [cs.gridTemplateColumns.split(' ').length, cs.overflowY, p.firstElementChild.classList.contains('emosearch'), g.querySelectorAll('.emo').length]; }""")
+        ok(r[0] == 10 and r[1] == "auto" and r[2] and r[3] > 1000, f"Clarification 'emoji': ten a line, scrolling, a search on top {r}")
+        pg.evaluate("document.getElementById('ruledialog').close()")
+        # a deleted event: struck through, greyed, where, Restore
+        uid = pg.locator("#cal details.ev:not(.custom)").first.get_attribute("data-uid")
+        c.post("/event/delete", data={"csrf": csrf, "uid": uid})
+        pg.reload(); pg.wait_for_timeout(500)
+        d = pg.locator(f'#cal details.ev[data-uid="{uid}"]').first
+        r = pg.evaluate("""uid => { const d = document.querySelector(`#cal details.ev[data-uid="${CSS.escape(uid)}"]`), s = d.querySelector('summary');
+            return [d.classList.contains('deleted'), getComputedStyle(s).textDecorationLine, getComputedStyle(d).filter, !!d.querySelector('.evrestore'), d.querySelector('.delnote').textContent]; }""", uid)
+        ok(r[0] and "line-through" in r[1] and "grayscale" in r[2] and r[3] and "Deleted in CalendarStream" in r[4], f"Clarification 'deleted events': struck through, greyed, where, Restore {r}")
         b.close()
     # Each Clarification in theme.md is covered above (by its key word)
     keys = {"handles": "Module handles", "module headers": "module headers share one layout", "status words": "Status words",
@@ -192,7 +239,12 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "credentials trash (suite 46)": "A credentials row", "one line of settings (suite 46)": "A row of settings that belong together",
             "next push (suite 46)": "Next push instantaneous", "one action, one state (suite 47)": "One action, one state",
             "a working Settings group shows everything (suite 47)": "A Settings",
-            "one look per meaning": "One look per meaning", "click paths": "In-page instructions are click paths"}
+            "one look per meaning": "One look per meaning", "click paths": "In-page instructions are click paths",
+            "date ranges": "Every date range has All", "no browser dialogs": "No browser alert or confirm boxes",
+            "(i) is info": "(i) is info", "+ pop-ups": "Every + opens a centred pop-up", "2 px border": "Modules have a 2 px border",
+            "label": "A module's name is its label", "one palette": "One color palette everywhere",
+            "deleted events": "A deleted event stays struck through", "import row": "Importing a calendar file is one row",
+            "emoji": "Emoji: the common ones"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

@@ -60,6 +60,8 @@ class Event:
     source: str = "ccs"      # the calendar source it belongs to ("ccs" or a feed source's ID)
     alarms: str = ""         # reminders, minutes before the start ("15,60"), set on the status page (0.2.8)
     rule_color: str = ""     # the color its rules give it (#rrggbb), or ""; its own color still wins (0.2.8)
+    deleted: str = ""        # 0.2.8-beta.15: deleted, but kept (struck through, greyed) until its Undo pops off:
+                             # "<where>|<when>" (where: calendarstream, google, united, feed); "gone" after that
     # Not stored: set while a download is read, for the rules (app/rules.py)
     no_end: bool = field(default=False, compare=False)    # it had no end time (its end is its start)
     ruled: bool = field(default=False, compare=False)     # a rule changed its time
@@ -373,13 +375,15 @@ def _edited(original: Event, ed: dict) -> Event:
     return Event(title=ed["title"], start=ed["start"], end=ed["end"], all_day=bool(ed["all_day"]),
                  location=ed.get("location", ""), description=ed.get("description", ""), uid=original.uid,
                  origin="united", edited=True, stale=ed.get("base") != original.fingerprint(),
-                 hidden=bool(ed.get("hidden")), free=original.free, color=ed.get("color", ""), source=original.source)
+                 hidden=bool(ed.get("hidden")), free=original.free, color=ed.get("color", ""), source=original.source,
+                 deleted=ed.get("deleted", ""))
 
 
 def _custom(c: dict, source: str) -> Event:
     return Event(title=c["title"], start=c["start"], end=c["end"], all_day=bool(c["all_day"]),
                  location=c.get("location", ""), description=c.get("description", ""), uid=c["uid"],
-                 origin="custom", color=c.get("color", ""), source=source)
+                 origin="custom", color=c.get("color", ""), source=source, hidden=bool(c.get("deleted")),
+                 deleted=c.get("deleted", ""))
 
 
 def build_feed(events: list[Event], name: str, tz_name: str, color: str = "") -> bytes:

@@ -57,7 +57,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     dup = seed.rule(c, csrf, "", [seed.text("rdo")], [{"type": "color", "color": "#0b8043"}], ["ccs"])
     p = c.get("/").text
     box = p[p.index('id="ruleconflicts"'):]; box = box[:box.index('<div class="rulelist')]
-    ok("never sets the color" in box and "Put “Text whole word “rdo” → Color (Basil)” first" in box and "Keep as is" in box and "to check" in p,
+    ok("never sets the color" in box and "Put “Title whole word “rdo” → Color (Basil)” first" in box and "Keep as is" in box and "to check" in p,
        "All Rules says the new RDO color never shows, with what to do")
     key = re.search(r'name="key" value="([^"]+)"', box)[1]
     ok(post("/rules/resolve", key=key, how="up").status_code == 303 and [r["id"] for r in main.source_rules("ccs")][0] == dup, "Put it first: it moves above")
@@ -99,7 +99,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     work = [e for e in main.store.load_events(wid) if not e.hidden and e.origin != "rule"]
     color = main.calendar_color(wid)
     had = [d["id"] for d in main.destinations() if wid in d["sources"]]
-    ok(post("/sources/remove", sid=wid, keep="local").status_code == 303 and wid not in main.source_ids(), "Remove Work, keeping its events…")
+    ok(post("/sources/remove", sid=wid, keep="merge", into="new").status_code == 303 and wid not in main.source_ids(), "Remove Work, merging its events into a new CalendarStream calendar…")
     new = next(x["id"] for x in main.sources() if x["type"] == "local" and main.calendar_name(x["id"]) == "Work")
     ok(len(main.store.load_events(new)) == len(work) and main.calendar_color(new) == color and had and all(new in main.destination(x)["sources"] for x in had),
        f"…in a Local calendar named Work, same color, same feeds ({len(work)} events)")
@@ -108,7 +108,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # F2: Settings
     p = c.get("/?menu=settings").text
     menu = p[p.index('id="menu"'):p.index('</header>')]
-    ok(menu.count('class="okslot"') == 3 and 'action="/settings/admin-email" class="clientform watch"' in menu, "F2.1: Public address and Admin e-mail save like the login (✓ | ✕ ✓)")
+    ok(menu.count('class="okslot"') == 3 and 'action="/settings/admin-email" class="clientform watch adminmail"' in menu, "F2.1: Public address and Admin e-mail save like the login (✓ | ✕ ✓)")
     ok(">Check now<" in menu and "upgradebtn" not in menu, "no newer version: Check now")
     with patch.object(main.updates, "available", lambda: "9.9.9"):
         p = c.get("/?menu=settings").text
@@ -119,7 +119,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         b = pw.chromium.launch()
-        pg = b.new_page(viewport={"width": 1400, "height": 900}, http_credentials={"username": "t", "password": "password1"})
+        pg = b.new_page(viewport={"width": 1400, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto("http://127.0.0.1:8093/?month=2026-10"); pg.wait_for_timeout(500)
         # (?) next to its word, everywhere
@@ -130,9 +130,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(not far, f"every (?) sits right after its word ({far})")
         # the color box: only while expanded
         pg.evaluate("document.querySelectorAll('.box.src .cfgtoggle[aria-expanded=true]').forEach(b => b.click())"); pg.wait_for_timeout(200)
-        ok(pg.evaluate("getComputedStyle(document.querySelector('#src-ccs input.colorpick')).pointerEvents") == "none", "folded: the color box only shows the color")
+        ok(pg.evaluate("getComputedStyle(document.querySelector('#src-ccs .colorpick')).pointerEvents") == "none", "folded: the color box only shows the color")
         pg.click("#src-ccs .cfgtoggle"); pg.wait_for_timeout(150)
-        ok(pg.evaluate("getComputedStyle(document.querySelector('#src-ccs input.colorpick')).pointerEvents") != "none", "expanded: it changes it")
+        ok(pg.evaluate("getComputedStyle(document.querySelector('#src-ccs .colorpick')).pointerEvents") != "none", "expanded: it changes it")
         # status lines on the right
         R_ = pg.locator("#src-ccs .srcright").bounding_box(); S_ = pg.locator("#src-ccs .srcstatus").bounding_box()
         ok(abs((R_["x"] + R_["width"]) - (S_["x"] + S_["width"])) < 2, "Last check was successful … on the right")
@@ -161,7 +161,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.locator("#ruledialog .act .atpl").select_option(""); pg.wait_for_timeout(50)
         ok(pg.is_visible("#ruledialog .act .anew.title"), "Create event → New event…: its fields appear")
         # a lone ")" gets its "("
-        pg.fill("#ruledialog .cond .cval", "RDO"); pg.select_option("#ruledialog .cond .cjoin", "or"); pg.wait_for_timeout(50)
+        pg.fill("#ruledialog .cond .cval", "RDO"); pg.locator("#ruledialog .cond").nth(0).locator(".cj[data-j=or]").click(); pg.wait_for_timeout(50)
         pg.locator("#ruledialog .cond").nth(1).locator(".cval").fill("VAC")
         pg.locator("#ruledialog .cond").nth(1).locator(".brk.spare.close").click(); pg.wait_for_timeout(100)
         ok(pg.locator("#ruledialog .cond").nth(0).get_attribute("data-open") == "1" and pg.locator("#ruledialog .cond").nth(0).locator(".brk.on.open.flash").count() == 1
@@ -174,8 +174,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.keyboard.press("Escape")
         # F3.1: the remove dialog
         pg.click("#src-ccs .removecal"); pg.wait_for_timeout(150)
-        ok(pg.locator("#removedialog[open]").count() == 1 and pg.is_checked('#removedialog input[value="local"]') and
-           pg.eval_on_selector('#removedialog .rminto option[value="ccs"]', "o => o.disabled"), "Remove asks: keep (the default), add to another calendar, or delete")
+        ok(pg.locator("#removedialog[open]").count() == 1 and pg.is_checked('#removedialog input[value="merge"]') and
+           pg.eval_on_selector('#removedialog .rminto option[value="ccs"]', "o => o.disabled"), "Remove asks: Merge into another calendar (the default) or Delete (0.2.8-beta.15)")
         pg.click("#removedialog [data-close]"); pg.wait_for_timeout(100)
         ok(pg.locator("#removedialog[open]").count() == 0 and "ccs" in main.source_ids(), "Cancel removes nothing")
         # F3.2: the link icon on the event page

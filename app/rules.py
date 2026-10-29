@@ -15,7 +15,10 @@ grouped with brackets: "open" brackets before a line, "close" brackets after it.
 event matches.
 
 Condition types (the event's start, in the calendar's time zone):
-  text   (title)  is / contains / word (whole word) / begins / ends / regex; "case": match capitals exactly
+  text   the title  is / contains / word (whole word) / begins / ends / pattern / regex; "case": match capitals
+  any    any text   the same, on the title, location and notes together (0.2.8-beta.15)
+         "pattern": the whole text matches simple wildcards (* any text, # a digit, ? one character);
+         "regex": contains a match of the regular expression
   date            is / after / before / between ("value", "value2": YYYY-MM-DD)
   time            the same, with HH:MM (never matches an all-day event)
   days            is (any of "days", 0 = Monday … 6 = Sunday) / after / before / between (wrapping round)
@@ -50,9 +53,12 @@ MAX_TEXT, MAX_REGEX, MAX_TITLE, MAX_EMOJI = 200, 100, 80, 16
 MAX_OFFSET, MAX_LENGTH = 7 * 24 * 60, 52 * 7 * 24 * 60      # minutes
 ALLDAY_TOLERANCE = timedelta(minutes=5)     # CCS+ writes whole days as 00:01–23:59:59
 
-COND_TYPES = {"text": "Text", "date": "Date", "time": "Time", "days": "Day(s)", "length": "Length"}
+COND_TYPES = {"text": "Title", "any": "Any text", "date": "Date", "time": "Time", "days": "Day(s)", "length": "Length"}
+TEXT_OPS = {"is": "is", "contains": "contains", "word": "whole word", "begins": "begins with", "ends": "ends with",
+            "pattern": "matches pattern", "regex": "contains regex"}
+TEXT_KINDS = ("text", "any")
 OPS = {
-    "text": {"is": "is", "contains": "contains", "word": "whole word", "begins": "begins with", "ends": "ends with", "regex": "regex"},
+    "text": TEXT_OPS, "any": TEXT_OPS,
     "date": {"is": "is", "after": "after", "before": "before", "between": "between"},
     "time": {"is": "is", "after": "after", "before": "before", "between": "between"},
     "days": {"is": "is", "after": "after", "before": "before", "between": "between"},
@@ -97,15 +103,10 @@ def _cond(c) -> dict | None:
     op = c.get("op") if c.get("op") in OPS[kind] else next(iter(OPS[kind]))
     out = {"type": kind, "op": op, "open": _int(c.get("open"), 0, MAX_BRACKETS), "close": _int(c.get("close"), 0, MAX_BRACKETS),
            "join": "or" if c.get("join") == "or" else "and"}
-    if kind == "text":
-        value = str(c.get("value") or "").strip()[:MAX_REGEX if op == "regex" else MAX_TEXT]
-        if not value:
+    if kind in TEXT_KINDS:
+        value = str(c.get("value") or "").strip()[:MAX_REGEX if op in ("regex", "pattern") else MAX_TEXT]
+        if not value or pattern_error(value, op):
             return None
-        if op == "regex":
-            try:
-                re.compile(value)
-            except re.error:
-                return None
         out.update(value=value, case=bool(c.get("case")))
     elif kind in ("date", "time"):
         norm = _day if kind == "date" else _clock
@@ -125,6 +126,39 @@ def _cond(c) -> dict | None:
         if op == "days" and out["minutes"] < 24 * 60:
             out["minutes"] = 24 * 60
     return out
+
+
+def wildcard(value: str) -> str:
+    """A simple pattern as a regular expression: * any text, # a digit, ? one character, the rest as typed;
+    it must match the whole text ("*E####": anything ending in E and four digits)."""
+    out = "".join({"*": ".*", "#": r"\d", "?": "."}.get(ch) or re.escape(ch) for ch in value)
+    return rf"^\s*{out}\s*$"
+
+
+def pattern_error(value: str, op: str) -> str:
+    """Why a regex can't be used ("" when it can), in words for the page."""
+    if op != "regex":
+        return ""
+    try:
+        re.compile(value)
+    except re.error as e:
+        where = f" (at character {e.pos + 1})" if e.pos is not None else ""
+        return f"Not a valid regex: {e.msg}{where}."
+    return ""
+
+
+def test_text(value: str, op: str, case: bool, samples: list[str]) -> dict:
+    """The regex test box (0.2.8-beta.15): which sample texts a Title / Any text condition matches, with the
+    matched part of each: {"error": "", "results": [{"text", "match", "span": [start, end]}]}."""
+    error = pattern_error(value, op)
+    if error or not value:
+        return {"error": error, "results": []}
+    rx = _text_regex({"value": value, "op": op, "case": case})
+    results = []
+    for text in samples[:30]:
+        m = rx.search(text)
+        results.append({"text": text, "match": m is not None, "span": [m.start(), m.end()] if m else []})
+    return {"error": "", "results": results}
 
 
 def _action(a, templates: set[str] | None = None) -> dict | None:
@@ -175,6 +209,11 @@ def normalize(raw, sids: list[str] | None = None, templates: set[str] | None = N
     if not isinstance(raw, dict):
         return bad("Not a rule.")
     rid = str(raw.get("id") or "")
+    for c in (raw.get("conds") or [])[:MAX_CONDS]:
+        if isinstance(c, dict) and c.get("type") in TEXT_KINDS:
+            err = pattern_error(str(c.get("value") or "").strip(), c.get("op"))
+            if err:
+                return bad(err)
     conds = [c for c in (_cond(c) for c in (raw.get("conds") or [])[:MAX_CONDS]) if c]
     if strict and len(conds) != len([c for c in raw.get("conds") or [] if c]):
         return bad("Fill in every condition (or take the empty ones out).")
@@ -257,7 +296,7 @@ SHADOWED = ("color", "emoji", "change")      # the actions only the highest matc
 
 def _cond_key(c: dict) -> tuple:
     value = c.get("value", "")
-    if c["type"] == "text" and not c["case"] and c["op"] != "regex":
+    if c["type"] in TEXT_KINDS and not c["case"] and c["op"] != "regex":
         value = value.casefold()
     return (c["type"], c["op"], value, c.get("value2", ""), tuple(c.get("days", ())), c.get("minutes", 0),
             c.get("case", False), c["open"], c["close"], c["join"])
@@ -374,16 +413,21 @@ def starters(no_end_type: str, no_end_hours: float, allday_24h: bool) -> list[di
 
 # --- Matching ---------------------------------------------------------------------------------
 
-def _text_test(c: dict):
+def _text_regex(c: dict) -> re.Pattern:
     value = c["value"]
     flags = 0 if c["case"] else re.IGNORECASE
     if c["op"] == "regex":
-        rx = re.compile(value, flags)
-    else:
-        v = re.escape(value)
-        rx = re.compile({"is": r"^\s*" + v + r"\s*$", "contains": v, "word": r"(?<!\w)" + v + r"(?!\w)",
-                         "begins": r"^\s*" + v, "ends": v + r"\s*$"}[c["op"]], flags)
-    return lambda e, info: rx.search(info["title"]) is not None
+        return re.compile(value, flags)
+    if c["op"] == "pattern":
+        return re.compile(wildcard(value), flags | re.DOTALL)
+    v = re.escape(value)
+    return re.compile({"is": r"^\s*" + v + r"\s*$", "contains": v, "word": r"(?<!\w)" + v + r"(?!\w)",
+                       "begins": r"^\s*" + v, "ends": v + r"\s*$"}[c["op"]], flags)
+
+
+def _text_test(c: dict):
+    rx, field = _text_regex(c), "title" if c["type"] == "text" else "text"
+    return lambda e, info: rx.search(info[field]) is not None
 
 
 def _range_test(op: str, a, b, wrap: bool = False):
@@ -418,7 +462,7 @@ def _days_test(c: dict):
 def _test(c: dict):
     """A function (event, info) -> bool for one condition."""
     kind = c["type"]
-    if kind == "text":
+    if kind in TEXT_KINDS:
         return _text_test(c)
     if kind == "date":
         t = _range_test(c["op"], c["value"], c["value2"])
@@ -483,13 +527,15 @@ def _compile(conds: list[dict]):
 
 
 def event_info(e: Event, tz: ZoneInfo) -> dict:
-    """What conditions look at: the title, the start's day, weekday and time, and the length."""
+    """What conditions look at: the title (and all its text: title, location, notes), the start's day,
+    weekday and time, and the length."""
+    text = "\n".join(x for x in (e.title, e.location, e.description) if x)
     if e.all_day:
         day = date.fromisoformat(e.start[:10])
         length = date.fromisoformat(e.end[:10]) - day
-        return {"title": e.title, "day": day.isoformat(), "weekday": day.weekday(), "clock": None, "length": length}
+        return {"title": e.title, "text": text, "day": day.isoformat(), "weekday": day.weekday(), "clock": None, "length": length}
     s, t = datetime.fromisoformat(e.start).astimezone(tz), datetime.fromisoformat(e.end).astimezone(tz)
-    return {"title": e.title, "day": s.date().isoformat(), "weekday": s.weekday(), "clock": f"{s:%H:%M}", "length": t - s}
+    return {"title": e.title, "text": text, "day": s.date().isoformat(), "weekday": s.weekday(), "clock": f"{s:%H:%M}", "length": t - s}
 
 
 class Ruleset:
@@ -508,6 +554,14 @@ class Ruleset:
                 if a["type"] == kind and test(e, info):
                     return a
         return None
+
+    def _all_of_first(self, kind: str, e: Event, info: dict) -> list[dict]:
+        """Every `kind` action of the highest matching rule that has one (a rule can add two emojis)."""
+        for r, test in self.rules:
+            found = [a for a in r["actions"] if a["type"] == kind]
+            if found and test(e, info):
+                return found
+        return []
 
     def change_times(self, events: list[Event]) -> list[Event]:
         """The time changes (before any edit): the first matching "Change" rule for each event; an event
@@ -540,10 +594,11 @@ class Ruleset:
                 out.append(e)
                 continue
             info = event_info(e, self.tz)
-            color, emoji = self._first("color", e, info), self._first("emoji", e, info)
+            color = self._first("color", e, info)
+            emoji = " ".join(a["emoji"] for a in self._all_of_first("emoji", e, info))
             title = e.title
-            if emoji and not title.startswith(emoji["emoji"]):
-                title = f"{emoji['emoji']} {title}"
+            if emoji and not title.startswith(emoji):
+                title = f"{emoji} {title}"
             out.append(replace(e, title=title, rule_color=color["color"] if color else ""))
         return out
 
@@ -610,7 +665,7 @@ def length_text(minutes: int) -> str:
 def cond_text(c: dict, tr) -> str:
     """One condition in words, e.g. 'Text contains "RDO"', 'Day(s) is Sat, Sun'."""
     head = f"{tr(COND_TYPES[c['type']])} {tr(OPS[c['type']][c['op']])}"
-    if c["type"] == "text":
+    if c["type"] in TEXT_KINDS:
         return f"{head} “{c['value']}”" + (" Aa" if c["case"] else "")
     if c["type"] in ("date", "time"):
         return f"{head} {c['value']}" + (f" – {c['value2']}" if c["op"] == "between" else "")

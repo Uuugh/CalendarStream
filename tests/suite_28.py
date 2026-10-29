@@ -27,7 +27,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         b = pw.chromium.launch()
-        ctx = b.new_context(http_credentials={"username":"t","password":"password1"}, viewport={"width":1100,"height":900}, color_scheme=SCHEME)
+        ctx = b.new_context(extra_http_headers={"Authorization":"Basic dDpwYXNzd29yZDE="}, viewport={"width":1100,"height":900}, color_scheme=SCHEME)
         pg = ctx.new_page(); pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto("http://127.0.0.1:8093/"); pg.wait_for_timeout(300)
         pg.click("#src-ccs .cfgtoggle"); pg.wait_for_timeout(150)

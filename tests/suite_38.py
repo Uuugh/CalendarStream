@@ -67,7 +67,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         b = pw.chromium.launch()
-        pg = b.new_page(viewport={"width": 1400, "height": 1000}, http_credentials={"username": "t", "password": "password1"})
+        pg = b.new_page(viewport={"width": 1400, "height": 1000}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         loads = []; pg.on("load", lambda: loads.append(1))
         pg.goto("http://127.0.0.1:8094/?month=2026-10"); pg.wait_for_timeout(500); loads.clear()
@@ -85,7 +85,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         box = f"#src-{wid}"
         pg.click(f"{box} .cfgtoggle"); pg.wait_for_timeout(150)
         for color in ("#0b8043", "#f4511e"):
-            pg.locator(f"{box} input.colorpick").evaluate("(e, c) => { e.value = c; e.dispatchEvent(new Event('input', { bubbles: true })); }", color)
+            pg.click(f"{box} .colorpick"); pg.click(f'{box} .palpop .pal[data-c="{color}"]')   # the color box (0.2.8-beta.15)
             pg.click(f"{box} .pairbtns .psave"); pg.wait_for_timeout(1500)
             ok(main.calendar_color(wid) == color, f"I4: color change to {color} saved")
         ok("#f4511e" in pg.inner_html(".legend") and "#f4511e" in pg.inner_html("#destinations .srcpicks") and not loads,

@@ -43,7 +43,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         b = pw.chromium.launch()
-        pg = b.new_page(viewport={"width": 1300, "height": 900}, http_credentials={"username": "t", "password": "password1"})
+        pg = b.new_page(viewport={"width": 1300, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto("http://127.0.0.1:8099/?menu=settings"); pg.wait_for_timeout(500)
         # Check now first: Settings is redrawn in place, Update still works afterwards

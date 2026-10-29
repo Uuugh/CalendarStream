@@ -46,7 +46,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok("<b>Add to Google Calendar</b>: one click" in p and "opens your calendar app" in p and "share it (no login needed)" in p, "the buttons are explained")
     ok(p.count('class="copybtn"') >= 3 and ">Copy<" not in p, f"copy buttons are icons ({p.count('class=\"copybtn\"')})")
     ok('class="linkbtn reportbtn" data-kind="bug"' in p and 'data-kind="idea"' in p and 'id="reportdialog"' in p, "footer: report a problem / suggest a feature")
-    ok("Upload Calendar.ics by hand</label>" in p and 'class="filebtn' in p, "upload row with a styled file button")
+    ok('<h3 class="cfghead">Manual Upload</h3>' in p and 'class="filefield"' in p and "Upload Calendar.ics by hand" not in p,
+       "0.2.8-beta.15: CCS+'s Manual Upload row, laid out like Import (the file field fills the line)")
     c.post("/setup/upload", data={"csrf": csrf}, files={"file": ("Calendar.ics", open(REAL, "rb").read())})
     c.post("/feed/name", data={"csrf": csrf, "name": "United Airlines Schedule"})
     import seed
@@ -60,7 +61,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # Real clicks in a browser
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
-        b = pw.chromium.launch(); ctx = b.new_context(http_credentials={"username": "t", "password": "password1"}, viewport={"width": 1100, "height": 900})
+        b = pw.chromium.launch(); ctx = b.new_context(extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="}, viewport={"width": 1100, "height": 900})
         pg = ctx.new_page(); pg.goto("http://127.0.0.1:8097/?month=2026-10"); pg.wait_for_timeout(300)
         evs = pg.locator("details.ev")
         evs.nth(3).locator("summary").click(); pg.wait_for_timeout(100)

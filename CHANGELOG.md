@@ -9,7 +9,89 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.14**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.15**
+
+## 0.2.8-beta.15 — 2026-10-28
+
+### Added
+- **F1** **Sign in** on the page's own sign-in page, in the theme, instead of the browser's login pop-up;
+  ☰ Settings › Administrator › **Sign out**. Changing the login signs every browser out. (Scripts that
+  send HTTP Basic still work.)
+- **F2** **History, Undo & Logs** (was Activities and Logs):
+  - every line has a **Type** (Calendar, Feed, Rule, Event, Google, Settings, Update, Sync); the list is
+    **Time | Type | Event | Undo**, with a filter on top (a Type, words, a time);
+  - changes made on the page (calendars, feeds, rules, templates, events, imports) can be **undone**,
+    and then **redone**: a stack, so the newest change goes first; the line stays and shows Redo;
+  - **Remember the last [20] changes for Undo**: older ones pop off, and what they kept is forgotten (a
+    removed CCS+ calendar's sign-in is kept encrypted only until then);
+  - folded, its header shows the latest lines, with Undo / Redo where it applies;
+  - **Container log**: what `docker logs` shows for CalendarStream since it started (an admin's page once
+    there are several users).
+- **F3** **Deleted events stay, struck through and greyed**, saying where they were deleted (in
+  CalendarStream, in Google Calendar, removed by United, gone from the feed), with **Restore**, until
+  their Undo pops off History. An event United removes from the schedule is kept this way too (Restore
+  keeps it, as an event added here); past events that drop off the schedule aren't.
+- **F4** **Import .ics** in every calendar: one row (the heading, the file field filling the line, From |
+  To | All, Import on the right). Only the events in those dates come in; one already in the calendar is
+  asked about, one at a time: **Merge** (the file's version updates it) or **Delete** (the file's copy is
+  dropped), with **Do this for all remaining**. Imported events say "Added here (not in …)". CCS+'s row
+  is **Manual Upload** (it replaces the schedule, as before).
+- **F5** **Google modules**: **Google 2-way Sync**, **Google 1-way Sync** (written by CalendarStream only;
+  changes made in Google are put back) and **Google Calendar (feed)**. Each Google module can use **a
+  Gmail of its own** (Connect another Gmail), so feeds can go to different people; the first account is
+  the one in ☰ Settings.
+- **F6** Rules: **Title** and **Any text** (title, place and notes); **matches pattern** with `*` any text,
+  `#` a digit, `?` one character (`*E####`: titles ending in E and four digits); **contains regex** (was
+  regex). With a pattern or regex, a **test box**: your event titles (editable) with ✓ / ✕ and the part
+  that matched, checked as you type, and insert helpers (Starts, Ends, Word, Either, Any text, Digits,
+  Space, Optional, Literal).
+- **F7** Every **date range** has **All** (From | To | ☐ All): the search, feeds, Print Preview, Import.
+- **F8** Event › **Link** offers **Event** (pick it: delete or move with it) or **Rule**: the rules it
+  follows (opens one), or **Create new** (a rule for its title and date).
+
+### Changed
+- **F9** **Calendars**: there's always a CalendarStream calendar, and the top one (the default) is always
+  one; there can be several. **Remove** asks: **Merge** into another calendar (or a new CalendarStream one)
+  or **Delete**, with **Download a copy (.ics) first**; with a Merge and rules of its own: **Move to** that
+  calendar or **Delete them**. The last CalendarStream calendar's trash says **Empty** (it stays, in every
+  feed and rule). Undo in History.
+- **F10** **Feeds**: a color box (a Google module's color is set in Google Calendar; a feed link carries it
+  for apps that read it); what the module is moved into its (i); "In Google as …" removed; its dates (with
+  All) and its calendars on one line; **In Google** is now **Connected**. **Remove** asks in a pop-up, the
+  answers one under the other: "Yes. Remove the module, and delete the … from Google Calendar" / "Yes.
+  Remove the module, but leave the … on Google Calendar" / "No, I changed my mind" (no tick box). ☰
+  Settings › Google Calendar API Sync's Remove asks the same way.
+- **F11** ☰ Settings: **Administrator** is the login (and Sign out); the **Admin e-mail** is in Google
+  Calendar API Sync, where it's used.
+- **F12** Theme: **one color palette everywhere**, Google Calendar's 11 colors, in a color box (calendars,
+  feeds, rules, templates); **every emoji** in a picker (ten a line, scrolling, a search on top; Unicode up
+  to Emoji 13.0, without flags, so Windows, Android and Apple all draw them); **every + opens a centred
+  pop-up**, the page dimmed and out of focus behind it (Calendars, Feeds, Event Templates); **modules have a
+  2 px border** (1 px less padding, so they keep their size); module names are **labels**: plain text until
+  expanded, then a field of the same size; **(i) is info** (what the module is, then its note), **(?) is
+  help**; **no browser alert / confirm boxes**: every question is the page's own pop-up.
+- **F13** Rules: **& (and) · | (or) · ✕** at the end of each condition line instead of the and / or
+  drop-down; **Apply to** on one line with its drop-down; no (?) on If.
+- A refused Save (what you typed) shows amber, not red: red is for CalendarStream itself failing.
+- Events deleted in Google are struck through here (with Restore) instead of more than 3 at once waiting
+  for you; the "waiting" step is gone. What's deleted outside CalendarStream (in Google, by United, from a
+  feed) has its History line, but no Undo icon: Restore is on the event, and History's Undo stays for
+  changes made here.
+- The sign-in page only goes back to an address on this site (a hidden tab or line break can't turn it into
+  another site's).
+- **R1** The theme rules (build_rules/theme.md, the Theme Rules pictures, cards 16–19) gained the new parts
+  and Clarifications: every date range has All; no browser dialogs; (i) info / (?) help; every + is a pop-up;
+  2 px module borders; labels; one palette; deleted events; the import row; emoji. The theme suite checks
+  each. The build rules: **GO** starts a build (EOF still works).
+
+### Fixed
+- **I1** Event › Link didn't offer what it should: now Event, or Rule (existing or new) (F8).
+- **I2** **Add a rule** in a calendar opened a menu with only "New rule…": it opens the new rule pop-up
+  straight away (the menu only shows when other calendars' rules could be used too).
+- **I3** A rule's second emoji wasn't added to the event's title: every emoji of the rule is.
+- **I4** A rule with a regex like `*E####` failed with "Fill in every condition": it says what's wrong with
+  the pattern ("Not a valid regex: nothing to repeat"), as you type, and Apply waits until it works. (For
+  `*E####`, use **matches pattern**, or the regex `E\d{4}`.)
 
 ## 0.2.8-beta.14 — 2026-10-26
 

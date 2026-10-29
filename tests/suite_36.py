@@ -99,9 +99,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     dentist = next(e for e in main.store.load_events() if e.title == "Dentist")
     ok(r.status_code == 303 and dentist.source == L, "a new event goes into the top calendar")
     ok('<option value="local"' in p or 'data-preset="local"' in p, "F3.2.4: Local calendar in + Add")
-    ok(post("/sources/move", sid=L, after="ccs").status_code == 303 and main.source_ids()[:2] == ["ccs", L], "F1.2: moving a module changes the order…")
+    # 0.2.8-beta.15: a CalendarStream calendar is always on top, so CCS+ can't be moved above the last one
+    ok(post("/sources/move", sid=L, after="ccs").status_code == 400 and main.source_ids()[0] == L, "F1.2: the top stays a CalendarStream calendar (0.2.8-beta.15)")
     p = c.get("/?month=2026-10").text
-    ok(p.index('class="deflabel"') > p.index('id="src-ccs"') and p.index('class="deflabel"') < p.index(f'id="src-{L}"'), "…and the top one is now the Default")
+    ok(p.index('class="deflabel"') > p.index(f'id="src-{L}"') and p.index('class="deflabel"') < p.index('id="src-ccs"'), "…and it's still the Default")
     post("/sources/move", sid=L, before="ccs")
     # F2.2.5: reminders
     ok(post("/event/alarms", uid=dentist.uid, minutes=["15", "60", "7"]).status_code == 303 and main.store.get_event(dentist.uid).alarms == "15,60", "reminders saved (only the choices offered)")
@@ -156,11 +157,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # I1: the Accomplished list's check marks are outside the text
     css = c.get("/assets/app.css").text
     ok(re.search(r"\.checks li \{[^}]*padding-left:22px", css) is not None and re.search(r"\.checks li::before \{[^}]*position:absolute", css) is not None, "I1: a line's words wrap under its first word, not the check")
-    # Removing the default calendar: the next one becomes the default
-    post("/sources/remove", sid=L)
-    ok(main.source_ids()[0] == "ccs" and not main.store.get("local_made") is False, "Local removed: CCS+ is the default")
+    # Removing the last CalendarStream calendar empties it (0.2.8-beta.15): it stays on top, the Default
+    post("/sources/remove", sid=L, keep="delete")
+    ok(main.source_ids()[0] == L and not [e for e in main.store.load_events(L) if not e.deleted], "the last CalendarStream calendar is emptied, not removed: still the Default")
     main.ensure_local()
-    ok(L not in main.source_ids() and all(main.source(x)["type"] != "local" for x in main.source_ids()), "…and it isn't made again")
+    ok([x for x in main.source_ids() if main.source(x)["type"] == "local"] == [L], "…and no second one is made")
     ok(post("/sources/add", type="local", name="").status_code == 303 and main.sources()[-1]["type"] == "local" and main.calendar_name(main.source_ids()[-1]) == "Local",
        "+ Local calendar: another can be added")
 
@@ -168,7 +169,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         b = pw.chromium.launch()
-        pg = b.new_page(viewport={"width": 1400, "height": 900}, http_credentials={"username": "t", "password": "password1"})
+        pg = b.new_page(viewport={"width": 1400, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e) + " " + str(e.stack)[:400]))
         pg.goto("http://127.0.0.1:8098/?month=2026-10"); pg.wait_for_timeout(400)
         # event: open, alarm popover, edit in a pop-up

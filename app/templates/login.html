@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="{{ html_lang }}"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ _('Sign in') }} · CalendarStream</title>
+{% include "_theme.html" %}
+{# The sign-in page (0.2.8-beta.15): the page's own, in the theme (not the browser's pop-up) #}
+<style>
+  * { box-sizing:border-box }
+  body { margin:0; font:15px/1.5 var(--font); background:var(--bg); color:var(--text) }
+  main { max-width:400px; margin:0 auto; padding:64px 16px 48px }
+  h1 { font-size:22px; margin:0 0 16px } .ver { color:var(--muted); font-size:13px; font-weight:500; margin-left:4px }
+  .card { background:var(--card); border:2px solid var(--line); border-radius:var(--rbox); padding:18px }
+  label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin:12px 0 2px }
+  label:first-of-type { margin-top:0 }
+  input { width:100%; height:34px; font:inherit; font-size:14px; padding:0 10px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  button { margin-top:18px; width:100%; height:34px; font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:var(--r); cursor:pointer }
+  .err { display:flex; align-items:center; gap:6px; background:var(--warnbg); color:var(--warn); border-radius:var(--r); padding:8px 10px; font-size:13.5px; margin-bottom:12px }
+</style>
+</head>
+<body>{{ icon_sprite() }}<main>
+  <h1>CalendarStream<span class="ver">v{{ version }}</span></h1>
+  <form class="card" method="post" action="/login">
+    {% if error %}<div class="err">{{ icon("warning", 16) }} {{ msg(error) }}</div>{% endif %}
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="next" value="{{ next }}">
+    <label for="user">{{ _('User name') }}</label>
+    <input id="user" name="user" required value="{{ user or '' }}" maxlength="64" autocomplete="username" spellcheck="false"{% if not user %} autofocus{% endif %}>
+    <label for="password">{{ _('Password') }}</label>
+    <input id="password" name="password" type="password" required autocomplete="current-password"{% if user %} autofocus{% endif %}>
+    <button>{{ _('Sign in') }}</button>
+  </form>
+</main>
+</body>
+</html>

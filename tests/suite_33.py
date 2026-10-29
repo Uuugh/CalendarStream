@@ -33,14 +33,14 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     p = c.get("/").text
     ok(main.source(gid)["preset"] == "google" and '<div class="srckind" title="Google Calendar">Google Calendar</div>' in p and "How to get your Google Calendar’s secret address" in p and "How to enable Google Calendar" in p,
        "F2.3.1: the Google preset: its note and step-by-step help")
-    ok('<div class="srckind" title="United Airlines CCS+">United Airlines CCS+</div>' in p and "notedot" not in p.split('id="src-ccs"')[1].split('class="srcright"')[0],
-       "F2.3.3 (beta.9): the CCS+ module's kind is United Airlines CCS+; no note until one is written")
+    ok('<div class="srckind" title="United Airlines CCS+">United Airlines CCS+</div>' in p and "<b>Note:</b>" not in p.split('id="src-ccs"')[1].split('class="srcright"')[0],
+       "F2.3.3 (beta.9): the CCS+ module's kind is United Airlines CCS+; no note until one is written (its (i) says what it is)")
     ok(">How to enable CCS+</p>" in p and ">Accomplished</p>" in p, "F2.1.4.1: How to enable CCS+ | Accomplished")
     q = p[p.index('id="src-ccs"'):]
     i_auto, i_man, i_rules = q.index(">Automatic Upload<"), q.index(">Manual Upload<"), q.index('class="cfghead">Rules<')
     ok(i_auto < q.index('id="interval-ccs"') < i_man < i_rules, "F2.1.1/F2.1.2: Automatic Upload (with Check every), then Manual Upload, then Rules")
     post("/feed/tags", sid="ccs", note="", name="United CCS Schedule")
-    ok('notedot' not in c.get("/").text.split('id="src-ccs"')[1].split('class="srcright"')[0], "F2.3.3: the note can be emptied like any other")
+    ok('<b>Note:</b>' not in c.get("/").text.split('id="src-ccs"')[1].split('class="srcright"')[0], "F2.3.3: the note can be emptied like any other")
     # 0.2.8 (F4): one rule, applied to the calendars chosen in its Apply to; changing it changes it for each
     import json, seed
     rdo = seed.rule(c, csrf, "", [seed.text("RDO")], [{"type": "color", "color": "#d50000"}], ["ccs", gid])
@@ -78,7 +78,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         b = pw.chromium.launch()
-        pg = b.new_page(viewport={"width": 1400, "height": 900}, http_credentials={"username": "t", "password": "password1"})
+        pg = b.new_page(viewport={"width": 1400, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         loads = []; pg.on("load", lambda: loads.append(1))
         pg.goto("http://127.0.0.1:8096/?view=month"); pg.wait_for_timeout(400); loads.clear()

@@ -28,7 +28,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     with sync_playwright() as pw:
         b = pw.chromium.launch()
         for w in (1230, 390):
-            pg = b.new_page(viewport={"width": w, "height": 900}, http_credentials={"username": "t", "password": "password1"})
+            pg = b.new_page(viewport={"width": w, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
             errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
             pg.goto("http://127.0.0.1:8097/?month=2026-10"); pg.wait_for_timeout(500)
             for sec, mod in (("#sources", "#src-ccs"), ("#destinations", ".box.dest")):

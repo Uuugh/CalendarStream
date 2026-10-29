@@ -117,7 +117,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
-        b = pw.chromium.launch(); ctx = b.new_context(http_credentials={"username": "t", "password": "password1"}, viewport={"width": 800, "height": 900})
+        b = pw.chromium.launch(); ctx = b.new_context(extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="}, viewport={"width": 800, "height": 900})
         pg = ctx.new_page(); pg.goto("http://127.0.0.1:8094/event?date=2026-10-08&month=2026-10"); pg.wait_for_timeout(200)
         val = lambda sel: pg.input_value(sel)
         def type_time(sel, text):
@@ -167,7 +167,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
         pg.fill("#lnew", "newpassword1"); pg.wait_for_timeout(50)
         ok(pg.is_visible("#lcur") and pg.is_visible("#lconf") and pg.is_visible("#pagelogin [data-save]") and pg.eval_on_selector("#lcur", "e => e.required"), "typing a new password asks for the current one and shows Save")
         groups = [pg.locator("#menu .mgroup").nth(i).get_attribute("id") for i in range(pg.locator("#menu .mgroup").count())]
-        ok(groups == ["pagelogin", "public", "admin", "googlesync", "updates"], f"Settings: site settings only, Google Calendar sync among them ({groups})")
+        ok(groups == ["pagelogin", "public", "googlesync", "updates"], f"Settings: site settings only, Google Calendar sync among them, the admin e-mail inside it (0.2.8-beta.15) ({groups})")
         box = pg.locator("#publicurl").bounding_box(); btn = pg.locator("#usethis").bounding_box(); save = pg.locator("#public .okslot").bounding_box()
         ok(btn["x"] > box["x"] and btn["x"] + btn["width"] <= box["x"] + box["width"] and abs(save["y"] + save["height"] / 2 - (box["y"] + box["height"] / 2)) < 6, "This page inside the box; its ✓ / Save slot on the same line (0.2.8-beta.3)")
         pg.locator("#menu").screenshot(path=os.path.join(tempfile.gettempdir(), "cs-menu4.png"))

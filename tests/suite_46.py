@@ -59,7 +59,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         b = pw.chromium.launch()
-        pg = b.new_page(viewport={"width": 1230, "height": 950}, http_credentials={"username": "t", "password": "password1"})
+        pg = b.new_page(viewport={"width": 1230, "height": 950}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto("http://127.0.0.1:8115/?month=2026-10"); pg.wait_for_timeout(500)
         # F4: + in the calendar's top right corner; search left of Time Zone
@@ -101,8 +101,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             r = pg.evaluate(f"""() => {{ const s = document.querySelector('{sec}').getBoundingClientRect(), p = document.querySelector('{sec} .sfoot .plus').getBoundingClientRect();
                                 return [Math.round(s.right - p.right), Math.round(s.bottom - p.bottom), document.querySelectorAll('{sec} > .shead .plus').length]; }}""")
             ok(17 <= r[0] <= 21 and r[1] <= 21 and r[2] == 0, f"F5: {sec}: + at the bottom right, none in the header {r}")
-        pg.click("#templates .sfoot .addfirst"); pg.wait_for_timeout(200)
-        ok(pg.locator("#templates .tagrows .tagrow").count() == 3, "…Event Templates' + adds a line")
+        pg.click("#templates .sfoot .plus"); pg.wait_for_timeout(200)
+        ok(pg.eval_on_selector("#tpladd", "d => d.open") and pg.locator("#tpladd .tagrow").count() == 1,
+           "…Event Templates' + opens its pop-up (0.2.8-beta.15: every + is a centred pop-up)")
+        pg.click("#tpladd .pcancel"); pg.wait_for_timeout(200)
+        if pg.eval_on_selector("#tpladd", "d => d.open"): pg.evaluate("document.getElementById('tpladd').close()")
         # I2: a narrow event: icons above Close, Close in the bottom left corner
         ev = pg.locator(".month details.ev").first
         ev.locator("summary").click(); pg.wait_for_timeout(200)

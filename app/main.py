@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import gzip
 import hashlib
+import hmac
 import calendar as pycal
 import json
 import os
@@ -13,12 +14,13 @@ import platform
 import re
 import secrets
 import threading
+from collections import deque
 from contextlib import asynccontextmanager
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from itertools import zip_longest
 from pathlib import Path
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, unquote, urlencode, urlparse
 from zoneinfo import ZoneInfo, available_timezones
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
@@ -44,10 +46,57 @@ from .updates import FREQUENCIES, RELEASES, Updater, UpdaterError, Updates, chan
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("calendar_stream")
 logging.getLogger("httpx").setLevel(logging.WARNING)   # one line per Google request is too chatty
+
+
+class _LogTail(logging.Handler):
+    """The container's log as it's written (what `docker logs` shows for this app), kept in memory for
+    History › Container log (0.2.8-beta.15): the last LOG_TAIL_LINES lines."""
+    def __init__(self, keep: int):
+        super().__init__()
+        self.lines: deque[str] = deque(maxlen=keep)
+        self.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+
+    def emit(self, record):
+        try:
+            self.lines.append(self.format(record))
+        except Exception:  # noqa: BLE001 - a line that can't be formatted is reported the logging way, never raised
+            self.handleError(record)
+
+
+LOG_TAIL_LINES = 3000
+LOG_TAIL = _LogTail(LOG_TAIL_LINES)
+
+
+def tail_logs():
+    """Keep the log lines from here on (called at start-up, once uvicorn has set up its own loggers):
+    the app's (the root logger) and uvicorn's, which don't pass theirs up."""
+    for name in ("", "uvicorn", "uvicorn.access"):
+        logger = logging.getLogger(name)
+        if LOG_TAIL not in logger.handlers and (not name or not logger.propagate):
+            logger.addHandler(LOG_TAIL)
 TZ = ZoneInfo(settings.timezone)
 store = Store(settings.dsn)
 box = SecretBox(settings.db_password)
-google = Google(store, box, settings.timezone)
+google = Google(store, box, settings.timezone)        # the first Google account (connected in Settings)
+ACCOUNT_RE = re.compile(r"^(|a[0-9a-f]{6})$")
+_accounts: dict[str, Google] = {"": google}
+
+
+def google_for(account: str = "") -> Google:
+    """A Google account's connection (0.2.8-beta.15: each Google module can use its own Gmail; they share
+    the OAuth client). "" is the first one."""
+    if account not in _accounts:
+        _accounts[account] = Google(store, box, settings.timezone, account)
+    return _accounts[account]
+
+
+def dest_google(d: dict) -> Google:
+    return google_for(d.get("account", ""))
+
+
+def google_accounts() -> list[str]:
+    """The accounts in use: the first, and any a Google module uses."""
+    return list(dict.fromkeys([""] + [d.get("account", "") for d in destinations("google")]))
 logins = Logins(store, box)
 updates = Updates(store)
 updater = Updater()     # the optional updater container behind "Update now"
@@ -114,7 +163,12 @@ def destinations(kind: str | None = None) -> list[dict]:
                       "sources": [x for x in d.get("sources") or [] if x in ids], "token": str(d.get("token") or ""),
                       "start": _iso_day(d.get("start")), "end": _iso_day(d.get("end")),
                       # a feed made by + Google Calendar while Google Calendar sync wasn't set up (0.2.8-beta.4)
-                      "for": "google" if d["type"] == "feed" and d.get("for") == "google" else ""})
+                      "for": "google" if d["type"] == "feed" and d.get("for") == "google" else "",
+                      # 0.2.8-beta.15: a Google module's account ("" = the first one, connected in Settings), whether it's
+                      # 1-way (written by CalendarStream only; changes made in Google are put back), and its color
+                      "account": str(d.get("account") or "") if ACCOUNT_RE.match(str(d.get("account") or "")) else "",
+                      "oneway": bool(d.get("oneway")) and d["type"] == "google",
+                      "color": str(d.get("color") or "").lower() if COLOR_RE.match(str(d.get("color") or "")) else ""})
     return found
 
 
@@ -131,7 +185,8 @@ def destination(did: str) -> dict | None:
 
 
 def save_destinations(found: list[dict]):
-    store.set("destinations", [{k: d.get(k, "") for k in ("id", "type", "name", "sources", "token", "start", "end", "for")} for d in found])
+    store.set("destinations", [{k: d.get(k, "") for k in ("id", "type", "name", "sources", "token", "start", "end", "for",
+                                                          "account", "oneway", "color")} for d in found])
 
 
 def new_did() -> str:
@@ -314,15 +369,28 @@ def first_named_calendar() -> str:
 
 
 def ensure_local():
-    """0.2.8: every install gets a local calendar once, at the top (so it's the default calendar for
-    events added here), in every feed. Removed later, it isn't made again."""
-    if store.get("local_made"):
-        return
-    sid = new_local()
-    store.set("sources", [{"id": sid, "type": "local"}] + sources())
-    store.set(f"calendar_name:{sid}", "Local")
-    save_destinations([{**d, "sources": [sid] + d["sources"]} for d in destinations()])
-    store.set("local_made", True)
+    """There's always a CalendarStream (local) calendar, and the top calendar (the default for events added
+    here) is always one (0.2.8-beta.15; before, one was made once). A missing one is made, in every feed;
+    if another kind is on top, the first CalendarStream calendar moves up."""
+    found = sources()
+    locals_ = [x for x in found if x.get("type") == "local"]
+    if not locals_:
+        sid = new_local()
+        store.set("sources", [{"id": sid, "type": "local"}] + found)
+        store.set(f"calendar_name:{sid}", "CalendarStream" if store.get("local_made") else "Local")
+        save_destinations([{**d, "sources": [sid] + d["sources"]} for d in destinations()])
+        store.set("local_made", True)
+    elif found[0].get("type") != "local":
+        store.set("sources", [locals_[0]] + [x for x in found if x is not locals_[0]])
+
+
+def is_local(sid: str) -> bool:
+    return (source(sid) or {}).get("type") == "local"
+
+
+def last_local(sid: str) -> bool:
+    """The only CalendarStream calendar left: it can be emptied, not removed."""
+    return is_local(sid) and sum(1 for x in sources() if x.get("type") == "local") == 1
 
 
 def new_local() -> str:
@@ -530,15 +598,17 @@ class State:
         self.running = False
         self.wake = asyncio.Event()
 
-    def record(self, level: str, msg: str):
-        """Add a line to the activity log (a feed source's lines start with its name)."""
+    def record(self, level: str, msg: str, kind: str = "", undo: dict | None = None, stack: bool = True) -> int | None:
+        """Add a line to History (a feed source's lines start with its name). `kind` is its Type (worked out
+        from the words when not given); `undo` makes it a change that can be undone (0.2.8-beta.15)."""
         if self.sid != "ccs":
             msg = f"{calendar_name(self.sid)}: {msg}"
         log.log({"warn": logging.WARNING, "error": logging.ERROR}.get(level, logging.INFO), msg)
         try:
-            store.add_log(level, msg)
+            return store.add_log(level, msg, kind or log_kind(msg, self.sid), undo, stack)
         except Exception as e:
             log.error("Couldn't write activity log to the database: %s", e)
+            return None
 
     _TIMES = ("last_attempt", "last_success", "last_change", "last_auth")
     _SAVED = _TIMES + ("status", "message", "last_auth_ok", "login_failures", "event_count", "last_detail")
@@ -563,6 +633,97 @@ class State:
                 setattr(self, k, v)
         if self.status == "running":   # container stopped mid-run
             self.status = "starting"
+
+
+# --- History, Undo & Logs (0.2.8-beta.15) -------------------------------------------------------
+# Every line has a Type. A change made on the page (a calendar, feed, rule, template or event) keeps what
+# was there before and after it, so it can be undone, and then redone: a stack, newest first. The newest
+# changes are kept (Settings › History: how many); older ones pop off, and what they kept is forgotten.
+
+LOG_KINDS = ("Calendar", "Feed", "Rule", "Event", "Google", "Settings", "Update", "Sync")
+
+
+def log_kind(msg: str, sid: str = "ccs") -> str:
+    """A line's Type, from its words, for the lines that don't say."""
+    m = msg.split(": ", 1)[1] if sid != "ccs" and ": " in msg else msg
+    for kind, starts in (("Rule", ("Rule ", "Event templates")),
+                         ("Calendar", ("Calendar source", "Default calendar", "Calendar settings", "Calendar Sync link", "Checks every",
+                                       "Imported", "Emptied", "Moved ")),
+                         ("Feed", ("Destination", "Feed link", "Stream name")),
+                         ("Event", ("Added \"", "Updated \"", "Deleted \"", "Hid \"", "Edited \"", "Reminders for", "Reverted",
+                                    "Restored \"")),
+                         ("Google", ("Google",)),
+                         ("Settings", ("Public address", "Admin e", "Status page", "Status-page", "Signed ")),
+                         ("Update", ("Update", "Updating", "Auto-update", "Auto"))):
+        if m.startswith(starts):
+            return kind
+    return "Sync"
+
+
+# What each kind of module is: its (i), with the person's note after it (0.2.8-beta.15)
+MODULE_ABOUT = {"local": "Only the events you add here. Goes into every feed.",
+                "ccs": "Your United CCS+ schedule, downloaded with your Calendar Sync password.",
+                "google": "A Google calendar, read from its secret iCal address.",
+                "apple": "An Apple calendar, read from its public link.",
+                "feed": "A calendar read from its link (.ics).",
+                "gdest": "A Google calendar of its own: changes within seconds, rule colors, reminders.",
+                "gdest1": "A Google calendar of its own, written by CalendarStream only: changes within seconds, rule colors, reminders.",
+                "gfeed": "A feed link your Google account subscribes to: refreshed every few hours, one color.",
+                "ffeed": "A link that Apple Calendar, Outlook and others subscribe to, with a page to share it."}
+
+SOURCE_BASES = ("calendar_name", "calendar_color", "calendar_tags", "rule_subs", "defaults", "note", "sync_interval",
+                "http_cache", "status", "feed_reads")
+UNDO_KEYS = ("sources", "destinations", "rules", "event_templates", "event_alarms", "event_links", "rule_conflicts_ignored")
+UNDO_KEEP = 20          # changes remembered for Undo, unless Settings › History says otherwise
+
+
+def undo_keep() -> int:
+    n = store.get("undo_keep")
+    return n if isinstance(n, int) and 1 <= n <= 200 else UNDO_KEEP
+
+
+class Change:
+    """A change that can be undone: what it touches is kept as it was (settings, and the whole of the
+    calendars in `whole`), then as it is after; done() writes its History line.
+
+        ch = Change(sids=[sid], whole=[sid]); …change things…; ch.done("Calendar", "Calendar source removed: Work")
+    """
+    def __init__(self, sids=(), whole=(), uids=()):
+        keys = list(UNDO_KEYS)
+        for sid in dict.fromkeys(sids):      # (its settings; `whole` adds its events, without its sign-in)
+            keys += [skey(sid, b) for b in SOURCE_BASES] + (["ccs_login", "calendar_url"] if sid == "ccs" else [])
+        self.keys, self.whole, self.uids = keys, list(whole), list(uids)
+        self.before = store.snapshot(self.keys, self.whole, self.uids)
+
+    def done(self, kind: str, msg: str) -> int | None:
+        after = store.snapshot(self.keys, self.whole, self.uids)
+        entry = state.record("info", msg, kind=kind, undo={"type": "snapshot", "before": self.before, "after": after})
+        pop_undo()
+        return entry
+
+
+def pop_undo():
+    """Drop what's kept for changes beyond the ones remembered (and finish their deletions)."""
+    popped = store.trim_undo(undo_keep())
+    if popped:
+        finish_deletions()
+
+
+def after_restore():
+    """After an undo or redo: checks started or stopped for calendars that came or went, statuses read
+    again, every calendar rebuilt."""
+    ensure_local()
+    ids = source_ids()
+    for sid in list(source_tasks):
+        if sid not in ids:
+            stop_source(sid)
+    for sid in store.event_sources():      # a calendar that's gone again (its adding undone): nothing of it is kept
+        if sid not in ids:
+            store.forget_source(sid)
+    for sid in ids:
+        states.pop(sid, None) if sid != "ccs" else state.load()
+        start_source(sid)
+    rebuild()
 
 
 states: dict[str, State] = {}
@@ -620,12 +781,14 @@ async def ensure_watch(sid: str):
     them, move them to a new public address, renew them before they run out. If Google refuses,
     Autosync carries on as before (daily check) and asks again later."""
     address = notify_address()
-    if not address or not google.connected or not google.watch_due(sid, address, now(), WATCH_RENEW, WATCH_RETRY):
+    d = destination(sid)
+    g = dest_google(d) if d else google
+    if not address or not g.connected or not g.watch_due(sid, address, now(), WATCH_RENEW, WATCH_RETRY):
         return
-    before = google.watch_info(sid)
-    had = bool(before.get("id")) or any(google.watch_info(d["id"]).get("id") for d in destinations("google") if d["id"] != sid)
+    before = g.watch_info(sid)
+    had = bool(before.get("id")) or any(g.watch_info(x["id"]).get("id") for x in destinations("google") if x["id"] != sid)
     try:
-        await google.start_watch(sid, address)
+        await g.start_watch(sid, address)
         if not had:
             state.record("info", "Google: instant updates turned on (changes made in Google are checked within seconds)")
     except GoogleError as e:
@@ -659,16 +822,15 @@ def sync_window_start() -> date:
 # Only the calendars CalendarStream makes in Google. A change made there becomes a change here, exactly
 # like making it on the status page (CCS+ itself is never touched): an edit of a source's event is an
 # edit, one of an added event changes it; an event added in Google goes into a CalendarStream (local)
-# calendar; a deletion hides the event (an added one is deleted). A rule's events stay read-only (put
-# back). When both sides changed, the newest change wins; more than GOOGLE_DELETE_LIMIT deletions in
-# one go wait for the person to choose (Activities and Logs).
+# calendar; a deletion strikes the event through here (0.2.8-beta.15: Undo in History restores it). A
+# rule's events stay read-only (put back). When both sides changed, the newest change wins.
 
-GOOGLE_DELETE_LIMIT = 3
 _FIELDS = ("title", "start", "end", "all_day", "location", "description")
 
 
 def google_held() -> dict:
-    """{uid: {dest, title, start}}: events deleted in Google that wait for the person's choice."""
+    """{uid: {dest, title, start}}: events deleted in Google that waited for the person's choice (0.2.8-beta.10
+    to beta.14; taken as deletions at the next sync since beta.15)."""
     found = store.get("google_pending_deletes")
     return found if isinstance(found, dict) else {}
 
@@ -692,15 +854,13 @@ async def apply_google_changes(d: dict, changes: list[dict]) -> list[str]:
     def still_here(uid):
         e = store.get_event(uid)
         return e is not None and not e.hidden
-    deleted = [c for c in changes if c["kind"] == "deleted" and c["uid"] not in held and c["uid"] not in restoring and still_here(c["uid"])]
-    if len(deleted) > GOOGLE_DELETE_LIMIT:
-        for c in deleted:
-            e = store.get_event(c["uid"])
-            held[c["uid"]] = {"dest": d["id"], "title": e.title if e else "", "start": e.start if e else ""}
-        store.set("google_pending_deletes", held)
-        state.record("warn", f"Google: {len(deleted)} events were deleted in Google at once. They're kept until you "
-                             "choose, at the top of Activities and Logs, whether to hide them here too or put them back")
-        deleted = []
+    # Deleted in Google (0.2.8-beta.15): struck through here, in no other feed, with Undo (Restore) in History;
+    # any held by an earlier version ("more than 3 at once wait for you") are taken the same way now
+    deleted = [c for c in changes if c["kind"] == "deleted" and c["uid"] not in restoring and still_here(c["uid"])]
+    deleted += [{"kind": "deleted", "uid": uid} for uid in held if still_here(uid) and uid not in {c["uid"] for c in deleted}]
+    if held:
+        store.delete("google_pending_deletes")
+    gone = []
     for c in deleted:
         e = store.get_event(c["uid"])
         if e is None:
@@ -708,12 +868,11 @@ async def apply_google_changes(d: dict, changes: list[dict]) -> list[str]:
         if e.origin == "rule":
             lines.append(f"\"{e.title}\" is made by a rule, so it was put back")
             continue
-        if e.origin == "custom":
-            store.delete_custom(e.uid)
-        else:
-            _hide(e)
-        lines.append(f"\"{e.title}\" ({e.start[:10]}) was deleted in Google, so it's hidden here")
+        gone.append(e)
         touched.add(e.source)
+    if gone:
+        names = ", ".join(f"\"{e.title}\" ({e.start[:10]})" for e in gone[:5]) + (" …" if len(gone) > 5 else "")
+        delete_events(gone, "google", f"Deleted in Google Calendar: {names}")
     for c in (c for c in changes if c["kind"] == "edited"):
         e = store.get_event(c["uid"])
         if e is None or c["uid"] in held:
@@ -756,7 +915,7 @@ async def apply_google_changes(d: dict, changes: list[dict]) -> list[str]:
             continue
         uid = f"cs-{secrets.token_hex(8)}@calendar_stream"
         store.set_custom(uid, {**{k: c[k] for k in _FIELDS}, "color": "", "source": locals_[0]})
-        await google.delete_event(d["id"], c["gid"])    # it comes back as CalendarStream's own copy
+        await dest_google(d).delete_event(d["id"], c["gid"])    # it comes back as CalendarStream's own copy
         lines.append(f"\"{c['title']}\" ({c['start'][:10]}) was added in Google; it's now in {calendar_name(locals_[0])}")
         touched.add(locals_[0])
     for sid in touched:
@@ -767,41 +926,52 @@ async def apply_google_changes(d: dict, changes: list[dict]) -> list[str]:
 
 
 async def google_sync_once(full: bool) -> bool:
-    """Run one sync. Returns False if it failed."""
+    """Run one sync of every Google module, account by account (0.2.8-beta.15). Returns False if one failed."""
     async with google_job.lock:
         dests = destinations("google")
-        if not (google.configured and google.connected and dests):
+        if not (google.configured and dests):
             return True
         google_job.running = True
+        ok = True
         try:
             color_for = event_colorer()
-            for d in dests:
-                first = date.fromisoformat(d["start"]) if d.get("start") else EARLIEST
-                if full:          # two-way: what changed in Google comes here first (0.2.8-beta.10)
-                    lines = await apply_google_changes(d, await google.pull(d["id"], first))
-                    who = "Google" if len(dests) == 1 else f"Google, {d['name']}"
-                    for line in lines:
-                        state.record("info", f"{who}: {line}")
-                result = await google.sync(d["id"], dest_events(d), d["name"], color_for, first, full,
-                                           hold=frozenset(google_held()))
-                if full and store.get("google_restoring"):
-                    store.set("google_restoring", [])      # put back in Google by this sync
-                if result.changed or result.notes:
-                    who = "Google" if len(dests) == 1 else f"Google, {d['name']}"
-                    state.record("info", f"{who}: {result.summary()}"
-                                 + ("; " + "; ".join(result.notes) if result.notes else ""))
-                await ensure_watch(d["id"])
-            return True
-        except GoogleError as e:
-            message = str(e)
-        except Exception as e:      # keep the loop alive whatever happens
-            message = f"Google sync failed: {type(e).__name__}: {e}"
+            for account in google_accounts():
+                mine = [d for d in dests if d["account"] == account]
+                g = google_for(account)
+                if mine and g.connected:
+                    ok = await _sync_account(g, mine, len(dests), color_for, full) and ok
         finally:
             google_job.running = False
-        if message != google.info().get("last_error"):   # log each new problem once
-            state.record("error", f"Google: {message}")
-        google.record_error(message)
-        return False
+        return ok
+
+
+async def _sync_account(g: Google, dests: list[dict], total: int, color_for, full: bool) -> bool:
+    try:
+        for d in dests:
+            first = date.fromisoformat(d["start"]) if d.get("start") else EARLIEST
+            who = "Google" if total == 1 else f"Google, {d['name']}"
+            if full and not d["oneway"]:    # two-way: what changed in Google comes here first (0.2.8-beta.10)
+                for line in await apply_google_changes(d, await g.pull(d["id"], first)):
+                    state.record("info", f"{who}: {line}")
+            result = await g.sync(d["id"], dest_events(d), d["name"], color_for, first, full,
+                                  hold=frozenset(google_held()))
+            if full and store.get("google_restoring"):
+                store.set("google_restoring", [])      # put back in Google by this sync
+            if result.changed or result.notes:
+                state.record("info", f"{who}: {result.summary()}" + ("; " + "; ".join(result.notes) if result.notes else ""))
+            if d["color"] and g.cal_info(d["id"]).get("color") != d["color"]:      # its color box (0.2.8-beta.15)
+                await g.set_color(d["id"], d["color"])
+                state.record("info", f"{who}: color set in Google Calendar", kind="Google")
+            await ensure_watch(d["id"])
+        return True
+    except GoogleError as e:
+        message = str(e)
+    except Exception as e:      # keep the loop alive whatever happens
+        message = f"Google sync failed: {type(e).__name__}: {e}"
+    if message != g.info().get("last_error"):   # log each new problem once
+        state.record("error", f"Google: {message}")
+    g.record_error(message)
+    return False
 
 
 async def google_loop():
@@ -951,6 +1121,100 @@ def _hide(e: Event):
     store.set_edit(e.uid, {**edit, "hidden": True})
 
 
+# --- Deleted events (0.2.8-beta.15) -------------------------------------------------------------------
+# A deleted event stays on the page, struck through and greyed, saying where it was deleted, until its
+# Undo pops off History; it's in no feed meanwhile. Undo (Restore) brings it back. After that it's gone:
+# an added event for good, a source's event hidden (its source would only send it again).
+
+DELETED_WHERE = {"calendarstream": "Deleted in CalendarStream", "google": "Deleted in Google Calendar",
+                 "united": "Removed by United (CCS+)", "feed": "Gone from the feed"}
+
+
+def mark_deleted(e: Event, where: str):
+    """Delete an event, keeping it struck through (see above)."""
+    stamp = f"{where}|{now().isoformat(timespec='seconds')}"
+    if e.origin == "custom":
+        c = next((x for x in store.get_customs() if x["uid"] == e.uid), None)
+        if c:
+            store.set_custom(e.uid, {k: v for k, v in c.items() if k != "uid"} | {"deleted": stamp})
+        return
+    had_edit = e.uid in store.get_edits()
+    _hide(e)
+    ed = store.get_edits().get(e.uid)
+    if ed:
+        store.set_edit(e.uid, {**ed, "hidden": True, "deleted": stamp, **({} if had_edit else {"for_delete": True})})
+
+
+def unmark_deleted(uid: str):
+    """Undo a delete: the event is back, as it was."""
+    c = next((x for x in store.get_customs() if x["uid"] == uid), None)
+    if c:
+        store.set_custom(uid, {k: v for k, v in c.items() if k not in ("uid", "deleted")})
+        return
+    ed = store.get_edits().get(uid)
+    if ed and ed.get("for_delete"):
+        store.delete_edit(uid)
+    elif ed:
+        store.set_edit(uid, {k: v for k, v in ed.items() if k not in ("deleted",)} | {"hidden": False})
+    store.google_forget(uid)        # it's written to Google again
+
+
+def delete_events(found: list[Event], where: str, msg: str) -> int | None:
+    """Delete events (kept struck through) as one change that can be undone. Deleted outside CalendarStream
+    (in Google), it's Restore on each event instead: no Undo on the stack, which is for changes made here."""
+    for e in found:
+        mark_deleted(e, where)
+    entry = state.record("info", msg, kind="Google" if where == "google" else "Event",
+                         undo={"type": "deleted", "where": where, "uids": [e.uid for e in found]}, stack=where == "calendarstream")
+    pop_undo()
+    return entry
+
+
+def finish_deletions():
+    """Deleted events whose Undo has popped off: an added one goes for good; a source's stays hidden
+    and is no longer shown ("gone")."""
+    live = {uid for undo in store.undo_payloads("deleted") for uid in undo["uids"]}
+    touched = set()
+    for c in store.get_customs():
+        if c.get("deleted") and c["uid"] not in live:
+            store.delete_custom(c["uid"])
+            touched.add(c.get("source", "ccs"))
+    for uid, ed in store.get_edits().items():
+        if ed.get("deleted") and ed["deleted"] != "gone" and uid not in live:
+            store.set_edit(uid, {**ed, "deleted": "gone"})
+            e = store.get_event(uid)
+            touched.add(e.source if e else "ccs")
+    for sid in touched & set(source_ids()):
+        rebuild(sid)
+
+
+def keep_removed(sid: str, previous: list[Event], events: list[Event]):
+    """Events the source no longer has (United removed them, or they're gone from the feed): kept here
+    struck through, as added events of this calendar, so Undo (Restore) can keep them. Past events that
+    simply drop off the schedule aren't kept."""
+    today = now().astimezone(TZ).date().isoformat()
+    still = {e.uid for e in events}
+    gone = [e for e in previous if e.origin == "united" and not e.hidden and e.uid not in still and e.end[:10] >= today]
+    if not gone:
+        return
+    where = "united" if sid == "ccs" else "feed"
+    kept = []
+    for e in gone[:200]:
+        uid = f"cs-{secrets.token_hex(8)}@calendar_stream"
+        store.set_custom(uid, {"title": e.title, "start": e.start, "end": e.end, "all_day": e.all_day, "location": e.location,
+                               "description": e.description, "color": e.color, "source": sid,
+                               "deleted": f"{where}|{now().isoformat(timespec='seconds')}"})
+        kept.append(uid)
+    names = ", ".join(f"\"{e.title}\" ({e.start[:10]})" for e in gone[:5]) + (" …" if len(gone) > 5 else "")
+    who = "United removed" if sid == "ccs" else f"{calendar_name(sid)}: gone from the feed:"
+    state.record("info", f"{who} {len(gone)} event{'s' if len(gone) != 1 else ''}: {names}", kind="Event",
+                 undo={"type": "deleted", "where": where, "uids": kept}, stack=False)   # Restore on each event
+    pop_undo()
+    publish_again = store.get_calendar(skey(sid, "source"))
+    if publish_again:
+        publish(publish_again[0], publish_again[1], sid)
+
+
 def rebuild(sid: str | None = None):
     """Rebuild a source's feed (or every source's) from its last download, e.g. after an edit or a rename."""
     for one in ([sid] if sid else source_ids()):
@@ -979,7 +1243,7 @@ def _event_time(e: Event, d: i18n.Dates, lang: str = "en") -> str:
 def record_changes(sid: str, old: list[Event], new: list[Event]) -> int:
     """The "Record changes" rules: for each matching event the source changed (time, title or location),
     a note is added to the event ("Changed Oct 22: time Oct 23 7:15am–9:30am → Oct 23 8:05am–10:20am"),
-    kept in kv change_notes:<source> and shown in its description, and a line goes in Activities and
+    kept in kv change_notes:<source> and shown in its description, and a line goes in History and
     Logs; a matching event the source dropped is logged too. Returns how many changes were noted."""
     rs = ruleset(sid)
     if not rs.records_changes or not old:
@@ -1046,6 +1310,8 @@ def apply_calendar(body: bytes, how: str, sid: str = "ccs") -> bool:
     if changed and old_source:
         record_changes(sid, preview(sid, old_source[0])[0], events_found)
     events, previous = publish(body, digest, sid)
+    if changed and previous:
+        keep_removed(sid, previous, events)
     S.status, S.last_success = "ok", now()
     if changed:
         S.last_change = now()
@@ -1272,6 +1538,7 @@ async def lifespan(_app):
     migrate_sources()
     migrate_destinations()
     migrate_rules()
+    tail_logs()
     ensure_local()
     share_converted_rules()
     imported = logins.import_old(settings.username, settings.password, settings.gui_user, settings.gui_password)
@@ -1447,18 +1714,65 @@ def _count_success(ip: str):
         _good_ips[ip] = now()
 
 
+# --- Signing in (0.2.8-beta.15: the page's own sign-in page, not the browser's pop-up) ------------------
+# A signed session cookie: the user, when it ends, and a signature that also covers the password's hash,
+# so changing the login signs every browser out. HTTP Basic is still accepted from scripts and tools
+# that send it; a page asked for without either goes to /login.
+
+SESSION_COOKIE = "cs_session"
+SESSION_DAYS = 30
+
+
+def _session_key() -> bytes:
+    key = store.get("session_key")
+    if not isinstance(key, str) or len(key) < 64:
+        key = secrets.token_hex(32)
+        store.set("session_key", key)
+    return bytes.fromhex(key)
+
+
+def _session_sig(user: str, until: int) -> str:
+    saved = logins.page_login() or {}
+    stamp = (saved.get("password") or {}).get("hash", "")
+    return hmac.new(_session_key(), f"{user}\0{until}\0{stamp}".encode(), hashlib.sha256).hexdigest()
+
+
+def new_session(user: str) -> str:
+    until = int(now().timestamp()) + SESSION_DAYS * 86400
+    return f"{quote(user, safe='')}.{until}.{_session_sig(user, until)}"
+
+
+def session_user(request: Request) -> str:
+    """The signed-in user from the session cookie, or ""."""
+    raw = request.cookies.get(SESSION_COOKIE, "")
+    try:
+        user_q, until, sig = raw.split(".")
+        user, until_n = unquote(user_q), int(until)
+    except ValueError:
+        return ""
+    if until_n < now().timestamp() or user != logins.page_user:
+        return ""
+    return user if hmac.compare_digest(sig, _session_sig(user, until_n)) else ""
+
+
 def gui_auth(request: Request, creds: HTTPBasicCredentials | None = Depends(basic)):
-    """The status-page login (HTTP Basic). Before one exists, every page leads to the first-visit form."""
+    """The status-page login. Before one exists, every page leads to the first-visit form; then the sign-in
+    page (a session cookie), or HTTP Basic sent by a script."""
     if not logins.has_page_login:
         raise HTTPException(303, headers={"Location": "/welcome"})
+    if session_user(request):
+        return
     ip = _client_ip(request)
     _check_lockout(ip)
     if creds and logins.check_page_login(creds.username, creds.password):
         _count_success(ip)
         return
-    if creds:   # a real attempt (not just the browser's first, credential-less request)
+    if creds:   # a real attempt
         _count_failure(ip)
-    raise HTTPException(401, headers={"WWW-Authenticate": 'Basic realm="CalendarStream"'})
+    if request.method == "GET" and not _is_async(request) and "text/html" in request.headers.get("accept", ""):
+        target = request.url.path + (f"?{request.url.query}" if request.url.query else "")
+        raise HTTPException(303, headers={"Location": "/login?" + urlencode({"next": target})})
+    raise HTTPException(401, "Sign in again (reload the page).")
 
 
 def check_csrf(token: str, expected: str | None = None):
@@ -1613,8 +1927,8 @@ def google_view(request: Request, lang: str = "en") -> dict:
             "running": google_job.running, "last_sync": _local_time(info.get("last_sync"), lang),
             "redirect_uri": uri, "watch": _watch_view(lang), "host_mismatch": _host_mismatch(request),
             "admin_email": admin_email(), "on": bool(destinations("google")),
-            "calendars": [{"did": d["id"], "name": d["name"], **google.cal_info(d["id"])} for d in destinations("google")],
-            "events": sum(int(google.cal_info(d["id"]).get("events") or 0) for d in destinations("google")),
+            "calendars": [{"did": d["id"], "name": d["name"], **dest_google(d).cal_info(d["id"])} for d in destinations("google")],
+            "events": sum(int(dest_google(d).cal_info(d["id"]).get("events") or 0) for d in destinations("google")),
             # Google only sends sign-ins back to https:// addresses with a public domain name (not a bare IP or .local),
             # or to http://localhost on this computer.
             "redirect_ok": (uri.startswith("https://") and not _is_ip(host) and not host.endswith(".local"))
@@ -1778,8 +2092,10 @@ def dest_view(request: Request, d: dict, lang: str, sections: dict) -> dict:
         view.update(feed=feed_url(request, d["token"]), links=subscribe_links(request, d["token"]),
                     reads=feed_reads(lang, d["id"]))
     else:
-        cal = google.cal_info(d["id"])
-        view.update(cal=cal, last_sync=_local_time(cal.get("last_sync"), lang))
+        g = dest_google(d)
+        cal = g.cal_info(d["id"])
+        view.update(cal=cal, last_sync=_local_time(cal.get("last_sync"), lang), connected=g.connected,
+                    email=g.info().get("email", ""), error=g.info().get("last_error", ""), own_account=bool(d["account"]))
     return view
 
 
@@ -1819,6 +2135,13 @@ def rule_js(lang: str) -> dict:
             "days": [tr(d) for d in rules_mod.DAY_NAMES],
             "calendars": [[sid, calendar_name(sid)] for sid in source_ids()],
             "emoji": ["✈️", "🏝️", "📚", "🏠", "🚗", "⭐", "❗", "🛌", "🎓", "🎉"],
+            "samples": rule_samples(),
+            # what each insert helper of the regex test box puts in (0.2.8-beta.15)
+            "rx": {k: tr(v) for k, v in {"starts": "Starts with (^)", "ends": "Ends with ($)", "word": "Whole word (\\b…\\b)",
+                                         "either": "Either: the selected words, or A|B", "any": "Any text (.*)", "digits": "Digits (\\d+)",
+                                         "space": "A space (\\s)", "optional": "The one before is optional (?)",
+                                         "literal": "The selected text exactly (escapes . ( ) + * ?)",
+                                         "anyText": "* any text", "digit": "# a digit", "oneChar": "? one character"}.items()},
             # Google's 11 event colors: a rule's Color is one of them (0.2.8-beta.5), as an event's is
             "palette": [[hexc, str(i18n.tr(lang, name))] for name, hexc in GOOGLE_COLORS.values()],
             "t": {"and": tr("and"), "or": tr("or"), "weeks": tr("weeks"), "days": tr("days"), "hours": tr("hours"),
@@ -1827,15 +2150,27 @@ def rule_js(lang: str) -> dict:
                   "length": tr("Length (hours:minutes)"), "time": tr("Time (hours:minutes)"), "allCalendars": tr("All calendars"),
                   "toAllDay": tr("all-day"), "toLength": tr("a length of"), "changeTo": tr("to"), "emoji": tr("Emoji"),
                   "open": tr("Open a bracket here"), "close": tr("Close a bracket here"),
-                  "noEnd": tr("0 = no end time")}}
+                  "noEnd": tr("0 = no end time"), "editSamples": tr("Change the titles to test"),
+                  "matchCount": tr("{n} of {total} match"), "andAdd": tr("and: another line"), "orAdd": tr("or: another line"),
+                  "moreEmoji": tr("Every emoji"), "searchEmoji": tr("Search emoji"), "noEmoji": tr("No emoji with that name")},
+            "version": __version__}
+
+
+def rule_samples(n: int = 10) -> list[str]:
+    """Titles to try a pattern on: the next `n` different ones, from today, in every calendar."""
+    today = now().astimezone(display_tz()).date().isoformat()
+    found = sorted((e.start[:10], e.title) for sid in source_ids() for e in store.load_events(sid)
+                   if e.title and not e.hidden and e.origin != "rule")
+    upcoming = [t for d, t in found if d >= today] + [t for d, t in reversed(found) if d < today]
+    return list(dict.fromkeys(upcoming))[:n]
 
 
 def cal_search(events: list[Event], q: str, src: str, first: date | None, last: date | None, lang: str = "en") -> dict:
     """The calendar's search (0.2.8-beta.11): the events whose title, place or notes contain `q` (any
-    case), in one calendar or all, between two days (a year back to a year ahead when not given),
+    case), in one calendar or all, between two days (0.2.8-beta.15: All, every date, when not given),
     listed by day like the List view."""
-    today = now().astimezone(display_tz()).date()
-    first, last = first or today - timedelta(days=365), last or today + timedelta(days=365)
+    given = {"from": first.isoformat() if first else "", "to": last.isoformat() if last else ""}
+    first, last = first or EARLIEST, last or date(2100, 12, 31)
     if last < first:
         first, last = last, first
     words = q.casefold().split()
@@ -1855,7 +2190,7 @@ def cal_search(events: list[Event], q: str, src: str, first: date | None, last: 
         one = cal_view(by_day[d], "day", d, lang)["days"]
         days += [x for x in one if x["items"]]
     n = sum(len(x["items"]) for x in days)
-    return {**out, "days": days, "count": n, "search": {"q": q, "src": src, "from": first.isoformat(), "to": last.isoformat()},
+    return {**out, "days": days, "count": n, "search": {"q": q, "src": src, **given},
             "title": str(i18n.tr(lang, "{n} found", n=n))}
 
 
@@ -1864,14 +2199,16 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
           view: str | None = None, q: str = "", qsrc: str = "", qfrom: str = "", qto: str = ""):
     """The status page. `view` shows the calendar in another view this time only (phones open on the
     list until a view has been chosen); `q` (with `qsrc`, `qfrom`, `qto`) searches it (0.2.8-beta.11)."""
-    events = store.load_events()
+    events = [e for e in store.load_events() if e.deleted != "gone"]
     ref = _parse_day(date_, month)
-    history = [{**h, "time": h["time"].astimezone(TZ)} for h in store.recent_log(100)]
+    history = [{**h, "time": h["time"].astimezone(TZ)} for h in store.recent_log(300)]
+    undo_top, redo_next = store.undo_stack()
     lang = lang_for(request)
     sections = section_state()
     srcs = [source_view(request, sid, lang, sections) for sid in source_ids()]
     return page(request, "index.html", {
-        "s": state, "cfg": settings, "history": history,
+        "s": state, "cfg": settings, "history": history, "undo_top": undo_top, "redo_next": redo_next,
+        "undo_keep": undo_keep(), "log_kinds": LOG_KINDS,
         "cal": (cal_search(events, q.strip()[:100], qsrc if qsrc in source_ids() else "", _opt_day(qfrom), _opt_day(qto), lang)
                 if q.strip() else cal_view(events, view if view in VIEWS else ui_view(), ref, lang)), "views": VIEWS,
         "view_explicit": store.get("ui_view") in VIEWS,
@@ -1882,17 +2219,19 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
                        "used": [calendar_name(x) for x in source_ids() if rules_mod.applies(r, x)]} for r in all_rules()],
         "rule_js": rule_js(lang),
         "rule_conflicts": rule_conflicts(lang),
-        "linked": linked_titles(), "google_held": google_held(),
+        "linked": linked_titles(),
         "default_dest_name": first_named_calendar(),
         "src_names": {x["id"]: x["name"] for x in srcs},
         "has_ccs": "ccs" in source_ids(), "templates": event_templates(), "event_colors": GOOGLE_COLORS.values(),
+        "deleted_where": {k: str(i18n.tr(lang, v)) for k, v in DELETED_WHERE.items()},
+        "palette": list(GOOGLE_COLORS.values()), "about": {k: str(i18n.tr(lang, v)) for k, v in MODULE_ABOUT.items()},
         "sections": sections, "zone": display_zone(), "zones": ALL_ZONES, "common_zones": COMMON_ZONES,
         "google": google_view(request, lang), "open_menu": request.query_params.get("menu") == "settings",
         # The first destination offers this page's address as the public one, if it's https:// (an
         # http://<IP>:8080 address would break Google sign-in, as the old installer default did).
         "public": {"url": public_url(), "here": (lambda u: u if u.startswith("https://") else "")(str(request.base_url).rstrip("/"))},
         "page_user": logins.page_user, "admin_email": admin_email(), "trash": TRASH_ICON, "copy_icon": COPY_ICON,
-        # Activities and Logs, folded: Healthy unless a problem in the log is still there
+        # History, Undo & Logs, folded: Healthy unless a problem in the log is still there
         "healthy": not any(st(sid).status in ("auth_failed", "blocked", "error", "internal", "paused") for sid in source_ids())
                    and not (google.connected and google.info().get("last_error")),
         "print_prefs": print_prefs(), "print_views": PRINT_VIEWS,
@@ -2005,6 +2344,7 @@ async def add_source(csrf: str = Form(""), type_: str = Form("", alias="type"), 
     """Calendars → +: a preset: a local calendar (events added here only), United's CCS+ Calendar Sync
     (once), a Google or Apple calendar (its private iCal link), or any other .ics feed link."""
     check_csrf(csrf)
+    ch = Change()
     found = sources()
     if len(found) >= 10:
         raise HTTPException(400, "Up to 10 calendars can be added.")
@@ -2030,7 +2370,7 @@ async def add_source(csrf: str = Form(""), type_: str = Form("", alias="type"), 
     else:
         raise HTTPException(400, "Unknown kind of calendar source.")
     store.set("sources", found)
-    state.record("info", f"Calendar source added: {calendar_name(sid)}")
+    ch.done("Calendar", f"Calendar source added: {calendar_name(sid)}")
     if " ".join(note.split()):
         store.set(skey(sid, "note"), " ".join(note.split())[:120])
     if len(source_ids()) == 1 or type_ == "local":     # into the feeds: the first calendar, and a local one
@@ -2056,12 +2396,15 @@ async def move_source(request: Request, csrf: str = Form(""), sid: str = Form(""
     """Drag (or ▲ ▼) a calendar module: the order of the calendars. The top one is the default
     calendar for events added here."""
     check_csrf(csrf)
+    ch = Change()
     found = sources()
     moved = _moved(found, sid, before, after)
+    if moved and moved[0].get("type") != "local":
+        raise HTTPException(400, "The top calendar is always a CalendarStream calendar: it's the default for events added here.")
     if moved != found:
         store.set("sources", moved)
         if found[0]["id"] != moved[0]["id"]:
-            state.record("info", f"Default calendar: {calendar_name(moved[0]['id'])}")
+            ch.done("Calendar", f"Default calendar: {calendar_name(moved[0]['id'])}")
     return {"ok": True} if _is_async(request) else RedirectResponse("/#sources", status_code=303)
 
 
@@ -2078,41 +2421,57 @@ async def move_destination(request: Request, csrf: str = Form(""), did: str = Fo
 
 
 @app.post("/sources/remove", dependencies=[Depends(gui_auth)])
-async def remove_source(csrf: str = Form(""), sid: str = Form(""), keep: str = Form("delete"), into: str = Form("")):
-    """Remove a source: its checks stop, its events and edits go, and it's taken off every
-    destination's list (their calendars stay). CCS+'s UID and Calendar Sync password are forgotten too.
-    F3.1 (0.2.8-beta.3): its events can be kept first, as a new Local calendar in its place
-    (`keep=local`) or added to another calendar (`keep=merge`, `into`)."""
+async def remove_source(csrf: str = Form(""), sid: str = Form(""), keep: str = Form("delete"), into: str = Form(""),
+                        rules: str = Form("delete")):
+    """Remove a calendar (0.2.8-beta.15): its checks stop, it's taken off every feed, and its events are
+    merged into another calendar (`keep=merge`, `into`: a calendar's ID, or "new" for a new CalendarStream
+    calendar named and colored like it) or deleted. With a merge, its own rules can move with them
+    (`rules=move`). The last CalendarStream calendar is emptied instead: it stays, in every feed and rule.
+    A CCS+ sign-in is kept (encrypted) only while the removal can be undone. Undo: History."""
     check_csrf(csrf)
     sid = _sid(sid)
-    name = calendar_name(sid)
+    if keep not in ("delete", "merge") or rules not in ("delete", "move"):
+        raise HTTPException(400, "Unknown choice.")
+    name, emptying = calendar_name(sid), last_local(sid)
     target = ""
-    if keep == "local" and (source(sid) or {}).get("type") != "local":
-        target = new_local()
-        at = source_ids().index(sid)
+    if keep == "merge":
+        if into == "new":
+            target = new_local()
+        elif into in source_ids() and into != sid:
+            target = into
+        else:
+            raise HTTPException(400, "Choose the calendar to merge its events into.")
+    ch = Change(sids=[sid] + ([target] if target else []), whole=[sid] + ([target] if target else []))
+    if into == "new" and target:
+        at = source_ids().index(sid) + (1 if emptying else 0)
         store.set("sources", sources()[:at] + [{"id": target, "type": "local"}] + sources()[at:])
         store.set(f"calendar_name:{target}", name)
         if calendar_color(sid):
             store.set(f"calendar_color:{target}", calendar_color(sid))
-        save_destinations([{**d, "sources": [target if x == sid else x for x in d["sources"]]} for d in destinations()])
-        save_rules([{**r, "apply": r["apply"] if r["apply"] == "all" else [target if x == sid else x for x in r["apply"]]}
-                    for r in all_rules()])
-    elif keep == "merge" and into in source_ids() and into != sid:
-        target = into
-    elif keep not in ("delete", "local", "merge"):
-        raise HTTPException(400, "Unknown choice.")
+        save_destinations([{**d, "sources": d["sources"] + ([target] if sid in d["sources"] else [])} for d in destinations()])
     moved = copy_events(sid, target) if target else 0
+    own = [r for r in all_rules() if rules_mod.is_local(r, sid)]
+    if target and rules == "move":     # its own rules now apply to the calendar its events went to
+        save_rules([{**r, "apply": [target]} if rules_mod.is_local(r, sid) else r for r in all_rules()])
+        own = []
+    if emptying:
+        store.forget_source(sid)
+        save_rules([r for r in all_rules() if r not in own])
+        note = f"{moved} events merged into {calendar_name(target)}" if target else "its events deleted"
+        rebuild(sid)
+        if target:
+            rebuild(target)
+        ch.done("Calendar", f"Emptied {name} ({note})")
+        return RedirectResponse("/#sources", status_code=303)
     old_rules = all_rules()       # read while it's still a calendar
     stop_source(sid)
     store.set("sources", [x for x in sources() if x["id"] != sid])
     save_destinations([{**d, "sources": [x for x in d["sources"] if x != sid]} for d in destinations()])
-    note = ""
     store.forget_source(sid)
-    # its own rules go; rules for several calendars are taken off it
+    # its own rules go (unless moved); rules for several calendars are taken off it
     save_rules([{**r, "apply": r["apply"] if r["apply"] == "all" else [x for x in r["apply"] if x != sid]}
                 for r in old_rules if not rules_mod.is_local(r, sid)])
-    for base in ("calendar_name", "calendar_color", "calendar_tags", "rule_subs", "defaults", "note", "sync_interval",
-                 "http_cache", "status", "feed_reads"):
+    for base in SOURCE_BASES:
         store.delete(skey(sid, base))
     if sid == "ccs":
         logins.clear_ccs()
@@ -2120,11 +2479,122 @@ async def remove_source(csrf: str = Form(""), sid: str = Form(""), keep: str = F
         state.__init__("ccs")
     else:
         states.pop(sid, None)
+    ensure_local()
+    note = ""
     if target:
         rebuild(target)
-        note = f"{moved} events kept in {calendar_name(target)}"
-    state.record("info", f"Calendar source removed: {name}" + (f" ({note})" if note else ""))
+        note = f"{moved} events merged into {calendar_name(target)}" + (", with its rules" if rules == "move" else "")
+    ch.done("Calendar", f"Calendar source removed: {name}" + (f" ({note})" if note else ""))
     return RedirectResponse("/#sources", status_code=303)
+
+
+# --- Import .ics (0.2.8-beta.15) ---------------------------------------------------------------------
+# Into any calendar: the file's events (only those in From–To, unless All) become events added to it, kept
+# through its downloads. One already there (the same event: a re-import, or a CalendarStream export of it)
+# is asked about: Merge (the file's version updates it) or Delete (the file's copy is dropped).
+
+IMPORT_KEEP = timedelta(minutes=30)
+
+
+def _import_key(uid: str) -> str:
+    return uid.split("/", 1)[1] if uid.startswith("imp/") else uid
+
+
+def _when(e: dict) -> str:
+    return e["start"][:10] + ("" if e["all_day"] else " " + e["start"][11:16])
+
+
+@app.post("/sources/import", dependencies=[Depends(gui_auth)])
+async def import_check(csrf: str = Form(""), sid: str = Form(""), start: str = Form(""), end: str = Form(""),
+                       file: UploadFile = File(...)):
+    """Step 1: read the file and say which of its events are already in the calendar."""
+    check_csrf(csrf)
+    sid = _sid(sid)
+    body = await file.read(MAX_UPLOAD + 1)
+    if len(body) > MAX_UPLOAD:
+        raise HTTPException(413, "That file is too large (over 5 MB).")
+    today = now().astimezone(TZ).date()
+    first, last = _opt_day(start) or today - timedelta(days=3650), _opt_day(end) or today + timedelta(days=3650)
+    if last < first:
+        first, last = last, first
+    try:
+        check_calendar(body)
+        found, _ = parse_feed(body, settings.timezone, RULES_PARSE, "imp", first, last + timedelta(days=1))
+    except SourceError as e:
+        raise HTTPException(400, str(e))
+    found = [e for e in found if first.isoformat() <= e.start[:10] <= last.isoformat()]
+    if not found:
+        raise HTTPException(400, "No events in that file between those dates.")
+    here = {e.uid: e for e in store.load_events(sid) if e.origin != "rule" and not e.deleted}
+    imported = {c.get("import_uid"): c["uid"] for c in customs_for(sid) if c.get("import_uid")}
+    rows, conflicts = [], []
+    for e in found:
+        key = _import_key(e.uid)
+        row = {"key": key, **{k: getattr(e, k) for k in _FIELDS}}
+        rows.append(row)
+        at = here.get(key) or here.get(imported.get(key, ""))
+        if at:
+            conflicts.append({"key": key, "there": {"title": at.title, "when": _when(at.__dict__)},
+                              "file": {"title": e.title, "when": _when(row)}})
+    token = secrets.token_hex(8)
+    store.set(f"import:{token}", {"sid": sid, "rows": rows, "at": now().isoformat(), "name": file.filename or "Calendar.ics"})
+    return {"token": token, "total": len(rows), "conflicts": conflicts}
+
+
+@app.post("/sources/import/finish", dependencies=[Depends(gui_auth)])
+async def import_finish(request: Request, csrf: str = Form(""), token: str = Form(""), choices: str = Form("{}")):
+    """Step 2: add the new events, and Merge or Delete each one already there (`choices`: {key: "merge" | "delete"})."""
+    check_csrf(csrf)
+    pending = store.get(f"import:{token}") if re.fullmatch(r"[0-9a-f]{16}", token or "") else None
+    if not pending or now() - datetime.fromisoformat(pending["at"]) > IMPORT_KEEP:
+        raise HTTPException(400, "That import has expired; choose the file again.")
+    store.delete(f"import:{token}")
+    sid = pending["sid"]
+    if sid not in source_ids():
+        raise HTTPException(400, "That calendar isn't here any more.")
+    try:
+        picked = json.loads(choices)
+    except ValueError:
+        picked = {}
+    ch = Change(whole=[sid])
+    here = {e.uid: e for e in store.load_events(sid) if e.origin != "rule" and not e.deleted}
+    customs = {c["uid"]: c for c in customs_for(sid)}
+    imported = {c.get("import_uid"): c["uid"] for c in customs.values() if c.get("import_uid")}
+    edits = store.get_edits()
+    added = merged = dropped = 0
+    for row in pending["rows"]:
+        key, data = row["key"], {k: row[k] for k in _FIELDS}
+        at = here.get(key) or here.get(imported.get(key, ""))
+        if not at:
+            store.set_custom(f"cs-{secrets.token_hex(8)}@calendar_stream", {**data, "color": "", "source": sid, "import_uid": key})
+            added += 1
+        elif picked.get(key) != "merge":
+            dropped += 1
+        elif at.origin == "custom":
+            store.set_custom(at.uid, {**{k: v for k, v in customs[at.uid].items() if k != "uid"}, **data})
+            merged += 1
+        else:
+            original = united_original(at.uid, at.source)
+            if original:
+                base = edits.get(at.uid) or {"color": at.color, "base": original.fingerprint()}
+                store.set_edit(at.uid, {**base, **data})
+                merged += 1
+    rebuild(sid)
+    ch.done("Calendar", f"Imported {pending['name']} into {calendar_name(sid)}: {added} added"
+            + (f", {merged} merged" if merged else "") + (f", {dropped} already there" if dropped else ""))
+    return {"ok": True, "added": added, "merged": merged} if _is_async(request) else RedirectResponse(f"/#src-{sid}", status_code=303)
+
+
+@app.get("/sources/export", dependencies=[Depends(gui_auth)])
+def export_source(sid: str = ""):
+    """A calendar as a .ics file (0.2.8-beta.15: "Download a copy first" when removing it): its events as
+    they are now, edits included, without hidden or rule-made ones."""
+    sid = _sid(sid)
+    events = [e for e in store.load_events(sid) if not e.hidden and e.origin != "rule"]
+    body = build_feed(events, calendar_name(sid), settings.timezone, calendar_color(sid))
+    safe = re.sub(r"[^A-Za-z0-9 ._-]+", "", calendar_name(sid)).strip() or "calendar"
+    return Response(body, media_type="text/calendar; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="{safe}.ics"'})
 
 
 def copy_events(sid: str, target: str) -> int:
@@ -2177,13 +2647,16 @@ async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="typ
     to start with (the list can be changed in its box). The first one asks for the public address
     (it can be changed later in ☰ Settings)."""
     check_csrf(csrf)
+    ch = Change()
+    # 0.2.8-beta.15: google (Google 2-way Sync), google1 (Google 1-way Sync), gfeed (Google Calendar (feed): a
+    # link Google subscribes to), feed (any app). Without Google Calendar API Sync, a Google one is a feed.
+    oneway = type_ == "google1"
+    made_for = "google" if type_ == "gfeed" else ""
+    type_ = {"google1": "google", "gfeed": "feed"}.get(type_, type_)
     if type_ not in DESTINATION_TYPES:
         raise HTTPException(400, "Unknown kind of destination.")
-    # + Google Calendar (0.2.8-beta.4): kept in sync through the Google API when Google Calendar sync is
-    # set up in Settings; otherwise a feed for the Google account to subscribe to.
-    made_for = ""
     if type_ == "google" and not google.configured:
-        type_, made_for = "feed", "google"
+        type_, made_for, oneway = "feed", "google", False
     if public.strip():
         try:
             store.set("public_url", normalise_public_url(public))
@@ -2196,9 +2669,10 @@ async def add_destination(csrf: str = Form(""), type_: str = Form("", alias="typ
     name = " ".join(name.split())[:100] or first_named_calendar()
     did = new_did()
     found.append({"id": did, "type": type_, "name": name, "sources": source_ids(),
-                  "token": secrets.token_urlsafe(24) if type_ == "feed" else "", "for": made_for})
+                  "token": secrets.token_urlsafe(24) if type_ == "feed" else "", "for": made_for, "oneway": oneway})
     save_destinations(found)
-    state.record("info", f"Destination added: {'Google Calendar (feed)' if made_for else DESTINATION_TYPES[type_]} \"{name}\"")
+    kind = "Google Calendar (feed)" if made_for else ("Google 1-way Sync" if oneway else DESTINATION_TYPES[type_])
+    ch.done("Feed", f"Destination added: {kind} \"{name}\"")
     if type_ == "google":
         request_google_sync(full=True)
     return RedirectResponse(f"/#dest-{did}", status_code=303)
@@ -2221,9 +2695,10 @@ async def sent_fields(request: Request, *names: str) -> list[str | None]:
 @app.post("/destinations/update", dependencies=[Depends(gui_auth)])
 async def update_destination(request: Request, csrf: str = Form(""), did: str = Form(""), name: str = Form(""),
                              sources_: list[str] = Form([], alias="sources"), start: str | None = Form(None),
-                             end: str | None = Form(None)):
+                             end: str | None = Form(None), color: str = Form("")):
     """A destination's name, the sources it gets and its dates (Start / End; empty = no limit)."""
     check_csrf(csrf)
+    ch = Change()
     start, end = await sent_fields(request, "start", "end")
     d = _did(did)
     if start is not None or end is not None:
@@ -2234,8 +2709,12 @@ async def update_destination(request: Request, csrf: str = Form(""), did: str = 
             raise HTTPException(400, "The end is before the start.")
     d["name"] = " ".join(name.split())[:100] or d["name"]
     d["sources"] = [x for x in source_ids() if x in sources_]
+    if color:
+        if not COLOR_RE.match(color):
+            raise HTTPException(400, "Choose the color in the color box.")
+        d["color"] = color.lower()
     save_destinations([d if x["id"] == did else x for x in destinations()])
-    state.record("info", f"Destination \"{d['name']}\": " + (", ".join(calendar_name(x) for x in d["sources"]) or "no sources"))
+    ch.done("Feed", f"Destination \"{d['name']}\": " + (", ".join(calendar_name(x) for x in d["sources"]) or "no sources"))
     if d["type"] == "google":
         request_google_sync(full=True)
     return RedirectResponse(f"/#dest-{did}", status_code=303)
@@ -2247,20 +2726,29 @@ async def remove_destination(csrf: str = Form(""), did: str = Form(""), delete: 
     and subscribe page stop working."""
     check_csrf(csrf)
     d = _did(did)
+    ch = Change() if d["type"] != "google" else None      # (a Google calendar's removal touches Google: no Undo)
+    if ch:
+        ch.keys.append(f"feed_reads:{did}")
+        ch.before = store.snapshot(ch.keys)
     note = ""
     if d["type"] == "google":
         async with google_job.lock:
+            g = dest_google(d)
             if delete == "1":
-                note = await google.delete_calendar(did)
+                note = await g.delete_calendar(did)
             else:
-                if google.connected:
-                    await google.stop_watch([did])
-                google.forget_calendar(did)
+                if g.connected:
+                    await g.stop_watch([did])
+                g.forget_calendar(did)
     else:
         store.delete(f"feed_reads:{did}")
     save_destinations([x for x in destinations() if x["id"] != did])
     what = " and its calendar in Google deleted" if d["type"] == "google" and delete == "1" and not note else ""
-    state.record("warn" if note else "info", f"Destination removed: \"{d['name']}\"{what}" + (f" ({note})" if note else ""))
+    msg = f"Destination removed: \"{d['name']}\"{what}" + (f" ({note})" if note else "")
+    if ch:
+        ch.done("Feed", msg)
+    else:
+        state.record("warn" if note else "info", msg, kind="Feed")
     return RedirectResponse("/#destinations", status_code=303)
 
 
@@ -2317,7 +2805,56 @@ def create_login(request: Request, csrf: str = Form(""), code: str = Form(""), u
         return page(request, "welcome.html", {"csrf": WELCOME_TOKEN, "error": error, "user": user}, status_code=400)
     renew_csrf()
     state.record("info", f"Status-page login created for \"{logins.page_user}\"")
-    return RedirectResponse("/", status_code=303)
+    back = RedirectResponse("/", status_code=303)       # signed in already: no need to type it again
+    back.set_cookie(SESSION_COOKIE, new_session(logins.page_user), max_age=SESSION_DAYS * 86400, httponly=True,
+                    samesite="lax", secure=request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https")
+    return back
+
+
+LOGIN_TOKEN = secrets.token_urlsafe(24)    # the sign-in page's own form token
+
+
+def _safe_next(target: str) -> str:
+    """Only a path on this site (never another site's address) to go back to after signing in. Browsers drop
+    tabs and line breaks from an address ("/<tab>/other.site" is "//other.site"), so no control characters."""
+    ok = target.startswith("/") and not target.startswith("//") and "\\" not in target and all(ord(ch) > 32 for ch in target)
+    return target if ok else "/"
+
+
+@app.get("/login")
+def login_page(request: Request, next_: str = Query("/", alias="next")):
+    """The sign-in page (0.2.8-beta.15)."""
+    if not logins.has_page_login:
+        return RedirectResponse("/welcome", status_code=303)
+    if session_user(request):
+        return RedirectResponse(_safe_next(next_), status_code=303)
+    return page(request, "login.html", {"csrf": LOGIN_TOKEN, "error": "", "next": _safe_next(next_)})
+
+
+@app.post("/login")
+def login_submit(request: Request, csrf: str = Form(""), user: str = Form(""), password: str = Form(""),
+                 next_: str = Form("/", alias="next")):
+    check_csrf(csrf, LOGIN_TOKEN)
+    ip = _client_ip(request)
+    _check_lockout(ip)
+    if not logins.check_page_login(user, password):
+        _count_failure(ip)
+        return page(request, "login.html", {"csrf": LOGIN_TOKEN, "error": "That user name or password isn't right.",
+                                            "next": _safe_next(next_), "user": user}, status_code=400)
+    _count_success(ip)
+    back = RedirectResponse(_safe_next(next_), status_code=303)
+    back.set_cookie(SESSION_COOKIE, new_session(logins.page_user), max_age=SESSION_DAYS * 86400, httponly=True,
+                    samesite="lax", secure=request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https")
+    return back
+
+
+@app.post("/logout", dependencies=[Depends(gui_auth)])
+def logout(csrf: str = Form("")):
+    """Sign out (Settings › Administrator): this browser's session ends."""
+    check_csrf(csrf)
+    back = RedirectResponse("/login", status_code=303)
+    back.delete_cookie(SESSION_COOKIE)
+    return back
 
 
 @app.post("/settings/login", dependencies=[Depends(gui_auth)])
@@ -2335,8 +2872,10 @@ def change_login(request: Request, csrf: str = Form(""), current: str = Form("")
         raise HTTPException(400, str(e))
     renew_csrf()
     state.record("info", f"Status-page login changed (user \"{logins.page_user}\")")
-    # The browser still holds the old login; it will ask for the new one.
-    return RedirectResponse("/", status_code=303)
+    # Every session (this one too) ended with the old password: this browser signs in again with the new one
+    back = RedirectResponse("/login", status_code=303)
+    back.delete_cookie(SESSION_COOKIE)
+    return back
 
 
 GOOGLE_SETTINGS = "/?menu=settings#googlesync"      # Google Calendar sync is in ☰ Settings (0.2.8-beta.4)
@@ -2505,10 +3044,11 @@ async def set_tags(request: Request, csrf: str = Form(""), sid: str = Form("ccs"
     check_csrf(csrf)
     name, note = await sent_fields(request, "name", "note")
     sid = _sid(sid)
+    ch = Change(sids=[sid])
     notes = _source_name_color(sid, name, color, color_default, note)
     if notes:
         rebuild(sid)
-        state.record("info", f"{calendar_name(sid)} saved: " + ", ".join(notes))
+        ch.done("Calendar", f"{calendar_name(sid)} saved: " + ", ".join(notes))
     return RedirectResponse(f"/#src-{sid}", status_code=303)
 
 
@@ -2532,6 +3072,7 @@ async def save_rule(request: Request, csrf: str = Form(""), rule: str = Form("")
     at its place (one for a single calendar above that calendar's shared rules, others last); a
     changed one keeps its place."""
     check_csrf(csrf)
+    ch = Change()
     try:
         raw = json.loads(rule)
         checked = rules_mod.normalize(raw, source_ids(), {t["id"] for t in event_templates()}, strict=True)
@@ -2552,8 +3093,68 @@ async def save_rule(request: Request, csrf: str = Form(""), rule: str = Form("")
         what = "added"
     save_rules(found)
     rebuild()
-    state.record("info", f"Rule {what}: {rule_label(checked)}")
+    ch.done("Rule", f"Rule {what}: {rule_label(checked)}")
     return _rule_done(request, checked)
+
+
+@app.post("/history/undo", dependencies=[Depends(gui_auth)])
+async def history_undo(request: Request, csrf: str = Form(""), entry: int = Form(0), redo: str = Form("")):
+    """Undo (or redo) a change from History (0.2.8-beta.15): a stack, so it's always the newest change
+    that's undone first, and the oldest undone one that's redone first."""
+    check_csrf(csrf)
+    top, nxt = store.undo_stack()
+    if entry != (nxt if redo else top):
+        raise HTTPException(400, "Newer changes come first: undo (or redo) the one with the arrow.")
+    found = store.undo_entry(entry)
+    if not found:
+        raise HTTPException(404, "That change can't be undone any more.")
+    undo = found["undo"]
+    if undo.get("type") == "deleted":
+        for uid in undo["uids"]:
+            if redo:
+                e = store.get_event(uid)
+                if e:
+                    mark_deleted(e, undo["where"])
+            else:
+                unmark_deleted(uid)
+        after_restore()
+    else:
+        store.restore(undo["after" if redo else "before"])
+        after_restore()
+    store.set_undo_state(entry, "done" if redo else "undone")
+    log.info("%s: %s", "Redone" if redo else "Undone", found["msg"])
+    return {"ok": True} if _is_async(request) else RedirectResponse("/#activity", status_code=303)
+
+
+@app.get("/history/container", dependencies=[Depends(gui_auth)])
+def container_log():
+    """History › Container log (0.2.8-beta.15): what `docker logs` shows for CalendarStream since it started
+    (its last LOG_TAIL_LINES lines), newest last. (An admin's page once there are several users.)"""
+    return Response("\n".join(LOG_TAIL.lines) + "\n", media_type="text/plain; charset=utf-8")
+
+
+@app.post("/history/keep", dependencies=[Depends(gui_auth)])
+async def history_keep(request: Request, csrf: str = Form(""), keep: int = Form(UNDO_KEEP)):
+    """How many changes History remembers for Undo (1–200)."""
+    check_csrf(csrf)
+    if not 1 <= keep <= 200:
+        raise HTTPException(400, "Between 1 and 200 changes.")
+    store.set("undo_keep", keep)
+    pop_undo()
+    state.record("info", f"History remembers the last {keep} changes for Undo", kind="Settings")
+    return {"ok": True} if _is_async(request) else RedirectResponse("/#activity", status_code=303)
+
+
+@app.post("/rules/test", dependencies=[Depends(gui_auth)])
+async def test_rule(csrf: str = Form(""), value: str = Form(""), op: str = Form("regex"), case: str = Form(""),
+                    samples: str = Form("")):
+    """The rule dialog's regex test box (0.2.8-beta.15): which of the given titles (one per line) a Title
+    condition matches, with the same matching the rule uses, or why the pattern can't be used."""
+    check_csrf(csrf)
+    if op not in rules_mod.TEXT_OPS:
+        raise HTTPException(400, "Unknown way to match.")
+    lines = [x.strip() for x in samples.splitlines() if x.strip()][:30]
+    return rules_mod.test_text(value.strip()[:rules_mod.MAX_REGEX], op, bool(case), [x[:300] for x in lines])
 
 
 @app.post("/rules/clone", dependencies=[Depends(gui_auth)])
@@ -2561,13 +3162,14 @@ async def clone_rule(request: Request, csrf: str = Form(""), rid: str = Form("",
     """All Rules: a copy of a rule, just below it, applying to no calendar yet; it opens in the rule
     dialog to be changed."""
     check_csrf(csrf)
+    ch = Change()
     found, i = _rule_or_400(rid)
     if len(found) >= rules_mod.MAX_RULES:
         raise HTTPException(400, f"Up to {rules_mod.MAX_RULES} rules can be kept.")
     copy = {**found[i], "id": "t" + secrets.token_hex(3), "apply": []}
     found.insert(i + 1, copy)
     save_rules(found)
-    state.record("info", f"Rule copied: {rule_label(copy)}")
+    ch.done("Rule", f"Rule copied: {rule_label(copy)}")
     return RedirectResponse(f"/?rule={copy['id']}#rules", status_code=303)
 
 
@@ -2575,11 +3177,12 @@ async def clone_rule(request: Request, csrf: str = Form(""), rid: str = Form("",
 async def delete_rule(request: Request, csrf: str = Form(""), rid: str = Form("", alias="id")):
     """Delete a rule (from every calendar)."""
     check_csrf(csrf)
+    ch = Change()
     found, i = _rule_or_400(rid)
     gone = found.pop(i)
     save_rules(found)
     rebuild()
-    state.record("info", f"Rule deleted: {rule_label(gone)}")
+    ch.done("Rule", f"Rule deleted: {rule_label(gone)}")
     return _rule_done(request, None)
 
 
@@ -2631,6 +3234,7 @@ async def resolve_rules(request: Request, csrf: str = Form(""), key: str = Form(
     """Settle a conflict between two rules (All Rules): put the lower rule first, take the action it
     loses out of it, merge duplicates, or leave them as they are (it's not shown again)."""
     check_csrf(csrf)
+    ch = Change()
     found = all_rules()
     c = next((x for x in rules_mod.conflicts(found, source_ids()) if rules_mod.conflict_key(x) == key), None)
     if c is None:
@@ -2655,7 +3259,7 @@ async def resolve_rules(request: Request, csrf: str = Form(""), key: str = Form(
             found.pop(ids.index(b["id"]))
     save_rules(found)
     rebuild()
-    state.record("info", f"Rule conflict settled ({how}): {rule_label(b)}")
+    ch.done("Rule", f"Rule conflict settled ({how}): {rule_label(b)}")
     return _rule_done(request, a)
 
 
@@ -2665,6 +3269,7 @@ async def apply_rule(request: Request, csrf: str = Form(""), rid: str = Form("",
     """Add a calendar to a rule's calendars (a calendar module's "+ Add a rule" menu), or take it off
     (the bin on a rule in a calendar module)."""
     check_csrf(csrf)
+    ch = Change()
     sid = _sid(sid)
     found, i = _rule_or_400(rid)
     r = found[i]
@@ -2673,7 +3278,7 @@ async def apply_rule(request: Request, csrf: str = Form(""), rid: str = Form("",
     r["apply"] = "all" if on == "1" and r["apply"] == "all" else users
     save_rules(found)
     rebuild(sid)
-    state.record("info", f"Rule {'added to' if on == '1' else 'taken off'} {calendar_name(sid)}: {rule_label(r)}")
+    ch.done("Rule", f"Rule {'added to' if on == '1' else 'taken off'} {calendar_name(sid)}: {rule_label(r)}")
     return _rule_done(request, r, f"/#src-{sid}")
 
 
@@ -2684,6 +3289,7 @@ async def set_templates(csrf: str = Form(""), tpl_id: list[str] = Form([]), tpl_
     """Save the event templates. Rows with no title are dropped; rules using a removed template stop
     adding events."""
     check_csrf(csrf)
+    ch = Change()
     found = []
     old = {t["id"]: t for t in event_templates()}
     for tid, title, kind, dur, loc, color in zip_longest(tpl_id, tpl_title, tpl_kind, tpl_duration, tpl_location,
@@ -2708,8 +3314,22 @@ async def set_templates(csrf: str = Form(""), tpl_id: list[str] = Form([]), tpl_
         raise HTTPException(400, f"Up to {MAX_TEMPLATES} templates can be kept.")
     store.set("event_templates", found)
     rebuild()
-    state.record("info", f"Event templates saved: {len(found)}")
+    ch.done("Rule", f"Event templates saved: {len(found)}")
     return RedirectResponse("/#templates", status_code=303)
+
+
+@app.post("/templates/add", dependencies=[Depends(gui_auth)])
+async def add_template(csrf: str = Form(""), tpl_title: str = Form(""), tpl_kind: str = Form("timed"),
+                       tpl_duration: str = Form("1:00"), tpl_location: str = Form(""), tpl_color: str = Form("")):
+    """+ Add an event template (0.2.8-beta.15, the pop-up): the templates as they are, and this one at the end."""
+    if not " ".join(tpl_title.split()):
+        raise HTTPException(400, "Give it a title.")
+    old = event_templates()
+    return await set_templates(csrf=csrf, tpl_id=[t["id"] for t in old] + [""], tpl_title=[t["title"] for t in old] + [tpl_title],
+                               tpl_kind=["allday" if t["all_day"] else "timed" for t in old] + [tpl_kind],
+                               tpl_duration=[show_duration(t["minutes"]) for t in old] + [tpl_duration],
+                               tpl_location=[t.get("location", "") for t in old] + [tpl_location],
+                               tpl_color=[t.get("color", "") for t in old] + [tpl_color])
 
 
 @app.post("/ui/section", dependencies=[Depends(gui_auth)])
@@ -2867,13 +3487,16 @@ def print_pages(events: list[Event], view: str, first: date, last: date, weekend
 
 @app.get("/print", dependencies=[Depends(gui_auth)])
 def print_page(request: Request, view: str = "", start: str = "", end: str = "", weekends: str = "",
-               theme: str = ""):
+               theme: str = "", all_: str = Query("", alias="all")):
     """Print Preview's page: the calendar as chosen, ready to print (the preview shows it in a frame)."""
     prefs = print_prefs()
     view = view if view in PRINT_VIEWS else prefs.get("view") or {"list": "itinerary"}.get(ui_view(), ui_view())
     today = now().astimezone(display_tz()).date()
     first = _parse_day(start, None) if start else today.replace(day=1)
     last = _parse_day(end, None) if end else first.replace(day=pycal.monthrange(first.year, first.month)[1])
+    if all_ == "1":       # All (0.2.8-beta.15): from the first event to the last (up to two years)
+        days = sorted(_span(e, TZ)[0] for e in store.load_events() if not e.hidden)
+        first, last = (days[0], days[-1]) if days else (first, last)
     if last < first:
         first, last = last, first
     last = min(last, first + timedelta(days=731))
@@ -2987,7 +3610,23 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         "csrf": CSRF_TOKEN, "month": month or (e.start[:7]), "tz": display_zone(), "embed": embed == "1",
         "default_sid": (source_ids() or [""])[0],
         "link": event_links().get(uid) if uid else None, "link_choices": link_choices(e, uid, lang), "open_link": link == "1",
+        "event_rules": event_rules(e) if uid else [],
     }, lang=lang)
+
+
+def event_rules(e: Event) -> list[dict]:
+    """The rules an event follows (Link › Rule › its rule, 0.2.8-beta.15): those of its calendar whose If
+    matches it, highest first."""
+    rs = rules_mod.Ruleset(rules_mod.for_source(all_rules(), e.source), TZ)
+    info = rules_mod.event_info(e, TZ)
+    found = []
+    for r, test in rs.rules:
+        try:
+            if test(e, info):
+                found.append({"id": r["id"], "label": rule_label(r)})
+        except (ValueError, KeyError):
+            continue
+    return found
 
 
 def link_choices(e: Event, uid: str, lang: str) -> list[dict]:
@@ -3115,9 +3754,11 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
     only used when "The end is in a different time zone" is ticked."""
     check_csrf(csrf)
     end_tz = end_tz if end_tz_differs else start_tz      # one time zone for both unless asked otherwise
+    known = store.get_event(uid) if uid else None
+    ch = Change(whole=[known.source if known else (source_ if source_ in source_ids() else (source_ids() or ["ccs"])[0])])
     data = _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description,
                             color, start_tz, end_tz)
-    current = store.get_event(uid) if uid else None
+    current, done = known, ""
     if current and current.origin == "rule":
         raise HTTPException(400, "This event is made by a rule; change the rule or its event template instead.")
     if current and current.origin == "united":
@@ -3128,8 +3769,7 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
             data[k] == getattr(current, k) for k in ("title", "start", "end", "all_day", "location", "description", "color"))
         if not unchanged:       # (only its link changed: it isn't marked as edited)
             store.set_edit(uid, {**data, "hidden": bool(hidden), "base": original.fingerprint()})
-            state.record("info", f"Edited \"{original.title}\" ({original.start[:10]})"
-                         + (" and hid it from Google" if hidden else ""))
+            done = f"Edited \"{original.title}\" ({original.start[:10]})" + (" and hid it from Google" if hidden else "")
         sid = current.source
         save_link(uid, link_to, bool(link_delete), bool(link_move))
     else:
@@ -3139,8 +3779,10 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
         new_uid = uid if current else f"cs-{secrets.token_hex(8)}@calendar_stream"
         store.set_custom(new_uid, {**data, "source": sid})
         save_link(new_uid, link_to, bool(link_delete), bool(link_move))
-        state.record("info", f"{'Updated' if current else 'Added'} \"{data['title']}\" ({data['start'][:10]})")
+        done = f"{'Updated' if current else 'Added'} \"{data['title']}\" ({data['start'][:10]})"
     rebuild(sid)
+    if done:
+        ch.done("Event", done)
     state.save()
     return _event_back(month or data["start"][:7], embed)
 
@@ -3149,13 +3791,28 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
 async def revert_event(csrf: str = Form(""), uid: str = Form(""), month: str = Form(""), embed: str = Form("")):
     check_csrf(csrf)
     e = store.get_event(uid)
+    ch = Change(whole=[e.source] if e else [])
     store.delete_edit(uid)
     rebuild(e.source if e else None)
-    state.record("info", "Reverted an event to United's version")
+    ch.done("Event", f"Reverted \"{e.title if e else ''}\" to its calendar’s version")
     return _event_back(month, embed)
 
 
 ALARM_CHOICES = (0, 5, 10, 15, 30, 60, 120, 1440, 2880, 10080)    # minutes before the start
+
+
+@app.post("/event/restore", dependencies=[Depends(gui_auth)])
+async def restore_event(request: Request, csrf: str = Form(""), uid: str = Form("")):
+    """Restore a deleted event (0.2.8-beta.15): it's back as it was, and taken out of its History line's Undo."""
+    check_csrf(csrf)
+    e = store.get_event(uid)
+    if not e or not e.deleted or e.deleted == "gone":
+        raise HTTPException(404, "That event can't be restored any more.")
+    unmark_deleted(uid)
+    store.forget_deleted(uid)
+    rebuild(e.source)
+    state.record("info", f"Restored \"{e.title}\" ({e.start[:10]})", kind="Event")
+    return {"ok": True} if _is_async(request) else RedirectResponse("/#cal", status_code=303)
 
 
 @app.post("/event/alarms", dependencies=[Depends(gui_auth)])
@@ -3204,14 +3861,12 @@ async def delete_event(request: Request, csrf: str = Form(""), uid: str = Form("
         raise HTTPException(404, "That event isn't in the current schedule any more.")
     if e.origin == "rule":
         raise HTTPException(400, "This event is made by a rule; change the rule or its event template instead.")
-    if e.origin == "custom":
-        store.delete_custom(uid)
-        state.record("info", f"Deleted \"{e.title}\" ({e.start[:10]})")
-    else:
-        if not united_original(uid, e.source):
-            raise HTTPException(404, "That event isn't in the current schedule any more.")
-        _hide(e)
-        state.record("info", f"Hid \"{e.title}\" ({e.start[:10]}) from the destinations")
+    if e.deleted:
+        raise HTTPException(400, "That event is already deleted; History › Undo brings it back.")
+    if e.origin != "custom" and not united_original(uid, e.source):
+        raise HTTPException(404, "That event isn't in the current schedule any more.")
+    # (0.2.8-beta.15) kept struck through until its Undo pops off History; a source's own event stays hidden after
+    delete_events([e], "calendarstream", f"Deleted \"{e.title}\" ({e.start[:10]})")
     rebuild(e.source)
     if _is_async(request):
         return {"ok": True}
@@ -3298,12 +3953,15 @@ async def google_client(request: Request, csrf: str = Form(""), client_id: str =
     """Save or remove the Google OAuth client (Google Calendar Autosync box). The secret is stored encrypted and
     never shown again. It can't change while connected: the sign-in belongs to that client."""
     check_csrf(csrf)
-    if google.connected and action == "remove":
+    if any(google_for(a).connected for a in google_accounts()) and action == "remove":
         # the trash at the end of the credentials (0.2.8-beta.11, confirmed in the page): disconnect first
-        # (CalendarStream's calendars stay in Google), then delete the client
+        # (CalendarStream's calendars stay in Google), then delete the client; every account uses it (beta.15)
         async with google_job.lock:
-            await google.stop_watch(sorted({d["id"] for d in destinations("google")} | set(google.calendar_sids())))
-            await google.disconnect(delete_calendar=False)
+            for account in google_accounts():
+                g = google_for(account)
+                if g.connected:
+                    await g.stop_watch(sorted({d["id"] for d in destinations("google") if d["account"] == account} | set(g.calendar_sids())))
+                    await g.disconnect(delete_calendar=False)
         state.record("info", "Google Calendar disconnected to delete the OAuth client")
     elif google.connected:
         raise HTTPException(400, "Disconnect Google Calendar before changing the OAuth client.")
@@ -3397,12 +4055,16 @@ async def google_callback(state_: str = Query("", alias="state"), code: str = ""
             raise GoogleError("Google sign-in was cancelled or refused. If Google said the app is only for "
                               "testers, add your Gmail address under Audience → Test users in Google Cloud."
                               if error in ("access_denied", "") else f"Google sign-in failed: {error[:80]}.")
+        # (0.2.8-beta.15) the account this sign-in was started for: the first one, or a Google module's own
+        g = next((x for x in [google_for(a) for a in google_accounts()] if state_ in x._pending), google)
         async with google_job.lock:      # no sync may start while the calendars are being found or made
-            info = await google.finish_sign_in(state_, code)
+            info = await g.finish_sign_in(state_, code)
             found = []
-            for d in destinations("google"):     # each Google destination's calendar: the one from before, or a new one
-                await google.ensure_calendar(d["id"], d["name"])
-                cal = google.cal_info(d["id"])
+            for d in destinations("google"):     # each of its Google modules' calendar: the one from before, or a new one
+                if d["account"] != g.account:
+                    continue
+                await g.ensure_calendar(d["id"], d["name"])
+                cal = g.cal_info(d["id"])
                 found.append(f"calendar \"{cal.get('calendar_name', '')}\" "
                              + ("created" if cal.get("created") else "found again"))
         state.record("info", f"Google Calendar connected as {info.get('email') or 'your account'}"
@@ -3414,35 +4076,38 @@ async def google_callback(state_: str = Query("", alias="state"), code: str = ""
     return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
 
 
-@app.post("/google/held", dependencies=[Depends(gui_auth)])
-async def google_held_choice(csrf: str = Form(""), action: str = Form("")):
-    """Events deleted in Google, more than GOOGLE_DELETE_LIMIT at once (0.2.8-beta.10): hide them here too,
-    or put them back in Google."""
+@app.post("/google/account", dependencies=[Depends(gui_auth)])
+async def google_account(request: Request, csrf: str = Form(""), did: str = Form(""), action: str = Form("connect")):
+    """A Google module's own Gmail (0.2.8-beta.15), so each module can go to a different person: `connect`
+    signs in a new account for it (Google's sign-in page); `first` puts it back on the first account
+    (Settings'); `disconnect` signs its account out (its calendar stays in Google)."""
     check_csrf(csrf)
-    held = google_held()
-    if action not in ("hide", "restore"):
-        raise HTTPException(400, "Choose Hide or Put back.")
-    touched = set()
-    if action == "hide":
-        for uid in held:
-            e = store.get_event(uid)
-            if e is None or e.origin == "rule":
-                continue
-            if e.origin == "custom":
-                store.delete_custom(uid)
-            else:
-                _hide(e)
-            touched.add(e.source)
-    store.set("google_pending_deletes", {})
-    if action == "restore":
-        store.set("google_restoring", sorted(held))
-    state.record("info", f"Google: {len(held)} events deleted in Google were "
-                 + ("hidden here too" if action == "hide" else "put back in Google"))
-    for sid in touched:
-        rebuild(sid)
-    state.save()
-    request_google_sync(full=True)
-    return RedirectResponse("/#activity", status_code=303)
+    d = _did(did)
+    if d["type"] != "google":
+        raise HTTPException(400, "Only a Google module has a Google account.")
+    view = google_view(request)
+    found = destinations()
+    if action == "first" or (action == "disconnect" and not d["account"]):
+        if action == "disconnect":
+            raise HTTPException(400, "That's the first account: disconnect it in ☰ Settings › Google Calendar API Sync.")
+        save_destinations([{**x, "account": ""} if x["id"] == did else x for x in found])
+        state.record("info", f"Google, {d['name']}: back on the first Google account", kind="Google")
+        request_google_sync(full=True)
+        return RedirectResponse(f"/#dest-{did}", status_code=303)
+    if action == "disconnect":
+        g = dest_google(d)
+        async with google_job.lock:
+            await g.stop_watch([did])
+            notes = await g.disconnect(delete_calendar=False)
+        save_destinations([{**x, "account": ""} if x["account"] == d["account"] else x for x in found])
+        state.record("warn" if notes else "info", f"Google, {d['name']}: {g.info().get('email') or 'its account'} disconnected"
+                     + ("; " + "; ".join(notes) if notes else ""), kind="Google")
+        return RedirectResponse(f"/#dest-{did}", status_code=303)
+    if not view["configured"] or not view["redirect_ok"]:
+        raise HTTPException(400, "First: ☰ Settings › Google Calendar API Sync › Connect.")
+    account = d["account"] or "a" + secrets.token_hex(3)
+    save_destinations([{**x, "account": account} if x["id"] == did else x for x in found])
+    return RedirectResponse(google_for(account).sign_in_url(view["redirect_uri"]), status_code=303)
 
 
 @app.post("/google/disconnect", dependencies=[Depends(gui_auth)])
@@ -3452,8 +4117,8 @@ async def google_disconnect(csrf: str = Form(""), delete: str = Form("")):
     if not google.connected:
         return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
     email = google.info().get("email") or "your account"
-    async with google_job.lock:      # not in the middle of a sync
-        await google.stop_watch(sorted({d["id"] for d in destinations("google")} | set(google.calendar_sids())))
+    async with google_job.lock:      # not in the middle of a sync (the first account; a module's own stays)
+        await google.stop_watch(sorted({d["id"] for d in destinations("google") if not d["account"]} | set(google.calendar_sids())))
         notes = await google.disconnect(delete_calendar=delete == "1")
     if delete == "1":
         store.google_forget()
@@ -3469,11 +4134,15 @@ async def google_notify(request: Request):
     Checked by the channel ID and the secret token CalendarStream gave Google; it carries no
     details, so it just starts a check that puts back events changed or deleted in Google."""
     channel = request.headers.get("x-goog-channel-id", "")
-    sid = google.notice_from(channel, request.headers.get("x-goog-channel-token", ""), [d["id"] for d in destinations("google")])
-    if sid:
-        if request.headers.get("x-goog-resource-state") != "sync":   # "sync" only confirms the channel
-            google.noticed(sid)
-            request_google_sync(full=True)
+    for account in google_accounts():      # (each Google module's channel is its account's)
+        g = google_for(account)
+        sid = g.notice_from(channel, request.headers.get("x-goog-channel-token", ""),
+                            [d["id"] for d in destinations("google") if d["account"] == account])
+        if sid:
+            if request.headers.get("x-goog-resource-state") != "sync":   # "sync" only confirms the channel
+                g.noticed(sid)
+                request_google_sync(full=True)
+            break
     return Response(status_code=200)   # anything else makes Google retry; unknown channels just expire
 
 
@@ -3545,7 +4214,7 @@ def redact(text: str) -> str:
 
 @app.get("/report/data", dependencies=[Depends(gui_auth)])
 def report_data():
-    """What Report a problem can attach, private details taken out: the recent Activities and Logs
+    """What Report a problem can attach, private details taken out: the recent History lines
     lines, each source's last download details, and this install's setup. The page shows it in the
     report's preview; nothing is sent anywhere from here."""
     lines = [f"{h['time'].astimezone(TZ):%Y-%m-%d %H:%M:%S} {h['level']:5} {h['msg']}" for h in store.recent_log(60)]
@@ -3582,7 +4251,8 @@ def calendar(token: str, request: Request):
     if not d:
         raise HTTPException(404)
     note_feed_read(request.headers.get("user-agent", ""), d["id"])
-    color = calendar_color(d["sources"][0]) if len(d["sources"]) == 1 else ""
+    # its own color (0.2.8-beta.15), else its one calendar's: apps that read a calendar's color use it
+    color = d["color"] or (calendar_color(d["sources"][0]) if len(d["sources"]) == 1 else "")
     ics = build_feed(dest_events(d), d["name"], settings.timezone, color)
     # An unchanged feed answers "304 Not Modified" (0.2.8-beta.4): calendar apps that ask with the tag
     # they were given last time don't download it all again.

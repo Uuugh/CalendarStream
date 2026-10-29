@@ -57,7 +57,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         b = pw.chromium.launch()
-        pg = b.new_page(viewport={"width": 1300, "height": 800}, http_credentials={"username": "t", "password": "password1"})
+        pg = b.new_page(viewport={"width": 1300, "height": 800}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto("http://127.0.0.1:8098/"); pg.wait_for_timeout(300)
         pg.screenshot(path=os.path.join(tempfile.gettempdir(), "cs-upd_ready.png"), clip={"x": 0, "y": 0, "width": 700, "height": 60})

@@ -45,7 +45,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok("longenough" not in str(main.store.get("page_login")), "password stored hashed")
     ok(c.get("/welcome", follow_redirects=False).status_code == 303 and post(code=code, user="x", password="aaaaaaaa", confirm="aaaaaaaa").status_code == 303
        and main.logins.page_user == "pilot", "welcome closed once a login exists")
-    ok(c.get("/").status_code == 401 and c.get("/", auth=("pilot", "wrong")).status_code == 401, "page needs the login")
+    ok("cs_session" in c.cookies, "the new login is signed in already (0.2.8-beta.15)")
+    c.cookies.clear()
+    ok(c.get("/", headers={"accept": "text/html"}, follow_redirects=False).headers.get("location", "").startswith("/login")
+       and c.get("/").status_code == 401 and c.get("/api/status").status_code == 401 and c.get("/api/status", auth=("pilot", "wrong")).status_code == 401,
+       "page needs the login (the page goes to the sign-in page)")
     A = ("pilot", "longenough")
     t0 = time.time(); [c.get("/api/status", auth=A) for _ in range(5)]; dt = time.time() - t0
     p = c.get("/", auth=A).text

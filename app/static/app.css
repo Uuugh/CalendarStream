@@ -188,6 +188,11 @@
   .ev .body { padding:4px 6px 6px; font-size:12px; white-space:pre-wrap; word-break:break-word; border-top:1px solid var(--line) }
   .ev.custom { background:var(--custom); color:var(--customtext) }
   .ev.hidden summary { text-decoration:line-through; opacity:.55 }
+  /* deleted (beta.15): struck through and greyed (its color subdued), until its Undo pops off */
+  .ev.deleted { filter:grayscale(.85) } .ev.deleted summary { opacity:.45 }
+  .ev .delnote { color:var(--muted); font-style:italic }
+  .ev .evrestore { display:inline-block; margin:4px 0 0 } .ev .evrestore button { height:28px; padding:0 8px; display:inline-flex; align-items:center; gap:4px }
+  s.legdel { opacity:.45; filter:grayscale(1) }
   .ev .mark { margin-left:3px; font-size:11px }
   .ev .edit { display:inline-block; font-weight:600 }
   .ev .evtools { display:flex; align-items:center; gap:3px; margin-top:5px; white-space:normal }
@@ -379,12 +384,12 @@
   .addwrap { position:relative }
   .addmenu { position:absolute; right:0; top:calc(100% + 6px); z-index:12; width:min(500px, calc(100vw - 40px)); display:grid; gap:10px;
              background:var(--card); border:1px solid var(--line); border-radius:var(--rbox); box-shadow:0 10px 30px rgba(0,0,0,.2); padding:14px }
-  .addmenu .title { font-weight:700; font-size:15px }
-  .addmenu .opt { display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:var(--r); padding:10px 12px; margin:0 }
-  .addmenu .opt > div { flex:1; min-width:0 }
-  .addmenu .opt.col { flex-direction:column; align-items:stretch }
-  .addmenu .opt.col .pair { margin-top:2px }
-  .addmenu .lbl { display:block; font-size:13px; font-weight:600; margin-bottom:4px }
+  .addmenu .title, .addbody .title { font-weight:700; font-size:15px }
+  .addmenu .opt, .addbody .opt { display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:var(--r); padding:10px 12px; margin:0 }
+  .addmenu .opt > div, .addbody .opt > div { flex:1; min-width:0 }
+  .addmenu .opt.col, .addbody .opt.col { flex-direction:column; align-items:stretch }
+  .addmenu .opt.col .pair, .addbody .opt.col .pair { margin-top:2px }
+  .addmenu .lbl, .addbody .lbl { display:block; font-size:13px; font-weight:600; margin-bottom:4px }
   .pubask { border:1px solid var(--line); border-radius:var(--r); padding:10px 12px; background:var(--soft) }
   .empty { color:var(--muted); font-size:14px; margin:10px 0 2px }
   .intervalform { display:flex; align-items:center; gap:8px; margin:0; font-size:13.5px; white-space:nowrap }
@@ -420,7 +425,7 @@
   .srcpicks { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:4px; font-size:14px }
   .srcpick { display:inline-flex; align-items:center; gap:6px; cursor:pointer }
   .destform .pair label.fld { flex:0 1 320px }
-  .addmenu input.solo { width:100%; font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  .addmenu input.solo, .addbody input.solo { width:100%; font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   .rules .boxhead { margin-bottom:6px } #templates form.tagsform, #ruletemplates form.tagsform { margin-top:10px }
   .rtpicks { display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin:0 0 8px; font-size:13.5px } .rtpicks .k { margin:0 }
   .rulerow[data-action="color"] .act.event, .rulerow[data-action="event"] .act.color { display:none }
@@ -468,13 +473,13 @@
   /* A destination's dates */
   .destform .pair.dates label.fld { flex:0 1 170px } .destform .pair.dates input { height:34px }
   .destform .pair.dates .mnote { flex:1 1 200px; align-self:center; margin:0 }
-  /* Activities and Logs: the same head as the other sections */
+  /* History, Undo & Logs: the same head as the other sections */
   #activity > .shead .bigtitle { font-size:24px; font-weight:600; color:var(--text) }
   /* Wide screens: Sources | Destinations, then Rules | Activity */
   @media (min-width:1300px) {
     main { max-width:1640px }
     .sections { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:0 10px; align-items:start }
-    .sections > #activity { grid-column:1 / -1 }      /* Activities and Logs: the full width */
+    .sections > #activity { grid-column:1 / -1 }      /* History, Undo & Logs: the full width */
   }
   /* Narrow screens: the view and theme choices become one button each that steps through them */
   .cyclebtn { display:none }
@@ -524,8 +529,10 @@
   .pairbtns[data-state="saving"] .psave, .pairbtns[data-state="saved"] .psave, .pairbtns[data-state="failed"] .psave { flex-basis:130px; width:130px; border-radius:var(--r) }
   .pairbtns[data-state="cancelled"] .pcancel { flex-basis:130px; width:130px; border-radius:var(--r); border-right-width:1px }
   .pairbtns[data-state="saving"] .psave { opacity:.85; pointer-events:none }
-  .pairbtns[data-state="failed"] .psave { background:var(--badbg); color:var(--bad); border-color:var(--bad) }
-  .pairfail { flex-basis:100%; text-align:right; color:var(--bad); font-size:12.5px; margin:2px 0 0 }
+  .pairbtns[data-state="failed"] .psave { background:var(--warnbg); color:var(--warn); border-color:var(--warn) }
+  .pairbtns[data-state="failed"][data-cause="inside"] .psave { background:var(--badbg); color:var(--bad); border-color:var(--bad) }
+  .pairfail { flex-basis:100%; text-align:right; color:var(--warn); font-size:12.5px; margin:2px 0 0 }
+  .pairfail.inside { color:var(--bad) }
   dialog .eactions .pairbtns { margin-left:auto }
   /* The rule-line pair: 130 × 26 px inside its 34 px line */
   /* Guide headings: underlined (F3.3) */
@@ -621,20 +628,27 @@
      Fonts, colors, corners and icons come from _theme.html. Every calendar and feed is a module: a
      50 px header (all a folded module shows), then its details. Folded, there's no line under the
      header: "▸ Expand … ◂" sits in the module's bottom border. */
-  .box.module { position:relative; container-type:inline-size; padding:6px 10px 6px; margin-top:5px }
-  .box.module:not(.cfgopen) { padding-bottom:12px }
+  /* (beta.15) a 2 px border, with 1 px less padding all round, so a module is the same size as before */
+  .box.module { position:relative; container-type:inline-size; border-width:2px; padding:5px 9px 5px; margin-top:5px }
+  .box.module:not(.cfgopen) { padding-bottom:11px }
   .box.module:not(.cfgopen) + .box.module { margin-top:14px }            /* room for the Expand text between them */
   .module .srchead { display:flex; align-items:center; gap:10px; height:50px }
-  .module .srchead .swatch, .module input.colorpick { flex:0 0 22px; width:22px; height:46px; border-radius:6px }
-  .module input.colorpick { padding:0; border:1px solid var(--line); background:transparent; cursor:pointer }
-  .module input.colorpick::-webkit-color-swatch-wrapper { padding:0 }
-  .module input.colorpick::-webkit-color-swatch { border:0; border-radius:5px }
-  .module input.colorpick::-moz-color-swatch { border:0; border-radius:5px }
+  .module .srchead .swatch, .module .colorbox { flex:0 0 22px; width:22px; height:46px; border-radius:6px }
+  /* The color box (beta.15): Google Calendar's 11 colors, in a small palette under it while expanded */
+  .colorbox { position:relative; display:inline-block }
+  .colorbox .colorpick { display:block; width:100%; height:100%; padding:0; border:1px solid var(--line); border-radius:6px; background:var(--c); cursor:default }
+  .module.cfgopen .colorbox .colorpick, .colorbox.free .colorpick { cursor:pointer }
+  .palpop { position:absolute; z-index:20; top:calc(100% + 4px); left:0; display:grid; grid-template-columns:repeat(6, 26px); gap:4px; padding:6px;
+            border:1px solid var(--line); border-radius:var(--r); background:var(--card); box-shadow:0 6px 20px rgba(0,0,0,.18) }
+  .palpop .pal, .palette .pal { width:26px; height:26px; padding:0; border-radius:6px; border:2px solid transparent; background:var(--c); cursor:pointer }
+  .palpop .pal[aria-checked="true"] { border-color:var(--text); box-shadow:inset 0 0 0 2px var(--card) }
   /* Title over note: two 24 px boxes (fields of the same size while expanded) */
   .module .srcleft { flex:0 1 270px; min-width:0; display:grid; grid-auto-rows:24px; gap:2px; align-content:center }
   .module .namebox { display:block; width:100%; min-width:0; height:24px; margin:0; padding:0 8px; border:1px solid var(--line); border-radius:6px;
                      background:var(--bg); color:var(--text); font:600 12.5px/22px var(--font); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
   .module .namebox.srcname, .module .namebox.nameinput { font-size:14px; font-weight:600 }
+  /* (beta.15) the label is plain text until the module is expanded; then a field, at the same size */
+  .module .namebox.srcname { border-color:transparent; background:transparent; padding-left:1px }
   /* (0.2.8-beta.9) line 1: the module's kind, fixed text at the module-title size; line 2: its name (a
      field while expanded) and, with a note, a raised (i) right after it */
   .module .srckind { font-size:17px; font-weight:700; line-height:24px; padding-left:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
@@ -763,8 +777,7 @@
   /* A calendar's two status lines ("Last check was successful @ 20:10", "0 events added here") on the right, by its status (0.2.8-beta.3) */
   .box.src .srcright, .box.dest .srcright { justify-items:end } .box.src .srcright p, .box.dest .srcright p { text-align:right }   /* both lines on the right (beta.5) */
   .bad-text { color:var(--bad) }
-  .module.cfgopen input.colorpick { cursor:pointer }
-  .module:not(.cfgopen) input.colorpick { pointer-events:none }   /* folded: it only shows the color */
+  .module:not(.cfgopen) .colorbox:not(.free) .colorpick { pointer-events:none }   /* folded: it only shows the color */
   /* Rule lines: the line, then its handle */
   .ruleline { display:flex; align-items:center; gap:4px; margin-top:2px }
   .ruleline > .rulebox { flex:1 1 auto; min-width:0; margin-top:0 }
@@ -784,8 +797,20 @@
                  max-height:calc(100vh - 32px); overflow:auto }
   dialog.popup.big { width:min(980px, calc(100vw - 32px)); height:calc(100vh - 48px); display:flex; flex-direction:column; gap:5px }
   dialog.popup:not([open]) { display:none }
+  /* A question or notice (beta.15): small and centred; the choices on one line, or stacked (vert) */
+  dialog.popup.ask { width:min(460px, calc(100vw - 32px)) }
+  dialog.ask .asktext { margin:0 0 16px; font-size:15px; font-weight:600; line-height:1.4 }
+  dialog.ask .askchoices { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px }
+  dialog.ask .askchoices button { height:34px; padding:0 14px }
+  dialog.ask .askchoices.vert { flex-direction:column; align-items:stretch }
+  dialog.ask .askchoices.vert button { height:auto; min-height:34px; padding:7px 12px; justify-content:flex-start; text-align:left; white-space:normal }
   /* Pop-ups (0.2.8-beta.10): a dark backdrop that keeps the page in view, and a 200 ms fade and scale-up */
-  dialog.popup::backdrop, #reportdialog::backdrop { background:rgba(0,0,0,.55) }
+  /* (beta.15) the page dimmed and out of focus behind every pop-up */
+  dialog.popup::backdrop, #reportdialog::backdrop { background:rgba(0,0,0,.55); backdrop-filter:blur(2px) }
+  dialog.addpop { width:min(560px, calc(100vw - 32px)) }
+  dialog.addpop[open], dialog.addpop > form.addmenu { display:grid; gap:10px }
+  dialog.addpop .eactions { display:flex; justify-content:flex-end }
+  dialog.addpop > .addmenu { position:static; width:auto; box-shadow:none; border:0; padding:0; background:none }
   dialog.popup[open], #reportdialog[open] { animation:popin .2s ease-out }
   dialog.popup[open]::backdrop, #reportdialog[open]::backdrop { animation:popfade .2s ease-out }
   @keyframes popin { from { opacity:0; transform:scale(.96) } to { opacity:1; transform:none } }
@@ -819,7 +844,38 @@
   .brk.on { color:var(--text) } .brk.on[data-level="2"] { color:var(--accent) } .brk.on[data-level="3"] { color:var(--warn) }
   .ruleform.unbalanced .brk.on { text-decoration:underline wavy var(--bad) }
   .brk.flash { animation:brkflash 1.4s ease-out } @keyframes brkflash { 0%, 40% { background:var(--runbg); color:var(--accent) } }   /* the ( added for a lone ) */
-  .cjoin { width:auto; min-width:64px } .cdel, .adel, .aadd { width:30px; height:30px; padding:0 }
+  .cdel, .adel, .aadd { width:30px; height:30px; padding:0 }
+  /* & (and) · | (or) · ✕: grey until chosen; the chosen join is in the text color (beta.15) */
+  .cjoins { display:inline-flex; gap:2px; flex:0 0 auto }
+  .cjoins .cj { width:30px; height:30px; padding:0; font:700 15px var(--mono); color:var(--muted); opacity:.55 }
+  .cjoins .cj[aria-pressed="true"] { color:var(--text); opacity:1; border-color:var(--text) }
+  .cjoins .cdel { color:var(--muted) }
+  /* The regex test box (beta.15): helpers, the error, your titles with ✓ / ✕ and the matched part */
+  .rxtools { flex:1 1 100%; order:99; display:grid; gap:4px; margin-top:2px }
+  /* the test box and the emoji list take a line of their own under the whole If / Then line */
+  .cond:has(.rxtools), .act:has(.emopick:not([hidden])) { flex-wrap:wrap }
+  .cond .cfields:has(.rxtools), .act .afields:has(.emopick:not([hidden])) { display:contents }
+  .cond .cop { min-width:150px }
+  .rxhelp { display:flex; flex-wrap:wrap; gap:3px }
+  .rxhelp .rxins { height:26px; padding:0 7px; font:12px var(--mono) }
+  .rxerr { margin:0; display:flex; align-items:center; gap:4px; font-size:12.5px; color:var(--warn) }
+  .rxbox { border:1px solid var(--line); border-radius:var(--r); background:var(--bg); padding:4px 6px }
+  .rxhead { display:flex; align-items:center; justify-content:space-between; font-size:12px; font-weight:600; color:var(--muted) }
+  .rxhead .rxedit { width:26px; height:26px; padding:0 }
+  .rxlist { list-style:none; margin:0; padding:0; max-height:150px; overflow-y:auto; font:12.5px/1.6 var(--mono); cursor:text }
+  .rxlist li { white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .rxlist li.no { color:var(--muted) }
+  .rxlist .rxmark { display:inline-block; width:18px; font-family:var(--font); font-weight:700 }
+  .rxlist li.yes .rxmark { color:var(--ok) }
+  .rxlist mark { background:var(--okbg); color:var(--ok); border-radius:3px; padding:0 1px }
+  .rxsamples { width:100%; font:12.5px/1.6 var(--mono); border:0; background:transparent; color:var(--text); resize:vertical; padding:0 }
+  /* Every emoji (beta.15): ten a line, scrolling, a search on top */
+  .emopick { flex:1 1 100%; order:99; display:grid; gap:4px; margin-top:4px; padding:6px; border:1px solid var(--line); border-radius:var(--r); background:var(--card) }
+  .emopick .emosearch { height:34px }
+  .emogrid { display:grid; grid-template-columns:repeat(10, minmax(0, 1fr)); gap:2px; max-height:224px; overflow-y:auto }
+  .emogrid .emo { height:34px; padding:0; font-size:19px; min-width:0 }
+  .emogroup { grid-column:1 / -1; font-size:12px; font-weight:600; color:var(--muted); padding:4px 2px 0 }
+  .emojis .emomore { width:30px; height:30px; padding:0 }
   .dayset { display:inline-flex; gap:2px; flex-wrap:wrap }
   .dayset .wd { height:30px; padding:0 7px; font-size:12.5px; border:1px solid var(--line); background:var(--card); color:var(--muted); border-radius:6px }
   .dayset .wd[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:var(--onaccent) }
@@ -831,7 +887,7 @@
   #ruledialog .rulesguide { margin-top:12px }
   .rdfoot { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; margin-top:12px }
   .rdfoot .rdremove { margin-right:auto }
-  .applyto { display:grid; gap:2px; font-size:12px; font-weight:600; color:var(--muted) }
+  .applyto { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--muted) }   /* Apply to, inline with its drop-down (beta.15) */
   .applyto > span { display:flex; align-items:center }   /* (not the (?)'s tip, which shows only when asked) */
   /* Rule conflicts (F4.2) */
   .warn-text { color:var(--warn) }
@@ -880,7 +936,7 @@
   .printopts input[type=date] { height:34px; font:inherit; font-size:13px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   .ppweekends { display:flex; align-items:center; gap:6px; height:34px; font-size:13.5px }
   #printdialog .eactions { display:flex; justify-content:flex-end; gap:8px }
-  /* Activities and Logs: a module-like header (F5) */
+  /* History, Undo & Logs: a module-like header (F5) */
   .modsection > .shead { min-height:50px; cursor:default }      /* only its Expand / Close line opens it (beta.3) */
   .modsection > .shead .bigtitle { flex:0 0 auto }
   .modsection > .shead .statusbox { flex:0 0 132px; width:132px; height:50px; margin-left:auto; display:flex; align-items:stretch; justify-content:center; padding:3px; border:1px solid var(--line); border-radius:var(--r) }
@@ -954,10 +1010,6 @@ details.gsteps ol > li.done { color:var(--muted) }
 .menu .module.bare .srcname .helpdot { margin-left:1px }
 .menu #googlesync .gconnwrap { margin-top:6px }
 /* Deleted in Google, waiting for a choice (0.2.8-beta.10) */
-.heldbox { margin:8px 0 4px; padding:10px 12px; border:1px solid color-mix(in srgb, var(--warn) 35%, var(--line)); border-radius:var(--r); background:var(--warnbg); font-size:13.5px }
-.heldbox p { margin:0 0 4px; display:flex; align-items:center; gap:6px; flex-wrap:wrap }
-.heldbox ul { margin:0 0 6px; padding-left:22px; max-height:140px; overflow:auto }
-.heldbox .btnrow { display:flex; justify-content:flex-end; gap:8px }
 /* the trash at the end of a credentials row (0.2.8-beta.11) */
 .menu .credtrash { flex:0 0 34px; width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); align-self:flex-end }
 .menu .credtrash:hover { color:var(--bad) }
@@ -990,3 +1042,61 @@ details.gsteps ol > li.done { color:var(--muted) }
   .statusbox .syncform, .statusbox .chip, .cfgtoggle .arr, .section > .shead .toggle::before, .okslot *, .pairbtns *, button.syncnow, .clockswitch button span { transition:none !important }
   .syncnow .sn, .updslot .updtext, .okslot *, .brk.flash { animation:none !important }
 }
+
+/* Import / Manual Upload (beta.15): the heading, the file (filling the line), the dates and the button */
+.importrow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:10px 0 0 }
+.importrow > .cfghead { margin:0; flex:0 0 auto }
+.filefield { flex:1 1 200px; min-width:0; position:relative; display:flex; align-items:center; gap:6px; height:34px; padding:0 10px;
+             border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--muted); font-size:13.5px; cursor:pointer }
+.filefield input { position:absolute; inset:0; opacity:0; cursor:pointer }
+.filefield .filename { overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.filefield .filename.chosen { color:var(--text) }
+.importrow > button { margin-left:auto; flex:0 0 auto }
+/* A date range (beta.15): From | To | All */
+.daterange { display:inline-flex; align-items:flex-end; gap:6px; flex-wrap:wrap }
+.daterange .fld { display:grid; gap:2px }
+.daterange .fld > span { font-size:12px; font-weight:600; color:var(--muted) }
+.daterange input[type=date] { height:34px }
+.daterange input[type=date].off { opacity:.45; pointer-events:none }
+.allbox { display:inline-flex; align-items:center; gap:4px; height:34px; font-size:13.5px; white-space:nowrap }
+.importrow .daterange .fld > span { display:none }        /* (in the import line, the dates say From / To in their tooltips) */
+/* The remove pop-up (beta.15) */
+#removedialog .rmopts { display:grid; gap:6px; margin:6px 0 }
+#removedialog .rmopt { display:flex; align-items:center; gap:6px; flex-wrap:wrap }
+#removedialog .rminto { height:34px; width:auto; max-width:100% }
+#removedialog .rmrules { display:flex; align-items:center; gap:4px 14px; flex-wrap:wrap; margin:4px 0 8px 22px; font-size:13.5px }
+#removedialog .rmrules label { display:inline-flex; align-items:center; gap:4px }
+#removedialog .rmdl { display:flex; align-items:center; gap:6px; margin:8px 0 0; font-size:13.5px }
+/* Import: an event already there (beta.15) */
+#conflictdialog .cfpair { display:grid; grid-template-columns:auto 1fr; gap:4px 12px; margin:0 0 12px; font-size:14px }
+#conflictdialog .cfpair dt { color:var(--muted); font-weight:600 } #conflictdialog .cfpair dd { margin:0 }
+#conflictdialog .cfrest { display:flex; align-items:center; gap:6px; margin:0 0 12px; font-size:13.5px }
+.colorbox.free { width:34px; height:34px; flex:0 0 34px }
+.colorbox .nocolor { background:repeating-linear-gradient(135deg, var(--card) 0 4px, var(--line) 4px 6px) }
+/* History, Undo & Logs (beta.15) */
+#activity .shead .peek.latest { display:grid; gap:0; min-width:0; flex:1 1 auto; font-size:12.5px; line-height:17px; overflow:hidden; max-height:50px }
+#activity .peekline { display:flex; align-items:center; gap:6px; min-width:0 }
+#activity .peekline .ptime { color:var(--muted); flex:0 0 auto }
+#activity .peekline .pmsg { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+#activity .peekline .undobtn { width:22px; height:17px; border:0; border-radius:4px }   /* small: a rounded rectangle, never a pill */
+#activity .peekline.undone .pmsg, #activity tr.undone td:nth-child(3) { text-decoration:line-through; color:var(--muted) }
+.histfilter { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:10px 0 6px; color:var(--muted) }
+.histfilter select, .histfilter input { height:34px; width:auto }
+.histfilter .hfwords { flex:1 1 160px; min-width:0 }
+.logwin .htime { width:140px } .logwin .htype { width:90px } .logwin .hundo { width:40px }
+.logwin td:nth-child(2) { color:var(--muted); font-size:12.5px }
+.logwin .undobtn { width:30px; height:26px; padding:0 }
+.vh { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0) }
+.histfoot { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin:8px 0 0 }
+.histfoot .keepform { display:flex; align-items:center; gap:8px; margin:0; font-size:13.5px }
+.histfoot .keepform input[type=number] { width:70px; height:34px; text-align:center }
+.histfoot .btn2 { display:inline-flex; align-items:center; gap:6px }
+#activity.open > .shead .peek.latest { display:none }        /* (folded only: open, the list itself is there) */
+/* A feed's dates and calendars on one line (beta.15) */
+.destline { display:flex; align-items:flex-end; gap:10px 18px; flex-wrap:wrap }
+.destline .destcals { flex:1 1 260px; min-width:0 }
+.gaccount { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:10px 0 0; font-size:13.5px }
+.gaccount .k { font-weight:600 }
+.signout { display:flex; justify-content:flex-end; margin:6px 0 0 } .signout button { display:inline-flex; align-items:center; gap:4px; height:30px }
+#tpladd .deltag, #tpladd .addtag { display:none }        /* (one new template: nothing to delete or add here) */
+#tpladd .tplrow { flex-wrap:wrap }

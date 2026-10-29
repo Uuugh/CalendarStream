@@ -11,12 +11,42 @@ var T = {
   updateFailed: {{ _('Update failed')|string|tojson }}, updated: {{ _('Updated')|string|tojson }}, updateSlow: {{ _('It’s taking longer than expected; check the updater container’s log.')|string|tojson }},
   syncing: {{ _('Syncing…')|string|tojson }}, saving: {{ _('Saving…')|string|tojson }},
   copiedReport: {{ _('Report copied')|string|tojson }}, longReport: {{ _('The report is long, so GitHub gets the start of it; the whole report is copied: paste it into the issue.')|string|tojson }},
-  failed: {{ _('Failed')|string|tojson }}
+  alreadyHere: {{ _('Already in this calendar ({n} of {total})')|string|tojson }},
+  failed: {{ _('Failed')|string|tojson }}, ok: {{ _('OK')|string|tojson }}, cancel: {{ _('Cancel')|string|tojson }}, yes: {{ _('Yes')|string|tojson }}
 };
 
 // Icons the scripts put next to a message (Material Symbols).
 var ICON = { ok: {{ icon("check_circle", 15)|string|tojson }}, fail: {{ icon("cancel", 15)|string|tojson }},
-             run: {{ icon("sync", 15)|string|tojson }} };
+             run: {{ icon("sync", 15)|string|tojson }}, warn: {{ icon("warning", 15)|string|tojson }} };
+
+// Questions and notices in a web pop-up (0.2.8-beta.15), never the browser's own alert / confirm boxes:
+// ask(text, [{label, value, cls}], vertical) resolves to the chosen value (null when closed).
+function ask(text, choices, vertical) {
+  var d = document.getElementById('askdialog'), box = d.querySelector('.askchoices');
+  d.querySelector('.asktext').textContent = text;
+  box.classList.toggle('vert', !!vertical); box.innerHTML = '';
+  return new Promise(function (ok) {
+    choices.forEach(function (c) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = c.cls || ''; b.textContent = c.label;
+      b.addEventListener('click', function () { ok(c.value); d.close(); });
+      box.appendChild(b);
+    });
+    d.addEventListener('close', function once() { d.removeEventListener('close', once); ok(null); });
+    d.showModal();
+    var last = box.lastElementChild; if (last) last.focus();
+  });
+}
+function tell(text) { return ask(text, [{ label: T.ok, value: true }]); }
+function confirmed(text, yes) { return ask(text, [{ label: T.cancel, value: false, cls: 'ghost' }, { label: yes || T.yes, value: true, cls: 'danger solid' }]); }
+// A form that asks first: sent only after Yes in the pop-up
+function guard(f, text) {
+  f.addEventListener('submit', function (e) {
+    if (f.dataset.confirmed) { delete f.dataset.confirmed; return; }
+    e.preventDefault(); e.stopImmediatePropagation();
+    var sub = e.submitter && e.submitter.form === f ? e.submitter : undefined;
+    confirmed(typeof text === 'function' ? text() : text).then(function (y) { if (y) { f.dataset.confirmed = '1'; f.requestSubmit(sub); } });
+  });
+}
 
 // Bind behaviour to elements once each: run again after a section is swapped in, it only binds the
 // new elements (an element's mark doesn't survive being replaced).
@@ -490,9 +520,7 @@ document.getElementById('usethis').addEventListener('click', function () {
     set(true);
     history.replaceState(null, '', location.pathname);   // a reload shouldn't open it again
   }
-  each('.disconnectform', 'disconnect', function (f) {
-    f.addEventListener('submit', function (e) { if (!confirm(T.disconnect)) e.preventDefault(); });
-  });
+  each('.disconnectform', 'disconnect', function (f) { guard(f, T.disconnect); });
 })();
 
 // Collapsible sections: clicking the header (outside its form) or the arrow opens or closes the
@@ -511,7 +539,7 @@ function initSections() {
     }
     head.addEventListener('click', function (e) {
       if (e.target.closest('form, #editbtn, .helpdot')) return;   // the editor and (?) don't toggle the section
-      // A section that looks like a module (All Rules, Event Templates, Activities and Logs) opens only
+      // A section that looks like a module (All Rules, Event Templates, History) opens only
       // from its Expand line (or +), like a module: a click on its header leaves it as it is (beta.3)
       if (sec.classList.contains('modsection') && !e.target.closest('.headplus')) return;
       if (e.target.closest('.headplus')) { if (!sec.classList.contains('open')) set(true); return; }
@@ -531,22 +559,44 @@ function setModule(box, open) {
   body.hidden = !open;
   box.classList.toggle('cfgopen', open);
   cfg.setAttribute('aria-expanded', String(open));
-  var pick = box.querySelector('input.colorpick');
+  var pick = box.querySelector('.colorpick');
   if (pick) pick.tabIndex = open ? 0 : -1;
+  if (!open) colorOpen(box, false);
   savePref('/ui/section', { section: box.dataset.section, open: open ? '1' : '0' });
 }
 function bindCfg() { each('.box.cfgbox, .module.bare.cfgbox', 'cfg', function (box) {
   box.querySelector('.cfgtoggle').addEventListener('click', function () { setModule(box, !box.classList.contains('cfgopen')); });
   // The color box changes the calendar's color while the module is expanded (0.2.8-beta.3), like its
   // title and note; folded, it only shows it.
-  var pick = box.querySelector('input.colorpick');
+  var pick = box.querySelector('.colorpick');
   if (pick) pick.tabIndex = box.classList.contains('cfgopen') ? 0 : -1;
 }); }
-// A changed color is sent with the module's Save. (Listened for on the page, not on the box: the header,
-// color box included, is swapped for a new one after each save, so a second change counts too.)
-document.addEventListener('input', function (e) {
-  if (e.target.matches && e.target.matches('input.colorpick')) e.target.name = 'color';
+// The color box (0.2.8-beta.15): a click opens Google's 11 colors (only while its module is expanded, or
+// anywhere it's free to change); a chosen color is sent with the module's Save. (Listened for on the page:
+// the header, color box included, is swapped for a new one after each save.)
+function colorOpen(scope, on) {
+  scope.querySelectorAll('.palpop').forEach(function (p) { p.hidden = !on; var b = p.parentNode.querySelector('.colorpick'); if (b) b.setAttribute('aria-expanded', String(on)); });
+}
+document.addEventListener('click', function (e) {
+  var cb = e.target.closest && e.target.closest('.colorbox');
+  document.querySelectorAll('.palpop:not([hidden])').forEach(function (p) { if (!cb || !cb.contains(p)) colorOpen(p.parentNode, false); });
+  if (!cb) return;
+  var mod = cb.closest('.module');
+  if (mod && !mod.classList.contains('cfgopen') && !cb.classList.contains('free')) return;
+  var pal = e.target.closest('.pal');
+  if (pal) {
+    var val = cb.querySelector('.colorval');
+    val.value = pal.dataset.c; if (!val.name) val.name = 'color';
+    cb.querySelector('.colorpick').style.setProperty('--c', pal.dataset.c || 'transparent');
+    cb.querySelector('.colorpick').classList.toggle('nocolor', !pal.dataset.c);
+    cb.querySelectorAll('.pal').forEach(function (b) { b.setAttribute('aria-checked', String(b === pal)); });
+    colorOpen(cb, false); cb.querySelector('.colorpick').focus();
+    if (cb.classList.contains('free')) cb.dispatchEvent(new Event('change', { bubbles: true }));
+    return;
+  }
+  if (e.target.closest('.colorpick')) colorOpen(cb, cb.querySelector('.palpop').hidden);
 });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') colorOpen(document, false); });
 bindCfg();
 
 // A module's header: when the long wording ("Downloaded 98 events from feed @ 14:53.", "Next scheduled
@@ -644,8 +694,13 @@ followRunning();
 // A calendar module: Cancel puts back its title, note and color; its rules: ✎ opens the rule dialog,
 // the bin takes a rule off this calendar, + Add a rule offers a new rule or one of the others.
 function bindSrc() { each('.box.src', 'src', function (box) {
-  var pick = box.querySelector('input.colorpick'), form = document.getElementById('srcform-' + box.dataset.sid);
-  if (form) form.addEventListener('paircancel', function () { if (pick) { pick.removeAttribute('name'); pick.value = pick.defaultValue; } });
+  var val = box.querySelector('.colorval'), form = document.getElementById('srcform-' + box.dataset.sid);
+  if (form) form.addEventListener('paircancel', function () {
+    if (!val) return;
+    val.removeAttribute('name'); val.value = val.dataset.default;
+    box.querySelector('.colorpick').style.setProperty('--c', val.dataset.default);
+    box.querySelectorAll('.pal').forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.c === val.dataset.default)); });
+  });
 }); }
 bindSrc();
 var RD = JSON.parse(document.getElementById('ruledata').textContent);
@@ -737,7 +792,7 @@ document.addEventListener('click', function (e) {
     if (url.length > 7000) {          // too long for a link: GitHub gets the start, the whole report is copied
       q.set('log', p.log.slice(0, 1500) + '\n… ' + T.longReport);
       url = 'https://github.com/Uuugh/CalendarStream/issues/new?' + q.toString();
-      copy(); alert(T.longReport);
+      copy(); tell(T.longReport);
     }
     window.open(url, '_blank', 'noopener');
   });
@@ -769,10 +824,20 @@ function brackets(n, ch, cls, title) {
   for (var i = 0; i < n; i++) h += '<button type="button" class="brk on ' + cls + '" title="' + esc(title) + '">' + ch + '</button>';
   return cls === 'open' ? ghost + h : h + ghost;
 }
+// Insert helpers (0.2.8-beta.15): a regex or a pattern is built by clicking what it should do; each puts its
+// piece at the cursor (or around the selected text)
+var RX_HELP = {
+  regex: [['^', 'starts'], ['$', 'ends'], ['\\b…\\b', 'word'], ['(A|B)', 'either'], ['.*', 'any'], ['\\d+', 'digits'], ['\\s', 'space'], ['?', 'optional'], ['a\\.b', 'literal']],
+  pattern: [['*', 'anyText'], ['#', 'digit'], ['?', 'oneChar']]
+};
 function condFields(c) {
   var t = c.type, h = '';
-  if (t === 'text') h = '<input type="text" class="cval" maxlength="200" value="' + esc(c.value || '') + '" aria-label="' + esc(RD.types.text) + '">'
+  if (t === 'text' || t === 'any') {
+    h = '<input type="text" class="cval" maxlength="200" value="' + esc(c.value || '') + '" aria-label="' + esc(RD.types[t]) + '"'
+      + (c.op === 'pattern' ? ' placeholder="*E####"' : c.op === 'regex' ? ' placeholder="E\\d{4}"' : '') + ' spellcheck="false">'
       + '<button type="button" class="ghost casebtn" aria-pressed="' + !!c.case + '" title="' + esc(RD.t.caps) + '">Aa</button>';
+    if (c.op === 'regex' || c.op === 'pattern') h += rxTools(c.op);
+  }
   else if (t === 'date' || t === 'time') {
     var kind = t === 'date' ? 'date' : 'time';
     h = '<input type="' + kind + '" class="cval" value="' + esc(c.value || '') + '">';
@@ -788,6 +853,56 @@ function condFields(c) {
   }
   return h;
 }
+// The regex test box (0.2.8-beta.15): helpers, then your event titles (one per line, editable) each with
+// ✓ or ✕ and the part that matched; checked by the server, with the rule's own matching, as you type.
+function rxTools(op) {
+  return '<div class="rxtools"><div class="rxhelp">' + RX_HELP[op].map(function (x) {
+      return '<button type="button" class="ghost rxins" data-ins="' + esc(x[1]) + '" title="' + esc(RD.rx[x[1]]) + '">' + esc(x[0]) + '</button>'; }).join('')
+    + '</div><p class="rxerr" hidden></p>'
+    + '<div class="rxbox"><div class="rxhead"><span class="rxcount"></span><button type="button" class="ghost rxedit" title="' + esc(RD.t.editSamples) + '" aria-label="' + esc(RD.t.editSamples) + '">'
+    + {{ icon("edit", 15)|string|tojson }} + '</button></div>'
+    + '<ol class="rxlist"></ol><textarea class="rxsamples" rows="6" hidden spellcheck="false" aria-label="' + esc(RD.t.editSamples) + '">' + esc((RD.samples || []).join('\n')) + '</textarea></div></div>';
+}
+function rxInsert(row, kind) {
+  var f = row.querySelector('.cval'), a = f.selectionStart, b = f.selectionEnd, v = f.value, sel = v.slice(a, b), put;
+  var esc1 = function (x) { return x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); };
+  put = { starts: '^', ends: '$', word: '\\b' + (sel || '') + '\\b', either: '(' + (sel ? sel.trim().split(/\s+/).join('|') : 'A|B') + ')', any: '.*', digits: '\\d+',
+          space: '\\s', optional: '?', literal: esc1(sel), anyText: '*', digit: '#', oneChar: '?' }[kind];
+  if (kind === 'starts') { f.value = '^' + v.replace(/^\^/, ''); }
+  else if (kind === 'ends') { f.value = v.replace(/\$$/, '') + '$'; }
+  else { f.value = v.slice(0, a) + put + v.slice(b); var at = a + put.length; f.setSelectionRange(at, at); }
+  f.focus(); rxTest(row);
+}
+var rxTimer = null;
+function rxTest(row) {
+  var box = row.querySelector('.rxtools');
+  if (!box) return;
+  clearTimeout(rxTimer);
+  rxTimer = setTimeout(function () {
+    var body = new URLSearchParams({ csrf: CSRF, value: row.querySelector('.cval').value, op: row.querySelector('.cop').value,
+                                     case: row.querySelector('.casebtn').getAttribute('aria-pressed') === 'true' ? '1' : '', samples: box.querySelector('.rxsamples').value });
+    fetch('/rules/test', { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var err = box.querySelector('.rxerr'), list = box.querySelector('.rxlist');
+        err.hidden = !j.error; err.innerHTML = j.error ? ICON.warn + esc(j.error) : '';
+        row.classList.toggle('rxbad', !!j.error); rxBlock();
+        var n = 0;
+        list.innerHTML = (j.results || []).map(function (x) {
+          if (x.match) n++;
+          // the span counts characters (Python), so slice by characters, not UTF-16 units (an emoji is one)
+          var t = Array.from(x.text), sp = x.span || [], part = function (a, b) { return esc(t.slice(a, b).join('')); };
+          var shown = x.match && sp.length ? part(0, sp[0]) + '<mark>' + part(sp[0], sp[1]) + '</mark>' + part(sp[1]) : part(0);
+          return '<li class="' + (x.match ? 'yes' : 'no') + '"><span class="rxmark">' + (x.match ? '✓' : '✕') + '</span>' + shown + '</li>'; }).join('');
+        box.querySelector('.rxcount').textContent = j.error ? '' : RD.t.matchCount.replace('{n}', n).replace('{total}', (j.results || []).length);
+      });
+  }, 300);
+}
+// A rule with a broken pattern can't be applied: its Apply waits until the pattern works
+function rxBlock() {
+  var bad = !!condBox.querySelector('.cond.rxbad'), sv = ruleForm.querySelector('.psave');
+  if (sv) sv.disabled = bad;
+}
 function condRow(c) {
   c = c || { type: 'text', op: 'contains', value: '', case: false, open: 0, close: 0, join: 'and' };
   var row = document.createElement('div');
@@ -796,8 +911,12 @@ function condRow(c) {
     + '<select class="ctype" aria-label="If">' + opts(Object.keys(RD.types).map(function (k) { return [k, RD.types[k]]; }), c.type) + '</select>'
     + '<select class="cop">' + opts(RD.ops[c.type], c.op) + '</select><span class="cfields">' + condFields(c) + '</span>'
     + '<span class="brks close">' + brackets(c.close || 0, ')', 'close', RD.t.close) + '</span>'
-    + '<select class="cjoin" aria-label="and / or"><option value="">—</option><option value="and">' + esc(RD.t.and) + '</option><option value="or">' + esc(RD.t.or) + '</option></select>'
-    + '<button type="button" class="ghost cdel" title="' + esc(RD.t.remove) + '" aria-label="' + esc(RD.t.remove) + '">' + {{ icon("close", 16)|string|tojson }} + '</button>';
+    // & (and) · | (or) · ✕ (take the line out), grey until chosen (0.2.8-beta.15)
+    + '<span class="cjoins" role="group" aria-label="' + esc(RD.t.and) + ' / ' + esc(RD.t.or) + '">'
+    + '<button type="button" class="ghost cj" data-j="and" title="' + esc(RD.t.andAdd) + '" aria-label="' + esc(RD.t.and) + '" aria-pressed="false">&amp;</button>'
+    + '<button type="button" class="ghost cj" data-j="or" title="' + esc(RD.t.orAdd) + '" aria-label="' + esc(RD.t.or) + '" aria-pressed="false">|</button>'
+    + '<button type="button" class="ghost cdel" title="' + esc(RD.t.remove) + '" aria-label="' + esc(RD.t.remove) + '">' + {{ icon("close", 16)|string|tojson }} + '</button></span>';
+  if (c.op === 'regex' || c.op === 'pattern') setTimeout(function () { rxTest(row); }, 0);
   return row;
 }
 function actFields(a) {
@@ -808,8 +927,12 @@ function actFields(a) {
       + RD.palette.map(function (p) { return '<button type="button" class="pal" role="radio" data-c="' + esc(p[0]) + '" title="' + esc(p[1]) + '" aria-label="' + esc(p[1])
         + '" aria-checked="' + (p[0] === cur) + '" style="--c:' + esc(p[0]) + '"></button>'; }).join('') + '</span>';
   }
+  // Emoji (0.2.8-beta.15): the field, the common ones, and ☺+ for every emoji (10 a line, a search on top)
   if (t === 'emoji') return '<input type="text" class="aval emoji" maxlength="16" value="' + esc(a.emoji || '') + '" aria-label="' + esc(RD.t.emoji) + '" placeholder="✈️">'
-      + '<span class="emojis">' + RD.emoji.map(function (x) { return '<button type="button" class="ghost emo">' + x + '</button>'; }).join('') + '</span>';
+      + '<span class="emojis">' + RD.emoji.map(function (x) { return '<button type="button" class="ghost emo">' + x + '</button>'; }).join('')
+      + '<button type="button" class="ghost emomore" aria-expanded="false" title="' + esc(RD.t.moreEmoji) + '" aria-label="' + esc(RD.t.moreEmoji) + '">' + {{ icon("add_reaction", 18)|string|tojson }} + '</button></span>'
+      + '<div class="emopick" hidden><input type="search" class="emosearch" placeholder="' + esc(RD.t.searchEmoji) + '" aria-label="' + esc(RD.t.searchEmoji) + '">'
+      + '<div class="emogrid" role="listbox" aria-label="' + esc(RD.t.emoji) + '"></div></div>';
   if (t === 'event') {
     var isNew = !a.template, h = '<select class="atpl">' + opts(RD.templates, a.template) + '<option value=""' + (isNew ? ' selected' : '') + '>' + esc(RD.t.newEvent) + '</option></select>';
     if (isNew) h += '<input type="text" class="anew title" maxlength="200" value="' + esc(a.title || '') + '" placeholder="' + esc(RD.t.title) + '">'
@@ -844,7 +967,7 @@ function actRow(a) {
 function readCond(row) {
   var c = { type: row.querySelector('.ctype').value, op: row.querySelector('.cop').value, open: +row.dataset.open, close: +row.dataset.close,
             join: row.dataset.join || 'and' };
-  if (c.type === 'text') { c.value = row.querySelector('.cval').value; c.case = row.querySelector('.casebtn').getAttribute('aria-pressed') === 'true'; }
+  if (c.type === 'text' || c.type === 'any') { c.value = row.querySelector('.cval').value; c.case = row.querySelector('.casebtn').getAttribute('aria-pressed') === 'true'; }
   if (c.type === 'date' || c.type === 'time') { c.value = row.querySelector('.cval').value; var v2 = row.querySelector('.cval2'); c.value2 = v2 ? v2.value : ''; }
   if (c.type === 'days') c.days = row.querySelector('.dayset').dataset.sel ? JSON.parse(row.querySelector('.dayset').dataset.sel)
                                  : Array.prototype.map.call(row.querySelectorAll('.wd[aria-pressed=true]'), function (b) { return +b.dataset.d; });
@@ -874,8 +997,8 @@ function drawConds() {
   rows.forEach(function (row, i) {
     row.querySelectorAll('.brk.on.open').forEach(function (b) { depth++; b.dataset.level = Math.min(depth, 3); });
     row.querySelectorAll('.brk.on.close').forEach(function (b) { b.dataset.level = Math.max(1, Math.min(depth, 3)); depth--; });
-    var join = row.querySelector('.cjoin');
-    join.value = i < rows.length - 1 ? (rows[i + 1].dataset.join || 'and') : '';
+    var join = i < rows.length - 1 ? (rows[i + 1].dataset.join || 'and') : '';
+    row.querySelectorAll('.cj').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.j === join)); });
     row.querySelector('.cdel').hidden = rows.length < 2;
   });
   ruleForm.classList.toggle('unbalanced', depth !== 0);
@@ -911,7 +1034,21 @@ condBox.addEventListener('click', function (e) {
     if (side === 'close' && b.classList.contains('spare')) pairOpen(row);
     drawConds(); return;
   }
-  if (e.target.closest('.casebtn')) { var cb = e.target.closest('.casebtn'); cb.setAttribute('aria-pressed', String(cb.getAttribute('aria-pressed') !== 'true')); return; }
+  if (e.target.closest('.casebtn')) { var cb = e.target.closest('.casebtn'); cb.setAttribute('aria-pressed', String(cb.getAttribute('aria-pressed') !== 'true')); rxTest(row); return; }
+  var ins = e.target.closest('.rxins');
+  if (ins) { rxInsert(row, ins.dataset.ins); return; }
+  // the test box: its titles are edited in place (✎, or a click on the list), and tested again after
+  if (e.target.closest('.rxedit, .rxlist')) {
+    var ta = row.querySelector('.rxsamples'), list = row.querySelector('.rxlist');
+    ta.hidden = false; list.hidden = true; ta.focus(); return;
+  }
+  var cj = e.target.closest('.cj');
+  if (cj) {     // the last line's & or | adds a line joined that way; another line's switches its join
+    var nx = row.nextElementSibling;
+    if (!nx) { var nr = condRow(); nr.dataset.join = cj.dataset.j; condBox.appendChild(nr); nr.querySelector('.cval, select').focus(); }
+    else nx.dataset.join = cj.dataset.j;
+    drawConds(); return;
+  }
   if (e.target.closest('.cdel')) {
     var next = row.nextElementSibling;
     if (next && !row.previousElementSibling) next.dataset.join = 'and';
@@ -939,13 +1076,15 @@ condBox.addEventListener('change', function (e) {
   if (!row) return;
   if (e.target.matches('.ctype')) { row.replaceWith(condRow({ type: e.target.value, op: RD.ops[e.target.value][0][0], open: +row.dataset.open, close: +row.dataset.close, join: row.dataset.join })); drawConds(); }
   else if (e.target.matches('.cop')) { var c = readCond(row); c.op = e.target.value; if (c.type === 'days' && c.op !== 'is') c.days = c.days.slice(0, c.op === 'between' ? 2 : 1); row.replaceWith(condRow(c)); drawConds(); }
-  else if (e.target.matches('.cjoin')) {
-    var next = row.nextElementSibling;
-    if (e.target.value && !next) { var nr = condRow(); nr.dataset.join = e.target.value; condBox.appendChild(nr); nr.querySelector('.cval, select').focus(); }
-    else if (e.target.value && next) next.dataset.join = e.target.value;
-    else if (!e.target.value && next) { while (row.nextElementSibling) row.nextElementSibling.remove(); }
-    drawConds();
-  }
+});
+condBox.addEventListener('input', function (e) {
+  var row = e.target.closest('.cond');
+  if (row && e.target.matches('.cval, .rxsamples')) rxTest(row);
+});
+condBox.addEventListener('focusout', function (e) {     // the edited titles are shown with their ✓ / ✕ again
+  if (!e.target.matches('.rxsamples')) return;
+  var row = e.target.closest('.cond');
+  e.target.hidden = true; row.querySelector('.rxlist').hidden = false; rxTest(row);
 });
 actBox.addEventListener('click', function (e) {
   var row = e.target.closest('.act');
@@ -953,10 +1092,35 @@ actBox.addEventListener('click', function (e) {
   if (e.target.closest('.aadd')) { var a = actRow({ type: 'emoji', emoji: '' }); actBox.appendChild(a); drawActs(); return; }
   if (e.target.closest('.adel')) { row.remove(); drawActs(); return; }
   var emo = e.target.closest('.emo');
-  if (emo) row.querySelector('.aval.emoji').value = emo.textContent;
+  if (emo) { row.querySelector('.aval.emoji').value = emo.textContent; var pk = row.querySelector('.emopick'); if (pk && !pk.hidden) emoOpen(row, false); }
+  if (e.target.closest('.emomore')) { emoOpen(row, row.querySelector('.emopick').hidden); return; }
   var pal = e.target.closest('.pal');
   if (pal) { row.querySelector('.aval').value = pal.dataset.c;
              row.querySelectorAll('.pal').forEach(function (b) { b.setAttribute('aria-checked', String(b === pal)); }); }
+});
+// Every emoji (0.2.8-beta.15): loaded once, the first time the picker opens
+var emojiData = null;
+function emoOpen(row, on) {
+  var pk = row.querySelector('.emopick'), btn = row.querySelector('.emomore');
+  pk.hidden = !on; btn.setAttribute('aria-expanded', String(on));
+  if (!on) return;
+  (emojiData || (emojiData = fetch('/static/emoji.json?v=' + encodeURIComponent(RD.version), { credentials: 'same-origin' }).then(function (r) { return r.json(); })))
+    .then(function (d) { emoDraw(row, d, ''); pk.querySelector('.emosearch').focus(); });
+}
+function emoDraw(row, d, q) {
+  q = q.trim().toLowerCase();
+  var grid = row.querySelector('.emogrid'), html = '', last = -1;
+  d.emoji.forEach(function (x) {
+    if (q && x[1].indexOf(q) < 0) return;
+    if (!q && x[2] !== last) { html += '<div class="emogroup">' + esc(d.groups[x[2]]) + '</div>'; last = x[2]; }
+    html += '<button type="button" class="ghost emo" title="' + esc(x[1]) + '" role="option">' + esc(x[0]) + '</button>';
+  });
+  grid.innerHTML = html || '<p class="mnote">' + esc(RD.t.noEmoji) + '</p>';
+}
+actBox.addEventListener('input', function (e) {
+  if (!e.target.matches('.emosearch')) return;
+  var row = e.target.closest('.act');
+  emojiData.then(function (d) { emoDraw(row, d, e.target.value); });
 });
 actBox.addEventListener('change', function (e) {
   var row = e.target.closest('.act');
@@ -998,7 +1162,7 @@ function openRule(rule, sid) {
   var title = document.getElementById('rdtitle');
   title.textContent = rule ? title.dataset.edit : title.dataset.new;
   ruleForm.querySelector('.rdname').value = rule ? rule.title : '';
-  condBox.innerHTML = ''; actBox.innerHTML = '';
+  condBox.innerHTML = ''; actBox.innerHTML = ''; rxBlock();
   (rule && rule.conds.length ? rule.conds : [null]).forEach(function (c) { condBox.appendChild(condRow(c)); });
   (rule ? rule.actions : [null]).forEach(function (a) { actBox.appendChild(actRow(a)); });
   // A new rule made in a calendar applies to that calendar; one made in All Rules to every calendar (F4.1)
@@ -1013,7 +1177,7 @@ function openRule(rule, sid) {
 ruleForm.addEventListener('submit', function (e) {
   var msg = ruleForm.querySelector('.rdmsg');
   var conds = Array.prototype.map.call(condBox.querySelectorAll('.cond'), readCond).filter(function (c, i, all) {
-    return all.length > 1 || (c.type === 'text' ? c.value.trim() : true); });
+    return all.length > 1 || (c.type === 'text' || c.type === 'any' ? c.value.trim() : true); });
   if (ruleForm.classList.contains('unbalanced')) { e.preventDefault(); msg.hidden = false; msg.textContent = {{ _('The brackets don’t pair up: every ( needs a ) after it.')|string|tojson }}; return; }
   var sel = applyChosen();
   var rule = { id: editing ? editing.id : '', title: ruleForm.querySelector('.rdname').value, conds: conds,
@@ -1023,16 +1187,29 @@ ruleForm.addEventListener('submit', function (e) {
   msg.hidden = true;
 });
 ruleForm.querySelector('.rdremove').addEventListener('click', function () {
-  if (!editing || !confirm({{ _('Delete this rule? It’s removed from every calendar that uses it.')|string|tojson }})) return;
-  var body = new URLSearchParams({ csrf: CSRF, id: editing.id });
-  fetch('/rules/delete', { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
-    .then(function () { ruleDialog.close(); return swapIn(location.href, ['#sources', '#rules', '#cal', '#activity', '#ruledata']); })
-    .then(function () { RD = JSON.parse(document.getElementById('ruledata').textContent); initCal(); bindAll(); reopenEvents(); });
+  if (!editing) return;
+  confirmed({{ _('Delete this rule? It’s removed from every calendar that uses it.')|string|tojson }}).then(function (y) {
+    if (!y) return;
+    var body = new URLSearchParams({ csrf: CSRF, id: editing.id });
+    fetch('/rules/delete', { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
+      .then(function () { ruleDialog.close(); return swapIn(location.href, ['#sources', '#rules', '#cal', '#activity', '#ruledata']); })
+      .then(function () { RD = JSON.parse(document.getElementById('ruledata').textContent); initCal(); bindAll(); reopenEvents(); });
+  });
 });
-// After "Copy" in All Rules (?rule=<the copy>): the copy opens in the rule dialog to be changed.
+// A new rule made for an event (Link › Rule › Create new, 0.2.8-beta.15): Title is <its title> and Date is <its day>
+function openRuleFor(title, day, sid) {
+  openRule(null, sid);
+  condBox.innerHTML = '';
+  condBox.appendChild(condRow({ type: 'text', op: 'is', value: title, case: false, open: 0, close: 0, join: 'and' }));
+  condBox.appendChild(condRow({ type: 'date', op: 'is', value: day, value2: '', open: 0, close: 0, join: 'and' }));
+  drawConds();
+}
+// After "Copy" in All Rules (?rule=<the copy>): the copy opens in the rule dialog to be changed; from an
+// event's own page (Link › Rule), its rule (?rule=) or a new one for it (?newrule=1&title=&date=&sid=).
 (function () {
-  var id = new URLSearchParams(location.search).get('rule');
+  var q = new URLSearchParams(location.search), id = q.get('rule');
   if (id && RD.rules[id]) openRule(RD.rules[id]);
+  else if (q.get('newrule')) openRuleFor(q.get('title') || '', q.get('date') || '', q.get('sid') || '');
 })();
 
 // Rule and template rows: only saved rows are listed. + (on the last row, or in the box's corner
@@ -1041,7 +1218,7 @@ function bindTags() { each('form.tagsform', 'tags', function (form) {
   var rows = form.querySelector('.tagrows'), tpl = form.querySelector('template.rowtpl'),
       first = form.closest('.box, .subbox, .card').querySelector('.addfirst'), foot = form.querySelector('.tagfoot');
   function refresh(changed) {
-    if (!first.classList.contains('plus')) first.hidden = rows.children.length > 0;   // a section's + always shows
+    if (first && !first.classList.contains('plus')) first.hidden = rows.children.length > 0;   // a section's + always shows
     var empty = form.closest('.card').querySelector(':scope > .empty');
     if (empty && rows.children.length) empty.hidden = true;
     if (foot && (changed || rows.children.length)) foot.hidden = false;
@@ -1051,7 +1228,7 @@ function bindTags() { each('form.tagsform', 'tags', function (form) {
     rows.appendChild(row); refresh(true);
     row.querySelector('input[type=text]').focus();
   }
-  first.addEventListener('click', addRow);
+  if (first) first.addEventListener('click', addRow);
   rows.addEventListener('click', function (e) {
     var row = e.target.closest('.tagrow');
     if (!row) return;
@@ -1076,7 +1253,17 @@ bindTags();
 
 // + in the corner of Calendar Sources / Calendar Destinations opens its menu.
 function bindAdd() { each('.addwrap', 'add', function (w) {
-  var btn = w.querySelector('.plus, .addrule'), menu = w.querySelector('.addmenu');
+  var btn = w.querySelector('.plus, .addrule'), pop = w.querySelector('dialog.addpop');
+  if (pop) {      // (0.2.8-beta.15) a centred pop-up, the page dimmed behind it
+    btn.addEventListener('click', function () {
+      pop.showModal(); btn.setAttribute('aria-expanded', 'true');
+      var f = pop.querySelector('input:not([type=hidden]):not([hidden])'); if (f) f.focus();
+    });
+    pop.addEventListener('close', function () { btn.setAttribute('aria-expanded', 'false'); });
+    pop.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { pop.close(); }); });
+    return;
+  }
+  var menu = w.querySelector('.addmenu');
   function set(open) { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); }
   btn.addEventListener('click', function (e) {
     e.stopPropagation(); set(menu.hidden);
@@ -1088,8 +1275,28 @@ function bindAdd() { each('.addwrap', 'add', function (w) {
 bindAdd();
 
 // Removing a source, destination or event asks first.
-function bindConfirm() { each('form[data-confirm]', 'confirm', function (f) {
-  f.addEventListener('submit', function (e) { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
+// A + that opens a pop-up of its own (0.2.8-beta.15: Event Templates); [data-close] inside closes it
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('.opendlg');
+  if (b) { var d = document.getElementById(b.dataset.dialog); d.showModal(); var i = d.querySelector('input[type=text]'); if (i) i.focus(); return; }
+  var c = e.target.closest && e.target.closest('dialog.addpop [data-close]');
+  if (c) c.closest('dialog').close();
+});
+// A Google module's Remove (0.2.8-beta.15): three answers, one under the other
+function bindGRemove() { each('form.gremovemod', 'gremove', function (f) {
+  f.addEventListener('submit', function (e) {
+    if (f.dataset.confirmed) { delete f.dataset.confirmed; return; }
+    e.preventDefault(); e.stopImmediatePropagation();
+    ask(f.dataset.ask, [{ label: f.dataset.yesdel, value: '1', cls: 'danger solid' }, { label: f.dataset.yeskeep, value: '0', cls: 'ghost danger' },
+                        { label: f.dataset.no, value: null, cls: 'ghost' }], true).then(function (v) {
+      if (v === null) return;
+      f.elements.delete.value = v === '1' ? '1' : ''; f.dataset.confirmed = '1'; f.requestSubmit();
+    });
+  });
+}); }
+bindGRemove();
+function bindConfirm() { bindGRemove(); each('form[data-confirm]', 'confirm', function (f) {
+  guard(f, function () { return f.dataset.confirm; });     // (read when sent: an event's text changes with the event)
 }); }
 bindConfirm();
 
@@ -1105,7 +1312,7 @@ function bindAll() {
   RD = JSON.parse(document.getElementById('ruledata').textContent);     // the rules, as now saved
   bindWatch(); bindFiles(); bindCfg(); bindSrc(); bindPresets(); bindTags(); bindAdd(); bindConfirm(); bindGuide();
   each('[data-fill]', 'fill', function (b) { b.addEventListener('click', function () { document.getElementById(b.dataset.fill).value = location.origin; }); });
-  each('.disconnectform', 'disconnect', function (f) { f.addEventListener('submit', function (e) { if (!confirm(T.disconnect)) e.preventDefault(); }); });
+  each('.disconnectform', 'disconnect', function (f) { guard(f, T.disconnect); });
   initSections();
   if (window.fitHeads) fitHeads();
   followRunning();
@@ -1123,7 +1330,7 @@ function sendSwap(f, body) {
   var sels = (f.dataset.swap || '').split('|').filter(Boolean);
   return fetch(f.getAttribute('action'), { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
     .then(function (r) {
-      if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { throw new Error(j.detail || ('HTTP ' + r.status)); });
+      if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { var er = new Error(j.detail || ('HTTP ' + r.status)); er.status = r.status; throw er; });
       var json = (r.headers.get('content-type') || '').indexOf('json') >= 0;
       // a JSON answer (the rule dialog's): the page is fetched for the swap
       return (json ? fetch(location.pathname + location.search, { cache: 'no-store', credentials: 'same-origin' }) : Promise.resolve(r))
@@ -1162,7 +1369,7 @@ function pairState(p, st) {
   var sv = p.querySelector('.psave'), c = p.querySelector('.pcancel');
   p.dataset.state = st;
   sv.textContent = { saving: sv.dataset.busy, saved: sv.dataset.done, failed: T.failed }[st] || sv.dataset.text;
-  if (st === 'failed') sv.insertAdjacentHTML('afterbegin', ICON.fail);
+  if (st === 'failed') sv.insertAdjacentHTML('afterbegin', p.dataset.cause === 'inside' ? ICON.fail : ICON.warn);
   c.textContent = st === 'cancelled' ? c.dataset.done : c.dataset.text;
 }
 function flashPair(p, st, then) {
@@ -1185,15 +1392,19 @@ document.addEventListener('submit', function (e) {
     var p2 = pairFor(f) || pair;                      // the pair may have been swapped for a new one
     if (p2) flashPair(p2, 'saved');
     if (formId(f) === 'ruleform') setTimeout(function () { ruleDialog.close(); }, 900);
+    var dl = f.closest('dialog.addpop'); if (dl) setTimeout(function () { dl.close(); f.reset(); }, 900);    // a + pop-up closes once saved
     var copy = new URL(res.url, location.href).searchParams.get('rule');     // after Copy in All Rules
     if (copy && RD.rules[copy]) openRule(RD.rules[copy]);
   }, function (err) {
+    // amber when what was typed was refused (4xx: waiting on you); red when CalendarStream itself failed
+    var inside = !err.status || err.status >= 500;
     if (pair) {
+      if (inside) pair.dataset.cause = 'inside'; else delete pair.dataset.cause;
       pairState(pair, 'failed');
-      var note = document.createElement('p'); note.className = 'pairfail'; note.innerHTML = ICON.fail + esc(err.message);
+      var note = document.createElement('p'); note.className = 'pairfail' + (inside ? ' inside' : ''); note.innerHTML = (inside ? ICON.fail : ICON.warn) + esc(err.message);
       pair.parentNode.appendChild(note);
       setTimeout(function () { if (pair.dataset.state === 'failed') pairState(pair, 'idle'); }, 4000);
-    } else alert(err.message);
+    } else tell(err.message);
   });
 });
 document.addEventListener('click', function (e) {
@@ -1203,10 +1414,11 @@ document.addEventListener('click', function (e) {
   if (f) { f.reset(); f.dispatchEvent(new CustomEvent('paircancel')); }
   var old = p.parentNode.querySelector('.pairfail:not(.rdmsg)'); if (old) old.remove();
   if (f && formId(f) === 'ruleform') { pairState(p, 'cancelled'); setTimeout(function () { ruleDialog.close(); }, 700); return; }
+  var dl = c.closest('dialog.addpop'); if (dl && !dl.querySelector('.addbody, .addmenu')) { pairState(p, 'cancelled'); setTimeout(function () { dl.close(); }, 700); return; }
   flashPair(p, 'cancelled');
   // In + Add a calendar (0.2.8-beta.9), Cancel closes the menu once it has shown "Cancelled"
-  var menu = c.closest('.addmenu');
-  if (menu) setTimeout(function () { menu.hidden = true; var b = menu.closest('.addwrap').querySelector('.plus'); if (b) b.setAttribute('aria-expanded', 'false'); }, 700);
+  var pop = c.closest('dialog.addpop');
+  if (pop) setTimeout(function () { pop.close(); }, 700);
   // Cancel also folds the module (F1.1), once it has shown "Cancelled"
   var box = c.closest('.box.cfgbox');
   if (box) setTimeout(function () { setModule(box, false); }, 700);
@@ -1246,6 +1458,7 @@ function fillTools(d) {
   if (origin === 'rule') lk.remove(); else { lk.href = '/event?uid=' + q + '&month=' + month + '&link=1'; if (box.dataset.linked) lk.classList.add('on'); }
   box.querySelector('.evcopy').href = '/event?copy=' + q + '&month=' + month;
   var del = box.querySelector('.evdel');
+  if (box.dataset.deleted) { [edit, lk, bell].forEach(function (x) { if (x && x.parentNode) x.remove(); }); }   // deleted: only Restore and Duplicate
   if (origin === 'rule' || box.dataset.hidden) del.remove();
   else { del.elements.uid.value = uid; del.dataset.confirm = origin === 'custom' ? tpl.dataset.delCustom : tpl.dataset.delSource; }
   box.dataset.filled = '1';
@@ -1272,33 +1485,119 @@ document.addEventListener('click', function (e) {
 window.addEventListener('message', function (e) {
   if (e.origin !== location.origin) return;
   if (e.data === 'calendarstream:event-close') { eventDialog.close(); return; }
+  // Link › Rule in the event pop-up (0.2.8-beta.15): its rule, or a new one for it, opens in the rule dialog
+  if (e.data && e.data.kind === 'calendarstream:open-rule') { eventDialog.close(); if (RD.rules[e.data.id]) openRule(RD.rules[e.data.id]); return; }
+  if (e.data && e.data.kind === 'calendarstream:new-rule') { eventDialog.close(); openRuleFor(e.data.title, e.data.date, e.data.sid); return; }
   if (e.data !== 'calendarstream:event-saved') return;
   eventDialog.close(); eventFrame.src = 'about:blank';
   swapIn(location.href, ['#cal', '#activity', '.box.src .srcright']).then(function () { initCal(); bindAll(); reopenEvents(); });
 });
 eventDialog.addEventListener('close', function () { eventFrame.src = 'about:blank'; });
-// Remove a calendar (F3.1): what becomes of its events. A Local calendar can't be kept as one; the
-// calendar itself isn't offered to merge into.
+// Remove a calendar (0.2.8-beta.15): Merge its events into another calendar (not itself; a new CalendarStream
+// one is always offered) or Delete them; "Download a copy (.ics) first"; with a Merge and rules of its
+// own, whether they move with them. The last CalendarStream calendar says Empty: it stays.
 document.addEventListener('click', function (e) {
   var b = e.target.closest('.removecal');
   if (!b) return;
-  var dlg = document.getElementById('removedialog'), f = dlg.querySelector('form'), into = f.querySelector('.rminto');
-  f.elements.sid.value = b.dataset.sid;
-  var t = dlg.querySelector('#rmtitle'); t.textContent = t.dataset.text.replace('{name}', b.dataset.name);
-  dlg.querySelector('.rmlocal').hidden = !!b.dataset.local;
+  var dlg = document.getElementById('removedialog'), f = dlg.querySelector('form'), into = f.querySelector('.rminto'), empty = !!b.dataset.empty;
+  f.elements.sid.value = b.dataset.sid; f.dataset.name = b.dataset.name; f.dataset.rules = b.dataset.rules || '0';
+  ['#rmtitle', '.rmnote'].forEach(function (sel) { var el = dlg.querySelector(sel); el.textContent = (empty ? el.dataset.empty : el.dataset.text).replace('{name}', b.dataset.name); });
+  var go = dlg.querySelector('.rmgo span'); go.textContent = empty ? go.parentNode.dataset.empty : go.parentNode.dataset.text;
   Array.prototype.forEach.call(into.options, function (o) { o.hidden = o.disabled = o.value === b.dataset.sid; });
-  var first = Array.prototype.find.call(into.options, function (o) { return !o.disabled; });
-  if (first) into.value = first.value;
-  into.closest('.rmopt').hidden = !first;
-  f.querySelector('input[value="' + (b.dataset.local ? (first ? 'merge' : 'delete') : 'local') + '"]').checked = true;
+  into.value = Array.prototype.find.call(into.options, function (o) { return !o.disabled; }).value;
+  f.querySelector('input[name=keep][value=merge]').checked = true;
+  f.querySelector('input[name=rules][value=move]').checked = true;
+  rmRules(f);
   dlg.showModal();
 });
+function rmRules(f) {      // "Its N rules: Move to <calendar> | Delete them", only with a Merge and rules of its own
+  var n = +f.dataset.rules, merge = f.querySelector('input[name=keep][value=merge]').checked, box = f.querySelector('.rmrules'), into = f.querySelector('.rminto');
+  box.hidden = !(merge && n > 0);
+  var lbl = box.querySelector('.rmrulesn'); lbl.textContent = n === 1 ? lbl.dataset.one : lbl.dataset.many.replace('{n}', n);
+  box.querySelector('.rmtarget').textContent = into.options[into.selectedIndex].text;
+}
 document.querySelectorAll('dialog [data-close]').forEach(function (b) { b.addEventListener('click', function () { b.closest('dialog').close(); }); });
 document.getElementById('removeform').addEventListener('change', function (e) {
   if (e.target.matches('.rminto')) e.target.closest('.rmopt').querySelector('input[type=radio]').checked = true;
+  rmRules(e.target.form);
 });
-document.getElementById('removeform').addEventListener('submit', function () {
+document.getElementById('removeform').addEventListener('submit', function (e) {
+  var f = e.target;
+  if (f.querySelector('.rmdownload').checked) {      // the copy is downloaded before anything changes
+    var a = document.createElement('a'); a.href = '/sources/export?sid=' + encodeURIComponent(f.elements.sid.value); a.download = '';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
   setTimeout(function () { document.getElementById('removedialog').close(); }, 50);
+});
+// Import .ics (0.2.8-beta.15): the file is read, then each of its events already in the calendar is asked
+// about one at a time (Merge | Delete, "Do this for all remaining"), then the rest is added.
+document.addEventListener('submit', function (e) {
+  var f = e.target;
+  if (!f.matches || !f.matches('form.importrow:not(.uploadform)')) return;
+  e.preventDefault();
+  var btn = f.querySelector('button:not([type=button])'), data = new FormData(f);
+  btn.disabled = true;
+  fetch('/sources/import', { method: 'POST', body: data, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
+    .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status)); return j; }); })
+    .then(function (j) {
+      var choices = {}, all = null;
+      return j.conflicts.reduce(function (p, c, i) {
+        return p.then(function () {
+          if (all) { choices[c.key] = all; return; }
+          return askConflict(c, i + 1, j.conflicts.length).then(function (res) { choices[c.key] = res.choice; if (res.all) all = res.choice; });
+        });
+      }, Promise.resolve()).then(function () {
+        var body = new URLSearchParams({ csrf: CSRF, token: j.token, choices: JSON.stringify(choices) });
+        return fetch('/sources/import/finish', { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } });
+      });
+    })
+    .then(function (r) { if (!r.ok) return r.json().then(function (j) { throw new Error(j.detail); }); f.reset(); return swapIn(location.href, ['#sources', '#cal', '#activity']); })
+    .then(function () { initCal(); bindAll(); reopenEvents(); })
+    .catch(function (err) { tell(err.message); })
+    .then(function () { btn.disabled = false; });
+});
+function askConflict(c, n, total) {
+  var d = document.getElementById('conflictdialog');
+  d.querySelector('.cfcount').textContent = T.alreadyHere.replace('{n}', n).replace('{total}', total);
+  d.querySelector('.cfthere').textContent = c.there.title + ' · ' + c.there.when;
+  d.querySelector('.cffile').textContent = c.file.title + ' · ' + c.file.when;
+  var rest = d.querySelector('.cfall'); rest.checked = false;
+  rest.closest('label').hidden = n === total;
+  rest.closest('label').querySelector('.cfleft').textContent = total - n;
+  return new Promise(function (ok) {
+    d.querySelector('.cfmerge').onclick = function () { ok({ choice: 'merge', all: rest.checked }); d.close(); };
+    d.querySelector('.cfdelete').onclick = function () { ok({ choice: 'delete', all: rest.checked }); d.close(); };
+    d.onclose = function () { ok({ choice: 'delete', all: true }); };   // closed: the rest of the file's copies are dropped
+    d.showModal();
+  });
+}
+// History's filter (0.2.8-beta.15): a Type, some words, a time; rows that don't fit are hidden
+document.addEventListener('input', histFilter);
+document.addEventListener('change', histFilter);
+function histFilter(e) {
+  if (!e.target.closest || !e.target.closest('.histfilter')) return;
+  var box = e.target.closest('#activity'), kind = box.querySelector('.hfkind').value, words = box.querySelector('.hfwords').value.trim().toLowerCase(),
+      hours = +box.querySelector('.hftime').value, since = hours ? Date.now() / 1000 - hours * 3600 : 0;
+  box.querySelectorAll('.logwin tbody tr').forEach(function (tr) {
+    tr.hidden = (kind && tr.dataset.kind !== kind) || (words && tr.textContent.toLowerCase().indexOf(words) < 0) || (since && +tr.dataset.at < since);
+  });
+}
+// A file field shows the chosen file's name in its box
+document.addEventListener('change', function (e) {
+  if (!e.target.matches || !e.target.matches('.filefield input[type=file]')) return;
+  var span = e.target.parentNode.querySelector('.filename');
+  span.textContent = e.target.files.length ? e.target.files[0].name : span.dataset.none;
+  span.classList.toggle('chosen', e.target.files.length > 0);
+});
+// A date range's All (0.2.8-beta.15): ticked, the dates are cleared and off (every date); unticked, they're open
+document.addEventListener('change', function (e) {
+  if (!e.target.matches || !e.target.matches('.daterange .rangeall')) return;
+  e.target.closest('.daterange').querySelectorAll('input[type=date]').forEach(function (i) { if (e.target.checked) i.value = ''; i.readOnly = e.target.checked; i.classList.toggle('off', e.target.checked); });
+  if (e.target.form) e.target.form.dispatchEvent(new Event('input', { bubbles: true }));     // (a watched form: Save shows)
+});
+document.addEventListener('input', function (e) {     // a date typed in: All goes off
+  if (!e.target.matches || !e.target.matches('.daterange input[type=date]')) return;
+  var all = e.target.closest('.daterange').querySelector('.rangeall'); if (all && e.target.value) all.checked = false;
 });
 // The pop-up's title is the page's own heading (Add event, Edit event…), which the page hides when embedded
 eventFrame.addEventListener('load', function () {
@@ -1347,7 +1646,8 @@ document.querySelectorAll('dialog.popup .dlgback').forEach(function (b) {
   function picked(group, attr) { var b = dlg.querySelector(group + ' [aria-checked=true]'); return b ? b.dataset[attr] : ''; }
   function url() {
     var q = new URLSearchParams({ view: picked('.viewpick', 'v'), theme: picked('.themepick', 't'),
-                                  weekends: f.elements.weekends.checked ? '1' : '0', start: f.elements.start.value, end: f.elements.end.value });
+                                  weekends: f.elements.weekends.checked ? '1' : '0', start: f.elements.start.value, end: f.elements.end.value,
+                                  all: f.querySelector('.rangeall').checked ? '1' : '' });
     return '/print?' + q.toString();
   }
   function refresh() { clearTimeout(timer); timer = setTimeout(function () { frame.src = url(); }, 250); }
@@ -1356,6 +1656,7 @@ document.querySelectorAll('dialog.popup .dlgback').forEach(function (b) {
     var month = document.getElementById('monthpick').dataset.month, y = +month.slice(0, 4), m = +month.slice(5, 7);
     var last = new Date(y, m, 0).getDate();
     f.elements.start.value = month + '-01'; f.elements.end.value = month + '-' + ('0' + last).slice(-2);
+    var all = f.querySelector('.rangeall'); all.checked = false; f.querySelectorAll('.daterange input[type=date]').forEach(function (i) { i.readOnly = false; i.classList.remove('off'); });
     pick('.viewpick', 'v', prefs.view || calView); pick('.themepick', 't', prefs.theme || 'light');
     f.elements.weekends.checked = prefs.weekends !== false;
     frame.src = url(); dlg.showModal();

@@ -27,7 +27,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     post("/destinations/update", did=feed["id"], name=feed["name"], sources=["ccs"], start="", end="")
     ok(c.get(f"/calendar/{feed['token']}.ics").text.count("BEGIN:VEVENT") == every, "F4: empty dates = no limit")
     p = c.get("/", auth=A).text
-    ok('name="start"' in p and 'name="end"' in p and "Leave one empty for no limit" in p, "F4: Start and End in the destination box")
+    ok('name="start"' in p and 'name="end"' in p and 'class="rangeall"' in p, "F4: Start and End in the destination box (0.2.8-beta.15: with All)")
     # A 0.2.5 install: a source's own rules, a ticked rule template and its built-in settings
     main.store.set("calendar_tags", [{"id": "r1", "tag": "RDO", "color": "#d50000", "mode": "word", "case": False, "action": "color"}])
     main.store.set("rule_templates", [{"id": "t9", "tag": "VAC", "color": "#0b8043", "mode": "word", "case": False, "action": "color"}])
@@ -45,5 +45,5 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # Note (F3.1)
     r = post("/feed/tags", sid="ccs", name="United Airlines Schedule", note="Base EWR")
     p = c.get("/", auth=A).text
-    ok(main.calendar_name() == "United Airlines Schedule" and re.search(r'class="helpdot notedot"[^>]*>.*?<span class="helptip" role="tooltip">Base EWR</span>', p) is not None, "F2.2/F3.1: title and note saved from the source's header")
+    ok(main.calendar_name() == "United Airlines Schedule" and re.search(r'class="helpdot notedot"[^>]*>.*?<span class="helptip" role="tooltip">[^<]*(<br>)?<b>Note:</b> Base EWR</span>', p) is not None, "F2.2/F3.1: title and note saved from the source's header")
 print("FAILS", fails)

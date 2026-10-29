@@ -13,10 +13,25 @@
   body.embed { background:var(--card) }
   body.embed main { max-width:none; padding:0 2px 8px }
   body.embed h1 { display:none }
+  dialog.ask { border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); color:var(--text); padding:18px; width:min(420px, calc(100vw - 32px)) }
+  dialog.ask::backdrop { background:rgba(0,0,0,.55) }
+  dialog.ask[open] { animation:popin .2s ease-out }
+  @keyframes popin { from { opacity:0; transform:scale(.96) } to { opacity:1; transform:none } }
+  @media (prefers-reduced-motion:reduce) { dialog.ask[open] { animation:none } }
+  dialog.ask .asktext { margin:0 0 16px; font-weight:600 }
+  dialog.ask .askchoices { display:flex; justify-content:flex-end; gap:8px }
+  dialog.ask button { height:34px; padding:0 14px }
+  dialog.ask button.danger.solid { background:var(--bad); color:#fff; border-color:var(--bad) }
   .linkbox { margin-top:14px; padding:10px 12px; border:1px solid var(--line); border-radius:var(--r) }
   .linkbox > label { display:flex; align-items:center; gap:4px; margin-top:0 }
   .linkopts { display:flex; flex-wrap:wrap; gap:4px 18px; margin-top:6px }
   .iconbtn.linkbtn.on { color:var(--accent); background:var(--runbg) }
+  .linkkind { display:flex; align-items:center; gap:0; margin-bottom:8px } .linkkind .k { display:inline-flex; align-items:center; gap:4px; margin-right:10px; font-weight:600 }
+  .linkkind .seg { height:30px; padding:0 14px; border:1px solid var(--line); background:var(--card); color:var(--text) }
+  .linkkind .seg:first-of-type { border-radius:var(--r) 0 0 var(--r) } .linkkind .seg:last-of-type { border-radius:0 var(--r) var(--r) 0; border-left:0 }
+  .linkkind .seg.on { background:var(--runbg); color:var(--run); font-weight:600 }
+  .linkrule { display:flex; flex-wrap:wrap; align-items:center; gap:6px } .linkrule .k { font-size:12px; font-weight:600; color:var(--muted) }
+  .linkrule button { display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 10px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
   body.embed form.card { border:0; border-radius:0; padding:0; background:transparent }
   .backbtn { display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 10px 0 6px; border:1px solid var(--line); border-radius:var(--r);
              color:var(--accent); text-decoration:none; font-weight:600; background:var(--card) }
@@ -199,8 +214,21 @@
     <textarea id="description" name="description" maxlength="4000">{{ e.description }}</textarea>
 
     {# Linked to another event (F3.2): the link icon below opens it. This event is deleted and/or moved with the other one. #}
+    {# Link (0.2.8-beta.15): to an Event (pick it: delete or move with it), or to a Rule: the one it follows
+       (opens it), or a new one made for it (its title and date) #}
     <div class="linkbox" id="linkbox"{% if not link and not open_link %} hidden{% endif %}>
-      <label for="link_to">{{ icon("link", 16) }} {{ _('Linked to') }}</label>
+      <div class="linkkind" role="radiogroup" aria-label="{{ _('Link to') }}">
+        <span class="k">{{ icon("link", 16) }} {{ _('Link to') }}</span>
+        <button type="button" class="seg on" data-kind="event" role="radio" aria-checked="true">{{ _('Event') }}</button><button type="button" class="seg" data-kind="rule" role="radio" aria-checked="false"{% if is_new %} disabled title="{{ _('Save the event first') }}"{% endif %}>{{ _('Rule') }}</button>
+      </div>
+      <div class="linkrule" hidden>
+        {% if event_rules %}<span class="k">{{ _('Existing') }}</span>
+        {% for r in event_rules %}<button type="button" class="ghost openrule" data-rule="{{ r.id }}">{{ icon("edit", 15) }} {{ r.label }}</button>{% endfor %}
+        {% else %}<span class="mnote">{{ _('No rule touches it yet.') }}</span>{% endif %}
+        <button type="button" class="ghost newrulefor" data-title="{{ e.title }}" data-date="{{ e.start[:10] }}" data-sid="{{ e.source }}">{{ icon("add", 15) }} {{ _('Create new: its title and date') }}</button>
+      </div>
+      <div class="linkevent">
+      <label for="link_to">{{ _('Event') }}</label>
       <select id="link_to" name="link_to" class="zone">
         <option value="">{{ _('(not linked)') }}</option>
         {% for x in link_choices %}<option value="{{ x.uid }}"{% if link and link.to == x.uid %} selected{% endif %}>{{ x.label }}{% if sources|length > 1 %} ({{ x.calendar }}){% endif %}</option>{% endfor %}
@@ -208,6 +236,7 @@
       <div class="linkopts">
         <label class="inline"><input type="checkbox" name="link_delete" value="1"{% if not link or link.delete %} checked{% endif %}> {{ _('Delete with it') }}</label>
         <label class="inline"><input type="checkbox" name="link_move" value="1"{% if not link or link.move %} checked{% endif %}> {{ _('Move with it') }}</label>
+      </div>
       </div>
     </div>
 
@@ -236,12 +265,26 @@
   <p class="muted" style="font-size:12px">{{ _('Changes here only affect CalendarStream and Google; CCS+ is never changed.') }}{% if e.origin == "united" %} {{ _('Your edit is kept when the schedule is downloaded again.') }}{% endif %}</p>
   {% endif %}
 </main>
+{# Delete asks here, in the page's own pop-up (0.2.8-beta.15) #}
+<dialog id="askdialog" class="ask" aria-labelledby="asktext">
+  <p class="asktext" id="asktext"></p>
+  <div class="askchoices"><button type="button" class="ghost askno">{{ _('Cancel') }}</button><button type="button" class="danger solid askyes">{{ _('Yes') }}</button></div>
+</dialog>
 <script>
-var T = { del: {{ (_('Delete this event?') if e.origin == "custom" else _('Hide this event from your feeds? (Its source would send it back. Undo: Edit › untick Hide.)'))|string|tojson }},
+var T = { del: {{ _('Delete this event? (Restore, or History › Undo, brings it back.)')|string|tojson }},
           badTime: {{ _('Type a time like 9:30, 9:30pm or 21:30.')|string|tojson }}, zone: {{ _('Time zone')|string|tojson }},
           startZone: {{ _('Start time zone')|string|tojson }} };
 var delForm = document.getElementById('deleteform');
-if (delForm) delForm.addEventListener('submit', function (e) { if (!confirm(T.del)) e.preventDefault(); });
+// Delete asks in the page's own pop-up (0.2.8-beta.15), not the browser's confirm box
+if (delForm) delForm.addEventListener('submit', function (e) {
+  if (delForm.dataset.confirmed) return;
+  e.preventDefault();
+  var d = document.getElementById('askdialog');
+  d.querySelector('.asktext').textContent = T.del;
+  d.querySelector('.askyes').onclick = function () { d.close(); delForm.dataset.confirmed = '1'; delForm.requestSubmit(); };
+  d.querySelector('.askno').onclick = function () { d.close(); };
+  d.showModal();
+});
 // Show the time fields only for timed events; for all-day events the end date is the last day.
 (function () {
   var box = document.getElementById('all_day');
@@ -417,6 +460,22 @@ if (delForm) delForm.addEventListener('submit', function (e) { if (!confirm(T.de
     if (!box.hidden) pick.focus();
   });
   pick.addEventListener('change', function () { btn.classList.toggle('on', !!pick.value); });
+  // Event | Rule (0.2.8-beta.15)
+  box.querySelectorAll('.linkkind .seg').forEach(function (b) { b.addEventListener('click', function () {
+    box.querySelectorAll('.linkkind .seg').forEach(function (x) { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', String(x === b)); });
+    box.querySelector('.linkevent').hidden = b.dataset.kind !== 'event'; box.querySelector('.linkrule').hidden = b.dataset.kind !== 'rule';
+  }); });
+  // A rule opens in the status page's rule dialog (the pop-up closes); on its own page, the status page opens with it
+  function toRule(msg, query) {
+    {% if embed %}parent.postMessage(msg, location.origin);{% else %}location.href = '/?' + query;{% endif %}
+  }
+  box.querySelectorAll('.openrule').forEach(function (b) { b.addEventListener('click', function () {
+    toRule({ kind: 'calendarstream:open-rule', id: b.dataset.rule }, 'rule=' + encodeURIComponent(b.dataset.rule)); }); });
+  var nr = box.querySelector('.newrulefor');
+  if (nr) nr.addEventListener('click', function () {
+    toRule({ kind: 'calendarstream:new-rule', title: nr.dataset.title, date: nr.dataset.date, sid: nr.dataset.sid },
+           new URLSearchParams({ newrule: '1', title: nr.dataset.title, date: nr.dataset.date, sid: nr.dataset.sid }).toString());
+  });
 })();
 </script>
 </body>

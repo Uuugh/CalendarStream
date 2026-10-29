@@ -28,7 +28,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     p = c.get("/", auth=A).text
     ok('id="updates"' in p and '<option value="weekly" selected>' in p and all(f'value="{f}"' in p for f in ("hourly", "monthly", "never")), "Settings: Check for updates, weekly by default")
     order = [m.group(1) for m in re.finditer(r'class="mgroup" id="([a-z]+)"', p)]
-    ok(order == ["pagelogin", "public", "admin", "googlesync", "updates"], f"order: login, public address, admin, Google Calendar sync, updates ({order})")
+    ok(order == ["pagelogin", "public", "googlesync", "updates"], f"order: Administrator, public address, Google Calendar sync (with the admin e-mail), updates ({order})")
     # stable install: only STABLE is consulted, a newer beta is never offered
     os.environ["IMAGE_TAG"] = "latest"
     c.post("/settings/updates", auth=A, data={"csrf": csrf, "action": "check"})
