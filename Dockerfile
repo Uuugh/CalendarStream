@@ -14,8 +14,11 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 
 WORKDIR /app
 COPY requirements.txt .
-# pip itself is upgraded first: the base image's pip had known vulnerabilities (trivy, 0.2.8-beta.16)
-RUN --mount=type=cache,target=/root/.cache/pip pip install --upgrade "pip>=26.1.2" && pip install -r requirements.txt
+# pip itself is upgraded first: the base image's pip had known vulnerabilities (trivy, 0.2.8-beta.16). Once the
+# app is installed, pip and setuptools are removed (0.2.8-beta.17): the app never needs them, and trivy found
+# High vulnerabilities in setuptools and in the msgpack and urllib3 copies pip carries.
+RUN --mount=type=cache,target=/root/.cache/pip pip install --upgrade "pip>=26.1.2" && pip install -r requirements.txt \
+ && pip uninstall -y pip setuptools
 
 COPY VERSION ./VERSION
 COPY app ./app
