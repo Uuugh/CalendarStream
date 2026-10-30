@@ -12,35 +12,6 @@
      after the word it explains (F1.2). `text` may hold <b>. #}
   {# Google Calendar API Sync's details once connected (0.2.8-beta.9/10): laid out like a login (the Client ID
      with Copy, the Client secret saved, ✓ Connected), then the account and calendars, and Disconnect. #}
-  {% macro gdetails(gcls='good') -%}
-  {% set g = google %}
-  <form class="gconnwrap" onsubmit="return false"><div class="pair gconn">
-    <label class="fld" for="gcid"><span>{{ _('Client ID') }}</span>
-      <span class="inbox"><input type="text" class="code" id="gcid" value="{{ g.client_id }}" readonly spellcheck="false"><button type="button" class="inboxbtn copybtn" onclick="copyField('gcid', this)" title="{{ _('Copy') }}" aria-label="{{ _('Copy the Client ID') }}">{{ icon("content_copy", 15) }}</button></span></label>
-    <label class="fld" for="gcsecret"><span>{{ _('Client secret') }}</span>
-      <input type="password" id="gcsecret" readonly placeholder="{{ _('Saved') }}" title="{{ _('Saved encrypted; it’s never shown again. Disconnect to change the client.') }}"></label>
-    <span class="okslot" data-state="ok"><span class="okmark">{{ icon("check_circle", 15) }}{{ _('Connected') if g.connected else _('Ready') }}</span></span>
-    <button type="submit" form="gremove" class="ghost credtrash" title="{{ _('Delete the client ID and secret') }}" aria-label="{{ _('Delete the client ID and secret') }}">{{ trash }}</button>
-  </div></form>
-  {# the trash at the end of the credentials (0.2.8-beta.11): asks first #}
-  <form method="post" action="/google/client" id="gremove" data-swap="#googlesync|#destinations|#activity" data-confirm="{{ _('Delete the client ID and secret? (Disconnects first; your calendars stay in Google.)') }}">
-    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="action" value="remove"></form>
-  {% if gcls != 'good' %}{{ m.google_connected(g, "", "f") }}{% endif %}
-  {# Remove (0.2.8-beta.12), in the lower left like a module's: disconnects Google. It asks in a pop-up
-     (0.2.8-beta.15), like a Google module's Remove: delete the calendars in Google too, or leave them. #}
-  {% if not g.connected %}{# (0.2.8-beta.17) Ready, nothing signed in here: Remove deletes the client (asks first) #}
-  <div class="gremoverow"><button class="ghost danger" form="gremove" title="{{ _('Delete the client ID and secret') }}">{{ trash }} {{ _('Remove') }}</button></div>
-  {% else %}
-  <form method="post" action="/google/disconnect" class="gremoverow gremovemod" data-swap="#googlesync|#destinations|#activity"
-        data-ask="{{ _('Are you certain you’d like to remove Google Calendar API Sync from CalendarStream?') }}"
-        data-yesdel="{{ _('Yes. Disconnect, and delete CalendarStream’s calendars from Google Calendar') }}"
-        data-yeskeep="{{ _('Yes. Disconnect, but leave the calendars on Google Calendar') }}"
-        data-no="{{ _('No, I changed my mind') }}">
-    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="delete" value="">
-    <button class="ghost danger" title="{{ _('Disconnect Google Calendar') }}">{{ trash }} {{ _('Remove') }}</button>
-  </form>
-  {% endif %}
-  {%- endmacro %}
   {# A module's info (0.2.8-beta.15): a raised (i) after its label, shown on hover or click: what the module is,
      then its note when it has one. (i) is info; (?) is help (how to). #}
   {% macro notedot(about, note="") -%}
@@ -204,47 +175,19 @@
            to subscribe to instead. #}
         {% set g = google %}
         {% set gvalid = g.configured and g.check.ok %}
-        {# One look per meaning (0.2.8-beta.14): good = done; run (the pressed look) = in action or waiting on you;
-           warn (amber) = a problem outside CalendarStream (here: Google); bad (red) = CalendarStream itself failed #}
-        {% if g.connected and g.info.last_error %}{% set gcls, glabel = ("bad" if g.info.last_error.startswith("Google sync failed") else "warn"), _('Sync problem') %}
-        {% elif g.connected %}{% set gcls, glabel = "good", _('Connected') %}
-        {% elif gvalid and g.redirect_ok and g.check.redirect_ok and g.check.redirect_uri == g.redirect_uri %}{% set gcls, glabel = "good", _('Ready') %}
-        {% elif gvalid %}{% set gcls, glabel = "run", _('Ready to check') %}
-        {% else %}{% set gcls, glabel = "run", _('Not set up') %}{% endif %}
         {# (0.2.8-beta.17, F13) no administrator's e-mail here any more: ☰ Settings sets up the API only #}
         <div class="mgroup" id="googlesync">
-        {% if gcls == 'good' %}
-          {# Working (0.2.8-beta.12): nothing hidden. A module header like Updates (the account; the last
-             sync and instant updates; Connected over Sync Now), then the credentials laid out like a login,
-             ending with the trash, then Disconnect. The explanations are in the (?). #}
-          <div class="module bare">
-            <div class="srchead">
-              <div class="srcleft">
-                <div class="namebox srcname">{{ _('Google Calendar API Sync') }}{{ help(_('Keeps each Google calendar in Feeds up to date: its dates, the reminders set here (🔔). Two-way: Google changes come back here (never to CCS+) · a rule’s events can’t be changed there · both changed: newer wins · a deletion there is struck through here (Restore, or History › Undo). Also subscribed to a feed in Google? Remove it there, or you’ll see everything twice.'), 'left') }}</div>
-                <div class="namebox srcnote">{{ _('For the Google modules in Feeds') }}</div>
-              </div>
-              <div class="srcright">
-                <p class="srcstatus" title="{{ _('Calendars in Google:') }} {% for c in g.calendars %}{{ c.calendar_name or c.name }}{% if c.events is defined %} ({{ _('{n} events', n=c.events or 0) }}){% endif %}{{ ', ' if not loop.last }}{% endfor %}">{% if g.last_sync %}{{ _('Last synced <b>{when}</b>', when=g.last_sync) }}{% else %}&nbsp;{% endif %}</p>
-                <p class="srcnext" title="{% if g.watch.on %}{{ _('Changes made in Google come here within seconds.') }}{% if g.watch.last %} {{ _('Last notice from Google: {when}.', when=g.watch.last) }}{% endif %}{% else %}{{ msg(g.watch.why) if g.watch.why else '' }}. {{ _('Changes made in Google come here at the daily check.') }}{% endif %}">{{ _('Instant updates on') if g.watch.on else _('Instant updates off') }}</p>
-              </div>
-              <div class="statusbox good">{{ chip('good', glabel) }}{% if g.on %}{{ syncbtn("/google/sync", "google", g.running) }}{% endif %}</div>
-            </div>
-          </div>
-          {{ gdetails() }}{# Remove stays in the lower left #}
-        {% else %}
-          <div class="mhead">{{ _('Google Calendar API Sync') }}{{ help(_('Optional, for the admin. It adds the Google modules to Feeds (Google 1-way and 2-way Sync): changes within seconds, rule colors, reminders. Without it, a Calendar Feed still works in Google (every few hours, one color).') ~ ' ' ~ _('Turn on: checks your client and address with Google. Then each Google module in Feeds signs in its own Google account (Connect me, or Invite someone).'), 'left') }}
-            {% if g.connected %}<span class="gstate">{{ chip(gcls, glabel) }}</span>{% endif %}</div>
-          {% if g.info.last_error %}<p class="merr">{{ msg(g.info.last_error) }}</p>{% endif %}
-          {% if g.connected %}{{ gdetails(gcls) }}{% endif %}
-          {% if not gvalid or g.info.last_error %}
-            {# Missing or not working (0.2.8-beta.10): two ways to get a client: Claude does the Google Cloud
-               steps in the person's own browser, or the guided setup below (each step in a window beside
-               this one, ticking itself off when CalendarStream can confirm it). #}
+          {# (0.2.8-beta.18, F3) the API only: no account and no sync here. Its title over what it's for; the
+             Client ID and secret, editable at any time (I2); the Status/Action box: its health over Connect,
+             Reconnect or Fix; Remove in the lower left; the ways to get a client while it isn't working. #}
+          <div class="mhead">{{ _('Google Calendar API Sync') }}{{ help(_('Optional, for the admin. It adds the Google modules to Feeds (Google 1-way and 2-way Sync): changes within seconds, rule colors, reminders. Each module then connects its own Google account.'), 'left') }}</div>
+          <p class="mnote" style="margin:0 0 4px">{{ _('For the Google modules in Feeds') }}</p>
+          {% if not (gvalid and g.redirect_ok and g.check.redirect_ok and g.check.redirect_uri == g.redirect_uri) %}
             <div class="gassist">
               <div class="gway">
                 <div class="gwayhead">{{ icon("smart_toy", 18) }} {{ _('Set it up with Claude') }}</div>
                 <p class="mnote">{{ _('Claude does the Google Cloud steps in your signed-in browser; you confirm what Google asks. Copy into a chat with Claude:') }}</p>
-                <div class="feed gask"><textarea id="gclaude" class="code" readonly rows="4">{{ _('Please set up Google Calendar API Sync for my CalendarStream at {public} in my browser. In Google Cloud Console: create a project named CalendarStream; enable the Google Calendar API; set up Google Auth Platform (app name CalendarStream, audience External, support and contact e-mail {email}) and publish the app, or add {email} as a test user; under Data access add the scope https://www.googleapis.com/auth/calendar.app.created; create an OAuth client (Web application, name CalendarStream) with the authorized redirect URI {redirect}. Then open {public}/?menu=settings#googlesync, paste the Client ID and Client secret into Google Calendar API Sync and press Turn on: it checks the client and the redirect URI with Google first, and says what to fix if either is wrong. Ask me before anything Google asks me to confirm.', public=public.url or public.here, email=g.admin_email or _('my Gmail address'), redirect=g.redirect_uri) }}</textarea>{{ m.copybtn("gclaude") }}</div>
+                <div class="feed gask"><textarea id="gclaude" class="code" readonly rows="4">{{ _('Please set up Google Calendar API Sync for my CalendarStream at {public} in my browser. In Google Cloud Console: create a project named CalendarStream; enable the Google Calendar API; set up Google Auth Platform (app name CalendarStream, audience External, support and contact e-mail {email}) and publish the app, or add {email} as a test user; under Data access add the scope https://www.googleapis.com/auth/calendar.app.created; create an OAuth client (Web application, name CalendarStream) with the authorized redirect URI {redirect}. Then open {public}/?menu=settings#googlesync, paste the Client ID and Client secret into Google Calendar API Sync and press Connect: it checks the client and the redirect URI with Google first, and says what to fix if either is wrong. Ask me before anything Google asks me to confirm.', public=public.url or public.here, email=g.admin_email or _('my Gmail address'), redirect=g.redirect_uri if g.redirect_ok else _('(set the public address in ☰ Settings first)')) }}</textarea>{{ m.copybtn("gclaude") }}</div>
                 <p class="mnote">{{ _('No browser linked? Claude in Chrome (extension), or the Claude desktop app.') }}</p>
               </div>
               <div class="gway">
@@ -254,8 +197,7 @@
               </div>
             </div>
           {% endif %}
-          {% if not g.connected %}{{ m.google_client(g, "f") }}{% endif %}
-        {% endif %}
+          {{ m.google_client(g, "f") }}
         </div>
 
         {# Check for updates: how often, for this install's channel (beta or stable) only. #}
@@ -888,10 +830,13 @@
         </div>
         <div class="srcright">
           <p class="srcstatus" title="{{ d.names|join(', ') if d.names else _('No sources') }}">{% if feed %}{% if d.reads.google %}{{ _('Last read by Google <b>{when}</b>', when=d.reads.google) }}{% elif d.reads.other %}{{ _('Last read <b>{when}</b>', when=d.reads.other) }}{% else %}&nbsp;{% endif %}
-            {% elif d.last_sync %}{{ _('Last synced <b>{when}</b>', when=d.last_sync) }}{% else %}&nbsp;{% endif %}</p>
-          <p class="srcnext">{% if not feed and d.connected %}{{ _('Next push instantaneous') }}{% else %}&nbsp;{% endif %}</p>
+            {% elif d.last_sync and d.connected %}{{ _('Last synced <b>{when}</b>', when=d.last_sync) }}{% else %}&nbsp;{% endif %}</p>
+          {# (0.2.8-beta.18) its instant updates: on (each change within seconds), or off and why, in the tooltip #}
+          <p class="srcnext"{% if not feed and d.connected %} title="{% if d.watch.on %}{{ _('Changes made in Google come here within seconds.') }}{% if d.watch.last %} {{ _('Last notice from Google: {when}.', when=d.watch.last) }}{% endif %}{% else %}{{ msg(d.watch.why) }}. {{ _('Changes made in Google come here at the daily check.') }}{% endif %}"{% endif %}>{% if not feed and d.connected %}{{ _('Next push instantaneous') if d.watch.on else _('Instant updates off') }}{% else %}&nbsp;{% endif %}</p>
         </div>
-        <div class="statusbox {{ dcls }}">{{ chip(dcls, dlabel) }}{% if not feed and d.connected %}{{ syncbtn("/google/sync", "google", g.running) }}{% endif %}</div>
+        {# (0.2.8-beta.18, F1.1) a sign-in Google no longer accepts: the fault over Fix, which signs that account in again #}
+        {% set signin_broken = not feed and d.connected and d.error and ("sign-in" in d.error) %}
+        <div class="statusbox {{ dcls }}">{{ chip(dcls, _('Sign-in failed') if signin_broken else dlabel) }}{% if signin_broken %}<span class="syncform"><button class="syncnow gfixbtn" form="gacct-{{ d.id }}" name="action" value="connect" data-state="idle" title="{{ msg(d.error) }}"><span class="sn idle">{{ _('Fix') }}</span></button></span>{% elif not feed and d.connected %}{{ syncbtn("/google/sync", "google", g.running) }}{% endif %}</div>
       </div>
       {{ cfgline("dest-" ~ d.id, d.open) }}
       <div class="cfgbody" id="cfg-dest-{{ d.id }}"{% if not d.open %} hidden{% endif %}>

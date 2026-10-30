@@ -973,9 +973,18 @@ async def _sync_account(g: Google, dests: list[dict], total: int, color_for, ful
                 store.set("google_restoring", [])      # put back in Google by this sync
             if result.changed or result.notes:
                 state.record("info", f"{who}: {result.summary()}" + ("; " + "; ".join(result.notes) if result.notes else ""))
-            if d["color"] and g.cal_info(d["id"]).get("color") != d["color"]:      # its color box (0.2.8-beta.15)
-                await g.set_color(d["id"], d["color"])
-                state.record("info", f"{who}: color set in Google Calendar", kind="Google")
+            info = g.cal_info(d["id"])
+            if d["color"] and info.get("color") != d["color"] and info.get("color_tried") != d["color"]:   # its color box (0.2.8-beta.15)
+                # (0.2.8-beta.18, I4) tried once per color: Google refusing it is said once and never makes the
+                # module's sync a "Sync problem" (before, it failed after every successful sync)
+                try:
+                    await g.set_color(d["id"], d["color"])
+                    state.record("info", f"{who}: color set in Google Calendar", kind="Google")
+                except GoogleError as e:
+                    g._update_cal(d["id"], color_tried=d["color"])
+                    state.record("warn", f"{who}: the calendar's color couldn't be set in Google Calendar ({e}); "
+                                 "set it there by hand if you like", kind="Google")
+            _remember_calendar(d["id"], g)
             await ensure_watch(d["id"])
         return True
     except GoogleError as e:
@@ -986,6 +995,19 @@ async def _sync_account(g: Google, dests: list[dict], total: int, color_for, ful
         state.record("error", f"Google: {message}")
     g.record_error(message)
     return False
+
+
+def _remember_calendar(did: str, g: Google):
+    """(0.2.8-beta.18, I5) The Google calendar a module writes to, kept apart from its sign-in: a module that
+    connects again (a new sign-in, the same Gmail) finds it and uses it again, instead of making a second one."""
+    cid = g.cal_info(did).get("calendar_id")
+    found = store.get("google_calendar_ids") or {}
+    if cid and found.get(did) != cid:
+        store.set("google_calendar_ids", {**found, did: cid})
+
+
+def _remembered_calendar(did: str) -> str | None:
+    return (store.get("google_calendar_ids") or {}).get(did)
 
 
 async def google_loop():
@@ -1948,6 +1970,19 @@ def _local_time(value: str | None, lang: str = "en") -> str:
     return dates_for(lang).when(when, now().date())
 
 
+def _watch_one(lang: str, d: dict) -> dict:
+    """(0.2.8-beta.18) One Google module's instant updates, for its header (☰ Settings no longer shows them):
+    on (with the last notice) or why not."""
+    if not notify_address():
+        return {"on": False, "why": "needs a public https:// address (☰ → Public address)"}
+    w = dest_google(d).watch_info(d["id"])
+    if w.get("error") and w.get("address") == notify_address():
+        return {"on": False, "why": w["error"]}
+    if w.get("id"):
+        return {"on": True, "last": _local_time(w.get("last_notice") or None, lang)}
+    return {"on": False, "why": "starts with the next sync"}
+
+
 def _watch_view(lang: str) -> dict:
     """Instant updates from Google, for the page: on (every source's calendar has them, with the last
     notice) or why not."""
@@ -2164,7 +2199,7 @@ def dest_view(request: Request, d: dict, lang: str, sections: dict) -> dict:
         cal = g.cal_info(d["id"])
         view.update(cal=cal, last_sync=_local_time(cal.get("last_sync"), lang), connected=g.connected,
                     email=g.info().get("email", ""), error=g.info().get("last_error", ""), own_account=bool(d["account"]),
-                    invite=invite_view(request, d["id"], lang))
+                    invite=invite_view(request, d["id"], lang), watch=_watch_one(lang, d))
     return view
 
 
@@ -4154,8 +4189,6 @@ async def google_step(request: Request, csrf: str = Form(""), step: str = Form("
     uri = view["redirect_uri"]
     def stop(message: str, **fix):
         return JSONResponse({"ok": False, "step": step, "message": message, "fix": fix})
-    if google.connected:
-        return stop("Already connected.")
     if step == "save":
         if client_id.strip() and (client_id.strip() != google.client_id or client_secret.strip()):
             try:
@@ -4170,18 +4203,18 @@ async def google_step(request: Request, csrf: str = Form(""), step: str = Form("
     if step == "client":
         check = await google.check_client(uri)
         if check.get("ok") is False:
-            return stop(f"{check['message']}: Google Cloud › Clients › CalendarStream › copy both again › Turn on.", open=GOOGLE_CLIENTS_PAGE)
+            return stop(f"{check['message']}: Google Cloud › Clients › CalendarStream › copy both again › Connect.", open=GOOGLE_CLIENTS_PAGE)
         if check.get("ok") is None:
             return stop(check.get("message") or "Couldn't check the client with Google.", retry=True)
         return JSONResponse({"ok": True, "step": step})
     if step == "address":
         if not view["redirect_ok"]:
-            return stop("☰ Settings › Public address: this page's https:// address › Save › Turn on.")
+            return stop("☰ Settings › Public address: this page's https:// address › Save › Connect.")
         ok = await google.check_redirect(uri)
         if ok is False:
             state.record("warn", f"Google doesn't list {uri} under the client's Authorized redirect URIs")
             return stop(f"Address not on your client: Google Cloud › Clients › CalendarStream › Authorized redirect URIs › "
-                        f"+ Add URI › {uri} › Save › wait 5 min › Turn on.", copy=uri, open=GOOGLE_CLIENTS_PAGE)
+                        f"+ Add URI › {uri} › Save › wait 5 min › Connect.", copy=uri, open=GOOGLE_CLIENTS_PAGE)
         return JSONResponse({"ok": True, "step": step, "confirmed": ok is True})
     if step == "go":
         # 0.2.8-beta.17 (F13): ☰ Settings sets up the API only; each Google module connects its own account
@@ -4216,20 +4249,26 @@ async def google_callback(request: Request, state_: str = Query("", alias="state
     invited = _invite_states.pop(state_, None)
     if invited is not None:
         return await _invite_finish(request, invited, state_, code, error)
+    # (0.2.8-beta.15) the account this sign-in was started for: the first one, or a Google module's own
+    g = next((x for x in [google_for(a) for a in google_accounts()] if state_ in x._pending), google)
+    mods = [d for d in destinations("google") if d["account"] == g.account]
+    # (0.2.8-beta.18, F1) a module's Connect me comes back to that module (open), saying Connected or what went wrong
+    back = f"/#dest-{mods[0]['id']}" if g.account and mods else GOOGLE_SETTINGS
+    if g.account and mods:
+        saved = store.get("ui_sections") or {}
+        store.set("ui_sections", {**saved, f"dest:{mods[0]['id']}": True})
     try:
         if error or not code:
             raise GoogleError("Google sign-in was cancelled or refused. If Google said the app is only for "
                               "testers, add your Gmail address under Audience → Test users in Google Cloud."
                               if error in ("access_denied", "") else f"Google sign-in failed: {error[:80]}.")
-        # (0.2.8-beta.15) the account this sign-in was started for: the first one, or a Google module's own
-        g = next((x for x in [google_for(a) for a in google_accounts()] if state_ in x._pending), google)
         async with google_job.lock:      # no sync may start while the calendars are being found or made
             info = await g.finish_sign_in(state_, code)
+            g.record_error("")
             found = []
-            for d in destinations("google"):     # each of its Google modules' calendar: the one from before, or a new one
-                if d["account"] != g.account:
-                    continue
-                await g.ensure_calendar(d["id"], d["name"])
+            for d in mods:     # each of its Google modules' calendar: the one from before (I5: also after a new sign-in), or a new one
+                await g.ensure_calendar(d["id"], d["name"], _remembered_calendar(d["id"]))
+                _remember_calendar(d["id"], g)
                 cal = g.cal_info(d["id"])
                 found.append(f"calendar \"{cal.get('calendar_name', '')}\" "
                              + ("created" if cal.get("created") else "found again"))
@@ -4237,9 +4276,9 @@ async def google_callback(request: Request, state_: str = Query("", alias="state
                      + "".join("; " + f for f in found))
         request_google_sync(full=True)
     except GoogleError as e:
-        google.record_error(str(e))
+        g.record_error(str(e))
         state.record("error", f"Google: {e}")
-    return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
+    return RedirectResponse(back, status_code=303)
 
 
 @app.post("/google/account", dependencies=[Depends(gui_auth)])
@@ -4555,7 +4594,8 @@ async def _invite_finish(request: Request, token: str, state_: str, code: str, e
             raise GoogleError("Google sign-in was cancelled. Open the invite link again to try once more.")
         async with google_job.lock:
             info = await g.finish_sign_in(state_, code)
-            await g.ensure_calendar(d["id"], d["name"])
+            await g.ensure_calendar(d["id"], d["name"], _remembered_calendar(d["id"]))
+            _remember_calendar(d["id"], g)
         forget_invites(d["id"])
         state.record("info", f"Google, {d['name']}: {info.get('email') or 'the invited account'} connected through an invite", kind="Google")
         request_google_sync(full=True)

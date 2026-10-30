@@ -3,7 +3,7 @@
 var PAGE = JSON.parse(document.getElementById('pagedata').textContent);
 // Texts used by the scripts below, in the page's language.
 var T = {
-  copied: {{ _('Copied')|string|tojson }}, gSaving: {{ _('Saving…')|string|tojson }}, gChecking: {{ _('Checking…')|string|tojson }}, gAddress: {{ _('Checking address…')|string|tojson }}, gOpening: {{ _('Turning on…')|string|tojson }}, stepAuto: {{ _('Ticks itself when CalendarStream can confirm it')|string|tojson }}, stepDone: {{ _('Step done')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }},
+  copied: {{ _('Copied')|string|tojson }}, gSaving: {{ _('Saving…')|string|tojson }}, gChecking: {{ _('Checking…')|string|tojson }}, gAddress: {{ _('Checking address…')|string|tojson }}, gOpening: {{ _('Connecting…')|string|tojson }}, stepAuto: {{ _('Ticks itself when CalendarStream can confirm it')|string|tojson }}, stepDone: {{ _('Step done')|string|tojson }}, pressCtrlC: {{ _('Press Ctrl+C')|string|tojson }},
   saved: {{ _('Saved')|string|tojson }}, verifying: {{ _('Verifying…')|string|tojson }},
   validated: {{ _('Validated')|string|tojson }}, verifyFailed: {{ _('Failed')|string|tojson }},
   disconnect: {{ _('Disconnect Google Calendar?')|string|tojson }},

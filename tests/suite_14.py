@@ -50,7 +50,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     save("test-client.apps.googleusercontent.com", "test-secret")
     ck = main.google.client_check(); p = c.get("/", auth=A).text
     ok(ck.get("ok") is True and "✓" in p and "Google accepted the client ID and secret" in p, "right ID + secret → accepted")
-    ok(('Guided setup: a client ID and secret' not in p or p.index('action="/google/client"') < p.index('Guided setup: a client ID and secret'))
+    ok(('Guided setup: a client ID and secret' not in p or p.index('id="fgform"') < p.index('Guided setup: a client ID and secret'))
        and '<details class="guide gsteps" open' not in p, "form above the guide; guide closed (beta.17: Ready shows no guide)")
     save("test-client.apps.googleusercontent.com", "wrong")
     p = c.get("/", auth=A).text

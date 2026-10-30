@@ -41,7 +41,13 @@ Claude answers; the Developer decides anything still disputed. Each REVIEW after
      for an area, HEAD and the area's files); the rules (this file and its commit); the checklist; the test and
      scan results; for the page, the screenshots and suite 44's result. No reasons or defence: the code, its
      comments and the docs speak for themselves.
-3. Claude: "Your move: send REVIEW to ChatGPT."
+3. Claude: "Do REVIEW 1", with the Reviewer's instructions ready to paste (the Dashboard's REVIEW button copies
+   them too).
+
+**The turns are numbered, and each one ends by naming the next:** REVIEW 1 › ChatGPT (round 1) › "Do REVIEW 2" ›
+Claude (reply) › "Do REVIEW 3" › ChatGPT (round 2) › "Do REVIEW 4" › Claude (summary) › "Do REVIEW 5": the
+Developer decides, or says OK when nothing is disputed. Every REVIEW to ChatGPT reprints the Reviewer's
+instructions, ready to paste.
 4. **Round 1, the Reviewer:** its findings; label › `review:awaiting-claude`.
 5. **Claude's reply** (at the Developer's REVIEW): each finding Accepted (fixed in commit …; a change of behavior
    is the next beta), Rejected (why) or Partly; label › `review:awaiting-reviewer`; "Your move: send REVIEW to
@@ -58,7 +64,7 @@ Claude answers; the Developer decides anything still disputed. Each REVIEW after
 - After round 1, no new findings except on lines the fixes changed.
 - Every comment starts with its author in bold (**Claude**; **Reviewer (ChatGPT), round N**): both may post as
   the Developer's account.
-- No timers: the Developer passes each turn with REVIEW, to ChatGPT or to Claude.
+- ChatGPT may check hourly; Claude acts only at the Developer's REVIEW (REVIEW 2 and REVIEW 4).
 
 ## Reviewer
 
@@ -75,6 +81,9 @@ final say on anything you and Claude don't agree on.
    does it do what README.md says; for the page, does it keep to theme.md, with the screenshots and suite 44's
    result). Check exactly that code, not the latest.
 3. If you haven't posted findings in this issue yet, do round 1; if you have, round 2.
+4. Each run finishes and posts every waiting issue, one at a time, lowest number first; it never waits for a
+   later run. The round-1 comments are yours to write: nobody posts first.
+5. End your message to the Developer with "Do REVIEW 2" after round 1, or "Do REVIEW 4" after round 2.
 
 **Round 1, findings:**
 - Read the checklist(s), 0-overview.md, and theme.md if the page is in scope, all at the rules commit. Read the

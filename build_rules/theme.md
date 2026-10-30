@@ -47,9 +47,9 @@ state, a line of text (Picture 2·11). Never pick a color because it looks nice 
 
 | Look | Means | Drawn as | Words that use it (add new ones here) |
 | --- | --- | --- | --- |
-| **Green** | done, OK | `--ok` on `--okbg` (`good`); a done button fills `--ok` with a green pulse | Healthy, Connected, Ready, Read by Google, Up to date, Synced, Updated, Saved, N Rules, N Templates |
-| **Pressed** | in action, or waiting on you | `--run` words on `--runbg` (`run`); a working button is `--card` with `--run` words | Syncing…, Checking…, Downloading…, Restarting…, Starting, Update found, Update available, Ready to connect, Ready to turn on, Not checked, Not set up, Not connected, Invited, Not read yet, Setup needed, Paused, N to check (rule conflicts) |
-| **Amber** | a problem outside CalendarStream (United, Google, GitHub, the internet), or what you typed was refused | `--warn` on `--warnbg` (`warn`); a failed button fills `--warn` with an amber pulse | Sign-in rejected, Blocked, Error (a download), Address missing, Client rejected, Sync problem (Google's answer), Couldn't check, Failed, Stopped, Unhealthy, a refused Save ("Not a valid regex…") |
+| **Green** | done, OK | `--ok` on `--okbg` (`good`); a done button fills `--ok` with a green pulse | Healthy, Connected, Read by Google, Up to date, Synced, Updated, Saved, N Rules, N Templates |
+| **Pressed** | in action, or waiting on you | `--run` words on `--runbg` (`run`); a working button is `--card` with `--run` words | Syncing…, Checking…, Downloading…, Restarting…, Starting, Update found, Update available, Not checked, Not set up, Not connected, Invited, Not read yet, Setup needed, Paused, N to check (rule conflicts) |
+| **Amber** | a problem outside CalendarStream (United, Google, GitHub, the internet), or what you typed was refused | `--warn` on `--warnbg` (`warn`); a failed button fills `--warn` with an amber pulse | Sign-in rejected, Blocked, Error (a download), Address missing, Client rejected, Sync problem (Google's answer), Couldn't check, Failed, Stopped, Unhealthy, a refused Save ("Not a valid regex…"), Sign-in failed |
 | **Red** | CalendarStream itself failed | `--bad` on `--badbg` (`bad`); a failed button fills `--bad` with a red pulse (`data-cause="inside"`) | Internal error, Sync problem (Google sync failed inside), Update failed |
 | **Blue** | you can press it | `--accent` fill, `--onaccent` words | buttons only: never a status |
 
@@ -80,8 +80,10 @@ The theme suite fails any status word whose look isn't in this table.
 - **History** (Picture 2·19): Time | Type | Event | Undo; a filter (Type, words, time) on top; folded, the
   latest lines with Undo / Redo where it applies (a stack: newest first). Something done outside
   CalendarStream (deleted in Google, removed by United) has no Undo icon: Restore is on the event.
+- **Names:** **Status/Action buttons** = a status box: the state, with its action under it. **Cancel/Save
+  buttons** = the pair at the bottom right of a module or pop-up.
 - **Status box** (Picture 2·5): a multi-button, 132 × 50 px: the status chip over the action that
-  updates it (Sync Now, Check now, Update now, Turn on). Its transitions are in section 4.
+  updates it (Sync Now, Check now, Update now, Connect, Fix). Its transitions are in section 4.
 - **Saving** (Picture 2·6): Cancel | Save, 130 × 34 px, at the bottom of what it saves; the pressed side
   fills the pair ("Saved", "Cancelled") for 3 s. A field saved in place shows ✓, then ✕ | ✓ while typing.
 - **Handles** (Picture 2·7): ▲ ☰ ▼ in the section's right margin; none with nothing to reorder.
@@ -101,7 +103,7 @@ pulses: each state simply replaces the last, with the same words and hold times.
 | Transition | Trigger | Style | Duration, easing | Holds |
 | --- | --- | --- | --- | --- |
 | Status-box button grows | press (or a sync seen running) | the button grows from the bottom 22 px to the whole box; the chip fades out under it at once | grow 0.25 s ease; chip fade 0.2 s | while working |
-| Working words | the button grows | words fade in (`sn-in`) with a spinning icon (1 s per turn, linear) | 0.25 s ease-out | at least 0.7 s (Check now), 0.5 s per Turn on step |
+| Working words | the button grows | words fade in (`sn-in`) with a spinning icon (1 s per turn, linear) | 0.25 s ease-out | at least 0.7 s (Check now), 0.5 s per Connect step |
 | Done | the action succeeded | fills green; a ring pulses out (`pulse-ok`, 0 → 9 px) twice | 1.1 s ease-out × 2 | 2.4 s |
 | Failed outside | United, Google, GitHub or the internet said no | fills amber; `pulse-warn` × 2 | 1.1 s ease-out × 2 | 2.4 s |
 | Failed inside | CalendarStream failed | fills red; `pulse-bad` × 2 | 1.1 s ease-out × 2 | 2.4 s |
@@ -129,8 +131,8 @@ and Settings; Feeds and Settings) shows the same words at the same moment and en
   (amber) → Check now, Updates redrawn.
 - **Update now**: Update now → Downloading… → Restarting… → Updated (green) → the page reloads; or
   Update failed (red) → Update now.
-- **Turn on** (Google Calendar API Sync): Turn on → Saving… → Checking… → Checking address… → Ready (the
-  Google modules in Feeds then connect their own accounts). The first step that fails stops it: Stopped (amber), and the line under it
+- **Connect** (Google Calendar API Sync; Reconnect when healthy, Fix after a fault): → Saving… → Checking… →
+  Checking address… → Healthy (the Google modules in Feeds then connect their own accounts). The first step that fails stops it: Stopped (amber), and the line under it
   says what to fix as a click path, with Copy and Open.
 - **Remove a calendar**: Merge into [calendar] | Delete, ☐ Download a copy (.ics) first, and with a Merge
   and rules of its own: Move to [calendar] | Delete them → Remove (the last CalendarStream calendar:

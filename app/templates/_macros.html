@@ -72,10 +72,13 @@
 {% set valid = g.configured and g.check.ok %}
 {% set addr_ok = g.check.redirect_ok and g.check.redirect_uri == g.redirect_uri %}
 {# amber: Google refused (outside CalendarStream); the pressed look: waiting on you #}
-{% if g.redirect_missing %}{% set bcls, blabel = "warn", _('Address missing') %}
-{% elif g.check.ok == false %}{% set bcls, blabel = "warn", _('Client rejected') %}
-{% elif valid %}{% set bcls, blabel = "run", _('Ready to turn on') %}
-{% else %}{% set bcls, blabel = "run", _('Not set up') %}{% endif %}
+{# (0.2.8-beta.18, F3) the Status/Action box: its health on top, one action under it: Connect (new, or not checked
+   yet), Fix (Google refused the client or the address), Reconnect (healthy: to check again, or after a change) #}
+{% if g.redirect_missing %}{% set bcls, blabel, bact = "warn", _('Address missing'), _('Fix') %}
+{% elif g.check.ok == false %}{% set bcls, blabel, bact = "warn", _('Client rejected'), _('Fix') %}
+{% elif valid and addr_ok %}{% set bcls, blabel, bact = "good", _('Healthy'), _('Reconnect') %}
+{% elif g.configured %}{% set bcls, blabel, bact = "run", _('Not checked'), _('Connect') %}
+{% else %}{% set bcls, blabel, bact = "run", _('Not set up'), _('Connect') %}{% endif %}
 <form class="clientform gconnect" id="{{ p }}gform" onsubmit="return false" autocomplete="off" data-uri="{{ g.redirect_uri if g.redirect_ok else '' }}">
   <div class="pair">
     <label class="fld" for="{{ p }}cid"><span>{{ _('Client ID') }}</span>
@@ -84,13 +87,12 @@
     <label class="fld" for="{{ p }}csecret"><span>{{ _('Client secret') }}</span>
       <input type="password" id="{{ p }}csecret" name="client_secret" spellcheck="false" autocomplete="new-password"
              placeholder="{{ _('Saved (leave empty to keep it)') if g.has_secret else 'GOCSPX-…' }}"></label>
-    <div class="statusbox gbox {{ bcls }}">{{ chip(bcls, blabel) }}<span class="syncform"><button type="button" class="syncnow gconnectbtn" data-state="idle"><span class="sn idle">{{ _('Turn on') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}<span class="snword">{{ _('Saving…') }}</span></span><span class="sn done">{{ icon("check", 14) }}<span class="snword">{{ _('Ready') }}</span></span><span class="sn fail">{{ icon("warning", 14) }}<span class="snword">{{ _('Stopped') }}</span></span></button></span></div>
-    {% if g.configured %}<button type="submit" form="{{ p }}gremove" class="ghost credtrash" formnovalidate title="{{ _('Delete the client ID and secret') }}" aria-label="{{ _('Delete the client ID and secret') }}">{{ trash }}</button>{% endif %}
+    <div class="statusbox gbox {{ bcls }}">{{ chip(bcls, blabel) }}<span class="syncform"><button type="button" class="syncnow gconnectbtn" data-state="idle"><span class="sn idle">{{ bact }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}<span class="snword">{{ _('Saving…') }}</span></span><span class="sn done">{{ icon("check", 14) }}<span class="snword">{{ _('Healthy') }}</span></span><span class="sn fail">{{ icon("warning", 14) }}<span class="snword">{{ _('Stopped') }}</span></span></button></span></div>
   </div>
   {# what stopped Connect, and the way to fix it #}
   <div class="gstepmsg check bad"{% if not (g.redirect_missing or g.check.ok == false) %} hidden{% endif %}>
     <span class="gstepicon">{{ icon("warning", 15) }}</span>
-    <span class="gsteptext">{% if g.redirect_missing %}{{ _('Address not on your client: Google Cloud › Clients › CalendarStream › Authorized redirect URIs › + Add URI › {uri} › Save › wait 5 min › Turn on.', uri=g.redirect_uri) }}{% elif g.check.ok == false %}{{ msg(g.check.message) }}: {{ _('Google Cloud › Clients › CalendarStream › copy both again › Turn on.') }}{% endif %}</span>
+    <span class="gsteptext">{% if g.redirect_missing %}{{ _('Address not on your client: Google Cloud › Clients › CalendarStream › Authorized redirect URIs › + Add URI › {uri} › Save › wait 5 min › Connect.', uri=g.redirect_uri) }}{% elif g.check.ok == false %}{{ msg(g.check.message) }}: {{ _('Google Cloud › Clients › CalendarStream › copy both again › Connect.') }}{% endif %}</span>
     <span class="gstepfix">
       <button type="button" class="ghost gcopyaddr"{% if not g.redirect_missing %} hidden{% endif %} onclick="navigator.clipboard && navigator.clipboard.writeText(this.closest('form').dataset.uri); this.textContent = T.copied">{{ _('Copy the address') }}</button>
       <a class="btn ghostbtn gopenclient" href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener"{% if not (g.redirect_missing or g.check.ok == false) %} hidden{% endif %}>{{ _('Open your client in Google Cloud') }}</a>
@@ -98,8 +100,7 @@
   </div>
   {% if desc %}<p class="mnote" style="margin:6px 0 0">{{ desc }}</p>{% endif %}
 </form>
-{% if g.configured %}<form method="post" action="/google/client" id="{{ p }}gremove" data-confirm="{{ _('Delete the Google client ID and secret?') }}">
-  <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="action" value="remove"></form>{% endif %}
+
 {% if g.host_mismatch %}
   <p class="warnline">{{ _('<b>Public address</b> <b>{public}</b> ≠ this page <b>{here}</b>: Google returns to the Public address › check its spelling (☰ Settings).', public=g.host_mismatch[0], here=g.host_mismatch[1]) }}</p>
 {% endif %}
@@ -133,11 +134,11 @@
     <li data-step="6">{{ _('<b>Client:</b> <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a> › <b>Create client</b> › <b>Web application</b> › Name: <code>CalendarStream</code> › <b>Authorized redirect URIs</b> › <b>+ Add URI</b> › paste:') }}
       {% if g.redirect_ok %}{{ copyfield(p ~ "redirect", g.redirect_uri) }}
       {{ _('› <b>Create</b>.') }}
-      <br><span class="muted">{{ _('✓ Ticks itself once Google confirms the address (at Turn on).') }}</span>{% else %}<p class="merr">{{ _('First: ☰ Settings › <b>Public address</b> › this page’s https:// address › Save.') }}</p>{% endif %}</li>
+      <br><span class="muted">{{ _('✓ Ticks itself once Google confirms the address (at Connect).') }}</span>{% else %}<p class="merr">{{ _('First: ☰ Settings › <b>Public address</b> › this page’s https:// address › Save.') }}</p>{% endif %}</li>
     <li data-step="7">{{ _('<b>Keys:</b> copy the Client ID and Client secret into the boxes above (the secret shows only once).') }}
       <br><span class="muted">{{ _('Pop-up closed? Clients › CalendarStream › <b>Add secret</b>.') }}</span></li>
-    <li data-step="8">{{ _('<b>Turn on</b> (above). Google can take 5 min to apply changes.') }}
-      <br><span class="muted">{{ _('✓ The status box says Ready: add the Google modules in Feeds.') }}</span></li>
+    <li data-step="8">{{ _('<b>Connect</b> (above). Google can take 5 min to apply changes.') }}
+      <br><span class="muted">{{ _('✓ The status box says Healthy: add the Google modules in Feeds.') }}</span></li>
   </ol>
   <p class="h4">{{ _('If Google shows an error') }}</p>
   <ul class="trouble">
@@ -149,6 +150,10 @@
     <li>{{ _('<b>A Google module needs Connect me again every week</b>: still Testing › step 5 (publish).') }}</li>
   </ul>
 </details>
+{# one Remove, in the lower left (0.2.8-beta.18): it says what stops #}
+{% if g.configured %}<form method="post" action="/google/client" id="{{ p }}gremove" class="gremoverow" data-confirm="{{ _('Delete the client ID and secret? Every Google module stops syncing until a client is entered again and each module connects again. Your calendars stay in Google.') }}">
+  <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="action" value="remove">
+  <button class="ghost danger" title="{{ _('Delete the client ID and secret') }}">{{ trash }} {{ _('Remove') }}</button></form>{% endif %}
 {%- endmacro %}
 
 {# Google Autosync when connected: account, calendars, last sync (Sync Now is in the module header). #}

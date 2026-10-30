@@ -78,7 +78,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
                                      "check": {"ok": True, "message": "Google accepted the client ID and secret", "at": "2026-10-20T20:00:00+00:00"}})
     main.google._client = None
     p = c.get("/").text
-    ok(("Ready to turn on" in p or ">Ready<" in p) and ('class="statusbox gbox run"' in p or 'id="gcid"' in p) and 'value="123-abc.apps.googleusercontent.com"' in p, "valid Google client: boxes shown, Ready to connect over Connect (0.2.8-beta.14)")
+    ok(("Not checked" in p or ">Healthy<" in p) and 'class="statusbox gbox' in p and 'value="123-abc.apps.googleusercontent.com"' in p, "valid Google client: boxes shown, Ready to connect over Connect (0.2.8-beta.14)")
     ok("gconnectbtn" in p, "Connect stays outside the fold")
     main.store.set("google_client", {**main.store.get("google_client"), "check": {"ok": False, "message": "Google rejected the client ID", "at": "2026-10-20T20:00:00+00:00"}})
     p = c.get("/").text

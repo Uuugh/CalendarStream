@@ -15,7 +15,7 @@ manage it all. See README.md for what it does.
 - `tests/`: the test suites and `run.sh` (see tests/README.md).
 - `docs/`: the README's screenshots.
 - `build_rules/`: how work is done here:
-  - `0-overview.md`: the steps and their commands (MENU, PLAN, BUILD, TEST, REVIEW, DEPLOY, STOP), who does
+  - `0-overview.md`: the steps and their commands (DASH, PLAN, BUILD, TEST, REVIEW, DEPLOY, STOP), who does
     what, the inputs (F, I, R, ?), ground rules. Read first.
   - `1-plan.md` … `5-deploy.md`: one file per step: Plan, Build, Test, Review, Deploy.
   - `theme.md`: how the page looks, with the CalendarStream Theme Rules picture beside it.

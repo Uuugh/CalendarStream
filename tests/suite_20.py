@@ -43,7 +43,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(w.get("token") and ch["token"] not in str(w), "secret token stored encrypted")
     ok(any("instant updates turned on" in h["msg"] for h in main.store.recent_log(10)), "logged: instant updates turned on")
     p = c.get("/", auth=A).text
-    ok("Instant updates on" in p, "page: instant updates on")
+    ok("Next push instantaneous" in p, "page: instant updates on (beta.18: in the module's header)")
     # a hand edit in Google, then the notification
     gid = next(k for k, v in S["events"][cid].items() if v.get("status") != "cancelled")
     S["events"][cid][gid]["summary"] = "changed by hand"; S["events"][cid][gid]["updated"] = "2099-01-01T00:00:00Z"

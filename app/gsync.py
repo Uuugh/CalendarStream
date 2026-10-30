@@ -552,7 +552,9 @@ class Google:
     async def ensure_calendar(self, sid: str, name: str, calendar_id: str | None = None) -> str:
         """Use a source's calendar if it still exists in Google, otherwise create it."""
         info = self.cal_info(sid)
-        calendar_id = calendar_id or info.get("calendar_id")
+        # its own calendar first; `calendar_id` is one remembered for the module from an earlier sign-in (0.2.8-beta.18, I5)
+        remembered = calendar_id if not info.get("calendar_id") else None
+        calendar_id = info.get("calendar_id") or calendar_id
         unreachable = False
         if calendar_id:
             try:
@@ -567,7 +569,7 @@ class Google:
                 return calendar_id
             # (0.2.8-beta.14) a calendar made with an earlier client can't be reached with this one: Google
             # only shows an app the calendars it made. A new one is made; the old one is named in the log.
-            if unreachable or (info.get("client") and info.get("client") != self.client_id):
+            if not remembered and (unreachable or (info.get("client") and info.get("client") != self.client_id)):
                 self._update_cal(sid, replaced=info.get("calendar_name") or name)
         made = await self.api("POST", "/calendars", body={
             "summary": name, "timeZone": self.tz_name,

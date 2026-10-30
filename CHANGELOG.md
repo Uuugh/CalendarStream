@@ -9,9 +9,38 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.17**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.18**
 
-## 0.2.8-beta.18 (next; not published yet)
+## 0.2.8-beta.18 — 2026-10-29
+
+### Changed
+- **F1** A Google module's **Connect me** comes back to that module (open), saying **Connected**, or what went wrong.
+- **F1.1** A module whose sign-in Google no longer accepts shows **Sign-in failed** over **Fix**, which signs that
+  account in again.
+- **F2, F3** ☰ Settings › Google Calendar API Sync is the API only, with no sync of its own: the Client ID and
+  secret, and its Status/Action box (**Healthy**, Not set up, or the fault, over **Connect**, **Reconnect** or
+  **Fix**). No Sync Now, "Last synced" or "Instant updates" there, and one **Remove**, whose question says every
+  Google module stops until a client is entered again and each module connects again.
+
+### Fixed
+- **I1, I1.2** In ☰ Settings, a Sync Now said "Synced" while nothing synced, beside an old "Last synced": gone (F3).
+- **I1.1** A Google module that isn't connected showed an old "Last synced".
+- **I2** The Client ID and secret could only be changed by deleting the client first: they can be changed at any
+  time, then Connect.
+- **I4** A Google module was a "Sync problem" after every successful sync ("Google no longer accepts
+  CalendarStream's sign-in"): setting the calendar's color in Google was refused, and tried again at every
+  sync. It's tried once per color now; a refusal is said once in History and never makes the sync a problem.
+- **I5** A Google module that connected again made a second calendar in Google: it uses the one it made before.
+
+### Build rules
+- **R1** Anything with a link is given as that link. **R2** Roadmap: 0.2.9 Outlook, 0.2.10 Apple, 0.3 Backups.
+  **R3** REVIEW turns are numbered (REVIEW 1–5), each naming the next; every REVIEW to ChatGPT reprints its
+  instructions; ChatGPT may check hourly. **R4** The Dashboard: the step in progress in green (amber when
+  something is missing) with where Claude is; "Waiting on" lists who, by name. **R5** Roadmap 0.7–0.9.
+  **R6** theme.md names Status/Action buttons and Cancel/Save buttons. **R7** The Reviewer finishes every
+  waiting issue in one run. **R8** MENU is now DASH (or DASHBOARD). **R9** Roadmap 0.4: an unlock e-mail or
+  code. **R10** Every waiting item ends with its state in blue.
+
 
 ### Fixed (review #2, Rules)
 - **#1** A typed regex or wildcard pattern like `(a|aa)+$` could stall a sync on a long near-match: each gets 0.05 s

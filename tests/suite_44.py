@@ -26,9 +26,9 @@ async def fake_check():
 CLAR = open(os.path.join(os.path.dirname(HERE), "build_rules", "theme.md")).read().split("## Clarifications", 1)[1]
 # One look per meaning (beta.14): every status word and the look it must have (theme.md, section 2). A word not
 # listed here fails: add it, with its meaning, to theme.md and here.
-MEANING = {"good": r"Healthy|Connected|Ready|In Google|Read by Google|Up to date|\d+ Rules?|\d+ Templates?",
-           "run": r"Syncing…|Starting|Paused|Setup needed|Ready to connect|Ready to turn on|Not set up|Not checked|Update available|Not connected|Invited|Not read yet|\d+ to check",
-           "warn": r"Sign-in rejected|Blocked|Error|Address missing|Client rejected|Sync problem|Unhealthy",
+MEANING = {"good": r"Healthy|Connected|In Google|Read by Google|Up to date|\d+ Rules?|\d+ Templates?",
+           "run": r"Syncing…|Starting|Paused|Setup needed|Ready to connect|Not set up|Not checked|Update available|Not connected|Invited|Not read yet|\d+ to check",
+           "warn": r"Sign-in rejected|Blocked|Error|Address missing|Client rejected|Sync problem|Sign-in failed|Unhealthy",
            "bad": r"Internal error|Sync problem|Update failed"}
 # Words on the page (beta.14): click paths and short lines; no sentence over 20 words outside the (?) help
 WORDS = r"""() => {

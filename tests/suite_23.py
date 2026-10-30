@@ -55,7 +55,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         r = asyncio.run(main.google.check_client("https://css.uuugh.com/google/callback"))
         ok(r["ok"] is True, "invalid_grant → ✓ (ID, secret and redirect accepted)")
     p = c.get("/", auth=A).text
-    ok("doesn’t list" not in p and "doesn&#39;t list" not in p and ">Ready<" in p and 'id="gcid"' in p, "after a good check: Ready (0.2.8-beta.17: the modules connect)")
+    ok("doesn’t list" not in p and "doesn&#39;t list" not in p and ">Healthy<" in p and 'id="fcid"' in p, "after a good check: Healthy (beta.18), the modules connect")
     ok([normalise_public_url(v) for v in ("https://x.com/a",)] == ["https://x.com/a"], "paths kept")
     for bad in ("http:/example.com", "https://x.com/a;b"):
         try: normalise_public_url(bad); ok(False, f"{bad} refused")

@@ -80,7 +80,7 @@ Then open the address it printed:
 3. Optional, for Google Calendar kept in sync within seconds (with your rule colors and reminders):
    **☰ Settings → Google Calendar API Sync** (the admin turns it on once): ask Claude to set it up, or follow
    its guided setup in order. Publish the app, or add each person as a test user, **before** pressing
-   **Turn on**. It needs the public `https://` address (check the spelling: Google sends you back to
+   **Connect**. It needs the public `https://` address (check the spelling: Google sends you back to
    exactly this address).
 4. **Feeds → +** (it first asks for the public address), pick the module, then fill it in:
    - **Calendar Feed**: a link any calendar app subscribes to: **Add to Google Calendar**, **Add to
@@ -241,7 +241,9 @@ logins or setup codes lock an address out for 15 minutes.
   - Each Google module has its own Google account: **Connect me** (sign in to Google yourself) or **Invite
     someone** (a one-time link, good for 7 days, to send them: they open it, continue with Google, and the
     calendar is made in their account; no CalendarStream login and no password shared; **Withdraw** ends it).
-    Nothing is made in Google until it's connected. Its color box sets the calendar's color in Google.
+    Nothing is made in Google until it's connected. Connect me comes back to the module, saying Connected; a
+    sign-in Google no longer accepts shows **Fix**. Connecting again uses the calendar it made before. Its color
+    box sets the calendar's color in Google (if Google refuses, History says so once).
 
   **+** picks the module first, then shows that module in a pop-up to fill in. Every feed module is laid out
   alike, with the same 50 px header as a calendar's: kind over the label and, after it, your note in the (i)
@@ -306,9 +308,10 @@ logins or setup codes lock an address out for 15 minutes.
   show-password eye and a strength bar, like every password box, and **Sign out**), the public address (and
   **More addresses**, for other domains this page is reached at: each editable, **+** for another; a feed's
   link can use any of them), **Google Calendar API Sync** (for the admin, laid out like a login: Client ID
-  with Copy, Client secret, and one **Turn on** button that saves and checks the client and the redirect
-  address with Google, then says **Ready**, stopping with the fix as a click path; no Gmail is signed in
-  here: each Google module in Feeds connects its own) and **Updates**, laid out
+  with Copy and Client secret, editable at any time, and a Status/Action box: **Healthy**, Not set up or the
+  fault, over **Connect**, **Reconnect** or **Fix**, which saves and checks the client and the redirect
+  address with Google, stopping with the fix as a click path; one **Remove**; no Gmail is signed in here:
+  each Google module in Feeds connects its own) and **Updates**, laid out
   like a module header: your release (stable or beta versions; only those are offered), when it last
   checked and the next check, and a status box with **Check now** or **Update now** (like Sync Now: **Checking…**, or for an
   update **Downloading…** and **Restarting…**, the same words as the top bar's Update now, then
@@ -368,8 +371,8 @@ browser), or the **Guided setup** (each Google page opens in a window beside Cal
 buttons; steps tick themselves off when CalendarStream can confirm them). Once it works, the group
 shows a module header (account, last sync, Connected over Sync Now), the credentials row (ending with
 a trash that deletes them, after asking) and **Remove** (disconnects, after asking; tick "Also delete
-these calendars in Google" beside it), with nothing under Expand. Paste its client ID and secret, then **Turn on**: Saving… › Checking… ›
-Checking address… › Ready; then each Google module in Feeds connects its own account. If the client or its redirect address isn't right, it stops there
+these calendars in Google" beside it), with nothing under Expand. Paste its client ID and secret, then **Connect**: Saving… › Checking… ›
+Checking address… › Healthy; then each Google module in Feeds connects its own account. If the client or its redirect address isn't right, it stops there
 and says what to fix (Google Cloud › Clients › CalendarStream › Authorized redirect URIs › + Add URI ›
 Save), with Copy and Open buttons; the guided setup's step 6 ticks itself once Google confirms the
 address. A module disconnected and connected again: the same Google calendar, no duplicates. A new client (after

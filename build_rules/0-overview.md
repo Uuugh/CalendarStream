@@ -6,7 +6,7 @@ Always loaded (imported by CLAUDE.md). The whole picture on one page; each step'
 
 | Step | Command | Who | What happens | Details |
 |---|---|---|---|---|
-| 0. Overview | **MENU** | Claude | Opens the CalendarStream Menu page beside the chat: the commands (each copies on a tap), every waiting F, I and R, what's waiting on the Developer, and the likely next step. Claude keeps the page up to date, so MENU only opens it. | this file |
+| 0. Overview | **DASH** (or **DASHBOARD**) | Claude | Opens the CalendarStream Dashboard beside the chat: the commands (each copies on a tap), every waiting F, I and R, who is being waited on, the likely next step and the roadmap. Claude keeps it up to date, so DASH only opens it. | this file |
 | 1. Plan | **PLAN** | Developer › Claude | The Developer gives F, I, R and ?; PLAN shows the waiting list and what Claude would do for each, so it's corrected before it's built. | 1-plan.md |
 | 2. Build | **BUILD** `[F\|f I\|i R\|r] [b m M]` | Claude | Builds the waiting inputs as the next beta: tests, publishes, reports. | 2-build.md |
 | 3. Test (optional) | **TEST** | Developer + Claude, together | The Developer tries the beta in a browser and Claude follows along: each TEST, Claude looks at the page, its console and requests, and problems are talked through and written up as I items. | 3-test.md |
@@ -17,6 +17,14 @@ Always loaded (imported by CLAUDE.md). The whole picture on one page; each step'
 
 Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW whenever wanted › DEPLOY for a stable release.
 
+**The Dashboard:**
+- The step in progress has its command in green, like a status box; amber when something in it is missing.
+  A line under it says where Claude is.
+- "Waiting on" lists only who is being waited on, each line starting (Claude), (Rich) or (ChatGPT). Claude's
+  requests appear under their item in amber.
+- Every waiting item ends with its state in blue: approved, understood or resolved (and, once planned, which
+  build it's in).
+
 ## Commands
 
 - Commands count only in capitals, so the same word in ordinary talk or dictation never starts anything. A
@@ -26,7 +34,7 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 - A step in progress uses only what existed when it started. New F, I and R wait for the next PLAN and BUILD.
   To bring them into a step that's running, STOP it and start it again with its command. What happens inside
   a step is part of it: a review's findings, Claude's fixes for them, the Developer's decisions on them.
-- GO and EOF are aliases of BUILD and work the same (GO R = BUILD R).
+- GO and EOF are aliases of BUILD and work the same (GO R = BUILD R). MENU was DASH's name until 0.2.8-beta.18.
 
 ## Who does what
 
@@ -44,6 +52,8 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 ## Ground rules
 
 - Pull before editing, and keep the Developer's own edits.
+- Anything with a link (a run, an issue, a release, a page to open) is given as that link, in messages and on
+  the Dashboard.
 - Never push half-finished or broken work.
 - Never modify CCS+ (United's system): CalendarStream only reads it.
 - Downloads identify themselves honestly: never disguise a client to get past United's bot protection.

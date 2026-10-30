@@ -31,20 +31,20 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         p = c.get("/?menu=settings").text
         g = main.destinations("google")[0]
         head = p[p.index(f'id="dest-{g["id"]}"'):]; head = head[:head.index('class="cfgline"')]
-        ok('<p class="srcnext">Next push instantaneous</p>' in head, "F1: a Google calendar's header says Next push instantaneous")
+        ok(re.search(r'<p class="srcnext" title="[^"]*">(Next push instantaneous|Instant updates off)</p>', head) is not None,
+       "F1: a Google calendar's header says Next push instantaneous (beta.18: or Instant updates off, with why)")
         f = [d for d in main.destinations("feed")][0]
         fh = p[p.index(f'id="dest-{f["id"]}"'):]; fh = fh[:fh.index('class="cfgline"')]
         ok("Next push" not in fh, "…a calendar feed doesn't (the app reads it when it chooses)")
         gs = p[p.index('id="googlesync"'):]; gs = gs[:gs.index('id="updates"')]
-        ok('class="ghost credtrash"' in gs and 'id="gremove"' in gs and 'data-confirm="Delete the client ID and secret?' in gs,
-           "F2.3: the connected credentials end with a trash that asks first")
+        ok("credtrash" not in gs and 'id="fgremove"' in gs and 'data-confirm="Delete the client ID and secret?' in gs,
+           "F2.3 (beta.18): one Remove for the credentials, asking first")
     p = c.get("/?menu=settings").text
     ud = p[p.index('id="updates"'):]; ud = ud[:ud.index("</form>")]
     ok(re.search(r'<div class="pair inline updrow">\s*<label class="rowlabel" for="updfreq">Check for updates</label>\s*<select id="updfreq"', ud) is not None and "autoupd" in ud,
        "F2.1: Check for updates, its menu and Auto-update on one line")
     gs = p[p.index('id="googlesync"'):]; gs = gs[:gs.index('id="updates"')]
-    ok(('form="fgremove" class="ghost credtrash"' in gs and 'id="fgremove"' in gs) or ('form="gremove" class="ghost credtrash"' in gs and 'id="gremove"' in gs),
-       "F2.3: the credentials before connecting (beta.17: or Ready) end with a trash too")
+    ok("credtrash" not in gs and ('id="fgremove"' in gs or "Not set up" in gs), "F2.3 (beta.18): no trash beside the credentials; one Remove")
     r = c.post("/google/client", data={"csrf": csrf, "action": "remove"}, follow_redirects=False)
     ok(r.status_code == 303 and not main.google.configured, "…which deletes the client ID and secret")
     # F4: search
