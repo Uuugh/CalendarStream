@@ -34,9 +34,8 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 
 ## Conversations
 
-- Every BUILD ends with a handoff (2-build.md, After). Claude's last two messages in that conversation are
-  "New conversation CalendarStream v<version>" (the version now current; an R-only build keeps it) and the
-  message for the Developer to paste as the new conversation's first.
+- Every BUILD ends with a handoff (2-build.md, After): Claude's last message in that conversation is the one
+  for the Developer to paste as the new conversation's first, in one block, and nothing else (R17).
 - A new conversation starts from the handoff, this repo and the Dashboard: it reads these rules, runs
   `tests/tools/setup.sh`, and reads the Dashboard for the waiting list.
 - TEST or REVIEW of the beta just built can stay in the same conversation while it's short. When the Developer

@@ -59,13 +59,11 @@
   .mhead > .helpdot, .bigtitle > .helpdot { margin-left:-7px }          /* right after the word, despite the row's gap */
   .section > .shead > .helpdot, .cardhead > .helpdot { margin-left:-4px }
   .helpdot:hover, .helpdot:focus-visible, .helpdot.open { color:var(--accent); outline:none }
-  .helptip { display:none; position:absolute; z-index:30; top:calc(100% + 6px); left:50%; transform:translateX(-50%); width:max-content; max-width:min(320px, 80vw);
+  .helptip { display:none; position:absolute; z-index:30; top:calc(100% + 6px); left:0; transform:none; width:max-content; max-width:min(320px, 80vw);
              padding:8px 10px; border:1px solid var(--line); border-radius:var(--r); background:var(--card); color:var(--text); box-shadow:0 8px 24px rgba(0,0,0,.18);
              font-size:12.5px; font-weight:400; line-height:1.45; text-align:left; white-space:normal; cursor:auto; font-family:var(--font) }
   .helpdot:hover .helptip, .helpdot:focus-visible .helptip, .helpdot.open .helptip { display:block }
-  .helpdot.right .helptip { left:auto; right:-6px; transform:none }
-  .helpdot.left .helptip { left:-6px; transform:none }
-  .helpdot.up .helptip { top:auto; bottom:calc(100% + 6px) }
+  /* (0.2.8-beta.21, F4) its upper left at the (i) or (?); placeTip() moves it to keep it in the window */
   form.connect, form.inline { margin:0 }
   .tagsform.editor { border:0; padding:0; margin:0; background:transparent }
   .addfirst { width:36px; padding:0; font-size:18px }

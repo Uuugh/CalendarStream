@@ -38,8 +38,17 @@ Every color is a token with a light and a dark value (Picture 2·10). Light is t
 - Icons (Picture 2·3): Material Symbols Rounded, weight 400, only from `app/material_symbols/symbols.json`;
   13–24 px, in the text color. Add new ones with `tools/vendor_icons.py`, never changing existing ones.
 - Sizes: 50 px module headers, 34 px controls (fields, buttons), the 132 × 50 px status box, the
-  130 × 34 px Cancel | Save pair, 5 px between modules and groups. Modules have a 2 px border (with 1 px
-  less padding all round, so they keep their size); everything else 1 px.
+  130 × 34 px Cancel | Save pair. Modules have a 2 px border (with 1 px less padding all round, so they keep
+  their size); everything else 1 px.
+- Spacing (R11, 0.2.8-beta.21; tried for now and adapted as needed; Picture 2·20, drawn at the next Deploy):
+  - 5 px between parts: sections, modules, the parts of a module or a pop-up, buttons in a row.
+  - 2 px between a label and its field (the label over it; From and To beside their dates, 5 px).
+  - 9 px inside a module's border at the sides, 5 px top and bottom; the 50 px header unchanged. A box
+    inside a module (Include, an instruction tile) is 5 px 9 px too.
+  - 12 px inside every pop-up, so all pop-ups and all modules are formatted alike.
+  - No other padding or margin (F9). The one exception: a folded module or module-like section keeps 14 px
+    below it, for the Expand line in its border.
+  - The rule lives in `app/styles/17-spacing.css`, last, so it wins; the theme suite measures it.
 
 ## 2. One look per meaning
 
@@ -63,7 +72,9 @@ The theme suite fails any status word whose look isn't in this table.
   right. Line 2: the label (plain text; a field of the same size while expanded) with a raised (i), "Next
   check @ 00:44" on the right. Expand sits in the bottom border; open, a Close line sits under the header.
 - **(i) and (?)** (Pictures 2·4, 2·9): (i) is info, about this module: what it is, then its note when it
-  has one. (?) is help: how to do something. Explanations live in one of them, never on the page.
+  has one. (?) is help: how to do something. Explanations live in one of them, never on the page. Its pop-up
+  opens with its upper left at the icon; past the window's right edge, its upper right sits at that edge; past
+  the bottom, its lower corners sit at the bottom (F4).
 - **Color box** (Picture 2·16): one palette everywhere, Google Calendar's 11 colors (what Google shows for
   an event): calendars, feeds, rules, event templates, events. A click opens it (in a module: while
   expanded); the choice goes with the module's Save.
@@ -88,7 +99,7 @@ The theme suite fails any status word whose look isn't in this table.
 - **Saving** (Picture 2·6): Cancel | Save, 130 × 34 px, at the bottom of what it saves; the pressed side
   fills the pair ("Saved", "Cancelled") for 3 s. A field saved in place shows ✓, then ✕ | ✓ while typing.
 - **Handles** (Picture 2·7): ▲ ☰ ▼ in the section's right margin; none with nothing to reorder.
-- **Pop-ups and drop-downs** (Pictures 2·8, 2·18): 12 px corners, 18 px padding, ← and the title; the
+- **Pop-ups and drop-downs** (Pictures 2·8, 2·18): 12 px corners, 12 px padding, ← and the title; the
   whole screen on a phone (≤ 700 px); the page behind dimmed (rgba(0,0,0,.55)) and blurred (2 px). Every +
   opens one, centred. A question is one too, never the browser's alert / confirm box: its answers on one
   line, or one under the other when they're sentences. A choice of calendars is a drop-down of ticks.
@@ -239,4 +250,16 @@ one here, with its card.
 - Emoji older Windows may not draw (newer than Emoji 12.0, and flags): a small i at the emoji's upper right in the
   list, and the page's own (i) beside the field when one is chosen, both "May not show on older Windows". (0.2.8-beta.19, F8)
 - A Google module's colors end with a muted line, "Color change does not carry to Google", while Google refuses the
-  color. (0.2.8-beta.19, I1.1)
+  color: only after it refused the RGB color, the nearest calendar color and a full update (0.2.8-beta.21, I1).
+  (0.2.8-beta.19, I1.1)
+- Spacing: 5 px between parts, 2 px between a label and its field, 9 px inside a module's border (5 px top and
+  bottom), 12 px inside pop-ups; nothing extra. (0.2.8-beta.21, R11, F9; Picture 2·20)
+- (i) and (?) pop-ups open with their upper left at the icon; at the window's right edge their upper right sits
+  at it; at the bottom their lower corners sit at it. In a pop-up, its edges count as the window's. (0.2.8-beta.21,
+  F4; Picture 2·9)
+- A folded module's (i) is a superscript right after its label's last word. (0.2.8-beta.21, F5; Picture 2·4)
+- An Include box's calendars run down a column three tall (5 px apart), then a second column; with no room for
+  another column, the columns grow taller instead; in every module. Its From / To: each label only
+  as wide as the longer, 5 px from its date, the dates lined up; a Calendar Feed's Add to… buttons are as wide as
+  the longest of them. (0.2.8-beta.21, F5.1, F5.2, F5.3; Part 1)
+- Today has a 2 px accent border around its whole day, as well as its filled date. (0.2.8-beta.21, F10; Part 1)

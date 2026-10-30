@@ -87,7 +87,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         sp = pg.evaluate("""() => { const g = s => getComputedStyle(document.querySelector(s));
             return [g('#sources .cardhead').columnGap, g('#src-ccs .cfgline').marginTop, g('#cfg-ccs > h3.cfghead').marginTop, g('#cfg-ccs > h3.cfghead').marginBottom,
                     g('#cfg-ccs .cfggrid').rowGap, g('#cfg-ccs details.guide').marginTop, Math.round(document.querySelector('#cfg-ccs details.guide').getBoundingClientRect().height)]; }""")
-        ok(sp == ["5px", "5px", "5px", "5px", "2px", "12px", 38], f"F1.6–F1.8/F1.10: spacing {sp}")
+        ok(sp == ["5px", "5px", "5px", "5px", "2px", "5px", 32], f"F1.6–F1.8/F1.10: spacing {sp} (0.2.8-beta.21, R11: an instruction tile 5 px under, 5 px 9 px inside)")
         # F3.2/F3.3
         ok(pg.evaluate("getComputedStyle(document.querySelector('#src-ccs .srcfoot')).borderTopStyle") == "solid", "F3.2: a line above Remove / Cancel / Save")
         # the rule dialog: Cancel | Apply, saving in the background

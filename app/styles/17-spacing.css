@@ -1,0 +1,53 @@
+  /* (0.2.8-beta.21, R11 and F9) The theme's spacing rule (theme.md, Spacing), in one place and last, so it wins over
+     the older margins in the parts above: 5 px between parts, 2 px between a label and its field, 9 px inside a
+     module's border (5 px top and bottom), 12 px inside every pop-up. The suite 44 checks measure it. The one
+     exception: a folded module or module-like section keeps 14 px below it, for its Expand line in the border. */
+
+  /* The page: the top bar, the calendar and the sections, 5 px apart */
+  .topbar { margin-bottom:5px }
+  .card { margin-bottom:5px }
+  .modsection:not(.open) { margin-bottom:14px }
+  .foot { margin-top:5px }
+  .calhead { margin-bottom:5px; row-gap:5px }
+  .legend { margin-top:5px }
+
+  /* Inside a module: its parts 5 px apart */
+  .cfgbody > form.importrow, .cfgbody form.importrow { margin-top:5px }
+  .sections details.guide, .cfgbody details.guide, details.feedinfo { margin-top:5px }
+  .srcfoot { margin-top:5px; gap:5px }
+  .editor .eactions { margin-top:5px; gap:5px }
+  .ccsform .siteaddr + .pair { margin-top:3px }      /* 5 px under the address (the field row adds 2) */
+  .cfgbody > .deflabel { margin-bottom:5px } .cfgbody > .deflabel + .notewrap { margin-top:0 }
+
+  /* Instruction tiles (details.guide): like the other boxes inside a module, 5 px 9 px, their parts 5 px apart */
+  details.guide { padding:5px 9px } details.guide[open] { padding-bottom:5px }
+  .helpgrid, .setupguide .helpgrid { margin-top:5px; row-gap:5px }
+  details.guide ol { margin:5px 0 } details.guide li:last-child { margin-bottom:0 } .howto > p.mnote { margin-top:0 }
+  .helpgrid .checks { margin-top:5px }
+  details.guide > p, details.rulesguide p { margin:5px 0 0 }
+  .setupguide .accomplished { padding-top:0 }
+
+  /* Include: the label 2 px over the calendars (the dates' own grid, 16-feeds.css, does the same for From over To) */
+  .destcals > .k, .feedinclude .fihead2, #adddest .feedinclude .fihead2, #adddest .feedinclude .destcals > .k { margin:0 }
+  .srcpicks { margin-top:2px }
+
+  /* A feed's Add to… buttons: 5 px apart */
+  .addbtns { gap:5px }
+
+  /* Pop-ups: 12 px inside, every part 5 px apart */
+  dialog.popup { padding:12px }
+  dialog.addpop[open], dialog.addpop > form.addmenu, .addmenu.addpick { gap:5px }
+  dialog.popup.big > .dlghead, .addmenu.addpick > .dlghead, #adddest > .dlghead { margin-bottom:0 }
+  #addsrc .presetform { gap:5px } #addsrc .presetform > .pair { margin-top:0 }
+  #ruleform > div.lbl { margin-top:5px; margin-bottom:0 } #ruleform > label.lbl { margin-top:5px; margin-bottom:2px }
+  #ruleform > .lbl + input { margin-top:0 }
+  #ruledialog .eactions, #ruleform .rdfoot { margin-top:5px; gap:5px }
+  #ruleform > details.guide { margin-top:5px }
+  #removedialog .rmnote { margin:0 } #removedialog .rmopts { gap:5px; margin:5px 0 0 }
+  #removedialog .rmdl { margin-top:5px }
+  #removedialog .eactions { margin-top:5px }
+  #conflictdialog .cfpair { margin-bottom:5px }
+  #tpladdform .editor { margin-bottom:5px } #tpladdform > p.mnote { margin:0 0 5px }
+  #reportdialog .eactions { margin-top:5px; gap:5px }
+  .alarmpop .eactions { margin-top:5px }
+  #printdialog .eactions { gap:5px }

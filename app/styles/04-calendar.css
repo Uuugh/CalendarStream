@@ -46,6 +46,7 @@
   .day.out { background:var(--soft) } .day.out .num { color:var(--muted); opacity:.7 }
   .num { font-weight:600; font-size:12px; margin-bottom:2px; display:inline-block; min-width:22px; text-align:center; border-radius:var(--r) }
   .day.today .num { background:var(--accent); color:var(--card) }
+  .day.today, .aday.today { box-shadow:inset 0 0 0 2px var(--accent) }      /* (0.2.8-beta.21, F10) today's whole day, not only its date */
   .ev { margin:2px 0; border-radius:5px; background:var(--ev); color:var(--evtext) }
   /* I1 (0.2.7-beta.6): all-day and timed events look the same; only rules, your own color, a
      calendar's color and "Added here" change an event's color. */

@@ -73,7 +73,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
 
     # --- I1.1: the color note ---------------------------------------------------------------------------------------
     gbox = module(d["id"]); fbox = module(feed["id"])
-    ok('class="palnote">Color change does not carry to Google<' in gbox, "I1.1: a Google module's colors say it doesn't carry to Google")
+    ok("palnote" not in gbox, "I1.1 (beta.21, I1): no note while Google hasn't refused the color")
     ok("palnote" not in fbox, "I1.1: …a Calendar Feed's don't")
 
     # --- I1: Google's own reason; no retry a fresh token can't fix --------------------------------------------------
@@ -88,8 +88,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
        "I1: History shows Google's own reason, word for word")
     ok(not any("no longer accepts" in m for m in lines) and not g.info().get("last_error"),
        "I1: …never \"no longer accepts CalendarStream's sign-in\", and the module stays healthy")
-    ok(sum(x.startswith("PATCH /users/me/calendarList") for x in S["calls"]) <= 2,
-       "I1: a 401 is tried again at most once, with a fresh token")
+    ok(sum(x.startswith("PATCH /users/me/calendarList") for x in S["calls"]) <= 4
+       and sum(x.startswith("PUT /users/me/calendarList") for x in S["calls"]) <= 2,
+       "I1: a 401 is tried again at most once, with a fresh token (each of beta.21's ways)")
+    ok('class="palnote">Color change does not carry to Google<' in module(d["id"]),
+       "I1.1: a Google module whose color Google refused says it doesn't carry to Google")
     g._access = None; S["calls"].clear()
     try:
         asyncio.run(g.set_color(d["id"], "#d50000")); ok(False, "refused")
@@ -97,8 +100,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(False, "I1: a refusal with a fresh token isn't a lost sign-in")
     except gsync.GoogleError as e:
         ok("refused" in str(e), "I1: a refusal with a fresh token is Google's refusal, not a lost sign-in")
-    ok(sum(x.startswith("PATCH /users/me/calendarList") for x in S["calls"]) == 1,
-       "I1: …and a fresh token isn't renewed to try again")
+    ok(sum(x.startswith("PATCH /users/me/calendarList") for x in S["calls"]) == 2
+       and sum(x.startswith("PUT /users/me/calendarList") for x in S["calls"]) == 1,
+       "I1: …and a fresh token isn't renewed to try again (each way once: RGB, colorId, PUT)")
     S["calls"].clear()
     asyncio.run(main.google_sync_once(True))
     ok(not any(x.startswith("PATCH /users/me/calendarList") for x in S["calls"]), "I1: the same color isn't tried again")

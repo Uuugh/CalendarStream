@@ -12,7 +12,7 @@ S = {"codes": {}, "refresh": {}, "access": {}, "calendars": {}, "events": {}, "r
      # client signed each token in (an app sees only the calendars its own client made)
      "clients": {CLIENT_ID: CLIENT_SECRET}, "redirects": None, "refresh_client": {},
      # (0.2.8-beta.19, I1) refuse every calendar color with a 401, as Google did for the Developer
-     "refuse_color": False}
+     "refuse_color": False, "list_put": None}
 # What Google sends with a 401 (its usual body)
 REFUSED_401 = {"error": {"code": 401, "message": "Request had invalid authentication credentials. Expected OAuth 2 access "
                "token, login cookie or other valid authentication credential.",
@@ -172,16 +172,63 @@ async def cal_patch(cid: str, request: Request, authorization: str = Header(""))
     c.update(await request.json()); return c
 
 
+def _refused(way: str) -> bool:
+    """S["refuse_color"]: True refuses every way of setting a calendar's color; a set refuses only those ways
+    ("rgb", "colorId", "put", "get") (0.2.8-beta.21, I1)."""
+    r = S["refuse_color"]
+    return r is True or (isinstance(r, (set, frozenset)) and way in r)
+
+
+def _list_entry(cid: str, authorization: str):
+    owner = who(authorization); c = S["calendars"].get(cid)
+    return c if c and c["owner"] == owner else None
+
+
 @app.patch("/calendar/v3/users/me/calendarList/{cid}")
 async def calendarlist_patch(cid: str, request: Request, authorization: str = Header("")):
-    """A calendar's color in the person's list (0.2.8-beta.15)."""
-    if S["refuse_color"]:
+    """A calendar's color in the person's list (0.2.8-beta.15): its RGB color, or (0.2.8-beta.21) a colorId."""
+    body = await request.json()
+    way = "colorId" if "colorId" in body else "rgb"
+    if _refused(way):
         return JSONResponse(REFUSED_401, 401)
-    owner = who(authorization); c = S["calendars"].get(cid)
-    if not c or c["owner"] != owner:
+    c = _list_entry(cid, authorization)
+    if not c:
+        return gerr(404, "notFound")
+    if way == "colorId":
+        assert body["colorId"] in {str(i) for i in range(1, 25)}, body
+        c["colorId"] = body["colorId"]; c.pop("backgroundColor", None)
+    else:
+        assert request.query_params.get("colorRgbFormat") == "true"
+        c["backgroundColor"] = body.get("backgroundColor"); c.pop("colorId", None)
+    return c
+
+
+@app.get("/calendar/v3/users/me/calendarList/{cid}")
+async def calendarlist_get(cid: str, authorization: str = Header("")):
+    if _refused("get"):
+        return JSONResponse(REFUSED_401, 401)
+    c = _list_entry(cid, authorization)
+    if not c:
+        return gerr(404, "notFound")
+    return {"kind": "calendar#calendarListEntry", "etag": '"1"', "id": cid, "summary": c.get("summary", ""),
+            "selected": True, "hidden": False, "defaultReminders": [{"method": "popup", "minutes": 30}],
+            **({"backgroundColor": c["backgroundColor"]} if c.get("backgroundColor") else {}),
+            **({"colorId": c["colorId"]} if c.get("colorId") else {})}
+
+
+@app.put("/calendar/v3/users/me/calendarList/{cid}")
+async def calendarlist_put(cid: str, request: Request, authorization: str = Header("")):
+    """(0.2.8-beta.21, I1) a full update of the entry: what it sends is kept (S["list_put"])."""
+    if _refused("put"):
+        return JSONResponse(REFUSED_401, 401)
+    c = _list_entry(cid, authorization)
+    if not c:
         return gerr(404, "notFound")
     body = await request.json()
-    c["backgroundColor"] = body.get("backgroundColor"); return c
+    assert request.query_params.get("colorRgbFormat") == "true" and body.get("id") == cid
+    S["list_put"] = body
+    c["backgroundColor"] = body.get("backgroundColor"); c.pop("colorId", None)
+    return c
 
 
 @app.post("/calendar/v3/calendars/{cid}/events")

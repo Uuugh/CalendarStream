@@ -245,8 +245,10 @@ logins or setup codes lock an address out for 15 minutes.
     Nothing is made in Google until it's connected. Connect me comes back to the module, saying Connected; a
     sign-in Google no longer accepts shows **Fix**. Connecting again uses the calendar it made before. The first
     **Sync Now** after its calendar is made opens Google Calendar in a new tab ("Making the calendar…" until it's
-    ready), in that module's own Gmail. Its color box sets the calendar's color in Google; Google refuses that for
-    now, so the colors say "Color change does not carry to Google", and History gives Google's own reason, once.
+    ready), in that module's own Gmail. Its color box sets the calendar's color in Google: as its RGB color, or when
+    Google refuses that, as the nearest of Google's calendar colors, or with a full update of the calendar's entry.
+    History says once which way Google takes, and that way is kept. If Google refuses all three, the colors say
+    "Color change does not carry to Google", and History gives Google's own reasons, once.
     A request Google refuses is always given in Google's own words.
 
   **+** picks the module first, then shows that module in a pop-up to fill in. Every feed module is laid out

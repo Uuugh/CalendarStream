@@ -141,7 +141,7 @@
     <div class="modrow" data-id="{{ d.id }}">
     <div class="box module cfgbox dest{% if not feed %} gdest{% endif %}{% if d.open %} cfgopen{% endif %}" id="dest-{{ d.id }}" data-section="dest:{{ d.id }}">
       <div class="srchead">
-        {{ colorbox("destform-" ~ d.id, d.color, _('Its color (expand to change it)'), d.open, "" if feed else _('Color change does not carry to Google')) }}
+        {{ colorbox("destform-" ~ d.id, d.color, _('Its color (expand to change it)'), d.open, _('Color change does not carry to Google') if not feed and d.cal and d.cal.color_refused == d.color else "") }}
         {% set kind = _('Calendar Feed') if feed else (_('Google 1-way Sync') if d.oneway else _('Google 2-way Sync')) %}
         <div class="srcleft">
           <div class="srckind" title="{{ kind }}">{{ kind }}</div>

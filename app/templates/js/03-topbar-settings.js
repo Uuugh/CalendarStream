@@ -10,6 +10,33 @@ function savePref(path, fields, then) {
 }
 var CSRF = PAGE.csrf;
 
+// (0.2.8-beta.21, F4) An (i) or (?) pop-up opens with its upper left at the icon. Past the window's right edge, its
+// upper right sits at that edge instead; past the bottom, its lower corners sit at the bottom. In a pop-up, the
+// pop-up's edges count as the window's.
+function placeTip(dot) {
+  var tip = dot && dot.querySelector('.helptip');
+  if (!tip) return;
+  tip.style.left = '0px'; tip.style.right = 'auto'; tip.style.bottom = 'auto'; tip.style.transform = 'none';
+  tip.style.top = 'calc(100% + 6px)';
+  var r = tip.getBoundingClientRect();
+  if (!r.width) return;
+  var w = document.documentElement.clientWidth, h = document.documentElement.clientHeight;
+  // inside a pop-up, its edges are the window's: what's past them is hidden in the pop-up's scrolling
+  var box = dot.closest('dialog[open]');
+  if (box) {
+    var b = box.getBoundingClientRect(), cs = getComputedStyle(box);
+    w = Math.min(w, b.right - parseFloat(cs.borderRightWidth)); h = Math.min(h, b.bottom - parseFloat(cs.borderBottomWidth));
+  }
+  if (r.right > w) tip.style.left = Math.round(w - r.right) + 'px';
+  if (r.bottom > h) tip.style.top = 'calc(100% + 6px + ' + Math.round(h - r.bottom) + 'px)';
+}
+['mouseover', 'focusin'].forEach(function (type) {
+  document.addEventListener(type, function (e) {
+    var dot = e.target.closest && e.target.closest('.helpdot');
+    if (dot && !(e.relatedTarget && dot.contains(e.relatedTarget))) placeTip(dot);
+  });
+});
+
 // (?): hovering or focusing shows the explanation; a click (or tap) keeps it open until a click
 // elsewhere or Escape. Delegated, so it also works in sections swapped in after a save.
 document.addEventListener('click', function (e) {
@@ -19,6 +46,7 @@ document.addEventListener('click', function (e) {
   e.preventDefault(); e.stopPropagation();
   var on = !dot.classList.contains('open');
   dot.classList.toggle('open', on); dot.setAttribute('aria-expanded', String(on));
+  if (on) placeTip(dot);
 }, true);
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {

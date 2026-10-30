@@ -92,3 +92,28 @@
     if (e.target.id === 'adddest2') { var f = document.getElementById('adddest'); f.reset(); clearFix(f); }
   }, true);
 })();
+
+// (0.2.8-beta.21, F5.3) An Include box's calendars: three a column, then another column; when no other column
+// fits, every column grows taller instead (--rows). Kept up to date as the box changes width or is redrawn.
+(function () {
+  function rows(list) {
+    var items = list.querySelectorAll('.srcpick'), n = items.length;
+    if (!n) return;
+    var gap = parseFloat(getComputedStyle(list).columnGap) || 0, widest = 0;
+    items.forEach(function (x) { widest = Math.max(widest, x.getBoundingClientRect().width); });
+    var fit = Math.max(1, Math.floor((list.clientWidth + gap) / (widest + gap)));
+    var want = String(Math.max(3, Math.ceil(n / fit)));
+    if (list.style.getPropertyValue('--rows') !== want) list.style.setProperty('--rows', want);
+  }
+  var seen = typeof ResizeObserver === 'function' ? new ResizeObserver(function (all) { all.forEach(function (e) { rows(e.target); }); }) : null;
+  function watch() {
+    document.querySelectorAll('.feedinclude .srcpicks').forEach(function (list) {
+      if (list.dataset.rows) return;
+      list.dataset.rows = '1';
+      if (seen) seen.observe(list); else rows(list);
+    });
+  }
+  watch();
+  new MutationObserver(watch).observe(document.body, { childList: true, subtree: true });
+})();
+

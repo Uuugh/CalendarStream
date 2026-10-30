@@ -23,7 +23,7 @@ manage it all. See README.md for what it does.
   - `theme.md`: how the page looks, with the CalendarStream Theme Rules picture beside it.
   - `roadmap.md`: what's planned.
 
-## Code map (0.2.8-beta.20, F12)
+## Code map (0.2.8-beta.20, F12; 0.2.8-beta.21)
 
 Read only the part you need. Each file's first lines say what it holds.
 
@@ -74,7 +74,8 @@ never reordered: `01-base`, `02-topbar-settings`, `03-sections-editors`, `04-cal
 `06-sections-boxes`, `07-calendars-feeds`, `08-layout` (narrow boxes, rule lines, wide and narrow screens),
 `09-spacing-print`, `10-calendar-module`, `11-modules` (the theme's modules, color box, status, Sync Now),
 `12-handles`, `13-popups`, `14-rule-dialog`, `15-features` (Remove a calendar, Updates, Google API Sync,
-search, import, date ranges, History…), `16-feeds`. A style for one area can live in more than one part:
+search, import, date ranges, History…), `16-feeds`, `17-spacing` (0.2.8-beta.21, R11: the theme's spacing rule,
+last so it wins; a spacing change goes here). A style for one area can live in more than one part:
 grep `app/styles/` for its class. New styles go at the end of the part for their area, unless they must win
 over a later part.
 

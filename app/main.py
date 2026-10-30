@@ -35,7 +35,7 @@ from . import rules as rules_mod
 from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, apply_changes, build_feed,
                       download, parse, parse_feed)
 from .config import normalise_public_url, settings
-from .gsync import GOOGLE_COLORS, Google, GoogleError, nearest_color_id
+from .gsync import CALENDAR_COLORS, GOOGLE_COLORS, Google, GoogleError, nearest_calendar_color, nearest_color_id
 from .logins import Logins
 from .secretbox import SecretBox
 from .store import Store, from_iso, iso
@@ -955,7 +955,11 @@ async def google_sync_once(full: bool) -> bool:
         return ok
 
 
-COLOR_TRY = 2    # (0.2.8-beta.19) a refused color is tried once per color and per COLOR_TRY
+COLOR_TRY = 3    # (0.2.8-beta.19) a refused color is tried once per color and per COLOR_TRY (3: beta.21's other ways, I1)
+
+# (0.2.8-beta.21, I1) how History names the way Google took a calendar's color (gsync.COLOR_WAYS)
+COLOR_WAY_TEXT = {"rgb": "as its RGB color", "colorId": "as the nearest of Google's calendar colors",
+                  "put": "with a full update of the calendar's entry"}
 
 
 async def _sync_account(g: Google, dests: list[dict], total: int, color_for, full: bool) -> bool:
@@ -978,13 +982,31 @@ async def _sync_account(g: Google, dests: list[dict], total: int, color_for, ful
             if d["color"] and info.get("color") != d["color"] and not tried:   # its color box (0.2.8-beta.15)
                 # (0.2.8-beta.18, I4) tried once per color: Google refusing it is said once and never makes the
                 # module's sync a "Sync problem" (before, it failed after every successful sync)
+                kept = info.get("color_way")
                 try:
-                    await g.set_color(d["id"], d["color"])
-                    state.record("info", f"{who}: color set in Google Calendar", kind="Google")
+                    way = await g.set_color(d["id"], d["color"])
                 except GoogleError as e:
-                    g._update_cal(d["id"], color_tried=d["color"], color_try=COLOR_TRY)
-                    state.record("warn", f"{who}: the calendar's color couldn't be set in Google Calendar ({e}); "
-                                 "set it there by hand if you like", kind="Google")
+                    way = None
+                    # out of reach or busy: tried again at the next sync (which says so itself); anything else, said once
+                    said = str(e)
+                    if not (said.startswith("Couldn't reach Google Calendar") or said.startswith("Google Calendar is busy")):
+                        refused = said.startswith("Google Calendar refused")
+                        g._update_cal(d["id"], color_tried=d["color"], color_try=COLOR_TRY, color_refused=d["color"] if refused else None)
+                        how = "it refused the RGB color, the nearest calendar color and a full update " if refused else ""
+                        state.record("warn", f"{who}: the calendar's color couldn't be set in Google Calendar: {how}({e}); "
+                                     "set it there by hand if you like", kind="Google")
+                if way:
+                    g._update_cal(d["id"], color_refused=None)
+                    # (I1) the way Google takes is said once, when it's first known or changes; the nearest calendar
+                    # color always, since Google then shows a color a little different from the color box's
+                    how = ""
+                    if way == "colorId":
+                        how = f" {COLOR_WAY_TEXT[way]} ({CALENDAR_COLORS[nearest_calendar_color(d['color'])]})"
+                    elif way != kept:
+                        how = f" {COLOR_WAY_TEXT[way]}"
+                    if way != kept:
+                        how += "; that way is kept"
+                    state.record("info", f"{who}: color set in Google Calendar{how}", kind="Google")
             _remember_calendar(d["id"], g)
             await ensure_watch(d["id"])
         return True

@@ -9,7 +9,39 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.20**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.21**
+
+## 0.2.8-beta.21 — 2026-10-30
+
+### Fixed
+- **I1** A Google module's color reaches Google even though Google refuses its RGB color (HTTP 401 "Invalid
+  Credentials", only on the calendar list). A refused RGB color is sent as the nearest of Google's 24 calendar
+  colors (colorId), then as a full update of the calendar's entry (PUT, starting from Google's own copy, so
+  nothing else in it changes). History says once which way Google takes, with the color Google shows when it's
+  the nearest one, and that way is tried first from then on. Only if Google refuses all three does History give
+  Google's reasons (once per color), and only then do the colors say "Color change does not carry to Google".
+  Google out of reach is not taken as a refusal: the color is tried again at the next sync. A 401 with an access
+  token Google issued in the last minute isn't retried with yet another one.
+
+### Changed
+- **R11, F9** One spacing everywhere, measured by the theme suite: 5 px between parts (the sections, modules, a
+  module's or a pop-up's parts, buttons in a row), 2 px between a label and its field, 9 px inside a module's
+  border at the sides and 5 px top and bottom, 12 px inside every pop-up (was 18), and no other padding or
+  margin. A folded module or section keeps 14 px below it for its Expand line. The rule is
+  `app/styles/17-spacing.css`, last, so it wins.
+- **F4** An (i) or (?) pop-up opens with its upper left at the icon (it was centred under it). Past the window's
+  right edge, its upper right sits at that edge; past the bottom, its lower corners sit at the bottom.
+- **F5** A folded module's (i) is a superscript right after its label (it was at the end of the label's column),
+  in Feeds and, since the two share one layout, in Calendars.
+- **F5.1** From / To: each label only as wide as the longer one, 5 px from its date, the dates lined up and narrower.
+- **F5.2** A Calendar Feed's Add to… buttons are as wide as the longest (Add to Google Calendar), not 200 px.
+- **F5.3** An Include box's calendars run down a column three tall, then a second column; with no room for
+  another column, the columns grow taller. In every module, Google and Calendar Feed alike.
+- **F10** Today has a 2 px accent border around its whole day, as well as its filled date.
+
+### Build rules
+- **R11** theme.md has the spacing rule; the theme suite (44) measures it in every module and every pop-up.
+- **R17** A BUILD's handoff is one message, the block to paste; no "New conversation…" message before it.
 
 ## 0.2.8-beta.20 — 2026-10-30
 

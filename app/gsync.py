@@ -39,6 +39,7 @@ SIGN_IN_TTL = 15 * 60       # seconds a sign-in started here stays valid
 MAX_PENDING = 20            # sign-ins started but not finished, kept at most
 TIMEOUT = httpx.Timeout(20.0, connect=10.0)
 
+FRESH_TOKEN = 60.0         # seconds an access token counts as just issued: a 401 with it isn't fixed by another (I1)
 MAX_WRITES = 1500          # Google writes in one sync at most; the rest wait for the next one
 SYNC_NOTE = "Synced by CalendarStream"
 MARKER = "calendarstream"   # private extended property on every event CalendarStream writes
@@ -50,6 +51,17 @@ GOOGLE_COLORS = {
     "7": ("Peacock", "#039be5"), "9": ("Blueberry", "#3f51b5"), "1": ("Lavender", "#7986cb"),
     "3": ("Grape", "#8e24aa"), "8": ("Graphite", "#616161"),
 }
+
+# (0.2.8-beta.21, I1) Google's calendar colors (its calendar palette, not the event colors above): colorId -> hex.
+CALENDAR_COLORS = {
+    "1": "#ac725e", "2": "#d06b64", "3": "#f83a22", "4": "#fa573c", "5": "#ff7537", "6": "#ffad46",
+    "7": "#42d692", "8": "#16a765", "9": "#7bd148", "10": "#b3dc6c", "11": "#fbe983", "12": "#fad165",
+    "13": "#92e1c0", "14": "#9fe1e7", "15": "#9fc6e7", "16": "#4986e7", "17": "#9a9cff", "18": "#b99aff",
+    "19": "#c2c2c2", "20": "#cabdbf", "21": "#cca6ac", "22": "#f691b2", "23": "#cd74e6", "24": "#a47ae2",
+}
+# (0.2.8-beta.21, I1) the ways a calendar's color is sent to Google, in the order they're tried: its RGB color; the
+# nearest of Google's calendar colors (colorId); a full update of the calendar's entry (PUT). The one Google takes is kept.
+COLOR_WAYS = ("rgb", "colorId", "put")
 
 WATCH_TTL = 7 * 24 * 3600   # seconds a push-notification channel lasts (Google's default and usual limit)
 
@@ -86,6 +98,12 @@ def nearest_color_id(hex_color: str) -> str:
     """The Google event color closest to a #rrggbb color."""
     r, g, b = _rgb(hex_color)
     return min(GOOGLE_COLORS, key=lambda cid: sum((x - y) ** 2 for x, y in zip((r, g, b), _rgb(GOOGLE_COLORS[cid][1]))))
+
+
+def nearest_calendar_color(hex_color: str) -> str:
+    """(0.2.8-beta.21, I1) The colorId of Google's calendar color closest to a #rrggbb color."""
+    r, g, b = _rgb(hex_color)
+    return min(CALENDAR_COLORS, key=lambda cid: sum((x - y) ** 2 for x, y in zip((r, g, b), _rgb(CALENDAR_COLORS[cid]))))
 
 
 def event_id(uid: str) -> str:
@@ -190,6 +208,7 @@ class Google:
         self.tz_name = tz_name
         self._pending: dict[str, tuple[str, str, float]] = {}   # state -> (PKCE verifier, redirect URI, expiry)
         self._access: tuple[str, float] | None = None            # (access token, expiry)
+        self._access_at = 0.0     # (0.2.8-beta.21, I1) when Google issued the access token (time.monotonic())
         self._lock = asyncio.Lock()
 
     # --- The OAuth client (entered in the Google Calendar Autosync box) ----------------
@@ -472,6 +491,7 @@ class Google:
         self._save_refresh_token(refresh)
         self._save_check(True, "Google accepted the client ID and secret", redirect_uri, True)   # signed in: both proven
         self._access = (tokens["access_token"], time.monotonic() + int(tokens.get("expires_in", 3600)) - 60)
+        self._access_at = time.monotonic()
         self._update_info(email=email, connected_at=datetime.now(timezone.utc).isoformat(), last_error=None)
         return self.info()
 
@@ -505,6 +525,7 @@ class Google:
                 return self._access[0]
             tokens = await self._token_request({"grant_type": "refresh_token", "refresh_token": self._refresh_token()})
             self._access = (tokens["access_token"], time.monotonic() + int(tokens.get("expires_in", 3600)) - 60)
+            self._access_at = time.monotonic()
             return self._access[0]
 
     # --- Calendar API -------------------------------------------------------------------------
@@ -518,6 +539,9 @@ class Google:
         for attempt in range(5):
             fresh = not (self._access and self._access[1] > time.monotonic())
             token = await self._access_token()
+            # (0.2.8-beta.21, I1) a token Google issued in the last minute is fresh for every call, not only the one
+            # that got it: the next ways of setting a color aren't each retried with yet another token
+            fresh = fresh or time.monotonic() - self._access_at < FRESH_TOKEN
             renewed = renewed or fresh
             try:
                 async with httpx.AsyncClient(timeout=TIMEOUT) as client:
@@ -585,14 +609,53 @@ class Google:
                          shown=False)   # (0.2.8-beta.19, F7) not shown yet: the next Sync Now shows it in Google Calendar
         return made["id"]
 
-    async def set_color(self, sid: str, color: str):
-        """The calendar's color in the person's Google Calendar (0.2.8-beta.15: a Google module's color box)."""
-        calendar_id = self.cal_info(sid).get("calendar_id")
+    async def set_color(self, sid: str, color: str) -> str:
+        """The calendar's color in the person's Google Calendar (0.2.8-beta.15: a Google module's color box). Returns the
+        way Google took it (COLOR_WAYS), "" without a calendar. (0.2.8-beta.21, I1) Google may refuse the RGB color
+        (HTTP 401 on the calendar list, with a sign-in that works everywhere else), so a refusal tries the next way;
+        the way Google took last time is tried first. Refused every way: GoogleError with Google's own reasons."""
+        info = self.cal_info(sid)
+        calendar_id = info.get("calendar_id")
         if not calendar_id:
-            return
-        await self.api("PATCH", f"/users/me/calendarList/{_quote(calendar_id)}", params={"colorRgbFormat": "true"},
-                       body={"backgroundColor": color, "foregroundColor": "#ffffff"})
-        self._update_cal(sid, color=color)
+            return ""
+        kept = info.get("color_way")
+        ways = ([kept] if kept in COLOR_WAYS else []) + [w for w in COLOR_WAYS if w != kept]
+        refused: list[str] = []
+        for way in ways:
+            try:
+                await self._send_color(calendar_id, way, color)
+            except AccessRevoked:
+                raise
+            except GoogleError as e:
+                if not str(e).startswith("Google Calendar refused"):
+                    raise                     # Google out of reach or busy: no other way would fare better now
+                if str(e) not in refused:
+                    refused.append(str(e))
+                continue
+            self._update_cal(sid, color=color, color_way=way)
+            return way
+        raise GoogleError("; ".join(refused))
+
+    async def _send_color(self, calendar_id: str, way: str, color: str):
+        path = f"/users/me/calendarList/{_quote(calendar_id)}"
+        if way == "rgb":
+            await self.api("PATCH", path, params={"colorRgbFormat": "true"},
+                           body={"backgroundColor": color, "foregroundColor": "#ffffff"})
+        elif way == "colorId":
+            await self.api("PATCH", path, body={"colorId": nearest_calendar_color(color)})
+        else:
+            # a PUT replaces the whole entry: start from Google's own copy so nothing else in it changes
+            try:
+                entry = await self.api("GET", path, ok_missing=True) or {}
+            except GoogleError as e:
+                if not str(e).startswith("Google Calendar refused"):
+                    raise
+                entry = {}
+            body = {k: v for k, v in entry.items() if k not in ("colorId", "etag", "kind")}
+            body.setdefault("selected", True)
+            body.setdefault("hidden", False)
+            body.update(id=calendar_id, backgroundColor=color, foregroundColor="#ffffff")
+            await self.api("PUT", path, params={"colorRgbFormat": "true"}, body=body)
 
     async def delete_calendar(self, sid: str) -> str:
         """Delete a destination's calendar in Google (if connected) and forget it. Returns a note

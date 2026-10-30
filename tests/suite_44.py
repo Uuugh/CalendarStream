@@ -228,6 +228,102 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         r = pg.evaluate("""uid => { const d = document.querySelector(`#cal details.ev[data-uid="${CSS.escape(uid)}"]`), s = d.querySelector('summary');
             return [d.classList.contains('deleted'), getComputedStyle(s).textDecorationLine, getComputedStyle(d).filter, !!d.querySelector('.evrestore'), d.querySelector('.delnote').textContent]; }""", uid)
         ok(r[0] and "line-through" in r[1] and "grayscale" in r[2] and r[3] and "Deleted in CalendarStream" in r[4], f"Clarification 'deleted events': struck through, greyed, where, Restore {r}")
+        # --- 0.2.8-beta.21: spacing (R11, F9), where (i) and (?) open (F4), the folded label's (i) (F5), From / To and
+        # the Add to… buttons (F5.1, F5.2), today's border (F10) ----------------------------------------------------
+        pg = b.new_page(viewport={"width": 1230, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
+        pg.goto("http://127.0.0.1:8106/?month=2026-10"); pg.wait_for_timeout(500)
+        pg.add_style_tag(content="*, *::before, *::after, dialog { animation:none !important; transition:none !important }")
+        r = pg.evaluate("""() => { const n = document.querySelector('.box.module:not(.cfgopen) .nameline > .namebox'), i = n.parentElement.querySelector('.notedot');
+            const a = n.getBoundingClientRect(), d = i.getBoundingClientRect(), t = document.querySelector('#cal .day.today');
+            return [Math.round(d.left - a.right), d.top < a.top, t ? getComputedStyle(t).boxShadow : '',
+                    getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()]; }""")
+        ok(0 <= r[0] <= 4 and r[1], f"Clarification 'folded (i)': a superscript right after the label's last word {r[:2]}")
+        ok("inset" in r[2] and r[2].endswith("2px") or ("inset" in r[2] and " 2px" in r[2]), f"Clarification 'today': today's whole day has a 2 px border {r[2]}")
+        # F4: its upper left at the icon; at the right edge, its upper right there; at the bottom, its lower corners there
+        r = pg.evaluate("""() => {
+            scrollTo(0, document.documentElement.scrollHeight);
+            const w = document.documentElement.clientWidth, h = document.documentElement.clientHeight;
+            const make = (x, y) => { const d = document.createElement('span'); d.className = 'helpdot'; d.tabIndex = 0; d.style.position = 'relative';
+              d.innerHTML = 'i<span class="helptip">' + 'Words to make the pop-up wide enough to cross an edge. '.repeat(4) + '</span>';
+              document.querySelector('.foot').appendChild(d); const a = d.getBoundingClientRect();
+              d.style.left = (x < 0 ? w + x - a.right : x - a.left) + 'px'; d.style.top = (y < 0 ? h + y - a.bottom : y - a.top) + 'px'; return d; };
+            const show = d => { d.classList.add('open'); placeTip(d);
+              const a = d.getBoundingClientRect(), t = d.querySelector('.helptip').getBoundingClientRect(); d.remove(); return [a, t]; };
+            const [a1, t1] = show(make(300, 200)), [a2, t2] = show(make(-4, 200)), [a3, t3] = show(make(300, -4));
+            return [Math.round(t1.left - a1.left), t1.top > a1.bottom, Math.round(w - t2.right), Math.round(t2.top - t1.top), Math.round(h - t3.bottom), Math.round(t3.left - a3.left)]; }""")
+        ok(r[0] == 0 and r[1], f"Clarification '(i) and (?) pop-ups': open with their upper left at the icon {r[:2]}")
+        ok(r[2] == 0 and r[3] == 0, f"Clarification '(i) and (?) pop-ups': at the right edge, their upper right sits there {r[2:4]}")
+        ok(r[4] == 0 and r[5] == 0, f"Clarification '(i) and (?) pop-ups': at the bottom, their lower corners sit there {r[4:]}")
+        r = pg.evaluate("""() => { const d = document.getElementById('adddest2'); d.showModal(); const b = d.getBoundingClientRect(), out = [];
+            d.querySelectorAll('.helpdot').forEach(dot => { if (!dot.offsetParent) return; dot.classList.add('open'); placeTip(dot);
+              const t = dot.querySelector('.helptip').getBoundingClientRect(); out.push(t.right <= b.right - 1 + 0.5 && t.bottom <= b.bottom - 1 + 0.5); dot.classList.remove('open'); });
+            d.close(); return out; }""")
+        ok(r and all(r), f"Clarification '(i) and (?) pop-ups': in a pop-up (+ Add a feed), inside the pop-up's edges {r}")
+        # the spacing rule, measured: every module open, then every pop-up
+        pg.evaluate("document.querySelectorAll('.cfgbody[hidden]').forEach(x => x.hidden = false); document.querySelectorAll('.cfgbox').forEach(x => x.classList.add('cfgopen'))")
+        pg.wait_for_timeout(200)
+        SPACING = """roots => {
+          const flow = e => { const cs = getComputedStyle(e), r = e.getBoundingClientRect();
+            return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && !['absolute', 'fixed'].includes(cs.position); };
+          const name = e => e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + [...e.classList].map(c => '.' + c).join('');
+          const label = e => e.matches('.k, label.lbl, .fld > span');
+          const skip = e => e.closest('ol, ul, .srcrules, .rulelist, .handle, .palpop, .emogrid, button, .pickdest, .srchead, .fitable, .helptip, svg, table, dl') || e.querySelector(':scope > .subtitle');   // a title over its subtitle is text
+          const bad = [];
+          for (const root of document.querySelectorAll(roots)) for (const box of [root, ...root.querySelectorAll('*')]) {
+            if (skip(box) || getComputedStyle(box).display === 'contents') continue;
+            const kids = [...box.children].filter(flow);
+            for (let i = 1; i < kids.length; i++) {
+              const a = kids[i - 1].getBoundingClientRect(), b = kids[i].getBoundingClientRect();
+              if (b.top < a.bottom - 1 || b.left >= a.right || b.right <= a.left) continue;      // side by side, not stacked
+              const gap = Math.round(b.top - a.bottom), want = label(kids[i - 1]) ? 2 : 5;
+              if (gap !== want) bad.push(name(kids[i - 1]).slice(0, 40) + ' > ' + name(kids[i]).slice(0, 40) + ': ' + gap + ' (not ' + want + ')');
+            }
+          }
+          return bad;
+        }"""
+        bad = pg.evaluate(SPACING, ".box.module .cfgbody")
+        ok(not bad, f"Clarification 'spacing': inside a module, 5 px between parts, 2 px under a label {bad[:6]}")
+        r = pg.evaluate("""() => { const s = [...document.querySelectorAll('main > .card, .sections > .card')], out = [];
+            for (let i = 1; i < s.length; i++) { const a = s[i - 1], g = Math.round(s[i].getBoundingClientRect().top - a.getBoundingClientRect().bottom);
+              if (!(a.matches('.modsection:not(.open)') ? g === 14 : g === 5) && s[i].parentElement === a.parentElement) out.push(a.id + ' > ' + s[i].id + ': ' + g); }
+            const m = [...document.querySelectorAll('.box.module')].map(x => getComputedStyle(x)).filter(c => !(c.paddingLeft === '9px' && c.paddingRight === '9px' && c.paddingTop === '5px'));
+            return [out, m.length]; }""")
+        ok(not r[0] and not r[1], f"Clarification 'spacing': sections 5 px apart (14 under a folded one), modules 9 px inside at the sides, 5 px at the top {r}")
+        dlgs = pg.evaluate("[...document.querySelectorAll('dialog.popup')].map(d => d.id)")
+        pads, bad = [], []
+        for d in dlgs:
+            pg.evaluate(f"document.getElementById('{d}').showModal()")
+            pads.append(pg.evaluate(f"(() => {{ const c = getComputedStyle(document.getElementById('{d}')); return [c.paddingTop, c.paddingRight, c.paddingBottom, c.paddingLeft].every(x => x === '12px') ? '' : '{d} ' + c.padding; }})()"))
+            bad += pg.evaluate(SPACING, f"#{d}")
+            pg.evaluate(f"document.getElementById('{d}').close()")
+        ok(len(dlgs) >= 10 and not any(pads), f"Clarification 'spacing': every pop-up is 12 px inside ({len(dlgs)} pop-ups) {[p for p in pads if p]}")
+        ok(not bad, f"Clarification 'spacing': inside every pop-up, 5 px between parts, 2 px under a label {bad[:6]}")
+        r = pg.evaluate("""() => { const d = document.querySelector('.box.module .destdates'), k = d.querySelector('.k').getBoundingClientRect();
+            const i = [...d.querySelectorAll('input')].map(x => x.getBoundingClientRect()), l = [...d.querySelectorAll('.dfield > span')].map(x => x.getBoundingClientRect());
+            const col = document.querySelector('.box.module .addbtns'), g = col.querySelector('.appgoogle'), w0 = col.getBoundingClientRect().width;
+            g.style.width = 'max-content'; const wg = g.getBoundingClientRect().width; g.style.width = '';
+            const same = [...col.querySelectorAll('.appbtn')].every(x => Math.abs(x.getBoundingClientRect().width - w0) < 1);
+            const picks = [...document.querySelectorAll('.box.module .feedinclude .srcpicks')].map(p => [...p.querySelectorAll('.srcpick')].map(x => x.getBoundingClientRect()));
+            const stacked = (picks.length >= 1 && picks.every(p => p.every((x, n) => !n || (x.left === p[0].left && Math.round(x.top - p[n - 1].bottom) === 5))))
+                            || JSON.stringify(picks.map(p => p.map(x => [x.left, x.top, x.bottom])));
+            return [Math.round(i[0].top - k.bottom), Math.round(i[1].top - i[0].bottom), Math.round(i[0].left - Math.max(l[0].right, l[1].right)), i[0].left === i[1].left,
+                    Math.round(w0 - wg), same, stacked]; }""")
+        ok(r[0] == 2 and r[1] == 5 and r[2] == 5 and r[3], f"Clarification 'From / To': 2 px under Dates, From 5 px over To, 5 px from the labels, lined up {r[:4]}")
+        ok(r[4] == 0 and r[5], f"Clarification 'Add to…': the buttons as wide as the longest (Add to Google Calendar) {r[4:]}")
+        ok(r[6] is True, f"Clarification 'From / To': an Include box's calendars one under the other, 5 px apart, in every module (F5.3) {r[6]}")
+        # five calendars: three, then a second column; with no room for a second column, one column five tall
+        r = pg.evaluate("""async () => {
+            const list = document.querySelector('.box.module .feedinclude .srcpicks'), one = list.querySelector('.srcpick');
+            for (let n = 0; n < 2; n++) list.appendChild(one.cloneNode(true));
+            await new Promise(r => setTimeout(r, 200));
+            const cols = () => { const xs = [...list.querySelectorAll('.srcpick')].map(x => Math.round(x.getBoundingClientRect().left));
+              return [...new Set(xs)].map(x => xs.filter(y => y === x).length); };
+            const wide = cols();
+            list.style.width = (Math.max(...[...list.querySelectorAll('.srcpick')].map(x => x.getBoundingClientRect().width)) + 10) + 'px';
+            await new Promise(r => setTimeout(r, 200));
+            return [wide, cols()]; }""")
+        ok(r[0] == [3, 2] and r[1] == [5], f"Clarification 'From / To': three a column, then a second column; with no room for one, taller {r}")
+        pg.close()
         b.close()
     # Each Clarification in theme.md is covered above (by its key word)
     keys = {"handles": "Module handles", "module headers": "module headers share one layout", "status words": "Status words",
@@ -248,7 +344,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "deleted events": "A deleted event stays struck through", "import row": "Importing a calendar file is one row",
             "emoji": "Emoji: the common ones",
             "emoji older Windows may not draw (suite 55)": "Emoji older Windows may not draw",
-            "a Google module's color note (suite 55)": "A Google module's colors end with"}
+            "a Google module's color note (suites 55, 56)": "A Google module's colors end with",
+            "spacing": "Spacing: 5 px between parts", "(i) and (?) pop-ups": "(i) and (?) pop-ups open with their upper left",
+            "folded (i)": "A folded module's (i) is a superscript", "From / To": "An Include box's calendars",
+            "today": "Today has a 2 px accent border"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")
