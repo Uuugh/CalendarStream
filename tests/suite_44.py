@@ -158,20 +158,33 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.click("#rules > .cfgline .cfgtoggle"); pg.wait_for_timeout(250)
         rot = pg.evaluate("""() => getComputedStyle(document.querySelector('#rules > .cfgline .arr')).transform""")
         ok(rot.startswith("matrix(") and rot.split(",")[1].strip().startswith("-1"), f"Clarification 'Close points up': Close's triangle turned up ({rot})")
-        # Clarification: an opened event: Close on the left, its icons on the right
+        # Clarification: an opened event: Close on the left, its icons on the right. (0.2.8-beta.23, I1) Measured
+        # against the event itself, not their own row: the rightmost icon ends as near the event's right edge as
+        # Close starts from its left one (the event's 6 px padding and its border)
         ev = pg.locator("#cal details.ev").first
         ev.locator("summary").click(); pg.wait_for_timeout(200)
-        r = pg.evaluate("""() => { const d = [...document.querySelectorAll('#cal details.ev')].find(x => x.open), t = d.querySelector('.evtools').getBoundingClientRect(),
-                          c = d.querySelector('.evclose').getBoundingClientRect(), i = d.querySelector('.evicons').getBoundingClientRect();
-                          return [Math.round(c.left - t.left), Math.round(t.right - i.right), d.querySelectorAll('.evicons .evlinkto').length,
+        r = pg.evaluate("""() => { const d = [...document.querySelectorAll('#cal details.ev')].find(x => x.open), e = d.getBoundingClientRect(),
+                          c = d.querySelector('.evclose').getBoundingClientRect(), i = d.querySelector('.evicons').getBoundingClientRect(),
+                          right = Math.max(...[...d.querySelectorAll('.evicons > *')].filter(x => x.offsetParent).map(x => x.getBoundingClientRect().right));
+                          return [Math.round(c.left - e.left), Math.round(e.right - right), d.querySelectorAll('.evicons .evlinkto').length,
                                   Math.abs((i.top + i.bottom) / 2 - (c.top + c.bottom) / 2) <= 3 || i.bottom <= c.top + 1]; }""")
-        ok(r[0] <= 2 and r[1] <= 2 and r[2] == 1 and r[3], f"Clarification 'event tools': Close at the bottom left, the icons (with Link) at the right, beside it or on a line above {r}")
+        ok(r[0] <= 9 and r[1] <= 9 and abs(r[0] - r[1]) <= 2 and r[2] == 1 and r[3],
+           f"Clarification 'event tools': Close at the bottom left, the icons (with Link) at the event's right edge, as far in as Close, beside it or on a line above {r}")
+        # Clarification: deleting an event asks with its note under the question and No | Yes as the pair (0.2.8-beta.23, F16)
+        dl = None
+        if ev.locator(".evdel button").count():
+            ev.locator(".evdel button").click(); pg.wait_for_timeout(300)
+            dl = pg.evaluate("""() => { const d = document.getElementById('askdialog'), s = d.querySelector('.asksub'), p = d.querySelector('.pairbtns');
+                return [d.open, !!s && getComputedStyle(s).display === 'block', p ? Math.round(p.getBoundingClientRect().width) : 0, p ? Math.round(p.getBoundingClientRect().height) : 0,
+                        [...d.querySelectorAll('.pairbtns button')].map(b => b.textContent)]; }""")
+            pg.keyboard.press("Escape"); pg.wait_for_timeout(250)
+        ok(dl and dl[0] and dl[1] and dl[2] == 130 and dl[3] == 34 and dl[4] == ["No", "Yes"], f"Clarification 'questions': Delete asks with a note under it and No | Yes as the 130 × 34 pair {dl}")
         # Clarification: pop-ups: dark backdrop, 200 ms fade and scale-up; the theme's Cancel | Save
         ev.locator(".evedit").click(); pg.wait_for_timeout(700)
         bd = pg.evaluate("""() => { const d = document.getElementById('eventdialog'); return [getComputedStyle(d, '::backdrop').backgroundColor, getComputedStyle(d).animationName, getComputedStyle(d).animationDuration]; }""")
         ok(bd[0] == "rgba(0, 0, 0, 0.55)" and bd[1] == "popin" and bd[2] == "0.2s", f"Clarification 'pop-ups': dark backdrop, 200 ms fade and scale-up {bd}")
         fr = pg.frame_locator("#eventdialog iframe")
-        pr = fr.locator(".pairbtns").bounding_box()
+        pr = fr.locator("#evform .pairbtns").bounding_box()
         ok(pr and round(pr["width"]) == 130 and round(pr["height"]) == 34, f"…its Cancel | Save is the 130 × 34 pair ({pr})")
         pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         # Clarification: adding ends with Cancel | Save

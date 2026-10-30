@@ -35,3 +35,6 @@
   #eventdialog.popup.big { height:fit-content; max-height:calc(100vh - 48px) }
   #eventdialog > .dlghead { display:none }
   #eventdialog iframe { flex:0 1 auto; height:560px }
+  /* (0.2.8-beta.23, F16) a question's second line, under it and not bold; No | Yes as the theme's Cancel | Save pair */
+  dialog.ask .asktext .asksub { display:block; margin-top:2px; font-size:13.5px; font-weight:500; color:var(--muted) }
+  dialog.ask .askchoices .pairbtns button { padding:0 }

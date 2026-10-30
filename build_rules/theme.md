@@ -214,7 +214,8 @@ one here, with its card.
   a 200 ms fade and scale-up (none with reduced motion). Every Cancel | Save, pop-ups included, is the
   130 × 34 pair. (Pictures 2·8, 2·14)
 - An opened event: Close in the bottom left corner, its icons (link, reminders, edit, duplicate,
-  delete) on the right; when it's too narrow for one line, the icons go on a line above Close. (Part 1)
+  delete) on the right, as near the event's right edge as Close is to its left one; when it's too narrow for
+  one line, the icons go on a line above Close. (Part 1)
 - Events show the color Google shows: their own, their rule's, else their calendar's. (Part 1)
 - Rule lines say what the rule does, titled or not ("Items without an end time → Change length to 1:00"). (Picture 2·7)
 - Fields everywhere, pop-ups included: a 12 px muted label over a 34 px field, 2 px apart; a value that
@@ -237,6 +238,8 @@ one here, with its card.
   not paragraphs, everywhere on the site; the explanations go in the (?). (Picture 2·15)
 - Every date range has All: From | To | ☐ All (search, Print Preview, Import). (Picture 2·17) A feed module's Include says it in words instead: Dates (optional; empty = all), From over To (0.2.8-beta.17).
 - No browser alert or confirm boxes: every question and notice is the page's own pop-up. (Picture 2·18)
+  Deleting or hiding an event asks the question, a note in muted words on the line under it, and No | Yes
+  as the 130 × 34 Cancel | Save pair (0.2.8-beta.23, F16).
 - (i) is info (what the module is, then your note); (?) is help (how to). (Pictures 2·4, 2·9)
 - Every + opens a centred pop-up, the page dimmed and out of focus behind it. (Picture 2·18)
 - Modules have a 2 px border, with 1 px less padding all round, so they keep their size. (Picture 2·4)

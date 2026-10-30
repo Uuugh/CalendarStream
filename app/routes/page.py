@@ -8,6 +8,7 @@ from __future__ import annotations
 import calendar as pycal
 import gzip
 import re
+import secrets
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from urllib.parse import urlparse
@@ -271,6 +272,7 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
                 if q.strip() else cal_view(events, view if view in VIEWS else ui_view(), ref, lang)), "views": VIEWS,
         "view_explicit": store.get("ui_view") in VIEWS,
         "csrf": core.CSRF_TOKEN, "name": calendar_name(), "srcs": srcs,
+        "new_stream": secrets.token_urlsafe(24),       # + Add a feed's link, whole from the start (0.2.8-beta.23, F13.1)
         "dests": [dest_view(request, d, lang, sections) for d in destinations()], "dest_types": DESTINATION_TYPES,
         # every rule, highest priority first, with its label and calendars (All Rules; "+ Add a rule")
         "all_rules": [{**r, "label": rule_label(r, lang), "html": rule_label_html(r, lang),

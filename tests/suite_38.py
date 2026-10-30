@@ -80,7 +80,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             pg.click(f"#{sec} > .cfgline .cfgtoggle"); pg.wait_for_timeout(150)
         lt, sb = pg.locator("#activity .peek.latest").bounding_box(), pg.locator("#activity > .shead .statusbox").bounding_box()
         right = pg.evaluate("(() => { const e = document.querySelector('#activity .peek.latest'); return getComputedStyle(e).textAlign; })()")
-        ok(right == "right" and sb["x"] - (lt["x"] + lt["width"]) < 16, "Activities: Latest on the right, by Healthy")
+        ok(right == "left" and sb["x"] - (lt["x"] + lt["width"]) < 16, "Activities: Latest by Healthy (0.2.8-beta.23, F15.1: its lines left-aligned)")
         # I4: a second color change sticks; I3: the keys follow
         box = f"#src-{wid}"
         pg.click(f"{box} .cfgtoggle"); pg.wait_for_timeout(150)

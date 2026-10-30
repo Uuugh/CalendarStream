@@ -47,9 +47,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
        < p.index('id="end_time"') < p.index('id="start_tz"') < p.index('id="end_tz"') < p.index('id="description"') < p.index('id="linkbox"'),
        "F11: the fields in the picture's order, Notes after them, Link to below")
     lk = p[p.index('id="linkbox"'):p.index('class="actions bottom"')]
-    ok(re.search(r'data-kind="event" aria-expanded="false"', lk) and re.search(r'data-kind="rule"[^>]*disabled', lk) and 'data-kind="remove"' in lk
+    ok(re.search(r'class="seg" data-kind="event"', lk) and re.search(r'data-kind="rule"[^>]*disabled', lk) and 'data-kind="remove"' in lk
        and re.search(r'id="linkevent" hidden', lk) and 'id="linkbtn"' not in p,
-       "F11.2: Link to starts closed, with Event | Rule (not until it's saved) | Remove")
+       "F11.2: Link to starts closed, with Event | Rule (not until it's saved) | Remove (beta.23, F2: an ✕)")
     ok("evdelbtn" not in p and "evhidebtn" not in p and 'name="hidden"' not in p, "a new event has no Delete or Hide")
 
     p = ev(f"uid={U}&month=2026-10&embed=1")
@@ -96,10 +96,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok('form="deleteform" class="danger evdelbtn" data-ask="Delete this event?' in bottom and "> Delete</button>" in bottom and "evhidebtn" not in bottom,
        "F11.3: an added event says Delete (asking today's question, Q8)")
     lk = p[p.index('id="linkbox"'):p.index('class="actions bottom"')]
-    ok('class="seg on" data-kind="event" aria-expanded="true"' in lk and 'id="linkevent" hidden' not in lk and f'<option value="{U}" selected' in lk,
+    ok('class="seg on" data-kind="event"' in lk and 'id="linkevent" hidden' not in lk and f'name="link_to" id="link_to" value="{U}"' in lk,
        "F11.2: a linked event opens with Event open (Q11)")
     p = ev("date=2026-10-21&month=2026-10&link=1&embed=1")
-    ok('class="seg on" data-kind="event"' in p, "…as does the calendar's Link icon")
+    ok('data-pick-now="1"' in p, "…the calendar's Link icon opens Event (beta.23, F1: its small calendar at once)")
 
     # --- In the browser ---------------------------------------------------------------------------------
     from playwright.sync_api import sync_playwright
@@ -129,9 +129,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(fr.locator("#title").input_value() == "Drive to the airport" and fr.locator("#location").input_value() == "EWR"
            and fr.locator("#end_time").input_value() == "10:30am" and not fr.locator(".tplmenu").is_visible(),
            "F11.1: Choose from template fills in the event and closes")
-        fr.locator('.linkkind [data-kind="event"]').click(); pg.wait_for_timeout(100)
-        ok(fr.locator("#linkevent").is_visible() and fr.locator("#link_to option").count() > 5, "F11.2: Event opens the events to link to")
-        fr.locator("#link_to").select_option(index=2)
+        fr.locator('.linkkind [data-kind="event"]').click(); pg.wait_for_timeout(700)
+        ok(fr.locator("#pickdialog").is_visible() and fr.locator("#pickdialog button.pkev").count() > 5, "F11.2: Event opens the events to link to (beta.23, F1: in a small calendar)")
+        fr.locator("#pickdialog button.pkev").nth(2).click(); pg.wait_for_timeout(200)
         fr.locator('.linkkind [data-kind="remove"]').click(); pg.wait_for_timeout(100)
         ok(fr.locator("#linkevent").is_hidden() and fr.locator("#link_to").input_value() == "" and fr.locator(".linkkind .seg.on").count() == 0,
            "…Remove closes it and takes the link off")

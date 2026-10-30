@@ -132,11 +132,11 @@ details.gsteps ol > li.done { color:var(--muted) }
 #activity .peekline .ptime { color:var(--muted); flex:0 0 auto }
 #activity .peekline .pmsg { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 #activity .peekline .undobtn { width:22px; height:17px; border:0; border-radius:4px }   /* small: a rounded rectangle, never a pill */
-#activity .peekline.undone .pmsg, #activity tr.undone td:nth-child(3) { text-decoration:line-through; color:var(--muted) }
+#activity .peekline.undone .pmsg, #activity tr.undone td:nth-child(4) { text-decoration:line-through; color:var(--muted) }
 .histfilter { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:10px 0 6px; color:var(--muted) }
 .histfilter select, .histfilter input { height:34px; width:auto }
 .histfilter .hfwords { flex:1 1 160px; min-width:0 }
-.logwin .htime { width:140px } .logwin .htype { width:90px } .logwin .hundo { width:40px }
+.logwin .htime { width:140px } .logwin .htype { width:90px } .logwin .hundo { width:40px; padding-left:2px; padding-right:2px; text-align:center }
 .logwin td:nth-child(2) { color:var(--muted); font-size:12.5px }
 .logwin .undobtn { width:30px; height:26px; padding:0 }
 .vh { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0) }
@@ -153,4 +153,6 @@ details.gsteps ol > li.done { color:var(--muted) }
 .signout { display:flex; justify-content:flex-end; margin:6px 0 0 } .signout button { display:inline-flex; align-items:center; gap:4px; height:30px }
 #tpladd .deltag, #tpladd .addtag { display:none }        /* (one new template: nothing to delete or add here) */
 #tpladd .tplrow { flex-wrap:wrap }
-
+/* (0.2.8-beta.23, F15.1) the latest three lines stay in the header when History is open, beside Healthy, left-aligned */
+#activity.open > .shead .peek.latest { display:grid }
+#activity > .shead .peek.latest { text-align:left; margin-left:9px }

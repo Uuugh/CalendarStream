@@ -20,7 +20,7 @@
     if (pick && !pick.disabled) {
       document.getElementById('adddestpop').close();
       showKind(pick.dataset.type);
-      var d2 = document.getElementById('adddest2'); d2.showModal();
+      var d2 = document.getElementById('adddest2'); addDefaults(); d2.showModal();
       var n = d2.querySelector('.nameinput'); if (n) n.focus();
       return;
     }
@@ -82,6 +82,19 @@
     s.value = s.dataset.was || (s.options[0] && s.options[0].value) || '';
     location.href = '/?menu=settings#public';
   });
+  // (0.2.8-beta.23, F13.2) Label and Notes show, in grey, what they take when left empty: the top calendar the
+  // feed includes (one that comes from somewhere, not Local, when there is one) and that calendar's note
+  function addDefaults() {
+    var f = document.getElementById('adddest'); if (!f) return;
+    var on = Array.prototype.filter.call(f.querySelectorAll('input[name=sources]'), function (x) { return x.checked; });
+    var top = on.filter(function (x) { return !x.dataset.local; })[0] || on[0];
+    var n = f.querySelector('.nameinput'), o = f.querySelector('.noteinput');
+    if (n) n.placeholder = top && top.dataset.name ? top.dataset.name : n.dataset.default;
+    if (o) o.placeholder = top && top.dataset.note ? top.dataset.note : o.dataset.default;
+  }
+  document.addEventListener('change', function (e) {
+    if (e.target.name === 'sources' && e.target.form && e.target.form.id === 'adddest') addDefaults();
+  });
   // Enter in the add pop-up is Save (not Connect me, the form's first button)
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Enter' || !e.target.form || e.target.form.id !== 'adddest' || e.target.tagName !== 'INPUT') return;
@@ -89,7 +102,7 @@
   });
   // Cancel in the add pop-up starts it over: Calendar Feed, nothing typed
   document.addEventListener('close', function (e) {
-    if (e.target.id === 'adddest2') { var f = document.getElementById('adddest'); f.reset(); clearFix(f); }
+    if (e.target.id === 'adddest2') { var f = document.getElementById('adddest'); f.reset(); clearFix(f); addDefaults(); }
   }, true);
 })();
 

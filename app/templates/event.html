@@ -46,6 +46,39 @@
   .linkrule { display:flex; flex-wrap:wrap; align-items:center; gap:6px } .linkrule .k { font-size:12px; font-weight:600; color:var(--muted) }
   .linkrule button { display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 10px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
   .linkrule[hidden], .linkevent[hidden] { display:none }
+  /* (0.2.8-beta.23, F1, F2) the picked event on Link to's line (a click picks again), and ✕ at the line's end */
+  .linkkind .linkpicked { display:inline-flex; align-items:center; height:30px; margin-left:10px; padding:0 10px; max-width:100%; min-width:0; overflow:hidden;
+                          text-overflow:ellipsis; white-space:nowrap; border:1px solid var(--line); background:var(--card); color:var(--text); font-weight:600; font-size:14px }
+  .linkkind .linkpicked:hover { border-color:var(--accent) }
+  .linkkind .linkpicked[hidden] { display:none }
+  .linkkind .linkremove { width:30px; height:30px }
+  .linkkind { flex-wrap:nowrap } .linkkind .grow { flex:1 1 auto }
+  /* Link to › Event's small calendar (F1): the calendar's ‹ › Today and title; one month; events to pick */
+  dialog.pick { border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); color:var(--text); padding:12px; width:min(600px, calc(100vw - 16px)); max-height:calc(100vh - 16px) }
+  dialog.pick::backdrop { background:rgba(0,0,0,.55) }
+  dialog.pick[open] { animation:popin .2s ease-out }
+  @media (prefers-reduced-motion:reduce) { dialog.pick[open] { animation:none } }
+  .pkhead { display:flex; align-items:center; gap:5px }
+  .pkhead .pknav.iconbtn { width:34px } .pkhead .pktoday { height:34px; padding:0 12px }
+  .pkhead .pktitle { font-size:16px; margin-left:5px } .pkhead .pkclose { margin-left:auto }
+  .pknote { margin:5px 0; font-size:12px; color:var(--muted) }
+  .pkgrid { display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); border-top:1px solid var(--line); border-left:1px solid var(--line) }
+  .pkdow { padding:3px 4px; font-size:11px; font-weight:600; color:var(--muted); text-align:center; border-right:1px solid var(--line); border-bottom:1px solid var(--line) }
+  .pkday { min-height:62px; padding:2px; display:flex; flex-direction:column; gap:1px; min-width:0; border-right:1px solid var(--line); border-bottom:1px solid var(--line) }
+  .pkday.out { background:var(--soft) } .pkday.out .num { opacity:.5 }
+  .pkday .num { font-size:11px; font-weight:600; color:var(--muted); padding:0 2px }
+  .pkday.today .num { color:var(--accent) }
+  .pkev { display:block; width:100%; min-width:0; padding:1px 4px; border:0; border-left:3px solid var(--cal); border-radius:4px; text-align:left; font:500 11px/1.35 var(--font);
+          background:color-mix(in srgb, var(--cal) 16%, var(--card)); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer }
+  button.pkev:hover, button.pkev:focus-visible { background:color-mix(in srgb, var(--cal) 30%, var(--card)); outline:none }
+  .pkev .t { display:none }      /* (the time is in its tooltip: the title matters more in a small day) */
+  .pkev.off { cursor:not-allowed; opacity:.5 } .pkev.self { opacity:.75; outline:1px dashed var(--muted); outline-offset:-1px }
+  .withinfo .infodot { margin-left:3px; vertical-align:-3px }
+  .infodot.down .tip { top:calc(100% + 4px); bottom:auto }
+  .tip .tipmore { display:block; margin-top:6px }
+  dialog.ask .asktext .asksub { display:block; margin-top:2px; font-size:13.5px; font-weight:500; color:var(--muted) }
+  dialog.ask .asksub:empty { display:none }
+  dialog.ask .pairbtns > * { padding:0 }
   body.embed form.card { border:0; border-radius:0; padding:0; background:transparent }
   .backbtn { color:var(--accent) }
   .sub { color:var(--muted); font-size:13px; margin:0 0 5px }
@@ -167,8 +200,6 @@
     {% endif %}
     <div class="note">{% if src_type == "ccs" %}{{ _('<b>United’s version</b> (from CCS+)') }}{% else %}{{ _('<b>The feed’s version</b> (from {name})', name=src_name) }}{% endif %}{% if not e.edited %} — {{ _('not edited yet') }}{% endif %}<br>
       <span class="orig">{{ original.title }} · {{ original_range }}{% if original.location %} · {{ original.location }}{% endif %}</span></div>
-  {% elif e.origin == "custom" and not is_new %}
-    <div class="note">{{ _('Added on this page. It appears only in CalendarStream and Google, not in CCS+.') }}</div>
   {% endif %}
 
   <form class="card" method="post" action="/event/save" id="evform">
@@ -193,7 +224,9 @@
         </div>
         <div class="calrow">
           <div>
-            <label for="source">{{ _('Calendar') }}</label>
+            <label for="source" class="withinfo">{{ _('Calendar') }}{% if e.origin == "custom" %}
+              {# (0.2.8-beta.23, I2) in place of the note at the top #}
+              <span class="infodot down" tabindex="0" role="button" aria-label="{{ _('Info') }}" aria-expanded="false">{{ icon("info", 15) }}<span class="tip" role="tooltip">{{ _('An event added here goes to CalendarStream, its feeds and Google. CCS+ is never changed.') }}</span></span>{% endif %}</label>
             {% if is_new and sources|length > 1 %}
             <select id="source" name="source" class="zone">{% for x in sources %}<option value="{{ x.id }}"{% if x.id == e.source %} selected{% endif %}>{{ x.name }}</option>{% endfor %}</select>
             {% else %}
@@ -238,14 +271,19 @@
     </div>
     <div class="timelist" id="timelist" role="listbox" hidden></div>
 
-    {# Link to (F3.2; 0.2.8-beta.15; 0.2.8-beta.22, F11.2): starts closed with Event | Rule | Remove. Event opens
-       the event to delete or move with; Rule, the rules it follows (opens one) or a new one for it (its title
-       and date); Remove takes the link off at Save and closes it. An event that's linked opens at Event. #}
-    {% set link_open = link or open_link %}
-    <div class="linkbox" id="linkbox">
+    {# Link to (F3.2; 0.2.8-beta.15; 0.2.8-beta.22, F11.2; 0.2.8-beta.23, F1, F2): one line, Event | Rule, the event
+       picked, and ✕ at its end. Event opens a small calendar (Month view, this event's month) to pick the event
+       to delete or move with; the pick shows on this line ("Title · date", a click picks again) with Delete with
+       it / Move with it under it. Rule opens the rules it follows (opens one) or a new one for it (its title and
+       date). ✕ takes the link off at Save (so Cancel keeps it). An event that's linked opens at Event. #}
+    {% set link_open = link and link_label %}
+    <div class="linkbox" id="linkbox" data-uid="{{ e.uid }}" data-month="{{ day[:7] }}"{% if open_link and not link_open %} data-pick-now="1"{% endif %}>
       <div class="linkkind" role="group" aria-label="{{ _('Link to') }}">
         <span class="k">{{ icon("link", 16) }} {{ _('Link to') }}</span>
-        <button type="button" class="seg{% if link_open %} on{% endif %}" data-kind="event" aria-expanded="{{ 'true' if link_open else 'false' }}" aria-controls="linkevent">{{ _('Event') }}</button><button type="button" class="seg" data-kind="rule" aria-expanded="false" aria-controls="linkrule"{% if is_new %} disabled title="{{ _('Save the event first') }}"{% endif %}>{{ _('Rule') }}</button><button type="button" class="seg" data-kind="remove" title="{{ _('Take the link off (at Save)') }}">{{ icon("link_off", 16) }} {{ _('Remove') }}</button>
+        <button type="button" class="seg{% if link_open %} on{% endif %}" data-kind="event" aria-haspopup="dialog" aria-controls="pickdialog">{{ _('Event') }}</button><button type="button" class="seg" data-kind="rule" aria-expanded="false" aria-controls="linkrule"{% if is_new %} disabled title="{{ _('Save the event first') }}"{% endif %}>{{ _('Rule') }}</button>
+        <button type="button" class="linkpicked" id="linkpicked" title="{{ _('Pick another event') }}"{% if not link_open %} hidden{% endif %}>{{ link_label }}</button>
+        <span class="grow"></span>
+        <button type="button" class="iconbtn linkremove" data-kind="remove" title="{{ _('Remove the link') }}" aria-label="{{ _('Remove the link') }}">{{ icon("close", 18) }}</button>
       </div>
       <div class="linkrule" id="linkrule" hidden>
         {% if event_rules %}<span class="k">{{ _('Existing') }}</span>
@@ -254,26 +292,23 @@
         <button type="button" class="ghost newrulefor" data-title="{{ e.title }}" data-date="{{ day }}" data-sid="{{ e.source }}">{{ icon("add", 15) }} {{ _('Create new: its title and date') }}</button>
       </div>
       <div class="linkevent" id="linkevent"{% if not link_open %} hidden{% endif %}>
-      <label for="link_to">{{ _('Event') }}</label>
-      <select id="link_to" name="link_to" class="zone">
-        <option value="">{{ _('(not linked)') }}</option>
-        {% for x in link_choices %}<option value="{{ x.uid }}"{% if link and link.to == x.uid %} selected{% endif %}>{{ x.label }}{% if sources|length > 1 %} ({{ x.calendar }}){% endif %}</option>{% endfor %}
-      </select>
-      <div class="linkopts">
-        <label class="inline"><input type="checkbox" name="link_delete" value="1"{% if not link or link.delete %} checked{% endif %}> {{ _('Delete with it') }}</label>
-        <label class="inline"><input type="checkbox" name="link_move" value="1"{% if not link or link.move %} checked{% endif %}> {{ _('Move with it') }}</label>
-      </div>
+        <input type="hidden" name="link_to" id="link_to" value="{{ link.to if link_open else '' }}">
+        <div class="linkopts">
+          <label class="inline"><input type="checkbox" name="link_delete" value="1"{% if not link or link.delete %} checked{% endif %}> {{ _('Delete with it') }}</label>
+          <label class="inline"><input type="checkbox" name="link_move" value="1"{% if not link or link.move %} checked{% endif %}> {{ _('Move with it') }}</label>
+        </div>
       </div>
     </div>
 
     {# The bottom (F11, F11.3): Delete on the left (Hide, or Show, for an event from a calendar source, which
        only hides it from the feeds: its source would send it again), Revert beside it; Cancel | Save on the right #}
     <div class="actions bottom">
-      {% if can_delete %}<button type="submit" form="deleteform" class="danger evdelbtn" data-ask="{{ _('Delete this event? (Restore, or History › Undo, brings it back.)') }}">{{ trash }} {{ _('Delete') }}</button>
+      {% if can_delete %}<button type="submit" form="deleteform" class="danger evdelbtn" data-ask="{{ _('Delete this event?') }}&#10;{{ _('(It may be restored here or in History, Undo & Logs)') }}">{{ trash }} {{ _('Delete') }}</button>
       {% elif can_hide %}
         {% if e.hidden %}<button type="submit" form="hideform" class="ghost evhidebtn">{{ icon("visibility", 18) }} {{ _('Show') }}</button>
-        {% else %}<button type="submit" form="hideform" class="danger evhidebtn" data-ask="{{ _('Hide this event from the feeds? (Show, or History › Undo, brings it back.)') }}">{{ icon("visibility_off", 18) }} {{ _('Hide') }}</button>{% endif %}
-        <span class="infodot" tabindex="0" role="button" aria-label="{{ _('Info') }}" aria-expanded="false">{{ icon("info", 16) }}<span class="tip" role="tooltip">{{ _('This event comes from {name}, so it can’t be removed from there, but it can be hidden from the feeds. Hidden, it stays here, struck through; Show brings it back.', name=src_name) }}</span></span>
+        {% else %}<button type="submit" form="hideform" class="danger evhidebtn" data-ask="{{ _('Hide this event from the feeds?') }}&#10;{{ _('(It may be shown again here or in History, Undo & Logs)') }}">{{ icon("visibility_off", 18) }} {{ _('Hide') }}</button>{% endif %}
+        <span class="infodot" tabindex="0" role="button" aria-label="{{ _('Info') }}" aria-expanded="false">{{ icon("info", 16) }}<span class="tip" role="tooltip">{{ _('This event comes from {name}, so it can’t be removed from there, but it can be hidden from the feeds. Hidden, it stays here, struck through; Show brings it back.', name=src_name) }}
+          <span class="tipmore">{{ _('Changes here only affect CalendarStream and Google; CCS+ is never changed.') }} {{ _('Your edit is kept when the schedule is downloaded again.') }}</span></span></span>
       {% endif %}
       {% if original and e.edited %}<button type="submit" form="revertform" class="ghost">{{ _('Revert to United’s version') if src_type == "ccs" else _('Revert to the feed’s version') }}</button>{% endif %}
       <span class="grow"></span>
@@ -289,14 +324,16 @@
     <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}"></form>{% endif %}
   {% if can_hide %}<form method="post" action="/event/hide" id="hideform" hidden><input type="hidden" name="csrf" value="{{ csrf }}">{% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
     <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">{% if e.hidden %}<input type="hidden" name="show" value="1">{% endif %}</form>{% endif %}
-  <p class="muted foot">{{ _('Changes here only affect CalendarStream and Google; CCS+ is never changed.') }}{% if e.origin == "united" %} {{ _('Your edit is kept when the schedule is downloaded again.') }}{% endif %}</p>
   {% endif %}
 </main>
 {# Delete and Hide ask here, in the page's own pop-up (0.2.8-beta.15) #}
 <dialog id="askdialog" class="ask" aria-labelledby="asktext">
-  <p class="asktext" id="asktext"></p>
-  <div class="askchoices"><button type="button" class="ghost askno">{{ _('Cancel') }}</button><button type="button" class="danger solid askyes">{{ _('Yes') }}</button></div>
+  {# (0.2.8-beta.23, F16) the question, its note on the next line, and No | Yes as the theme's Cancel | Save pair #}
+  <p class="asktext" id="asktext"><span class="askq"></span><span class="asksub"></span></p>
+  <div class="askchoices"><span class="pairbtns"><button type="button" class="pcancel askno">{{ _('No') }}</button><button type="button" class="psave askyes">{{ _('Yes') }}</button></span></div>
 </dialog>
+{# Link to › Event's small calendar (0.2.8-beta.23, F1): its month comes from /event/pick #}
+<dialog id="pickdialog" class="pick" aria-labelledby="picktitle"><div class="pkbody"></div></dialog>
 <script>
 var T = { badTime: {{ _('Type a time like 9:30, 9:30pm or 21:30.')|string|tojson }}, zone: {{ _('Time zone')|string|tojson }},
           startZone: {{ _('Start time zone')|string|tojson }} };
@@ -306,15 +343,16 @@ document.querySelectorAll('button[data-ask]').forEach(function (btn) {
   btn.addEventListener('click', function (e) {
     e.preventDefault();
     var d = document.getElementById('askdialog'), form = document.getElementById(btn.getAttribute('form'));
-    d.querySelector('.asktext').textContent = btn.dataset.ask;
+    var lines = btn.dataset.ask.split('\n');
+    d.querySelector('.askq').textContent = lines[0]; d.querySelector('.asksub').textContent = lines.slice(1).join(' ');
     d.querySelector('.askyes').onclick = function () { d.close(); form.submit(); };
     d.querySelector('.askno').onclick = function () { d.close(); };
-    d.showModal();
+    d.showModal(); d.querySelector('.askyes').focus();
   });
 });
 // (i) (F11.3): opens on hover or focus; a click (a touch screen) keeps it open until the next click
 document.querySelectorAll('.infodot').forEach(function (dot) {
-  dot.addEventListener('click', function (e) { e.stopPropagation(); dot.classList.toggle('open'); dot.setAttribute('aria-expanded', String(dot.classList.contains('open'))); });
+  dot.addEventListener('click', function (e) { e.stopPropagation(); e.preventDefault(); dot.classList.toggle('open'); dot.setAttribute('aria-expanded', String(dot.classList.contains('open'))); });
   document.addEventListener('click', function () { dot.classList.remove('open'); dot.setAttribute('aria-expanded', 'false'); });
 });
 // Show the time fields only for timed events; for all-day events the end date is the last day.
@@ -508,20 +546,50 @@ document.querySelectorAll('.evprint').forEach(function (a) {
   size();
 })();
 {% endif %}
-// Link to (F11.2): Event or Rule opens its part; Remove takes the link off (at Save, so Cancel keeps it) and closes it.
+// Link to (F11.2; 0.2.8-beta.23, F1, F2): Event opens the small calendar to pick the event; the pick shows on the
+// line, with Delete with it / Move with it under it; Rule opens its part; ✕ takes the link off (at Save, so
+// Cancel keeps it) and closes them.
 (function () {
   var box = document.getElementById('linkbox'), pick = document.getElementById('link_to');
   if (!box) return;
-  var segs = box.querySelectorAll('.linkkind .seg');
+  var segs = box.querySelectorAll('.linkkind .seg'), picked = document.getElementById('linkpicked');
+  var dlg = document.getElementById('pickdialog'), body = dlg.querySelector('.pkbody'), shown = box.dataset.month;
   function show(kind) {
-    segs.forEach(function (x) { var on = x.dataset.kind === kind; x.classList.toggle('on', on); if (x.dataset.kind !== 'remove') x.setAttribute('aria-expanded', String(on)); });
-    box.querySelector('.linkevent').hidden = kind !== 'event'; box.querySelector('.linkrule').hidden = kind !== 'rule';
+    segs.forEach(function (x) { var on = x.dataset.kind === kind; x.classList.toggle('on', on); if (x.dataset.kind === 'rule') x.setAttribute('aria-expanded', String(on)); });
+    box.querySelector('.linkevent').hidden = kind !== 'event' || !pick.value;
+    picked.hidden = kind !== 'event' || !pick.value;
+    box.querySelector('.linkrule').hidden = kind !== 'rule';
   }
+  function load(month) {
+    return fetch('/event/pick?uid=' + encodeURIComponent(box.dataset.uid) + '&month=' + encodeURIComponent(month), { credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(function (html) { body.innerHTML = html; shown = month; });
+  }
+  function openPick() {
+    load(box.dataset.month).then(function () {       // (always on this event's month)
+      if (!dlg.open) dlg.showModal();
+      var first = body.querySelector('.pkev:not(.off)') || body.querySelector('.pkclose'); if (first) first.focus();
+    });
+  }
+  dlg.addEventListener('click', function (e) {
+    var nav = e.target.closest('.pknav');
+    if (nav) { load(nav.dataset.month); return; }
+    if (e.target.closest('.pkclose') || e.target === dlg) { dlg.close(); return; }
+    var ev = e.target.closest('button.pkev');
+    if (ev) {
+      pick.value = ev.dataset.uid; picked.textContent = ev.dataset.label;
+      dlg.close(); show('event'); picked.focus();
+    }
+  });
+  // (Escape closes only the small calendar, not the event's pop-up)
+  dlg.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dlg.close(); } });
   segs.forEach(function (b) { b.addEventListener('click', function () {
-    if (b.dataset.kind === 'remove') { pick.value = ''; show(''); return; }
+    if (b.dataset.kind === 'event') { show('event'); openPick(); return; }
     show(b.dataset.kind);
-    if (b.dataset.kind === 'event') pick.focus();
   }); });
+  picked.addEventListener('click', openPick);
+  box.querySelector('.linkremove').addEventListener('click', function () { pick.value = ''; picked.textContent = ''; show(''); });
+  if (box.dataset.pickNow) { show('event'); openPick(); }
   // A rule opens in the status page's rule dialog (the pop-up closes); on its own page, the status page opens with it
   function toRule(msg, query) {
     {% if embed %}parent.postMessage(msg, location.origin);{% else %}location.href = '/?' + query;{% endif %}

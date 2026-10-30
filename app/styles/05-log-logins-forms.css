@@ -71,7 +71,7 @@
   .h4 { font-weight:600; font-size:14px; margin:14px 0 0 }
   /* Month view: pin to keep an event open; empty spots add an event */
   .day { cursor:copy } .day .ev, .day a { cursor:pointer }
-  .ev .body { position:relative; padding-right:26px }
+  .ev .body { position:relative; padding-right:6px }   /* (0.2.8-beta.23, I1) as on the left: the pin it made room for went in 0.2.8 */
   /* Footer */
   .foot { text-align:center; font-size:12.5px; color:var(--muted); margin:8px 0 0 }
   .foot a { color:var(--muted) } .foot a:hover { color:var(--accent) }

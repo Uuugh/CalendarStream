@@ -51,7 +51,7 @@
     <div class="ficols">
       <div class="destcals"><div class="k">{{ _('Calendars') }}{{ help(_('Each event keeps its calendar’s colors and rules.')) }}</div>
         <div class="srcpicks">
-          {% for x in srcs %}<label class="srcpick"><input type="checkbox" name="sources" value="{{ x.id }}" form="{{ form }}"{% if picked is none or x.id in picked %} checked{% endif %}>
+          {% for x in srcs %}<label class="srcpick"><input type="checkbox" name="sources" value="{{ x.id }}" form="{{ form }}"{% if picked is none or x.id in picked %} checked{% endif %} data-name="{{ x.name }}" data-note="{{ x.note }}"{% if x.type == 'local' %} data-local="1"{% endif %}>
             <span class="swatch" style="--c:{{ x.color or '#1d4ed8' }}" aria-hidden="true"></span> {{ x.name }}</label>{% endfor %}
           {% if not srcs %}<span class="mnote">{{ _('Add a calendar first.') }}</span>{% endif %}
         </div></div>
@@ -65,13 +65,13 @@
 
   {# A Calendar Feed's link (F10): the public address (a drop-down: every one in ☰ Settings, then + Add a domain),
      /calendar/, the stream name (editable: an old one brings old links back; F5) and .ics, then copy. #}
-  {% macro feedlink(form, base, token, placeholder="") -%}
+  {% macro feedlink(form, base, token, placeholder="", own_title="") -%}
   <div class="k">{{ _('Feed link') }}{{ help(_('The second part is the <b>stream name</b>: reinstalled, or removed a feed by mistake? Type the old stream name (or paste a whole old link) › Save: subscriptions in other calendar apps keep working. It’s checked on Save, so two feeds never share one.')) }}</div>
   <div class="feedlink inbox">
     <select name="base" class="code fbase" form="{{ form }}" aria-label="{{ _('Address') }}">
       {% for u in public.all %}<option value="{{ u }}"{% if u == base %} selected{% endif %}>{{ u }}</option>{% endfor %}
       <option value="+add">{{ _('+ Add a domain') }}</option>
-    </select><span class="fmid code">/calendar/</span><input type="text" name="stream" class="code fstream" form="{{ form }}" value="{{ token }}" placeholder="{{ placeholder }}" spellcheck="false" autocomplete="off" aria-label="{{ _('Stream name') }}"><span class="fmid code">.ics</span>
+    </select><span class="fmid code">/calendar/</span>{% if own_title %}<span class="fstreamwrap"><span class="fstitle">{{ own_title }}</span>{% endif %}<input type="text" name="stream" class="code fstream" form="{{ form }}" value="{{ token }}" placeholder="{{ placeholder }}" spellcheck="false" autocomplete="off" aria-label="{{ _('Stream name') }}">{% if own_title %}</span>{% endif %}<span class="fmid code">.ics</span>
     <button type="button" class="inboxbtn copybtn feedcopy" title="{{ _('Copy') }}" aria-label="{{ _('Copy the feed link') }}">{{ icon("content_copy", 15) }}</button>
   </div>
   {%- endmacro %}
@@ -98,9 +98,13 @@
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="feed">
             <div class="dlghead"><button type="button" class="ghost iconbtn dlgback adddestback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}">{{ icon("arrow_back", 20) }}</button>
               <div class="title" id="adddest2title">{{ _('Add a feed') }} · <span class="addkind" data-feed="{{ _('Calendar Feed') }}" data-google1="{{ _('Google 1-way Sync') }}" data-google="{{ _('Google 2-way Sync') }}">{{ _('Calendar Feed') }}</span></div></div>
+            {# (0.2.8-beta.23, F13.2) Label and Notes have titles here, so "Calendar Feed" isn't taken for the label;
+               their light grey text is what they take when left empty: the top calendar it includes, and its note #}
             <div class="nameline addname">
-              <input type="text" class="namebox nameinput" name="name" maxlength="100" aria-label="{{ _('Label') }}" placeholder="{{ _('Label') }}">
-              <span class="notebox">{{ notedot("") }}<input type="text" class="noteinput" name="note" maxlength="300" placeholder="{{ _('Note (optional)') }}" aria-label="{{ _('Note') }}"></span>
+              <span class="addfield"><span class="k">{{ _('Label') }}{{ help(_('Left empty, the feed is named after the top calendar it includes (shown in grey).')) }}</span>
+              <input type="text" class="namebox nameinput" name="name" maxlength="100" aria-label="{{ _('Label') }}" placeholder="{{ _('Label') }}" data-default="{{ _('Label') }}"></span>
+              <span class="addfield"><span class="k">{{ _('Notes') }}{{ help(_('Left empty, the feed takes the note of the top calendar it includes (shown in grey), if it has one.')) }}</span>
+              <span class="notebox">{{ notedot("") }}<input type="text" class="noteinput" name="note" maxlength="300" placeholder="{{ _('Note (optional)') }}" data-default="{{ _('Note (optional)') }}" aria-label="{{ _('Note') }}"></span></span>
             </div>
             {% if not public.url %}
             <div class="pubask">
@@ -112,7 +116,7 @@
               <p class="mnote">{{ _('This page’s https:// address, e.g. <code>https://cal.example.com</code> (☰ Settings changes it later).') }}</p>
             </div>
             {% endif %}
-            <div class="addfor" data-for="feed">{{ feedlink("adddest", public.all[0], "", _('a new one is made on Save')) }}</div>
+            <div class="addfor" data-for="feed">{{ feedlink("adddest", public.all[0], new_stream, _('a new one is made on Save'), _('(or enter your own calendar url)')) }}</div>
             <div class="k">{{ _('Account') }}{{ help(_('A Google module’s calendar is made in this Google account.')) }}</div>
             <div class="addfor" data-for="feed"><div class="accline mnote">{{ _('Not needed: each app subscribes to the link') }}</div></div>
             <div class="addfor" data-for="google" hidden><div class="accline"><span class="mnote">{{ _('No Google account specified yet') }}</span>

@@ -9,7 +9,38 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.22**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.23**
+
+## 0.2.8-beta.23 — 2026-10-30
+
+### Changed
+- **F1** Event pop-up › **Link to › Event** opens a small calendar at once, on the event's month (Month view, with
+  the calendar's ‹ › Today; nothing is added or edited there). A click on an event picks it and closes it; this
+  event and the ones rules make can't be picked. The pick shows on Link to's line ("Title · date", click it to
+  pick again), with Delete with it / Move with it under it, in place of the drop-down. The calendar's Link icon
+  opens it straight away.
+- **F2** Link to's **Remove** is an ✕ (icon only, "Remove the link") at the end of the Event | Rule line.
+- **F13** + Add a feed: **F13.1** the feed link is whole from the start (a stream name filled in), with "(or enter
+  your own calendar url)" over the stream name; **F13.2** "Label (?)" and "Notes (?)" over their fields, showing in
+  grey the top calendar it includes and that calendar's note; left empty, the feed takes them.
+- **F14** All Rules' "All calendars" badge: blue words and border on a clear background, not a white button.
+- **F15** History, Undo & Logs remembers the last **100** changes by default (was 20); a number you save is kept.
+  **F15.1** The latest three lines stay in the header, folded or open, beside Healthy, left-aligned. **F15.2** Undo
+  has its own column, between Type and Event.
+- **F16** Deleting an event asks "Delete this event?" with "(It may be restored here or in History, Undo & Logs)"
+  under it, and **No | Yes** as the theme's Cancel | Save pair; Hide asks the same way ("(It may be shown again
+  here or in History, Undo & Logs)").
+
+### Fixed
+- **I1** An open event's icons stopped short of the event's right edge: its details kept 26 px on the right for the
+  pin removed in 0.2.8. Now 6 px, as on the left; the theme suite measures the icons against the event.
+- **I2** The event pop-up's "Changes here only affect CalendarStream and Google…" line is gone: an added event has an
+  (i) beside Calendar ("An event added here goes to CalendarStream, its feeds and Google. CCS+ is never changed."),
+  in place of the note at the top; a source's event has the whole line in Hide's (i).
+
+### Build rules
+- **R1** Recommended builds are always split for the least usage: one build, unless splitting saves more, with the
+  reason, checked again when new inputs come in (1-plan.md, PLAN shows point 5; 0-overview.md).
 
 ## 0.2.8-beta.22 — 2026-10-30
 

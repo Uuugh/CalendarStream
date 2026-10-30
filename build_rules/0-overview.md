@@ -27,8 +27,8 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 - The waiting list is sorted I, then F, then R, in number order; each number in blue, amber when Claude is
   asking something under it.
 - "Waiting on" spells out the recommended path: the exact command to say next, when (for example after a usage
-  reset), in which conversation, and how the remaining builds are split, with the reason when it saves usage (a
-  new conversation, a smaller build, waiting for a reset).
+  reset), in which conversation, and how the remaining builds are split (for the least usage, 1-plan.md point 5),
+  with the reason when it saves usage (a new conversation, a smaller build, waiting for a reset).
 - It is one artifact, "CalendarStream Dashboard", kept from conversation to conversation: a new conversation
   opens it from the link in the handoff (or the artifact list) and updates that one, never a copy.
 

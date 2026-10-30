@@ -106,7 +106,8 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         "original_range": _range_text(original, *_span(original)[2:], lang) if original else "",
         "csrf": core.CSRF_TOKEN, "month": month or (e.start[:7]), "tz": display_zone(), "embed": embed == "1",
         "default_sid": (source_ids() or [""])[0],
-        "link": event_links().get(uid) if uid else None, "link_choices": link_choices(e, uid, lang), "open_link": link == "1",
+        "link": event_links().get(uid) if uid else None, "open_link": link == "1",
+        "link_label": link_label((event_links().get(uid) or {}).get("to", ""), lang) if uid else "",
         "event_rules": event_rules(e) if uid else [],
     }, lang=lang)
 
@@ -126,22 +127,27 @@ def event_rules(e: Event) -> list[dict]:
     return found
 
 
-def link_choices(e: Event, uid: str, lang: str) -> list[dict]:
-    """The events an event can be linked to (F3.2): those within three weeks of it, in every calendar."""
-    try:
-        day = date.fromisoformat(e.start[:10])
-    except ValueError:
-        return []
-    first, last = (day - timedelta(days=21)).isoformat(), (day + timedelta(days=22)).isoformat()
+def link_label(to: str, lang: str) -> str:
+    """How a picked event shows on Link to's line (0.2.8-beta.23, F1): "Title · date"; "" when it's gone."""
+    other = store.get_event(to) if to else None
+    if other is None or other.deleted:
+        return ""
+    return f"{other.title} · {dates_for(lang).day(_span(other)[0])}"
+
+
+@app.get("/event/pick", dependencies=[Depends(gui_auth)])
+def pick_event(request: Request, uid: str = "", month: str | None = None):
+    """Link to › Event's small calendar (0.2.8-beta.23, F1): one month of the calendar, with its own ‹ › Today,
+    to pick the event to link to. It adds and edits nothing; this event and the ones rules make can't be picked."""
+    y, m = _parse_month(month)
+    lang = lang_for(request)
+    events = [e for e in store.load_events() if not e.deleted]
+    cal = core.cal_view(events, "month", date(y, m, 1), lang)
+    today = now().astimezone(display_tz()).date()
     d = dates_for(lang)
-    names = {sid: calendar_name(sid) for sid in source_ids()}
-    out = []
-    for x in sorted(store.load_events(), key=lambda x: x.start):
-        if x.uid == uid or x.origin == "rule" or x.hidden or not (first <= x.start[:10] < last):
-            continue
-        when = d.day(date.fromisoformat(x.start[:10])) + ("" if x.all_day else " " + d.clock(datetime.fromisoformat(x.start).astimezone(display_tz())))
-        out.append({"uid": x.uid, "label": f"{when} · {x.title}", "calendar": names.get(x.source, "")})
-    return out[:300]
+    shown = {it["e"].uid: it["e"] for week in cal["weeks"] for day in week for it in day["items"]}
+    starts = {u: d.day(_span(e)[0]) for u, e in shown.items()}      # (a picked event shows as "Title · its first day")
+    return page(request, "event-pick.html", {"cal": cal, "uid": uid, "this_month": f"{today:%Y-%m}", "starts": starts}, lang=lang)
 
 
 def save_link(uid: str, to: str, delete: bool, move: bool):

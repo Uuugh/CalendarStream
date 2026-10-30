@@ -684,7 +684,7 @@ MODULE_ABOUT = {"local": "Only the events you add here. Goes into every feed.",
 SOURCE_BASES = ("calendar_name", "calendar_color", "calendar_tags", "rule_subs", "defaults", "note", "sync_interval",
                 "http_cache", "status", "feed_reads")
 UNDO_KEYS = ("sources", "destinations", "rules", "event_templates", "event_alarms", "event_links", "rule_conflicts_ignored")
-UNDO_KEEP = 20          # changes remembered for Undo, unless Settings › History says otherwise
+UNDO_KEEP = 100         # changes remembered for Undo, unless History says otherwise (20 until 0.2.8-beta.23, F15)
 
 
 def undo_keep() -> int:

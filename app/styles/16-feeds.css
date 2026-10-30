@@ -1,19 +1,19 @@
   /* --- Feeds (0.2.8-beta.17) --------------------------------------------------------------------- */
   /* F12: the note in the header, after the label. Expanded: a rounded field that starts with the (i), so the
      (i) stays where it was; folded: only the (i), raised, when there's a note */
-  .module .nameline > .notebox, .addname > .notebox { display:inline-flex; align-items:center; min-width:0 }
+  .module .nameline > .notebox, .addname .notebox { display:inline-flex; align-items:center; min-width:0 }
   .module .notebox > .notedot { margin-left:2px; top:-.35em }
   /* (0.2.8-beta.21, F5) folded, the label is only as wide as its words, so its (i) is raised right after it (a superscript) */
   .module:not(.cfgopen) .nameline > .namebox { flex:0 1 auto; width:auto; padding-right:0 }
-  .module.cfgopen .nameline > .notebox, .addname > .notebox { flex:1 1 0; height:24px; margin-left:5px; padding:0 0 0 4px; border:1px solid var(--line);
+  .module.cfgopen .nameline > .notebox, .addname .notebox { flex:1 1 0; height:24px; margin-left:5px; padding:0 0 0 4px; border:1px solid var(--line);
                                                        border-radius:6px; background:var(--bg) }
   .module.cfgopen .notebox > .notedot, .addname .notebox > .notedot { top:0; margin-left:0 }
   .noteinput { flex:1 1 auto; min-width:0; height:22px; border:0; padding:0 6px; background:transparent; color:var(--text); font:13px var(--font) }
   .noteinput:focus { outline:none } .notebox:focus-within { outline:2px solid color-mix(in srgb, var(--accent) 45%, transparent) }
   .module.cfgopen .nameline > .namebox { flex:0 1 280px }
   .addname { display:flex; align-items:center; gap:0 }
-  .addname > .namebox { flex:0 1 280px; height:30px; padding:0 9px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text); font:600 14px var(--font) }
-  .addname > .notebox { height:30px; border-radius:var(--r) }
+  .addname .namebox { flex:0 1 280px; height:30px; padding:0 9px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text); font:600 14px var(--font) }
+  .addname .notebox { height:30px; border-radius:var(--r) }
   /* The module's body: its link, account and Include on the left; for a feed, the app buttons on the right */
   .destbody { display:flex; gap:9px; align-items:flex-start; margin-top:5px }
   .destmain { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:5px }
@@ -105,8 +105,20 @@
   /* (the add pop-up never wider than the screen; on a phone the note goes under the label) */
   dialog#adddest2[open] { grid-template-columns:minmax(0, 1fr) } #adddest > * { min-width:0 }
   @media (max-width:700px) {
-    .addname { flex-wrap:wrap; gap:5px } .addname > .namebox, .addname > .notebox { flex:1 1 100%; margin-left:0 }
+    .addname { flex-wrap:wrap; gap:5px } .addname > .addfield { flex:1 1 100% }
     .module.cfgopen .nameline { flex-wrap:wrap; gap:5px } .module.cfgopen .nameline > .namebox { flex:1 1 100% }
     .module.cfgopen .nameline > .notebox { flex:1 1 100%; margin-left:0 }
     .feedlink select.fbase { max-width:38% }
   }
+  /* (0.2.8-beta.23, F13.2) + Add a feed: "Label (?)" and "Notes (?)" over their fields; F13.1: the feed link's
+     stream name has its title over it, on the Feed link line */
+  .addname { align-items:flex-end; gap:0 5px }
+  .addname > .addfield { display:flex; flex-direction:column; gap:2px; min-width:0 }
+  .addname > .addfield:first-child { flex:0 1 280px } .addname > .addfield:last-child { flex:1 1 0 }
+  .addname .addfield > .namebox, .addname .addfield > .notebox { flex:none; width:100%; margin-left:0 }
+  #adddest .addname .k { margin:0 }
+  .feedlink .fstreamwrap { position:relative; flex:1 1 120px; min-width:60px; display:flex }
+  .feedlink .fstreamwrap > input.fstream { flex:1 1 auto }
+  .feedlink .fstitle { position:absolute; left:0; bottom:calc(100% + 6px); font:500 12px var(--font); color:var(--muted); white-space:nowrap; pointer-events:none }
+  @media (max-width:700px) { .addname { flex-wrap:wrap; gap:5px } .addname > .addfield:first-child, .addname > .addfield:last-child { flex:1 1 100% } }
+  @media (max-width:700px) { .feedlink .fstitle { left:auto; right:0 } }     /* (a narrow stream name: the title ends with it) */

@@ -154,6 +154,6 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(re.search(r'Long days → Change to all-day', p) is not None, "F4: a titled rule line says what it does")
     # F2: the event's Link icon opens the pop-up at "Linked to"
     e = c.get(f"/event?uid={du}&link=1&embed=1").text
-    ok('id="linkbox">' in e and 'class="pairbtns"><a class="pcancel evcancel"' in e, "F2: Link opens the edit pop-up at Linked to; Cancel | Save is the theme's pair")
+    ok('id="linkbox"' in e and 'class="pairbtns"><a class="pcancel evcancel"' in e, "F2: Link opens the edit pop-up at Linked to; Cancel | Save is the theme's pair")
 srv.should_exit = True
 print("FAILED:", fails) if fails else print("ALL PASSED")

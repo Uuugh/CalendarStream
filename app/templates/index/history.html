@@ -1,7 +1,8 @@
   {% macro t(d) %}{{ dates.when(d, cal.today) if d else _('never') }}{% endmacro %}
   {# History, Undo & Logs (0.2.8-beta.15; was Activities and Logs): every line with its Time and Type, the
      changes made on the page with Undo / Redo (a stack: the newest first), a filter, how many changes are
-     remembered, and the container's own log. Folded, its header shows the latest lines. #}
+     remembered, and the container's own log. Its header shows the latest lines, folded or open (0.2.8-beta.23,
+     F15.1); Undo has its own column between Type and Event (F15.2). #}
   {% macro undobtn(h) -%}
   {% if h.id == undo_top %}<button class="ghost iconbtn undobtn" form="undoform" name="entry" value="{{ h.id }}" title="{{ _('Undo') }}" aria-label="{{ _('Undo') }}">{{ icon("undo", 16) }}</button>
   {%- elif h.id == redo_next %}<button class="ghost iconbtn undobtn" form="redoform" name="entry" value="{{ h.id }}" title="{{ _('Redo') }}" aria-label="{{ _('Redo') }}">{{ icon("redo", 16) }}</button>{% endif %}
@@ -11,7 +12,7 @@
     <form method="post" action="/history/undo" id="redoform" data-swap="#sources|#destinations|#cal|#rules|#templates|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="redo" value="1"></form>
     <div class="shead">
       <span class="bigtitle">{{ icons.activity|safe }}{{ _('History, Undo &amp; Logs') }}</span>
-      {# folded: the latest lines that fit, with Undo / Redo where it applies #}
+      {# the latest three lines, with Undo / Redo where it applies #}
       {% if history %}<div class="peek latest">{% for h in history[:3] %}<div class="peekline{% if h.state == 'undone' %} undone{% endif %}"><span class="ptime">{{ dates.clock(h.time) }}</span><span class="pmsg" title="{{ msg(h.msg) }}">{{ msg(h.msg) }}</span>{{ undobtn(h) }}</div>{% endfor %}</div>{% endif %}
       <div class="statusbox {{ 'good' if healthy else 'warn' }}">{{ chip('good' if healthy else 'warn', _('Healthy') if healthy else _('Unhealthy')) }}</div>
     </div>
@@ -37,8 +38,8 @@
       <input type="search" class="hfwords" placeholder="{{ _('Words') }}" aria-label="{{ _('Words') }}">
       <select class="hftime" aria-label="{{ _('Time') }}"><option value="">{{ _('Any time') }}</option><option value="1">{{ _('Last hour') }}</option><option value="24">{{ _('Last 24 hours') }}</option><option value="168">{{ _('Last 7 days') }}</option><option value="720">{{ _('Last 30 days') }}</option></select>
     </div>
-    {% if history %}<div class="logwin"><table><thead><tr><th class="htime">{{ _('Time') }}</th><th class="htype">{{ _('Type') }}</th><th>{{ _('Event') }}</th><th class="hundo"><span class="vh">{{ _('Undo') }}</span></th></tr></thead><tbody>
-      {% for h in history %}<tr data-kind="{{ h.kind }}" data-at="{{ h.time.timestamp()|int }}"{% if h.state == 'undone' %} class="undone"{% endif %}><td>{{ dates.short(h.time.date()) }} {{ dates.clock(h.time, true) }}</td><td>{{ _(h.kind) if h.kind else '' }}</td><td class="lvl-{{ h.level }}">{{ msg(h.msg) }}{% if h.state == 'undone' %} <span class="muted">({{ _('undone') }})</span>{% endif %}</td><td>{{ undobtn(h) }}</td></tr>{% endfor %}
+    {% if history %}<div class="logwin"><table><thead><tr><th class="htime">{{ _('Time') }}</th><th class="htype">{{ _('Type') }}</th><th class="hundo"><span class="vh">{{ _('Undo') }}</span></th><th>{{ _('Event') }}</th></tr></thead><tbody>
+      {% for h in history %}<tr data-kind="{{ h.kind }}" data-at="{{ h.time.timestamp()|int }}"{% if h.state == 'undone' %} class="undone"{% endif %}><td>{{ dates.short(h.time.date()) }} {{ dates.clock(h.time, true) }}</td><td>{{ _(h.kind) if h.kind else '' }}</td><td class="hundo">{{ undobtn(h) }}</td><td class="lvl-{{ h.level }}">{{ msg(h.msg) }}{% if h.state == 'undone' %} <span class="muted">({{ _('undone') }})</span>{% endif %}</td></tr>{% endfor %}
     </tbody></table></div>{% else %}<p class="muted">{{ _('Nothing yet.') }}</p>{% endif %}
     <div class="histfoot">
       <form method="post" action="/history/keep" class="clientform watch keepform" data-swap="#activity">

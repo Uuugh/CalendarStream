@@ -12,7 +12,7 @@ var T = {
   syncing: {{ _('Syncing…')|string|tojson }}, saving: {{ _('Saving…')|string|tojson }},
   copiedReport: {{ _('Report copied')|string|tojson }}, longReport: {{ _('The report is long, so GitHub gets the start of it; the whole report is copied: paste it into the issue.')|string|tojson }},
   alreadyHere: {{ _('Already in this calendar ({n} of {total})')|string|tojson }},
-  failed: {{ _('Failed')|string|tojson }}, prefFailed: {{ _('That setting wasn’t saved: CalendarStream couldn’t be reached, or refused it. Try again.')|string|tojson }}, ok: {{ _('OK')|string|tojson }}, cancel: {{ _('Cancel')|string|tojson }}, yes: {{ _('Yes')|string|tojson }}
+  failed: {{ _('Failed')|string|tojson }}, prefFailed: {{ _('That setting wasn’t saved: CalendarStream couldn’t be reached, or refused it. Try again.')|string|tojson }}, ok: {{ _('OK')|string|tojson }}, cancel: {{ _('Cancel')|string|tojson }}, yes: {{ _('Yes')|string|tojson }}, no: {{ _('No')|string|tojson }}
 };
 
 // Icons the scripts put next to a message (Material Symbols).
@@ -21,30 +21,38 @@ var ICON = { ok: {{ icon("check_circle", 15)|string|tojson }}, fail: {{ icon("ca
 
 // Questions and notices in a web pop-up (0.2.8-beta.15), never the browser's own alert / confirm boxes:
 // ask(text, [{label, value, cls}], vertical) resolves to the chosen value (null when closed).
-function ask(text, choices, vertical) {
-  var d = document.getElementById('askdialog'), box = d.querySelector('.askchoices');
-  d.querySelector('.asktext').textContent = text;
+// A question's first line is the question; a second line (after a line break) is a note under it, not bold
+// (0.2.8-beta.23, F16). pair: the choices are the theme's Cancel | Save pair (No | Yes).
+function ask(text, choices, vertical, pair) {
+  var d = document.getElementById('askdialog'), box = d.querySelector('.askchoices'), q = d.querySelector('.asktext');
+  var lines = String(text).split('\n');
+  q.textContent = lines[0];
+  if (lines.length > 1) { var sub = document.createElement('span'); sub.className = 'asksub'; sub.textContent = lines.slice(1).join(' '); q.appendChild(sub); }
   box.classList.toggle('vert', !!vertical); box.innerHTML = '';
+  var holder = box;
+  if (pair) { holder = document.createElement('span'); holder.className = 'pairbtns'; box.appendChild(holder); }
   return new Promise(function (ok) {
-    choices.forEach(function (c) {
-      var b = document.createElement('button'); b.type = 'button'; b.className = c.cls || ''; b.textContent = c.label;
+    choices.forEach(function (c, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = pair ? (i ? 'psave' : 'ghost pcancel') : (c.cls || ''); b.textContent = c.label;
       b.addEventListener('click', function () { ok(c.value); d.close(); });
-      box.appendChild(b);
+      holder.appendChild(b);
     });
     d.addEventListener('close', function once() { d.removeEventListener('close', once); ok(null); });
     d.showModal();
-    var last = box.lastElementChild; if (last) last.focus();
+    var last = holder.lastElementChild; if (last) last.focus();
   });
 }
 function tell(text) { return ask(text, [{ label: T.ok, value: true }]); }
 function confirmed(text, yes) { return ask(text, [{ label: T.cancel, value: false, cls: 'ghost' }, { label: yes || T.yes, value: true, cls: 'danger solid' }]); }
+// No | Yes in the theme's Cancel | Save pair (F16): deleting or hiding an event
+function confirmedPair(text) { return ask(text, [{ label: T.no, value: false }, { label: T.yes, value: true }], false, true); }
 // A form that asks first: sent only after Yes in the pop-up
 function guard(f, text) {
   f.addEventListener('submit', function (e) {
     if (f.dataset.confirmed) { delete f.dataset.confirmed; return; }
     e.preventDefault(); e.stopImmediatePropagation();
     var sub = e.submitter && e.submitter.form === f ? e.submitter : undefined;
-    confirmed(typeof text === 'function' ? text() : text).then(function (y) { if (y) { f.dataset.confirmed = '1'; f.requestSubmit(sub); } });
+    (f.dataset.pair ? confirmedPair : confirmed)(typeof text === 'function' ? text() : text).then(function (y) { if (y) { f.dataset.confirmed = '1'; f.requestSubmit(sub); } });
   });
 }
 

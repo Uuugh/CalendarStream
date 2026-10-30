@@ -142,11 +142,13 @@ logins or setup codes lock an address out for 15 minutes.
   **Location** (with a map button that opens the place in Google Maps), **Calendar | Change color**,
   **All-day** and **The end is in a different time zone**, **Starts | Ends** with their times, and the time
   zone; on the right, **Notes**, as tall as the fields (drag it taller and the pop-up grows). Under them,
-  **Link to**: **Event** links it to another event (e.g. a drive to the airport to its trip: **Delete with
-  it** and/or **Move with it**), **Rule** opens the rules it follows or makes one for it, **Remove** takes the
-  link off when you Save. At the bottom, **Delete** (asks first) and **Cancel | Save**; an event from a
-  calendar source says **Hide** instead (its source would send it again): it's left out of the feeds and stays
-  here struck through, with **Show** to bring it back. The **search** icon (left of Time Zone) opens a search line: words found in
+  **Link to**: **Event** opens a small calendar (its month, with ‹ › Today) to pick another event to link it
+  to (e.g. a drive to the airport to its trip: **Delete with it** and/or **Move with it**); the pick shows on
+  the line ("Title · date", click it to pick again). **Rule** opens the rules it follows or makes one for it,
+  and **✕** takes the link off when you Save. At the bottom, **Delete** (asks first: **No | Yes**) and
+  **Cancel | Save**; an event from a calendar source says **Hide** instead (its source would send it again):
+  it's left out of the feeds and stays here struck through, with **Show** to bring it back. Nothing here ever
+  changes CCS+ (the (i) beside Calendar, or Hide's, says so). The **search** icon (left of Time Zone) opens a search line: words found in
   titles, places and notes, one calendar or all, from and to (a year back to a year ahead when empty);
   matches are listed by day while you type, and ✕ brings the calendar back. On a computer, adding and editing an
   event (and the rule dialog) open in a pop-up; on a phone they're a full page with a **←** back
@@ -239,7 +241,9 @@ logins or setup codes lock an address out for 15 minutes.
     copy), or copy the link from its field for any other app. The link is the address (a drop-down of every
     public address in ☰ Settings, ending in **+ Add a domain**), `/calendar/`, the **stream name** and `.ics`:
     after a reinstall, or removing a feed by mistake, type the old stream name (or paste a whole old link) ›
-    Save, and existing subscriptions work again. It's checked on Save, so two feeds never share one.
+    Save, and existing subscriptions work again. It's checked on Save, so two feeds never share one. A new
+    feed's link is filled in from the start (or enter your own), and its **Label** and **Notes**, left empty,
+    take the name and note of the top calendar it includes.
   - **Google 2-way Sync** (needs **Google Calendar API Sync**, which the admin turns on in ☰ Settings; dimmed
     until then): a calendar of its own in Google, kept up to date within seconds, with your rule colors and
     reminders, and **Sync Now** in its header; changes made there come back here.
@@ -304,12 +308,12 @@ logins or setup codes lock an address out for 15 minutes.
 - **Event Templates** (like All Rules: "2 Templates" in a box, Expand for Details, **+** in the bottom right corner, Cancel | Save): ready-made events (title, length or all day, location, color) for Add-event
   rules and for **Choose from template** when adding an event by hand.
 - **History, Undo & Logs** (a module like the others: it opens only from its Expand line): each check
-  and what changed, for each source, then every line as **Time | Type | Event | Undo**, with a filter
+  and what changed, for each source, then every line as **Time | Type | Undo | Event**, with a filter
   (a Type, words, a time). Changes made on the page can be **undone** and **redone** (newest first);
-  it remembers the last 20 (you choose how many). A deleted event stays struck through and greyed,
+  it remembers the last 100 (you choose how many). A deleted event stays struck through and greyed,
   saying where it was deleted (here, in Google Calendar, by United, gone from the feed), with
-  **Restore**, until its Undo is forgotten. **Container log** shows what `docker logs` shows. Folded,
-  it shows the latest lines (with Undo / Redo) and **Healthy**, or **Unhealthy** while a problem is
+  **Restore**, until its Undo is forgotten. **Container log** shows what `docker logs` shows. Its header
+  shows the latest lines (with Undo / Redo) and **Healthy**, or **Unhealthy** while a problem is
   still there (a calendar failing, a sign-in rejected, Google sync failing).
 - **Signing in:** the page's own sign-in page (user name and password); a session lasts 30 days, and
   changing the login signs every browser out. Five wrong tries from one address lock it out for 15 minutes; 50 from many addresses

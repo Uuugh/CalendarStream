@@ -1,0 +1,26 @@
+{# Link to › Event's small calendar (0.2.8-beta.23, F1), loaded into the event pop-up's own pop-up: one month,
+   with the calendar's ‹ › Today and its title; nothing is added or edited here. A click on an event picks it;
+   this event and the ones rules make can't be picked. #}
+<div class="pkhead">
+  <button type="button" class="iconbtn pknav" data-month="{{ cal.prev[:7] }}" title="{{ _('Previous month') }}" aria-label="{{ _('Previous month') }}">{{ icon("chevron_left", 20) }}</button>
+  <button type="button" class="iconbtn pknav" data-month="{{ cal.next[:7] }}" title="{{ _('Next month') }}" aria-label="{{ _('Next month') }}">{{ icon("chevron_right", 20) }}</button>
+  <button type="button" class="ghost pknav pktoday" data-month="{{ this_month }}">{{ _('Today') }}</button>
+  <b class="pktitle" id="picktitle">{{ cal.title }}</b>
+  <button type="button" class="iconbtn pkclose" title="{{ _('Close') }}" aria-label="{{ _('Close') }}">{{ icon("close", 18) }}</button>
+</div>
+<p class="pknote">{{ _('Pick the event to link to.') }}</p>
+<div class="pkgrid" data-month="{{ cal.month }}">
+  {% for d in cal.dow %}<div class="pkdow">{{ d }}</div>{% endfor %}
+  {% for week in cal.weeks %}{% for day in week %}
+  <div class="pkday{% if not day.in_month %} out{% endif %}{% if day.date == cal.today %} today{% endif %}">
+    <span class="num">{{ day.date.day }}</span>
+    {% for it in day["items"] %}{% set x = it.e %}{% set tc = it.tag_color or it.src_color or '#1d4ed8' %}
+    {% if x.uid == uid or x.origin == 'rule' %}
+    <span class="pkev off{% if x.uid == uid %} self{% endif %}" style="--cal:{{ tc }}" title="{{ _('This event') if x.uid == uid else _('Made by a rule: it can’t be linked to') }}">{% if it.when %}<span class="t">{{ it.when }}</span> {% endif %}{{ x.title }}</span>
+    {% else %}
+    <button type="button" class="pkev" style="--cal:{{ tc }}" data-uid="{{ x.uid }}" data-label="{{ x.title }} · {{ starts.get(x.uid, '') }}" title="{{ x.title }} · {{ it.range }}">{% if it.when %}<span class="t">{{ it.when }}</span> {% endif %}{{ x.title }}</button>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% endfor %}{% endfor %}
+</div>

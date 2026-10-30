@@ -17,7 +17,7 @@ from .. import main as core
 from ..main import (_did, _is_async, _iso_day, _moved, _shared_grant, app, calendar_color, calendar_name, Change,
     check_csrf, COLOR_RE, dest_events, dest_google, DESTINATION_TYPES, destinations, FieldError,
     first_named_calendar, forget_invites, google_for, google_job, google_view, gui_auth, make_invite, new_did, now,
-    page, public_addresses, public_url, request_google_sync, save_destinations, sent_fields, source_ids, st, state,
+    page, public_addresses, public_url, request_google_sync, save_destinations, sent_fields, source, source_ids, st, state,
     store, subscribe_links)
 from .. import i18n
 from ..calsync import build_feed
@@ -89,6 +89,18 @@ def _dest_dates(d: dict, start: str | None, end: str | None):
             raise FieldError("The end is before the start.", "end")
 
 
+def top_named_calendar(picked: list[str]) -> str:
+    """The top calendar a new feed includes that comes from somewhere (not a Local one), else its top one
+    (+ Add a feed's Label and Notes, 0.2.8-beta.23, F13.2); "" when it includes none."""
+    named = [x for x in picked if (source(x) or {}).get("type") != "local"]
+    return (named or picked or [""])[0]
+
+
+def _source_note(sid: str) -> str:
+    from .page import source_note       # (the Calendars area's helper; imported here to keep the areas apart)
+    return source_note(sid)
+
+
 @app.post("/destinations/add", dependencies=[Depends(gui_auth)])
 async def add_destination(request: Request, csrf: str = Form(""), type_: str = Form("", alias="type"), name: str = Form(""),
                           public: str = Form(""), note: str = Form(""), stream: str = Form(""), base: str = Form(""),
@@ -115,10 +127,14 @@ async def add_destination(request: Request, csrf: str = Form(""), type_: str = F
     found = destinations()
     if len(found) >= 20:
         raise HTTPException(400, "Up to 20 destinations can be added.")
-    name = " ".join(name.split())[:100] or first_named_calendar()
+    picked = [x for x in source_ids() if x in form.getlist("sources")] if "sources" in form else source_ids()
+    # Left empty, the label is the top calendar it includes, and the note that calendar's note (0.2.8-beta.23, F13.2)
+    top = top_named_calendar(picked)
+    name = " ".join(name.split())[:100] or (calendar_name(top) if top else first_named_calendar())
+    note = " ".join(note.split())[:300] or (" ".join(_source_note(top).split())[:300] if top else "")
     did = new_did()
-    d = {"id": did, "type": type_, "name": name, "oneway": oneway, "note": " ".join(note.split())[:300],
-         "sources": [x for x in source_ids() if x in form.getlist("sources")] if "sources" in form else source_ids(),
+    d = {"id": did, "type": type_, "name": name, "oneway": oneway, "note": note,
+         "sources": picked,
          "token": (_stream_value(stream) if stream.strip() else secrets.token_urlsafe(24)) if type_ == "feed" else "",
          "base": base if base in public_addresses() else "",
          # (I4) a Google module's own account, signed in with Connect me or an invite; never the one from before beta.17

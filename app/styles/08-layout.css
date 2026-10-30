@@ -13,7 +13,8 @@
   .rulebox .ruleused { font-size:12px; color:var(--muted); white-space:nowrap }
   /* A rule's calendars badge in their colors (beta.3) */
   .rulebox .ruleused.calbadge { height:22px; line-height:20px; padding:0 8px; border:1px solid var(--line); border-radius:6px; font-size:11px; font-weight:700; overflow:hidden; text-overflow:ellipsis; max-width:40% }
-  .calbadge[data-cal="all"] { background:#fff !important; color:#1f2937 !important; border-color:var(--line) !important }
+  /* (0.2.8-beta.23, F14) "All calendars": a blue border and blue words on a clear background, not a white button */
+  .calbadge[data-cal="all"] { background:transparent !important; color:var(--accent) !important; border-color:var(--accent) !important }
   .calbadge[data-cal="one"] { background:color-mix(in srgb, var(--c1) 22%, var(--card)) !important; color:color-mix(in srgb, var(--c1) 70%, var(--text)) !important; border-color:transparent !important }
   .calbadge[data-cal="many"] { color:var(--text) !important; border-color:transparent !important }
   .rulebox button, .rulebox form button { height:30px; width:30px; padding:0; border:0; border-radius:var(--r); color:var(--muted); background:transparent }

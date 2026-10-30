@@ -45,7 +45,7 @@ shared things from `main` by name; anything the tests replace on `main` (`downlo
 | `sources.py` | `/run`, `/verify`, `/sources/…` (add, move, remove, import, export, link), `/setup/ccs`, `/setup/interval`, `/setup/link`, `/setup/upload`, `/feed/name`, `/feed/tags` |
 | `destinations.py` | `/destinations/…`, `/feed/stream`, `/subscribe/{token}`, `/calendar/{token}.ics` |
 | `rules.py` | `/rules/…`, `/templates`, `/templates/add` |
-| `events.py` | `/event`, `/event/…` (save, hide, revert, restore, alarms, delete, done) |
+| `events.py` | `/event`, `/event/…` (save, hide, revert, restore, alarms, delete, done, pick: Link to › Event's small calendar, `event-pick.html`) |
 | `history.py` | `/history/…` (undo, keep, container log) |
 | `account.py` | `/welcome`, `/login`, `/unlock/{token}`, `/logout`, `/settings/login` |
 | `settings.py` | `/settings/public-url`, `/settings/public-extra`, `/settings/admin-email`, `/settings/updates`, `/update/now` |
