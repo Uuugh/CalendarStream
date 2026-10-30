@@ -15,7 +15,8 @@ manage it all. See README.md for what it does.
   stylesheet, by area), `static/` (fonts, emoji). The code map below says which file holds what.
 - `tests/`: the test suites and `run.sh`; `tests/tools/`: setup for a new machine or conversation, a demo
   server and screenshots (see tests/README.md).
-- `docs/`: the README's screenshots.
+- `docs/`: `screenshots/` (the README's pictures) and `development/`, the Developer's own scratch work: kept on the
+  Developer's machine (its contents are in `.gitignore`), never read for the app or the build.
 - `build_rules/`: how work is done here:
   - `0-overview.md`: the steps and their commands (DASH, PLAN, BUILD, TEST, REVIEW, DEPLOY, STOP), who does
     what, the inputs (F, I, R, ?), ground rules. Read first.
@@ -44,7 +45,7 @@ shared things from `main` by name; anything the tests replace on `main` (`downlo
 | `sources.py` | `/run`, `/verify`, `/sources/…` (add, move, remove, import, export, link), `/setup/ccs`, `/setup/interval`, `/setup/link`, `/setup/upload`, `/feed/name`, `/feed/tags` |
 | `destinations.py` | `/destinations/…`, `/feed/stream`, `/subscribe/{token}`, `/calendar/{token}.ics` |
 | `rules.py` | `/rules/…`, `/templates`, `/templates/add` |
-| `events.py` | `/event`, `/event/…` (save, revert, restore, alarms, delete, done) |
+| `events.py` | `/event`, `/event/…` (save, hide, revert, restore, alarms, delete, done) |
 | `history.py` | `/history/…` (undo, keep, container log) |
 | `account.py` | `/welcome`, `/login`, `/unlock/{token}`, `/logout`, `/settings/login` |
 | `settings.py` | `/settings/public-url`, `/settings/public-extra`, `/settings/admin-email`, `/settings/updates`, `/update/now` |

@@ -4,3 +4,7 @@ __pycache__/
 
 # the tests' made-up calendars are kept (data/ above is for local installs)
 !tests/data/
+
+# The Developer's scratch work stays local (R19)
+docs/development/*
+!docs/development/README.md

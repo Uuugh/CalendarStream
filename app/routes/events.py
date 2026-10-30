@@ -245,11 +245,12 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
         original = united_original(uid, current.source)
         if not original:
             raise HTTPException(404, "That event isn't in the current schedule any more.")
+        was_hidden = bool((store.get_edits().get(uid) or {}).get("hidden"))     # (F11.3: Hide and Show have their own button)
         unchanged = not hidden and uid not in store.get_edits() and all(
             data[k] == getattr(current, k) for k in ("title", "start", "end", "all_day", "location", "description", "color"))
         if not unchanged:       # (only its link changed: it isn't marked as edited)
-            store.set_edit(uid, {**data, "hidden": bool(hidden), "base": original.fingerprint()})
-            done = f"Edited \"{original.title}\" ({original.start[:10]})" + (" and hid it from Google" if hidden else "")
+            store.set_edit(uid, {**data, "hidden": bool(hidden) or was_hidden, "base": original.fingerprint()})
+            done = f"Edited \"{original.title}\" ({original.start[:10]})" + (" and hid it from Google" if hidden and not was_hidden else "")
         sid = current.source
         save_link(uid, link_to, bool(link_delete), bool(link_move))
     else:
@@ -265,6 +266,42 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
         ch.done("Event", done)
     state.save()
     return _event_back(month or data["start"][:7], embed)
+
+
+@app.post("/event/hide", dependencies=[Depends(gui_auth)])
+async def hide_event(request: Request, csrf: str = Form(""), uid: str = Form(""), show: str = Form(""),
+                     month: str = Form(""), embed: str = Form("")):
+    """Hide an event from a calendar source from every feed, or Show it again (0.2.8-beta.22, F11.3): its
+    source would only send it again if it were deleted. It stays on the page, struck through; Undo in History."""
+    check_csrf(csrf)
+    e = store.get_event(uid)
+    if not e or e.origin != "united" or e.deleted:
+        raise HTTPException(400 if e else 404, "Only an event from a calendar source can be hidden or shown." if e
+                            else "That event isn't in the current schedule any more.")
+    original = united_original(uid, e.source)
+    if not original:
+        raise HTTPException(404, "That event isn't in the current schedule any more.")
+    ch = Change(whole=[e.source])
+    edit = store.get_edits().get(uid)
+    if show:
+        if edit and edit.get("hidden"):
+            rest = {k: v for k, v in edit.items() if k not in ("hidden", "base")}
+            same = all(rest.get(k) == getattr(original, k) for k in ("title", "start", "end", "all_day", "location", "description", "color")) \
+                and set(rest) <= {"title", "start", "end", "all_day", "location", "description", "color"}
+            if same:            # hidden was its only change: it's as its source has it again
+                store.delete_edit(uid)
+            else:
+                store.set_edit(uid, {**edit, "hidden": False})
+        done = f"Showed \"{e.title}\" ({e.start[:10]}) in the feeds again"
+    else:
+        core._hide(e)
+        done = f"Hid \"{e.title}\" ({e.start[:10]}) from the feeds"
+    rebuild(e.source)
+    ch.done("Event", done)
+    state.save()
+    if _is_async(request):
+        return {"ok": True}
+    return _event_back(month or e.start[:7], embed)
 
 
 @app.post("/event/revert", dependencies=[Depends(gui_auth)])

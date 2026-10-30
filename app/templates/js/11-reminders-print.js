@@ -38,22 +38,33 @@
     return '/print?' + q.toString();
   }
   function refresh() { clearTimeout(timer); timer = setTimeout(function () { frame.src = url(); }, 250); }
+  var oneDay = false;     // opened from an event (F11.1): its day, in the Day view; Print doesn't keep that view
+  function open(start, end, view) {
+    f.elements.start.value = start; f.elements.end.value = end;
+    var all = f.querySelector('.rangeall'); all.checked = false; f.querySelectorAll('.daterange input[type=date]').forEach(function (i) { i.readOnly = false; i.classList.remove('off'); });
+    pick('.viewpick', 'v', view); pick('.themepick', 't', prefs.theme || 'light');
+    f.elements.weekends.checked = prefs.weekends !== false;
+    frame.src = url(); dlg.showModal();
+  }
   document.addEventListener('click', function (e) {
     if (!e.target.closest('#printbtn')) return;
     var month = document.getElementById('monthpick').dataset.month, y = +month.slice(0, 4), m = +month.slice(5, 7);
     var last = new Date(y, m, 0).getDate();
-    f.elements.start.value = month + '-01'; f.elements.end.value = month + '-' + ('0' + last).slice(-2);
-    var all = f.querySelector('.rangeall'); all.checked = false; f.querySelectorAll('.daterange input[type=date]').forEach(function (i) { i.readOnly = false; i.classList.remove('off'); });
-    pick('.viewpick', 'v', prefs.view || calView); pick('.themepick', 't', prefs.theme || 'light');
-    f.elements.weekends.checked = prefs.weekends !== false;
-    frame.src = url(); dlg.showModal();
+    oneDay = false; open(month + '-01', month + '-' + ('0' + last).slice(-2), prefs.view || calView);
   });
+  window.openPrintDay = function (day) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day || '')) return;
+    oneDay = true; open(day, day, 'day');
+  };
+  // The event page on its own (a phone): its Print comes back here with ?print=<day>
+  var askedDay = new URLSearchParams(location.search).get('print');
+  if (askedDay) window.openPrintDay(askedDay);
   dlg.querySelectorAll('.viewpick [data-v]').forEach(function (b) { b.addEventListener('click', function () { pick('.viewpick', 'v', b.dataset.v); refresh(); }); });
   dlg.querySelectorAll('.themepick [data-t]').forEach(function (b) { b.addEventListener('click', function () { pick('.themepick', 't', b.dataset.t); refresh(); }); });
   f.addEventListener('change', refresh);
   dlg.querySelector('.ppcancel').addEventListener('click', function () { dlg.close(); });
   dlg.querySelector('.ppprint').addEventListener('click', function () {
-    prefs = { view: picked('.viewpick', 'v'), theme: picked('.themepick', 't'), weekends: f.elements.weekends.checked };
+    prefs = { view: oneDay && picked('.viewpick', 'v') === 'day' ? (prefs.view || calView) : picked('.viewpick', 'v'), theme: picked('.themepick', 't'), weekends: f.elements.weekends.checked };
     savePref('/ui/print', { view: prefs.view, theme: prefs.theme, weekends: prefs.weekends ? '1' : '0' });
     frame.contentWindow.focus(); frame.contentWindow.print();
   });

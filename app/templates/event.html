@@ -8,11 +8,10 @@
 <style>
   * { box-sizing:border-box }
   body { margin:0; font:15px/1.5 var(--font); background:var(--bg); color:var(--text) }
-  main { max-width:620px; margin:0 auto; padding:24px 16px 48px }
-  /* In the status page's pop-up (I2): the pop-up is the frame and has the title, so no second card or heading */
+  main { max-width:980px; margin:0 auto; padding:24px 16px 48px }
+  /* In the status page's pop-up (I2): the pop-up is the frame; the page draws its own header (0.2.8-beta.22, F11) */
   body.embed { background:var(--card) }
-  body.embed main { max-width:none; padding:0 2px 8px }
-  body.embed h1 { display:none }
+  body.embed main { max-width:none; padding:0 2px 2px }
   dialog.ask { border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); color:var(--text); padding:18px; width:min(420px, calc(100vw - 32px)) }
   dialog.ask::backdrop { background:rgba(0,0,0,.55) }
   dialog.ask[open] { animation:popin .2s ease-out }
@@ -22,38 +21,59 @@
   dialog.ask .askchoices { display:flex; justify-content:flex-end; gap:8px }
   dialog.ask button { height:34px; padding:0 14px }
   dialog.ask button.danger.solid { background:var(--bad); color:#fff; border-color:var(--bad) }
-  .linkbox { margin-top:14px; padding:10px 12px; border:1px solid var(--line); border-radius:var(--r) }
-  .linkbox > label { display:flex; align-items:center; gap:4px; margin-top:0 }
-  .linkopts { display:flex; flex-wrap:wrap; gap:4px 18px; margin-top:6px }
-  .iconbtn.linkbtn.on { color:var(--accent); background:var(--runbg) }
-  .linkkind { display:flex; align-items:center; gap:0; margin-bottom:8px } .linkkind .k { display:inline-flex; align-items:center; gap:4px; margin-right:10px; font-weight:600 }
-  .linkkind .seg { height:30px; padding:0 14px; border:1px solid var(--line); background:var(--card); color:var(--text) }
-  .linkkind .seg:first-of-type { border-radius:var(--r) 0 0 var(--r) } .linkkind .seg:last-of-type { border-radius:0 var(--r) var(--r) 0; border-left:0 }
+  /* The header (F11): ← and the title on the left; Choose from template, Print and Duplicate in the upper right corner */
+  .evhead { display:flex; align-items:center; gap:5px; margin:0 0 5px; flex-wrap:wrap }
+  .evhead h1 { font-size:18px; font-weight:700; margin:0 }
+  .cornertools { display:flex; align-items:center; gap:5px; margin-left:auto }
+  .tplpick { position:relative }
+  .tplpick summary { list-style:none; display:inline-flex; align-items:center; gap:5px; height:34px; padding:0 6px 0 10px; border:1px solid var(--line);
+                     border-radius:var(--r); color:var(--accent); font-weight:600; font-size:14px; cursor:pointer; white-space:nowrap }
+  .tplpick summary::-webkit-details-marker { display:none }
+  .tplpick summary:hover { background:var(--soft) }
+  .tplmenu { position:absolute; right:0; top:calc(100% + 5px); z-index:7; min-width:220px; max-height:300px; overflow-y:auto; padding:4px 0;
+             background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18) }
+  .tplmenu button { display:flex; align-items:center; gap:8px; width:100%; padding:6px 12px; border:0; border-radius:0; background:transparent;
+                    color:var(--text); font-weight:500; text-align:left; white-space:nowrap }
+  .tplmenu button:hover, .tplmenu button:focus-visible { background:var(--soft) }
+  /* Link to (F11.2): one line, Event | Rule | Remove; Event or Rule opens its part, Remove closes it */
+  .linkbox { margin-top:5px; padding:9px 12px; border:1px solid var(--line); border-radius:var(--r); display:flex; flex-direction:column; gap:5px }
+  .linkopts { display:flex; flex-wrap:wrap; gap:4px 18px; margin-top:5px }
+  .linkkind { display:flex; align-items:center; gap:0; flex-wrap:wrap } .linkkind .k { display:inline-flex; align-items:center; gap:4px; margin-right:10px; font-weight:600 }
+  .linkkind .seg { display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 14px; border:1px solid var(--line); border-left-width:0; border-radius:0; background:var(--card); color:var(--text) }
+  .linkkind .seg:first-of-type { border-left-width:1px; border-radius:var(--r) 0 0 var(--r) } .linkkind .seg:last-of-type { border-radius:0 var(--r) var(--r) 0 }
   .linkkind .seg.on { background:var(--runbg); color:var(--run); font-weight:600 }
+  .linkkind .seg:disabled { color:var(--muted); cursor:default }
   .linkrule { display:flex; flex-wrap:wrap; align-items:center; gap:6px } .linkrule .k { font-size:12px; font-weight:600; color:var(--muted) }
   .linkrule button { display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 10px; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .linkrule[hidden], .linkevent[hidden] { display:none }
   body.embed form.card { border:0; border-radius:0; padding:0; background:transparent }
-  .backbtn { display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 10px 0 6px; border:1px solid var(--line); border-radius:var(--r);
-             color:var(--accent); text-decoration:none; font-weight:600; background:var(--card) }
-  h1 { font-size:20px; margin:0 0 4px } .sub { color:var(--muted); font-size:13px; margin:0 0 18px }
+  .backbtn { color:var(--accent) }
+  .sub { color:var(--muted); font-size:13px; margin:0 0 5px }
   .card { background:var(--card); border:1px solid var(--line); border-radius:var(--rbox); padding:18px; margin-bottom:16px }
-  /* The theme (0.2.8-beta.11): labels 12 px muted over 34 px fields, 2 px apart; 5 px between groups */
-  label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin:8px 0 2px }
+  /* The theme (R11): labels 12 px muted over 34 px fields, 2 px apart; 5 px between parts */
+  label, .lbl { display:block; font-size:12px; font-weight:600; color:var(--muted); margin:0 0 2px }
+  .req { color:var(--bad); margin-left:2px }
   label.inline { display:inline-flex; align-items:center; gap:8px; font-weight:500; font-size:13px; width:auto; color:var(--text); margin:0 }  /* only the box and its words toggle it */
   input[type=text], input[type=date], textarea {
     width:100%; font:inherit; font-size:14px; padding:0 10px; height:34px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
   textarea { height:auto; padding:7px 10px }
-  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:0 10px; align-items:end }
+  /* Two columns (F11): the fields on the left, Notes on the right as tall as they are; one column on a narrow screen */
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:5px 10px; align-items:stretch }
+  .cols > * { min-width:0 }
+  .leftcol { display:flex; flex-direction:column; gap:5px }
+  .rightcol { display:flex; flex-direction:column }
+  .rightcol textarea { flex:1 1 auto; min-height:calc(10 * 1.5em + 16px); resize:vertical }   /* 10 lines; dragging it grows the pop-up */
+  @media (max-width:700px) { .cols { grid-template-columns:1fr } }
+  .calrow { display:grid; grid-template-columns:1fr minmax(150px, max-content); gap:0 5px; align-items:end }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:5px 10px; align-items:end }
   .grid2 > * { min-width:0 }
   .fixed { height:34px; display:flex; align-items:center; font-size:14px; font-weight:600 }      /* fixed text: no box */
-  .tools { display:flex; gap:5px; align-items:center; margin-top:8px }
-  .ticks { display:flex; flex-wrap:wrap; gap:6px 22px; margin:12px 0 0 }
-  .ticks .timed[hidden], .ticks label[hidden] { display:none }
+  .ticks { align-items:center; min-height:20px }
+  .timed[hidden], .endzone[hidden], label[hidden] { display:none }
   .inbox { position:relative; display:block }
   .inbox input { padding-right:40px }
   .inboxbtn { position:absolute; right:4px; top:4px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:6px; color:var(--muted) }
   .inboxbtn:hover { color:var(--accent); background:var(--soft) }
-  textarea { min-height:110px; resize:vertical }
   /* The theme's Cancel | Save pair (as in app.css): 130 × 34 px, Cancel outlined on the left, Save filled */
   .pairbtns { display:inline-flex; width:130px; height:34px; flex:0 0 130px; border-radius:var(--r); overflow:hidden }
   .pairbtns > * { flex:0 0 65px; width:65px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center;
@@ -61,27 +81,27 @@
   .pairbtns .pcancel { border:1px solid var(--line); border-right-width:0; border-radius:var(--r) 0 0 var(--r); color:var(--accent); background:var(--card) }
   .pairbtns .pcancel:hover { background:var(--soft) }
   .pairbtns .psave { border:1px solid var(--accent); border-radius:0 var(--r) var(--r) 0; background:var(--accent); color:var(--onaccent) }
-  /* In the pop-up, Notes takes the room that's left (0.2.8-beta.10) */
-  html:has(body.embed), body.embed { height:100% }
-  body.embed main { min-height:100%; display:flex; flex-direction:column }
-  body.embed form.card { flex:1 1 auto; display:flex; flex-direction:column }
-  body.embed form.card > label.inline { align-self:flex-start }
-  body.embed form.card > textarea { flex:1 1 110px }
-  .row { display:grid; grid-template-columns:1fr 1fr; gap:10px }
-  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; align-items:center }
+  .actions { display:flex; gap:5px; flex-wrap:wrap; align-items:center }
+  .actions.bottom { margin-top:5px }
   button { font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:var(--r); padding:9px 18px; cursor:pointer }
   button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
   button.danger { background:transparent; color:var(--bad); border:1px solid var(--line) }
+  .actions.bottom button.danger, .actions.bottom button.ghost { display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 14px }
   .iconbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; padding:0; border:1px solid var(--line);
-             border-radius:var(--r); background:transparent; color:var(--muted); cursor:pointer }
-  .iconbtn:hover { color:var(--accent); background:var(--soft) } .iconbtn.del:hover { color:var(--bad) }
+             border-radius:var(--r); background:transparent; color:var(--muted); cursor:pointer; text-decoration:none }
+  .iconbtn:hover { color:var(--accent); background:var(--soft) }
   a { color:var(--accent) } .muted { color:var(--muted) }
-  .note { border-radius:var(--r); padding:10px 12px; font-size:13px; margin-bottom:14px; background:var(--soft) }
+  /* (i) (F11.3): info; at the bottom of the pop-up it opens upwards, its lower left at the icon */
+  .infodot { position:relative; display:inline-flex; align-items:center; color:var(--muted); cursor:help; outline:none }
+  .infodot:hover, .infodot:focus-visible { color:var(--accent) }
+  .infodot .tip { display:none; position:absolute; left:0; bottom:calc(100% + 4px); z-index:8; width:min(300px, 80vw); padding:8px 10px; font-size:13px; font-weight:500;
+                  line-height:1.45; color:var(--text); background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18) }
+  .infodot:hover .tip, .infodot:focus .tip, .infodot.open .tip { display:block }
+  .note { border-radius:var(--r); padding:10px 12px; font-size:13px; margin-bottom:5px; background:var(--soft) }
   .note.warn { background:var(--warnbg); color:var(--warn) }
   .orig { white-space:pre-wrap; font-size:13px }
-  .timed[hidden] { display:none }
+  .foot { font-size:12px; margin:5px 0 0 }
   select.zone { width:100%; font:inherit; font-size:14px; height:34px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
-  .endzone[hidden] { display:none }
   .timefield:invalid, .timefield.bad { border-color:var(--bad) !important }
   .timelist { position:absolute; z-index:6; max-height:240px; overflow-y:auto; min-width:150px; background:var(--card);
               border:1px solid var(--line); border-radius:var(--r); box-shadow:0 10px 30px rgba(0,0,0,.18); padding:4px 0 }
@@ -89,15 +109,13 @@
   .timelist div:hover, .timelist div.near { background:var(--soft) }
   .timelist div .muted { font-size:12px }
   form.card { position:relative }
-  .actions.bottom { margin-top:22px }
   .grow { flex:1 }
-  a.ghostbtn { font-weight:600; text-decoration:none; padding:8px 16px; border:1px solid var(--line); border-radius:var(--r) }
   .colorpick { position:relative }
-  .colorpick summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:14px; height:34px; padding:0 8px 0 10px; border:1px solid var(--line); border-radius:var(--r) }
+  .colorpick summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:14px; height:34px; padding:0 8px 0 10px; border:1px solid var(--line); border-radius:var(--r); white-space:nowrap }
   .colorpick summary::-webkit-details-marker { display:none }
-  .sw { display:inline-block; width:18px; height:18px; border-radius:5px; background:var(--c) }
+  .sw { display:inline-block; width:18px; height:18px; border-radius:5px; background:var(--c); flex:0 0 auto }
   .sw.auto { background:repeating-linear-gradient(45deg, var(--c) 0 4px, transparent 4px 7px); box-shadow:inset 0 0 0 2px var(--c) }
-  .palette { position:absolute; left:0; top:calc(100% + 6px); z-index:5; display:grid; grid-template-columns:repeat(6, 30px); gap:6px;
+  .palette { position:absolute; right:0; top:calc(100% + 6px); z-index:5; display:grid; grid-template-columns:repeat(6, 30px); gap:6px;
              padding:10px; background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18) }
   .palette label { margin:0; width:30px; height:30px; display:grid; place-items:center; border-radius:5px; cursor:pointer }
   .palette input { position:absolute; opacity:0; pointer-events:none }
@@ -114,10 +132,34 @@
   <optgroup label="{{ _('All time zones') }}">{% for z in zones if z not in common_zones %}<option value="{{ z }}"{% if z == value %} selected{% endif %}>{{ z.replace('_', ' ') }}</option>{% endfor %}</optgroup>
 </select>
 {%- endmacro %}
+{% set req %}<span class="req" aria-hidden="true">*</span>{% endset %}
+{% set can_delete = not is_new and e.origin == "custom" and not e.deleted %}
+{% set can_hide = not is_new and e.origin == "united" and not e.deleted %}
+{% set day = e.start[:10] %}
 <main>
-  <h1>{{ (_("Duplicate event") if is_copy else _("Add event")) if is_new else (_("Edit event") if e.origin == "custom" or src_type != "ccs" else _("Edit United event")) }}</h1>
-  {# In the status page's pop-up (a computer) its own ← closes it; on its own (a phone), ← Back returns (F1.3). #}
-  {% if not embed %}<p class="sub"><a class="backbtn" href="/?month={{ month }}#cal">{{ icon("arrow_back", 18) }} {{ _('Back') }}</a></p>{% endif %}
+  {# The header (0.2.8-beta.22, F11): ← and the title; the upper right corner has Choose from template (a new
+     event), Print (Print Preview on the event's day) and Duplicate (a saved one). In the status page's pop-up
+     ← closes it; on its own page (a phone), ← goes back to the calendar (F1.3). #}
+  <header class="evhead">
+    {% if embed %}<button type="button" class="iconbtn backbtn evback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}">{{ icon("arrow_back", 20) }}</button>
+    {% else %}<a class="iconbtn backbtn" href="/?month={{ month }}#cal" aria-label="{{ _('Back') }}" title="{{ _('Back') }}">{{ icon("arrow_back", 20) }}</a>{% endif %}
+    <h1>{{ (_("Duplicate event") if is_copy else _("Add event")) if is_new else (_("Edit event") if e.origin == "custom" or src_type != "ccs" else _("Edit United event")) }}</h1>
+    <span class="cornertools">
+      {% if is_new and templates %}
+      <details class="tplpick" id="tplpick">
+        <summary>{{ icon("event_note", 18) }} {{ _('Choose from template') }}{{ icon("arrow_drop_down", 20) }}</summary>
+        <div class="tplmenu" role="menu" aria-label="{{ _('Choose from template') }}">
+          {% for t in templates %}<button type="button" role="menuitem" class="tplitem" data-title="{{ t.title }}" data-allday="{{ '1' if t.all_day else '' }}"
+            data-minutes="{{ t.minutes }}" data-location="{{ t.location }}" data-color="{{ t.color }}">{{ t.title }}{% if not t.all_day %} <span class="muted">({{ t.length }})</span>{% endif %}</button>{% endfor %}
+        </div>
+      </details>
+      {% endif %}
+      {% if not is_new %}
+      <a class="iconbtn evprint" href="/?month={{ day[:7] }}&print={{ day }}#cal" data-date="{{ day }}" title="{{ _('Print') }}" aria-label="{{ _('Print this day') }}">{{ icon("print", 18) }}</a>
+      <a class="iconbtn" href="/event?copy={{ e.uid|urlencode }}&month={{ month }}" title="{{ _('Duplicate') }}" aria-label="{{ _('Duplicate') }}">{{ copy_icon }}</a>
+      {% endif %}
+    </span>
+  </header>
 
   {% if original %}
     {% if e.stale %}
@@ -129,105 +171,89 @@
     <div class="note">{{ _('Added on this page. It appears only in CalendarStream and Google, not in CCS+.') }}</div>
   {% endif %}
 
-  <form class="card" method="post" action="/event/save">
+  <form class="card" method="post" action="/event/save" id="evform">
     <input type="hidden" name="csrf" value="{{ csrf }}">
     <input type="hidden" name="uid" value="{{ e.uid }}">
     <input type="hidden" name="month" value="{{ month }}">
     {% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
 
-    {# (0.2.8-beta.11) Calendar | Title; the color, link, duplicate and delete | Location (with a map);
-       All-day and "the end is in a different time zone"; Starts and Ends, each with its Time under it. #}
-    {% if is_new and templates %}
-    <label for="template">{{ _('Start from a template') }}</label>
-    <select id="template" class="zone">
-      <option value="">{{ _('(none)') }}</option>
-      {% for t in templates %}<option value="{{ t.id }}" data-title="{{ t.title }}" data-allday="{{ '1' if t.all_day else '' }}"
-        data-minutes="{{ t.minutes }}" data-location="{{ t.location }}" data-color="{{ t.color }}">{{ t.title }}{% if not t.all_day %} ({{ t.length }}){% endif %}</option>{% endfor %}
-    </select>
-    {% endif %}
-    <div class="grid2">
-      <div>
-        <label for="source">{{ _('Calendar') }}</label>
-        {% if is_new and sources|length > 1 %}
-        <select id="source" name="source" class="zone">{% for x in sources %}<option value="{{ x.id }}"{% if x.id == e.source %} selected{% endif %}>{{ x.name }}</option>{% endfor %}</select>
-        {% else %}
-        {# fixed: plain text, not a box (a box means it can be changed) #}
-        <div class="fixed" id="source">{{ src_name }}</div>
-        {% if is_new %}<input type="hidden" name="source" value="{{ e.source if e.source in sources|map(attribute='id') else (sources[0].id if sources else '') }}">{% endif %}
-        {% endif %}
-      </div>
-      <div>
-        <label for="title">{{ _('Title') }}</label>
-        <input type="text" id="title" name="title" value="{{ e.title }}" required maxlength="200" {% if is_new %}autofocus{% endif %}>
-      </div>
-      <div class="tools">
-        {# The event's own color: Google's 11 event colors, or the tag / calendar color. #}
-        <details class="colorpick" id="colorpick">
-          <summary title="{{ _('Event color') }}" aria-label="{{ _('Event color') }}">
-            <span class="sw" id="colorshow" style="--c:{{ e.color or auto_color or 'var(--accent)' }}"></span>
-            <span id="colorname">{% if e.color %}{% for n, h in colors if h == e.color %}{{ n }}{% endfor %}{% else %}{{ _('Default color') }}{% endif %}</span>{{ icon("arrow_drop_down", 20) }}
-          </summary>
-          <div class="palette" role="radiogroup" aria-label="{{ _('Event color') }}">
-            <label title="{{ _('Default color (from a tag or the calendar)') }}"><input type="radio" name="color" value="" data-c="{{ auto_color or 'var(--accent)' }}" data-name="{{ _('Default color') }}" {% if not e.color %}checked{% endif %}><span class="sw auto" style="--c:{{ auto_color or 'var(--accent)' }}"></span></label>
-            {% for n, h in colors %}<label title="{{ n }}"><input type="radio" name="color" value="{{ h }}" data-c="{{ h }}" data-name="{{ n }}" {% if e.color == h %}checked{% endif %}><span class="sw" style="--c:{{ h }}"></span></label>{% endfor %}
+    {# (0.2.8-beta.22, F11) Two columns. Left: Title; Location (with a map); Calendar | Change color; All-day |
+       "The end is in a different time zone"; Starts | Ends; Time | Time; Time zone | End time zone. Right: Notes. #}
+    <div class="cols">
+      <div class="leftcol">
+        <div>
+          <label for="title">{{ _('Title') }}{{ req }}</label>
+          <input type="text" id="title" name="title" value="{{ e.title }}" required maxlength="200" {% if is_new %}autofocus{% endif %}>
+        </div>
+        <div>
+          <label for="location">{{ _('Location') }}</label>
+          {# a map (0.2.8-beta.11): opens the place in Google Maps, to check it or find it #}
+          <span class="inbox"><input type="text" id="location" name="location" value="{{ e.location }}" maxlength="200"><a class="inboxbtn" id="mapbtn" target="_blank" rel="noopener"
+            href="https://www.google.com/maps/search/?api=1&query={{ e.location|urlencode }}" title="{{ _('Check or find the place on Google Maps') }}" aria-label="{{ _('Open the place on Google Maps') }}">{{ icon("map", 17) }}</a></span>
+        </div>
+        <div class="calrow">
+          <div>
+            <label for="source">{{ _('Calendar') }}</label>
+            {% if is_new and sources|length > 1 %}
+            <select id="source" name="source" class="zone">{% for x in sources %}<option value="{{ x.id }}"{% if x.id == e.source %} selected{% endif %}>{{ x.name }}</option>{% endfor %}</select>
+            {% else %}
+            {# fixed: plain text, not a box (a box means it can be changed) #}
+            <div class="fixed" id="source">{{ src_name }}</div>
+            {% if is_new %}<input type="hidden" name="source" value="{{ e.source if e.source in sources|map(attribute='id') else (sources[0].id if sources else '') }}">{% endif %}
+            {% endif %}
           </div>
-        </details>
-        <button type="button" class="iconbtn linkbtn{% if link %} on{% endif %}" id="linkbtn" aria-controls="linkbox" aria-expanded="{{ 'true' if link or open_link else 'false' }}"
-                title="{{ _('Link to another event (delete or move with it)') }}" aria-label="{{ _('Link to another event') }}">{{ icon("link", 18) }}</button>
-        {% if not is_new %}
-        <a class="iconbtn" href="/event?copy={{ e.uid|urlencode }}&month={{ month }}" title="{{ _('Duplicate') }}" aria-label="{{ _('Duplicate') }}">{{ copy_icon }}</a>
-        {% if e.origin != "rule" and not e.hidden %}<button type="submit" form="deleteform" class="iconbtn del" title="{{ _('Delete') }}" aria-label="{{ _('Delete') }}">{{ trash }}</button>{% endif %}
-        {% endif %}
+          <div>
+            {# The event's own color: Google's 11 event colors, or the tag / calendar color. #}
+            <span class="lbl" id="colorlbl">{{ _('Change color') }}</span>
+            <details class="colorpick" id="colorpick">
+              <summary title="{{ _('Event color') }}" aria-labelledby="colorlbl colorname">
+                <span class="sw" id="colorshow" style="--c:{{ e.color or auto_color or 'var(--accent)' }}"></span>
+                <span id="colorname">{% if e.color %}{% for n, h in colors if h == e.color %}{{ n }}{% endfor %}{% else %}{{ _('Default color') }}{% endif %}</span>{{ icon("arrow_drop_down", 20) }}
+              </summary>
+              <div class="palette" role="radiogroup" aria-label="{{ _('Event color') }}">
+                <label title="{{ _('Default color (from a tag or the calendar)') }}"><input type="radio" name="color" value="" data-c="{{ auto_color or 'var(--accent)' }}" data-name="{{ _('Default color') }}" {% if not e.color %}checked{% endif %}><span class="sw auto" style="--c:{{ auto_color or 'var(--accent)' }}"></span></label>
+                {% for n, h in colors %}<label title="{{ n }}"><input type="radio" name="color" value="{{ h }}" data-c="{{ h }}" data-name="{{ n }}" {% if e.color == h %}checked{% endif %}><span class="sw" style="--c:{{ h }}"></span></label>{% endfor %}
+              </div>
+            </details>
+          </div>
+        </div>
+        <div class="grid2 ticks">
+          <label class="inline"><input type="checkbox" id="all_day" name="all_day" value="1" {% if e.all_day %}checked{% endif %}> {{ _('All-day') }}</label>
+          <label class="inline timed"><input type="checkbox" id="end_tz_differs" name="end_tz_differs" value="1"{% if end_zone != start_zone %} checked{% endif %}> {{ _('The end is in a different time zone') }}</label>
+        </div>
+        <div class="grid2">
+          <div><label for="start_date">{{ _('Starts') }}{{ req }}</label><input type="date" id="start_date" name="start_date" value="{{ f.start_date }}" required></div>
+          <div><label for="end_date" id="end_label">{{ _('Ends') }}{{ req }}</label><input type="date" id="end_date" name="end_date" value="{{ f.end_date }}" required></div>
+          <div class="timed"><label for="start_time">{{ _('Time') }}{{ req }}</label><input type="text" class="timefield" id="start_time" name="start_time" value="{{ f.start_label }}" autocomplete="off" spellcheck="false" inputmode="text" aria-haspopup="listbox"></div>
+          <div class="timed"><label for="end_time">{{ _('Time') }}{{ req }}</label><input type="text" class="timefield" id="end_time" name="end_time" value="{{ f.end_label }}" autocomplete="off" spellcheck="false" inputmode="text" aria-haspopup="listbox"></div>
+          {# Time zone: one for both ends, or a different one for the end (e.g. a flight), under the end's Time #}
+          <div class="timed zones"><label for="start_tz" id="start_tz_label">{{ _('Time zone') }}</label>{{ zonepick("start_tz", start_zone, _('Time zone')) }}</div>
+          <div class="endzone"{% if end_zone == start_zone or e.all_day %} hidden{% endif %}><label for="end_tz">{{ _('End time zone') }}</label>{{ zonepick("end_tz", end_zone, _('End time zone')) }}</div>
+        </div>
       </div>
-      <div>
-        <label for="location">{{ _('Location') }}</label>
-        {# a map (0.2.8-beta.11): opens the place in Google Maps, to check it or find it #}
-        <span class="inbox"><input type="text" id="location" name="location" value="{{ e.location }}" maxlength="200"><a class="inboxbtn" id="mapbtn" target="_blank" rel="noopener"
-          href="https://www.google.com/maps/search/?api=1&query={{ e.location|urlencode }}" title="{{ _('Check or find the place on Google Maps') }}" aria-label="{{ _('Open the place on Google Maps') }}">{{ icon("map", 17) }}</a></span>
-      </div>
-    </div>
-
-    <div class="ticks">
-      <label class="inline"><input type="checkbox" id="all_day" name="all_day" value="1" {% if e.all_day %}checked{% endif %}> {{ _('All-day') }}</label>
-      <label class="inline timed"><input type="checkbox" id="end_tz_differs" name="end_tz_differs" value="1"{% if end_zone != start_zone %} checked{% endif %}> {{ _('The end is in a different time zone') }}</label>
-    </div>
-    <div class="grid2">
-      <div>
-        <label for="start_date">{{ _('Starts') }}</label><input type="date" id="start_date" name="start_date" value="{{ f.start_date }}" required>
-        <div class="timed"><label for="start_time">{{ _('Time') }}</label><input type="text" class="timefield" id="start_time" name="start_time" value="{{ f.start_label }}" autocomplete="off" spellcheck="false" inputmode="text" aria-haspopup="listbox"></div>
-      </div>
-      <div>
-        <label for="end_date" id="end_label">{{ _('Ends') }}</label><input type="date" id="end_date" name="end_date" value="{{ f.end_date }}" required>
-        <div class="timed"><label for="end_time">{{ _('Time') }}</label><input type="text" class="timefield" id="end_time" name="end_time" value="{{ f.end_label }}" autocomplete="off" spellcheck="false" inputmode="text" aria-haspopup="listbox"></div>
-      </div>
-    </div>
-    {# Time zone: one for both ends, or a different one for the end (e.g. a flight). #}
-    <div class="timed zones">
-      <div class="grid2">
-        <div><label for="start_tz" id="start_tz_label">{{ _('Time zone') }}</label>{{ zonepick("start_tz", start_zone, _('Time zone')) }}</div>
-        <div class="endzone"{% if end_zone == start_zone %} hidden{% endif %}><label>{{ _('End time zone') }}</label>{{ zonepick("end_tz", end_zone, _('End time zone')) }}</div>
+      <div class="rightcol">
+        <label for="description">{{ _('Notes') }}</label>
+        <textarea id="description" name="description" rows="10" maxlength="4000">{{ e.description }}</textarea>
       </div>
     </div>
     <div class="timelist" id="timelist" role="listbox" hidden></div>
 
-    <label for="description">{{ _('Notes') }}</label>
-    <textarea id="description" name="description" maxlength="4000">{{ e.description }}</textarea>
-
-    {# Linked to another event (F3.2): the link icon below opens it. This event is deleted and/or moved with the other one. #}
-    {# Link (0.2.8-beta.15): to an Event (pick it: delete or move with it), or to a Rule: the one it follows
-       (opens it), or a new one made for it (its title and date) #}
-    <div class="linkbox" id="linkbox"{% if not link and not open_link %} hidden{% endif %}>
-      <div class="linkkind" role="radiogroup" aria-label="{{ _('Link to') }}">
+    {# Link to (F3.2; 0.2.8-beta.15; 0.2.8-beta.22, F11.2): starts closed with Event | Rule | Remove. Event opens
+       the event to delete or move with; Rule, the rules it follows (opens one) or a new one for it (its title
+       and date); Remove takes the link off at Save and closes it. An event that's linked opens at Event. #}
+    {% set link_open = link or open_link %}
+    <div class="linkbox" id="linkbox">
+      <div class="linkkind" role="group" aria-label="{{ _('Link to') }}">
         <span class="k">{{ icon("link", 16) }} {{ _('Link to') }}</span>
-        <button type="button" class="seg on" data-kind="event" role="radio" aria-checked="true">{{ _('Event') }}</button><button type="button" class="seg" data-kind="rule" role="radio" aria-checked="false"{% if is_new %} disabled title="{{ _('Save the event first') }}"{% endif %}>{{ _('Rule') }}</button>
+        <button type="button" class="seg{% if link_open %} on{% endif %}" data-kind="event" aria-expanded="{{ 'true' if link_open else 'false' }}" aria-controls="linkevent">{{ _('Event') }}</button><button type="button" class="seg" data-kind="rule" aria-expanded="false" aria-controls="linkrule"{% if is_new %} disabled title="{{ _('Save the event first') }}"{% endif %}>{{ _('Rule') }}</button><button type="button" class="seg" data-kind="remove" title="{{ _('Take the link off (at Save)') }}">{{ icon("link_off", 16) }} {{ _('Remove') }}</button>
       </div>
-      <div class="linkrule" hidden>
+      <div class="linkrule" id="linkrule" hidden>
         {% if event_rules %}<span class="k">{{ _('Existing') }}</span>
         {% for r in event_rules %}<button type="button" class="ghost openrule" data-rule="{{ r.id }}">{{ icon("edit", 15) }} {{ r.label }}</button>{% endfor %}
         {% else %}<span class="mnote">{{ _('No rule touches it yet.') }}</span>{% endif %}
-        <button type="button" class="ghost newrulefor" data-title="{{ e.title }}" data-date="{{ e.start[:10] }}" data-sid="{{ e.source }}">{{ icon("add", 15) }} {{ _('Create new: its title and date') }}</button>
+        <button type="button" class="ghost newrulefor" data-title="{{ e.title }}" data-date="{{ day }}" data-sid="{{ e.source }}">{{ icon("add", 15) }} {{ _('Create new: its title and date') }}</button>
       </div>
-      <div class="linkevent">
+      <div class="linkevent" id="linkevent"{% if not link_open %} hidden{% endif %}>
       <label for="link_to">{{ _('Event') }}</label>
       <select id="link_to" name="link_to" class="zone">
         <option value="">{{ _('(not linked)') }}</option>
@@ -240,12 +266,16 @@
       </div>
     </div>
 
-    {% if e.origin == "united" and not is_new %}
-    <label class="inline" style="margin-top:14px"><input type="checkbox" name="hidden" value="1" {% if e.hidden %}checked{% endif %}>
-      {{ _('Hide from Google Calendar <span class="muted">(stays visible here, struck through)</span>') }}</label>
-    {% endif %}
-
+    {# The bottom (F11, F11.3): Delete on the left (Hide, or Show, for an event from a calendar source, which
+       only hides it from the feeds: its source would send it again), Revert beside it; Cancel | Save on the right #}
     <div class="actions bottom">
+      {% if can_delete %}<button type="submit" form="deleteform" class="danger evdelbtn" data-ask="{{ _('Delete this event? (Restore, or History › Undo, brings it back.)') }}">{{ trash }} {{ _('Delete') }}</button>
+      {% elif can_hide %}
+        {% if e.hidden %}<button type="submit" form="hideform" class="ghost evhidebtn">{{ icon("visibility", 18) }} {{ _('Show') }}</button>
+        {% else %}<button type="submit" form="hideform" class="danger evhidebtn" data-ask="{{ _('Hide this event from the feeds? (Show, or History › Undo, brings it back.)') }}">{{ icon("visibility_off", 18) }} {{ _('Hide') }}</button>{% endif %}
+        <span class="infodot" tabindex="0" role="button" aria-label="{{ _('Info') }}" aria-expanded="false">{{ icon("info", 16) }}<span class="tip" role="tooltip">{{ _('This event comes from {name}, so it can’t be removed from there, but it can be hidden from the feeds. Hidden, it stays here, struck through; Show brings it back.', name=src_name) }}</span></span>
+      {% endif %}
+      {% if original and e.edited %}<button type="submit" form="revertform" class="ghost">{{ _('Revert to United’s version') if src_type == "ccs" else _('Revert to the feed’s version') }}</button>{% endif %}
       <span class="grow"></span>
       {# The theme's Cancel | Save: one 130 × 34 px pair (0.2.8-beta.10) #}
       <span class="pairbtns"><a class="pcancel evcancel" href="/?month={{ month }}#cal">{{ _('Cancel') }}</a><button class="psave">{{ _('Save') }}</button></span>
@@ -253,43 +283,46 @@
   </form>
 
   {% if not is_new %}
-  <div class="actions">
-    {% if e.origin == "united" and e.edited %}
-    <form method="post" action="/event/revert"><input type="hidden" name="csrf" value="{{ csrf }}">{% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
-      <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">
-      <button class="ghost">{{ _('Revert to United’s version') if src_type == "ccs" else _('Revert to the feed’s version') }}</button></form>
-    {% endif %}
-    <form method="post" action="/event/delete" id="deleteform" hidden><input type="hidden" name="csrf" value="{{ csrf }}">{% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
-      <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}"></form>
-  </div>
-  <p class="muted" style="font-size:12px">{{ _('Changes here only affect CalendarStream and Google; CCS+ is never changed.') }}{% if e.origin == "united" %} {{ _('Your edit is kept when the schedule is downloaded again.') }}{% endif %}</p>
+  {% if original and e.edited %}<form method="post" action="/event/revert" id="revertform" hidden><input type="hidden" name="csrf" value="{{ csrf }}">{% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
+    <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}"></form>{% endif %}
+  {% if can_delete %}<form method="post" action="/event/delete" id="deleteform" hidden><input type="hidden" name="csrf" value="{{ csrf }}">{% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
+    <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}"></form>{% endif %}
+  {% if can_hide %}<form method="post" action="/event/hide" id="hideform" hidden><input type="hidden" name="csrf" value="{{ csrf }}">{% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
+    <input type="hidden" name="uid" value="{{ e.uid }}"><input type="hidden" name="month" value="{{ month }}">{% if e.hidden %}<input type="hidden" name="show" value="1">{% endif %}</form>{% endif %}
+  <p class="muted foot">{{ _('Changes here only affect CalendarStream and Google; CCS+ is never changed.') }}{% if e.origin == "united" %} {{ _('Your edit is kept when the schedule is downloaded again.') }}{% endif %}</p>
   {% endif %}
 </main>
-{# Delete asks here, in the page's own pop-up (0.2.8-beta.15) #}
+{# Delete and Hide ask here, in the page's own pop-up (0.2.8-beta.15) #}
 <dialog id="askdialog" class="ask" aria-labelledby="asktext">
   <p class="asktext" id="asktext"></p>
   <div class="askchoices"><button type="button" class="ghost askno">{{ _('Cancel') }}</button><button type="button" class="danger solid askyes">{{ _('Yes') }}</button></div>
 </dialog>
 <script>
-var T = { del: {{ _('Delete this event? (Restore, or History › Undo, brings it back.)')|string|tojson }},
-          badTime: {{ _('Type a time like 9:30, 9:30pm or 21:30.')|string|tojson }}, zone: {{ _('Time zone')|string|tojson }},
+var T = { badTime: {{ _('Type a time like 9:30, 9:30pm or 21:30.')|string|tojson }}, zone: {{ _('Time zone')|string|tojson }},
           startZone: {{ _('Start time zone')|string|tojson }} };
-var delForm = document.getElementById('deleteform');
-// Delete asks in the page's own pop-up (0.2.8-beta.15), not the browser's confirm box
-if (delForm) delForm.addEventListener('submit', function (e) {
-  if (delForm.dataset.confirmed) return;
-  e.preventDefault();
-  var d = document.getElementById('askdialog');
-  d.querySelector('.asktext').textContent = T.del;
-  d.querySelector('.askyes').onclick = function () { d.close(); delForm.dataset.confirmed = '1'; delForm.requestSubmit(); };
-  d.querySelector('.askno').onclick = function () { d.close(); };
-  d.showModal();
+// Delete and Hide ask in the page's own pop-up (0.2.8-beta.15), not the browser's confirm box: a button with
+// data-ask asks first; Yes sends its form.
+document.querySelectorAll('button[data-ask]').forEach(function (btn) {
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    var d = document.getElementById('askdialog'), form = document.getElementById(btn.getAttribute('form'));
+    d.querySelector('.asktext').textContent = btn.dataset.ask;
+    d.querySelector('.askyes').onclick = function () { d.close(); form.submit(); };
+    d.querySelector('.askno').onclick = function () { d.close(); };
+    d.showModal();
+  });
+});
+// (i) (F11.3): opens on hover or focus; a click (a touch screen) keeps it open until the next click
+document.querySelectorAll('.infodot').forEach(function (dot) {
+  dot.addEventListener('click', function (e) { e.stopPropagation(); dot.classList.toggle('open'); dot.setAttribute('aria-expanded', String(dot.classList.contains('open'))); });
+  document.addEventListener('click', function () { dot.classList.remove('open'); dot.setAttribute('aria-expanded', 'false'); });
 });
 // Show the time fields only for timed events; for all-day events the end date is the last day.
 (function () {
   var box = document.getElementById('all_day');
   function sync() {          // (the end stays "Ends", all-day or not: 0.2.8-beta.11)
     document.querySelectorAll('.timed').forEach(function (el) { el.hidden = box.checked; });
+    document.querySelector('.endzone').hidden = box.checked || !document.getElementById('end_tz_differs').checked;
   }
   box.addEventListener('change', sync); sync();
 
@@ -346,7 +379,7 @@ if (delForm) delForm.addEventListener('submit', function (e) {
     if (a !== null && length !== null) setWall(ed, et, zoneOf(true), a + Math.max(length, 0));
   }
   function endChanged() { var l = lengthNow(); if (l !== null) length = l; }
-  window.setEventLength = function (min) { length = min; startChanged(); };   // used by "Start from a template"
+  window.setEventLength = function (min) { length = min; startChanged(); };   // used by "Choose from template"
   function tidy(input) {   // show a typed time the standard way, or mark it
     var t = parse(input.value);
     input.classList.toggle('bad', t === null);
@@ -399,6 +432,7 @@ if (delForm) delForm.addEventListener('submit', function (e) {
     input.addEventListener('focus', function () { openList(input); });
     input.addEventListener('click', function () { if (list.hidden) openList(input); });
     input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !list.hidden) e.preventDefault();      // (closes the list, not the pop-up)
       if (e.key === 'Escape' || e.key === 'Tab') closeList();
       if (e.key === 'Enter') { e.preventDefault(); closeList(); input.dispatchEvent(new Event('change')); }
     });
@@ -424,13 +458,14 @@ if (delForm) delForm.addEventListener('submit', function (e) {
   document.addEventListener('click', function (e) { if (box.open && !box.contains(e.target)) box.open = false; });
 })();
 
-// "Start from a template" fills in the title, length, location and color.
+// "Choose from template" (F11.1) fills in the title, length, location and color.
 (function () {
-  var pick = document.getElementById('template');
+  var pick = document.getElementById('tplpick');
   if (!pick) return;
-  pick.addEventListener('change', function () {
-    var o = pick.selectedOptions[0];
-    if (!o || !o.value) return;
+  document.addEventListener('click', function (e) { if (pick.open && !pick.contains(e.target)) pick.open = false; });
+  pick.addEventListener('keydown', function (e) { if (e.key === 'Escape' && pick.open) { e.preventDefault(); pick.open = false; pick.querySelector('summary').focus(); } });
+  pick.querySelectorAll('.tplitem').forEach(function (o) { o.addEventListener('click', function () {
+    pick.open = false;
     document.getElementById('title').value = o.dataset.title;
     document.getElementById('location').value = o.dataset.location;
     var allDay = document.getElementById('all_day');
@@ -438,7 +473,7 @@ if (delForm) delForm.addEventListener('submit', function (e) {
     if (!o.dataset.allday && window.setEventLength) window.setEventLength(+o.dataset.minutes);
     var radio = document.querySelector('input[name=color][value="' + (o.dataset.color || '') + '"]');
     if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }
-  });
+  }); });
 })();
 // The map button opens what's in Location (0.2.8-beta.11)
 (function () {
@@ -447,23 +482,45 @@ if (delForm) delForm.addEventListener('submit', function (e) {
   function set() { map.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(loc.value.trim()); }
   loc.addEventListener('input', set); set();
 })();
-// In the status page's pop-up, Cancel closes the pop-up.
-{% if embed %}document.querySelectorAll('.evcancel').forEach(function (a) {
+{% if embed %}
+// In the status page's pop-up: ← and Cancel close it; Print opens Print Preview there, on this event's day;
+// the pop-up is as tall as this page, so dragging Notes taller grows it (F11).
+document.querySelectorAll('.evcancel, .evback').forEach(function (a) {
   a.addEventListener('click', function (e) { e.preventDefault(); parent.postMessage('calendarstream:event-close', location.origin); });
-});{% endif %}
-// The link icon (F3.2) shows or hides "Linked to"; hiding it while nothing is chosen leaves no link.
+});
+// Escape closes the pop-up (focus is in this page now that it draws the header), unless something in it is open
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape' || e.defaultPrevented) return;
+  var open = document.querySelector('dialog[open], details[open]');
+  if (open) { if (open.tagName === 'DETAILS') { e.preventDefault(); open.open = false; } return; }
+  parent.postMessage('calendarstream:event-close', location.origin);
+});
+document.querySelectorAll('.evprint').forEach(function (a) {
+  a.addEventListener('click', function (e) { e.preventDefault(); parent.postMessage({ kind: 'calendarstream:print', date: a.dataset.date }, location.origin); });
+});
 (function () {
-  var btn = document.getElementById('linkbtn'), box = document.getElementById('linkbox'), pick = document.getElementById('link_to');
-  if (!btn || !box) return;
-  btn.addEventListener('click', function () {
-    box.hidden = !box.hidden; btn.setAttribute('aria-expanded', String(!box.hidden));
-    if (!box.hidden) pick.focus();
-  });
-  pick.addEventListener('change', function () { btn.classList.toggle('on', !!pick.value); });
-  // Event | Rule (0.2.8-beta.15)
-  box.querySelectorAll('.linkkind .seg').forEach(function (b) { b.addEventListener('click', function () {
-    box.querySelectorAll('.linkkind .seg').forEach(function (x) { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', String(x === b)); });
-    box.querySelector('.linkevent').hidden = b.dataset.kind !== 'event'; box.querySelector('.linkrule').hidden = b.dataset.kind !== 'rule';
+  var main = document.querySelector('main'), last = 0;
+  function size() {
+    var h = Math.ceil(main.getBoundingClientRect().height);
+    if (h !== last) { last = h; parent.postMessage({ kind: 'calendarstream:event-size', height: h }, location.origin); }
+  }
+  if (window.ResizeObserver) new ResizeObserver(size).observe(main);
+  size();
+})();
+{% endif %}
+// Link to (F11.2): Event or Rule opens its part; Remove takes the link off (at Save, so Cancel keeps it) and closes it.
+(function () {
+  var box = document.getElementById('linkbox'), pick = document.getElementById('link_to');
+  if (!box) return;
+  var segs = box.querySelectorAll('.linkkind .seg');
+  function show(kind) {
+    segs.forEach(function (x) { var on = x.dataset.kind === kind; x.classList.toggle('on', on); if (x.dataset.kind !== 'remove') x.setAttribute('aria-expanded', String(on)); });
+    box.querySelector('.linkevent').hidden = kind !== 'event'; box.querySelector('.linkrule').hidden = kind !== 'rule';
+  }
+  segs.forEach(function (b) { b.addEventListener('click', function () {
+    if (b.dataset.kind === 'remove') { pick.value = ''; show(''); return; }
+    show(b.dataset.kind);
+    if (b.dataset.kind === 'event') pick.focus();
   }); });
   // A rule opens in the status page's rule dialog (the pop-up closes); on its own page, the status page opens with it
   function toRule(msg, query) {

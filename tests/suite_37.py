@@ -80,7 +80,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     pack = next(e for e in main.store.load_events(L) if e.title == "Pack")
     ok(main.event_links()[pack.uid]["to"] == trip.uid and main.event_links()[pack.uid]["src"] == "ccs", "an added event linked to a trip")
     e = c.get(f"/event?uid={pack.uid}&month=2026-10").text
-    ok('id="linkbox"' in e and f'<option value="{trip.uid}" selected' in e and 'class="iconbtn linkbtn on"' in e, "its page shows the link (icon on)")
+    ok('id="linkbox"' in e and f'<option value="{trip.uid}" selected' in e and 'class="seg on" data-kind="event"' in e, "its page shows the link (Link to opens at Event, 0.2.8-beta.22)")
     ok("Linked to “" + trip.title + "”" in c.get("/?month=2026-10").text, "…and its details on the calendar")
     # the trip moves 2 h later (an edit, as a download would): Pack moves with it
     f = main._form_values(trip)
@@ -180,10 +180,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(pg.locator("#removedialog[open]").count() == 0 and "ccs" in main.source_ids(), "Cancel removes nothing")
         # F3.2: the link icon on the event page
         pg.goto("http://127.0.0.1:8093/event?date=2026-10-14&month=2026-10"); pg.wait_for_timeout(300)
-        ok(not pg.is_visible("#linkbox"), "a new event: not linked")
-        pg.click("#linkbtn"); pg.wait_for_timeout(100)
-        ok(pg.is_visible("#linkbox") and pg.locator("#link_to option").count() > 5 and pg.is_checked("input[name=link_delete]") and pg.is_checked("input[name=link_move]"),
-           "the link icon: Linked to (events around it), Delete with it, Move with it")
+        ok(not pg.is_visible("#linkevent"), "a new event: not linked")
+        pg.click('.linkkind [data-kind="event"]'); pg.wait_for_timeout(100)
+        ok(pg.is_visible("#linkevent") and pg.locator("#link_to option").count() > 5 and pg.is_checked("input[name=link_delete]") and pg.is_checked("input[name=link_move]"),
+           "Link to › Event: the events around it, Delete with it, Move with it")
         ok(not errs, f"no script errors {errs}")
         b.close()
     srv.should_exit = True

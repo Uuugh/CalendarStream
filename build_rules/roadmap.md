@@ -12,6 +12,12 @@ Read when planning a version.
 - Apple iCloud 2-way Sync (CalDAV): an app-specific password per person (made at account.apple.com), entered on
   an invite page (kept encrypted); iCloud is checked every few minutes, since it sends no change notices.
 
+0.2.11 Holidays
+- Public holidays as calendars, only from sources free for commercial use with redistribution rights. First set:
+  python-holidays (Vacanza, MIT), UK Government Bank Holidays (Open Government Licence v3.0), US OPM federal holidays
+  (public domain), Victoria Government Important Dates (CC BY 4.0). For calendars those don't cover: Holibase
+  (MIT / CC BY 4.0), date-holidays (ISC / CC BY-SA 3.0). Each licence's terms are checked when 0.2.11 is planned.
+
 0.3 Backups
 - Backups.
 

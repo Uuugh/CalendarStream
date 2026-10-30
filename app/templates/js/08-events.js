@@ -48,6 +48,7 @@ var eventDialog = document.getElementById('eventdialog'), eventFrame = eventDial
 function narrow() { return window.matchMedia('(max-width: 700px)').matches; }
 function openEvent(url) {
   if (narrow()) { location.href = url; return; }
+  eventFrame.style.height = '';      // (F11) until the page says how tall it is
   eventFrame.src = url + (url.indexOf('?') < 0 ? '?' : '&') + 'embed=1';
   eventDialog.showModal();
 }
@@ -59,6 +60,9 @@ document.addEventListener('click', function (e) {
 window.addEventListener('message', function (e) {
   if (e.origin !== location.origin) return;
   if (e.data === 'calendarstream:event-close') { eventDialog.close(); return; }
+  // (0.2.8-beta.22, F11) the event page's height: the pop-up fits it, up to the window; Print: Print Preview on its day
+  if (e.data && e.data.kind === 'calendarstream:event-size' && e.source === eventFrame.contentWindow) { eventFrame.style.height = (+e.data.height || 0) + 'px'; return; }
+  if (e.data && e.data.kind === 'calendarstream:print') { if (window.openPrintDay) window.openPrintDay(e.data.date); return; }
   // Link › Rule in the event pop-up (0.2.8-beta.15): its rule, or a new one for it, opens in the rule dialog
   if (e.data && e.data.kind === 'calendarstream:open-rule') { eventDialog.close(); if (RD.rules[e.data.id]) openRule(RD.rules[e.data.id]); return; }
   if (e.data && e.data.kind === 'calendarstream:new-rule') { eventDialog.close(); openRuleFor(e.data.title, e.data.date, e.data.sid); return; }

@@ -263,3 +263,7 @@ one here, with its card.
   as wide as the longer, 5 px from its date, the dates lined up; a Calendar Feed's Add to… buttons are as wide as
   the longest of them. (0.2.8-beta.21, F5.1, F5.2, F5.3; Part 1)
 - Today has a 2 px accent border around its whole day, as well as its filled date. (0.2.8-beta.21, F10; Part 1)
+- The event pop-up: ← and its title, with its tools in the upper right corner (Choose from template; Print and
+  Duplicate); the fields on the left, Notes on the right as tall as them (dragging Notes taller grows the pop-up);
+  Link to below, closed until Event or Rule; Delete (Hide or Show for a calendar source's event, with its (i)) at the
+  bottom left, Cancel | Save at the right. On a phone, one column. (0.2.8-beta.22, F11; Picture 2·21, drawn at the next Deploy)

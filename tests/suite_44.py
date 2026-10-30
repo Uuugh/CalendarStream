@@ -239,6 +239,15 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                     getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()]; }""")
         ok(0 <= r[0] <= 4 and r[1], f"Clarification 'folded (i)': a superscript right after the label's last word {r[:2]}")
         ok("inset" in r[2] and r[2].endswith("2px") or ("inset" in r[2] and " 2px" in r[2]), f"Clarification 'today': today's whole day has a 2 px border {r[2]}")
+        # --- 0.2.8-beta.22: the event pop-up (F11) -------------------------------------------------------------
+        pg.evaluate("openEvent('/event?date=2026-10-21&month=2026-10')"); pg.wait_for_timeout(1200)
+        r = pg.evaluate("""() => { const f = document.querySelector('#eventdialog iframe'), d = f.contentDocument, q = s => d.querySelector(s).getBoundingClientRect();
+            const t = q('#title'), n = q('#description'), h = q('.evhead'), c = q('.cornertools'), l = q('#linkbox'), p = q('.pairbtns');
+            return [n.left > t.right, Math.abs(n.top - t.top) <= 1, Math.abs(h.right - c.right) <= 1, l.top > n.bottom, Math.abs(p.right - l.right) <= 1,
+                    d.querySelector('#linkevent').hidden && d.querySelector('#linkrule').hidden,
+                    Math.abs(f.getBoundingClientRect().height - d.querySelector('main').getBoundingClientRect().height) <= 1]; }""")
+        ok(all(r), f"Clarification 'event pop-up': Notes on the right of the fields, tools in the upper right corner, Link to closed below, Cancel | Save at the right, the pop-up as tall as the page {r}")
+        pg.evaluate("document.getElementById('eventdialog').close()"); pg.wait_for_timeout(200)
         # F4: its upper left at the icon; at the right edge, its upper right there; at the bottom, its lower corners there
         r = pg.evaluate("""() => {
             scrollTo(0, document.documentElement.scrollHeight);
@@ -347,7 +356,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "a Google module's color note (suites 55, 56)": "A Google module's colors end with",
             "spacing": "Spacing: 5 px between parts", "(i) and (?) pop-ups": "(i) and (?) pop-ups open with their upper left",
             "folded (i)": "A folded module's (i) is a superscript", "From / To": "An Include box's calendars",
-            "today": "Today has a 2 px accent border"}
+            "today": "Today has a 2 px accent border", "event pop-up": "The event pop-up"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

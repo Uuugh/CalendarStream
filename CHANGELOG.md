@@ -9,7 +9,35 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.21**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.22**
+
+## 0.2.8-beta.22 — 2026-10-30
+
+### Changed
+- **F11** The event pop-up, laid out as in the Developer's picture: **←** and its title (Add event, Edit event), its
+  tools in the upper right corner; two columns, the fields on the left (Title\*, Location with its map, Calendar |
+  Change color, All-day | The end is in a different time zone, Starts\* | Ends\*, Time\* | Time\*, Time zone, with
+  End time zone under the end's time when it's ticked) and Notes on the right, as tall as the fields and at least
+  10 lines; dragging Notes taller grows the pop-up, which is now as tall as the page (up to the window) instead of
+  always the window's height. A phone shows one column, Notes after the fields. Spacing as R11.
+- **F11.1** The upper right corner: **Choose from template** (a new event; it was the "Start from a template" field),
+  **Print** (Print Preview on the event's day, in the Day view; the view you print with otherwise is kept) and
+  **Duplicate** (a saved event).
+- **F11.2** **Link to** is one line, closed: **Event** opens the event to link to, **Rule** the rules it follows or a
+  new one (once the event is saved), **Remove** takes the link off at Save (Cancel keeps it) and closes it. An event
+  that's linked opens at Event. The link icon beside the color is gone.
+- **F11.3** **Delete** at the bottom left (it asks first). An event from a calendar source says **Hide** instead, with
+  an (i): it can't be removed from its source, but it's hidden from the feeds, stays on the page struck through, and
+  **Show** brings it back; both are in History, with Undo. This replaces the "Hide from Google Calendar" box; Save
+  keeps a hidden event hidden.
+
+### Removed
+- **R19** `docs/plans/` (one plan from 0.1.0, long since done).
+
+### Added
+- **R19** `docs/development/`, for the Developer's own scratch work: everything in it but its README stays on the
+  Developer's machine (`.gitignore`).
+- **R18** Roadmap: 0.2.11 Holidays, from sources free for commercial use with redistribution rights.
 
 ## 0.2.8-beta.21 — 2026-10-30
 

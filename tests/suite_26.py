@@ -84,7 +84,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
        "All Rules; each calendar's rules with a bin, and + Add a rule → New rule…")
     ok(p.count('<use href="#mi-delete"') >= 3, "the bin is an icon")
     e = c.get("/event?date=2026-10-12", auth=A).text
-    ok('<select id="source" name="source"' in e and 'id="template"' in e and 'data-title="Prep"' in e, "event page: which calendar, and Start from a template")
+    ok('<select id="source" name="source"' in e and 'id="tplpick"' in e and 'data-title="Prep"' in e, "event page: which calendar, and Choose from template (0.2.8-beta.22)")
     r = post("/event/save", title="Lunch", start_date="2026-10-12", start_time="12:00", end_date="2026-10-12", end_time="13:00", source=sid)
     ok(r.status_code == 303 and any(x.title == "Lunch" and x.origin == "custom" for x in main.store.load_events(sid)), "an added event goes into the chosen calendar")
     # Destinations: independent of sources, each with its own list; the first asks for the public address

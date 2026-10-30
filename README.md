@@ -134,14 +134,19 @@ logins or setup codes lock an address out for 15 minutes.
   and **Print** (Print Preview, below). Click the title to jump to any month. Click an event to
   open it; it stays open (also while the calendar is redrawn) until its **Close** (on the left). On
   the right of its details: the **link** (opens the event at "Linked to"), the bell (**reminders**: up to five, from "at the start" to "1 week before", sent to
-  Google and written into the feeds), **✎ Edit** (title, times, notes, or hide it), **duplicate**
+  Google and written into the feeds), **✎ Edit** (title, times, notes), **duplicate**
   and **delete** (a source's own event is hidden instead, since the source would send it again).
   Click an empty spot on a day, a day's **+**, or the **+** in the calendar's top right corner to add
-  your own. The event pop-up: **Calendar | Title**; the color, link, duplicate and delete beside
-  **Location** (with a map button that opens the place in Google Maps); **All-day** and **The end is in
-  a different time zone**; **Starts | Ends**, each with its time under it; Notes; **Cancel | Save**. The
-  link links an event to another one (e.g. a drive to the airport to its trip): **Delete with it**
-  and/or **Move with it**. The **search** icon (left of Time Zone) opens a search line: words found in
+  your own. The event pop-up: **←** and its title, with **Choose from template** (a new event) or **Print**
+  (Print Preview on the event's day) and **Duplicate** in the upper right corner. On the left: **Title**,
+  **Location** (with a map button that opens the place in Google Maps), **Calendar | Change color**,
+  **All-day** and **The end is in a different time zone**, **Starts | Ends** with their times, and the time
+  zone; on the right, **Notes**, as tall as the fields (drag it taller and the pop-up grows). Under them,
+  **Link to**: **Event** links it to another event (e.g. a drive to the airport to its trip: **Delete with
+  it** and/or **Move with it**), **Rule** opens the rules it follows or makes one for it, **Remove** takes the
+  link off when you Save. At the bottom, **Delete** (asks first) and **Cancel | Save**; an event from a
+  calendar source says **Hide** instead (its source would send it again): it's left out of the feeds and stays
+  here struck through, with **Show** to bring it back. The **search** icon (left of Time Zone) opens a search line: words found in
   titles, places and notes, one calendar or all, from and to (a year back to a year ahead when empty);
   matches are listed by day while you type, and ✕ brings the calendar back. On a computer, adding and editing an
   event (and the rule dialog) open in a pop-up; on a phone they're a full page with a **←** back
@@ -297,7 +302,7 @@ logins or setup codes lock an address out for 15 minutes.
   `DEFAULT_EVENT_HOURS`) and **24-hour events** (shown as all-day; CCS+ writes full days as
   00:01–23:59:59). Rules from earlier versions are converted, in the same order.
 - **Event Templates** (like All Rules: "2 Templates" in a box, Expand for Details, **+** in the bottom right corner, Cancel | Save): ready-made events (title, length or all day, location, color) for Add-event
-  rules and for **Start from a template** when adding an event by hand.
+  rules and for **Choose from template** when adding an event by hand.
 - **History, Undo & Logs** (a module like the others: it opens only from its Expand line): each check
   and what changed, for each source, then every line as **Time | Type | Event | Undo**, with a filter
   (a Type, words, a time). Changes made on the page can be **undone** and **redone** (newest first);
