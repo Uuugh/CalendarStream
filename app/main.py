@@ -959,6 +959,9 @@ async def google_sync_once(full: bool) -> bool:
         return ok
 
 
+COLOR_TRY = 2    # (0.2.8-beta.19) a refused color is tried once per color and per COLOR_TRY
+
+
 async def _sync_account(g: Google, dests: list[dict], total: int, color_for, full: bool) -> bool:
     try:
         for d in dests:
@@ -974,14 +977,16 @@ async def _sync_account(g: Google, dests: list[dict], total: int, color_for, ful
             if result.changed or result.notes:
                 state.record("info", f"{who}: {result.summary()}" + ("; " + "; ".join(result.notes) if result.notes else ""))
             info = g.cal_info(d["id"])
-            if d["color"] and info.get("color") != d["color"] and info.get("color_tried") != d["color"]:   # its color box (0.2.8-beta.15)
+            # (0.2.8-beta.19, I1) tried again once after updating, so History gets Google's own reason for a refusal
+            tried = info.get("color_tried") == d["color"] and info.get("color_try") == COLOR_TRY
+            if d["color"] and info.get("color") != d["color"] and not tried:   # its color box (0.2.8-beta.15)
                 # (0.2.8-beta.18, I4) tried once per color: Google refusing it is said once and never makes the
                 # module's sync a "Sync problem" (before, it failed after every successful sync)
                 try:
                     await g.set_color(d["id"], d["color"])
                     state.record("info", f"{who}: color set in Google Calendar", kind="Google")
                 except GoogleError as e:
-                    g._update_cal(d["id"], color_tried=d["color"])
+                    g._update_cal(d["id"], color_tried=d["color"], color_try=COLOR_TRY)
                     state.record("warn", f"{who}: the calendar's color couldn't be set in Google Calendar ({e}); "
                                  "set it there by hand if you like", kind="Google")
             _remember_calendar(d["id"], g)
@@ -1742,7 +1747,57 @@ def _own_network(ip: str) -> bool:
     return ip in _domain_ips["ips"]
 
 
-def _check_lockout(ip: str):
+# (0.2.8-beta.19, F6) Two ways back in when the limit for all addresses trips, so it can't lock the owner out of a
+# remote server: (a) a browser that has signed in here before carries a signed "known browser" cookie, which gets
+# past that limit from anywhere (the limit for its own address still applies, and it still needs the password);
+# (b) the moment the limit trips, the container log gets a one-time link, good for an hour, that makes the
+# browser opening it a known browser.
+KNOWN_COOKIE = "cs_known"
+KNOWN_DAYS = 400                        # the longest browsers keep a cookie
+UNLOCK_FOR = timedelta(hours=1)
+_unlock: dict = {"token": None, "until": None}
+
+
+def _known_sig(issued: int) -> str:
+    return hmac.new(_session_key(), f"known\0{issued}".encode(), hashlib.sha256).hexdigest()
+
+
+def new_known() -> str:
+    issued = int(now().timestamp())
+    return f"{issued}.{_known_sig(issued)}"
+
+
+def known_browser(request: Request) -> bool:
+    """The browser has signed in here before (its signed cookie, within KNOWN_DAYS)."""
+    try:
+        issued, sig = request.cookies.get(KNOWN_COOKIE, "").split(".")
+        issued_n = int(issued)
+    except ValueError:
+        return False
+    if now().timestamp() - issued_n > KNOWN_DAYS * 86400:
+        return False
+    return hmac.compare_digest(sig, _known_sig(issued_n))
+
+
+def _secure(request: Request) -> bool:
+    return request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
+
+
+def set_known(back, request: Request):
+    """Mark this browser as known (each successful sign-in renews it)."""
+    back.set_cookie(KNOWN_COOKIE, new_known(), max_age=KNOWN_DAYS * 86400, httponly=True, samesite="lax",
+                    secure=_secure(request))
+
+
+def _new_unlock() -> str:
+    """A one-time unlock link for the container log, replacing any earlier one."""
+    token = secrets.token_urlsafe(24)
+    _unlock.update(token=token, until=now() + UNLOCK_FOR)
+    base = (public_addresses() or [""])[0].rstrip("/")
+    return f"{base}/unlock/{token}"
+
+
+def _check_lockout(ip: str, known: bool = False):
     own = _own_network(ip)       # (looked up before the lock: it may ask DNS)
     with _failures_lock:
         locked_until = _gui_failures.get(ip, [0, None])[1]
@@ -1755,7 +1810,8 @@ def _check_lockout(ip: str):
         while _global_failures and _global_failures[0] < cutoff:
             _global_failures.pop(0)
         trusted = _good_ips.get(ip)
-        if len(_global_failures) >= GLOBAL_MAX_FAILURES and not own and not (trusted and now() - trusted < GOOD_IP_FOR):
+        if (len(_global_failures) >= GLOBAL_MAX_FAILURES and not own and not known
+                and not (trusted and now() - trusted < GOOD_IP_FOR)):
             raise HTTPException(429, "Too many failed attempts. Try again later.")
 
 
@@ -1769,10 +1825,15 @@ def _count_failure(ip: str, what: str = "logins"):
         count = _gui_failures.get(ip, [0, None])[0] + 1
         locked = now() + GUI_LOCKOUT if count >= GUI_MAX_FAILURES else None
         _gui_failures[ip] = [0 if locked else count, locked]
-    if everyone:     # (review #6.1) said once, with the way back in
+    if everyone:     # (review #6.1) said once, with the ways back in
+        link = _new_unlock()
+        log.warning("Sign-ins paused for new browsers after %s failed attempts. To let your browser in, open this "
+                    "link in it within an hour (it works once): %s", GLOBAL_MAX_FAILURES, link)
         state.record("warn", f"{GLOBAL_MAX_FAILURES} failed sign-ins from many addresses in {int(GUI_LOCKOUT.total_seconds() // 60)} min: "
-                     "new browsers wait 15 minutes, except on your own network (a local address, or the IP your domain points at) "
-                     "and ones signed in here in the last 7 days. Locked out yourself? Restart CalendarStream (docker compose restart).", kind="Settings")
+                     "new browsers wait 15 minutes, except browsers that have signed in here before, your own network (a local "
+                     "address, or the IP your domain points at) and addresses signed in here in the last 7 days. Locked out "
+                     "yourself? Open the one-time link in the container log (docker compose logs) within an hour, or restart "
+                     "CalendarStream (docker compose restart).", kind="Settings")
     if locked:
         state.record("warn", f"Status page locked for {ip} after {GUI_MAX_FAILURES} failed {what}")
         raise HTTPException(429, "Too many failed attempts. Try again later.")
@@ -1835,7 +1896,7 @@ def gui_auth(request: Request, creds: HTTPBasicCredentials | None = Depends(basi
     if session_user(request):
         return
     ip = _client_ip(request)
-    _check_lockout(ip)
+    _check_lockout(ip, known_browser(request))
     if creds and logins.check_page_login(creds.username, creds.password):
         _count_success(ip)
         return
@@ -2257,7 +2318,9 @@ def rule_js(lang: str) -> dict:
                   "noEnd": tr("0 = no end time"), "editSamples": tr("Change the titles to test"),
                   "matchCount": tr("{n} of {total} match"), "andAdd": tr("and: another line"), "orAdd": tr("or: another line"),
                   "searchEmoji": tr("Search for more emojis"), "noEmoji": tr("No emoji with that name"),
+                  "olderWindows": tr("May not show on older Windows"),
                   "lasting": tr("lasting"), "at": tr("at")},
+            "info_icon": str(icons.svg("info", 15)),     # (0.2.8-beta.19, F8) the (i) beside an emoji
             "version": __version__}
 
 
@@ -2971,7 +3034,8 @@ def create_login(request: Request, csrf: str = Form(""), code: str = Form(""), u
     state.record("info", f"Status-page login created for \"{logins.page_user}\"")
     back = RedirectResponse("/", status_code=303)       # signed in already: no need to type it again
     back.set_cookie(SESSION_COOKIE, new_session(logins.page_user), max_age=SESSION_DAYS * 86400, httponly=True,
-                    samesite="lax", secure=request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https")
+                    samesite="lax", secure=_secure(request))
+    set_known(back, request)
     return back
 
 
@@ -3000,7 +3064,7 @@ def login_submit(request: Request, csrf: str = Form(""), user: str = Form(""), p
                  next_: str = Form("/", alias="next")):
     check_csrf(csrf, LOGIN_TOKEN)
     ip = _client_ip(request)
-    _check_lockout(ip)
+    _check_lockout(ip, known_browser(request))
     if not logins.check_page_login(user, password):
         _count_failure(ip)
         return page(request, "login.html", {"csrf": LOGIN_TOKEN, "error": "That user name or password isn't right.",
@@ -3008,7 +3072,23 @@ def login_submit(request: Request, csrf: str = Form(""), user: str = Form(""), p
     _count_success(ip)
     back = RedirectResponse(_safe_next(next_), status_code=303)
     back.set_cookie(SESSION_COOKIE, new_session(logins.page_user), max_age=SESSION_DAYS * 86400, httponly=True,
-                    samesite="lax", secure=request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https")
+                    samesite="lax", secure=_secure(request))
+    set_known(back, request)
+    return back
+
+
+@app.get("/unlock/{token}")
+def unlock(request: Request, token: str):
+    """(0.2.8-beta.19, F6) The one-time link from the container log: this browser becomes a known browser, so the
+    limit for all addresses lets it through to the sign-in page. It works once, within an hour."""
+    good = (_unlock["token"] and _unlock["until"] and now() < _unlock["until"]
+            and hmac.compare_digest(token.encode(), _unlock["token"].encode()))
+    if not good:
+        raise HTTPException(404, "This unlock link has expired or was already used.")
+    _unlock.update(token=None, until=None)
+    state.record("info", f"Unlock link used from {_client_ip(request)}: that browser can sign in again", kind="Settings")
+    back = RedirectResponse("/login", status_code=303)
+    set_known(back, request)
     return back
 
 
@@ -4364,6 +4444,31 @@ async def google_sync_now(request: Request, csrf: str = Form("")):
     if _is_async(request):
         return {"ok": True}
     return RedirectResponse(GOOGLE_SETTINGS, status_code=303)
+
+
+def google_calendar_url(email: str) -> str:
+    """Google Calendar in that Gmail (0.2.8-beta.19, F7). No ?cid=: CalendarStream's calendar is already in the
+    account's list, and a cid link only brings up Google's "Add calendar?" for it."""
+    return "https://calendar.google.com/calendar/r" + (f"?{urlencode({'authuser': email})}" if email else "")
+
+
+@app.get("/google/open/{did}", dependencies=[Depends(gui_auth)])
+def google_open(request: Request, did: str, check: int = Query(0)):
+    """(0.2.8-beta.19, F7) The tab a Google module's first Sync Now opens: "Making the calendar…" until the sync
+    is done, then Google Calendar. With ?check=1 it answers {"url": …} once ready ({} until then)."""
+    d = destination(did)
+    if not d or d["type"] == "feed":
+        raise HTTPException(404)
+    g = dest_google(d)
+    url = google_calendar_url(g.info().get("email", ""))
+    if not check:
+        return page(request, "gopen.html", {"name": d["name"], "fallback": url})
+    cal = g.cal_info(did)
+    busy = google_job.running or google_job.wake.is_set()
+    if busy or (g.connected and cal.get("calendar_id") and not cal.get("last_sync") and not g.info().get("last_error")):
+        return {}
+    g._update_cal(did, shown=True)
+    return {"url": url}
 
 
 @app.get("/subscribe/{token}")

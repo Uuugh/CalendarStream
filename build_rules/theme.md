@@ -68,7 +68,7 @@ The theme suite fails any status word whose look isn't in this table.
   expanded); the choice goes with the module's Save.
 - **Emoji** (Picture 2·16): the common ones beside the field, then a rounded "Search for more emojis" field
   that opens every emoji (Unicode up to Emoji 13.0, no flags, drawn by the device): ten a line, scrolling,
-  filtered as you type.
+  filtered as you type. One older Windows may not draw has a small i (Clarifications).
 - **Date range** (Picture 2·17): From | To | ☐ All, in that order, everywhere a range is asked for
   (search, feeds, Print Preview, Import). All clears the dates and greys them; typing in is done after
   unticking it. All is what an empty range means.
@@ -235,3 +235,7 @@ one here, with its card.
 - Importing a calendar file is one row in every calendar: heading, the file field filling the line, the
   dates, the button on the right (CCS+: Manual Upload). (Picture 2·17)
 - Emoji: the common ones, then a rounded "Search for more emojis" field that opens every emoji, ten a line, scrolling, filtered as you type. (Picture 2·16)
+- Emoji older Windows may not draw (newer than Emoji 12.0, and flags): a small i at the emoji's upper right in the
+  list, and the page's own (i) beside the field when one is chosen, both "May not show on older Windows". (0.2.8-beta.19, F8)
+- A Google module's colors end with a muted line, "Color change does not carry to Google", while Google refuses the
+  color. (0.2.8-beta.19, I1.1)

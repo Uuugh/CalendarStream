@@ -77,7 +77,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             main._count_failure(f"203.0.113.{i}")
         except Exception:
             pass
-    ok(sum("failed sign-ins from many addresses" in m and "Restart CalendarStream" in m for m in log(30)) == 1,
+    ok(sum("failed sign-ins from many addresses" in m and "container log" in m and "restart CalendarStream" in m for m in log(30)) == 1,
        "#6.1: reaching the limit for all addresses says so once in History, with the way back in")
     # (the Developer's decision, review #6.1) local addresses and the IP the domain points at still get in
     def blocked(ip):

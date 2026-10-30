@@ -30,5 +30,9 @@ Postgres it can create databases on (`TEST_DB_HOST`, `TEST_DB_PORT`, `TEST_DB_US
 - `one.sh NN`: one suite, printing everything but the PASS lines (run.sh prints only failures).
 - `demo.sh`: (re)starts `demo.py`, a demo CalendarStream on http://127.0.0.1:8177 (t / password1) filled by
   `seed.py`, for looking at the page. Restart it after changing the page.
+- `shots.py DIR`: the standard set of whole-page screenshots of the demo (desktop and phone, light and dark, modules
+  expanded, the ☰ menu), with times hidden. Take one before a change and one after, then
+  `pixdiff.py BEFORE AFTER OUT`: compares them pixel by pixel and writes each changed area, before beside after,
+  to OUT; only those are looked at (R15). Exit 0 = nothing changed.
 - `shot.py [--phone] [--dark] [--url /path] out.png STEP...`: a screenshot of the demo after some steps
   (CLICK, FILL, WAIT, SHOT an element, or JavaScript); it prints the page's errors.

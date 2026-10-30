@@ -24,6 +24,8 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   requests appear under their item in amber.
 - Every waiting item ends with its state in blue: approved, understood or resolved (and, once planned, which
   build it's in).
+- The waiting list is sorted I, then F, then R, in number order; each number in blue, amber when Claude is
+  asking something under it.
 - "Waiting on" spells out the recommended path: the exact command to say next, when (for example after a usage
   reset), in which conversation, and how the remaining builds are split, with the reason when it saves usage (a
   new conversation, a smaller build, waiting for a reset).

@@ -10,7 +10,14 @@ S = {"codes": {}, "refresh": {}, "access": {}, "calendars": {}, "events": {}, "r
      "grant_calendar": True, "email": "pilot@example.com", "calls": [], "fail_next": [],
      # (0.2.8-beta.14) several OAuth clients; each one's Authorized redirect URIs (None: any); which
      # client signed each token in (an app sees only the calendars its own client made)
-     "clients": {CLIENT_ID: CLIENT_SECRET}, "redirects": None, "refresh_client": {}}
+     "clients": {CLIENT_ID: CLIENT_SECRET}, "redirects": None, "refresh_client": {},
+     # (0.2.8-beta.19, I1) refuse every calendar color with a 401, as Google did for the Developer
+     "refuse_color": False}
+# What Google sends with a 401 (its usual body)
+REFUSED_401 = {"error": {"code": 401, "message": "Request had invalid authentication credentials. Expected OAuth 2 access "
+               "token, login cookie or other valid authentication credential.",
+               "errors": [{"message": "Invalid Credentials", "domain": "global", "reason": "authError",
+                           "location": "Authorization", "locationType": "header"}], "status": "UNAUTHENTICATED"}}
 app = FastAPI()
 
 
@@ -168,6 +175,8 @@ async def cal_patch(cid: str, request: Request, authorization: str = Header(""))
 @app.patch("/calendar/v3/users/me/calendarList/{cid}")
 async def calendarlist_patch(cid: str, request: Request, authorization: str = Header("")):
     """A calendar's color in the person's list (0.2.8-beta.15)."""
+    if S["refuse_color"]:
+        return JSONResponse(REFUSED_401, 401)
     owner = who(authorization); c = S["calendars"].get(cid)
     if not c or c["owner"] != owner:
         return gerr(404, "notFound")

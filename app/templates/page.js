@@ -682,6 +682,14 @@ document.addEventListener('submit', function (e) {
   if (!f) return;
   e.preventDefault();
   var sid = f.elements.sid.value;
+  // (0.2.8-beta.19, F7) a Google module's first Sync Now: its tab opens now, at the click, so no pop-up blocker
+  // stops it; it shows "Making the calendar…" and then Google Calendar
+  var btn = f.querySelector('.syncnow[data-gopen]');
+  if (btn) {
+    var w = window.open(btn.dataset.gopen, '_blank');
+    if (w) w.opener = null;
+    btn.removeAttribute('data-gopen');
+  }
   showSyncing(sid);
   fetch(f.getAttribute('action'), { method: 'POST', body: new URLSearchParams({ csrf: CSRF, sid: sid }), credentials: 'same-origin',
                     headers: { 'X-CS-Async': '1' } }).then(function () { followSync(sid); }, function () { f.submit(); });
@@ -934,6 +942,8 @@ function actFields(a) {
   // Emoji: the field, the common ones, then a search field for every emoji (0.2.8-beta.17, was a face+ button):
   // typing in it (or clicking it) opens the full list under the line, ten a line, filtered as you type
   if (t === 'emoji') return '<input type="text" class="aval emoji" maxlength="16" value="' + esc(a.emoji || '') + '" aria-label="' + esc(RD.t.emoji) + '" placeholder="✈️">'
+      + '<span class="helpdot notedot emowarn" tabindex="0" role="button" aria-label="' + esc(RD.t.olderWindows) + '" aria-expanded="false"'
+      + (emoNewer(a.emoji) ? '' : ' hidden') + '>' + RD.info_icon + '<span class="helptip" role="tooltip">' + esc(RD.t.olderWindows) + '</span></span>'
       + '<span class="emojis">' + RD.emoji.map(function (x) { return '<button type="button" class="ghost emo">' + x + '</button>'; }).join('') + '</span>'
       + '<input type="search" class="emofind" placeholder="' + esc(RD.t.searchEmoji) + '" aria-label="' + esc(RD.t.searchEmoji) + '" aria-expanded="false" autocomplete="off">'
       + '<div class="emopick" hidden><div class="emogrid" role="listbox" aria-label="' + esc(RD.t.emoji) + '"></div></div>';
@@ -1029,7 +1039,8 @@ function pairOpen(row) {
 }
 function drawActs() {
   var rows = actBox.querySelectorAll('.act');
-  rows.forEach(function (row, i) { row.querySelector('.aadd').hidden = i < rows.length - 1; row.querySelector('.adel').hidden = rows.length < 2; });
+  rows.forEach(function (row, i) { row.querySelector('.aadd').hidden = i < rows.length - 1; row.querySelector('.adel').hidden = rows.length < 2;
+                                   emoWarn(row); });
 }
 condBox.addEventListener('click', function (e) {
   var row = e.target.closest('.cond');
@@ -1101,7 +1112,7 @@ actBox.addEventListener('click', function (e) {
   if (e.target.closest('.aadd')) { var a = actRow({ type: 'emoji', emoji: '' }); actBox.appendChild(a); drawActs(); return; }
   if (e.target.closest('.adel')) { row.remove(); drawActs(); return; }
   var emo = e.target.closest('.emo');
-  if (emo) { row.querySelector('.aval.emoji').value = emo.textContent; var pk = row.querySelector('.emopick');
+  if (emo) { row.querySelector('.aval.emoji').value = emo.textContent; emoWarn(row); var pk = row.querySelector('.emopick');
              if (pk && !pk.hidden) { row.querySelector('.emofind').value = ''; emoOpen(row, false); } }
   if (e.target.closest('.emofind')) { emoOpen(row, true); return; }
   var pal = e.target.closest('.pal');
@@ -1110,12 +1121,34 @@ actBox.addEventListener('click', function (e) {
 });
 // Every emoji (0.2.8-beta.15): loaded once, the first time the picker opens
 var emojiData = null;
+// (0.2.8-beta.19, F8) Emoji older Windows may not draw: flags (regional letters or tag letters) and those newer than
+// Emoji 12.0 (marked in emoji.json); the chosen one gets an (i) beside the field
+var emojiNewer = null;
+function loadEmoji() {
+  return emojiData || (emojiData = fetch('/static/emoji.json?v=' + encodeURIComponent(RD.version), { credentials: 'same-origin' }).then(function (r) { return r.json(); }));
+}
+function emoNewer(v) {
+  v = (v || '').replace(/\uFE0F/g, '');
+  if (!v) return false;
+  if (/[\u{1F1E6}-\u{1F1FF}\u{E0020}-\u{E007F}]/u.test(v)) return true;
+  if (!emojiNewer) return false;
+  for (var i = 0; i < emojiNewer.length; i++) if (v.indexOf(emojiNewer[i]) >= 0) return true;
+  return false;
+}
+function emoWarn(row) {
+  var f = row.querySelector('.aval.emoji'), w = row.querySelector('.emowarn');
+  if (!f || !w) return;
+  w.hidden = !emoNewer(f.value);
+  if (f.value && !emojiNewer && /[^\x00-\u2FFF]/.test(f.value)) loadEmoji().then(function (d) {
+    emojiNewer = d.emoji.filter(function (x) { return x[3]; }).map(function (x) { return x[0].replace(/\uFE0F/g, ''); });
+    w.hidden = !emoNewer(f.value);
+  });
+}
 function emoOpen(row, on) {
   var pk = row.querySelector('.emopick'), find = row.querySelector('.emofind');
   pk.hidden = !on; find.setAttribute('aria-expanded', String(on));
   if (!on) return;
-  (emojiData || (emojiData = fetch('/static/emoji.json?v=' + encodeURIComponent(RD.version), { credentials: 'same-origin' }).then(function (r) { return r.json(); })))
-    .then(function (d) { emoDraw(row, d, find.value); });
+  loadEmoji().then(function (d) { emoDraw(row, d, find.value); });
 }
 function emoDraw(row, d, q) {
   q = q.trim().toLowerCase();
@@ -1123,11 +1156,13 @@ function emoDraw(row, d, q) {
   d.emoji.forEach(function (x) {
     if (q && x[1].indexOf(q) < 0) return;
     if (!q && x[2] !== last) { html += '<div class="emogroup">' + esc(d.groups[x[2]]) + '</div>'; last = x[2]; }
-    html += '<button type="button" class="ghost emo" title="' + esc(x[1]) + '" role="option">' + esc(x[0]) + '</button>';
+    html += x[3] ? '<button type="button" class="ghost emo newemo" title="' + esc(x[1] + ' · ' + RD.t.olderWindows) + '" role="option">' + esc(x[0]) + '</button>'
+                 : '<button type="button" class="ghost emo" title="' + esc(x[1]) + '" role="option">' + esc(x[0]) + '</button>';
   });
   grid.innerHTML = html || '<p class="mnote">' + esc(RD.t.noEmoji) + '</p>';
 }
 actBox.addEventListener('input', function (e) {
+  if (e.target.matches('.aval.emoji')) { emoWarn(e.target.closest('.act')); return; }
   if (!e.target.matches('.emofind')) return;
   var row = e.target.closest('.act');
   if (row.querySelector('.emopick').hidden) emoOpen(row, true);

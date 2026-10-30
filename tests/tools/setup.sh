@@ -30,5 +30,6 @@ fi
 python3 -c "import fastapi, psycopg, icalendar, recurring_ical_events" 2>/dev/null ||
   pip install -q -r "$ROOT/requirements.txt" --break-system-packages
 # Playwright: cloud sessions come with it (never install a second copy there); elsewhere, install it.
+python3 -c "import PIL" 2>/dev/null || pip install -q pillow --break-system-packages    # pixdiff.py (R15)
 python3 -c "import playwright" 2>/dev/null || { pip install -q playwright --break-system-packages && python3 -m playwright install chromium; }
 echo "Ready. Postgres on 127.0.0.1:$PORT (ccs / testpw). Now: export TEST_DB_PORT=$PORT"

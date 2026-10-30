@@ -9,7 +9,37 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.18**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.19**
+
+## 0.2.8-beta.19 — 2026-10-29
+
+### Added
+- **F6** Two ways back in when 50 failed sign-ins from many addresses pause new browsers: (a) every sign-in marks
+  the browser with a signed cookie, and a browser that has signed in before gets past that pause from anywhere
+  (its own address's limit still applies, and it still needs the password); (b) the moment the pause starts, the
+  container log (`docker compose logs`) gets a one-time link, good for an hour, that lets the browser opening it in.
+- **F7** A Google module's first **Sync Now** after its calendar is made opens a tab at the click: "Making the
+  calendar…", then Google Calendar in that module's own Gmail. No `?cid=` link, so Google's "Add calendar?" never
+  shows.
+- **F8** Rules › Add emoji to title: emoji older Windows may not draw (newer than Emoji 12.0, and flags) have a small
+  (i), "May not show on older Windows": in the list, and beside the field when one is chosen or typed.
+
+### Changed
+- **I1.1** A Google module's colors end with "Color change does not carry to Google", until the color is fixed.
+
+### Fixed
+- **I1** A request Google refused was worded as "Google no longer accepts CalendarStream's sign-in", whatever the
+  reason: History now gives Google's own reason, word for word (the container log has its whole answer). A 401
+  is tried again only when the token used wasn't fresh, so a refusal a new token can't fix isn't retried; a sign-in
+  Google really dropped is still said so. A color refused by beta.18 is tried once more, so History shows why.
+  The color itself is fixed once Google's reason is known.
+
+### Build rules
+- **R12** The Dashboard rules: the waiting list is sorted I, then F, then R, in number order; each number in blue,
+  amber when Claude is asking something under it.
+- **R15** `tests/tools/shots.py` takes the standard screenshots (desktop and phone, light and dark, modules
+  expanded, ☰ Settings, times hidden) and `tests/tools/pixdiff.py` compares two sets pixel by pixel, writing each
+  changed area before beside after: only those are looked at. A page change is compared before and after (2-build.md).
 
 ## 0.2.8-beta.18 — 2026-10-29
 

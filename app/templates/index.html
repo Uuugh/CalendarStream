@@ -20,11 +20,12 @@
 
   {# The color box (0.2.8-beta.15): one palette everywhere, Google Calendar's 11 colors (what Google shows for
      an event); a click (while the module is expanded) opens it. The choice is sent with `form`'s Save. #}
-  {% macro colorbox(form, value, title, open=true) -%}
+  {# (0.2.8-beta.19, I1.1) `note`: a line under the colors (a Google module's: Google refuses the color for now). #}
+  {% macro colorbox(form, value, title, open=true, note="") -%}
   {% set c = value or '#3f51b5' %}
   <span class="colorbox"><button type="button" class="colorpick" style="--c:{{ c }}" aria-haspopup="true" aria-expanded="false" aria-label="{{ _('Color') }}" title="{{ title }}"{% if not open %} tabindex="-1"{% endif %}></button>
     <input type="hidden" class="colorval" form="{{ form }}" value="{{ c }}" data-default="{{ c }}">
-    <span class="palpop" role="radiogroup" aria-label="{{ _('Color') }}" hidden>{% for n, h in palette %}<button type="button" class="pal" role="radio" data-c="{{ h }}" title="{{ _(n) }}" aria-label="{{ _(n) }}" aria-checked="{{ 'true' if h == c else 'false' }}" style="--c:{{ h }}"></button>{% endfor %}</span></span>
+    <span class="palpop" role="radiogroup" aria-label="{{ _('Color') }}" hidden>{% for n, h in palette %}<button type="button" class="pal" role="radio" data-c="{{ h }}" title="{{ _(n) }}" aria-label="{{ _(n) }}" aria-checked="{{ 'true' if h == c else 'false' }}" style="--c:{{ h }}"></button>{% endfor %}{% if note %}<span class="palnote">{{ note }}</span>{% endif %}</span></span>
   {%- endmacro %}
 
   {# Import .ics (0.2.8-beta.15), the one layout for every calendar: the heading, the file (it fills the line),
@@ -68,9 +69,11 @@
 
   {# Sync Now (F1.1): the same size everywhere; while it runs it says Syncing…, then pulses green
      (Synced) or yellow (Failed) and goes back to Sync Now. `sid` is a source's id, or "google". #}
-  {% macro syncbtn(action, sid, disabled=false) -%}
+  {# `gopen` (0.2.8-beta.19, F7): a Google module's first Sync Now after its calendar was made (shown: false, set when
+     it's made; calendars from before have none) opens that page in a new tab #}
+  {% macro syncbtn(action, sid, disabled=false, gopen="") -%}
   <form method="post" action="{{ action }}" class="inline syncform"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ sid }}">
-    <button class="syncnow" data-state="idle"{% if disabled %} disabled{% endif %}><span class="sn idle">{{ _('Sync Now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Syncing…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Synced') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Failed') }}</span></button></form>
+    <button class="syncnow" data-state="idle"{% if gopen %} data-gopen="{{ gopen }}"{% endif %}{% if disabled %} disabled{% endif %}><span class="sn idle">{{ _('Sync Now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Syncing…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Synced') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Failed') }}</span></button></form>
   {%- endmacro %}
 
 <main>
@@ -817,7 +820,7 @@
     <div class="modrow" data-id="{{ d.id }}">
     <div class="box module cfgbox dest{% if not feed %} gdest{% endif %}{% if d.open %} cfgopen{% endif %}" id="dest-{{ d.id }}" data-section="dest:{{ d.id }}">
       <div class="srchead">
-        {{ colorbox("destform-" ~ d.id, d.color, _('Its color (expand to change it)'), d.open) }}
+        {{ colorbox("destform-" ~ d.id, d.color, _('Its color (expand to change it)'), d.open, "" if feed else _('Color change does not carry to Google')) }}
         {% set kind = _('Calendar Feed') if feed else (_('Google 1-way Sync') if d.oneway else _('Google 2-way Sync')) %}
         <div class="srcleft">
           <div class="srckind" title="{{ kind }}">{{ kind }}</div>
@@ -836,7 +839,7 @@
         </div>
         {# (0.2.8-beta.18, F1.1) a sign-in Google no longer accepts: the fault over Fix, which signs that account in again #}
         {% set signin_broken = not feed and d.connected and d.error and ("sign-in" in d.error) %}
-        <div class="statusbox {{ dcls }}">{{ chip(dcls, _('Sign-in failed') if signin_broken else dlabel) }}{% if signin_broken %}<span class="syncform"><button class="syncnow gfixbtn" form="gacct-{{ d.id }}" name="action" value="connect" data-state="idle" title="{{ msg(d.error) }}"><span class="sn idle">{{ _('Fix') }}</span></button></span>{% elif not feed and d.connected %}{{ syncbtn("/google/sync", "google", g.running) }}{% endif %}</div>
+        <div class="statusbox {{ dcls }}">{{ chip(dcls, _('Sign-in failed') if signin_broken else dlabel) }}{% if signin_broken %}<span class="syncform"><button class="syncnow gfixbtn" form="gacct-{{ d.id }}" name="action" value="connect" data-state="idle" title="{{ msg(d.error) }}"><span class="sn idle">{{ _('Fix') }}</span></button></span>{% elif not feed and d.connected %}{{ syncbtn("/google/sync", "google", g.running, ("/google/open/" ~ d.id) if d.cal.shown is sameas false else "") }}{% endif %}</div>
       </div>
       {{ cfgline("dest-" ~ d.id, d.open) }}
       <div class="cfgbody" id="cfg-dest-{{ d.id }}"{% if not d.open %} hidden{% endif %}>

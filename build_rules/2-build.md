@@ -27,6 +27,9 @@ Documentation-only changes (README, CLAUDE.md, AGENTS.md, build_rules/) don't ch
   (the next number).
 - Anything on the page that changed follows theme.md (look and interaction), checked by the theme suite
   (suite 44): each Clarification has a check there, added in the same beta.
+- A change to the page is compared before and after, pixel by pixel (`tests/tools/shots.py` before and after,
+  then `tests/tools/pixdiff.py`): Claude looks only at the areas it reports, and every one is either the intended
+  change or fixed. A change meant to leave the look alone (such as a split of the files) reports nothing.
 - `pip-audit -r requirements.txt` finds nothing; anything it finds is fixed in that beta, or reported to the
   Developer.
 - The release workflow's trivy scan of the image finds no fixable High or Critical vulnerability (it stops the

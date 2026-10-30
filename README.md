@@ -176,7 +176,8 @@ logins or setup codes lock an address out for 15 minutes.
   a centred pop-up, with the page dimmed and out of focus behind it.
 - **Colors:** one palette everywhere, Google Calendar's 11 event colors, in a color box (calendars, feeds,
   rules, templates, events), so what you pick is what Google shows. **Emoji:** the common ones, and every
-  emoji through "Search for more emojis" (ten a line, filtered as you type).
+  emoji through "Search for more emojis" (ten a line, filtered as you type). Emoji older Windows may not draw
+  (newer than Emoji 12.0, and flags) have a small (i): "May not show on older Windows".
 - Saving, cancelling and removing happen in place: only the parts of the page they change are
   updated, without reloading it. **Cancel | Save** is one 130 px pair at the bottom of a module and
   (**Cancel | Apply** in the rule dialog); the pressed side fills it and says **Cancelled** or
@@ -242,8 +243,11 @@ logins or setup codes lock an address out for 15 minutes.
     someone** (a one-time link, good for 7 days, to send them: they open it, continue with Google, and the
     calendar is made in their account; no CalendarStream login and no password shared; **Withdraw** ends it).
     Nothing is made in Google until it's connected. Connect me comes back to the module, saying Connected; a
-    sign-in Google no longer accepts shows **Fix**. Connecting again uses the calendar it made before. Its color
-    box sets the calendar's color in Google (if Google refuses, History says so once).
+    sign-in Google no longer accepts shows **Fix**. Connecting again uses the calendar it made before. The first
+    **Sync Now** after its calendar is made opens Google Calendar in a new tab ("Making the calendar…" until it's
+    ready), in that module's own Gmail. Its color box sets the calendar's color in Google; Google refuses that for
+    now, so the colors say "Color change does not carry to Google", and History gives Google's own reason, once.
+    A request Google refuses is always given in Google's own words.
 
   **+** picks the module first, then shows that module in a pop-up to fill in. Every feed module is laid out
   alike, with the same 50 px header as a calendar's: kind over the label and, after it, your note in the (i)
@@ -303,7 +307,11 @@ logins or setup codes lock an address out for 15 minutes.
 - **Signing in:** the page's own sign-in page (user name and password); a session lasts 30 days, and
   changing the login signs every browser out. Five wrong tries from one address lock it out for 15 minutes; 50 from many addresses
   together make every new browser wait 15 minutes, except on your own network (a local address such as
-  192.168.x.x, or the IP your domain points at) and browsers signed in here in the last 7 days; History says so. Locked out yourself? Restart CalendarStream (`docker compose restart`) to clear it.
+  192.168.x.x, or the IP your domain points at), addresses signed in here in the last 7 days, and any browser
+  that has signed in here before (from anywhere: each sign-in marks the browser with a signed cookie; its own
+  address's limit still applies); History says so. Locked out yourself on a new browser? The container log
+  (`docker compose logs`) has a one-time link, good for an hour, that lets that browser in; or restart
+  CalendarStream (`docker compose restart`).
 - **☰ Settings** (a light blue panel): site settings only: **Administrator** (the login, with a
   show-password eye and a strength bar, like every password box, and **Sign out**), the public address (and
   **More addresses**, for other domains this page is reached at: each editable, **+** for another; a feed's
@@ -459,7 +467,7 @@ CalendarStream includes these, under their own licenses (a copy of each comes wi
 | --- | --- | --- | --- |
 | [Material Symbols](https://github.com/google/material-design-icons) (Rounded, weight 400): every icon on the pages | Google | [Apache License 2.0](app/material_symbols/LICENSE) | `app/material_symbols/` |
 | [IBM Plex Sans and IBM Plex Mono](https://github.com/IBM/plex): the pages' fonts | IBM Corp. | [SIL Open Font License 1.1](app/static/fonts/OFL.txt) | `app/static/fonts/` |
-| [unicode-emoji-json](https://github.com/muan/unicode-emoji-json) 0.6.0: the emoji picker's list (names and groups; each device draws the emoji itself) | Mu-An Chiou | [MIT](app/static/emoji-LICENSE.txt) | `app/static/emoji.json` |
+| [unicode-emoji-json](https://github.com/muan/unicode-emoji-json) 0.6.0: the emoji picker's list (names and groups; each device draws the emoji itself; which are newer than Emoji 12.0 is marked from Unicode's emoji data) | Mu-An Chiou | [MIT](app/static/emoji-LICENSE.txt) | `app/static/emoji.json` |
 
 The icons are copied from the [`@material-symbols/svg-400`](https://www.npmjs.com/package/@material-symbols/svg-400)
 package by `tools/vendor_icons.py`; the fonts are the `latin` and `latin-ext` files of

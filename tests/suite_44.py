@@ -246,7 +246,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "(i) is info": "(i) is info", "+ pop-ups": "Every + opens a centred pop-up", "2 px border": "Modules have a 2 px border",
             "label": "A module's name is its label", "one palette": "One color palette everywhere",
             "deleted events": "A deleted event stays struck through", "import row": "Importing a calendar file is one row",
-            "emoji": "Emoji: the common ones"}
+            "emoji": "Emoji: the common ones",
+            "emoji older Windows may not draw (suite 55)": "Emoji older Windows may not draw",
+            "a Google module's color note (suite 55)": "A Google module's colors end with"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

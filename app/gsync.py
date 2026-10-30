@@ -514,8 +514,11 @@ class Google:
         """Call the Calendar API. Retries once with a fresh access token on 401 and backs off on
         rate limits and server errors. With ok_missing, a 404/410 returns None instead of failing."""
         delay = 1.0
+        renewed = False                # (0.2.8-beta.19, I1) a fresh access token was already tried for this call
         for attempt in range(5):
+            fresh = not (self._access and self._access[1] > time.monotonic())
             token = await self._access_token()
+            renewed = renewed or fresh
             try:
                 async with httpx.AsyncClient(timeout=TIMEOUT) as client:
                     r = await client.request(method, API_URL + path, json=body, params=params,
@@ -535,7 +538,7 @@ class Google:
             reason = _error_reason(r)
             if r.status_code == 409:
                 raise Conflict(f"Google Calendar: {reason or 'conflict'}")
-            if r.status_code == 401 and attempt == 0:
+            if r.status_code == 401 and not renewed:
                 self._access = None              # expired early: get a new access token once
                 continue
             if r.status_code == 429 or r.status_code >= 500 or reason in ("rateLimitExceeded", "userRateLimitExceeded"):
@@ -543,10 +546,14 @@ class Google:
                     await asyncio.sleep(delay)
                     delay *= 2
                     continue
-            if r.status_code == 401:
-                raise AccessRevoked("Google no longer accepts CalendarStream's sign-in. Connect again.")
-            raise GoogleError(f"Google Calendar answered {r.status_code}"
-                              + (f" ({reason})" if reason else "") + f" to {method} {path.split('?')[0]}.")
+            # (0.2.8-beta.19, I1) Google's own words, never a guess: a 401 here came with an access token Google had
+            # just issued for this sign-in, so the sign-in itself works (a sign-in Google no longer accepts fails at
+            # the token request, as AccessRevoked) and signing in again can't fix it.
+            said = _error_message(r)
+            log.warning("Google Calendar refused %s %s: HTTP %s %s", method, path.split("?")[0], r.status_code,
+                        r.text[:2000])
+            raise GoogleError(f"Google Calendar refused {method} {path.split('?')[0]}: HTTP {r.status_code}"
+                              + (f" {reason}" if reason else "") + (f", “{said}”" if said else ""))
         raise GoogleError("Google Calendar is busy; CalendarStream will try again later.")
 
     async def ensure_calendar(self, sid: str, name: str, calendar_id: str | None = None) -> str:
@@ -574,7 +581,8 @@ class Google:
         made = await self.api("POST", "/calendars", body={
             "summary": name, "timeZone": self.tz_name,
             "description": CALENDAR_DESCRIPTION})
-        self._update_cal(sid, calendar_id=made["id"], calendar_name=made.get("summary", name), created=True, client=self.client_id)
+        self._update_cal(sid, calendar_id=made["id"], calendar_name=made.get("summary", name), created=True, client=self.client_id,
+                         shown=False)   # (0.2.8-beta.19, F7) not shown yet: the next Sync Now shows it in Google Calendar
         return made["id"]
 
     async def set_color(self, sid: str, color: str):
@@ -956,6 +964,23 @@ def _error_reason(r: httpx.Response) -> str:
     try:
         errors = r.json().get("error", {}).get("errors") or [{}]
         return errors[0].get("reason", "")
+    except (ValueError, AttributeError):
+        return ""
+
+
+def _error_message(r: httpx.Response) -> str:
+    """Google's own explanation of a refused request (0.2.8-beta.19, I1): its message, and the detail's when it
+    says more; one line, at most 300 characters."""
+    try:
+        err = r.json().get("error", {})
+        if not isinstance(err, dict):
+            return str(err)[:300]
+        said = [err.get("message") or ""]
+        for e in err.get("errors") or []:
+            m = (e or {}).get("message") or ""
+            if m and m not in said[0]:
+                said.append(m)
+        return " · ".join(s for s in said if s).replace("\n", " ")[:300]
     except (ValueError, AttributeError):
         return ""
 

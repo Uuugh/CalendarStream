@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="{{ html_lang }}"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>{{ _('Making the calendar…') }} · CalendarStream</title>
+{% include "_theme.html" %}
+{# (0.2.8-beta.19, F7) The tab a Google module's first Sync Now opens at the click (so no pop-up blocker stops it):
+   it waits for the sync to finish, then goes to Google Calendar, in the module's own Gmail. #}
+<style>
+  * { box-sizing:border-box }
+  body { margin:0; font:15px/1.5 var(--font); background:var(--bg); color:var(--text) }
+  main { max-width:440px; margin:0 auto; padding:64px 16px 48px }
+  .card { background:var(--card); border:2px solid var(--line); border-radius:var(--rbox); padding:18px; display:grid; gap:12px }
+  .busy { display:flex; align-items:center; gap:8px; font-weight:600 }
+  p { margin:0 } .note { color:var(--muted); font-size:13.5px } a { color:var(--accent); font-weight:600 }
+  .spin { animation:spin 1s linear infinite } @keyframes spin { to { transform:rotate(360deg) } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation:none } }
+</style>
+</head>
+<body>{{ icon_sprite() }}<main>
+  <div class="card">
+    <div class="busy" id="busy">{{ icon("progress_activity", 18, "spin") }} {{ _('Making the calendar…') }}</div>
+    <p id="name">{{ _('<b>{name}</b> opens in Google Calendar as soon as it’s ready.', name=name) }}</p>
+    <p class="note" id="late" hidden>{{ _('Taking longer than usual. <a href="{url}">Open Google Calendar now</a>', url=fallback) }}</p>
+  </div>
+</main>
+<script>
+(function () {
+  var tries = 0;
+  function check() {
+    tries++;
+    fetch(location.pathname + '?check=1', { credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j.url) { location.replace(j.url); return; }
+        if (tries === 40) document.getElementById('late').hidden = false;
+        setTimeout(check, 1500);
+      }, function () { setTimeout(check, 3000); });
+  }
+  check();
+})();
+</script>
+</body>
+</html>
