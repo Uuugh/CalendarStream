@@ -21,3 +21,14 @@ Postgres it can create databases on (`TEST_DB_HOST`, `TEST_DB_PORT`, `TEST_DB_US
 - `seed.py`: fills an install with the demo schedule, a work calendar, rules and feeds.
 - `mockgoogle.py`: a stand-in for Google's sign-in and Calendar API.
 - New suites take the next number; a suite's first lines say which version and requests it covers.
+
+## Tools (tests/tools)
+
+- `setup.sh`: gets a machine ready (a new cloud session, or any Debian/Ubuntu box): a Postgres just for the
+  tests on port 55432 (ccs / testpw), the app's packages, Playwright's Chromium. Safe to run again. Then
+  `export TEST_DB_PORT=55432`.
+- `one.sh NN`: one suite, printing everything but the PASS lines (run.sh prints only failures).
+- `demo.sh`: (re)starts `demo.py`, a demo CalendarStream on http://127.0.0.1:8177 (t / password1) filled by
+  `seed.py`, for looking at the page. Restart it after changing the page.
+- `shot.py [--phone] [--dark] [--url /path] out.png STEP...`: a screenshot of the demo after some steps
+  (CLICK, FILL, WAIT, SHOT an element, or JavaScript); it prints the page's errors.

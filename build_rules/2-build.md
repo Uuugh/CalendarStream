@@ -38,3 +38,11 @@ Documentation-only changes (README, CLAUDE.md, AGENTS.md, build_rules/) don't ch
 
 Commit and push; the release workflow tags `v<version>` and publishes the `beta` image. Claude reports what came
 out, the readings it took, and anything still waiting.
+
+Then the handoff, as Claude's last two messages in the conversation:
+
+1. "New conversation CalendarStream v<version>": the version now current (an R-only build keeps it).
+2. The message to paste as the new conversation's first, in one block: the repo (Uuugh/CalendarStream) and
+   version; the Dashboard's link; "Read CLAUDE.md, run tests/tools/setup.sh, read the Dashboard"; the next
+   command from "Waiting on"; and anything in flight (a review turn, a release still running, a fix waiting for
+   something from the Developer). Never the Developer's real data.

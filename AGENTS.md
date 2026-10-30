@@ -12,7 +12,8 @@ manage it all. See README.md for what it does.
 - `app/`: the app. `main.py` (routes and orchestration), `calsync.py` (reading calendars, feeds),
   `rules.py` (the If/Then rules), `gsync.py` (Google), `store.py` (Postgres), `templates/` (pages,
   `page.js`), `static/` (stylesheet, fonts).
-- `tests/`: the test suites and `run.sh` (see tests/README.md).
+- `tests/`: the test suites and `run.sh`; `tests/tools/`: setup for a new machine or conversation, a demo
+  server and screenshots (see tests/README.md).
 - `docs/`: the README's screenshots.
 - `build_rules/`: how work is done here:
   - `0-overview.md`: the steps and their commands (DASH, PLAN, BUILD, TEST, REVIEW, DEPLOY, STOP), who does

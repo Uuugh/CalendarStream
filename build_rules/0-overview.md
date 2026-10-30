@@ -24,6 +24,23 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   requests appear under their item in amber.
 - Every waiting item ends with its state in blue: approved, understood or resolved (and, once planned, which
   build it's in).
+- "Waiting on" spells out the recommended path: the exact command to say next, when (for example after a usage
+  reset), in which conversation, and how the remaining builds are split, with the reason when it saves usage (a
+  new conversation, a smaller build, waiting for a reset).
+- It is one artifact, "CalendarStream Dashboard", kept from conversation to conversation: a new conversation
+  opens it from the link in the handoff (or the artifact list) and updates that one, never a copy.
+
+## Conversations
+
+- Every BUILD ends with a handoff (2-build.md, After). Claude's last two messages in that conversation are
+  "New conversation CalendarStream v<version>" (the version now current; an R-only build keeps it) and the
+  message for the Developer to paste as the new conversation's first.
+- A new conversation starts from the handoff, this repo and the Dashboard: it reads these rules, runs
+  `tests/tools/setup.sh`, and reads the Dashboard for the waiting list.
+- TEST or REVIEW of the beta just built can stay in the same conversation while it's short. When the Developer
+  carries on in a conversation that has already been summarized, Claude reminds them, in one line at the top of
+  each reply, to start a new one from the handoff.
+- The Developer doesn't need reminding about REVIEW.
 
 ## Commands
 
