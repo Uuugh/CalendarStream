@@ -62,10 +62,21 @@ document.addEventListener('keydown', function (e) {
 // changes and the page reloads with the new version. One listener for the whole
 // page, so the buttons keep working after Settings is redrawn in place (a Check now, a save).
 var updating = false;
-function updateNow() {
+// (0.2.8-beta.24, F1) An update that didn't start here (Auto-update, or Update now in another tab): /api/status
+// says "updating", and the page follows it the same way, in a slot made for it when the top bar has none.
+function updateSlot() {
   var slot = document.querySelector('.updslot');
+  if (slot) return slot;
+  var ver = document.querySelector('.topbar .ver');
+  if (!ver) return null;
+  ver.insertAdjacentHTML('beforeend', '<span class="updslot" data-state="ready" data-from="' + document.querySelector('.topbar').dataset.canupdate +
+    '"><span class="updmsg" aria-live="polite"><span class="updtext"></span><span class="updbar" aria-hidden="true"><i></i></span></span></span>');
+  return document.querySelector('.updslot');
+}
+function updateNow(started) {
+  var slot = started ? updateSlot() : document.querySelector('.updslot');
   if (!slot || updating) return;
-  var btn = slot.querySelector('.updbtn'), text = slot.querySelector('.updtext'), from = slot.dataset.from;
+  var btn = slot.querySelector('.updbtn') || document.createElement('button'), text = slot.querySelector('.updtext'), from = slot.dataset.from;
   // One action, one state (0.2.8-beta.13): the top bar's Update now and Settings → Update now always show
   // the same words at the same moment (Downloading…, Restarting…, then Updated or Update failed), and
   // end together.
@@ -92,12 +103,15 @@ function updateNow() {
     show('done', T.updated);
     // The page is reloaded (0.2.8-beta.9) so the new version's script and stylesheet are the ones
     // running: drawn in place, its parts would be run by the old ones. Settings stays open if it was.
+    // (0.2.8-beta.24, F1) 15 seconds after its status showed Restarting (the new version settling in), or at once
+    // (after 0.8 s) if it never showed it.
     var menu = document.getElementById('menu'), inSettings = menu && !menu.hidden;
     setTimeout(function () {
       if (inSettings && !/[?&]menu=settings/.test(location.search)) location.href = '/?menu=settings#updates';
       else location.reload();
-    }, 800);
+    }, downAt ? Math.max(800, downAt + RESTART_WAIT - Date.now()) : 800);
   }
+  var downAt = 0;
   function follow() {
     var started = Date.now(), down = false;
     (function poll() {
@@ -106,7 +120,7 @@ function updateNow() {
         .then(function (j) {
           if (j.version && j.version !== from) { done(j.version); return; }
           next();
-        }, function () { if (!down) { down = true; show('restarting', T.restarting); } next(); });
+        }, function () { if (!down) { down = true; downAt = Date.now(); show('restarting', T.restarting); } next(); });
       function next() {
         if (Date.now() - started > 15 * 60 * 1000) { fail(T.updateSlow); return; }
         setTimeout(poll, 2000);
@@ -115,6 +129,7 @@ function updateNow() {
   }
   updating = true;
   btn.disabled = true; slot.title = ''; show('downloading', T.downloading);
+  if (started) { follow(); return; }
   fetch('/update/now', { method: 'POST', body: new URLSearchParams({ csrf: CSRF }), credentials: 'same-origin',
                          headers: { 'X-CS-Async': '1' } })
     .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.detail || ('HTTP ' + r.status)); return j; }); })
@@ -125,6 +140,17 @@ document.addEventListener('click', function (e) {
   if (!b || b.disabled) return;
   updateNow();
 });
+var RESTART_WAIT = 15000;
+// (F1) With the updater, an open page looks once a minute (while it's shown) for an update started elsewhere
+(function () {
+  var bar = document.querySelector('.topbar[data-canupdate]');
+  if (!bar) return;
+  setInterval(function () {
+    if (updating || document.hidden) return;
+    fetch('/api/status', { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (j) { if (j.updating) updateNow(true); }, function () {});
+  }, 60000);
+})();
 
 // Settings → Google Calendar API Sync → Guided setup (0.2.8-beta.10): a tick on each step (the client
 // steps, 6 and 7, tick themselves once Google accepted the client, step 8 once connected; the others are

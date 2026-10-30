@@ -101,7 +101,14 @@
   .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:5px 10px; align-items:end }
   .grid2 > * { min-width:0 }
   .fixed { height:34px; display:flex; align-items:center; font-size:14px; font-weight:600 }      /* fixed text: no box */
-  .ticks { align-items:center; min-height:20px }
+  /* (0.2.8-beta.24, F5) the end's column: Time with All-day Event on its label line; Different end time zone beside
+     Time zone's field; End time zone under it. Kept in the right column when the left one's fields hide. */
+  .endtime, .tzdiff, .endzone { grid-column:2 }
+  .lblline { display:flex; align-items:center; gap:10px; margin:0 0 2px; min-height:16px }
+  .lblline > label { margin:0 }
+  .lblline > label.timed[hidden] { display:block; visibility:hidden }   /* Time's place kept, so All-day Event doesn't move */
+  .lblline label.allday { font-size:12px; gap:5px; color:var(--muted); font-weight:600 }
+  .tzdiff { align-self:end; height:34px; display:flex; align-items:center }
   .timed[hidden], .endzone[hidden], label[hidden] { display:none }
   .inbox { position:relative; display:block }
   .inbox input { padding-right:40px }
@@ -208,8 +215,9 @@
     <input type="hidden" name="month" value="{{ month }}">
     {% if embed %}<input type="hidden" name="embed" value="1">{% endif %}
 
-    {# (0.2.8-beta.22, F11) Two columns. Left: Title; Location (with a map); Calendar | Change color; All-day |
-       "The end is in a different time zone"; Starts | Ends; Time | Time; Time zone | End time zone. Right: Notes. #}
+    {# (0.2.8-beta.22, F11) Two columns. Left: Title; Location (with a map); Calendar | Change color; Starts | Ends;
+       Time | Time with All-day Event on its label line; Time zone | Different end time zone; End time zone (under it).
+       Right: Notes. (0.2.8-beta.24, F5) #}
     <div class="cols">
       <div class="leftcol">
         <div>
@@ -228,7 +236,7 @@
               {# (0.2.8-beta.23, I2) in place of the note at the top #}
               <span class="infodot down" tabindex="0" role="button" aria-label="{{ _('Info') }}" aria-expanded="false">{{ icon("info", 15) }}<span class="tip" role="tooltip">{{ _('An event added here goes to CalendarStream, its feeds and Google. CCS+ is never changed.') }}</span></span>{% endif %}</label>
             {% if is_new and sources|length > 1 %}
-            <select id="source" name="source" class="zone">{% for x in sources %}<option value="{{ x.id }}"{% if x.id == e.source %} selected{% endif %}>{{ x.name }}</option>{% endfor %}</select>
+            <select id="source" name="source" class="zone">{% for x in sources %}<option value="{{ x.id }}" data-color="{{ x.color }}"{% if x.id == e.source %} selected{% endif %}>{{ x.name }}</option>{% endfor %}</select>
             {% else %}
             {# fixed: plain text, not a box (a box means it can be changed) #}
             <div class="fixed" id="source">{{ src_name }}</div>
@@ -250,17 +258,16 @@
             </details>
           </div>
         </div>
-        <div class="grid2 ticks">
-          <label class="inline"><input type="checkbox" id="all_day" name="all_day" value="1" {% if e.all_day %}checked{% endif %}> {{ _('All-day') }}</label>
-          <label class="inline timed"><input type="checkbox" id="end_tz_differs" name="end_tz_differs" value="1"{% if end_zone != start_zone %} checked{% endif %}> {{ _('The end is in a different time zone') }}</label>
-        </div>
         <div class="grid2">
           <div><label for="start_date">{{ _('Starts') }}{{ req }}</label><input type="date" id="start_date" name="start_date" value="{{ f.start_date }}" required></div>
           <div><label for="end_date" id="end_label">{{ _('Ends') }}{{ req }}</label><input type="date" id="end_date" name="end_date" value="{{ f.end_date }}" required></div>
           <div class="timed"><label for="start_time">{{ _('Time') }}{{ req }}</label><input type="text" class="timefield" id="start_time" name="start_time" value="{{ f.start_label }}" autocomplete="off" spellcheck="false" inputmode="text" aria-haspopup="listbox"></div>
-          <div class="timed"><label for="end_time">{{ _('Time') }}{{ req }}</label><input type="text" class="timefield" id="end_time" name="end_time" value="{{ f.end_label }}" autocomplete="off" spellcheck="false" inputmode="text" aria-haspopup="listbox"></div>
+          {# (0.2.8-beta.24, F5) All-day Event on the end's Time label line, right of "Time *"; ticked, it stays there as the Time fields hide #}
+          <div class="endtime"><div class="lblline"><label for="end_time" class="timed">{{ _('Time') }}{{ req }}</label><label class="inline allday"><input type="checkbox" id="all_day" name="all_day" value="1" {% if e.all_day %}checked{% endif %}> {{ _('All-day Event') }}</label></div><input type="text" class="timefield timed" id="end_time" name="end_time" value="{{ f.end_label }}" autocomplete="off" spellcheck="false" inputmode="text" aria-haspopup="listbox"></div>
           {# Time zone: one for both ends, or a different one for the end (e.g. a flight), under the end's Time #}
           <div class="timed zones"><label for="start_tz" id="start_tz_label">{{ _('Time zone') }}</label>{{ zonepick("start_tz", start_zone, _('Time zone')) }}</div>
+          {# (F5) "Different end time zone" beside Time zone, right of its field; ticked, End time zone shows under it #}
+          <div class="timed tzdiff"><label class="inline"><input type="checkbox" id="end_tz_differs" name="end_tz_differs" value="1"{% if end_zone != start_zone %} checked{% endif %}> {{ _('Different end time zone') }}</label></div>
           <div class="endzone"{% if end_zone == start_zone or e.all_day %} hidden{% endif %}><label for="end_tz">{{ _('End time zone') }}</label>{{ zonepick("end_tz", end_zone, _('End time zone')) }}</div>
         </div>
       </div>
@@ -494,6 +501,14 @@ document.querySelectorAll('.infodot').forEach(function (dot) {
     box.open = false;
   });
   document.addEventListener('click', function (e) { if (box.open && !box.contains(e.target)) box.open = false; });
+  // (0.2.8-beta.24, I1) Add event: Default color follows the Calendar chosen, unless the event has a tag color
+  var cal = document.querySelector('select#source'), auto = box.querySelector('.palette input[value=""]');
+  if (cal && auto && !{{ (tag_color != "")|tojson }}) cal.addEventListener('change', function () {
+    var c = cal.selectedOptions[0].dataset.color || 'var(--accent)';
+    auto.dataset.c = c;
+    auto.nextElementSibling.style.setProperty('--c', c);
+    if (auto.checked) document.getElementById('colorshow').style.setProperty('--c', c);   // a picked color stays
+  });
 })();
 
 // "Choose from template" (F11.1) fills in the title, length, location and color.

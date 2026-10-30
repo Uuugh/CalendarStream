@@ -9,7 +9,34 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.23**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.24**
+
+## 0.2.8-beta.24 — 2026-10-30
+
+### Added
+- **F1** Updates started elsewhere (Auto-update, or Update now in another tab) show on every open page: the top bar
+  says Downloading… and Restarting…, and the page refreshes itself 15 seconds after Restarting… (Update now's own
+  page too). The automatic check wakes when it's due at the frequency chosen in Settings, not only on the hour; with
+  Auto-update on, the update it finds installs.
+
+### Changed
+- **F2** Removing a feed asks "Remove the feed …?" with "Its links and subscribe page stop working." on the line under
+  it, muted (as F16's questions).
+- **F5** Event pop-up: the All-day line is gone. **All-day Event** sits on the end's Time label line, right of
+  "Time *", and stays there when ticked as the Time fields hide; **Different end time zone** (was "The end is in a
+  different time zone") sits beside Time zone, right of its field, with End time zone under it when ticked.
+- **F7** Sections and modules told apart, the look otherwise kept: each section a muted border of its own (Calendar
+  slate blue, Calendars teal, Feeds violet, All Rules amber, Event Templates green, History grey), 2 px, on --card;
+  each calendar's or feed's module bordered in its color at 65%, its header tinted 10% and the rest 5%; light and dark.
+- **R1** theme.md follows the Theme Rules picture's Part 2, card by card: 1 Fonts · 2 Website color palette ·
+  3 Icons · 4 Corners · 5 Static & Icon buttons · 6 Responsive Cancel/Save buttons · 7 Responsive Status/Action
+  buttons (the status looks, their transitions and the flows) · 8 Every transition · 9 Modules · 10 Handles ·
+  11 Pop-ups · 12 (?) help · 13 Words · 14 Color box and emoji · 15 Date range and Import · 16 Deleted events and
+  History · 17 Spacing · 18 The event pop-up. The rules say "Cancel/Save buttons" and "Status/Action buttons".
+
+### Fixed
+- **I1** Add event: choosing another Calendar now changes Change color's Default color to that calendar's color (the
+  palette's Default too), unless a color was picked or the event has a tag color.
 
 ## 0.2.8-beta.23 — 2026-10-30
 

@@ -64,6 +64,7 @@ document.addEventListener('click', function (e) {
     val.value = pal.dataset.c; if (!val.name) val.name = 'color';
     cb.querySelector('.colorpick').style.setProperty('--c', pal.dataset.c || 'transparent');
     cb.querySelector('.colorpick').classList.toggle('nocolor', !pal.dataset.c);
+    if (mod && pal.dataset.c) mod.style.setProperty('--mc', pal.dataset.c);   // (0.2.8-beta.24, F7) its border and tints follow
     cb.querySelectorAll('.pal').forEach(function (b) { b.setAttribute('aria-checked', String(b === pal)); });
     colorOpen(cb, false); cb.querySelector('.colorpick').focus();
     if (cb.classList.contains('free')) cb.dispatchEvent(new Event('change', { bubbles: true }));
@@ -182,6 +183,7 @@ function bindSrc() { each('.box.src', 'src', function (box) {
     if (!val) return;
     val.removeAttribute('name'); val.value = val.dataset.default;
     box.querySelector('.colorpick').style.setProperty('--c', val.dataset.default);
+    box.style.setProperty('--mc', val.dataset.default);
     box.querySelectorAll('.pal').forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.c === val.dataset.default)); });
   });
 }); }

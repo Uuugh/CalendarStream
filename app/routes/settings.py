@@ -8,7 +8,7 @@ from fastapi import Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
 from .. import main as core
-from ..main import (app, auto_update, check_csrf, EMAIL_RE, FieldError, GOOGLE_SETTINGS, gui_auth, public_url,
+from ..main import (app, auto_update, check_csrf, mark_updating, EMAIL_RE, FieldError, GOOGLE_SETTINGS, gui_auth, public_url,
     state, store, updater, updates)
 from ..config import normalise_public_url
 from ..updates import UpdaterError
@@ -30,6 +30,7 @@ async def update_now(csrf: str = Form("")):
     except UpdaterError as e:
         state.record("warn", f"Update to CalendarStream {target} not started: {e}")
         raise HTTPException(502, str(e))
+    mark_updating(target)
     state.record("info", f"Updating to CalendarStream {target}: downloading, then restarting")
     return {"ok": True, "from": core.__version__, "to": target}
 

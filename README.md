@@ -338,7 +338,8 @@ logins or setup codes lock an address out for 15 minutes.
   shows next to the version at the top; then **Update** replaces Check now; once it has updated,
   Settings shows Up to date and Check now again). Under it, on one line, **Check for updates** (hourly,
   weekly, monthly or never) and **Auto-update** (with the updater: newer versions are installed by
-  themselves). The Google credentials row ends with a trash, which asks before deleting them. Each field shows ✓ until you type, then ✕ | ✓, and saves in
+  themselves, when the check at that frequency finds one; every open page shows Downloading… and Restarting… in
+  the top bar and refreshes itself 15 seconds after Restarting…). The Google credentials row ends with a trash, which asks before deleting them. Each field shows ✓ until you type, then ✕ | ✓, and saves in
   place, without reloading the page.
 - **Report a problem / Suggest a feature** at the bottom of the page open a form: what happened (or
   your idea), and tick what to include: the History lines, each source's last download

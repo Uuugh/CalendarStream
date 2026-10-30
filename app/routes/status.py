@@ -32,7 +32,7 @@ def api_status():
     found = [one(sid) for sid in source_ids()]
     # The top-level fields are CCS+'s (as before 0.2), or the first source's.
     first = st("ccs") if "ccs" in source_ids() else (st(source_ids()[0]) if found else State("none"))
-    return {"version": core.__version__, "status": first.status, "message": first.message, "running": first.running,
+    return {"version": core.__version__, "updating": core.updating_to(), "status": first.status, "message": first.message, "running": first.running,
             "last_attempt": fmt(first.last_attempt), "last_success": fmt(first.last_success),
             "last_change": fmt(first.last_change), "last_auth": fmt(first.last_auth),
             "last_auth_ok": first.last_auth_ok, "next_run": fmt(first.next_run), "events": first.event_count,

@@ -351,7 +351,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     keys = {"handles": "Module handles", "module headers": "module headers share one layout", "status words": "Status words",
             "+ in the corner": "Module-like sections", "a box means you can change it": "A box means you can change it",
             "Copy": "Copy buttons", "rule colors": "rule's color is one of Google", "Light = Soft": "Light is the Soft palette",
-            "status-box buttons": "The status box is a multi-button", "note": "raised (i)",
+            "status-box buttons": "The Status/Action buttons are a multi-button", "note": "raised (i)",
             "Cancel | Save when adding": "Adding something", "reload after an update (suite 42)": "After an update the page reloads",
             "Close points up": "Close's triangles point up", "pop-ups": "Pop-ups: a dark backdrop", "event tools": "An opened event: Close in the bottom left",
             "event colors (suite 45)": "Events show the color Google shows", "rule summaries": "Rule lines say what the rule does",
@@ -369,7 +369,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "a Google module's color note (suites 55, 56)": "A Google module's colors end with",
             "spacing": "Spacing: 5 px between parts", "(i) and (?) pop-ups": "(i) and (?) pop-ups open with their upper left",
             "folded (i)": "A folded module's (i) is a superscript", "From / To": "An Include box's calendars",
-            "today": "Today has a 2 px accent border", "event pop-up": "The event pop-up"}
+            "today": "Today has a 2 px accent border", "event pop-up": "The event pop-up",
+            "section and module colors (suite 59)": "Sections and modules are told apart by color"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

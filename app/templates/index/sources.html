@@ -66,7 +66,7 @@
        Upload (the Site Address and how often it's checked, the login and how to set it up), Manual
        Upload (CCS+), and its Rules; then Remove (lower left) and Cancel | Save. Its handle is on the right. #}
     <div class="modrow" data-id="{{ x.id }}">
-    <div class="box module src cfgbox{% if x.open %} cfgopen{% endif %}" id="src-{{ x.id }}" data-section="src:{{ x.id }}" data-sid="{{ x.id }}">
+    <div class="box module src cfgbox{% if x.open %} cfgopen{% endif %}" style="--mc:{{ x.color or '#3f51b5' }}" id="src-{{ x.id }}" data-section="src:{{ x.id }}" data-sid="{{ x.id }}">
       {# The module header (50 px; all a folded module shows): color | title over note | the last download
          and the next check | status over Sync Now. While expanded, the color, title and note are fields
          of the same size. #}

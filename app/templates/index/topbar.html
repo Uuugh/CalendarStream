@@ -1,4 +1,4 @@
-  <header class="topbar">
+  <header class="topbar"{% if update.can_update %} data-canupdate="{{ version }}"{% endif %}>
     {# The version links to its release notes on GitHub; a newer one shows as "(v0.2.0 is available)". #}
     <h1>CalendarStream<span class="ver"><a class="curver" href="{{ update.releases }}/tag/v{{ version }}" target="_blank" rel="noopener"
          title="{{ _('What’s in this version (GitHub)') }}">v{{ version }}</a>{% if update.available %}
