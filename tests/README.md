@@ -34,5 +34,7 @@ Postgres it can create databases on (`TEST_DB_HOST`, `TEST_DB_PORT`, `TEST_DB_US
   expanded, the ☰ menu), with times hidden. Take one before a change and one after, then
   `pixdiff.py BEFORE AFTER OUT`: compares them pixel by pixel and writes each changed area, before beside after,
   to OUT; only those are looked at (R15). Exit 0 = nothing changed.
+- `theme_rules.py`: draws the Theme Rules pictures (`build_rules/CalendarStream_Theme_Rules_Light.png`, `…_Dark.png`)
+  from the demo: Part 1 the page with its parts named, Part 2 a card per theme.md section. Start `demo.sh` first.
 - `shot.py [--phone] [--dark] [--url /path] out.png STEP...`: a screenshot of the demo after some steps
   (CLICK, FILL, WAIT, SHOT an element, or JavaScript); it prints the page's errors.

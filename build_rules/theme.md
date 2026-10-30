@@ -4,13 +4,14 @@ Read before changing how the page looks. Written so anyone (the Developer, Claud
 a change against it without asking: every look, status, transition and word rule is here, each with the
 card of the **CalendarStream Theme Rules** picture that shows it.
 
-- The picture: `build_rules/CalendarStream_Theme_Rules_Light.png` and `…_Dark.png`, drawn from the page
-  itself (every size in it is measured). **Part 1** is the whole page with each part named where it is,
+- The picture: `build_rules/CalendarStream_Theme_Rules_Light.png` and `…_Dark.png`, drawn from the demo page
+  itself by `tests/tools/theme_rules.py` (0.2.8-beta.24, R2: start `tests/tools/demo.sh`, then run it), so every
+  size in it is the page's own. **Part 1** is the whole page with each part named where it is,
   a module open in every section. **Part 2** is numbered cards; "Picture 2·5" below means part 2, card 5.
 - The stylesheet is `app/styles/*.css` (sent as one file, in their number order), the script
   `app/templates/js/*.js` (put together by `page.js`, made once per language; AGENTS.md has the map),
   the color tokens `app/templates/_theme.html`. Change those, never inline copies.
-- When the theme changes, update this file and redraw the picture (at the latest in the Deploy's documentation part, 5-deploy.md). A rule
+- When the theme changes, update this file and redraw the picture with `tests/tools/theme_rules.py` (at the latest in the Deploy's documentation part, 5-deploy.md). A rule
   here with no card, or a card with no rule, is a mistake: fix whichever is missing.
 
 The sections below follow the picture's Part 2, card by card (0.2.8-beta.24, R1): section N is card 2·N.
@@ -204,7 +205,7 @@ on the event.
 
 ## 17. Spacing
 
-Picture 2·17 (drawn at the next Deploy). R11, 0.2.8-beta.21; tried for now and adapted as needed:
+Picture 2·17. R11, 0.2.8-beta.21; tried for now and adapted as needed:
 - 5 px between parts: sections, modules, the parts of a module or a pop-up, buttons in a row.
 - 2 px between a label and its field (the label over it; From and To beside their dates, 5 px).
 - 9 px inside a module's border at the sides, 5 px top and bottom; the 50 px header unchanged. A box
@@ -216,7 +217,7 @@ Picture 2·17 (drawn at the next Deploy). R11, 0.2.8-beta.21; tried for now and 
 
 ## 18. The event pop-up
 
-Picture 2·18 (drawn at the next Deploy). Its layout is in the Clarifications (0.2.8-beta.22, F11; 0.2.8-beta.24, F5).
+Picture 2·18. Its layout is in the Clarifications (0.2.8-beta.22, F11; 0.2.8-beta.24, F5).
 
 ## Enforced by tests
 
@@ -328,7 +329,7 @@ one here, with its card.
 - The event pop-up: ← and its title, with its tools in the upper right corner (Choose from template; Print and
   Duplicate); the fields on the left, Notes on the right as tall as them (dragging Notes taller grows the pop-up);
   Link to below, closed until Event or Rule; Delete (Hide or Show for a calendar source's event, with its (i)) at the
-  bottom left, the Cancel/Save buttons at the right. On a phone, one column. (0.2.8-beta.22, F11; Picture 2·18, drawn at the next Deploy)
+  bottom left, the Cancel/Save buttons at the right. On a phone, one column. (0.2.8-beta.22, F11; Picture 2·18)
   The end's column: Time with All-day Event on its label line, right of "Time *" (ticked, it stays there as the Time
   fields hide); Different end time zone beside Time zone's field, End time zone under it when ticked. (0.2.8-beta.24, F5)
 - Sections and modules are told apart by color, nothing else changing: each section's 2 px border its own muted

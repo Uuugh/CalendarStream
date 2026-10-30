@@ -36,15 +36,18 @@ Read when planning a version.
   - failed sync, a sign-in rejected
   - settings allows options for (Apprise library): email, ntfy, Pushover, Telegram and others
 
-0.6 Theming
+0.6 Invitations/Booking
+- (Filled in at its first PLAN.)
 
-0.7 Admin dashboard
+0.7 Theming
+
+0.8 Admin dashboard
 - API usage.
 - A business dashboard of usage and cost: APIs, subscriptions, servers, domains, internet, PC purchases.
 
-0.8 Documentation
+0.9 Documentation
 
-0.9 Business website
+0.10 Business website
 
 ## Low findings
 
