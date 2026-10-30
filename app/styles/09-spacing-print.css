@@ -1,0 +1,67 @@
+  /* ---- 0.2.7-beta.6: one spacing scale (F1.6–F1.10) ---------------------------------------------
+     Section: 10 px between sections, 18 px padding. Section title row: gap 5. Subsection (a box in a
+     section): 5 px apart. Subsection title (Automatic Upload, Manual Upload, Rules): 5 px above and
+     below. Everything else in a section: 2 px apart vertically. Instruction tiles ("How to …") keep
+     their 38 px height and 12 px above. Text boxes and rule lines: 34 px rounded rectangles. */
+  .cardhead, .section > .shead { gap:5px }
+  .bigtitle { display:flex; align-items:center; gap:8px }
+  .secicon { width:22px; height:22px; flex:0 0 auto; color:var(--muted) }
+  .cfghead { margin:5px 0 !important }
+  .cfgbody > h3.cfghead:not(:first-child), .cfgheadrow { margin-top:5px !important; padding-top:5px !important }
+  .cfgheadrow .cfghead { margin:0 !important; padding:0 !important; display:flex; align-items:center }
+  .cfgheadrow { margin-bottom:5px }
+  .sections .cfgbody { margin-top:2px; padding-bottom:2px }
+  .sections .cfggrid { gap:2px 16px }
+  .sections form .pair { row-gap:2px; margin-top:2px }
+  .sections form .pair label.fld, .sections .cfggrid .siteaddr { gap:2px }
+  .sections .rulebox, .sections .rulelist { margin-top:2px }
+  .sections p.mnote, .sections .check, .sections .k, .sections .statusline, .sections .btnrow { margin-top:2px; margin-bottom:0 }
+  .sections .subbox { margin-top:5px; padding-top:5px }
+  .sections .editor .tagrows { gap:2px }
+  .sections .debuglinks { margin-top:2px }
+  .sections details.guide { margin-top:12px }              /* instruction tiles: as they were */
+  /* Text boxes: 34 px rounded rectangles */
+  .sections input[type=text], .sections input[type=url], .sections input[type=password], .sections input[type=email],
+  .sections input[type=number], .sections input[type=date], .sections input:not([type]), .menu input[type=text], .menu input[type=email],
+  .menu input[type=password], dialog input[type=text], dialog input:not([type]) { height:34px; border-radius:var(--r); box-sizing:border-box }
+  .sections input.nameinput { height:34px }
+  /* Rule lines: 34 px rounded rectangles (taller only while being changed, or on a phone) */
+  .sections .rulebox { border-radius:var(--r); min-height:34px; padding-top:0; padding-bottom:0; box-sizing:border-box }
+  @media (max-width:600px) { .sections .rulebox.lib { border-radius:var(--r) } }
+  /* The bottom line of a calendar or feed: a line above; Remove on the left; Cancel | Save on the right */
+  .srcfoot { border-top:1px solid var(--line); margin-top:5px !important; padding-top:5px }
+  .srcfoot .alsodelete { margin:0 auto 0 0; display:flex; align-items:center; gap:4px }
+  .srcfoot .removeform + .pairbtns { margin-left:auto }
+  /* Cancel | Save: one 130 × 34 px pair; the pressed side fills it for 3 seconds (F1.4) */
+  .pairbtns { display:inline-flex; width:130px; height:34px; flex:0 0 130px; border-radius:var(--r); overflow:hidden }
+  .pairbtns button { flex:0 0 65px; width:65px; height:34px; padding:0; justify-content:center; white-space:nowrap; overflow:hidden; min-width:0;
+                     transition:flex-basis .3s ease, width .3s ease, opacity .3s ease }
+  .pairbtns .pcancel { border-radius:var(--r) 0 0 8px; border-right-width:0 }
+  .pairbtns .psave { border-radius:0 8px 8px 0; border:1px solid var(--accent) }
+  .pairbtns[data-state="saving"] .pcancel, .pairbtns[data-state="saved"] .pcancel, .pairbtns[data-state="failed"] .pcancel,
+  .pairbtns[data-state="cancelled"] .psave { flex-basis:0; width:0; opacity:0; border-width:0 }
+  .pairbtns[data-state="saving"] .psave, .pairbtns[data-state="saved"] .psave, .pairbtns[data-state="failed"] .psave { flex-basis:130px; width:130px; border-radius:var(--r) }
+  .pairbtns[data-state="cancelled"] .pcancel { flex-basis:130px; width:130px; border-radius:var(--r); border-right-width:1px }
+  .pairbtns[data-state="saving"] .psave { opacity:.85; pointer-events:none }
+  .pairbtns[data-state="failed"] .psave { background:var(--warnbg); color:var(--warn); border-color:var(--warn) }
+  .pairbtns[data-state="failed"][data-cause="inside"] .psave { background:var(--badbg); color:var(--bad); border-color:var(--bad) }
+  .pairfail { flex-basis:100%; text-align:right; color:var(--warn); font-size:12.5px; margin:2px 0 0 }
+  .pairfail.inside { color:var(--bad) }
+  dialog .eactions .pairbtns { margin-left:auto }
+  /* The rule-line pair: 130 × 26 px inside its 34 px line */
+  /* Guide headings: underlined (F3.3) */
+  .setupguide .h4 { text-decoration:underline; text-underline-offset:3px }
+  .calright .printbtn { height:28px; width:32px }
+  /* Printing: only the calendar, in black on white, with whole event titles */
+  @media print {
+    :root { --bg:#fff; --card:#fff; --text:#000; --muted:#444; --line:#bbb; color-scheme:light }
+    body { background:#fff }
+    .topbar, .sections, .foot, dialog, .navbtn, .calright, .monthpick, .caret, .day .add, .aday .add, .legend .helpdot { display:none !important }
+    main { max-width:none; padding:0 }
+    #cal { border:0; padding:0; margin:0 }
+    .calhead .title { font-size:20px; padding:0 }
+    .ev summary { white-space:normal; overflow:visible }
+    .ev, .legend span::before { -webkit-print-color-adjust:exact; print-color-adjust:exact }
+    .ev[open] .body { display:none }
+    .day { break-inside:avoid }
+  }

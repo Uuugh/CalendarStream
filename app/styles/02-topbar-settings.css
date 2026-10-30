@@ -1,0 +1,66 @@
+  /* Title bar */
+  .topbar { display:flex; align-items:center; gap:10px; margin-bottom:4px }
+  .topbar h1 { font-size:20px; margin:0; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .topbar .ver { color:var(--muted); font-size:13px; font-weight:500; margin-left:4px }
+  .topbar .newver { color:var(--accent); font-weight:600; text-decoration:none; margin-left:3px } .topbar .newver:hover { text-decoration:underline }
+  .topbar .ver a.curver { color:inherit; text-decoration:none } .topbar .ver a.curver:hover { text-decoration:underline }
+  /* Update now: one small pill that changes as the update goes (see the script near the end). */
+  .updslot { display:inline-flex; vertical-align:middle; margin-left:6px; height:24px; min-width:118px; border-radius:var(--r); overflow:hidden }
+  .updslot > * { display:none }
+  .updslot[data-state="ready"] .updbtn { display:inline-flex; height:24px; padding:0 10px; font-size:12px; border-radius:var(--r) }
+  .updslot .updmsg { position:relative; width:100%; align-items:center; justify-content:center; padding:0 10px; font-size:12px; font-weight:700; white-space:nowrap }
+  .updslot:not([data-state="ready"]) .updmsg { display:inline-flex }
+  .updslot:not([data-state="ready"]) .updmsg .updtext { animation:sn-in .25s ease-out }     /* only the words fade in: no blank moment (beta.14) */
+  .updslot[data-state="downloading"] .updmsg { color:var(--run); background:var(--runbg) }  /* working: the pressed look, like Restarting… */
+  .updslot[data-state="restarting"] .updmsg { color:var(--run); background:var(--runbg) }
+  .updslot[data-state="failed"] .updmsg { color:var(--bad); background:var(--badbg) }
+  .updslot[data-state="done"] .updmsg { color:var(--ok); background:var(--okbg) }  .updslot[data-state="done"] .updbar { display:none }
+  /* A moving bar along the bottom: the updater doesn't report how far the download is. */
+  .updslot .updbar { position:absolute; left:0; right:0; bottom:0; height:3px; overflow:hidden }
+  .updslot[data-state="failed"] .updbar { display:none }
+  .updslot .updbar i { position:absolute; top:0; bottom:0; width:40%; background:currentColor; opacity:.55; animation:updbar 1.2s ease-in-out infinite }
+  @keyframes updbar { from { left:-40% } to { left:100% } }
+  @media (prefers-reduced-motion:reduce) { .updslot .updbar i { animation:none; left:0; width:100% } }
+  /* Phones: the version (a beta's is long) goes on its own small line under the name. */
+  @media (max-width:560px) { .topbar h1 { line-height:1.15 } .topbar .ver { display:block; margin-left:0; font-size:12px; overflow:hidden; text-overflow:ellipsis } }
+  form .pair label.fld select { width:100%; height:34px; font:inherit; font-size:13px; padding:0 6px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:var(--card) }
+  .seg button { display:inline-flex; align-items:center; background:transparent; color:var(--muted); border:0; border-radius:0; padding:7px 9px; line-height:1 }
+  .seg button + button { border-left:1px solid var(--line) }
+  .seg button[aria-pressed="true"] { background:var(--soft); color:var(--accent) }
+  .iconbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:32px; padding:0;
+             background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:var(--r) }
+  .menuwrap { position:relative }
+  /* Settings: a light blue panel (the same blue as the Sync Now box), so it stands out from the page. */
+  .menu { position:absolute; right:0; top:calc(100% + 6px); width:min(420px, calc(100vw - 32px)); z-index:10; background:var(--runbg);
+          border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18); padding:12px 14px }
+  .menu[hidden] { display:none }
+  .menu .title { font-weight:700; font-size:14px; margin-bottom:4px }
+  /* Each Settings section in its own outlined block. */
+  .menu .mgroup { border:1px solid var(--line); border-radius:var(--rbox); margin-top:5px; padding:10px 12px; font-size:13px; background:var(--card) }
+  .menu .pair > .ghost, .menu .pair > button { margin-left:0 } .menu .pair > button:last-child { margin-left:auto }
+  .menu .mgroup p { margin:0 0 5px }
+  .menu .mhead { display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px; margin-bottom:5px }
+  .menu .merr { background:var(--badbg); color:var(--bad); border-radius:var(--r); padding:6px 10px }
+  .menu .mnote { color:var(--muted); font-size:12px }
+  .menu code { overflow-wrap:anywhere }
+  .menu label { display:flex; align-items:center; gap:6px; margin:0 0 2px }
+  .menu .upgradebtn { display:inline-flex; align-items:center; gap:4px; height:34px; padding:0 12px }
+  /* Updates (beta.3): the label over the menu, like the other fields; Auto-update and Check now beside it */
+  .menu .pair.updrow { align-items:center; flex-wrap:nowrap; gap:8px }
+  .menu .pair.updrow .rowlabel { flex:0 0 auto; font-size:13px; font-weight:600 } .menu .pair.updrow select { flex:1 1 auto; width:auto }
+  .menu .pair.updrow label.fld { flex:1 1 auto }
+  .menu .pair.updrow select { width:100%; height:34px }
+  .menu .autoupd { flex:0 0 auto; height:34px; margin:0; font-size:13px; font-weight:600; white-space:nowrap }
+  .menu .autoupd input:disabled + * , .menu .autoupd:has(input:disabled) { color:var(--muted) }
+  /* The menu scrolls when taller than the window. */
+  .menu { max-height:calc(100vh - 80px); overflow-y:auto }
+  /* Settings holds Google Calendar sync too (0.2.8-beta.4): wider, so its Client ID | secret row fits */
+  .menu { width:min(560px, calc(100vw - 32px)) }
+  #googlesync .mhead .gstate { margin-left:auto; display:flex }
+  #googlesync .mhead .gstate .chip { height:24px; padding:0 8px; border-radius:6px }
+  #googlesync .chip.good { background:var(--okbg) } #googlesync .chip.warn { background:var(--warnbg) } #googlesync .chip.bad { background:var(--badbg) }
+  #googlesync details.guide { margin-top:6px }
+  /* A feed's subscribe buttons, then the link as the fallback */
+  .subbox .subbtns { flex-wrap:wrap; gap:5px; align-items:center; margin:0 0 5px }
+

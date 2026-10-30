@@ -1,0 +1,79 @@
+  /* Month view */
+  .calhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px }
+  .calhead .title { font-size:18px; font-weight:700; min-width:150px }
+  .monthwrap { position:relative }
+  select.tzpick { font:inherit; font-size:13px; color:var(--text); background:transparent; border:1px solid var(--line); border-radius:var(--r); height:28px; padding:0 4px; max-width:200px; cursor:pointer }
+  select.tzpick:hover, select.tzpick:focus { background:var(--soft) }
+  .calhead button.title { background:transparent; color:var(--text); border:0; padding:4px 6px; border-radius:var(--r); cursor:pointer; text-align:left; font-family:inherit }
+  .calhead button.title:hover, .calhead button.title[aria-expanded=true] { background:var(--soft) }
+  .calhead .caret { font-size:12px; color:var(--muted) }
+  .monthpick { position:absolute; top:calc(100% + 6px); left:0; z-index:8; width:250px; padding:10px; background:var(--card);
+               border:1px solid var(--line); border-radius:var(--rbox); box-shadow:0 10px 30px rgba(0,0,0,.18) }
+  .monthpick .yearrow { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:15px }
+  .monthpick .yearrow button { width:30px; height:30px; padding:0; background:transparent; color:var(--accent); border:1px solid var(--line); border-radius:var(--r); font-size:18px; line-height:1; cursor:pointer }
+  .calhead { position:relative }
+  @media (max-width:600px) { .monthwrap { position:static } .monthpick { left:0 } }
+  .monthpick .months { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px }
+  .monthpick .months button { background:transparent; color:var(--text); border:1px solid var(--line); border-radius:var(--r); padding:7px 0; font-size:13px; font-weight:500; cursor:pointer }
+  .monthpick .months button:hover { background:var(--soft) }
+  .monthpick .months button.on { background:var(--accent); color:var(--onaccent); border-color:var(--accent); font-weight:700 }
+  .calright { margin-left:auto; display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end }
+  .viewseg { display:inline-flex; border:1px solid var(--line); border-radius:var(--r); overflow:hidden }
+  .viewseg button { height:28px; padding:0 10px; border:0; border-radius:0; background:transparent; color:var(--muted); font-size:12.5px; font-weight:600 }
+  .viewseg button + button { border-left:1px solid var(--line) }
+  .viewseg button[aria-pressed="true"] { background:var(--accent); color:var(--onaccent) }
+  .weekgrid .day { min-height:220px } .weekgrid .ev summary { white-space:normal }
+  .agenda { border-top:1px solid var(--line) }
+  .aday { display:grid; grid-template-columns:150px 1fr; gap:12px; padding:8px 4px; border-bottom:1px solid var(--line); font-size:13px }
+  .aday .adate { font-weight:600; display:flex; align-items:baseline; gap:6px }
+  .aday.today .num { background:var(--accent); color:var(--card) }
+  .aday .add { margin-left:auto }
+  .aday:hover .add { visibility:visible }
+  .aitems .ev summary { white-space:normal; padding:3px 8px }
+  .aitems p { margin:3px 0 }
+  @media (max-width:600px) { .aday { grid-template-columns:1fr; gap:4px } .calright { margin-left:0; justify-content:flex-start } }
+  .clockswitch { display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); font-weight:600 }
+  .clockswitch button { position:relative; width:38px; height:22px; border-radius:11px; border:1px solid var(--line); background:var(--soft); padding:0; cursor:pointer }
+  .clockswitch button span { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:5px; background:var(--muted); transition:left .15s, background .15s }
+  .clockswitch button[aria-checked=true] { background:var(--accent); border-color:var(--accent) }
+  .clockswitch button[aria-checked=true] span { left:18px; background:var(--onaccent) }
+  .navbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border:1px solid var(--line);
+            border-radius:var(--r); text-decoration:none; color:var(--accent); font-size:18px; font-weight:700 }
+  .navbtn.wide { width:auto; padding:0 12px; font-size:14px }
+  .month { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); border-top:1px solid var(--line); border-left:1px solid var(--line); min-width:640px }
+  .dow { font-size:12px; font-weight:600; color:var(--muted); text-align:center; padding:6px 0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--soft) }
+  .day { min-height:96px; padding:4px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); font-size:12px; overflow:hidden }
+  .day.out { background:var(--soft) } .day.out .num { color:var(--muted); opacity:.7 }
+  .num { font-weight:600; font-size:12px; margin-bottom:2px; display:inline-block; min-width:22px; text-align:center; border-radius:var(--r) }
+  .day.today .num { background:var(--accent); color:var(--card) }
+  .ev { margin:2px 0; border-radius:5px; background:var(--ev); color:var(--evtext) }
+  /* I1 (0.2.7-beta.6): all-day and timed events look the same; only rules, your own color, a
+     calendar's color and "Added here" change an event's color. */
+  .ev summary { list-style:none; cursor:pointer; padding:1px 5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .ev summary::-webkit-details-marker { display:none }
+  .ev .t { font-variant-numeric:tabular-nums; opacity:.85; margin-right:4px }
+  .ev .body { padding:4px 6px 6px; font-size:12px; white-space:pre-wrap; word-break:break-word; border-top:1px solid var(--line) }
+  .ev.custom { background:var(--custom); color:var(--customtext) }
+  .ev.hidden summary { text-decoration:line-through; opacity:.55 }
+  /* deleted (beta.15): struck through and greyed (its color subdued), until its Undo pops off */
+  .ev.deleted { filter:grayscale(.85) } .ev.deleted summary { opacity:.45 }
+  .ev .delnote { color:var(--muted); font-style:italic }
+  .ev .evrestore { display:inline-block; margin:4px 0 0 } .ev .evrestore button { height:28px; padding:0 8px; display:inline-flex; align-items:center; gap:4px }
+  s.legdel { opacity:.45; filter:grayscale(1) }
+  .ev .mark { margin-left:3px; font-size:11px }
+  .ev .edit { display:inline-block; font-weight:600 }
+  .ev .evtools { display:flex; align-items:center; gap:3px; margin-top:5px; white-space:normal }
+  .ev .evtools .edit { margin-right:auto }
+  .ev .evtools form { margin:0; display:inline }
+  .ev .evicon { display:inline-flex; align-items:center; justify-content:center; width:25px; height:25px; padding:0; border:0; border-radius:6px;
+                background:transparent; color:var(--muted); cursor:pointer }
+  .ev .evicon:hover { background:var(--soft); color:var(--accent) } .ev .evdel .evicon:hover { color:var(--bad) }
+  .dayhead { display:flex; align-items:center; justify-content:space-between }
+  .add { visibility:hidden; text-decoration:none; font-weight:700; font-size:15px; line-height:1; padding:0 4px; border-radius:4px; color:var(--accent) }
+  .day:hover .add, .add:focus { visibility:visible } .add:hover { background:var(--soft) }
+  @media (hover:none) { .add { visibility:visible; opacity:.6 } }
+  .legend { display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin:8px 0 0 }
+  .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; background:var(--sw) }
+  /* The chosen calendar color tints United's events (timed lighter, all-day stronger) */
+  .ev.tint { background:color-mix(in srgb, var(--cal) var(--tint, 18%), var(--card)); color:color-mix(in srgb, var(--cal) var(--tinttext, 70%), var(--text)) }
+

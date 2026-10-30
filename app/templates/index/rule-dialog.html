@@ -1,0 +1,31 @@
+<script type="application/json" id="ruledata">{{ rule_js|tojson }}</script>
+{# The rule dialog (F4): a pop-up on a computer, the whole screen (with ← back) on a phone. The script
+   builds the If and Then lines (see "The rule dialog" below) and sends the rule as JSON. #}
+<dialog id="ruledialog" class="popup" aria-labelledby="rdtitle">
+  <form method="post" action="/rules/save" class="ruleform" id="ruleform" data-swap="#sources|#rules|#cal|#activity|#ruledata">
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="rule" value="">
+    <div class="dlghead"><button type="button" class="ghost iconbtn dlgback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}">{{ icon("arrow_back", 20) }}</button>
+      <div class="title" id="rdtitle" data-new="{{ _('New rule') }}" data-edit="{{ _('Change rule') }}">{{ _('New rule') }}</div></div>
+    <label class="lbl" for="rdname">{{ _('Title') }}</label>
+    <input type="text" id="rdname" class="rdname" maxlength="80" placeholder="{{ _('Optional, e.g. Days off in red') }}">
+    <div class="lbl rdif">{{ _('If') }}</div>
+    <div class="conds"></div>
+    <div class="lbl">{{ _('Then') }}</div>
+    <div class="acts"></div>
+    <p class="pairfail rdmsg" hidden></p>
+    <div class="eactions rdfoot">
+      <button type="button" class="ghost danger rdremove">{{ trash }} {{ _('Remove') }}</button>
+      {# Apply to (F4.1, 0.2.8-beta.3): a drop-down of the calendars, each with its color #}
+      <div class="applyto"><span id="rdapplylbl">{{ _('Apply to') }}{{ help(_('Tick the calendars it applies to. All calendars includes later ones.'), 'up right') }}</span>
+        <div class="dropdown rdapply">
+          <button type="button" class="ddbtn" aria-haspopup="true" aria-expanded="false" aria-labelledby="rdapplylbl"><span class="ddsum"></span>{{ icon("arrow_drop_down", 20) }}</button>
+          <div class="ddmenu" role="group" aria-labelledby="rdapplylbl" hidden>
+            <label class="ddopt"><input type="checkbox" value="all"><span class="ddsw all" aria-hidden="true"></span><span class="ddname">{{ _('All calendars') }}</span></label>
+            {% for x in srcs %}<label class="ddopt"><input type="checkbox" value="{{ x.id }}"><span class="ddsw" style="background:{{ x.color or '#1d4ed8' }}" aria-hidden="true"></span><span class="ddname">{{ x.name }}</span></label>{% endfor %}
+          </div>
+        </div></div>
+      {{ pair("ruleform", _('Apply')) }}
+    </div>
+    {{ rules_guide() }}{# (F5.1, beta.3: at the bottom of the dialog; no longer under All Rules) #}
+  </form>
+</dialog>

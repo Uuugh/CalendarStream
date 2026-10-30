@@ -1,0 +1,22 @@
+  {# Event Templates: ready-made events for "Add event" rules and for adding events by hand. #}
+  <section class="card section modsection{% if sections.templates %} open{% endif %}" id="templates" data-section="templates" aria-labelledby="tplstitle">
+    <div class="shead">
+      <span class="bigtitle" id="tplstitle">{{ icons.templates|safe }}{{ _('Event Templates') }}{{ help(_('Ready-made events, for rules that add events and for adding an event by hand.')) }}</span>
+      <div class="statusbox countbox good" id="tplcount">{{ chip('good', _('1 Template') if templates|length == 1 else _('{n} Templates', n=templates|length)) }}</div>
+    </div>
+    {{ sectionline("templates", sections.templates) }}
+    <div class="sbody" id="templates-body"{% if not sections.templates %} hidden{% endif %}>
+    {% if not templates %}<p class="empty">{{ _('No event templates yet. Press <b>+</b> to add one.') }}</p>{% endif %}
+    <form class="editor tagsform" id="tplform" method="post" action="/templates" data-swap="#templates|#rules|#sources|#cal|#activity|#ruledata"{% if not templates %} data-empty{% endif %}>
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <template class="rowtpl">{{ m.template_row({"id": "", "title": "", "all_day": false, "minutes": 60, "location": "", "color": ""}, event_colors, trash) }}</template>
+      <div class="tagrows">{% for t in templates %}{{ m.template_row(t, event_colors, trash) }}{% endfor %}</div>
+      <div class="btnrow tagfoot"{% if not templates %} hidden{% endif %}>
+        <p class="mnote">{{ _('Length as hours:minutes, e.g. 1:30.') }}</p>
+        {{ pair("tplform") }}
+      </div>
+    </form>
+    {# + in the bottom right corner (0.2.8-beta.11) #}
+    <div class="sfoot"><button type="button" class="ghost plus opendlg" data-dialog="tpladd" aria-haspopup="dialog" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 24) }}</button></div>
+    </div>
+  </section>

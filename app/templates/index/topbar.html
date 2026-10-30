@@ -1,0 +1,36 @@
+  <header class="topbar">
+    {# The version links to its release notes on GitHub; a newer one shows as "(v0.2.0 is available)". #}
+    <h1>CalendarStream<span class="ver"><a class="curver" href="{{ update.releases }}/tag/v{{ version }}" target="_blank" rel="noopener"
+         title="{{ _('What’s in this version (GitHub)') }}">v{{ version }}</a>{% if update.available %}
+      <a class="newver" href="{{ update.releases }}/tag/v{{ update.available }}" target="_blank" rel="noopener"
+         title="{{ _('What’s new in it (GitHub)') if update.can_update else _('Run the installer again to update.') }}">{{ _('(v{v} is available)', v=update.available) }}</a>
+      {# With the updater container: Update now → Downloading… → Restarting… → gone, with the new version shown. #}
+      {% if update.can_update %}<span class="updslot" data-state="ready" data-from="{{ version }}" data-to="{{ update.available }}">
+        <button type="button" class="updbtn">{{ _('Update now') }}</button>
+        <span class="updmsg" aria-live="polite"><span class="updtext"></span><span class="updbar" aria-hidden="true"><i></i></span></span>
+      </span>{% endif %}{% endif %}</span></h1>
+    {# Language menu: Automatic follows the browser; the choice is saved in the database. #}
+    <div class="langwrap">
+      <button type="button" class="iconbtn" id="langbtn" aria-haspopup="menu" aria-expanded="false" aria-controls="langmenu"
+              title="{{ _('Language') }}" aria-label="{{ _('Language') }}">
+        {{ icon("language", 20) }}
+      </button>
+      <div class="langmenu" id="langmenu" role="menu" hidden>
+        <button type="button" role="menuitemradio" data-lang="auto" aria-checked="{{ 'true' if lang_choice == 'auto' else 'false' }}">{{ _('Automatic (browser)') }}</button>
+        <hr>
+        {% for code, label in langs.items() %}
+        <button type="button" role="menuitemradio" data-lang="{{ code }}" lang="{{ code }}" aria-checked="{{ 'true' if lang_choice == code else 'false' }}">{{ label }}</button>
+        {% endfor %}
+      </div>
+    </div>
+    <button type="button" class="ghost cyclebtn themecycle" title="{{ _('Theme: press for the next one') }}" aria-label="{{ _('Color theme') }}"></button>
+    <div class="seg" role="group" aria-label="{{ _('Color theme') }}">
+      <button type="button" data-theme-choice="light" title="{{ _('Light') }}" aria-label="{{ _('Light theme') }}">
+        {{ icon("light_mode", 18) }}</button>
+      <button type="button" data-theme-choice="dark" title="{{ _('Dark') }}" aria-label="{{ _('Dark theme') }}">
+        {{ icon("dark_mode", 18) }}</button>
+      <button type="button" data-theme-choice="system" title="{{ _('Match system') }}" aria-label="{{ _('Match system theme') }}">
+        {{ icon("contrast", 18) }}</button>
+    </div>
+{% include "index/settings.html" %}
+  </header>

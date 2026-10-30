@@ -9,7 +9,25 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.19**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.20**
+
+## 0.2.8-beta.20 — 2026-10-30
+
+### Changed
+- **F12** The code is split into parts by area, so a change only needs the part it touches; nothing the page or the
+  app does changes. `app/main.py` keeps what's shared and the routes move to `app/routes/` (page, sources,
+  destinations, rules, events, history, account, settings, google, status); `index.html` includes its parts from
+  `app/templates/index/` (top bar, ☰ settings, calendar, calendars, feeds, rules, templates, history, the pop-ups);
+  `page.js` is put together from `app/templates/js/`, and the stylesheet from `app/styles/`, each in its own
+  order. AGENTS.md has the code map. Shown unchanged: the full test run; every page, script (English, German,
+  French), stylesheet and answer of the demo the same as before; the same routes, each with the same
+  parameters; and R15's before and after screenshots, which differ nowhere.
+- The stylesheet keeps its order (in the cascade a later rule wins a tie, and over 12,000 pairs of its rules
+  depend on theirs), so its parts are named for what they mostly hold. The stylesheet is no longer also at
+  `/static/app.css` (nothing used that address; the page uses `/assets/app.css`).
+
+### Build rules
+- theme.md and the review areas (4-review.md) name the new files.
 
 ## 0.2.8-beta.19 — 2026-10-29
 

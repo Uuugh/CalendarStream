@@ -1,0 +1,235 @@
+  {# Send to… (0.2.8-beta.17, F6): a menu to send a link: e-mail, a text message, the device's share menu
+     (where there is one) or copy. `big` is the app-button size, beside Add to Google / Apple / Outlook. #}
+  {% macro sendto(url, title, text, big=false) -%}
+  <span class="sendto">
+    <button type="button" class="{{ 'appbtn appsend' if big else 'ghost' }} sendbtn" aria-haspopup="menu" aria-expanded="false" data-url="{{ url }}" data-title="{{ title }}" data-text="{{ text }}">{{ icon("send", 15) }} {{ _('Send to…') }}</button>
+    <span class="sendmenu" role="menu" hidden>
+      <a role="menuitem" href="mailto:?subject={{ title|urlencode }}&amp;body={{ text|urlencode }}">{{ icon("mail", 15) }} {{ _('E-mail') }}</a>
+      <a role="menuitem" href="sms:?&amp;body={{ text|urlencode }}">{{ icon("sms", 15) }} {{ _('Text message') }}</a>
+      <button type="button" role="menuitem" class="sendshare" hidden>{{ icon("share", 15) }} {{ _('Share…') }}</button>
+      <button type="button" role="menuitem" class="sendcopy">{{ icon("content_copy", 15) }} {{ _('Copy the link') }}</button>
+    </span>
+  </span>
+  {%- endmacro %}
+
+  {# Information & Instructions (0.2.8-beta.17, F4): under Cancel | Save in every feed module and in the add
+     pop-up: which module to pick (this one's column lit; the Google ones dimmed while the API is off), then how to. #}
+  {% macro feedinfo(kind, open=false) -%}
+  {% set col = {"feed": 1, "google1": 2, "google": 3}[kind] %}
+  <details class="guide feedinfo"{% if open %} open{% endif %}><summary>{{ _('Information & Instructions') }}</summary>
+    <div class="fitable" role="table" aria-label="{{ _('Which one?') }}">
+      {% set rows = [
+        [_('Which one?'), _('Calendar Feed'), _('Google 1-way Sync'), _('Google 2-way Sync')],
+        [_('Pick it when…'), _('You want your schedule in any calendar app, or to share it with anyone'), _('Someone on Google Calendar should see your schedule, but not change it'), _('You use Google Calendar and want to change events there too')],
+        [_('Works in'), _('Google, Apple, Outlook and most other calendar apps'), _('Google Calendar only'), _('Google Calendar only')],
+        [_('Changes show up'), _('A few times a day'), _('Within seconds'), _('Within seconds')],
+        [_('Colors and reminders'), _('No: one color for everything'), _('Yes'), _('Yes')],
+        [_('Edit events in Google'), _('No'), _('No: they go back to how CalendarStream has them'), _('Yes: your change comes back here')],
+        [_('To set it up'), _('Nothing: copy or send the link'), _('Connect me, or Invite someone'), _('Connect me, or Invite someone')]] %}
+      {% for r in rows %}<div class="firow{% if loop.first %} fihead{% endif %}" role="row">{% for c in r %}<div role="{{ 'columnheader' if loop.first or r is sameas rows[0] else 'cell' }}" class="{{ 'on' if loop.index0 == col else '' }}{{ ' off' if loop.index0 >= 2 and not api_on else '' }}">{{ c }}</div>{% endfor %}</div>{% endfor %}
+    </div>
+    {% if not api_on %}<p class="mnote">{{ _('The Google ones need Google Calendar API Sync, which your admin turns on in ☰ Settings.') }}</p>{% endif %}
+    <div class="fihow">
+    {% if kind == "feed" %}
+      <p>{{ _('<b>Add to Google, Apple or Outlook</b>: one click opens that app with the link, and it subscribes. The app re-reads it on its own schedule.') }}</p>
+      <p>{{ _('<b>Send to…</b>: e-mail or text the link to someone, with how to add it, or use your device’s share menu.') }}</p>
+      <p>{{ _('<b>Any other app</b>: copy the link') }} {{ icon("content_copy", 13) }} {{ _('› paste it where the app subscribes from a URL. Reusing an old stream name keeps existing subscriptions working.') }}</p>
+    {% else %}
+      <p>{{ _('<b>Connect me</b>: sign in to Google; CalendarStream makes this calendar in that account.') }}</p>
+      <p>{{ _('<b>Invite someone</b>: makes a one-time link (7 days) to send them; they open it and connect their own Google account. You never need their password.') }}</p>
+      <p>{{ _('While the Google app is in Testing, add them first: Google Cloud › Audience › Test users › + Add users › their Gmail › Save.') }}</p>
+      {% if kind == "google" %}<p>{{ _('Changes made in Google come back here; a rule’s events are put back, since the rule makes them.') }}</p>{% endif %}
+    {% endif %}
+    </div>
+  </details>
+  {%- endmacro %}
+
+  {# Include (F4): the calendars it gets on the left; its dates on the right, From over To (each optional; empty = all) #}
+  {% macro feedinclude(form, picked, start, end) -%}
+  <div class="feedinclude">
+    <div class="k fihead2">{{ _('Include') }}</div>
+    <div class="ficols">
+      <div class="destcals"><div class="k">{{ _('Calendars') }}{{ help(_('Each event keeps its calendar’s colors and rules.')) }}</div>
+        <div class="srcpicks">
+          {% for x in srcs %}<label class="srcpick"><input type="checkbox" name="sources" value="{{ x.id }}" form="{{ form }}"{% if picked is none or x.id in picked %} checked{% endif %}>
+            <span class="swatch" style="--c:{{ x.color or '#1d4ed8' }}" aria-hidden="true"></span> {{ x.name }}</label>{% endfor %}
+          {% if not srcs %}<span class="mnote">{{ _('Add a calendar first.') }}</span>{% endif %}
+        </div></div>
+      <div class="destdates"><div class="k">{{ _('Dates (optional; empty = all)') }}</div>
+        <label class="dfield"><span>{{ _('From') }}</span><input type="date" name="start" value="{{ start }}" form="{{ form }}"></label>
+        <label class="dfield"><span>{{ _('To') }}</span><input type="date" name="end" value="{{ end }}" form="{{ form }}"></label>
+      </div>
+    </div>
+  </div>
+  {%- endmacro %}
+
+  {# A Calendar Feed's link (F10): the public address (a drop-down: every one in ☰ Settings, then + Add a domain),
+     /calendar/, the stream name (editable: an old one brings old links back; F5) and .ics, then copy. #}
+  {% macro feedlink(form, base, token, placeholder="") -%}
+  <div class="k">{{ _('Feed link') }}{{ help(_('The second part is the <b>stream name</b>: reinstalled, or removed a feed by mistake? Type the old stream name (or paste a whole old link) › Save: subscriptions in other calendar apps keep working. It’s checked on Save, so two feeds never share one.')) }}</div>
+  <div class="feedlink inbox">
+    <select name="base" class="code fbase" form="{{ form }}" aria-label="{{ _('Address') }}">
+      {% for u in public.all %}<option value="{{ u }}"{% if u == base %} selected{% endif %}>{{ u }}</option>{% endfor %}
+      <option value="+add">{{ _('+ Add a domain') }}</option>
+    </select><span class="fmid code">/calendar/</span><input type="text" name="stream" class="code fstream" form="{{ form }}" value="{{ token }}" placeholder="{{ placeholder }}" spellcheck="false" autocomplete="off" aria-label="{{ _('Stream name') }}"><span class="fmid code">.ics</span>
+    <button type="button" class="inboxbtn copybtn feedcopy" title="{{ _('Copy') }}" aria-label="{{ _('Copy the feed link') }}">{{ icon("content_copy", 15) }}</button>
+  </div>
+  {%- endmacro %}
+
+  <section class="card" id="destinations" aria-labelledby="deststitle">
+    <div class="cardhead">
+      <h2 class="bigtitle" id="deststitle">{{ icons.feeds|safe }}{{ _('Feeds') }}
+        {{ help(_('What other apps get: a link any calendar app subscribes to, or a Google calendar kept up to date.')) }}</h2>
+      <div class="addwrap">
+        <button type="button" class="ghost plus" aria-haspopup="dialog" aria-expanded="false" aria-controls="adddestpop"
+                title="{{ _('Add a feed') }}" aria-label="{{ _('Add a feed') }}">{{ icon("add", 24) }}</button>
+        {# Adding a feed (0.2.8-beta.17, F7): step 1 picks the module; step 2 is that module in a pop-up #}
+        <dialog class="popup addpop" id="adddestpop" aria-label="{{ _('Add a feed') }}">
+          <div class="addmenu addpick">
+            <div class="dlghead"><button type="button" class="ghost iconbtn dlgback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}" data-close>{{ icon("arrow_back", 20) }}</button>
+              <div class="title">{{ _('Add a feed') }}</div></div>
+            <button type="button" class="opt pickdest" data-type="feed"><b>{{ _('Calendar Feed') }}</b><span class="subtitle">{{ about.ffeed }}</span></button>
+            <button type="button" class="opt pickdest" data-type="google1"{% if not api_on %} disabled{% endif %}><b>{{ _('Google 1-way Sync') }}</b><span class="subtitle">{{ about.gdest1 if api_on else about.apioff }}</span></button>
+            <button type="button" class="opt pickdest" data-type="google"{% if not api_on %} disabled{% endif %}><b>{{ _('Google 2-way Sync') }}</b><span class="subtitle">{{ about.gdest if api_on else about.apioff }}</span></button>
+          </div>
+        </dialog>
+        <dialog class="popup addpop" id="adddest2" aria-labelledby="adddest2title">
+          <form method="post" action="/destinations/add" id="adddest" class="addmod" data-swap="#destinations|#activity">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="feed">
+            <div class="dlghead"><button type="button" class="ghost iconbtn dlgback adddestback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}">{{ icon("arrow_back", 20) }}</button>
+              <div class="title" id="adddest2title">{{ _('Add a feed') }} · <span class="addkind" data-feed="{{ _('Calendar Feed') }}" data-google1="{{ _('Google 1-way Sync') }}" data-google="{{ _('Google 2-way Sync') }}">{{ _('Calendar Feed') }}</span></div></div>
+            <div class="nameline addname">
+              <input type="text" class="namebox nameinput" name="name" maxlength="100" aria-label="{{ _('Label') }}" placeholder="{{ _('Label') }}">
+              <span class="notebox">{{ notedot("") }}<input type="text" class="noteinput" name="note" maxlength="300" placeholder="{{ _('Note (optional)') }}" aria-label="{{ _('Note') }}"></span>
+            </div>
+            {% if not public.url %}
+            <div class="pubask">
+              <label class="lbl" for="pubask">{{ _('First, this page’s public address') }}</label>
+              <div class="inbox">
+                <input type="text" id="pubask" name="public" value="{{ public.here }}" spellcheck="false" placeholder="https://cal.example.com">
+                <button type="button" class="inboxbtn" data-fill="pubask" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
+              </div>
+              <p class="mnote">{{ _('This page’s https:// address, e.g. <code>https://cal.example.com</code> (☰ Settings changes it later).') }}</p>
+            </div>
+            {% endif %}
+            <div class="addfor" data-for="feed">{{ feedlink("adddest", public.all[0], "", _('a new one is made on Save')) }}</div>
+            <div class="k">{{ _('Account') }}{{ help(_('A Google module’s calendar is made in this Google account.')) }}</div>
+            <div class="addfor" data-for="feed"><div class="accline mnote">{{ _('Not needed: each app subscribes to the link') }}</div></div>
+            <div class="addfor" data-for="google" hidden><div class="accline"><span class="mnote">{{ _('No Google account specified yet') }}</span>
+              <button class="ghost" name="then" value="connect">{{ _('Connect me') }}</button><button class="ghost" name="then" value="invite">{{ _('Invite someone') }}</button></div></div>
+            {{ feedinclude("adddest", none, "", "") }}
+            <div class="eactions">{{ pair("adddest") }}</div>
+            <div class="addfor" data-for="feed">{{ feedinfo("feed") }}</div>
+            <div class="addfor" data-for="google1" hidden>{{ feedinfo("google1") }}</div>
+            <div class="addfor" data-for="google2" hidden>{{ feedinfo("google") }}</div>
+          </form>
+        </dialog>
+      </div>
+    </div>
+    {% if not dests %}<p class="empty">{{ _('No feeds yet. <b>+</b> adds a calendar feed or a Google calendar.') }}</p>{% endif %}
+
+    {% set g = google %}
+    <div class="sortable modules" data-kind="dest">
+    {% for d in dests %}
+    {% set feed = d.type == "feed" %}
+    {% set kindkey = "feed" if feed else ("google1" if d.oneway else "google") %}
+    {% if feed %}{% set dcls, dlabel = ("good", _('Read by Google')) if d.reads.google else ("run", _('Not read yet')) %}
+    {% elif not d.connected %}{% set dcls, dlabel = "run", (_('Invited') if d.invite else _('Not connected')) %}
+    {% elif d.error %}{% set dcls, dlabel = ("bad" if d.error.startswith("Google sync failed") else "warn"), _('Sync problem') %}
+    {% elif d.cal.calendar_id %}{% set dcls, dlabel = "good", _('Connected') %}
+    {% else %}{% set dcls, dlabel = "run", _('Starting') %}{% endif %}
+    <div class="modrow" data-id="{{ d.id }}">
+    <div class="box module cfgbox dest{% if not feed %} gdest{% endif %}{% if d.open %} cfgopen{% endif %}" id="dest-{{ d.id }}" data-section="dest:{{ d.id }}">
+      <div class="srchead">
+        {{ colorbox("destform-" ~ d.id, d.color, _('Its color (expand to change it)'), d.open, "" if feed else _('Color change does not carry to Google')) }}
+        {% set kind = _('Calendar Feed') if feed else (_('Google 1-way Sync') if d.oneway else _('Google 2-way Sync')) %}
+        <div class="srcleft">
+          <div class="srckind" title="{{ kind }}">{{ kind }}</div>
+          <div class="nameline">
+            <div class="namebox srcname showonly" title="{{ d.name }}">{{ d.name }}</div>
+            <input type="text" class="namebox nameinput editonly" form="destform-{{ d.id }}" name="name" value="{{ d.name }}" maxlength="100" required aria-label="{{ _('Label') }}" placeholder="{{ _('Label') }}">
+            {# F12: the note sits in the header: while expanded a rounded field that starts with the (i), so the (i) stays put #}
+            <span class="notebox">{{ notedot(about.ffeed if feed else (about.gdest1 if d.oneway else about.gdest), d.note) }}<input type="text" class="noteinput editonly" form="destform-{{ d.id }}" name="note" value="{{ d.note }}" maxlength="300" placeholder="{{ _('Note (optional)') }}" aria-label="{{ _('Note') }}"></span>
+          </div>
+        </div>
+        <div class="srcright">
+          <p class="srcstatus" title="{{ d.names|join(', ') if d.names else _('No sources') }}">{% if feed %}{% if d.reads.google %}{{ _('Last read by Google <b>{when}</b>', when=d.reads.google) }}{% elif d.reads.other %}{{ _('Last read <b>{when}</b>', when=d.reads.other) }}{% else %}&nbsp;{% endif %}
+            {% elif d.last_sync and d.connected %}{{ _('Last synced <b>{when}</b>', when=d.last_sync) }}{% else %}&nbsp;{% endif %}</p>
+          {# (0.2.8-beta.18) its instant updates: on (each change within seconds), or off and why, in the tooltip #}
+          <p class="srcnext"{% if not feed and d.connected %} title="{% if d.watch.on %}{{ _('Changes made in Google come here within seconds.') }}{% if d.watch.last %} {{ _('Last notice from Google: {when}.', when=d.watch.last) }}{% endif %}{% else %}{{ msg(d.watch.why) }}. {{ _('Changes made in Google come here at the daily check.') }}{% endif %}"{% endif %}>{% if not feed and d.connected %}{{ _('Next push instantaneous') if d.watch.on else _('Instant updates off') }}{% else %}&nbsp;{% endif %}</p>
+        </div>
+        {# (0.2.8-beta.18, F1.1) a sign-in Google no longer accepts: the fault over Fix, which signs that account in again #}
+        {% set signin_broken = not feed and d.connected and d.error and ("sign-in" in d.error) %}
+        <div class="statusbox {{ dcls }}">{{ chip(dcls, _('Sign-in failed') if signin_broken else dlabel) }}{% if signin_broken %}<span class="syncform"><button class="syncnow gfixbtn" form="gacct-{{ d.id }}" name="action" value="connect" data-state="idle" title="{{ msg(d.error) }}"><span class="sn idle">{{ _('Fix') }}</span></button></span>{% elif not feed and d.connected %}{{ syncbtn("/google/sync", "google", g.running, ("/google/open/" ~ d.id) if d.cal.shown is sameas false else "") }}{% endif %}</div>
+      </div>
+      {{ cfgline("dest-" ~ d.id, d.open) }}
+      <div class="cfgbody" id="cfg-dest-{{ d.id }}"{% if not d.open %} hidden{% endif %}>
+      <form method="post" action="/destinations/update" class="clientform destform" id="destform-{{ d.id }}" data-swap="#dest-{{ d.id }}|#activity">
+        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
+      </form>
+      <div class="destbody">
+        <div class="destmain">
+          {% if feed %}
+          {{ feedlink("destform-" ~ d.id, d.base, d.token) }}
+          {% if not d.links.is_public %}<p class="warnline">{{ _('⚠ Not a public https:// address: Google can’t load the feed. ☰ Settings › <b>Public address</b>.') }}</p>{% endif %}
+          {% endif %}
+          <div class="k">{{ _('Account') }}{{ help(_('A Google module’s calendar is made in this Google account.')) }}</div>
+          {% if feed %}<div class="accline mnote">{{ _('Not needed: each app subscribes to the link') }}</div>
+          {% else %}
+          <div class="accline">
+            {% if d.connected %}<code class="gmail">{{ d.email or _('connected') }}</code>
+              <button class="ghost" form="gacct-{{ d.id }}" name="action" value="disconnect">{{ _('Disconnect') }}</button>
+            {% else %}<span class="mnote">{{ _('No Google account specified yet') }}</span>
+              <button class="ghost" form="gacct-{{ d.id }}" name="action" value="connect"{% if not api_on %} disabled{% endif %}>{{ _('Connect me') }}</button>
+              {% if not d.invite %}<button class="ghost" form="ginvite-{{ d.id }}"{% if not api_on %} disabled{% endif %}>{{ _('Invite someone') }}</button>{% endif %}{% endif %}
+          </div>
+          {% if d.invite and not d.connected %}
+          <div class="invitebox">
+            <div class="k">{{ _('Invite link: works once, until {when}', when=d.invite.until) }}</div>
+            {{ m.copyfield("invite-" ~ d.id, d.invite.url) }}
+            <div class="btnrow">{{ sendto(d.invite.url, _('Get “{name}” in your Google Calendar', name=d.name), _('Open this link and continue with Google: {url}', url=d.invite.url)) }}
+              <button class="ghost" form="ginvitex-{{ d.id }}">{{ _('Withdraw') }}</button></div>
+          </div>
+          {% endif %}
+          {% endif %}
+          {{ feedinclude("destform-" ~ d.id, d.sources, d.start, d.end) }}
+        </div>
+        {% if feed %}
+        {# Subscribing (F6): one button per app, the same size, in its colors; Send to… shares the link #}
+        <div class="addbtns">
+          <a class="appbtn appgoogle" href="{{ d.links.google }}" target="_blank" rel="noopener">{{ _('Add to Google Calendar') }}</a>
+          <a class="appbtn appapple" href="{{ d.links.webcal }}">{{ _('Add to Apple Calendar') }}</a>
+          <a class="appbtn appoutlook" href="{{ d.links.outlook }}" target="_blank" rel="noopener">{{ _('Add to Outlook') }}</a>
+          {{ sendto(d.feed, d.name, _('My calendar “{name}”. To add it: {url}', name=d.name, url=d.links.page), true) }}
+        </div>
+        {% endif %}
+      </div>
+      {% if not feed %}
+      <form method="post" action="/google/account" id="gacct-{{ d.id }}"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}"></form>
+      <form method="post" action="/google/invite" id="ginvite-{{ d.id }}" data-swap="#dest-{{ d.id }}"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}"></form>
+      <form method="post" action="/google/invite" id="ginvitex-{{ d.id }}" data-swap="#dest-{{ d.id }}"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}"><input type="hidden" name="action" value="withdraw"></form>
+      {% endif %}
+
+      <div class="srcfoot">
+        {% if feed %}<form method="post" action="/destinations/remove" class="removeform inline" id="destremove-{{ d.id }}" data-swap="#destinations|#activity" data-confirm="{{ _('Remove the feed {name}? Its links and subscribe page stop working.', name=d.name) }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
+          <button class="ghost danger" title="{{ _('Remove this feed') }}">{{ trash }} {{ _('Remove') }}</button>
+        </form>
+        {% else %}<form method="post" action="/destinations/remove" class="removeform inline gremovemod" id="destremove-{{ d.id }}" data-swap="#destinations|#activity"
+              data-ask="{{ _('Are you certain you’d like to remove this Google Calendar module from CalendarStream?') }}"
+              data-yesdel="{{ _('Yes. Remove the module, and delete {name} from Google Calendar', name=d.cal.calendar_name or d.name) }}"
+              data-yeskeep="{{ _('Yes. Remove the module, but leave {name} on Google Calendar', name=d.cal.calendar_name or d.name) }}"
+              data-no="{{ _('No, I changed my mind') }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}"><input type="hidden" name="delete" value="">
+          <button class="ghost danger" title="{{ _('Remove this feed') }}">{{ trash }} {{ _('Remove') }}</button>
+        </form>{% endif %}
+        {{ pair("destform-" ~ d.id) }}
+      </div>
+      {{ feedinfo(kindkey) }}
+      </div>
+    </div>
+    {{ handle("dest", d.id, d.name) }}
+    </div>
+    {% endfor %}
+    </div>
+  </section>

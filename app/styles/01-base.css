@@ -1,0 +1,24 @@
+/* CalendarStream status page (0.2.8-beta.4: served as a cached file, no longer inside the page) */
+  * { box-sizing:border-box }
+  body { margin:0; font:15px/1.5 var(--font); background:var(--bg); color:var(--text) }
+  main { max-width:1040px; margin:0 auto; padding:16px 16px 48px }
+  .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
+  /* Spacing: 10px between sections, 5px between the boxes inside one, 2px between rows of fields. */
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--rbox); padding:18px; margin-bottom:10px }
+  .ok{background:var(--okbg);color:var(--ok)} .bad{background:var(--badbg);color:var(--bad)}
+  .warn{background:var(--warnbg);color:var(--warn)} .run{background:var(--runbg);color:var(--run)}
+  button { font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:var(--r); padding:8px 16px; cursor:pointer }
+  button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
+  button:disabled { opacity:.5; cursor:default }
+  .feed { display:flex; gap:8px; margin-top:4px } .feed input { flex:1; min-width:0; font:13px var(--mono); padding:8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  table { width:100%; border-collapse:collapse; font-size:13px } th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; line-height:18px }
+  th { color:var(--muted); font-weight:600 }
+  .lvl-error{color:var(--bad);font-weight:600} .lvl-warn{color:var(--warn);font-weight:600}
+  a { color:var(--accent) } .muted{color:var(--muted)} .scroll{overflow-x:auto}
+  ol { margin:8px 0 0; padding-left:20px; font-size:14px } ol li { margin:3px 0 }
+  .btn, .btn2 { font-weight:600; text-decoration:none; border-radius:var(--r); padding:9px 16px; font-size:14px }
+  .btn { background:var(--accent); color:var(--onaccent) } .btn2 { border:1px solid var(--line); color:var(--accent) }
+  .card .k { color:var(--muted); font-size:12px; margin-top:10px }
+  .warnline { background:var(--warnbg); color:var(--warn); border-radius:var(--r); padding:8px 12px; font-size:13px; margin:0 0 12px }
+  code { font:12.5px var(--mono); background:var(--soft); padding:1px 5px; border-radius:4px }
+

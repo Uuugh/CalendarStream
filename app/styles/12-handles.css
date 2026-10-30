@@ -1,0 +1,47 @@
+  /* ---- 0.2.8-beta.2 ----------------------------------------------------------------------------------
+     Modules with a handle on the right (F1.2), Close (F1.1), Default, local calendars, the rule lines and
+     rule dialog (F4), events (F2.2), Print Preview (F2.1), pop-ups (F1.3), Activities as a module (F5). */
+  .sortable.modules { display:grid; gap:0 }
+  .modrow { display:flex; align-items:flex-start; gap:4px; margin-top:5px }
+  .modrow > .box.module { flex:1 1 auto; min-width:0; margin-top:0 }
+  .sortable.modules > .modrow:has(> .box.module:not(.cfgopen)) + .modrow { margin-top:14px }
+  .box.module:not(.cfgopen) + .box.module { margin-top:14px }
+  .handle { flex:0 0 18px; width:18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; align-self:flex-start; margin-top:12px; color:var(--muted) }
+  .handle.none { visibility:hidden }
+  .handle .hmove { width:18px; height:14px; padding:0; border:0; border-radius:4px; background:transparent; color:var(--muted); line-height:0 }
+  .handle .hmove:hover, .handle .hmove:focus-visible { color:var(--accent); background:var(--soft) }
+  .handle .hgrip { display:flex; height:16px; align-items:center; cursor:grab }
+  .handle .hgrip:active { cursor:grabbing }
+  .dragging { opacity:.55 }
+  /* No ▲ on the first, no ▼ on the last (child selectors: a module's rule lines have their own order) */
+  /* Module handles sit in the section's right margin (18 px), so modules are as wide as the section header */
+  .sortable.modules > .modrow { gap:2px; margin-right:-16px }
+  .sortable.modules > .modrow > .handle { flex-basis:14px; width:14px }
+  .sortable.modules > .modrow > .handle .hmove { width:14px }
+  .sortable > .modrow:first-child > .handle .hmove[data-dir="up"], .sortable > .modrow:last-child > .handle .hmove[data-dir="down"],
+  .sortable > .ruleline:first-child > .handle .hmove[data-dir="up"], .sortable > .ruleline:last-child > .handle .hmove[data-dir="down"] { visibility:hidden }
+  /* Expand / Close */
+  .cfgtoggle .closeword { display:none }
+  .cfgtoggle[aria-expanded="true"] .expandword { display:none } .cfgtoggle[aria-expanded="true"] .closeword { display:inline }
+  /* The default calendar: under the Close line, on the right */
+  .deflabel { display:block; width:max-content; margin:0 0 0 auto; height:22px; line-height:22px; padding:0 8px; border-radius:6px; font-size:12px; font-weight:700;
+              color:var(--accent); background:var(--runbg) }
+  .module .srcright .srcnext { justify-self:end; text-align:right }
+  /* A calendar's two status lines ("Last check was successful @ 20:10", "0 events added here") on the right, by its status (0.2.8-beta.3) */
+  .box.src .srcright, .box.dest .srcright { justify-items:end } .box.src .srcright p, .box.dest .srcright p { text-align:right }   /* both lines on the right (beta.5) */
+  .bad-text { color:var(--bad) }
+  .module:not(.cfgopen) .colorbox:not(.free) .colorpick { pointer-events:none }   /* folded: it only shows the color */
+  /* Rule lines: the line, then its handle */
+  .ruleline { display:flex; align-items:center; gap:4px; margin-top:2px }
+  .ruleline > .rulebox { flex:1 1 auto; min-width:0; margin-top:0 }
+  .ruleline > .handle { margin-top:0; align-self:center; height:34px }
+  .ruleline .handle .hmove { height:10px } .ruleline .handle .hgrip { height:14px }
+  .ruleline.going { opacity:.4 }
+  .rulebox .scope { flex:0 0 auto; height:22px; line-height:20px; padding:0 8px; border-radius:6px; font-size:11px; font-weight:700;
+                    border:1px solid var(--line); background:var(--soft); color:var(--muted); white-space:nowrap }
+  .rulebox .scope.local { background:var(--warnbg); color:var(--warn); border-color:transparent }
+  .norules { margin:2px 0 0 }
+  .rulemenu { width:min(420px, calc(100vw - 40px)); gap:2px; padding:8px }
+  .rulemenu form { margin:0 } .rulemenu .linkbtn { display:flex; align-items:center; gap:6px; width:100%; height:30px; padding:0 8px; border-radius:6px; color:var(--text); text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .rulemenu .linkbtn:hover { background:var(--soft); text-decoration:none }
+  .rulemenu .newrule { color:var(--accent); font-weight:600 }

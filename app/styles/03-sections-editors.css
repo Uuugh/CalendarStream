@@ -1,0 +1,43 @@
+  /* Collapsible sections: a header that toggles the body; open/closed is saved in the database */
+  .section > .shead { display:flex; align-items:center; gap:10px; flex-wrap:wrap; cursor:pointer }
+  .section > .shead .toggle { display:inline-flex; align-items:center; gap:8px; background:transparent; color:var(--muted);
+                              border:0; padding:0; font:inherit; cursor:pointer }
+  .section > .shead .toggle::before { transition:transform .15s }
+  .section.open > .shead .toggle::before { transform:rotate(-90deg) }
+  .section.open > .shead { margin-bottom:14px }
+  .section > .sbody[hidden] { display:none }
+  .section .peek { font-size:13px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 }
+  .section.open > .shead .peek { display:none }
+  /* Calendar title (read-only, in the calendar color) and its editor */
+  .calname { font-size:18px; font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .calname.outlined { text-shadow:-1px -1px 0 var(--ol), 1px -1px 0 var(--ol), -1px 1px 0 var(--ol), 1px 1px 0 var(--ol) }
+  .linkbtn { background:none; border:0; padding:0; color:var(--accent); font:inherit; font-size:13px; font-weight:500; cursor:pointer }
+  .linkbtn:hover { text-decoration:underline }
+  .editor { border:1px solid var(--line); border-radius:var(--r); padding:14px; margin:0 0 16px; background:var(--soft); cursor:auto }
+  .editor[hidden] { display:none }
+  .editor.tagsform { background:transparent; margin:12px 0 0; padding:12px 14px }
+  .editor .lbl { display:block; font-size:12px; color:var(--muted); font-weight:600; margin:10px 0 4px }
+  .editor .lbl:first-of-type { margin-top:0 }
+  .editor .row { display:flex; gap:8px; align-items:center }
+  .editor input[type=text] { flex:1; min-width:0; font:inherit; padding:7px 10px; border:1px solid var(--line); border-radius:var(--r); background:var(--card); color:var(--text) }
+  .editor input[name=name] { font-size:16px; font-weight:600 }
+  .editor input[type=color] { flex:0 0 auto; width:40px; height:36px; padding:2px; border:1px solid var(--line); border-radius:var(--r); background:var(--card); cursor:pointer }
+  .editor select { flex:0 0 auto; font:inherit; font-size:13px; height:36px; padding:0 6px; border:1px solid var(--line); border-radius:var(--r); background:var(--card); color:var(--text) }
+  .editor .casebtn { flex:0 0 auto; height:36px; padding:0 9px; font-size:13px; color:var(--muted) }
+  .editor .casebtn[aria-pressed="true"] { background:var(--accent); color:var(--onaccent); border-color:var(--accent) }
+  @media (max-width:600px) { .editor .tagrow { flex-wrap:wrap } .editor .tagrow input[name=tag] { flex-basis:100% } }
+  .editor .tagrows { display:grid; gap:6px }
+  .editor .tagrow .addtag, .editor .tagrow .deltag { flex:0 0 auto; width:36px; height:36px; padding:0; font-size:18px; line-height:1 }
+  .editor .tagrow:not(:last-child) .addtag { visibility:hidden }
+  .editor .hint { font-size:12px; color:var(--muted); margin:6px 0 0 }
+  .editor .eactions { display:flex; justify-content:flex-end; gap:8px; margin-top:14px }
+
+  /* Setup */
+  .checks { list-style:none; padding:0; margin:0 0 12px; display:grid; gap:6px; font-size:14px }
+  /* I1: the mark hangs to the left, so a long line wraps under its own words, not under the mark */
+  .checks li { position:relative; padding-left:22px }
+  .checks li::before { content:""; position:absolute; left:0; top:3px; width:16px; height:16px; background:var(--muted);
+                       -webkit-mask:var(--i-todo) center / contain no-repeat; mask:var(--i-todo) center / contain no-repeat }
+  .checks li.done::before { background:var(--ok); -webkit-mask-image:var(--i-ok); mask-image:var(--i-ok) }
+  .checks li.fail::before { background:var(--bad); -webkit-mask-image:var(--i-fail); mask-image:var(--i-fail) }
+

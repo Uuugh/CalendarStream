@@ -1,0 +1,11 @@
+{# + Add an event template (0.2.8-beta.15): a centred pop-up, like every + #}
+<dialog id="tpladd" class="popup addpop" aria-labelledby="tpladdtitle">
+  <form method="post" action="/templates/add" id="tpladdform" data-swap="#templates|#rules|#sources|#cal|#activity|#ruledata">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="dlghead"><button type="button" class="ghost iconbtn dlgback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}" data-close>{{ icon("arrow_back", 20) }}</button>
+      <div class="title" id="tpladdtitle">{{ _('Add an event template') }}</div></div>
+    <div class="editor">{{ m.template_row({"id": "", "title": "", "all_day": false, "minutes": 60, "location": "", "color": ""}, event_colors, trash) }}</div>
+    <p class="mnote">{{ _('Length as hours:minutes, e.g. 1:30.') }}</p>
+    <div class="eactions">{{ pair("tpladdform") }}</div>
+  </form>
+</dialog>

@@ -3,7 +3,7 @@ after a sync comes here (#3.1); deletions left over at the write limit say there
 occurrence keeps its key, and an oversized feed keeps its earliest events (#4.1, #4.2); the limit for all addresses
 together says so in History, with the way back (#6.1); the installer takes a pinned version's own files (#6.2); the
 import row shows From / To, and a view setting that isn't saved says so (#7.1, #7.2)."""
-import asyncio, os, re, sys, threading, time
+import asyncio, glob, os, re, sys, threading, time
 from datetime import date
 from urllib.parse import urlparse
 for k in list(os.environ):
@@ -138,9 +138,9 @@ import subprocess
 ok(subprocess.run(["bash", "-n", os.path.join(ROOT, "install.sh")]).returncode == 0, "#6.2: install.sh is valid bash")
 
 # #7.1, #7.2
-css = open(os.path.join(ROOT, "app", "static", "app.css")).read()
+css = "".join(open(f).read() for f in sorted(glob.glob(os.path.join(ROOT, "app", "styles", "*.css"))))  # (beta.20, F12: the stylesheet by area)
 ok(".importrow .daterange .fld > span { display:none }" not in css and ".importrow .daterange .fld { display:flex" in css, "#7.1: the import row shows From / To")
-js = open(os.path.join(ROOT, "app", "templates", "page.js")).read()
+js = "".join(open(f).read() for f in sorted(glob.glob(os.path.join(ROOT, "app", "templates", "js", "*.js"))))  # (beta.20, F12: page.js in parts)
 sp = js[js.index("function savePref"):js.index("var CSRF")]
 ok("if (!r.ok) throw" in sp and "tell(T.prefFailed)" in sp and ".then(then ||" not in sp, "#7.2: a view setting runs its next step only once saved, and says when it isn't")
 srv.should_exit = True

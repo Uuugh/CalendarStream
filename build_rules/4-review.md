@@ -11,12 +11,12 @@ Claude answers; the Developer decides anything still disputed. Each REVIEW after
 
 | Area | What it covers |
 |---|---|
-| rules | `app/rules.py`; the rule dialog's script (`page.js`); the rules parts of README.md |
-| google | `app/gsync.py`; the Google parts of `app/main.py` |
-| calendars | `app/calsync.py`, the import and download parts of `app/main.py`, `app/links.py` |
-| database | `app/store.py`, Undo and History (`app/main.py`), `app/secretbox.py` |
-| security | every route in `app/main.py` (login, form token, escaping), `app/logins.py`, sessions, the Docker setup |
-| page | `app/templates/`, `app/static/`, against theme.md, its Clarifications and the Theme Rules pictures |
+| rules | `app/rules.py`, `app/routes/rules.py`; the rule dialog's script (`app/templates/js/06-rules.js`); the rules parts of README.md |
+| google | `app/gsync.py`, `app/routes/google.py`; the Google parts of `app/main.py` |
+| calendars | `app/calsync.py`, `app/routes/sources.py`, `app/routes/destinations.py`, the download parts of `app/main.py`, `app/links.py` |
+| database | `app/store.py`, Undo and History (`app/main.py`, `app/routes/history.py`), `app/secretbox.py` |
+| security | every route (`app/routes/`), the login, sessions and form token (`app/main.py`), escaping, `app/logins.py`, the Docker setup |
+| page | `app/templates/`, `app/styles/`, `app/static/`, against theme.md, its Clarifications and the Theme Rules pictures |
 
 ## Which rules a review uses
 

@@ -1,0 +1,239 @@
+  <section class="card" id="sources" aria-labelledby="sourcestitle">
+    <div class="cardhead">
+      <h2 class="bigtitle" id="sourcestitle">{{ icons.calendars|safe }}{{ _('Calendars') }}
+        {{ help(_('Where events come from: <b>Local</b>, CCS+, Google, Apple or any link. The top one is the <b>default</b> for events you add. Handle or ▲ ▼ reorders.')) }}</h2>
+      <div class="addwrap">
+        <button type="button" class="ghost plus" aria-haspopup="dialog" aria-expanded="false" aria-controls="addsrc"
+                title="{{ _('Add a calendar') }}" aria-label="{{ _('Add a calendar') }}">{{ icon("add", 24) }}</button>
+        {# + opens a centred pop-up (0.2.8-beta.15), the page dimmed and out of focus behind it #}
+        <dialog class="popup addpop addbody" id="addsrc" aria-label="{{ _('Add a calendar') }}">
+          <div class="title">{{ _('Add a calendar') }}</div>
+          {# Presets: United CCS+ (once), Google, Apple, or any other calendar link. #}
+          <div class="presets" role="radiogroup" aria-label="{{ _('Kind of calendar') }}">
+            <button type="button" class="preset" data-preset="local" role="radio" aria-checked="false">{{ _('CalendarStream') }}</button>
+            {% if not has_ccs %}<button type="button" class="preset" data-preset="ccs" role="radio" aria-checked="false">{{ _('United CCS+') }}</button>{% endif %}
+            <button type="button" class="preset" data-preset="google" role="radio" aria-checked="false">{{ _('Google') }}</button>
+            <button type="button" class="preset" data-preset="apple" role="radio" aria-checked="false">{{ _('Apple') }}</button>
+            <button type="button" class="preset" data-preset="other" role="radio" aria-checked="true">{{ _('Other') }}</button>
+          </div>
+          <form method="post" action="/sources/add" class="opt col presetform" id="addsrc-local" data-for="local" hidden data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="local">
+            <div><b>{{ _('CalendarStream') }}</b>
+              <div class="subtitle">{{ _('Only the events you add here. Goes into every feed.') }}</div></div>
+            <div class="pair">
+              <label class="fld"><span>{{ _('Label') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Personal') }}"></label>
+              {{ pair("addsrc-local") }}
+            </div>
+          </form>
+          {% if not has_ccs %}
+          <form method="post" action="/sources/add" class="opt presetform" id="addsrc-ccs" data-for="ccs" hidden data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="ccs">
+            <div><b>{{ _('United CCS+ Calendar Sync') }}</b>
+              <div class="subtitle">{{ _('Your CCS+ schedule. Username and Calendar Sync password next.') }}</div></div>
+            {{ pair("addsrc-ccs") }}
+          </form>
+          {% endif %}
+          <form method="post" action="/sources/add" class="opt col presetform" id="addsrc-feed" data-for="google apple other" data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="ics">
+            <input type="hidden" name="preset" value="other">
+            <div><b data-text-google="{{ _('Google Calendar') }}" data-text-apple="{{ _('Apple Calendar') }}" data-text-other="{{ _('Calendar feed (.ics link)') }}">{{ _('Calendar feed (.ics link)') }}</b>
+              <div class="subtitle" data-text-google="{{ _('calendar.google.com › Settings › the calendar › Integrate calendar › Secret address in iCal format.') }}"
+                   data-text-apple="{{ _('Calendar › ⓘ by the calendar › Public Calendar › Share Link.') }}"
+                   data-text-other="{{ _('Add any calendar with a link starting with webcal:// or ending in .ics') }}">{{ _('Add any calendar with a link starting with webcal:// or ending in .ics') }}</div></div>
+            <div class="pair">
+              <label class="fld"><span>{{ _('Label') }}</span><input name="name" maxlength="100" placeholder="{{ _('e.g. Work') }}"></label>
+              <label class="fld"><span>{{ _('Link') }}</span><input name="url" class="code" required spellcheck="false" placeholder="https://… / webcal://…"></label>
+            </div>
+            <div class="pair">
+              <label class="fld"><span>{{ _('Note') }}</span><input name="note" maxlength="120" placeholder="{{ _('Optional: shown in the (i) after the label') }}"></label>
+              {{ pair("addsrc-feed") }}
+            </div>
+          </form>
+        </dialog>
+      </div>
+    </div>
+    {% if not srcs %}<p class="empty">{{ _('No calendars yet. <b>+</b> adds one: CCS+, Google, Apple or any feed.') }}</p>{% endif %}
+
+    <div class="sortable modules" data-kind="source">
+    {% for x in srcs %}
+    {% set S = x.s %}
+    {% set ccs = x.type == "ccs" %}
+    {# good = healthy; run = syncing, starting, or setup waiting on you; warn (amber) = the source refused or failed
+       (United, a feed's server, the internet: outside CalendarStream) #}
+    {% set scls = {"ok":"good","running":"run","starting":"run","setup":"run","paused":"run","internal":"bad"}.get(S.status, "warn") %}
+    {% set local = x.type == "local" %}
+    {# A calendar module: its header, then (expanded; folded unless something needs doing) Automatic
+       Upload (the Site Address and how often it's checked, the login and how to set it up), Manual
+       Upload (CCS+), and its Rules; then Remove (lower left) and Cancel | Save. Its handle is on the right. #}
+    <div class="modrow" data-id="{{ x.id }}">
+    <div class="box module src cfgbox{% if x.open %} cfgopen{% endif %}" id="src-{{ x.id }}" data-section="src:{{ x.id }}" data-sid="{{ x.id }}">
+      {# The module header (50 px; all a folded module shows): color | title over note | the last download
+         and the next check | status over Sync Now. While expanded, the color, title and note are fields
+         of the same size. #}
+      <div class="srchead">
+        {# Its color, always shown (blue until one is chosen); a color picker while expanded (I3, 0.2.8-beta.3) #}
+        {{ colorbox("srcform-" ~ x.id, x.color, _('Color of its events (expand to change it)'), x.open) }}
+        {# The module (0.2.8-beta.9): its kind (fixed) over its name (a field while expanded) and, when it
+           has a note, a raised (i) showing it; the note is changed under Close. #}
+        {% set kind = _('CalendarStream') if local else (_('United Airlines CCS+') if ccs else {'google': _('Google Calendar'), 'apple': _('Apple Calendar')}.get(x.preset, _('Calendar Feed'))) %}
+        <div class="srcleft">
+          <div class="srckind" title="{{ kind }}">{{ kind }}</div>
+          <div class="nameline">
+            <div class="namebox srcname showonly" title="{{ x.name }}">{{ x.name }}</div>
+            <input type="text" class="namebox nameinput editonly" form="srcform-{{ x.id }}" name="name" value="{{ x.name }}" maxlength="100" aria-label="{{ _('Label') }}" placeholder="{{ _('Label') }}">
+            {{ notedot(about.get(x.preset or x.type, about.feed), x.note) }}
+          </div>
+        </div>
+        {# "Last check was successful @ 14:34" over "Next check @ 14:49" (on the right, beside Sync Now);
+           what each download changed is in History, Undo & Logs (F3.5, F3.6) #}
+        <div class="srcright">
+          {# The standard header (0.2.8-beta.5), the same for calendars and feeds: "Last synced 00:31" over
+             "Next check @ 00:44", on the right by the status box; a line with nothing to say is left empty. #}
+          {% if local %}<p class="srcstatus">&nbsp;</p><p class="srcnext">&nbsp;</p>
+          {% else %}
+          <p class="srcstatus">{% if x.last_check == "ok" %}{{ _('Last synced <b>{when}</b>', when=x.check_when) }}{% elif x.last_check == "failed" %}<span class="bad-text">{{ _('Sync failed <b>{when}</b>', when=x.check_when) }}</span>{% elif S.message %}{{ msg(S.message) }}{% else %}&nbsp;{% endif %}</p>
+          <p class="srcnext">{% if x.next_when and S.status not in ("paused", "setup") %}{{ _('Next check @ {when}', when=x.next_when) }}{% elif S.status == "paused" %}{{ _('Automatic checks paused') }}{% else %}&nbsp;{% endif %}</p>
+          {% endif %}
+        </div>
+        <div class="statusbox {{ scls }}">
+          {{ chip(scls, status_labels.get(S.status, S.status)) }}
+          {% if not local %}{{ syncbtn("/run", x.id, S.running or (ccs and not x.setup.configured)) }}{% endif %}
+        </div>
+      </div>
+
+      {{ cfgline(x.id, x.open) }}
+      <div class="cfgbody" id="cfg-{{ x.id }}"{% if not x.open %} hidden{% endif %}>
+        {% if x.default %}<div class="deflabel" title="{{ _('Events you add here go to this calendar unless you choose another') }}">{{ _('Default') }}</div>{% endif %}
+        {# (a form of its own only for the field styles: the note is saved with the module's Cancel | Save) #}
+        <form class="notewrap" onsubmit="return false"><div class="pair notepair">
+          <label class="fld"><span>{{ _('Note') }}</span><input type="text" class="noteinput" form="srcform-{{ x.id }}" name="note" value="{{ x.note }}" maxlength="120" placeholder="{{ _('Optional: shown in the (i) after the label') }}"></label>
+        </div></form>
+        {% if not local %}
+        {# How often it's checked: beside the Site Address #}
+        {% set interval %}<form class="intervalform cfgside" method="post" action="/setup/interval" data-swap="#src-{{ x.id }}>.srchead|#activity">
+          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
+          <label for="interval-{{ x.id }}">{{ _('Check every') }}</label>
+          <input type="number" id="interval-{{ x.id }}" name="minutes" value="{{ x.interval }}" min="15" max="1440" step="5" required
+                 title="{{ _('Minutes between checks (15–1440)') }}" onchange="this.form.requestSubmit()">
+          <span class="muted">{{ _('min') }}</span>
+        </form>{% endset %}
+        <h3 class="cfghead">{{ _('Automatic Upload') }}</h3>
+      {% if ccs %}
+        {% set setup = x.setup %}
+        {% if not setup.configured %}<p class="mnote" style="margin:0 0 4px">{{ _('CCS+ <b>Username</b> + <b>Calendar Sync password</b> (not your CCS login):') }}</p>{% endif %}
+        {{ m.ccs_login(setup, S, side=interval) }}
+        {% set help_open = not setup.configured or scls in ("warn", "bad") or S.status == "paused" or S.last_auth_ok == false %}
+        {% set howto %}
+          <li>{{ _('<a href="https://ccsplus.ual.com/schedule/" target="_blank" rel="noopener">CCS+ Schedule</a> › <b>Settings</b> › <b>Calendar syncing</b>.') }}</li>
+          <li>{{ _('Turn on calendar export / syncing.') }}</li>
+          <li>{{ _('Link different from <b>Site Address</b>? <b>Copy link</b> › paste into Site Address.') }}</li>
+          <li>{{ _('<b>Edit calendar sync settings</b> › <b>Include Trips</b>: on › <b>As a single event</b> › every option: on › <b>Save</b>.') }}</li>
+          <li>{{ _('<b>Change Password</b>: use a password just for Calendar Sync, not your CCS login.') }}</li>
+          <li>{{ _('<b>Username</b> (Uxxxxxx) + <b>Calendar Sync password</b>* above › <b>Save</b>.') }}</li>
+          <li>{{ _('✓ The list on the right turns green.') }}</li>
+        {% endset %}
+        {% set done %}
+          <li class="{{ 'done' if setup.uid else '' }}">{{ _('Username') }} {% if setup.uid %}<code>{{ setup.uid }}</code>{% else %}<span class="muted">{{ _('not entered yet') }}</span>{% endif %}</li>
+          <li class="{{ 'done' if setup.has_password else '' }}">{{ _('Calendar Sync password') }} {% if setup.has_password %}{{ _('saved <span class="muted">(encrypted)</span>') }}{% else %}<span class="muted">{{ _('not entered yet') }}</span>{% endif %}</li>
+          <li class="done">{{ _('Calendar Sync link') }} <span class="muted">({% if setup.url_from_gui %}{{ _('set here') }}{% elif setup.url_is_default %}{{ _('default') }}{% else %}{{ _('from .env') }}{% endif %})</span></li>
+          <li class="{{ 'done' if S.last_auth_ok else ('fail' if S.last_auth_ok == false else '') }}">{{ _('CCS+ accepted the sign-in') }}{% if S.last_auth_ok == false %} — {{ _('<b>rejected</b>; check the Username and Calendar Sync password') }}{% endif %}</li>
+          <li class="{{ 'done' if setup.downloaded else '' }}">{{ _('Schedule received') }}{% if setup.downloaded %} <span class="muted">({{ _('{n} events', n=S.event_count) }})</span>{% endif %}</li>
+        {% endset %}
+        {{ setupguide(_('How to get a Calendar Sync link, ID and secret (step by step)'), _('How to enable CCS+'), howto, done, help_open,
+                      _('* The password is stored encrypted and never shown again; leave its box empty to keep it.')) }}
+
+        {{ importrow(x, manual=true) }}
+      {% else %}
+        {# A feed source (Google, Apple or any .ics link): its link, saved like a login (✓ until it's changed) #}
+        <div class="cfggrid">
+          <form method="post" action="/sources/url" class="clientform watch feedurl" data-verify="feed" data-sid="{{ x.id }}">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
+            <div class="pair">
+              <label class="fld"><span>{{ _('Site Address') }}</span><input name="url" class="code" value="{{ x.url }}" required spellcheck="false"></label>
+              {{ m.okbutton(S.status == "ok", _('Validated'), _('Save'), _('The feed downloaded')) }}
+            </div>
+          </form>
+          {{ interval }}
+        </div>
+        {% set help_open = scls in ("warn", "bad") or not x.downloaded %}
+        {% set done %}
+          <li class="{{ 'done' if x.url else '' }}">{{ _('Site Address entered') }}</li>
+          <li class="{{ 'done' if x.downloaded else ('fail' if scls in ('warn', 'bad') else '') }}">{{ _('The calendar downloaded') }}{% if scls in ('warn', 'bad') %} — {{ msg(S.message) }}{% endif %}</li>
+          <li class="{{ 'done' if x.downloaded else '' }}">{{ _('Events received') }}{% if x.downloaded %} <span class="muted">({{ _('{n} events', n=S.event_count) }})</span>{% endif %}</li>
+        {% endset %}
+        {% if x.preset == "google" %}
+          {% set howto %}
+            <li>{{ _('<a href="https://calendar.google.com" target="_blank" rel="noopener">calendar.google.com</a> (computer) › gear › <b>Settings</b>.') }}</li>
+            <li>{{ _('<b>Settings for my calendars</b> › the calendar › <b>Integrate calendar</b>.') }}</li>
+            <li>{{ _('Copy <b>Secret address in iCal format</b> (ends in <code>basic.ics</code>; keep it private).') }}</li>
+            <li>{{ _('Paste it as the <b>Site Address</b> above and press <b>Save</b>.') }}</li>
+          {% endset %}
+          {{ setupguide(_('How to get your Google Calendar’s secret address (step by step)'), _('How to enable Google Calendar'), howto, done, help_open,
+                        _('Google refreshes it every few hours.')) }}
+        {% elif x.preset == "apple" %}
+          {% set howto %}
+            <li>{{ _('iPhone / iPad: <b>Calendar</b> › <b>Calendars</b> › ⓘ › <b>Public Calendar</b>: on › <b>Share Link…</b> › <b>Copy</b>.') }}</li>
+            <li>{{ _('Mac: <b>Calendar</b> › right-click the calendar › <b>Sharing Settings…</b> › <b>Public Calendar</b> › copy the <code>webcal://</code> link.') }}</li>
+            <li>{{ _('Paste it as the <b>Site Address</b> above and press <b>Save</b>.') }}</li>
+          {% endset %}
+          {{ setupguide(_('How to get your Apple Calendar’s link (step by step)'), _('How to enable Apple Calendar'), howto, done, help_open,
+                        _('Anyone with a public link can see the calendar: keep it private.')) }}
+        {% else %}
+          {% set howto %}
+            <li>{{ _('The calendar app › <b>Share</b> / <b>Publish</b> / <b>Subscribe</b> / <b>Export</b> › copy the link (<code>webcal://</code> or <code>https://</code>, often <code>.ics</code>).') }}</li>
+            <li>{{ _('Paste it as the <b>Site Address</b> above and press <b>Save</b>.') }}</li>
+          {% endset %}
+          {{ setupguide(_('How to get a calendar’s link (step by step)'), _('How to enable the calendar'), howto, done, help_open,
+                        _('Repeating events are shown from a year back to two years ahead.')) }}
+        {% endif %}
+      {% endif %}
+        {% endif %}{# not local #}
+
+        {% if not ccs %}{{ importrow(x) }}{% endif %}
+
+        {# The rules this calendar uses, highest priority first: its own above the shared ones (unless
+           moved). ✎ opens the rule dialog; the bin takes a rule off this calendar; + Add a rule offers
+           the other rules, or a new one. Moving and the bin take effect at once. #}
+        <form class="srcform" id="srcform-{{ x.id }}" method="post" action="/feed/tags" data-swap="#src-{{ x.id }}>.srchead|#cal|#destinations .srcright|#destinations .srcpick .swatch|.box.src .srcrules|#rules .rulelist|#activity|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
+          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}">
+          <input type="hidden" name="color_default" class="colordefault" value="">
+        </form>
+        <div class="rules" id="rules-{{ x.id }}">
+          <div class="cfgheadrow"><h3 class="cfghead">{{ _('Rules') }}{{ help(_('This calendar’s rules. Higher wins (color, emoji, time). Handle or ▲ ▼ › priority · ✎ edits (every calendar it applies to) · bin › off this calendar.')) }}</h3>
+            {# Add a rule (0.2.8-beta.15): straight to the new rule pop-up; a menu only when other calendars'
+               rules could be used here too #}
+            {% set reusable = [] %}{% for r in all_rules if x.name not in r.used and r.apply != 'all' %}{% if reusable.append(r) %}{% endif %}{% endfor %}
+            {% if not reusable %}<button type="button" class="ghost addrule newrule" data-sid="{{ x.id }}">{{ icon("add", 17) }}{{ _('Add a rule') }}</button>
+            {% else %}
+            <div class="addwrap">
+              <button type="button" class="ghost addrule" aria-haspopup="menu" aria-expanded="false" data-sid="{{ x.id }}">{{ icon("add", 17) }}{{ _('Add a rule') }}</button>
+              <div class="addmenu rulemenu" role="menu" hidden>
+                <button type="button" class="linkbtn newrule" data-sid="{{ x.id }}" role="menuitem">{{ icon("add", 16) }} {{ _('New rule…') }}</button>
+                {% for r in reusable %}
+                <form method="post" action="/rules/apply" class="inline" data-swap="#src-{{ x.id }} .rules|#rules .rulelist|#ruleconflicts|#rulecount|#cal|#activity|#ruledata">
+                  <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}"><input type="hidden" name="sid" value="{{ x.id }}">
+                  <button class="linkbtn" role="menuitem" title="{{ _('Use this rule in {name} too', name=x.name) }}">{{ r.html }}</button></form>
+                {% endfor %}
+              </div>
+            </div>{% endif %}</div>
+          <div class="srcrules sortable" data-kind="rule" data-scope="{{ x.id }}">{% for r in x.rules %}{{ src_rule(r, x) }}{% else %}<p class="mnote norules">{{ _('No rules yet.') }}</p>{% endfor %}</div>
+        </div>
+
+        {# The bottom line: Remove on the left (asks first); Cancel and Save on the right. #}
+        <div class="srcfoot">
+          {# Remove asks what becomes of its events: the remove dialog below. The last CalendarStream calendar
+             is emptied instead (0.2.8-beta.15): there's always one, on top. #}
+          {% set emptyonly = local and srcs|selectattr("type", "equalto", "local")|list|length == 1 %}
+          {% set own = x.rules|selectattr("local")|list %}
+          <button type="button" class="ghost danger removecal" data-sid="{{ x.id }}" data-name="{{ x.name }}" data-empty="{{ '1' if emptyonly else '' }}"
+                  data-rules="{{ own|length }}" title="{{ _('Empty this calendar') if emptyonly else _('Remove this calendar') }}">{{ trash }} {{ _('Empty') if emptyonly else _('Remove') }}</button>
+          {{ pair("srcform-" ~ x.id) }}
+        </div>
+      </div>
+    </div>
+    {{ handle("source", x.id, x.name) }}
+    </div>
+    {% endfor %}
+    </div>
+
+  </section>

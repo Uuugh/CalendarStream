@@ -1,0 +1,29 @@
+{# Remove a calendar (0.2.8-beta.15): Merge its events into another calendar (or a new CalendarStream one) or
+   Delete them, with "Download a copy (.ics) first"; with a Merge, its own rules move or go. The last
+   CalendarStream calendar is emptied instead (it stays). Undo: History. #}
+<dialog id="removedialog" class="popup" aria-labelledby="rmtitle">
+  <form method="post" action="/sources/remove" id="removeform" data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="">
+    <div class="dlghead"><button type="button" class="ghost iconbtn dlgback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}">{{ icon("arrow_back", 20) }}</button>
+      <div class="title" id="rmtitle" data-text="{{ _('Remove {name}') }}" data-empty="{{ _('Empty {name}') }}"></div></div>
+    <p class="mnote rmnote" data-text="{{ _('Off every feed; its checks stop. Its events:') }}" data-empty="{{ _('It stays, in every feed and rule. Its events:') }}"></p>
+    <div class="rmopts">
+      <label class="rmopt rmmerge"><input type="radio" name="keep" value="merge" checked> <b>{{ _('Merge') }}</b> {{ _('into') }}
+        <select name="into" class="rminto" aria-label="{{ _('Calendar') }}">{% for x in srcs %}<option value="{{ x.id }}">{{ x.name }}</option>{% endfor %}<option value="new">{{ _('A new CalendarStream calendar') }}</option></select></label>
+      <label class="rmopt"><input type="radio" name="keep" value="delete"> <b>{{ _('Delete') }}</b> {{ _('them') }}</label>
+    </div>
+    <div class="rmrules" hidden><span class="rmrulesn" data-one="{{ _('Its rule:') }}" data-many="{{ _('Its {n} rules:') }}"></span>
+      <label><input type="radio" name="rules" value="move" checked> {{ _('Move to') }} <b class="rmtarget"></b></label>
+      <label><input type="radio" name="rules" value="delete"> {{ _('Delete them') }}</label></div>
+    <label class="rmdl"><input type="checkbox" class="rmdownload" checked> {{ _('Download a copy (.ics) first') }}</label>
+    <div class="eactions"><button type="button" class="ghost" value="cancel" data-close>{{ _('Cancel') }}</button><button class="danger solid rmgo" data-text="{{ _('Remove') }}" data-empty="{{ _('Empty') }}">{{ trash }} <span>{{ _('Remove') }}</span></button></div>
+  </form>
+</dialog>
+
+{# Import: an event of the file already in the calendar (0.2.8-beta.15), one at a time #}
+<dialog id="conflictdialog" class="popup ask" aria-labelledby="cfcount">
+  <p class="asktext cfcount" id="cfcount"></p>
+  <dl class="cfpair"><dt>{{ _('There') }}</dt><dd class="cfthere"></dd><dt>{{ _('In the file') }}</dt><dd class="cffile"></dd></dl>
+  <label class="cfrest" hidden><input type="checkbox" class="cfall"> {{ _('Do this for all remaining') }} (<span class="cfleft"></span>)</label>
+  <div class="askchoices"><button type="button" class="ghost cfdelete" title="{{ _('Drop the file’s copy; the one there stays') }}">{{ _('Delete') }}</button><button type="button" class="cfmerge" title="{{ _('The file’s version updates the one there') }}">{{ _('Merge') }}</button></div>
+</dialog>

@@ -1,0 +1,45 @@
+  {# All Rules (F4; Rule Templates before 0.2.8): every rule, highest priority first, each with the
+     calendars it applies to. Looks like a module (0.2.8-beta.3, F5): its title and (?), + and a box
+     with the number of rules (green, or yellow while a rule needs checking); Expand / Close below. #}
+  <section class="card section modsection{% if sections.rules %} open{% endif %}" id="rules" data-section="rules" aria-labelledby="rulestitle">
+    <div class="shead">
+      <span class="bigtitle" id="rulestitle">{{ icons.rules|safe }}{{ _('All Rules') }}{{ help(_('Every rule, highest first, with its calendars. Handle or ▲ ▼ › priority · ✎ edits · copy › a copy · bin deletes. How rules work: bottom of the rule dialog.')) }}</span>
+      <div class="statusbox countbox {{ 'run' if rule_conflicts else 'good' }}" id="rulecount"{% if rule_conflicts %} title="{{ _('{n} to check', n=rule_conflicts|length) }}"{% endif %}>{{ chip('run' if rule_conflicts else 'good', (_('1 Rule') if all_rules|length == 1 else _('{n} Rules', n=all_rules|length)) if not rule_conflicts else _('{n} to check', n=rule_conflicts|length)) }}</div>
+    </div>
+    {{ sectionline("rules", sections.rules) }}
+    <div class="sbody" id="rules-body"{% if not sections.rules %} hidden{% endif %}>
+    {% if not all_rules %}<p class="empty">{{ _('No rules yet. Press <b>+</b> to add one.') }}</p>{% endif %}
+    {# Conflicts (F4.2): a lower rule that never gets to set something, or two rules that are the same #}
+    <div id="ruleconflicts" class="conflicts"{% if not rule_conflicts %} hidden{% endif %}>
+      {% for c in rule_conflicts %}
+      <div class="conflict" data-a="{{ c.a }}" data-b="{{ c.b }}">
+        <p>{{ icon("warning", 17) }}<span>{{ c.text }}</span></p>
+        <div class="fixes">{% for how, label in c.fixes %}
+          <form method="post" action="/rules/resolve" class="inline" data-swap="#rules .rulelist|#ruleconflicts|#rulecount|#sources|#cal|#activity|#ruledata">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="key" value="{{ c.key }}"><input type="hidden" name="how" value="{{ how }}">
+            <button class="{{ 'ghost' if how == 'ignore' else 'btn2' }}">{{ label }}</button></form>{% endfor %}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="rulelist sortable" data-kind="rule" data-scope="">
+      {% for r in all_rules %}
+      <div class="ruleline{% if r.id in conflicted %} conflicted{% endif %}" data-rule-id="{{ r.id }}">
+        <div class="rulebox lib">
+          <span class="rulelabel" title="{{ r.label }}">{{ r.html }}</span>
+          <span class="ruleused calbadge"{{ badge_style(r.apply) }}>{{ _('All calendars') if r.apply == 'all' else (r.used|join(', ') if r.used else _('No calendar yet')) }}</span>
+          <button type="button" class="ghost editrule" title="{{ _('Change this rule') }}" aria-label="{{ _('Change this rule') }}">{{ icon("edit", 17) }}</button>
+          <form method="post" action="/rules/clone" class="inline" data-swap="#rules|#activity|#ruledata">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}">
+            <button class="ghost clonerule" title="{{ _('Make a copy of this rule') }}" aria-label="{{ _('Make a copy of this rule') }}">{{ copy_icon }}</button></form>
+          <form method="post" action="/rules/delete" class="inline" data-swap="#rules|#sources|#cal|#activity|#ruledata" data-confirm="{{ _('Delete this rule? It’s removed from every calendar that uses it.') }}">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}">
+            <button class="ghost delrule" title="{{ _('Delete this rule') }}" aria-label="{{ _('Delete this rule') }}">{{ trash }}</button></form>
+        </div>
+        {{ handle("rule", r.id, r.label) }}
+      </div>
+      {% endfor %}
+    </div>
+    {# + in the bottom right corner (0.2.8-beta.11) #}
+    <div class="sfoot"><button type="button" class="ghost plus newrule" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">{{ icon("add", 24) }}</button></div>
+    </div>
+  </section>

@@ -7,7 +7,8 @@ card of the **CalendarStream Theme Rules** picture that shows it.
 - The picture: `build_rules/CalendarStream_Theme_Rules_Light.png` and `…_Dark.png`, drawn from the page
   itself (every size in it is measured). **Part 1** is the whole page with each part named where it is,
   a module open in every section. **Part 2** is numbered cards; "Picture 2·5" below means part 2, card 5.
-- The stylesheet is `app/static/app.css`, the script `app/templates/page.js` (made once per language),
+- The stylesheet is `app/styles/*.css` (sent as one file, in their number order), the script
+  `app/templates/js/*.js` (put together by `page.js`, made once per language; AGENTS.md has the map),
   the color tokens `app/templates/_theme.html`. Change those, never inline copies.
 - When the theme changes, update this file and redraw the picture (at the latest in the Deploy's documentation part, 5-deploy.md). A rule
   here with no card, or a card with no rule, is a mistake: fix whichever is missing.

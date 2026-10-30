@@ -1,0 +1,75 @@
+  /* ---- Review #1–#11: one pattern for every section and box ---------------------------------- */
+  [hidden] { display:none !important }
+  /* #1 Card titles: one size and weight for the schedule name and Activity log */
+  .cardtitle { font-size:18px; font-weight:700; color:var(--text); text-transform:none; letter-spacing:0 }
+  .section > .shead .headright { display:flex; align-items:center; gap:10px; margin-left:auto }
+  .section > .shead .headright form { margin:0 }
+  .statusmsg { margin:-4px 0 4px; font-size:14px; color:var(--text) }
+  /* Boxes inside a card: title + subtitle on the left, a status chip on the right */
+  .box { display:block; border:1px solid var(--line); border-radius:var(--rbox); padding:14px 16px; margin-top:5px; background:var(--card) }
+  .boxhead { display:flex; align-items:flex-start; gap:12px; margin-bottom:10px }
+  .boxhead > div { flex:1; min-width:0 }
+  .boxtitle { font-size:15px; font-weight:700 }
+  .subtitle { font-size:12.5px; color:var(--muted); margin-top:1px }
+  details.box > summary { list-style:none; cursor:pointer; margin-bottom:0 }
+  details.box > summary::-webkit-details-marker { display:none }
+  details.box[open] > summary { margin-bottom:6px }
+  .subbox { border-top:1px solid var(--line); padding-top:12px; margin-top:12px }
+  .subbox .boxtitle { font-size:14px }
+  /* #8 One status chip: an icon and a word or two (good, warn, bad, or run while working) */
+  .chip { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:4px; font-size:12px; font-weight:700; height:22px;
+          padding:0 8px 0 6px; border-radius:var(--r); white-space:nowrap; letter-spacing:.01em }
+  .chip .chiptext { overflow:hidden; text-overflow:ellipsis }
+  .chip.good { background:var(--okbg); color:var(--ok) } .chip.warn { background:var(--warnbg); color:var(--warn) }
+  .chip.bad { background:var(--badbg); color:var(--bad) } .chip.run { background:var(--runbg); color:var(--run) }
+  .statusline { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; font-size:13px; margin:10px 0 0 }
+  /* #9 Two button sizes: primary and secondary, both at input height */
+  button, .btn, .btn2, .ghostbtn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:34px; padding:0 14px;
+          font:inherit; font-size:14px; font-weight:600; border-radius:var(--r); text-decoration:none; cursor:pointer; white-space:nowrap }
+  .btn2, .ghostbtn, button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
+  .calhead button.title, .langmenu button, .seg button, .monthpick button, .linkbtn, .copybtn,
+  .inbox .inboxbtn { height:auto }
+  .copybtn { height:34px }
+  .clockswitch button { height:22px; width:38px; padding:0 }
+  .editor .tagrow .addtag, .editor .tagrow .deltag, .editor .casebtn { height:36px }
+  .filebtn { position:relative; overflow:hidden; max-width:260px }
+  .filebtn input { position:absolute; inset:0; opacity:0; cursor:pointer }
+  .filebtn span { overflow:hidden; text-overflow:ellipsis }
+  /* #3 Labelled field rows */
+  .fieldrow { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin:14px 0 0; font-size:13.5px }
+  .fieldrow > label:first-of-type { font-weight:600; color:var(--text) }
+  .fieldrow input[type=number] { width:80px; height:34px; font:inherit; padding:0 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  .fieldrow + .mnote { margin-top:4px }
+  /* #11 Every step-by-step / help fold looks the same */
+  details.guide { border:1px solid var(--line); border-radius:var(--r); padding:8px 12px; margin:12px 0 0; background:var(--soft); font-size:13px }
+  details.guide > summary { cursor:pointer; font-weight:600; font-size:13.5px }
+  details.guide[open] { padding-bottom:12px }
+  details.guide ol { font-size:13px; padding-left:18px; margin:8px 0 } details.guide li { margin:0 0 6px }
+  details.guide.inline { flex:1 1 260px; margin:0; padding:6px 10px; background:transparent }
+  details.guide.inline p { margin:6px 0 0; color:var(--muted); font-size:12.5px }
+  .statusline details.guide.inline { flex-basis:100% }
+  .k { color:var(--muted); font-size:12px; margin:10px 0 0 }
+  .trouble { font-size:13px; padding-left:18px; margin:6px 0 0 } .trouble li { margin:0 0 6px }
+  /* (?): a small help icon raised like a superscript right after the word it explains (F1.2); its
+     explanation shows on hover or focus, or stays open after a click. */
+  .helpdot { position:relative; top:-.45em; display:inline-flex; flex:0 0 auto; align-self:center; margin-left:1px; width:15px; height:15px;
+             color:var(--muted); cursor:help; font-style:normal; font-weight:400; letter-spacing:0; line-height:1; vertical-align:baseline }
+  .helpdot > svg.mi { display:block }
+  .legend .helpdot { margin-left:-6px }       /* right after the key's last words, like every (?) */
+  .mhead > .helpdot, .bigtitle > .helpdot { margin-left:-7px }          /* right after the word, despite the row's gap */
+  .section > .shead > .helpdot, .cardhead > .helpdot { margin-left:-4px }
+  .helpdot:hover, .helpdot:focus-visible, .helpdot.open { color:var(--accent); outline:none }
+  .helptip { display:none; position:absolute; z-index:30; top:calc(100% + 6px); left:50%; transform:translateX(-50%); width:max-content; max-width:min(320px, 80vw);
+             padding:8px 10px; border:1px solid var(--line); border-radius:var(--r); background:var(--card); color:var(--text); box-shadow:0 8px 24px rgba(0,0,0,.18);
+             font-size:12.5px; font-weight:400; line-height:1.45; text-align:left; white-space:normal; cursor:auto; font-family:var(--font) }
+  .helpdot:hover .helptip, .helpdot:focus-visible .helptip, .helpdot.open .helptip { display:block }
+  .helpdot.right .helptip { left:auto; right:-6px; transform:none }
+  .helpdot.left .helptip { left:-6px; transform:none }
+  .helpdot.up .helptip { top:auto; bottom:calc(100% + 6px) }
+  form.connect, form.inline { margin:0 }
+  .tagsform.editor { border:0; padding:0; margin:0; background:transparent }
+  .addfirst { width:36px; padding:0; font-size:18px }
+  .tagrows:empty { display:none } #tags:has(#tagrows:empty):has(#tagfoot[hidden]) .boxhead { margin-bottom:0 }
+  .boxhead form.inline { margin:0 }
+  .boxhead { flex-wrap:wrap } .boxhead > div { flex:1 1 240px }
+  @media (max-width:600px) { .section > .shead .headright { margin-left:0 } .editor .tagrow:not(:last-child) .addtag { display:none } }

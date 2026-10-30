@@ -1,0 +1,29 @@
+{# Report a problem / Suggest a feature: what to include (each part can be left out), a preview with
+   private details taken out, then GitHub's new-issue page filled in (the issue's page is the link to
+   follow it; GitHub notifies its author). Without a GitHub account: copy or download the report. #}
+<dialog id="reportdialog" aria-labelledby="rptitle">
+  <form method="dialog" class="reportform">
+    <div class="title" id="rptitle" data-bug="{{ _('Report a problem') }}" data-idea="{{ _('Suggest a feature') }}">{{ _('Report a problem') }}</div>
+    <label class="lbl" for="rpsubject">{{ _('Title') }}</label>
+    <input type="text" id="rpsubject" name="subject" maxlength="120" placeholder="{{ _('In a few words') }}">
+    <label class="lbl" for="rpwhat" data-bug="{{ _('What happened? What did you expect?') }}" data-idea="{{ _('What would you like CalendarStream to do, and why?') }}">{{ _('What happened? What did you expect?') }}</label>
+    <textarea id="rpwhat" name="what"></textarea>
+    <div class="lbl">{{ _('Include') }}</div>
+    <div class="attach">
+      <label><input type="checkbox" name="inc_activity" checked> {{ _('History, Undo &amp; Logs (the last 60 lines)') }}</label>
+      {% for x in srcs %}<label><input type="checkbox" name="inc_src" value="{{ x.id }}"{% if x.s.status not in ("ok", "running") %} checked{% endif %}> {{ _('{name}: last download details', name=x.name) }}</label>{% endfor %}
+      <label><input type="checkbox" name="inc_device" checked> {{ _('Device and setup (browser, screen, version, release, server)') }}</label>
+      <label><input type="checkbox" name="inc_contact"> {{ _('My contact details:') }} <input type="text" name="contact" placeholder="{{ _('name or e-mail (shown publicly)') }}" style="flex:1"></label>
+      <label><input type="checkbox" name="notify" checked> {{ _('Notify me of replies') }}</label>
+    </div>
+    <p class="mnote">{{ _('Private details (Username, links, stream names, e-mails, public address) are taken out. GitHub is public: check the preview.') }}</p>
+    <details><summary class="mnote">{{ _('Preview') }}</summary><pre class="preview"></pre></details>
+    <p class="noacct">{{ _('No GitHub account? Copy or download the report › send it to whoever runs this CalendarStream.') }}</p>
+    <div class="eactions">
+      <button type="button" class="ghost rpcopy">{{ _('Copy report') }}</button>
+      <button type="button" class="ghost rpdownload">{{ _('Download report') }}</button>
+      <button type="button" class="ghost rpcancel">{{ _('Cancel') }}</button>
+      <button type="button" class="rpgithub">{{ _('Open on GitHub') }}</button>
+    </div>
+  </form>
+</dialog>

@@ -1,0 +1,122 @@
+  /* ---- 0.2.8: the theme (F1.6) ---------------------------------------------------------------------
+     Fonts, colors, corners and icons come from _theme.html. Every calendar and feed is a module: a
+     50 px header (all a folded module shows), then its details. Folded, there's no line under the
+     header: "▸ Expand … ◂" sits in the module's bottom border. */
+  /* (beta.15) a 2 px border, with 1 px less padding all round, so a module is the same size as before */
+  .box.module { position:relative; container-type:inline-size; border-width:2px; padding:5px 9px 5px; margin-top:5px }
+  .box.module:not(.cfgopen) { padding-bottom:11px }
+  .box.module:not(.cfgopen) + .box.module { margin-top:14px }            /* room for the Expand text between them */
+  .module .srchead { display:flex; align-items:center; gap:10px; height:50px }
+  .module .srchead .swatch, .module .colorbox { flex:0 0 22px; width:22px; height:46px; border-radius:6px }
+  /* The color box (beta.15): Google Calendar's 11 colors, in a small palette under it while expanded */
+  .colorbox { position:relative; display:inline-block }
+  .colorbox .colorpick { display:block; width:100%; height:100%; padding:0; border:1px solid var(--line); border-radius:6px; background:var(--c); cursor:default }
+  .module.cfgopen .colorbox .colorpick, .colorbox.free .colorpick { cursor:pointer }
+  .palpop { position:absolute; z-index:20; top:calc(100% + 4px); left:0; display:grid; grid-template-columns:repeat(6, 26px); gap:4px; padding:6px;
+            border:1px solid var(--line); border-radius:var(--r); background:var(--card); box-shadow:0 6px 20px rgba(0,0,0,.18) }
+  .palpop .pal, .palette .pal { width:26px; height:26px; padding:0; border-radius:6px; border:2px solid transparent; background:var(--c); cursor:pointer }
+  .palpop .palnote { grid-column:1 / -1; max-width:calc(6 * 26px + 5 * 4px); font-size:12px; line-height:1.3; color:var(--muted) }   /* I1.1 */
+  .palpop .pal[aria-checked="true"] { border-color:var(--text); box-shadow:inset 0 0 0 2px var(--card) }
+  /* Title over note: two 24 px boxes (fields of the same size while expanded) */
+  .module .srcleft { flex:0 1 270px; min-width:0; display:grid; grid-auto-rows:24px; gap:2px; align-content:center }
+  .module .namebox { display:block; width:100%; min-width:0; height:24px; margin:0; padding:0 8px; border:1px solid var(--line); border-radius:6px;
+                     background:var(--bg); color:var(--text); font:600 12.5px/22px var(--font); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .module .namebox.srcname, .module .namebox.nameinput { font-size:14px; font-weight:600 }
+  /* (beta.15) the label is plain text until the module is expanded; then a field, at the same size */
+  .module .namebox.srcname { border-color:transparent; background:transparent; padding-left:1px }
+  /* (0.2.8-beta.9) line 1: the module's kind, fixed text at the module-title size; line 2: its name (a
+     field while expanded) and, with a note, a raised (i) right after it */
+  .module .srckind { font-size:17px; font-weight:700; line-height:24px; padding-left:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .module .nameline { display:flex; align-items:center; min-width:0; gap:0 }
+  .module .nameline > .namebox { flex:1 1 auto; width:auto }
+  .module .nameline > .notedot { margin-left:2px; top:-.35em }
+  .module .notewrap { margin:0 0 5px } .module .notepair { max-width:540px; margin-top:0 }
+  .module .editonly { display:none } .module.cfgopen .editonly { display:block } .module.cfgopen .showonly { display:none !important }
+  .sections .module input.namebox { height:24px; line-height:22px }
+  .module input.namebox:focus { outline:2px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset:0 }
+  /* The last download and the next check: two lines, shortened to fit ("98 events @ 22:10") */
+  .module .srcright { flex:1 1 auto; min-width:0; display:grid; gap:2px; align-content:center; justify-items:start }
+  .module .srcright p { margin:0; max-width:100%; font-size:13px; line-height:20px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .module .srcnext, .module .destsum { color:var(--muted) }
+  .module .srcright p:first-child:not(.destsum) { color:var(--text) }
+  .srchead.tight .long { display:none } .srchead.tight .short { display:inline }
+  /* Status over Sync Now: one 132 × 50 px rounded rectangle in every module (F1.1) */
+  .module .statusbox { flex:0 0 132px; width:132px; height:50px; margin-left:auto; display:flex; flex-direction:column; justify-content:center;
+                       align-items:stretch; gap:2px; padding:3px; border:1px solid var(--line); border-radius:var(--r) }
+  .statusbox.good { border-color:color-mix(in srgb, var(--ok) 35%, var(--line)); background:var(--okbg) }
+  .statusbox.bad { border-color:color-mix(in srgb, var(--bad) 35%, var(--line)); background:var(--badbg) }
+  .statusbox.warn { border-color:color-mix(in srgb, var(--warn) 35%, var(--line)); background:var(--warnbg) }
+  .statusbox.run { border-color:color-mix(in srgb, var(--run) 35%, var(--line)); background:var(--runbg) }
+  .statusbox .chip { background:transparent; height:18px; padding:0 }
+  .statusbox .syncform { margin:0 }
+  /* Sync Now → Syncing… → Synced (a green pulse) or Failed (a yellow pulse) → Sync Now */
+  button.syncnow { width:100%; height:22px; padding:0 6px; font-size:12.5px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+                   transition:background-color .25s, color .25s }
+  .syncnow .sn { display:none; align-items:center; justify-content:center; gap:3px; white-space:nowrap }
+  .syncnow[data-state="idle"] .sn.idle, .syncnow[data-state="syncing"] .sn.syncing,
+  .syncnow[data-state="done"] .sn.done, .syncnow[data-state="fail"] .sn.fail { display:inline-flex; animation:sn-in .25s ease-out }
+  @keyframes sn-in { from { opacity:0 } to { opacity:1 } }
+  /* While it syncs (and says Synced / Failed), the button grows over the whole status box, its words in
+     the middle, and Healthy fades out under it; then it shrinks back (0.2.8-beta.3). */
+  .module .statusbox:has(.syncform) { position:relative }
+  .statusbox .chip { transition:opacity .2s ease .25s }    /* back: after the button has shrunk (0.25 s), then fades in (0.2 s) */
+  .statusbox .syncform { position:absolute; left:3px; right:3px; bottom:3px; top:calc(100% - 25px); transition:top .25s ease }
+  .statusbox .syncform button.syncnow { height:100% }
+  .statusbox.instant .syncform, .statusbox.instant .chip { transition:none }
+  .statusbox:has(.syncnow:not([data-state="idle"])) .chip { opacity:0; transition-delay:0s }   /* pressed: fades out at once, under the growing button */
+  .statusbox:has(.syncnow:not([data-state="idle"])) .syncform { top:3px }
+  .statusbox:has(.syncnow:not([data-state="idle"])) button.syncnow { font-size:13px }
+  /* (the chip keeps its place at the top while Sync Now sits at the bottom) */
+  .module .statusbox:has(.syncform) { justify-content:flex-start }
+  .module .statusbox:has(.syncform) > .chip { margin-top:1px }
+  .syncnow[data-state="syncing"] { background:var(--card); color:var(--run); opacity:1 }
+  .syncnow[data-state="done"] { background:var(--ok); color:var(--card); opacity:1; animation:pulse-ok 1.1s ease-out 2 }
+  .syncnow[data-state="fail"] { background:var(--warn); color:var(--card); opacity:1; animation:pulse-warn 1.1s ease-out 2 }
+  /* (0.2.8-beta.14) red: CalendarStream itself failed (amber is a problem outside it: Google, GitHub, United, the internet) */
+  .syncnow[data-state="fail"][data-cause="inside"] { background:var(--bad); animation:pulse-bad 1.1s ease-out 2 }
+  @keyframes pulse-ok { from { box-shadow:0 0 0 0 color-mix(in srgb, var(--ok) 70%, transparent) } to { box-shadow:0 0 0 9px transparent } }
+  @keyframes pulse-warn { from { box-shadow:0 0 0 0 color-mix(in srgb, var(--warn) 70%, transparent) } to { box-shadow:0 0 0 9px transparent } }
+  @keyframes pulse-bad { from { box-shadow:0 0 0 0 color-mix(in srgb, var(--bad) 70%, transparent) } to { box-shadow:0 0 0 9px transparent } }
+  @keyframes pulse-run { from { box-shadow:0 0 0 0 color-mix(in srgb, var(--run) 60%, transparent) } to { box-shadow:0 0 0 9px transparent } }
+  svg.spin { animation:spin 1s linear infinite }
+  @keyframes spin { to { transform:rotate(360deg) } }
+  @media (prefers-reduced-motion:reduce) { svg.spin, .syncnow { animation:none !important } }
+  /* ▸ Expand for Details or to Edit Configuration ◂: a line under the header while expanded; folded, it
+     sits in the module's bottom border (F1.6). The arrows turn down while it's open. */
+  .module .cfgline { position:relative; height:18px; margin:5px 0 0; text-align:center }
+  .module .cfgline::before { content:""; position:absolute; left:0; right:0; top:50%; border-top:1px solid var(--line) }
+  .module:not(.cfgopen) .cfgline { position:absolute; left:10px; right:10px; bottom:-9.5px; margin:0 }
+  .module:not(.cfgopen) .cfgline::before { display:none }
+  .cfgline .cfgtoggle { position:relative; display:inline-flex; align-items:center; gap:2px; height:18px; padding:0 8px; border:0; border-radius:0;
+                        background:var(--card); color:var(--text); font-weight:500; font-size:13px }
+  .cfgline .cfgtoggle:hover { color:var(--accent) }
+  .cfgtoggle .arr { color:var(--muted); transition:transform .15s }
+  .cfgtoggle .arr.r { transform:rotate(180deg) }
+  .cfgtoggle[aria-expanded="true"] .arr { transform:rotate(-90deg) }      /* Close: the triangles point up (0.2.8-beta.10) */
+  .module .cfgbody { margin-top:5px }
+  @container (max-width:540px) {
+    .module .srchead .long { display:none } .module .srchead .short { display:inline }
+    /* narrow: the 50 px row keeps the title and status; the two status lines go under it */
+    .module .srchead { height:auto; min-height:50px; flex-wrap:wrap; row-gap:4px }
+    .module .srcleft { flex:1 1 0; grid-auto-rows:auto }
+    /* the kind may take two lines here rather than be cut off (0.2.8-beta.9) */
+    .module .srckind { font-size:15px; line-height:19px; white-space:normal; overflow:visible }
+    .module .statusbox { order:2 }
+    .module .srcright { order:3; flex:1 1 100% }
+  }
+  .gsyncline { margin:6px 0 0; font-size:13.5px }
+  /* Rule lines: ✎ turns one into fields with ✕ | ✓ (icons, F1.4); ✓ asks This calendar | All calendars;
+     then Saved / Cancelled shows for 3 seconds where ✎ and the bin are. */
+  .srule.flash .rulebtns { display:none }
+  /* Icons drawn by stylesheets */
+  .section > .shead .toggle::before { content:""; width:18px; height:18px; background:currentColor; font-size:0;
+                                      -webkit-mask:var(--i-arrow) center / contain no-repeat; mask:var(--i-arrow) center / contain no-repeat }
+  .langmenu button[aria-checked="true"]::after { content:""; width:18px; height:18px; background:var(--accent);
+                                                 -webkit-mask:var(--i-check) center / contain no-repeat; mask:var(--i-check) center / contain no-repeat }
+  .ev .mark svg, .legendkey svg, .statline svg, .check svg, .mnote > svg { vertical-align:-3px }
+  .ev .body > svg { vertical-align:-2px }
+  button.addrule { gap:4px; padding-left:8px }
+  .menu, .langmenu { border-radius:var(--rbox) }
+  .num { border-radius:5px }
+  .clockswitch button { border-radius:6px } .clockswitch button span { border-radius:4px }
+  .calhead .caret { display:inline-flex; vertical-align:middle; margin-left:-2px }

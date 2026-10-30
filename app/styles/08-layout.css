@@ -1,0 +1,44 @@
+  /* ---- 0.2.6 ------------------------------------------------------------------------------- */
+  .cfgbody { margin-top:6px; padding-bottom:8px; container-type:inline-size }
+  /* In a narrow box (half the page, or a phone) the Site Address, login and upload stack */
+  @container (max-width:520px) {
+    .cfggrid { grid-template-columns:1fr }
+    .cfggrid .siteaddr, .cfggrid .pair, .cfggrid .uploadform { grid-column:1; grid-row:auto }
+    .cfggrid .uploadform { justify-content:flex-start }
+  }
+  /* Rules: each in a rounded box across the line */
+  .rulebox { display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:var(--r); padding:3px 4px 3px 12px; margin-top:2px; background:var(--card) }
+  .rulebox .rulelabel { flex:1; min-width:0; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .rulebox .rulelabel .swatch { width:14px; height:12px }
+  .rulebox .ruleused { font-size:12px; color:var(--muted); white-space:nowrap }
+  /* A rule's calendars badge in their colors (beta.3) */
+  .rulebox .ruleused.calbadge { height:22px; line-height:20px; padding:0 8px; border:1px solid var(--line); border-radius:6px; font-size:11px; font-weight:700; overflow:hidden; text-overflow:ellipsis; max-width:40% }
+  .calbadge[data-cal="all"] { background:#fff !important; color:#1f2937 !important; border-color:var(--line) !important }
+  .calbadge[data-cal="one"] { background:color-mix(in srgb, var(--c1) 22%, var(--card)) !important; color:color-mix(in srgb, var(--c1) 70%, var(--text)) !important; border-color:transparent !important }
+  .calbadge[data-cal="many"] { color:var(--text) !important; border-color:transparent !important }
+  .rulebox button, .rulebox form button { height:30px; width:30px; padding:0; border:0; border-radius:var(--r); color:var(--muted); background:transparent }
+  .rulebox button:hover { background:var(--soft); color:var(--accent) } .rulebox .delrule:hover, .rulebox .delpick:hover { color:var(--bad) }
+  .rulebox form { margin:0 }
+  .rulelist { margin-top:6px }
+  button.addrule { margin-top:8px; height:30px; font-size:13px }
+  @media (max-width:600px) { .rulebox.lib { flex-wrap:wrap; border-radius:var(--rbox) } .rulebox .ruleused { flex-basis:100% } }
+  /* The rule dialog */
+  #ruledialog input.dur { width:64px; text-align:center }
+  #ruledialog input[type=color] { width:44px; height:34px; padding:2px; border:1px solid var(--line); border-radius:var(--r); background:var(--card) }
+  #ruledialog .casebtn { height:34px; padding:0 10px; color:var(--muted) }
+  #ruledialog .casebtn[aria-pressed="true"] { background:var(--accent); color:var(--onaccent); border-color:var(--accent) }
+  #ruledialog .eactions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px }
+  /* A destination's dates */
+  .destform .pair.dates label.fld { flex:0 1 170px } .destform .pair.dates input { height:34px }
+  .destform .pair.dates .mnote { flex:1 1 200px; align-self:center; margin:0 }
+  /* History, Undo & Logs: the same head as the other sections */
+  #activity > .shead .bigtitle { font-size:24px; font-weight:600; color:var(--text) }
+  /* Wide screens: Sources | Destinations, then Rules | Activity */
+  @media (min-width:1300px) {
+    main { max-width:1640px }
+    .sections { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:0 10px; align-items:start }
+    .sections > #activity { grid-column:1 / -1 }      /* History, Undo & Logs: the full width */
+  }
+  /* Narrow screens: the view and theme choices become one button each that steps through them */
+  .cyclebtn { display:none }
+  #cal.loading { opacity:.6; transition:opacity .15s }

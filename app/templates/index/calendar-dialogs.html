@@ -1,0 +1,36 @@
+{# The event page in a pop-up (F1.3): adding, editing or duplicating an event on a computer. A phone
+   opens the page itself. #}
+<dialog id="eventdialog" class="popup big" aria-label="{{ _('Event') }}">
+  <div class="dlghead"><button type="button" class="ghost iconbtn dlgback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}">{{ icon("arrow_back", 20) }}</button>
+    <div class="title">{{ _('Event') }}</div></div>
+  <iframe class="eventframe" title="{{ _('Event') }}" data-title="{{ _('Event') }}"></iframe>
+</dialog>
+
+{# Print Preview (F2.1): starts with the last print's choices (or the calendar's view), and the
+   month shown. #}
+<dialog id="printdialog" class="popup big" aria-labelledby="pptitle">
+  <div class="dlghead"><button type="button" class="ghost iconbtn dlgback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}">{{ icon("arrow_back", 20) }}</button>
+    <div class="title" id="pptitle">{{ _('Print Preview') }}</div></div>
+  <form class="printopts" onsubmit="return false">
+    <div class="seg viewpick" role="radiogroup" aria-label="{{ _('What to print') }}">
+      {% for v, label in (("itinerary", _('Itinerary')), ("day", _('Day')), ("5day", _('5-day')), ("week", _('Week')), ("month", _('Month'))) %}<button type="button" data-v="{{ v }}" role="radio" aria-checked="false">{{ label }}</button>{% endfor %}
+    </div>
+    <label class="ppweekends"><input type="checkbox" name="weekends" checked> {{ _('Include weekends') }}</label>
+    {{ daterange("start", "end", "", "", allon=false) }}
+    <div class="seg themepick" role="radiogroup" aria-label="{{ _('Colors') }}">
+      <button type="button" data-t="light" role="radio" aria-checked="true" title="{{ _('Light') }}">{{ icon("light_mode", 18) }}</button><button type="button" data-t="dark" role="radio" aria-checked="false" title="{{ _('Dark') }}">{{ icon("dark_mode", 18) }}</button>
+    </div>
+  </form>
+  <iframe class="printframe" title="{{ _('Print Preview') }}"></iframe>
+  <div class="eactions"><button type="button" class="ghost ppcancel">{{ _('Cancel') }}</button><button type="button" class="ppprint">{{ icon("print", 18) }} {{ _('Print') }}</button></div>
+</dialog>
+
+{# An event's reminders (the bell in its details): sent to Google and written into the feeds. #}
+<div class="alarmpop" id="alarmpop" role="dialog" aria-labelledby="aptitle" hidden>
+  <form method="post" action="/event/alarms" class="alarmform" data-swap="#cal|#activity">
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="uid" value=""><input type="hidden" name="month" value="{{ cal.month }}">
+    <div class="title" id="aptitle">{{ _('Reminders') }}{{ help(_('Up to five, to Google and the feeds (some apps ignore them in feeds).'), 'right') }}</div>
+    <div class="alarmlist">{% for m, label in alarm_choices %}<label><input type="checkbox" name="minutes" value="{{ m }}"> {{ label }}</label>{% endfor %}</div>
+    <div class="eactions"><button type="button" class="ghost apcancel">{{ _('Cancel') }}</button><button>{{ _('Save') }}</button></div>
+  </form>
+</div>

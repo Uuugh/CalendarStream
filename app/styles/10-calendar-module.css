@@ -1,0 +1,73 @@
+  /* ---- 0.2.7-beta.5: the source box (mockup), its rules, the presets, folding sections, the report form ---- */
+  /* Section titles inside Configure: Automatic Upload, Manual Upload, Rules */
+  .cfghead { margin:12px 0 6px; font-size:19px; font-weight:400; letter-spacing:-.01em }
+  .cfgbody > .cfghead:first-child { margin-top:2px }
+  .cfgbody > h3.cfghead:not(:first-child) { border-top:1px solid var(--line); padding-top:8px }
+  .cfgheadrow { display:flex; align-items:center; gap:10px; border-top:1px solid var(--line); margin-top:12px; padding-top:2px }
+  .cfgheadrow .cfghead { flex:1; margin-bottom:2px }
+  .cfgheadrow .addrule { margin:0 }
+  .cfgbody .uploadform { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin:0; font-size:13.5px }
+  .cfgbody .uploadform > label:first-of-type { font-weight:600 }
+  .cfgbody h3.cfghead + .cfggrid, .cfgbody h3.cfghead + .mnote + .cfggrid { margin-top:0 }
+  .cfggrid .cfgside { grid-column:2; grid-row:1; align-self:end; margin-bottom:0 }
+  .cfggrid > form.feedurl { grid-column:1; grid-row:1; margin:0 }
+  .cfggrid > form.feedurl .pair { margin:0 }
+  @container (max-width:520px) { .cfggrid .cfgside { grid-column:1; grid-row:auto } .cfggrid > form.feedurl { grid-column:1 } }
+  /* Setup help: how to enable it | Accomplished, with a line between */
+  .setupguide .helpgrid { grid-template-columns:2fr minmax(200px, 1fr); gap:8px 0 }
+  .setupguide .howto { padding-right:20px }
+  .setupguide .accomplished { padding-left:20px; border-left:1px solid var(--line) }
+  @container (max-width:600px) { .setupguide .helpgrid { grid-template-columns:1fr }
+    .setupguide .accomplished { padding-left:0; border-left:0; border-top:1px solid var(--line); padding-top:8px } .setupguide .howto { padding-right:0 } }
+  /* A source's rules: thin rounded lines; ✎ and the bin, or Cancel / Save while it's being changed */
+  .srule { min-height:32px; padding:1px 4px 1px 12px }
+  .srule .rulelabel { font-size:13.5px }
+  .srule .scope { height:22px; padding:0 8px; border-radius:var(--r); font-size:11px; font-weight:700; border:1px solid var(--line);
+                  background:var(--soft); color:var(--muted); white-space:nowrap; cursor:pointer }
+  .srule .scope.local { background:var(--warnbg); color:var(--warn); border-color:transparent }
+  .rulebox.srule .scope { width:auto; height:22px; padding:0 9px; border-radius:var(--r); border:1px solid var(--line) }
+  .rulebox.srule .scope.local { border-color:transparent }
+  .srule .scope:hover { color:var(--accent) }
+  .srule .rulebtns { display:inline-flex; gap:2px }
+  /* Menus follow the theme (their lists were light in dark mode) */
+  select { color-scheme:inherit }
+  select option, select optgroup { background:var(--card); color:var(--text) }
+  /* Bottom line: Remove on the left, Cancel and Save on the right */
+  .srcfoot { justify-content:flex-end }
+  .srcfoot .removeform { margin-right:auto } .srcfoot .removecal { margin-right:auto }
+  /* + Add a calendar source: the presets */
+  .presets { display:flex; gap:6px; flex-wrap:wrap }
+  .presets .preset { height:30px; padding:0 12px; font-size:13px; background:transparent; color:var(--text); border:1px solid var(--line) }
+  .presets .preset[aria-checked="true"] { background:var(--accent); color:var(--onaccent); border-color:var(--accent) }
+  .presetform[hidden] { display:none }
+  /* Sections that fold to their title (Rule Templates, Event Templates): + stays in the corner */
+  .section > .shead .headplus { margin-left:auto }
+  .section > .shead .bigtitle { color:var(--text) }
+  .debuglinks { display:flex; flex-wrap:wrap; gap:4px 14px; align-items:baseline; margin-top:10px; font-size:12.5px }
+  .debuglinks .k { margin:0 }
+  /* Report a problem / Suggest a feature */
+  #reportdialog { border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); color:var(--text); padding:18px; width:min(620px, calc(100vw - 32px)) }
+  #reportdialog .title { font-weight:700; font-size:16px }
+  #reportdialog .lbl { display:block; font-size:12px; color:var(--muted); font-weight:600; margin:12px 0 4px }
+  #reportdialog input[type=text], #reportdialog textarea { width:100%; font:inherit; font-size:14px; padding:6px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  #reportdialog textarea { min-height:90px; resize:vertical }
+  #reportdialog .attach { display:grid; gap:4px; font-size:13.5px } #reportdialog .attach label { display:flex; gap:8px; align-items:baseline }
+  #reportdialog pre.preview { max-height:200px; overflow:auto; font:12px var(--mono); background:var(--soft); border-radius:var(--r); padding:8px; white-space:pre-wrap; margin:6px 0 0 }
+  #reportdialog .eactions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-top:16px }
+  #reportdialog .noacct { font-size:12.5px; color:var(--muted); margin:10px 0 0 }
+  .foot .linkbtn { font-size:inherit; text-decoration:underline; color:inherit }
+  /* Words with a short form (Time Zone → TZ, minutes → min…): the short one shows when space is tight. */
+  .short { display:none }
+  .tzlabel { font-size:12.5px; font-weight:600; color:var(--muted); white-space:nowrap }
+  @media (max-width:900px) { .tzlabel .long { display:none } .tzlabel .short { display:inline } }
+  /* Event template rows wrap when their section is narrow (half the page, or a phone). */
+  #templates form.tagsform { container-type:inline-size }
+  @container (max-width:700px) {
+    .editor .tagrow { flex-wrap:wrap; border:1px solid var(--line); border-radius:var(--r); padding:8px }
+    .editor .tagrow input[name=tpl_title] { flex-basis:100% }
+  }
+  @media (max-width:700px) {
+    .viewseg, .topbar .seg { display:none }
+    .cyclebtn { display:inline-flex; height:28px; padding:0 10px; font-size:12.5px }
+    .topbar .themecycle { height:34px; width:38px; padding:0 }
+  }

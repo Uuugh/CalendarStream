@@ -1,0 +1,134 @@
+  /* The rule dialog */
+  #ruledialog .lbl { display:flex; align-items:center; font-size:12px; color:var(--muted); font-weight:600; margin:12px 0 2px }
+  #ruledialog input[type=text], #ruledialog input[type=date], #ruledialog input[type=time], #ruledialog input[type=number], #ruledialog select {
+    font:inherit; font-size:13.5px; height:34px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  #ruledialog .rdname { width:100% }
+  .conds, .acts { display:grid; gap:2px }
+  /* F14 (beta.17): each action line's + sits outside its box, in a gutter both boxes keep, so the ✕ of the
+     conditions and of the actions stay in one column */
+  .conds, .acts { padding-right:34px }
+  .act { position:relative }
+  .act > .aadd { position:absolute; right:-34px; top:50%; transform:translateY(-50%); width:30px; height:30px }
+  .act .evpart { display:inline-flex; align-items:center; gap:4px; flex-wrap:nowrap; min-width:0 }
+  .act .evpart .anew.title, .act .evpart .anew.location { flex:1 1 140px; min-width:110px }
+  .act .evpart .mnote, .act .evpart label { margin:0; line-height:30px; white-space:nowrap; display:inline-flex; align-items:center; gap:4px }
+  .cond, .act { display:flex; flex-wrap:nowrap; align-items:center; gap:4px; padding:3px 4px; border:1px solid var(--line); border-radius:var(--r); background:var(--card) }
+  .cond .cfields, .act .afields { display:flex; flex-wrap:wrap; align-items:center; gap:4px; flex:1 1 0; min-width:0 }
+  @media (min-width:701px) { #ruledialog { width:min(900px, calc(100vw - 32px)) } }   /* a phone: the whole screen (above) */
+  .cond > select, .cond > button, .cond > .brks, .act > select, .act > button { flex:0 0 auto }
+  .lenset { flex-wrap:wrap }
+  #ruledialog .ctype { flex:0 0 96px; width:96px } #ruledialog .cop { flex:0 0 118px; width:118px } #ruledialog .atype { flex:0 0 150px; width:150px }
+  @media (max-width:700px) { .cond, .act { flex-wrap:wrap } }
+  .cond .cval { flex:1 1 140px; min-width:0 }
+  .brks { display:inline-flex; align-items:center }
+  .brk { width:14px; height:30px; padding:0; border:0; border-radius:4px; background:transparent; font:600 20px/1 var(--mono); color:var(--line) }
+  .brk.spare:hover, .brk.spare:focus-visible { color:var(--muted); background:var(--soft) }
+  .brk.on { color:var(--text) } .brk.on[data-level="2"] { color:var(--accent) } .brk.on[data-level="3"] { color:var(--warn) }
+  .ruleform.unbalanced .brk.on { text-decoration:underline wavy var(--bad) }
+  .brk.flash { animation:brkflash 1.4s ease-out } @keyframes brkflash { 0%, 40% { background:var(--runbg); color:var(--accent) } }   /* the ( added for a lone ) */
+  .cdel, .adel, .aadd { width:30px; height:30px; padding:0 }
+  /* & (and) · | (or) · ✕: grey until chosen; the chosen join is in the text color (beta.15) */
+  .cjoins { display:inline-flex; gap:2px; flex:0 0 auto }
+  .cjoins .cj { width:30px; height:30px; padding:0; font:700 15px var(--mono); color:var(--muted); opacity:.55 }
+  .cjoins .cj[aria-pressed="true"] { color:var(--text); opacity:1; border-color:var(--text) }
+  .cjoins .cdel { color:var(--muted) }
+  /* The regex test box (beta.15): helpers, the error, your titles with ✓ / ✕ and the matched part */
+  .rxtools { flex:1 1 100%; order:99; display:grid; gap:4px; margin-top:2px }
+  /* the test box and the emoji list take a line of their own under the whole If / Then line */
+  .cond:has(.rxtools), .act:has(.emopick:not([hidden])) { flex-wrap:wrap }
+  .cond .cfields:has(.rxtools), .act .afields:has(.emopick:not([hidden])) { display:contents }
+  .cond .cop { min-width:150px }
+  .rxhelp { display:flex; flex-wrap:wrap; gap:3px }
+  .rxhelp .rxins { height:26px; padding:0 7px; font:12px var(--mono) }
+  .rxerr { margin:0; display:flex; align-items:center; gap:4px; font-size:12.5px; color:var(--warn) }
+  .rxbox { border:1px solid var(--line); border-radius:var(--r); background:var(--bg); padding:4px 6px }
+  .rxhead { display:flex; align-items:center; justify-content:space-between; font-size:12px; font-weight:600; color:var(--muted) }
+  .rxhead .rxedit { width:26px; height:26px; padding:0 }
+  .rxlist { list-style:none; margin:0; padding:0; max-height:150px; overflow-y:auto; font:12.5px/1.6 var(--mono); cursor:text }
+  .rxlist li { white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .rxlist li.no { color:var(--muted) }
+  .rxlist .rxmark { display:inline-block; width:18px; font-family:var(--font); font-weight:700 }
+  .rxlist li.yes .rxmark { color:var(--ok) }
+  .rxlist mark { background:var(--okbg); color:var(--ok); border-radius:3px; padding:0 1px }
+  .rxsamples { width:100%; font:12.5px/1.6 var(--mono); border:0; background:transparent; color:var(--text); resize:vertical; padding:0 }
+  /* Every emoji (beta.15): ten a line, scrolling, a search on top */
+  .emopick { flex:1 1 100%; order:99; display:grid; gap:4px; margin-top:4px; padding:6px; border:1px solid var(--line); border-radius:var(--r); background:var(--card) }
+  .emogrid { display:grid; grid-template-columns:repeat(10, minmax(0, 1fr)); gap:2px; max-height:224px; overflow-y:auto }
+  .emogrid .emo { height:34px; padding:0; font-size:19px; min-width:0 }
+  .emogroup { grid-column:1 / -1; font-size:12px; font-weight:600; color:var(--muted); padding:4px 2px 0 }
+  .act .emofind { height:30px; flex:1 1 170px; min-width:150px; max-width:240px; border-radius:var(--r) }   /* a rounded rectangle, never a pill */
+  .dayset { display:inline-flex; gap:2px; flex-wrap:wrap }
+  .dayset .wd { height:30px; padding:0 7px; font-size:12.5px; border:1px solid var(--line); background:var(--card); color:var(--muted); border-radius:6px }
+  .dayset .wd[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:var(--onaccent) }
+  .lenset { display:inline-flex; align-items:center; gap:2px }
+  .lenset .len { width:62px; padding:0 4px !important } .lenset .len::placeholder { color:var(--muted); opacity:.8 } .lenset .colon { color:var(--text) }
+  .act .emoji { width:70px; text-align:center } .emojis { display:inline-flex; flex-wrap:wrap; gap:2px }
+  /* (0.2.8-beta.19, F8) an emoji older Windows may not draw: a small (i) at its upper right, and beside the field */
+  .emogrid .emo.newemo { position:relative }
+  .emogrid .emo.newemo::after { content:"i"; position:absolute; top:2px; right:2px; display:grid; place-items:center; width:10px; height:10px;
+    border:1px solid var(--muted); border-radius:50%; font:italic 600 8px/1 var(--font); color:var(--muted); background:var(--card) }
+  .act .emowarn { align-self:center } .act .emowarn[hidden] { display:none }
+  .emojis .emo { width:30px; height:30px; padding:0; font-size:16px }
+  .act .dur { width:64px; text-align:center } .act .anew.title { flex:1 1 140px; min-width:0 } .act .anew.location { flex:1 1 100px; min-width:0 }
+  #ruledialog .rulesguide { margin-top:12px }
+  .rdfoot { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; margin-top:12px }
+  .rdfoot .rdremove { margin-right:auto }
+  .applyto { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--muted) }   /* Apply to, inline with its drop-down (beta.15) */
+  .applyto > span { display:flex; align-items:center }   /* (not the (?)'s tip, which shows only when asked) */
+  /* Rule conflicts (F4.2) */
+  .warn-text { color:var(--warn) }
+  .conflicts { display:grid; gap:5px; margin:0 0 5px }
+  .conflict { padding:8px 10px; border:1px solid color-mix(in srgb, var(--warn) 45%, var(--line)); border-radius:var(--r); background:color-mix(in srgb, var(--warn) 8%, var(--card)) }
+  .conflict p { display:flex; gap:6px; align-items:flex-start; margin:0 0 5px; font-size:13.5px } .conflict p .mi { flex:0 0 auto; color:var(--warn); margin-top:2px }
+  .conflict .fixes { display:flex; flex-wrap:wrap; gap:5px } .conflict .fixes button { height:30px; font-size:13px; padding:0 10px }
+  .ruleline.conflicted .rulebox { border-color:color-mix(in srgb, var(--warn) 60%, var(--line)) }
+  /* Remove a calendar */
+  #removedialog { width:min(520px, calc(100vw - 32px)) }
+  .rmopts { display:grid; gap:5px; margin:5px 0 }
+  .rmopt { display:flex; gap:8px; align-items:flex-start; padding:8px 10px; border:1px solid var(--line); border-radius:var(--r); cursor:pointer }
+  .rmopt:has(input:checked) { border-color:var(--accent); background:var(--runbg) }
+  .rmopt input { margin-top:3px } .rmopt select { display:block; margin-top:5px; height:34px; min-width:220px }
+  #removedialog .eactions { display:flex; justify-content:flex-end; gap:5px; margin-top:12px }
+  button.danger.solid { display:inline-flex; align-items:center; gap:4px; background:var(--bad); color:#fff; border-color:var(--bad) }
+  /* A drop-down of ticks (Apply to): a button with the choice, a menu that opens above it */
+  .dropdown { position:relative }
+  .ddbtn { display:flex; align-items:center; gap:6px; height:34px; min-width:200px; max-width:320px; padding:0 4px 0 10px; font:inherit; font-size:13.5px; font-weight:400;
+           color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:var(--r); text-align:left }
+  .ddbtn .ddsum { flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:4px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis }
+  .ddmenu { position:absolute; z-index:40; bottom:calc(100% + 4px); left:0; min-width:100%; max-height:260px; overflow-y:auto; padding:4px;
+            background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18) }
+  .ddopt { display:flex; align-items:center; gap:8px; height:32px; padding:0 8px; border-radius:6px; font-size:13.5px; font-weight:400; color:var(--text); cursor:pointer; white-space:nowrap }
+  .ddopt:hover { background:var(--soft) }
+  .ddsw { flex:0 0 auto; width:14px; height:14px; border-radius:4px }
+  .ddsw.all { background:conic-gradient(#d50000, #f6bf26, #0b8043, #039be5, #8e24aa, #d50000) }
+  .rdmsg { text-align:left }
+  /* Events: Close on the left; the bell, ✎, copy and the bin on the right (F2.2) */
+  .ev .evtools .evclose { margin-right:auto; font-weight:600 }
+  /* (0.2.8-beta.10) the icons on the right, on a line of their own when the event is narrow */
+  .ev .evtools { flex-wrap:wrap-reverse; justify-content:space-between; align-items:center; row-gap:1px }   /* narrow: the icons go above Close (beta.11) */
+  /* the icons right-aligned (0.2.8-beta.11): in a narrow day they take whole lines above Close (the
+     tools wrap in reverse), each line flush right, never under Close */
+  .ev .evtools .evicons { display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:1px; margin-left:auto; flex:1 1 auto; max-width:100% }
+  .ev .evtools .evicon.on { color:var(--accent) }
+  .alarmpop { position:absolute; z-index:40; width:240px; padding:12px; border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); box-shadow:0 10px 30px rgba(0,0,0,.2) }
+  .alarmpop .title { display:flex; align-items:center; font-weight:700; font-size:14px; margin-bottom:5px }
+  .alarmpop .alarmlist { display:grid; gap:2px; font-size:13.5px } .alarmpop label { display:flex; align-items:center; gap:6px }
+  .alarmpop .eactions { display:flex; justify-content:flex-end; gap:5px; margin-top:8px }
+  /* Print Preview */
+  .printopts { display:flex; flex-wrap:wrap; align-items:flex-end; gap:5px 12px }
+  .printopts .seg button[aria-checked="true"] { background:var(--accent); color:var(--onaccent) }
+  .printopts .seg button { height:34px; padding:0 10px; font-size:13px }
+  .printopts .fld { display:grid; gap:2px; font-size:12px; font-weight:600; color:var(--muted) }
+  .printopts input[type=date] { height:34px; font:inherit; font-size:13px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  .ppweekends { display:flex; align-items:center; gap:6px; height:34px; font-size:13.5px }
+  #printdialog .eactions { display:flex; justify-content:flex-end; gap:8px }
+  /* History, Undo & Logs: a module-like header (F5) */
+  .modsection > .shead { min-height:50px; cursor:default }      /* only its Expand / Close line opens it (beta.3) */
+  .modsection > .shead .bigtitle { flex:0 0 auto }
+  .modsection > .shead .statusbox { flex:0 0 132px; width:132px; height:50px; margin-left:auto; display:flex; align-items:stretch; justify-content:center; padding:3px; border:1px solid var(--line); border-radius:var(--r) }
+  #activity.open > .shead .statusbox { display:none }
+  /* All Rules and Event Templates (beta.3, F5/F6): + then the count box, on the right */
+  /* + in the top right corner, after the count box (0.2.8-beta.5), as in Calendars and Feeds */
+  .modsection > .shead .countbox { margin-left:auto }      /* the count box at the top right; + at the bottom right (0.2.8-beta.11) */
+  .modsection .sfoot { display:flex; justify-content:flex-end; margin-top:5px }
+  .countbox .chip { font-weight:600 }

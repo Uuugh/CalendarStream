@@ -1,0 +1,91 @@
+  /* Activity log */
+  .statline { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:13px; margin:0 0 12px }
+  .statline .k { color:var(--muted) } .statline b { font-weight:600 }
+  /* Five rows tall: each row is 18px text + 12px padding + 1px border; plus the header row */
+  .logwin { max-height:calc(31px * 6); overflow-y:auto; border:1px solid var(--line); border-radius:var(--r) }
+  .logwin th { position:sticky; top:0; background:var(--card) }
+  .logwin tr:last-child td { border-bottom:0 }
+  .debug { font-size:13px; margin-top:12px }
+  /* Copy buttons: an icon */
+  .copybtn { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; min-width:38px; padding:0 10px;
+             background:var(--card); color:var(--accent); border:1px solid var(--line); font-size:13px }
+  .copybtn.done { color:var(--ok) }
+  /* Check results (CCS+ sign-in, Google client) */
+  .check { margin:6px 0 0; font-weight:600; font-size:13px }
+  /* Login forms (CCS+, Google client): a label above each box, the boxes side by side, then the button. */
+  form .pair { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; margin-top:4px }
+  form .pair label.fld { flex:1 1 150px; display:flex; flex-direction:column; align-items:stretch; text-align:left; gap:3px; margin:0; font-size:12px; font-weight:600; color:var(--muted) }
+  form .pair label.fld input { width:100%; min-width:0; font:13px var(--font); padding:7px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  form .pair > button { flex:0 0 auto; margin-left:auto }
+  form .pair.inline { align-items:center; flex-wrap:nowrap }
+  form .pair.inline .rowlabel { flex:1 1 auto; font-size:13px; font-weight:600; white-space:nowrap }
+  form .pair.inline select { flex:0 0 auto; font:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  form .pair.inline > button { margin-left:0 }
+  form .pair > input.solo { flex:1 1 180px; min-width:0; font:13px var(--font); padding:7px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  /* The Settings menu is narrow: smaller boxes so the button or ✓ stays on the same line. */
+  .menu form .pair { flex-wrap:nowrap } .menu form .pair label.fld, .menu .inbox { flex:1 1 0; min-width:0 }
+  .menu form .pair > button, .menu .okmark { padding-left:10px; padding-right:10px }
+  /* The slot next to a login (see okbutton in _macros.html): ✓ Validated; ✕ | ✓ (Cancel and Save, icons
+     only) while typing; Save when nothing valid is saved yet. The pressed side fills the slot. */
+  .okslot { flex:0 0 var(--slotw, 80px); width:var(--slotw, 80px); margin-left:auto; align-self:flex-end; height:28px; margin-bottom:3px;
+            display:flex; align-items:center; justify-content:flex-end; gap:0; overflow:hidden; border-radius:var(--r) }
+  .okslot > * { display:none }
+  .okslot .okmark, .okslot .slotmsg { width:100%; height:28px; align-items:center; justify-content:center; gap:3px; border-radius:var(--r);
+                                      padding:0 4px; font-weight:700; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .okslot .okmark { color:var(--ok); background:var(--okbg) }
+  .okslot button { flex:1 1 0; min-width:0; height:28px; padding:0 3px; font-size:12px; border-radius:0; overflow:hidden;
+                   transition:flex-grow .3s ease, padding .3s ease, opacity .3s ease, background-color .3s ease, color .3s ease }
+  .okslot .slotcancel { border-radius:var(--r) 0 0 var(--r); border-right-width:0 }
+  .okslot .slotsave { border-radius:0 var(--r) var(--r) 0 }
+  .okslot .slotsave .slotword { display:none }
+  .okslot[data-state="ok"] .okmark { display:flex; animation:slotfade .45s ease }
+  .okslot[data-state="needs"] .slotsave { display:inline-flex; border-radius:var(--r) }
+  .okslot[data-state="needs"] .slotsave .slotword, .okslot[data-state="saving"] .slotsave .slotword { display:inline }
+  .okslot[data-state="needs"] .slotsave svg, .okslot[data-state="saving"] .slotsave svg { display:none }
+  .okslot[data-state="edit"] .slotsave, .okslot[data-state="edit"] .slotcancel,
+  .okslot[data-state="cancel"] .slotsave, .okslot[data-state="cancel"] .slotcancel,
+  .okslot[data-state="saving"] .slotsave, .okslot[data-state="saving"] .slotcancel { display:inline-flex }
+  .okslot[data-state="cancel"] .slotcancel, .okslot[data-state="saving"] .slotsave { border-radius:var(--r); border-right-width:1px }
+  .okslot[data-state="cancel"] .slotsave, .okslot[data-state="saving"] .slotcancel { flex-grow:0; padding:0; border-width:0; opacity:0 }
+  .okslot[data-state="saving"] .slotsave { pointer-events:none }
+  .okslot[data-state="verifying"] .slotmsg, .okslot[data-state="valid"] .slotmsg, .okslot[data-state="failed"] .slotmsg { display:flex; animation:slotfade .3s ease }
+  .okslot[data-state="verifying"] .slotmsg { color:var(--warn); background:var(--warnbg) }
+  .okslot[data-state="valid"] .slotmsg { color:var(--ok); background:var(--okbg) }
+  .okslot[data-state="failed"] .slotmsg { color:var(--bad); background:var(--badbg) }
+  @keyframes slotfade { from { opacity:0 } to { opacity:1 } }
+  form .pair[hidden], .mnote[hidden] { display:none }
+  /* A box with a small button inside it, on the right (Public address → This page). */
+  .inbox { position:relative; flex:1 1 180px; min-width:0 }
+  .inbox input { width:100%; font:13px var(--mono); padding:7px 84px 7px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  .inbox .inboxbtn { position:absolute; right:4px; top:50%; transform:translateY(-50%); padding:3px 8px; font-size:12px; font-weight:600;
+                     background:var(--soft); color:var(--accent); border:1px solid var(--line); border-radius:6px; cursor:pointer }
+  /* A note on the left, its button on the right. */
+  .btnrow { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin-top:8px }
+  .btnrow > p { flex:1 1 240px; margin:0 }
+  .btnrow > :last-child { flex:0 0 auto; margin-left:auto }
+  .btnrow > .helpdot:last-child { margin-left:-13px }       /* (?) right after its button */
+  .check.good { color:var(--ok) } .check.bad { color:var(--bad) } .check.unknown { color:var(--warn) }
+  .check .muted { font-weight:400 }
+  .mnote { color:var(--muted); font-size:12px; margin:6px 0 0 }
+  .merr { background:var(--badbg); color:var(--bad); border-radius:var(--r); padding:6px 10px; font-size:13px; margin:6px 0 }
+  .h4 { font-weight:600; font-size:14px; margin:14px 0 0 }
+  /* Month view: pin to keep an event open; empty spots add an event */
+  .day { cursor:copy } .day .ev, .day a { cursor:pointer }
+  .ev .body { position:relative; padding-right:26px }
+  /* Footer */
+  .foot { text-align:center; font-size:12.5px; color:var(--muted); margin:8px 0 0 }
+  .foot a { color:var(--muted) } .foot a:hover { color:var(--accent) }
+  /* Checklist on the left, how-to on the right; stacked on phones. */
+  .helpgrid { display:grid; grid-template-columns:minmax(220px, 1fr) 2fr; gap:8px 28px; margin-top:10px; align-items:start }
+  .helpgrid .checks { margin:4px 0 0 } .helpgrid .h4 { margin-top:0 }
+  @media (max-width:700px) { .helpgrid { grid-template-columns:1fr } }
+  /* Language menu (globe), left of the theme switch */
+  .langwrap { position:relative }
+  .langmenu { position:absolute; right:0; top:calc(100% + 6px); min-width:210px; z-index:11; background:var(--card);
+              border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18); padding:6px }
+  .langmenu[hidden] { display:none }
+  .langmenu button { display:flex; width:100%; justify-content:space-between; gap:12px; background:transparent; color:var(--text);
+                     border:0; border-radius:6px; padding:7px 10px; font-weight:500; text-align:left }
+  .langmenu button:hover, .langmenu button:focus { background:var(--soft) }
+  .langmenu hr { border:0; border-top:1px solid var(--line); margin:4px 2px }
+

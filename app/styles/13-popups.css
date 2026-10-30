@@ -1,0 +1,32 @@
+  /* Pop-ups (rule, event, Print Preview): on a phone they fill the screen, with ← to go back */
+  dialog.popup { border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); color:var(--text); padding:18px; width:min(720px, calc(100vw - 32px));
+                 max-height:calc(100vh - 32px); overflow:auto }
+  dialog.popup.big { width:min(980px, calc(100vw - 32px)); height:calc(100vh - 48px); display:flex; flex-direction:column; gap:5px }
+  dialog.popup:not([open]) { display:none }
+  /* A question or notice (beta.15): small and centred; the choices on one line, or stacked (vert) */
+  dialog.popup.ask { width:min(460px, calc(100vw - 32px)) }
+  dialog.ask .asktext { margin:0 0 16px; font-size:15px; font-weight:600; line-height:1.4 }
+  dialog.ask .askchoices { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px }
+  dialog.ask .askchoices button { height:34px; padding:0 14px }
+  dialog.ask .askchoices.vert { flex-direction:column; align-items:stretch }
+  dialog.ask .askchoices.vert button { height:auto; min-height:34px; padding:7px 12px; justify-content:flex-start; text-align:left; white-space:normal }
+  /* Pop-ups (0.2.8-beta.10): a dark backdrop that keeps the page in view, and a 200 ms fade and scale-up */
+  /* (beta.15) the page dimmed and out of focus behind every pop-up */
+  dialog.popup::backdrop, #reportdialog::backdrop { background:rgba(0,0,0,.55); backdrop-filter:blur(2px) }
+  dialog.addpop { width:min(560px, calc(100vw - 32px)) }
+  dialog.addpop[open], dialog.addpop > form.addmenu { display:grid; gap:10px }
+  dialog.addpop .eactions { display:flex; justify-content:flex-end }
+  dialog.addpop > .addmenu { position:static; width:auto; box-shadow:none; border:0; padding:0; background:none }
+  dialog.popup[open], #reportdialog[open] { animation:popin .2s ease-out }
+  dialog.popup[open]::backdrop, #reportdialog[open]::backdrop { animation:popfade .2s ease-out }
+  @keyframes popin { from { opacity:0; transform:scale(.96) } to { opacity:1; transform:none } }
+  @keyframes popfade { from { opacity:0 } to { opacity:1 } }
+  @media (prefers-reduced-motion:reduce) { dialog.popup[open], #reportdialog[open], dialog.popup[open]::backdrop, #reportdialog[open]::backdrop { animation:none } }
+  .dlghead { display:flex; align-items:center; gap:5px; margin:0 0 5px }
+  .dlghead .title { font-weight:700; font-size:18px }
+  .dlgback { width:34px; height:34px; padding:0 }
+  dialog.popup iframe { flex:1 1 auto; width:100%; min-height:0; border:1px solid var(--line); border-radius:var(--r); background:var(--bg) }
+  #eventdialog iframe { border:0; border-radius:0; background:var(--card) }   /* the event page draws no frame of its own (I2) */
+  @media (max-width:700px) {
+    dialog.popup, dialog.popup.big { width:100vw; max-width:100vw; height:100vh; max-height:100vh; margin:0; border:0; border-radius:0; padding:12px }
+  }

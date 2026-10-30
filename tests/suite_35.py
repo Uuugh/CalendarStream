@@ -25,7 +25,7 @@ async def fake_download(url, username="", password="", etag="", last_modified=""
     return calsync.Download(200, body=FEED, debug={"url": url})
 
 # Icons: every icon the templates and code name is vendored; nothing else is drawn by hand.
-src = "".join(open(f, encoding="utf-8").read() for f in glob.glob(REPO + "/app/templates/*.html") + [REPO + "/app/main.py"])
+src = "".join(open(f, encoding="utf-8").read() for f in glob.glob(REPO + "/app/templates/**/*.html", recursive=True) + [REPO + "/app/main.py"] + glob.glob(REPO + "/app/routes/*.py"))  # (beta.20, F12: partials and routes split out)
 names = set(re.findall(r'icon(?:_mask)?\("([a-z_\-]+)"', src)) | set(re.findall(r'icons\.svg\("([a-z_\-]+)"', src))
 missing = [n for n in names if n not in icons._paths()]
 ok(names and not missing, f"every icon used is a vendored Material Symbol ({len(names)} used; missing {missing})")
@@ -34,7 +34,7 @@ try:
 except KeyError:
     ok(True, "an unknown icon name raises KeyError (a typo shows up)")
 ok(str(icons.mask("check")).startswith('url("data:image/svg+xml,%3Csvg') and "<" not in str(icons.mask("check")), "icon masks are percent-encoded data URLs")
-tpl = "".join(open(f, encoding="utf-8").read() for f in glob.glob(REPO + "/app/templates/*.html"))
+tpl = "".join(open(f, encoding="utf-8").read() for f in glob.glob(REPO + "/app/templates/**/*.html", recursive=True))
 ok("999px" not in tpl and "border-radius:50%" not in tpl, "no pills or circles: rounded rectangles only")
 ok('viewBox="0 0 16 16"' not in tpl and 'viewBox="0 0 24 24"' not in tpl and 'viewBox="0 0 18 18"' not in tpl, "no hand-drawn, Bootstrap or Feather icons left")
 

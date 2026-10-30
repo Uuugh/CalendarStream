@@ -1,0 +1,64 @@
+  /* ---- 0.2: Calendar Sources and Calendar Destinations ---------------------------------------- */
+  #sources, #destinations { overflow:visible }      /* the + menus may reach past a short card */
+  .cardhead { display:flex; align-items:center; gap:10px }
+  .bigtitle { flex:1; margin:0; font-size:24px; font-weight:600; letter-spacing:-.01em }
+  button.plus { width:38px; height:38px; padding:0; font-size:24px; font-weight:400 }
+  .addwrap { position:relative }
+  .addmenu { position:absolute; right:0; top:calc(100% + 6px); z-index:12; width:min(500px, calc(100vw - 40px)); display:grid; gap:10px;
+             background:var(--card); border:1px solid var(--line); border-radius:var(--rbox); box-shadow:0 10px 30px rgba(0,0,0,.2); padding:14px }
+  .addmenu .title, .addbody .title { font-weight:700; font-size:15px }
+  .addmenu .opt, .addbody .opt { display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:var(--r); padding:10px 12px; margin:0 }
+  .addmenu .opt > div, .addbody .opt > div { flex:1; min-width:0 }
+  .addmenu .opt.col, .addbody .opt.col { flex-direction:column; align-items:stretch }
+  .addmenu .opt.col .pair, .addbody .opt.col .pair { margin-top:2px }
+  .addmenu .lbl, .addbody .lbl { display:block; font-size:13px; font-weight:600; margin-bottom:4px }
+  .pubask { border:1px solid var(--line); border-radius:var(--r); padding:10px 12px; background:var(--soft) }
+  .empty { color:var(--muted); font-size:14px; margin:10px 0 2px }
+  .intervalform { display:flex; align-items:center; gap:8px; margin:0; font-size:13.5px; white-space:nowrap }
+  .intervalform label { font-weight:600 }
+  .intervalform input { width:78px; height:32px; font:inherit; padding:0 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  .cfgbody { margin-top:12px }
+  .cfggrid { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:10px 16px; align-items:end }
+  .cfggrid > form.ccsform { display:contents }
+  .cfggrid .siteaddr { grid-column:1; grid-row:1; display:flex; flex-direction:column; gap:3px; margin:0; font-size:12px; font-weight:600; color:var(--muted) }
+  .cfggrid .siteaddr input { width:100%; font:13px var(--mono); padding:7px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  .cfggrid .pair { grid-column:1 / -1; grid-row:2; margin:0 }
+  .cfggrid .check { grid-column:1 / -1; margin:0 }
+  .cfggrid .uploadform { grid-column:2; grid-row:1; display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin:0; font-size:13.5px }
+  .cfggrid .uploadform > label:first-of-type { font-weight:600 }
+  @media (max-width:760px) { .cfggrid { grid-template-columns:1fr } .cfggrid .siteaddr, .cfggrid .pair, .cfggrid .uploadform { grid-column:1; grid-row:auto }
+                             .cfggrid .uploadform { justify-content:flex-start } }
+  .fixedrows { display:grid; gap:6px; margin-top:6px }
+  .fixedrule .fixedname { flex:1 1 200px; display:flex; align-items:center; height:36px; padding:0 10px; border:1px solid var(--line); border-radius:var(--r); font-size:13px; color:var(--muted) }
+  .fixedrule[data-mode="allday"] input.dur { visibility:hidden }
+  .srcfoot { display:flex; align-items:center; gap:8px; margin-top:12px; justify-content:flex-end; flex-wrap:wrap }
+  .srcfoot details.guide.inline { margin-right:auto }
+  .srcfoot form { margin:0 }
+  .swatch { display:inline-block; flex:0 0 auto; width:22px; height:16px; border-radius:4px; background:var(--c); vertical-align:-2px }
+  .src .nameeditor { margin:10px 0 0 }
+  .srcrow { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px }
+  .srcrow .fieldrow { margin:0 }
+  .srcrow .statusmsg { flex:1 1 220px; margin:0 }
+  .srcrow form.inline { margin-left:auto }
+  .feed { display:flex; gap:6px } .feed input { flex:1; min-width:0; font:13px var(--mono); padding:7px 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  button.danger { color:var(--bad) }
+  .removeform { margin-top:12px }
+  .removeform p, .removeform label { flex:1 1 240px }
+  .srcpicks { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:4px; font-size:14px }
+  .srcpick { display:inline-flex; align-items:center; gap:6px; cursor:pointer }
+  .destform .pair label.fld { flex:0 1 320px }
+  .addmenu input.solo, .addbody input.solo { width:100%; font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }
+  .rules .boxhead { margin-bottom:6px } #templates form.tagsform, #ruletemplates form.tagsform { margin-top:10px }
+  .rtpicks { display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin:0 0 8px; font-size:13.5px } .rtpicks .k { margin:0 }
+  .rulerow[data-action="color"] .act.event, .rulerow[data-action="event"] .act.color { display:none }
+  .act { display:inline-flex; align-items:center; gap:6px; flex-wrap:wrap }
+  .arrow { color:var(--muted) }
+  .editor .tagrow input.dur { flex:0 0 62px; width:62px; text-align:center }
+  .tplrow[data-kind="allday"] input.dur { visibility:hidden }
+  .editor .tagrow .deltag { color:var(--muted) } .editor .tagrow .deltag:hover { color:var(--bad) }
+  .editor .tagrow input[name=tag] { flex:1 1 120px }
+  .editor .tagrow input[name=tpl_location] { flex:1 1 100px }
+  @media (max-width:700px) {
+    .editor .tagrow { flex-wrap:wrap; border:1px solid var(--line); border-radius:var(--r); padding:8px }
+    .editor .tagrow input[name=tag], .editor .tagrow input[name=tpl_title] { flex-basis:100% }
+  }

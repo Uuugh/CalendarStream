@@ -1,0 +1,136 @@
+    <div class="menuwrap">
+      <button type="button" class="iconbtn" id="menubtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="menu" title="{{ _('Settings') }}">
+        {{ icon("menu", 20) }}
+      </button>
+      <div class="menu" id="menu" role="dialog" aria-label="{{ _('Settings') }}" hidden>
+        <div class="title">{{ _('Settings') }}</div>
+        {# Laid out like the other logins; "✓ Signed in" until something is typed, then the
+           current password (and the new one again) are asked for and Save appears. #}
+        <div class="mgroup" id="pagelogin">
+          <div class="mhead">{{ _('Administrator') }}</div>
+          <form method="post" action="/settings/login" class="clientform watch" autocomplete="off">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <div class="pair">
+              <label class="fld" for="luser"><span>{{ _('User name') }}</span>
+                <input type="text" id="luser" name="user" value="{{ page_user }}" required maxlength="64" autocomplete="username" spellcheck="false"></label>
+              <label class="fld" for="lnew"><span>{{ _('Password') }}</span>
+                <input type="password" id="lnew" name="password" minlength="8" data-strength autocomplete="new-password" placeholder="{{ _('Type a new one to change it') }}"></label>
+              {{ m.okbutton(true, _('Signed in'), _('Save')) }}
+            </div>
+            <div class="pair more" hidden>
+              <label class="fld" for="lcur"><span>{{ _('Current password') }}</span>
+                <input type="password" id="lcur" name="current" autocomplete="current-password" data-required></label>
+              <label class="fld" for="lconf"><span>{{ _('New password again') }}</span>
+                <input type="password" id="lconf" name="confirm" minlength="8" autocomplete="new-password"></label>
+            </div>
+            <p class="mnote more" style="margin:6px 0 0" hidden>{{ _('Then sign in again with the new login.') }}</p>
+          </form>
+          <form method="post" action="/logout" class="signout"><input type="hidden" name="csrf" value="{{ csrf }}">
+            <button class="ghost">{{ icon("logout", 16) }} {{ _('Sign out') }}</button></form>
+        </div>
+
+        {# Right under the page login. "This page" sits inside the box; Save is on the same line. #}
+        <div class="mgroup" id="public">
+          <div class="mhead">{{ _('Public address') }}{{ help(_('This page’s https:// address, e.g. <code>https://cal.example.com</code>: for feed links and Google sign-in.'), 'left') }}</div>
+          {# F2.1 (0.2.8-beta.3): like every field changed in place: ✓ Saved, then ✕ | ✓ while typing #}
+          <form method="post" action="/settings/public-url" class="clientform watch" data-swap="#public|#destinations">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <div class="pair">
+              <div class="inbox">
+                <input type="text" class="code" id="publicurl" name="url" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
+                <button type="button" class="inboxbtn" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
+              </div>
+              {{ m.okbutton(public.url, _('Saved'), _('Save'), name="action", value="save") }}
+            </div>
+          </form>
+          {% if not public.url %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
+          {# More addresses (0.2.8-beta.17, F11): each always editable, + for another; a feed link can use any #}
+          <form method="post" action="/settings/public-extra" class="clientform publicextra" id="publicextra" data-swap="#public|#destinations">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <div class="k">{{ _('More addresses') }}{{ help(_('Other addresses people reach this page at (another domain). A Calendar Feed’s link can use any of them; Google’s sign-in uses the one above.'), 'left') }}</div>
+            <div class="extrarows">
+              {% for u in public.extra %}<div class="extrarow"><input type="text" class="code" name="url" value="{{ u }}" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
+                <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div>{% endfor %}
+            </div>
+            <div class="extrafoot"><button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button>
+              {{ pair("publicextra") }}</div>
+            <template class="extratpl"><div class="extrarow"><input type="text" class="code" name="url" value="" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
+              <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div></template>
+          </form>
+        </div>
+
+        {# Google Calendar sync (0.2.8-beta.4, moved here from Feeds): the one Google sign-in every Google
+           calendar in Feeds uses: the client ID and secret (with the step-by-step guide), Connect /
+           Disconnect, the account and its last sync. Without it, + Google Calendar in Feeds makes a feed
+           to subscribe to instead. #}
+        {% set g = google %}
+        {% set gvalid = g.configured and g.check.ok %}
+        {# (0.2.8-beta.17, F13) no administrator's e-mail here any more: ☰ Settings sets up the API only #}
+        <div class="mgroup" id="googlesync">
+          {# (0.2.8-beta.18, F3) the API only: no account and no sync here. Its title over what it's for; the
+             Client ID and secret, editable at any time (I2); the Status/Action box: its health over Connect,
+             Reconnect or Fix; Remove in the lower left; the ways to get a client while it isn't working. #}
+          <div class="mhead">{{ _('Google Calendar API Sync') }}{{ help(_('Optional, for the admin. It adds the Google modules to Feeds (Google 1-way and 2-way Sync): changes within seconds, rule colors, reminders. Each module then connects its own Google account.'), 'left') }}</div>
+          <p class="mnote" style="margin:0 0 4px">{{ _('For the Google modules in Feeds') }}</p>
+          {% if not (gvalid and g.redirect_ok and g.check.redirect_ok and g.check.redirect_uri == g.redirect_uri) %}
+            <div class="gassist">
+              <div class="gway">
+                <div class="gwayhead">{{ icon("smart_toy", 18) }} {{ _('Set it up with Claude') }}</div>
+                <p class="mnote">{{ _('Claude does the Google Cloud steps in your signed-in browser; you confirm what Google asks. Copy into a chat with Claude:') }}</p>
+                <div class="feed gask"><textarea id="gclaude" class="code" readonly rows="4">{{ _('Please set up Google Calendar API Sync for my CalendarStream at {public} in my browser. In Google Cloud Console: create a project named CalendarStream; enable the Google Calendar API; set up Google Auth Platform (app name CalendarStream, audience External, support and contact e-mail {email}) and publish the app, or add {email} as a test user; under Data access add the scope https://www.googleapis.com/auth/calendar.app.created; create an OAuth client (Web application, name CalendarStream) with the authorized redirect URI {redirect}. Then open {public}/?menu=settings#googlesync, paste the Client ID and Client secret into Google Calendar API Sync and press Connect: it checks the client and the redirect URI with Google first, and says what to fix if either is wrong. Ask me before anything Google asks me to confirm.', public=public.url or public.here, email=g.admin_email or _('my Gmail address'), redirect=g.redirect_uri if g.redirect_ok else _('(set the public address in ☰ Settings first)')) }}</textarea>{{ m.copybtn("gclaude") }}</div>
+                <p class="mnote">{{ _('No browser linked? Claude in Chrome (extension), or the Claude desktop app.') }}</p>
+              </div>
+              <div class="gway">
+                <div class="gwayhead">{{ icon("checklist", 18) }} {{ _('Guided setup') }}</div>
+                <p class="mnote">{{ _('Google’s pages open beside this one, with Copy buttons. Steps tick themselves when confirmed; tick the rest.') }}</p>
+                <button type="button" class="ghost gstart" onclick="var g = document.querySelector('#googlesync details.gsteps'); if (g) { g.open = true; g.scrollIntoView({ behavior: 'smooth', block: 'start' }); }">{{ _('Start the guided setup') }}</button>
+              </div>
+            </div>
+          {% endif %}
+          {{ m.google_client(g, "f") }}
+        </div>
+
+        {# Check for updates: how often, for this install's channel (beta or stable) only. #}
+        {# Updates (0.2.8-beta.5) laid out like a module header, with nothing to expand: its title over the
+           channel, the state over the next check (on the right), and the status box: the state over
+           Check now (or Update). Under it, how often to check and Auto-update, changed in place. #}
+        {% set ucls, ulabel = ("run", _('Update available')) if update.available else (("good", _('Up to date')) if update.info.newest else ("run", _('Not checked'))) %}
+        <div class="mgroup" id="updates">
+          <form method="post" action="/settings/updates" class="clientform" data-swap="#updates|.topbar .ver">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="autoform" value="1">
+            <div class="module bare"><div class="srchead">
+              <div class="srcleft">
+                <div class="namebox srcname">{{ _('Updates') }}</div>
+                <div class="namebox srcnote">{{ _('Beta versions') if update.channel == 'beta' else _('Stable versions') }}</div>
+              </div>
+              <div class="srcright">
+                <p class="srcstatus">{% if update.available %}{{ _('Version <b>{v}</b> is out', v=update.available) }}{% elif update.checked %}{{ _('Last checked <b>{when}</b>', when=update.checked) }}{% else %}&nbsp;{% endif %}</p>
+                <p class="srcnext">{% if update.next %}{{ _('Next check @ {when}', when=update.next) }}{% else %}{{ _('Automatic checks are off') }}{% endif %}</p>
+              </div>
+              <div class="statusbox {{ ucls }}">
+                {{ chip(ucls, ulabel) }}
+                {# with a newer version out, Update instead of Check now (the updater, or how to update) #}
+                {# Update now works like Sync Now (0.2.8-beta.11): Updating… while it downloads and restarts, then Updated (or Failed) #}
+                {% if update.available and update.can_update %}<span class="syncform"><button type="button" class="syncnow upgradebtn" data-state="idle"><span class="sn idle">{{ icon("upgrade", 14) }}{{ _('Update now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}<span class="snword">{{ _('Downloading…') }}</span></span><span class="sn done">{{ icon("check", 14) }}<span class="snword">{{ _('Updated') }}</span></span><span class="sn fail">{{ icon("warning", 14) }}<span class="snword">{{ _('Update failed') }}</span></span></button></span>
+                {% elif update.available %}<a class="btn upgradebtn" href="https://github.com/Uuugh/CalendarStream#updating" target="_blank" rel="noopener" title="{{ _('Run the installer again to update.') }}">{{ icon("upgrade", 15) }}{{ _('Update now') }}</a>
+                {% else %}{# Check now works like Sync Now: Checking… → Up to date (green pulse), Update found (yellow) or Couldn't check (yellow) #}
+                <span class="syncform"><button class="syncnow checknow" name="action" value="check" data-state="idle"><span class="sn idle">{{ _('Check now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Checking…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Up to date') }}</span><span class="sn found">{{ icon("upgrade", 14) }}{{ _('Update found') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Couldn’t check') }}</span></button></span>{% endif %}
+              </div>
+            </div></div>
+            {# one line (0.2.8-beta.11): Check for updates [Hourly ▾] ☐ Auto-update #}
+            <div class="pair inline updrow">
+              <label class="rowlabel" for="updfreq">{{ _('Check for updates') }}</label>
+              <select id="updfreq" name="frequency" onchange="this.form.requestSubmit()">
+                {% for f in update.frequencies %}<option value="{{ f }}"{% if f == update.frequency %} selected{% endif %}>{{ {"hourly": _('Hourly'), "weekly": _('Weekly'), "monthly": _('Monthly'), "never": _('Never')}[f] }}</option>{% endfor %}
+              </select>
+              {# Auto-update: installs newer versions by itself; needs the updater #}
+              <label class="autoupd" title="{{ _('Install newer versions by themselves (with the updater)') if update.can_update else _('Needs the updater: run the installer again › Update from the status page: yes.') }}">
+                <input type="checkbox" name="auto" value="1"{% if update.auto %} checked{% endif %}{% if not update.can_update and not update.auto %} disabled{% endif %} onchange="this.form.requestSubmit()"> {{ _('Auto-update') }}</label>
+            </div>
+            {% if update.info.error %}<p class="check bad">{{ icon("cancel", 15) }} {{ msg(update.info.error) }}</p>{% endif %}
+            {% if not update.updater %}<p class="mnote" style="margin:5px 0 0">{{ _('To update from here: run the installer again › Update from the status page: yes.') }}</p>
+            {% elif update.can_update is false %}<p class="mnote" style="margin:5px 0 0">{{ _('This install runs an exact version (IMAGE_TAG): update it with the installer.') }}</p>{% endif %}
+          </form>
+        </div>
+      </div>
+    </div>

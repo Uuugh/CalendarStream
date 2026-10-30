@@ -1,0 +1,156 @@
+  /* Activities: the latest line on the right, before Healthy */
+  .modsection > .shead .peek.latest { flex:1 1 0; text-align:right; margin-left:auto; padding-right:5px }
+  .modsection > .shead .peek.latest + .statusbox { margin-left:0 }
+  .modsection > .shead .statusbox .chip { background:transparent; height:auto }
+  .modsection { position:relative }
+  .modsection:not(.open) { padding-bottom:12px }
+  .modsection > .cfgline { position:relative; height:18px; margin:5px 0 0; text-align:center }
+  .modsection > .cfgline::before { content:""; position:absolute; left:0; right:0; top:50%; border-top:1px solid var(--line) }
+  .modsection:not(.open) > .cfgline { position:absolute; left:18px; right:18px; bottom:-9.5px; margin:0 }
+  .modsection:not(.open) > .cfgline::before { display:none }
+  .modsection.open > .shead { margin-bottom:0 }
+  .modsection > .sbody { margin-top:5px }
+  .modsection:not(.open) { margin-bottom:20px }
+
+/* A rule's Color (0.2.8-beta.5): Google's 11 colors to choose from */
+.act .palette { display:inline-flex; flex-wrap:wrap; gap:4px; align-items:center }
+.act .pal { width:24px; height:24px; padding:0; border:2px solid transparent; border-radius:6px; background:var(--c); box-shadow:inset 0 0 0 1px rgba(0,0,0,.08) }
+.act .pal[aria-checked="true"] { border-color:var(--text); box-shadow:inset 0 0 0 2px var(--card) }
+.act .pal:hover { transform:scale(1.08) }
+
+/* Settings → Updates (0.2.8-beta.5): a module header without a box around it, nothing to expand */
+.menu .module.bare { padding:0; margin:0 0 5px; border:0; background:none }
+.menu .module.bare .srchead { gap:10px }
+.menu .module.bare .srcright { justify-items:end } .menu .module.bare .srcright p { text-align:right }
+.menu .module.bare .statusbox { flex:0 0 132px; width:132px; height:50px; display:flex; flex-direction:column; justify-content:center; gap:2px; padding:3px;
+                                border:1px solid var(--line); border-radius:var(--r) }
+.menu .module.bare .statusbox .chip { background:transparent; height:18px; padding:0; justify-content:center }
+.menu .module.bare .statusbox > button, .menu .module.bare .statusbox > .btn { height:22px; width:100%; padding:0 6px; font-size:12.5px; border-radius:6px;
+                                display:flex; align-items:center; justify-content:center; gap:3px }
+/* Check now is a Sync Now (0.2.8-beta.8): at the bottom of the box, growing over it while it checks */
+.menu .module.bare .statusbox:has(.syncform) { justify-content:flex-start }
+.syncnow[data-state="found"] .sn.found { display:inline-flex; animation:sn-in .25s ease-out }
+.syncnow[data-state="found"] { background:var(--card); color:var(--run); opacity:1; animation:pulse-run 1.1s ease-out 2 }   /* waiting on you: the pressed look (beta.14) */
+.menu .module.bare .srcleft { flex:0 1 210px; min-width:0; display:grid; gap:2px }
+.menu .module.bare .namebox { background:none; border-color:transparent; padding-left:0 } /* fixed text, not fields */
+.menu .module.bare .srcnote { font-weight:400; color:var(--muted) }
+
+/* 0.2.8-beta.9: no handle where there's nothing to reorder (one module, one rule) */
+.sortable > .modrow:only-child > .handle, .sortable > .ruleline:only-child > .handle, .rulelist > .ruleline:only-child > .handle { visibility:hidden }
+/* All Rules: the rule lines' handles sit in the section's right margin, like the modules' */
+#rules .rulelist > .ruleline { gap:2px; margin-right:-16px }
+#rules .rulelist > .ruleline > .handle { flex-basis:14px; width:14px }
+#rules .rulelist > .ruleline > .handle .hmove { width:14px }
+.gconnwrap { margin-bottom:6px }
+
+/* Settings → Google Calendar API Sync (0.2.8-beta.10): the two ways to set it up, and the guided steps */
+.menu .gassist { display:grid; gap:5px; margin:6px 0 }
+.menu .gway { border:1px solid var(--line); border-radius:var(--r); padding:8px 10px; background:var(--bg) }
+.menu .gwayhead { display:flex; align-items:center; gap:6px; font-weight:700; font-size:13.5px; margin-bottom:3px }
+.menu .gask { display:flex; gap:4px; align-items:flex-start; margin:4px 0 }
+.menu .gask textarea { flex:1 1 auto; min-width:0; font:12px/1.45 var(--mono); padding:6px 8px; border:1px solid var(--line); border-radius:var(--r);
+                       background:var(--card); color:var(--text); resize:vertical }
+details.gsteps ol { padding-left:0; list-style:none; counter-reset:gstep }
+details.gsteps ol > li { position:relative; padding:6px 8px 6px 30px; border-radius:var(--r); counter-increment:gstep }
+details.gsteps ol > li > .steptick { position:absolute; left:6px; top:8px; margin:0; width:16px; height:16px; accent-color:var(--ok) }
+details.gsteps ol > li.current { background:var(--runbg); outline:1px solid color-mix(in srgb, var(--run) 35%, var(--line)) }
+details.gsteps ol > li.done { color:var(--muted) }
+.menu .module.bare .cfgline { margin-top:2px }
+/* A folded Settings group (Google Calendar API Sync while it works): its Expand line sits in the
+   group's bottom border, as a module's does; it was placed against the whole menu, off the screen */
+.menu .mgroup { position:relative }
+.menu .module.bare .srcname .helpdot { margin-left:1px }
+.menu #googlesync .gconnwrap { margin-top:6px }
+/* Deleted in Google, waiting for a choice (0.2.8-beta.10) */
+/* the trash at the end of a credentials row (0.2.8-beta.11) */
+.menu .credtrash { flex:0 0 34px; width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); align-self:flex-end }
+.menu .credtrash:hover { color:var(--bad) }
+/* The calendar's search line and its + (0.2.8-beta.11) */
+.calsearch { display:flex; flex-wrap:wrap; align-items:center; gap:5px 8px; margin:5px 0 8px }
+.calsearch[hidden] { display:none }
+.calsearch .inbox { flex:1 1 220px; min-width:0 }
+.calsearch input[type=search], .calsearch select, .calsearch input[type=date] { height:34px; font:13px var(--font); padding:0 8px; border:1px solid var(--line);
+                                                                               border-radius:var(--r); background:var(--bg); color:var(--text); box-sizing:border-box }
+.calsearch input[type=search] { width:100% }
+.calsearch .qdate { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; color:var(--muted) }
+.calhead { position:relative; padding-right:46px }
+.calhead .calplus { position:absolute; top:0; right:0 }     /* always the top right corner, even when the controls wrap */
+/* Google Calendar API Sync's Remove (0.2.8-beta.12): lower left, like a module's, the tick beside it */
+.menu .gremoverow { display:flex; align-items:center; justify-content:flex-start; gap:10px; margin-top:6px }
+.menu .gremoverow button.danger { display:inline-flex; align-items:center; gap:4px; height:34px; padding:0 12px }
+.menu .gremoverow label.mnote { margin:0; display:inline-flex; align-items:center; gap:6px }
+/* Google Calendar API Sync → Connect (0.2.8-beta.14): a status box at the end of the credentials row */
+.menu .gconnect .pair { align-items:flex-end }
+.menu .gconnect .gbox { flex:0 0 132px; width:132px; height:50px; display:flex; flex-direction:column; justify-content:flex-start; gap:2px; padding:3px;
+                        border:1px solid var(--line); border-radius:var(--r); position:relative; box-sizing:border-box }
+.menu .gconnect .gbox .chip { background:transparent; height:18px; padding:0; justify-content:center; margin-top:1px }
+.menu .gstepmsg { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:6px 0 0 }
+.menu .gstepmsg[hidden] { display:none }
+.menu .gstepmsg .gsteptext { flex:1 1 220px }
+.menu .gstepmsg .gstepfix { display:inline-flex; gap:6px; flex-wrap:wrap }
+
+/* Reduced motion (beta.14): nothing slides, grows, fades or pulses; every state change is instant */
+@media (prefers-reduced-motion:reduce) {
+  .statusbox .syncform, .statusbox .chip, .cfgtoggle .arr, .section > .shead .toggle::before, .okslot *, .pairbtns *, button.syncnow, .clockswitch button span { transition:none !important }
+  .syncnow .sn, .updslot .updtext, .okslot *, .brk.flash { animation:none !important }
+}
+
+/* Import / Manual Upload (beta.15): the heading, the file (filling the line), the dates and the button */
+.importrow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:10px 0 0 }
+.importrow > .cfghead { margin:0; flex:0 0 auto }
+.filefield { flex:1 1 200px; min-width:0; position:relative; display:flex; align-items:center; gap:6px; height:34px; padding:0 10px;
+             border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--muted); font-size:13.5px; cursor:pointer }
+.filefield input { position:absolute; inset:0; opacity:0; cursor:pointer }
+.filefield .filename { overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.filefield .filename.chosen { color:var(--text) }
+.importrow > button { margin-left:auto; flex:0 0 auto }
+/* A date range (beta.15): From | To | All */
+.daterange { display:inline-flex; align-items:flex-end; gap:6px; flex-wrap:wrap }
+.daterange .fld { display:grid; gap:2px }
+.daterange .fld > span { font-size:12px; font-weight:600; color:var(--muted) }
+.daterange input[type=date] { height:34px }
+.daterange input[type=date].off { opacity:.45; pointer-events:none }
+.allbox { display:inline-flex; align-items:center; gap:4px; height:34px; font-size:13.5px; white-space:nowrap }
+.importrow .daterange { align-items:center }
+.importrow .daterange .fld { display:flex; align-items:center; gap:4px }   /* (review #7.1) From / To beside their dates, on one line */
+/* The remove pop-up (beta.15) */
+#removedialog .rmopts { display:grid; gap:6px; margin:6px 0 }
+#removedialog .rmopt { display:flex; align-items:center; gap:6px; flex-wrap:wrap }
+#removedialog .rminto { height:34px; width:auto; max-width:100% }
+#removedialog .rmrules { display:flex; align-items:center; gap:4px 14px; flex-wrap:wrap; margin:4px 0 8px 22px; font-size:13.5px }
+#removedialog .rmrules label { display:inline-flex; align-items:center; gap:4px }
+#removedialog .rmdl { display:flex; align-items:center; gap:6px; margin:8px 0 0; font-size:13.5px }
+/* Import: an event already there (beta.15) */
+#conflictdialog .cfpair { display:grid; grid-template-columns:auto 1fr; gap:4px 12px; margin:0 0 12px; font-size:14px }
+#conflictdialog .cfpair dt { color:var(--muted); font-weight:600 } #conflictdialog .cfpair dd { margin:0 }
+#conflictdialog .cfrest { display:flex; align-items:center; gap:6px; margin:0 0 12px; font-size:13.5px }
+.colorbox.free { width:34px; height:34px; flex:0 0 34px }
+.colorbox .nocolor { background:repeating-linear-gradient(135deg, var(--card) 0 4px, var(--line) 4px 6px) }
+/* History, Undo & Logs (beta.15) */
+#activity .shead .peek.latest { display:grid; gap:0; min-width:0; flex:1 1 auto; font-size:12.5px; line-height:17px; overflow:hidden; max-height:50px }
+#activity .peekline { display:flex; align-items:center; gap:6px; min-width:0 }
+#activity .peekline .ptime { color:var(--muted); flex:0 0 auto }
+#activity .peekline .pmsg { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+#activity .peekline .undobtn { width:22px; height:17px; border:0; border-radius:4px }   /* small: a rounded rectangle, never a pill */
+#activity .peekline.undone .pmsg, #activity tr.undone td:nth-child(3) { text-decoration:line-through; color:var(--muted) }
+.histfilter { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:10px 0 6px; color:var(--muted) }
+.histfilter select, .histfilter input { height:34px; width:auto }
+.histfilter .hfwords { flex:1 1 160px; min-width:0 }
+.logwin .htime { width:140px } .logwin .htype { width:90px } .logwin .hundo { width:40px }
+.logwin td:nth-child(2) { color:var(--muted); font-size:12.5px }
+.logwin .undobtn { width:30px; height:26px; padding:0 }
+.vh { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0) }
+.histfoot { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin:8px 0 0 }
+.histfoot .keepform { display:flex; align-items:center; gap:8px; margin:0; font-size:13.5px }
+.histfoot .keepform input[type=number] { width:70px; height:34px; text-align:center }
+.histfoot .btn2 { display:inline-flex; align-items:center; gap:6px }
+#activity.open > .shead .peek.latest { display:none }        /* (folded only: open, the list itself is there) */
+/* A feed's dates and calendars on one line (beta.15) */
+.destline { display:flex; align-items:flex-end; gap:10px 18px; flex-wrap:wrap }
+.destline .destcals { flex:1 1 260px; min-width:0 }
+.gaccount { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:10px 0 0; font-size:13.5px }
+.gaccount .k { font-weight:600 }
+.signout { display:flex; justify-content:flex-end; margin:6px 0 0 } .signout button { display:inline-flex; align-items:center; gap:4px; height:30px }
+#tpladd .deltag, #tpladd .addtag { display:none }        /* (one new template: nothing to delete or add here) */
+#tpladd .tplrow { flex-wrap:wrap }
+

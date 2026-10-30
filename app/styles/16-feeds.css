@@ -1,0 +1,104 @@
+  /* --- Feeds (0.2.8-beta.17) --------------------------------------------------------------------- */
+  /* F12: the note in the header, after the label. Expanded: a rounded field that starts with the (i), so the
+     (i) stays where it was; folded: only the (i), raised, when there's a note */
+  .module .nameline > .notebox, .addname > .notebox { display:inline-flex; align-items:center; min-width:0 }
+  .module .notebox > .notedot { margin-left:2px; top:-.35em }
+  .module.cfgopen .nameline > .notebox, .addname > .notebox { flex:1 1 0; height:24px; margin-left:5px; padding:0 0 0 4px; border:1px solid var(--line);
+                                                       border-radius:6px; background:var(--bg) }
+  .module.cfgopen .notebox > .notedot, .addname .notebox > .notedot { top:0; margin-left:0 }
+  .noteinput { flex:1 1 auto; min-width:0; height:22px; border:0; padding:0 6px; background:transparent; color:var(--text); font:13px var(--font) }
+  .noteinput:focus { outline:none } .notebox:focus-within { outline:2px solid color-mix(in srgb, var(--accent) 45%, transparent) }
+  .module.cfgopen .nameline > .namebox { flex:0 1 280px }
+  .addname { display:flex; align-items:center; gap:0 }
+  .addname > .namebox { flex:0 1 280px; height:30px; padding:0 9px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text); font:600 14px var(--font) }
+  .addname > .notebox { height:30px; border-radius:var(--r) }
+  /* The module's body: its link, account and Include on the left; for a feed, the app buttons on the right */
+  .destbody { display:flex; gap:9px; align-items:flex-start; margin-top:5px }
+  .destmain { flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:5px }
+  .destmain > .k, #adddest .k { margin:0 0 -3px }      /* 2 px between a label and its field */
+  .addbtns { flex:0 0 200px; display:flex; flex-direction:column; gap:8px; margin-top:16px }
+  .appbtn { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; height:40px; padding:0 10px; border-radius:var(--r);
+            font-size:14px; font-weight:600; text-decoration:none; white-space:nowrap; border:1px solid transparent }
+  .appgoogle { background:#1a73e8; color:#fff } .appapple { background:#f5f5f7; color:#1d1d1f; border-color:#d2d2d7 } .appoutlook { background:#0f6cbd; color:#fff }
+  button.appsend { background:var(--card); color:var(--accent); border-color:var(--line) }
+  .appbtn:hover { filter:brightness(1.07) }
+  @media (max-width:700px) { .destbody { flex-direction:column; align-items:stretch } .addbtns { flex-basis:auto; margin-top:0 } }
+  /* F10: the feed link: the address (a drop-down), /calendar/, the stream name (a field) and .ics, the copy inside */
+  .feedlink { display:flex; align-items:center; gap:0; height:34px; padding:0 0 0 3px; border:1px solid var(--line); border-radius:var(--r);
+              background:var(--bg); font:13px var(--mono); min-width:0; flex:none }
+  .feedlink select.fbase { flex:0 1 auto; min-width:0; max-width:46%; height:28px; padding:0 4px; border:1px solid var(--line); border-radius:6px;
+                           background:var(--card); color:var(--text); font:inherit }
+  .feedlink .fmid { color:var(--muted); white-space:nowrap; padding:0 2px }
+  .feedlink input.fstream { flex:1 1 120px; min-width:60px; height:28px; padding:0 6px; border:1px solid var(--line); border-radius:6px;
+                            background:var(--card); color:var(--text); font:inherit }
+  .feedlink .fmid:last-of-type { padding-right:4px }
+  .feedlink .feedcopy { position:static; transform:none; flex:0 0 auto; width:30px; height:28px; padding:0; margin-right:2px; border:0; background:transparent; color:var(--muted) }
+  .feedlink .feedcopy.done { width:auto; padding:0 6px; color:var(--ok); font:600 12px var(--font) }
+  /* the account line: the Gmail, or Connect me | Invite someone */
+  .accline { display:flex; align-items:center; gap:5px; flex-wrap:wrap; min-height:34px }
+  .accline.mnote { padding:0 10px; border:1px solid var(--line); border-radius:var(--r); margin:0 }
+  .accline > .mnote { flex:1 1 auto; margin:0 }
+  .accline .gmail { flex:1 1 auto; font-size:13px }
+  .invitebox { display:flex; flex-direction:column; gap:2px; padding:5px 9px; border:1px solid var(--line); border-radius:var(--r); background:var(--soft) }
+  .invitebox .btnrow { display:flex; gap:5px; margin-top:3px; flex-wrap:wrap }
+  /* Include: the calendars on the left, the dates on the right, From over To */
+  .feedinclude { border:1px solid var(--line); border-radius:var(--r); padding:5px 9px; display:flex; flex-direction:column; gap:2px }
+  .feedinclude .fihead2 { margin:0; font-size:14px; font-weight:600; color:var(--text) }
+  .ficols { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start }
+  .ficols .destcals { flex:1 1 240px; min-width:0 } .ficols .k { margin:0 }
+  .destdates { display:flex; flex-direction:column; gap:2px }
+  .dfield { display:grid; grid-template-columns:40px auto; align-items:center; gap:6px; font-size:14px }
+  .dfield input { height:30px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text); font:inherit; font-size:13.5px }
+  /* Information & Instructions: which module (this one's column lit), then how to */
+  details.feedinfo { margin:5px 0 0 }
+  .fitable { display:grid; grid-template-columns:150px repeat(3, minmax(0, 1fr)); margin-top:5px; border:1px solid var(--line); border-radius:var(--r);
+             overflow:hidden; font-size:12.5px; line-height:1.35 }
+  .firow { display:contents }
+  .firow > div { padding:5px 8px; border-bottom:1px solid var(--line) }
+  .firow:last-child > div { border-bottom:0 }
+  .firow > div:first-child { font-weight:600; color:var(--muted) }
+  .fihead > div { font-weight:600; background:var(--card) }
+  .firow > div.on { background:color-mix(in srgb, var(--accent) 12%, var(--card)) }
+  .fihead > div.on { background:var(--accent); color:var(--onaccent) }
+  .firow > div.off { opacity:.45 }
+  .fihow p { margin:5px 0 0; font-size:13px } .fihow svg.mi { vertical-align:-2px; color:var(--muted) }
+  @media (max-width:700px) { .fitable { grid-template-columns:96px repeat(3, minmax(0, 1fr)); font-size:11.5px } }
+  /* Send to…: a small menu under its button */
+  .sendto { position:relative; display:inline-flex }
+  .addbtns .sendto { display:flex }
+  .sendmenu { position:absolute; z-index:15; top:calc(100% + 4px); left:0; min-width:190px; display:flex; flex-direction:column; padding:4px;
+              border:1px solid var(--line); border-radius:var(--r); background:var(--card); box-shadow:0 6px 20px rgba(0,0,0,.18) }
+  .sendmenu[hidden] { display:none } .addbtns .sendmenu { left:auto; right:0 }
+  .sendmenu > a, .sendmenu > button { display:flex; align-items:center; justify-content:flex-start; gap:8px; height:32px; padding:0 10px; border:0;
+                                      border-radius:6px; background:transparent; color:var(--text); font-size:13.5px; font-weight:500; text-decoration:none }
+  .sendmenu > a:hover, .sendmenu > button:hover { background:var(--soft) }
+  .sendmenu > [hidden] { display:none }
+  /* + Add a feed: step 1, the three modules (the Google ones dimmed while the API is off); step 2, the module */
+  #adddestpop .pickdest { display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start; gap:2px; width:100%; height:auto; padding:10px 12px;
+              text-align:left; white-space:normal; background:var(--card); color:var(--text); border:1px solid var(--line); font-weight:400 }
+  .pickdest:hover:not([disabled]) { border-color:var(--accent) }
+  .pickdest b { font-size:15px } .pickdest .subtitle { color:var(--muted); font-size:13px }
+  .pickdest[disabled] { opacity:.45 }
+  dialog#adddest2 { width:min(860px, calc(100vw - 32px)) }
+  #adddest { display:flex; flex-direction:column; gap:5px }
+  #adddest .eactions { display:flex; justify-content:flex-end; border-top:1px solid var(--line); padding-top:5px; margin-top:0 }
+  #adddest .addfor[hidden] { display:none }
+  /* ☰ Settings › More addresses: one row each, the trash after it; + and Cancel | Save below */
+  .extrarows { display:flex; flex-direction:column; gap:5px; margin-top:2px }
+  .extrarow { display:flex; gap:5px; align-items:center }
+  .extrarow input { flex:1 1 auto; min-width:0; height:34px; padding:0 8px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text); font:13px var(--mono) }
+  .extrafoot { display:flex; align-items:center; gap:5px; margin-top:5px }
+  .extrafoot .pairbtns { margin-left:auto }
+  button.iconbtn { width:34px; padding:0 }
+  /* F8: a field a Save refused, until it's changed */
+  .needsfix, .feedlink .needsfix, .dfield input.needsfix { outline:2px solid var(--warn) !important; outline-offset:1px }
+  /* expanded, a feed module's header is its kind over the label and note (the status line comes back folded) */
+  .module.dest.cfgopen .srcleft { flex:1 1 auto } .module.dest.cfgopen .srcright { display:none }
+  /* (the add pop-up never wider than the screen; on a phone the note goes under the label) */
+  dialog#adddest2[open] { grid-template-columns:minmax(0, 1fr) } #adddest > * { min-width:0 }
+  @media (max-width:700px) {
+    .addname { flex-wrap:wrap; gap:5px } .addname > .namebox, .addname > .notebox { flex:1 1 100%; margin-left:0 }
+    .module.cfgopen .nameline { flex-wrap:wrap; gap:5px } .module.cfgopen .nameline > .namebox { flex:1 1 100% }
+    .module.cfgopen .nameline > .notebox { flex:1 1 100%; margin-left:0 }
+    .feedlink select.fbase { max-width:38% }
+  }

@@ -1,7 +1,7 @@
 """The theme suite (0.2.8-beta.9): the whole page checked against build_rules/theme.md, its look and its
 interaction, in light and dark, on a computer and a phone. Each Clarification in theme.md has a check here
 (named after it); a new Clarification gets its check in the same beta."""
-import os, re, sys, threading, time
+import glob, os, re, sys, threading, time
 from datetime import datetime, timezone
 os.environ.update(DB_HOST=os.environ.get("TEST_DB_HOST", "127.0.0.1"), DB_PORT=os.environ.get("TEST_DB_PORT", "5432"), DB_NAME=sys.argv[1],
                   DB_USER=os.environ.get("TEST_DB_USER", "ccs"), DB_PASSWORD=os.environ.get("TEST_DB_PASSWORD", "testpw"),
@@ -205,7 +205,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(r[7] == 0 and r[8], f"Clarification 'one palette': no free color picker; every color box offers Google's 11 {r[7:9]}")
         ok(r[9], "Clarification 'date ranges': every date range on the page has From | To | All")
         ok(r[10], "Clarification 'import row': every calendar has the import row (heading, file field, …, the button last)")
-        src = open(os.path.join(os.path.dirname(HERE), "app", "templates", "page.js")).read() + open(os.path.join(os.path.dirname(HERE), "app", "templates", "event.html")).read()
+        src = "".join(open(f).read() for f in sorted(glob.glob(os.path.join(os.path.dirname(HERE), "app", "templates", "js", "*.js")))) + open(os.path.join(os.path.dirname(HERE), "app", "templates", "event.html")).read()  # (beta.20, F12: page.js in parts)
         ok(not re.search(r"(?<![\w.])(alert|confirm|prompt)\(", src), "Clarification 'no browser dialogs': no alert / confirm / prompt in the page's scripts")
         ok("cls: 'danger'" not in src and "cls: 'danger ghost'" not in src,
            "Clarification 'one look per meaning': a pop-up's red choice is a red fill ('danger solid') or red words ('ghost danger'), never red on blue")
