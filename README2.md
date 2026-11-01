@@ -1,7 +1,4 @@
-<h1 align="center">
-  <img src="build_rules/CalendarStream_Logo_Light.svg" alt="CalendarStream logo" width="68" align="absmiddle">
-  <span style="color:#00B8FF">Calendar</span><span style="color:#7B2FF7">Stream</span>
-</h1>
+# CalendarStream
 
 **Self-hosted calendar aggregation, synchronization, automation, and publishing.**
 
