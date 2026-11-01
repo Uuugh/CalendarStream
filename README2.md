@@ -17,6 +17,10 @@ Bring calendars together, customize events with powerful rules, manage your sche
 | **History and recovery** | Sync status, change history, undo/redo, source-change indicators, and failure protection |
 | **Administration** | Browser-based setup, Docker deployment, PostgreSQL persistence, optional updates, local authentication, and light/dark themes |
 
+## Future integrations
+
+**Planned for future releases:** direct Microsoft Outlook / Microsoft 365 and Apple Calendar integrations. These are roadmap goals, not currently available native synchronization connections. Existing ICS/iCal feeds from supported providers can already be imported where a feed URL is available.
+
 ## Built for flexible calendar workflows
 
 **Collect and organize.** Import multiple calendars into a unified interface without giving up their individual identities. Use local calendars for events you create yourself and external sources for schedules managed elsewhere.
