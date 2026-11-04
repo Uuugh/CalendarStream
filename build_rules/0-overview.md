@@ -8,6 +8,7 @@ Always loaded (imported by CLAUDE.md). The whole picture on one page; each step'
 |---|---|---|---|---|
 | 0. Overview | **DASH** (or **DASHBOARD**) | Claude | Opens the CalendarStream Dashboard beside the chat: the commands (each copies on a tap), every waiting F, I and R, who is being waited on, the likely next step and the roadmap. Claude keeps it up to date, so DASH only opens it. | this file |
 | 1. Plan | **PLAN** | Developer › Claude | The Developer gives F, I, R and ?; PLAN shows the waiting list and what Claude would do for each, so it's corrected before it's built. | 1-plan.md |
+| 1.1 Handoff | **HANDOFF** | Claude | Gives the handoff message for the next conversation, in one block to paste there. Every BUILD ends with it. | 2-build.md |
 | 2. Build | **BUILD** `[F\|f I\|i R\|r] [b m M]` | Claude | Builds the waiting inputs as the next beta: tests, publishes, reports. | 2-build.md |
 | 3. Test (optional) | **TEST** | Developer + Claude, together | The Developer tries the beta in a browser and Claude follows along: each TEST, Claude looks at the page, its console and requests, and problems are talked through and written up as I items. | 3-test.md |
 | 4. Review | **REVIEW** | ChatGPT ⇄ Claude; the Developer decides | The agents check without the Developer: Claude › ChatGPT › Claude › ChatGPT, then the Developer decides anything still disputed. REVIEW starts it; each REVIEW after that passes the turn. | 4-review.md |
@@ -42,6 +43,9 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   carries on in a conversation that has already been summarized, Claude reminds them, in one line at the top of
   each reply, to start a new one from the handoff.
 - The Developer doesn't need reminding about REVIEW.
+- At BUILD, Claude checks which model it is running on. If it isn't Sonnet 5.5, Claude says so before building and
+  reminds the Developer to set Medium effort (Claude can't see that setting). Only the Developer switches models.
+  Opus is for PLAN and for REVIEW of risky items.
 
 ## Commands
 
@@ -81,4 +85,5 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 ## References (not steps)
 
 - `theme.md`: how the page looks, with the Theme Rules pictures.
+- `ui_ux.md`: usability and accessibility of the page; theme.md wins where they differ.
 - `roadmap.md`: what's planned, and Low review findings waiting for their code to change.

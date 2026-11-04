@@ -16,7 +16,7 @@ Claude answers; the Developer decides anything still disputed. Each REVIEW after
 | calendars | `app/calsync.py`, `app/routes/sources.py`, `app/routes/destinations.py`, the download parts of `app/main.py`, `app/links.py` |
 | database | `app/store.py`, Undo and History (`app/main.py`, `app/routes/history.py`), `app/secretbox.py` |
 | security | every route (`app/routes/`), the login, sessions and form token (`app/main.py`), escaping, `app/logins.py`, the Docker setup |
-| page | `app/templates/`, `app/styles/`, `app/static/`, against theme.md, its Clarifications and the Theme Rules pictures |
+| page | `app/templates/`, `app/styles/`, `app/static/`, against theme.md, ui_ux.md, its Clarifications and the Theme Rules pictures |
 
 ## Which rules a review uses
 
@@ -78,7 +78,7 @@ final say on anything you and Claude don't agree on.
    every other issue. If there are none, tell the Developer so and post nothing.
 2. Its title and first post say what to check: Review a (the commit range, checklist a below), Review b (the
    commit range, checklist b, the scan results) or Review <area> (one area at one commit, both checklists, and:
-   does it do what README.md says; for the page, does it keep to theme.md, with the screenshots and suite 44's
+   does it do what README.md says; for the page, does it keep to theme.md and ui_ux.md, with the screenshots and suite 44's
    result). Check exactly that code, not the latest.
 3. If you haven't posted findings in this issue yet, do round 1; if you have, round 2.
 4. Each run finishes and posts every waiting issue, one at a time, lowest number first; it never waits for a
@@ -86,7 +86,7 @@ final say on anything you and Claude don't agree on.
 5. End your message to the Developer with "Do REVIEW 2" after round 1, or "Do REVIEW 4" after round 2.
 
 **Round 1, findings:**
-- Read the checklist(s), 0-overview.md, and theme.md if the page is in scope, all at the rules commit. Read the
+- Read the checklist(s), 0-overview.md, and theme.md and ui_ux.md if the page is in scope, all at the rules commit. Read the
   code to check and the test suites that cover it (`tests/`).
 - Post ONE comment, starting with "**Reviewer (ChatGPT), round 1** · rules `<commit>`". Each finding:
   `#N [High | Medium | Low] path/file:line: what goes wrong (a concrete input or situation and the wrong result),
@@ -126,6 +126,8 @@ final say on anything you and Claude don't agree on.
 - Theme: Does every changed part of the page look and behave like the existing part it resembles
   (theme.md and its Clarifications)? Does the theme suite (suite 44) check each
   Clarification, and did it pass?
+- UI/UX: Does every changed part of the page meet build_rules/ui_ux.md? Report a genuine WCAG 2.2 AA failure as
+  Medium, anything else as Low, and say which.
 
 ## b. Security Review
 

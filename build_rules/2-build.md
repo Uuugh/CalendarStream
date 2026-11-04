@@ -1,6 +1,6 @@
 # 2. Build
 
-Command: **BUILD** `[F|f I|i R|r] [b m M]` (GO and EOF are aliases). Read when the Developer says BUILD.
+Command: **BUILD** `[F|f I|i R|r] [b m M]` (GO and EOF are aliases). Read when the Developer says BUILD. Claude first checks its model (0-overview.md, Conversations).
 
 ## What BUILD builds
 
@@ -27,6 +27,8 @@ Documentation-only changes (README, CLAUDE.md, AGENTS.md, build_rules/) don't ch
   (the next number).
 - Anything on the page that changed follows theme.md (look and interaction), checked by the theme suite
   (suite 44): each Clarification has a check there, added in the same beta.
+- A page change meets ui_ux.md §5: keyboard, visible focus, labels, contrast and reduced motion, in light and dark
+  and on a phone. Checks suite 44 can make are added in the same beta.
 - A change to the page is compared before and after, pixel by pixel (`tests/tools/shots.py` before and after,
   then `tests/tools/pixdiff.py`): Claude looks only at the areas it reports, and every one is either the intended
   change or fixed. A change meant to leave the look alone (such as a split of the files) reports nothing.
@@ -41,6 +43,8 @@ Documentation-only changes (README, CLAUDE.md, AGENTS.md, build_rules/) don't ch
 
 Commit and push; the release workflow tags `v<version>` and publishes the `beta` image. Claude reports what came
 out, the readings it took, and anything still waiting.
+
+HANDOFF (step 1.1) gives the same message at any time.
 
 Then the handoff, as Claude's last message in the conversation (R17: one message, with no separate "New
 conversation…" line before it): the message to paste as the new conversation's first, in one block. It names the
