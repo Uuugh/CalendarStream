@@ -7,7 +7,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
 LABEL org.opencontainers.image.source="https://github.com/Uuugh/CalendarStream" \
       org.opencontainers.image.description="Republishes a United CCS+ Calendar Sync schedule as a Google Calendar feed"
 
-# curl does the downloads from CCS+ (United's Akamai protection answers curl normally)
+# curl does the downloads of calendar links, and of CCS+ when CCS_CLIENT says so; curl_cffi (a pip package with its own
+# libcurl, no extra system library) is CCS+'s browser-like client (0.2.8-beta.25, I8: United's protection held curl)
 # Debian's security fixes are applied at every build (I2, 0.2.8-beta.17), not only when the base image is renewed
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends curl ca-certificates \
  && rm -rf /var/lib/apt/lists/*

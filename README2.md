@@ -136,8 +136,11 @@ logins or setup codes lock an address out for 15 minutes.
 
 ## How syncing works
 
-- CalendarStream downloads the Calendar Sync link with `curl` (it identifies itself honestly;
-  United's bot protection holds Python's HTTP clients) and only fetches it again when it changed.
+- CalendarStream reads CCS+ with your own sign-in, only for your own schedule, with a browser-like client
+  (United's bot protection holds plain `curl` and Python's HTTP clients at times), and only fetches it again
+  when it changed. Other calendar links are downloaded with `curl`, which identifies itself. `CCS_CLIENT` in `.env`
+  chooses the CCS+ client: `auto` (the default: the browser-like client, again for longer, then `curl`), `browser`,
+  `browser-patient` (up to three tries) or `curl`. A download's record (Report a problem) names the one that answered.
 - Events keep United's IDs, times and details, except: day codes (RDO, HDO…) and other items with no
   end become all-day or `DEFAULT_EVENT_HOURS` long, and 24-hour events (CCS+ writes full days as
   00:01–23:59:59) become all-day with the original times in the notes.

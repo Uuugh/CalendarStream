@@ -10,7 +10,7 @@ manage it all. See README.md for what it does.
 ## Where things are
 
 - `app/`: the app. `main.py` (shared state and orchestration), `routes/` (the status page's routes, by
-  area), `calsync.py` (reading calendars, feeds), `rules.py` (the If/Then rules), `gsync.py` (Google),
+  area), `calsync.py` (reading calendars, feeds; the downloads: `curl`, and CCS+'s browser-like client, `CCS_CLIENT`), `rules.py` (the If/Then rules), `gsync.py` (Google),
   `store.py` (Postgres), `templates/` (pages, their partials, the page's script), `styles/` (the page's
   stylesheet, by area), `static/` (fonts, emoji). The code map below says which file holds what.
 - `tests/`: the test suites and `run.sh`; `tests/tools/`: setup for a new machine or conversation, a demo

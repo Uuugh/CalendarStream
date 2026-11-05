@@ -9,7 +9,26 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.24**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.25**
+
+## 0.2.8-beta.25 — 2026-11-04
+
+### Changed
+- **I8** CCS+ downloads no longer depend on `curl` alone: United's bot protection began to hold it (the connection opens
+  and nothing comes back: "sent no reply within 60 seconds"). CCS+ is now read with a browser-like client
+  (`curl_cffi`, which presents Chrome's connection fingerprint) with your own sign-in, only for your own schedule. The
+  client is chosen by `CCS_CLIENT` in `.env`: **`auto`** (the default: the browser-like client; if it gets no reply or is
+  refused, again for twice as long, then `curl`), **`browser`** (once), **`browser-patient`** (up to three tries, 90 s each,
+  with pauses) or **`curl`** (as before). A rejected password still stops at once. The download's record names the client
+  that answered and what was tried first; the container log has each try. Redirects keep to https, five at most, no sign-in
+  sent to another host, 5 MB at most, as with `curl`. Calendar links (feeds) are still downloaded with `curl`, which
+  identifies itself. Upload & publish stays. The image has no browser in it (Chromium would come only if none of these
+  work).
+
+### Build rules
+- **R11** The ground rule that downloads never disguise a client is replaced: "CCS+ is read with the account owner's own
+  sign-in, only for their own schedule, by script when needed, with a browser-like client if United's protection
+  requires it. Other downloads (calendar links) identify themselves honestly." Never modify CCS+ stays (0-overview.md).
 
 ## 0.2.8-beta.24 — 2026-10-30
 

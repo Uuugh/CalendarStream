@@ -86,18 +86,54 @@ class Defaults:
 
 # --- Download --------------------------------------------------------------
 #
-# Downloads use the curl program. United's Akamai protection answers curl normally, but holds
-# or refuses requests from Python HTTP libraries. curl identifies itself as curl.
+# CCS+ is read with the account owner's own sign-in, only for their own schedule, by script when needed, with a
+# browser-like client if United's protection requires it (build_rules/0-overview.md, Ground rules). Other
+# downloads (calendar links) identify themselves honestly, as curl.
+#
+# United's Akamai protection answered the curl program normally, then (0.2.8-beta.24, I8) began to hold it: the
+# connection opens and nothing comes back. So CCS+ has more than one client, chosen by CCS_CLIENT in .env:
+#   auto             the browser-like client; if it gets no reply (or is refused), once more, longer; then curl
+#   browser          the browser-like client (curl_cffi, which presents Chrome's connection fingerprint), once
+#   browser-patient  the browser-like client up to three times, 90 s each, with pauses
+#   curl             the curl program, as before 0.2.8-beta.25
+# Whichever answered is named in the download's debug record ("client", "tried").
 
 import asyncio
 import json as _json
+import logging
 import os
 import shutil
 import tempfile
-from urllib.parse import urlparse
+import time
+from urllib.parse import urljoin, urlparse
+
+log = logging.getLogger("calsync")
 
 CURL = shutil.which("curl") or "curl"
 _curl_version = ""
+BROWSER_PROFILE = "chrome"        # curl_cffi's newest Chrome
+MAX_BYTES = 5 * 1024 * 1024       # like a hand upload
+MAX_REDIRECTS = 5
+CCS_CLIENTS = ("auto", "browser", "browser-patient", "curl")
+# (client, seconds as a multiple of the base timeout, pause before it in seconds)
+_PLANS = {
+    "curl": [("curl", 1.0, 0)],
+    "browser": [("browser", 1.0, 0)],
+    "browser-patient": [("browser", 1.5, 0), ("browser", 1.5, 5), ("browser", 1.5, 15)],
+    "auto": [("browser", 1.0, 0), ("browser", 2.0, 3), ("curl", 1.0, 0)],
+}
+PAUSE_SCALE = 1.0                 # the tests set 0
+_SESSION_EXTRA: dict = {}         # the tests point the browser-like client at their own CA
+
+
+class NoReplyError(SourceError):
+    """Connected, but nothing came back in time: the silent hold (I8)."""
+
+
+def ccs_client(client: str | None = None) -> str:
+    """The CCS+ client in use: the argument, else CCS_CLIENT in .env, else auto (an unknown name is auto too)."""
+    name = (client or os.environ.get("CCS_CLIENT", "") or "auto").strip().lower()
+    return name if name in CCS_CLIENTS else "auto"
 
 
 def _snippet(body: bytes, n: int = 300) -> str:
@@ -134,10 +170,59 @@ async def curl_version() -> str:
     return _curl_version
 
 
-async def download(url: str, username: str = "", password: str = "", etag: str = "", last_modified: str = "",
-                   timeout: float = 60.0, connect_timeout: float = 20.0, who: str = "CCS+") -> Download:
-    """Download a calendar. `username`/`password` are sent with HTTP Basic (CCS+); feeds send none.
-    `who` names the server in messages ("CCS+", or the feed's host)."""
+def _no_reply(host: str, timeout: float, who: str) -> NoReplyError:
+    return NoReplyError(f"Connected to {host}, but it sent no reply within {int(timeout)} seconds. "
+                        + ("United's bot protection may be holding the request; "
+                           "use Upload & publish in the CCS+ Calendar Sync box in the meantime." if who == "CCS+" else
+                           "Try again later."))
+
+
+def _not_https(who: str) -> SourceError:
+    return SourceError(("The Calendar Sync link" if who == "CCS+" else "The feed link")
+                       + " must start with https://, and may only redirect to https:// addresses (CalendarStream only downloads over https).")
+
+
+def _too_many_redirects(host: str, who: str) -> SourceError:
+    return SourceError(f"{host} redirected too many times; check the "
+                       + ("Calendar Sync link." if who == "CCS+" else "feed link."))
+
+
+def _too_large(host: str) -> SourceError:
+    return SourceError(f"{host} sent more than 5 MB, which is too large for a schedule.")
+
+
+def _finish(status: int, body: bytes, headers: dict, debug: dict, host: str, who: str,
+            etag: str, last_modified: str) -> Download:
+    """What a response means, the same for every client: a Download, or the error for it."""
+    if status == 304:
+        return Download(304, not_modified=True, etag=etag, last_modified=last_modified, debug=debug)
+    if status == 401 and who != "CCS+":
+        raise AuthError(f"{host} wants a login (HTTP 401). Use the calendar's public or secret .ics "
+                        "link, which works without one.")
+    if status == 401:
+        raise AuthError("CCS+ rejected the UID or Calendar Sync password (HTTP 401). Check both in "
+                        "the CCS+ Calendar Sync box (the Calendar Sync password, not your CCS login).")
+    if status == 403:
+        server = headers.get("server", "")
+        ref = re.search(r"Reference\s*#?\s*([\w.]+)", _snippet(body, 1000))
+        by = "Akamai (United's bot protection)" if "akamai" in server.lower() else (server or "the server")
+        raise BlockedError(f"Access denied by {by}, HTTP 403" + (f", reference {ref[1]}" if ref else "") + ".")
+    if status >= 400:
+        raise SourceError(f"{who} answered HTTP {status}: {_snippet(body, 160) or 'no details'}")
+    if b"BEGIN:VCALENDAR" not in body[:2000]:
+        raise SourceError(f"{who} answered, but not with a calendar file "
+                          f"({headers.get('content-type', 'unknown type')}): {_snippet(body, 160)}")
+    return Download(status, body=body, etag=headers.get("etag", ""),
+                    last_modified=headers.get("last-modified", ""), debug=debug)
+
+
+_KEEP = ("content-type", "content-length", "content-disposition", "etag", "last-modified",
+         "server", "date", "cache-control", "www-authenticate")
+
+
+async def _download_curl(*, url: str, username: str, password: str, etag: str, last_modified: str,
+                         timeout: float, connect_timeout: float, who: str) -> Download:
+    """The curl program. It identifies itself as curl."""
     host = urlparse(url).hostname or url
     with tempfile.TemporaryDirectory(prefix="calsync-") as tmp:
         body_path, head_path = os.path.join(tmp, "body"), os.path.join(tmp, "headers")
@@ -151,7 +236,8 @@ async def download(url: str, username: str = "", password: str = "", etag: str =
             config.append(f"header = {_q('If-Modified-Since: ' + last_modified)}")
         # https only (also after redirects), at most 5 redirects and 5 MB, like a hand upload
         args = [CURL, "--silent", "--show-error", "--location", "--config", "-",
-                "--proto", "=https", "--proto-redir", "=https", "--max-redirs", "5", "--max-filesize", str(5 * 1024 * 1024),
+                "--proto", "=https", "--proto-redir", "=https", "--max-redirs", str(MAX_REDIRECTS),
+                "--max-filesize", str(MAX_BYTES),
                 "--connect-timeout", str(int(connect_timeout)), "--max-time", str(int(timeout)),
                 "--output", body_path, "--dump-header", head_path, "--write-out", "%{json}"]
         try:
@@ -175,50 +261,114 @@ async def download(url: str, username: str = "", password: str = "", etag: str =
         if not connected:
             raise SourceError(f"Couldn't connect to {host} within {int(connect_timeout)} seconds "
                               "(network, DNS or firewall problem on this server).")
-        raise SourceError(f"Connected to {host}, but it sent no reply within {int(timeout)} seconds. "
-                          + ("United's bot protection may be holding the request; "
-                             "use Upload & publish in the CCS+ Calendar Sync box in the meantime." if who == "CCS+" else
-                             "Try again later."))
+        raise _no_reply(host, timeout, who)
     if code == 1:
-        raise SourceError(("The Calendar Sync link" if who == "CCS+" else "The feed link")
-                          + " must start with https://, and may only redirect to https:// addresses (CalendarStream only downloads over https).")
+        raise _not_https(who)
     if code == 47:
-        raise SourceError(f"{host} redirected too many times; check the "
-                          + ("Calendar Sync link." if who == "CCS+" else "feed link."))
+        raise _too_many_redirects(host, who)
     if code == 63:
-        raise SourceError(f"{host} sent more than 5 MB, which is too large for a schedule.")
+        raise _too_large(host)
     if code in (6, 7):
         raise SourceError(f"Couldn't reach {host}: {err.decode().strip() or f'curl error {code}'}")
     if code != 0 and not status:
         raise SourceError(f"Download from {host} failed: {err.decode().strip() or f'curl error {code}'}")
 
-    keep = ("content-type", "content-length", "content-disposition", "etag", "last-modified",
-            "server", "date", "cache-control", "www-authenticate")
     debug = {
         "url": info.get("url_effective", url), "status": status,
         "elapsed_s": round(float(info.get("time_total") or 0), 2), "bytes": len(body),
-        "client": await curl_version(), "headers": {k: v for k, v in headers.items() if k in keep},
+        "client": await curl_version(), "headers": {k: v for k, v in headers.items() if k in _KEEP},
     }
-    if status == 304:
-        return Download(304, not_modified=True, etag=etag, last_modified=last_modified, debug=debug)
-    if status == 401 and who != "CCS+":
-        raise AuthError(f"{host} wants a login (HTTP 401). Use the calendar's public or secret .ics "
-                        "link, which works without one.")
-    if status == 401:
-        raise AuthError("CCS+ rejected the UID or Calendar Sync password (HTTP 401). Check both in "
-                        "the CCS+ Calendar Sync box (the Calendar Sync password, not your CCS login).")
-    if status == 403:
-        server = headers.get("server", "")
-        ref = re.search(r"Reference\s*#?\s*([\w.]+)", _snippet(body, 1000))
-        who = "Akamai (United's bot protection)" if "akamai" in server.lower() else (server or "the server")
-        raise BlockedError(f"Access denied by {who}, HTTP 403" + (f", reference {ref[1]}" if ref else "") + ".")
-    if status >= 400:
-        raise SourceError(f"{who} answered HTTP {status}: {_snippet(body, 160) or 'no details'}")
-    if b"BEGIN:VCALENDAR" not in body[:2000]:
-        raise SourceError(f"{who} answered, but not with a calendar file "
-                          f"({headers.get('content-type', 'unknown type')}): {_snippet(body, 160)}")
-    return Download(status, body=body, etag=headers.get("etag", ""),
-                    last_modified=headers.get("last-modified", ""), debug=debug)
+    return _finish(status, body, headers, debug, host, who, etag, last_modified)
+
+
+async def _download_browser(*, url: str, username: str, password: str, etag: str, last_modified: str,
+                            timeout: float, connect_timeout: float, who: str) -> Download:
+    """curl_cffi: a client that presents a current Chrome's connection (TLS and HTTP/2) fingerprint, so
+    United's bot protection treats it as a browser. Redirects are followed here, by hand, so that https only,
+    five at most and no sign-in sent to another host hold exactly as they do for curl."""
+    try:
+        from curl_cffi import __version__ as cffi_version
+        from curl_cffi.requests import AsyncSession
+        from curl_cffi.requests import exceptions as cx
+    except ImportError:
+        raise SourceError("The browser-like client (curl_cffi) isn't installed in this container.")
+    host = urlparse(url).hostname or url
+    headers = {"Accept": "text/calendar, */*;q=0.5"}
+    if etag:
+        headers["If-None-Match"] = etag
+    if last_modified:
+        headers["If-Modified-Since"] = last_modified
+    started = time.monotonic()
+
+    async def fetch():
+        cur = url
+        async with AsyncSession(impersonate=BROWSER_PROFILE, **_SESSION_EXTRA) as session:
+            for hop in range(MAX_REDIRECTS + 1):
+                if urlparse(cur).scheme != "https":
+                    raise _not_https(who)
+                auth = (username, password) if username and urlparse(cur).hostname == host else None
+                async with session.stream("GET", cur, headers=headers, auth=auth, allow_redirects=False,
+                                          timeout=(connect_timeout, timeout)) as resp:
+                    status = resp.status_code
+                    got = {k.lower(): v for k, v in resp.headers.items()}
+                    if status in (301, 302, 303, 307, 308) and got.get("location"):
+                        cur = urljoin(cur, got["location"])
+                        continue
+                    chunks, size = [], 0
+                    async for chunk in resp.aiter_content():
+                        size += len(chunk)
+                        if size > MAX_BYTES:
+                            raise _too_large(host)
+                        chunks.append(chunk)
+                    return cur, status, b"".join(chunks), got
+            raise _too_many_redirects(host, who)
+
+    try:
+        final, status, body, got = await asyncio.wait_for(fetch(), timeout)
+    except (asyncio.TimeoutError, cx.ReadTimeout):
+        raise _no_reply(host, timeout, who)
+    except cx.ConnectTimeout:
+        raise SourceError(f"Couldn't connect to {host} within {int(connect_timeout)} seconds "
+                          "(network, DNS or firewall problem on this server).")
+    except cx.Timeout:
+        raise _no_reply(host, timeout, who)
+    except cx.RequestException as e:
+        raise SourceError(f"Couldn't reach {host}: {str(e).strip() or type(e).__name__}")
+    debug = {
+        "url": final, "status": status, "elapsed_s": round(time.monotonic() - started, 2), "bytes": len(body),
+        "client": f"curl_cffi {cffi_version}, as {BROWSER_PROFILE}", "headers": {k: v for k, v in got.items() if k in _KEEP},
+    }
+    return _finish(status, body, got, debug, host, who, etag, last_modified)
+
+
+async def download(url: str, username: str = "", password: str = "", etag: str = "", last_modified: str = "",
+                   timeout: float = 60.0, connect_timeout: float = 20.0, who: str = "CCS+",
+                   client: str | None = None) -> Download:
+    """Download a calendar. `username`/`password` are sent with HTTP Basic (CCS+); feeds send none.
+    `who` names the server in messages ("CCS+", or the feed's host). `client` picks the CCS+ client (see above;
+    default CCS_CLIENT); feeds always use curl, which identifies itself."""
+    common = dict(url=url, username=username, password=password, etag=etag, last_modified=last_modified,
+                  connect_timeout=connect_timeout, who=who)
+    if who != "CCS+":
+        return await _download_curl(timeout=timeout, **common)
+    plan, tried, last = _PLANS[ccs_client(client)], [], None
+    for i, (engine, factor, pause) in enumerate(plan):
+        if pause and PAUSE_SCALE:
+            await asyncio.sleep(pause * PAUSE_SCALE)
+        try:
+            dl = await (_download_browser if engine == "browser" else _download_curl)(timeout=timeout * factor, **common)
+        except (NoReplyError, BlockedError) as e:       # worth trying again, or the next client
+            tried.append(f"{engine}: {'no reply in %d s' % int(timeout * factor) if isinstance(e, NoReplyError) else 'refused (HTTP 403)'}")
+            log.warning("CCS+ download, %s: %s", tried[-1], e)
+            last = e
+            continue
+        tried.append(f"{engine}: HTTP {dl.status}")
+        if dl.debug is not None:
+            dl.debug["tried"] = tried
+        if len(tried) > 1:
+            log.info("CCS+ download answered after %s", "; ".join(tried))
+        return dl
+    raise last
 
 
 def check_calendar(body: bytes):

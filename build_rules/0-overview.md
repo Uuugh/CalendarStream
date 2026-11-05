@@ -78,7 +78,8 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   the Dashboard.
 - Never push half-finished or broken work.
 - Never modify CCS+ (United's system): CalendarStream only reads it.
-- Downloads identify themselves honestly: never disguise a client to get past United's bot protection.
+- CCS+ is read with the account owner's own sign-in, only for their own schedule, by script when needed, with a
+  browser-like client if United's protection requires it. Other downloads (calendar links) identify themselves honestly.
 - The Developer's real schedule (Calendar.ics), username and Google client secret never go into the repo, the
   tests, screenshots or messages. Use the made-up demo schedule (`tests/data/Demo.ics`, Username U123456).
 

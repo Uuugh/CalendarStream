@@ -102,6 +102,7 @@ explained in [`.env.default`](.env.default):
 | `PUID` / `GUID`, `RESTART` | `1000` / `100`, `unless-stopped` | |
 | `FORWARDED_ALLOW_IPS` | `127.0.0.1` | Behind a reverse proxy: its address or network (e.g. `172.18.0.0/16`), so visitors' addresses and https are seen |
 | `SYNC_INTERVAL_MINUTES` | `60` | 15–1,440, for CCS+; overridden by “Check for changes every” in its box |
+| `CCS_CLIENT` | `auto` | How CCS+ is downloaded: `auto`, `browser`, `browser-patient` or `curl` ([How syncing works](#how-syncing-works)) |
 | `CCS_CALENDAR_URL`, `CALENDAR_NAME` | United's link, "United CCS Schedule" | Overridden in the CCS+ box (Expand) |
 | `DEFAULT_EVENT_HOURS` | `1` | Hours for items with no end time, or `allday`; the Items-without-an-end-time rule overrides it, and a new install's rule starts from it |
 | `ALLDAY_24H` | `true` | Whether a new install starts with the 24-hour-events rule (24 h, 48 h… events shown as all-day) |
@@ -115,8 +116,11 @@ logins or setup codes lock an address out for 15 minutes.
 
 ## How syncing works
 
-- CalendarStream downloads the Calendar Sync link with `curl` (it identifies itself honestly;
-  United's bot protection holds Python's HTTP clients) and only fetches it again when it changed.
+- CalendarStream reads CCS+ with your own sign-in, only for your own schedule, with a browser-like client
+  (United's bot protection holds plain `curl` and Python's HTTP clients at times), and only fetches it again
+  when it changed. Other calendar links are downloaded with `curl`, which identifies itself. `CCS_CLIENT` in `.env`
+  chooses the CCS+ client: `auto` (the default: the browser-like client, again for longer, then `curl`), `browser`,
+  `browser-patient` (up to three tries) or `curl`. A download's record (Report a problem) names the one that answered.
 - Events keep United's IDs, times and details, except: day codes (RDO, HDO…) and other items with no
   end become all-day or `DEFAULT_EVENT_HOURS` long, and 24-hour events (CCS+ writes full days as
   00:01–23:59:59) become all-day with the original times in the notes.
