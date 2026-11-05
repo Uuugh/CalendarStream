@@ -24,7 +24,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     c.post("/destinations/add", data={"csrf": csrf, "type": "feed", "name": "Everything"})
     p = c.get("/").text
     ok('id="sourcestitle"><svg class="mi secicon"' in p and ">Calendars<" in p and "Feeds" in p and p.count('class="mi secicon"') == 5, f"({p.count('class=\"mi secicon\"')}) F1.3/F3.1/F4: section icons; Calendars and Feeds")
-    ok("Expand for Details or to Edit Configuration" in p and '<span class="short">Expand</span>' in p and "Configure" not in re.sub(r"<[^>]+>", "", p.split('id="sources"')[1]).split("All Rules")[0], "F1.2: Expand for Details or to Edit Configuration")
+    ok("Expand to Configure" in p and "Expand for Details or to Edit Configuration" not in p and '<span class="short">Expand</span>' in p, "F1.2 (beta.26, F11.4): Expand to Configure (Expand for Details stays for History)")
     ok('class="helpdot' in p and "What other apps get" in p and 'class=&#34;' not in p, "F1.1: explanations behind (?)")
     key = p.split('class="legend"')[1].split("</div>")[0]
     ok(">Timed<" not in key and ">All-day<" not in key, "I1: no Timed / All-day in the key")
@@ -52,7 +52,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(round(bb["width"]) == 130 and round(bb["height"]) == 34 and [round(pair.locator(x).bounding_box()["width"]) for x in (".pcancel", ".psave")] == [65, 65],
            f"F1.4: Cancel | Save: one 130 × 34 px pair, 65 px each ({bb['width']:.0f}×{bb['height']:.0f})")
         pg.fill("#src-ccs .nameinput", "Changed name"); pair.locator(".pcancel").click(); pg.wait_for_timeout(300)
-        ok(pg.input_value("#src-ccs .nameinput") == "United CCS Schedule" and pair.locator(".pcancel").inner_text() == "Cancelled" and round(pair.locator(".pcancel").bounding_box()["width"]) == 130,
+        ok(pg.input_value("#src-ccs .nameinput") == "United CCS Schedule" and pair.locator(".pcancel").inner_text() == "Cancelled" and pair.locator(".pcancel").bounding_box()["width"] > 65,   # (beta.26, F12.5: it grows over 1 s)
            "F1.4: Cancel fills the pair, says Cancelled and undoes the typing")
         pg.wait_for_timeout(900)
         ok(pg.locator("#cfg-ccs[hidden]").count() == 1, "F1.1 (0.2.8): …then closes the module")
@@ -91,7 +91,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         # F3.2/F3.3
         ok(pg.evaluate("getComputedStyle(document.querySelector('#src-ccs .srcfoot')).borderTopStyle") == "solid", "F3.2: a line above Remove / Cancel / Save")
         # the rule dialog: Cancel | Apply, saving in the background
-        pg.click("#rules .toggle"); pg.click("#rules .sfoot .newrule"); pg.wait_for_timeout(200)
+        pg.click("#rules .toggle"); pg.click("#rules > .shead .newrule"); pg.wait_for_timeout(200)
         pg.fill("#ruledialog .cond .cval", "SIM"); pg.click("#ruledialog .psave"); pg.wait_for_timeout(1500)
         ok(any(c.get("value") == "SIM" for r in main.all_rules() for c in r["conds"]) and not loads and "SIM" in pg.inner_text("#rules .rulelist"), "F1.5: the rule dialog saves without reloading; All Rules shows it")
         ok(not errs, f"no script errors {errs}")

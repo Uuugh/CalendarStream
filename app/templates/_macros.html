@@ -24,7 +24,7 @@
    then Verifying… (yellow), then ✓ Validated (green) or ✗ Failed (red, the reason under the boxes). With nothing
    valid saved yet, the slot is just Save. The states are set by the script in index.html. #}
 <span class="okslot" data-state="{{ 'ok' if ok else 'needs' }}">
-  <span class="okmark"{% if ok_title %} title="{{ ok_title }}"{% endif %}>{{ icon("check_circle", 15) }}{{ ok_text }}</span>
+  <span class="okmark"{% if ok_title %} title="{{ ok_title }}"{% endif %}>{{ icon("check_circle", 15) }}<span class="okword">{{ ok_text }}</span></span>
   <span class="slotmsg" aria-live="polite"></span>
   {# While typing, Cancel and Save are icons only (F1.4): ✕ and ✓, named by their title. #}
   <button type="button" data-cancel class="ghost slotcancel" title="{{ _('Cancel') }}" aria-label="{{ _('Cancel') }}">{{ icon("close", 18) }}</button>

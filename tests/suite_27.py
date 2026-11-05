@@ -27,7 +27,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     p = c.get("/", auth=A).text
     ok(re.search(r'<p class="srcstatus">Last synced <b>[^<]+</b></p>', p) is not None, "0.2.8-beta.5: header: Last synced (time)")
     ok('id="cfg-ccs" hidden' in p, "Configure folded once healthy")
-    ok(re.search(r'<svg class="mi arr l"[^>]*>.*?</svg><span class="expandword"><span class="long">Expand for Details or to Edit Configuration</span><span class="short">Expand</span></span><span class="closeword">Close</span><svg class="mi arr r"', p) is not None
+    ok(re.search(r'<svg class="mi arr l"[^>]*>.*?</svg><span class="expandword"><span class="long">Expand to Configure</span><span class="short">Expand</span></span><span class="closeword">Close</span><svg class="mi arr r"', p) is not None
        and 'class="statusbox good"' in p and ">Sync Now<" in p, "> Expand < (Close when open), status box with Sync Now")
     ok("Items without an end time" in p and "24-hour events" in p, "the source starts with the two predefined rules")
     import json

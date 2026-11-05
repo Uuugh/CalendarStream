@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CalendarStream</title>
 {% include "_theme.html" %}
+<link rel="icon" type="image/png" sizes="32x32" href="/static/logo/favicon-32.png?v={{ version }}">
+<link rel="icon" type="image/png" sizes="192x192" href="/static/logo/icon-192.png?v={{ version }}">
+<link rel="apple-touch-icon" href="/static/logo/apple-touch-icon.png?v={{ version }}">
 <link rel="stylesheet" href="/assets/app.css?v={{ version }}">
 </head>
 <body>{{ icon_sprite() }}{% import "_macros.html" as m with context %}
@@ -99,7 +102,7 @@
   {% macro handle(kind, id, name) -%}
   <span class="handle" data-kind="{{ kind }}" data-id="{{ id }}">
     <button type="button" class="hmove" data-dir="up" title="{{ _('Move {name} up', name=name) }}" aria-label="{{ _('Move {name} up', name=name) }}">{{ icon("arrow_drop_up", 18) }}</button>
-    <span class="hgrip" draggable="true" title="{{ _('Drag to change the order') }}" aria-hidden="true">{{ icon("menu", 16) }}</span>
+    <span class="hgrip" draggable="true" title="{{ _('Drag to change the order') }}" aria-hidden="true"><svg class="gripdots" width="10" height="16" viewBox="0 0 10 16" fill="currentColor" focusable="false"><circle cx="2.5" cy="3" r="1.4"/><circle cx="7.5" cy="3" r="1.4"/><circle cx="2.5" cy="8" r="1.4"/><circle cx="7.5" cy="8" r="1.4"/><circle cx="2.5" cy="13" r="1.4"/><circle cx="7.5" cy="13" r="1.4"/></svg></span>
     <button type="button" class="hmove" data-dir="down" title="{{ _('Move {name} down', name=name) }}" aria-label="{{ _('Move {name} down', name=name) }}">{{ icon("arrow_drop_down", 18) }}</button>
   </span>
   {%- endmacro %}
@@ -142,8 +145,8 @@
   {# Folded, "▸ Expand for Details or to Edit Configuration ◂" in the module's bottom border; open, a
      line under its header with "Close" (F1.1). #}
   {# A section's Expand / Close line (All Rules, Event Templates, History), like a module's #}
-  {% macro sectionline(name, open) %}<div class="cfgline"><button type="button" class="cfgtoggle toggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="{{ name }}-body">{{ icon("arrow_right", 18, "arr l") }}<span class="expandword"><span class="long">{{ _('Expand for Details') }}</span><span class="short">{{ _('Expand') }}</span></span><span class="closeword">{{ _('Close') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>{% endmacro %}
-  {% macro cfgline(id, open) %}<div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="cfg-{{ id }}">{{ icon("arrow_right", 18, "arr l") }}<span class="expandword"><span class="long">{{ _('Expand for Details or to Edit Configuration') }}</span><span class="short">{{ _('Expand') }}</span></span><span class="closeword">{{ _('Close') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>{% endmacro %}
+  {% macro sectionline(name, open) %}<div class="cfgline"><button type="button" class="cfgtoggle toggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="{{ name }}-body">{{ icon("arrow_right", 18, "arr l") }}<span class="expandword"><span class="long">{{ _('Expand to Configure') if name in ('rules', 'templates') else _('Expand for Details') }}</span><span class="short">{{ _('Expand') }}</span></span><span class="closeword">{{ _('Close') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>{% endmacro %}
+  {% macro cfgline(id, open) %}<div class="cfgline"><button type="button" class="cfgtoggle" aria-expanded="{{ 'true' if open else 'false' }}" aria-controls="cfg-{{ id }}">{{ icon("arrow_right", 18, "arr l") }}<span class="expandword"><span class="long">{{ _('Expand to Configure') }}</span><span class="short">{{ _('Expand') }}</span></span><span class="closeword">{{ _('Close') }}</span>{{ icon("arrow_right", 18, "arr r") }}</button></div>{% endmacro %}
   {# Small icons left of the section titles (F1.3). #}
   {% set icons = {"calendars": icon("calendar_month", 24, "secicon"), "feeds": icon("sensors", 24, "secicon"),
                   "rules": icon("rule", 24, "secicon"), "templates": icon("event_note", 24, "secicon"),
@@ -173,7 +176,8 @@
 {% include "index/history.html" %}
   </div>
   <footer class="foot">
-    CalendarStream v{{ version }} ·
+    © CalendarStream <a class="curver" href="{{ update.releases }}/tag/v{{ version }}" target="_blank" rel="noopener"
+         title="{{ _('What’s in this version (GitHub)') }}">v{{ version }}</a> ·
     <button type="button" class="linkbtn reportbtn" data-kind="bug">{{ _('Report a problem') }}</button> ·
     <button type="button" class="linkbtn reportbtn" data-kind="idea">{{ _('Suggest a feature') }}</button> ·
     <a href="https://github.com/Uuugh/CalendarStream#license--attribution" target="_blank" rel="noopener">{{ _('License & Attribution') }}</a>

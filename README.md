@@ -216,7 +216,7 @@ logins or setup codes lock an address out for 15 minutes.
   status over **Sync Now** (while it syncs, the button fills the box), in a box of the same size in every module. **Sync Now** says
   **Syncing…** at once, then pulses green (**Synced**), amber (**Failed**: United, Google or the
   internet said no) or red (CalendarStream itself failed) and goes back to Sync Now; the status, the calendar and the log update in place, without reloading the page.
-  **▸ Expand for Details or to Edit Configuration ◂** sits in a folded module's bottom border; it
+  **▸ Expand to Configure ◂** sits in a folded module's bottom border; it
   opens the rest (it opens by itself when something needs doing) and becomes a **Close** line under
   the header, turns the name into a field of the same size, and shows the **Note** field:
   - **Automatic Upload:** the **Site Address** with **Check every … min** beside it, CCS+'s
@@ -275,7 +275,7 @@ logins or setup codes lock an address out for 15 minutes.
   whether to delete its calendar from Google Calendar too, or leave it there. Every event keeps its source's
   colors and rules.
 - **All Rules** (looks like a module: its header shows the number of rules in a box, green, or
-  in the pressed look (waiting on you) with "n to check" while a rule conflicts; **Expand for Details** opens it, with **+** in its bottom right corner): every rule,
+  in the pressed look (waiting on you) with "n to check" while a rule conflicts; **Expand to Configure** opens it, with **+** in its top right corner, beside its count box): every rule,
   highest priority first, with the calendars it applies to in a badge in their colors (stripes for
   several, white for All calendars). **+** or ✎ opens the rule dialog (with **How rules work** at its
   bottom), the copy button makes a copy for no calendar yet, the bin deletes it, the handle changes
@@ -309,7 +309,7 @@ logins or setup codes lock an address out for 15 minutes.
   A new install starts with two rules for every calendar: **Items without an end time** (from
   `DEFAULT_EVENT_HOURS`) and **24-hour events** (shown as all-day; CCS+ writes full days as
   00:01–23:59:59). Rules from earlier versions are converted, in the same order.
-- **Event Templates** (like All Rules: "2 Templates" in a box, Expand for Details, **+** in the bottom right corner, Cancel | Save): ready-made events (title, length or all day, location, color) for Add-event
+- **Event Templates** (like All Rules: "2 Templates" in a box, Expand to Configure, **+** in the top right corner, Cancel | Save): ready-made events (title, length or all day, location, color) for Add-event
   rules and for **Choose from template** when adding an event by hand.
 - **History, Undo & Logs** (a module like the others: it opens only from its Expand line): each check
   and what changed, for each source, then every line as **Time | Type | Undo | Event**, with a filter

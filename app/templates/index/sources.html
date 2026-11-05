@@ -210,7 +210,7 @@
               <div class="addmenu rulemenu" role="menu" hidden>
                 <button type="button" class="linkbtn newrule" data-sid="{{ x.id }}" role="menuitem">{{ icon("add", 16) }} {{ _('New rule…') }}</button>
                 {% for r in reusable %}
-                <form method="post" action="/rules/apply" class="inline" data-swap="#src-{{ x.id }} .rules|#rules .rulelist|#ruleconflicts|#rulecount|#cal|#activity|#ruledata">
+                <form method="post" action="/rules/apply" class="inline" data-swap="#src-{{ x.id }} .rules|#rules .rulelist|#ruleconflicts|#rulelines|#rulecount|#cal|#activity|#ruledata">
                   <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}"><input type="hidden" name="sid" value="{{ x.id }}">
                   <button class="linkbtn" role="menuitem" title="{{ _('Use this rule in {name} too', name=x.name) }}">{{ r.html }}</button></form>
                 {% endfor %}

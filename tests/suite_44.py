@@ -54,7 +54,7 @@ MEASURE = """() => {
   // handles in the section's right margin: modules (Calendars, Feeds) and All Rules' lines
   document.querySelectorAll('.sortable.modules > .modrow, #rules .rulelist > .ruleline').forEach(row => {
     const sec = row.closest('section'), h = row.querySelector(':scope > .handle'), box = row.firstElementChild;
-    const plus = sec.querySelector('.cardhead .plus, .shead .countbox');
+    const plus = sec.querySelector('.cardhead .plus, .shead .plus');
     if (!vis(row)) return;
     out.margins.push([sec.id, Math.round(R(box).right), Math.round(R(plus).right), Math.round(R(h).left), Math.round(R(h).right), Math.round(R(sec).right)]);
   });
@@ -115,10 +115,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                 if w > 600 and scheme == "light":
                     # Clarification: module-like sections: the count box top right, + bottom right (beta.11)
                     for sec, box in (("#rules", "#rulecount"), ("#templates", "#tplcount")):
-                        r = pg.evaluate(f"""() => {{ const s = document.querySelector('{sec}').getBoundingClientRect(), p = document.querySelector('{sec} .sfoot .plus').getBoundingClientRect(),
-                                         b = document.querySelector('{box}').getBoundingClientRect(); return [s.right - p.right, s.bottom - p.bottom, s.right - b.right, b.top - s.top, document.querySelectorAll('{sec} > .shead .plus').length]; }}""")
-                        ok(17 <= r[0] <= 21 and r[1] <= 21 and 17 <= r[2] <= 21 and r[3] < 30 and r[4] == 0,
-                           f"[{tag}] Clarification '+ in the corner': {sec} count box top right, + bottom right, none in the header {r}")
+                        r = pg.evaluate(f"""() => {{ const s = document.querySelector('{sec}').getBoundingClientRect(), p = document.querySelector('{sec} > .shead .plus').getBoundingClientRect(),
+                                         b = document.querySelector('{box}').getBoundingClientRect(); return [s.right - p.right, p.top - s.top, s.right - b.right, b.top - s.top, document.querySelectorAll('{sec} .sfoot').length]; }}""")
+                        ok(17 <= r[0] <= 21 and r[1] < 30 and 55 <= r[2] <= 70 and r[3] < 30 and r[4] == 0,
+                           f"[{tag}] Clarification '+ in the corner': {sec} the count box, then + in the top right corner, none at the bottom {r}")
                     # Clarification: a note is a raised (i) after the name, only when there is one
                     ok(pg.locator(f"#src-{wid} .nameline .notedot").count() == 1 and "Shared with the office" in pg.locator(f"#src-{wid} .nameline .helptip").text_content()
                        and "Note:" not in pg.locator("#src-ccs .nameline .helptip").text_content(),
@@ -202,7 +202,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             ok(r[0] and r[1] and "blur" in r[2], f"Clarification '+ pop-ups': {plus} opens a centred pop-up, the page blurred behind {r}")
             pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         pg.click("#templates > .cfgline .cfgtoggle"); pg.wait_for_timeout(200)
-        pg.click("#templates .sfoot .plus"); pg.wait_for_timeout(350)
+        pg.click("#templates > .shead .plus"); pg.wait_for_timeout(350)
         ok(pg.evaluate("document.getElementById('tpladd').matches(':modal')"), "…Event Templates' + too")
         pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         r = pg.evaluate("""() => { const m = document.querySelector('.box.module'), cs = getComputedStyle(m), n = m.querySelector('.srcname');
@@ -212,7 +212,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                     [...document.querySelectorAll('.palpop')].every(p => p.querySelectorAll('.pal:not(.nocolor)').length === 11),
                     [...document.querySelectorAll('main input[type=date]')].every(i => (i.closest('.daterange') && i.closest('.daterange').querySelector('.rangeall')) || i.closest('.destdates')),
                     [...document.querySelectorAll('.box.src .cfgbody')].every(c => { const f = c.querySelector('form.importrow'); return f && f.querySelector('.filefield') && f.lastElementChild.tagName === 'BUTTON'; })]; }""")
-        ok(r[0] == "2px" and r[1] == "5px" and r[2] == "9px", f"Clarification '2 px border': modules have a 2 px border, 1 px less padding {r[:3]}")
+        ok(r[0] == "1px" and r[1] == "5px" and r[2] == "9px", f"Clarification '2 px border': modules have a 1 px border (beta.26, F21) {r[:3]}")
         ok(r[3] in ("rgba(0, 0, 0, 0)", "transparent") and r[4] == "rgba(0, 0, 0, 0)", f"Clarification 'label': a folded module's label is plain text {r[3:5]}")
         ok(r[5] and r[5] == r[6], f"Clarification '(i) is info': every module has its (i) after the label ({r[6]} of {r[5]})")
         ok(r[7] == 0 and r[8], f"Clarification 'one palette': no free color picker; every color box offers Google's 11 {r[7:9]}")
@@ -223,8 +223,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok("cls: 'danger'" not in src and "cls: 'danger ghost'" not in src,
            "Clarification 'one look per meaning': a pop-up's red choice is a red fill ('danger solid') or red words ('ghost danger'), never red on blue")
         # emoji: ten a line, scrolling, a search on top
-        pg.click("#rules > .cfgline .cfgtoggle") if pg.locator("#rules .sfoot .newrule").is_hidden() else None
-        pg.click("#rules .sfoot .newrule"); pg.wait_for_timeout(300)
+        pg.click("#rules > .cfgline .cfgtoggle") if pg.locator("#rules > .shead .newrule").is_hidden() else None
+        pg.click("#rules > .shead .newrule"); pg.wait_for_timeout(300)
         pg.evaluate("() => { const s = document.querySelector('#ruledialog .atype'); s.value = 'emoji'; s.dispatchEvent(new Event('change', {bubbles:true})); }")
         pg.click("#ruledialog .emofind"); pg.wait_for_timeout(700)
         r = pg.evaluate("""() => { const g = document.querySelector('#ruledialog .emogrid'), cs = getComputedStyle(g), f = document.querySelector('#ruledialog .emofind'), fs = getComputedStyle(f);
@@ -297,14 +297,14 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             for (let i = 1; i < kids.length; i++) {
               const a = kids[i - 1].getBoundingClientRect(), b = kids[i].getBoundingClientRect();
               if (b.top < a.bottom - 1 || b.left >= a.right || b.right <= a.left) continue;      // side by side, not stacked
-              const gap = Math.round(b.top - a.bottom), want = label(kids[i - 1]) ? 2 : 5;
+              const gap = Math.round(b.top - a.bottom), want = label(kids[i - 1]) ? 1 : 5;
               if (gap !== want) bad.push(name(kids[i - 1]).slice(0, 40) + ' > ' + name(kids[i]).slice(0, 40) + ': ' + gap + ' (not ' + want + ')');
             }
           }
           return bad;
         }"""
         bad = pg.evaluate(SPACING, ".box.module .cfgbody")
-        ok(not bad, f"Clarification 'spacing': inside a module, 5 px between parts, 2 px under a label {bad[:6]}")
+        ok(not bad, f"Clarification 'spacing': inside a module, 5 px between parts, 1 px under a label (beta.26, F12.1) {bad[:6]}")
         r = pg.evaluate("""() => { const s = [...document.querySelectorAll('main > .card, .sections > .card')], out = [];
             for (let i = 1; i < s.length; i++) { const a = s[i - 1], g = Math.round(s[i].getBoundingClientRect().top - a.getBoundingClientRect().bottom);
               if (!(a.matches('.modsection:not(.open)') ? g === 14 : g === 5) && s[i].parentElement === a.parentElement) out.push(a.id + ' > ' + s[i].id + ': ' + g); }
@@ -319,7 +319,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             bad += pg.evaluate(SPACING, f"#{d}")
             pg.evaluate(f"document.getElementById('{d}').close()")
         ok(len(dlgs) >= 10 and not any(pads), f"Clarification 'spacing': every pop-up is 12 px inside ({len(dlgs)} pop-ups) {[p for p in pads if p]}")
-        ok(not bad, f"Clarification 'spacing': inside every pop-up, 5 px between parts, 2 px under a label {bad[:6]}")
+        ok(not bad, f"Clarification 'spacing': inside every pop-up, 5 px between parts, 1 px under a label (beta.26, F12.1) {bad[:6]}")
         r = pg.evaluate("""() => { const d = document.querySelector('.box.module .destdates'), k = d.querySelector('.k').getBoundingClientRect();
             const i = [...d.querySelectorAll('input')].map(x => x.getBoundingClientRect()), l = [...d.querySelectorAll('.dfield > span')].map(x => x.getBoundingClientRect());
             const col = document.querySelector('.box.module .addbtns'), g = col.querySelector('.appgoogle'), w0 = col.getBoundingClientRect().width;
@@ -330,7 +330,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                             || JSON.stringify(picks.map(p => p.map(x => [x.left, x.top, x.bottom])));
             return [Math.round(i[0].top - k.bottom), Math.round(i[1].top - i[0].bottom), Math.round(i[0].left - Math.max(l[0].right, l[1].right)), i[0].left === i[1].left,
                     Math.round(w0 - wg), same, stacked]; }""")
-        ok(r[0] == 2 and r[1] == 5 and r[2] == 5 and r[3], f"Clarification 'From / To': 2 px under Dates, From 5 px over To, 5 px from the labels, lined up {r[:4]}")
+        ok(r[0] == 1 and r[1] == 5 and r[2] == 5 and r[3], f"Clarification 'From / To': 1 px under Dates (beta.26, F12.1), From 5 px over To, 5 px from the labels, lined up {r[:4]}")
         ok(r[4] == 0 and r[5], f"Clarification 'Add to…': the buttons as wide as the longest (Add to Google Calendar) {r[4:]}")
         ok(r[6] is True, f"Clarification 'From / To': an Include box's calendars one under the other, 5 px apart, in every module (F5.3) {r[6]}")
         # five calendars: three, then a second column; with no room for a second column, one column five tall
@@ -361,7 +361,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "a working Settings group shows everything (suite 47)": "A Settings",
             "one look per meaning": "One look per meaning", "click paths": "In-page instructions are click paths",
             "date ranges": "Every date range has All", "no browser dialogs": "No browser alert or confirm boxes",
-            "(i) is info": "(i) is info", "+ pop-ups": "Every + opens a centred pop-up", "2 px border": "Modules have a 2 px border",
+            "(i) is info": "(i) is info", "+ pop-ups": "Every + opens a centred pop-up", 
             "label": "A module's name is its label", "one palette": "One color palette everywhere",
             "deleted events": "A deleted event stays struck through", "import row": "Importing a calendar file is one row",
             "emoji": "Emoji: the common ones",
@@ -370,7 +370,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "spacing": "Spacing: 5 px between parts", "(i) and (?) pop-ups": "(i) and (?) pop-ups open with their upper left",
             "folded (i)": "A folded module's (i) is a superscript", "From / To": "An Include box's calendars",
             "today": "Today has a 2 px accent border", "event pop-up": "The event pop-up",
-            "section and module colors (suite 59)": "Sections and modules are told apart by color"}
+            "section and module colors (suite 59)": "Sections and modules are told apart by color",
+            "header order (suite 61)": "Every section's header reads: icon", "status word shrinks (suite 61)": "A good status word (Validated",
+            "Expand words (suite 61)": "say \"Expand to Configure\"", "title bar logo (suite 61)": "The title bar: the logo's mark",
+            "trash icons (suite 61)": "Trash icons: the icon's lines tinted red", "24-hour fold (suite 61)": "left open folds again after 24 hours",
+            "+ top right (suite 61)": "Every section's + is in its top right", "1 px borders (suite 59, 61)": "Every border is 1 px wide"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

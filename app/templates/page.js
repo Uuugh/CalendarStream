@@ -11,3 +11,4 @@
 {% include "js/11-reminders-print.js" %}
 {% include "js/12-handles-checks.js" %}
 {% include "js/13-feeds.js" %}
+{% include "js/14-status-fold.js" %}

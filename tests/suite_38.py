@@ -30,7 +30,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     n = len(main.all_rules())
     ok(re.search(r'<div class="statusbox countbox good" id="rulecount">.*?%d Rules' % n, p, re.S) is not None
        and re.search(r'<div class="statusbox countbox good" id="tplcount">.*?2 Templates', p, re.S) is not None, f"F: All Rules and Event Templates: a green box with {n} Rules / 2 Templates")
-    ok(p.count('<span class="expandword"><span class="long">Expand for Details</span>') == 3, "…and an Expand for Details line, like Activities and Logs")
+    ok(p.count('<span class="expandword"><span class="long">Expand to Configure</span>') >= 2, "…and an Expand to Configure line (beta.26, F11.4)")
     hd = p[p.index('id="rules"'):p.index('id="rules-body"')]
     ok('class="toggle"' not in hd and 'class="peek"' not in hd and re.search(r'All Rules<span class="helpdot', hd) is not None, "no ▸ toggle or grey count; (?) right after the title")
     ok('class="guide rulesguide"' not in p.split('id="rules-body"')[1].split("</section>")[0] and p.index('class="eactions rdfoot"') < p.index('class="guide rulesguide"', p.index('id="ruledialog"')),

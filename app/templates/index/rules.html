@@ -4,7 +4,11 @@
   <section class="card section modsection{% if sections.rules %} open{% endif %}" id="rules" data-section="rules" aria-labelledby="rulestitle">
     <div class="shead">
       <span class="bigtitle" id="rulestitle">{{ icons.rules|safe }}{{ _('All Rules') }}{{ help(_('Every rule, highest first, with its calendars. Handle or ▲ ▼ › priority · ✎ edits · copy › a copy · bin deletes. How rules work: bottom of the rule dialog.')) }}</span>
+      {# F13: icon · title · space · status lines · health · + (0.2.8-beta.26): up to three lines, the conflicts first, otherwise how many #}
+      {% set rl_all = all_rules|selectattr("apply", "equalto", "all")|list|length %}{% set rl_none = all_rules|rejectattr("apply", "equalto", "all")|rejectattr("used")|list|length %}
+      <div class="slines" id="rulelines">{% if rule_conflicts %}{% for c in rule_conflicts[:3] %}<div class="sline warn" title="{{ c.text }}">{{ c.text }}</div>{% endfor %}{% else %}<div class="sline">{{ _('{n} for all calendars', n=rl_all) }}</div><div class="sline">{{ _('{n} for chosen calendars', n=all_rules|length - rl_all - rl_none) }}</div><div class="sline">{{ _('{n} without a calendar yet', n=rl_none) }}</div>{% endif %}</div>
       <div class="statusbox countbox {{ 'run' if rule_conflicts else 'good' }}" id="rulecount"{% if rule_conflicts %} title="{{ _('{n} to check', n=rule_conflicts|length) }}"{% endif %}>{{ chip('run' if rule_conflicts else 'good', (_('1 Rule') if all_rules|length == 1 else _('{n} Rules', n=all_rules|length)) if not rule_conflicts else _('{n} to check', n=rule_conflicts|length)) }}</div>
+      <button type="button" class="ghost plus newrule" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">{{ icon("add", 24) }}</button>
     </div>
     {{ sectionline("rules", sections.rules) }}
     <div class="sbody" id="rules-body"{% if not sections.rules %} hidden{% endif %}>
@@ -15,7 +19,7 @@
       <div class="conflict" data-a="{{ c.a }}" data-b="{{ c.b }}">
         <p>{{ icon("warning", 17) }}<span>{{ c.text }}</span></p>
         <div class="fixes">{% for how, label in c.fixes %}
-          <form method="post" action="/rules/resolve" class="inline" data-swap="#rules .rulelist|#ruleconflicts|#rulecount|#sources|#cal|#activity|#ruledata">
+          <form method="post" action="/rules/resolve" class="inline" data-swap="#rules .rulelist|#ruleconflicts|#rulelines|#rulecount|#sources|#cal|#activity|#ruledata">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="key" value="{{ c.key }}"><input type="hidden" name="how" value="{{ how }}">
             <button class="{{ 'ghost' if how == 'ignore' else 'btn2' }}">{{ label }}</button></form>{% endfor %}</div>
       </div>
@@ -39,7 +43,5 @@
       </div>
       {% endfor %}
     </div>
-    {# + in the bottom right corner (0.2.8-beta.11) #}
-    <div class="sfoot"><button type="button" class="ghost plus newrule" title="{{ _('Add a rule') }}" aria-label="{{ _('Add a rule') }}">{{ icon("add", 24) }}</button></div>
     </div>
   </section>

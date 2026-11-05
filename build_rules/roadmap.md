@@ -4,8 +4,8 @@ Read when planning a version.
 
 0.2 = more sources and destinations (0.2.8-beta.10: two-way sync with the Google calendars CalendarStream makes)
 
-0.2.9 Outlook
-- Outlook 1-way and 2-way Sync (Microsoft Graph): a Microsoft API module in ☰ Settings (an app registered once
+0.2.9 Microsoft 365 / Outlook
+- Outlook 1-way and 2-way Sync through Microsoft 365 OAuth (Microsoft Graph), for work-calendar integrations: a Microsoft API module in ☰ Settings (an app registered once
   in Microsoft's Azure portal), then Connect me / Invite someone in each module, like Google.
 
 0.2.10 Apple
@@ -18,6 +18,14 @@ Read when planning a version.
   (public domain), Victoria Government Important Dates (CC BY 4.0). For calendars those don't cover: Holibase
   (MIT / CC BY 4.0), date-holidays (ISC / CC BY-SA 3.0). Each licence's terms are checked when 0.2.11 is planned.
 
+0.2.12 Generic CalDAV
+- Nextcloud, Fastmail and other self-hosted calendars.
+
+0.2.13 CCS+ via iCal? (an idea to look into)
+
+0.2.14 Cloud / attachment integration (the last 0.2.x)
+- Attachments in an area at the bottom of an event's Notes (was F17.2).
+
 0.3 Backups
 - Backups.
 
@@ -29,6 +37,9 @@ Read when planning a version.
 - keep the built-in login as a fallback admin, so a broken authentik doesn't lock you out. And today's data should belong to whoever logs in first.
 - put the share switch on each source and destination rather than one page-wide toggle. Sharing is per calendar, and you may want to share your schedule but not a personal feed.
 - An unlock e-mail or code for a sign-in that's locked out.
+- 0.4.1 Multi-user accounts and permissions, for family / team installs (the first part of this).
+- 0.4.2 Privacy / busy-only output rules, for safe work / personal sharing.
+- 0.4.3 A public REST API and webhooks, for outside automation.
 
 0.5 Notifications
 - triggers  are defined in rules say the may be resued
@@ -37,9 +48,10 @@ Read when planning a version.
   - settings allows options for (Apprise library): email, ntfy, Pushover, Telegram and others
 
 0.6 Invitations/Booking
-- (Filled in at its first PLAN.)
+- 0.6.1 Booking links and availability, like the scheduling platforms (the first part of this). The rest is filled in at its first PLAN.
 
 0.7 Theming
+- 0.7.0 Phone mode: Settings a full page, with a back button in its left corner.
 
 0.8 Admin dashboard
 - API usage.
@@ -47,7 +59,10 @@ Read when planning a version.
 
 0.9 Documentation
 
-0.10 Business website
+0.10 Native mobile apps
+- Beyond the responsive web page.
+
+0.11 Business website
 
 ## Low findings
 

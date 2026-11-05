@@ -153,10 +153,12 @@ function checkNow(f, btn, body) {
 function pairState(p, st) {
   if (!p) return;
   var sv = p.querySelector('.psave'), c = p.querySelector('.pcancel');
+  if (p.dataset.state === 'cancelled' && st === 'idle') p.dataset.prev = 'cancelled'; else delete p.dataset.prev;   // (F12.5: Cancel shrinks back as slowly as it grew)
   p.dataset.state = st;
   sv.textContent = { saving: sv.dataset.busy, saved: sv.dataset.done, failed: T.failed }[st] || sv.dataset.text;
   if (st === 'failed') sv.insertAdjacentHTML('afterbegin', p.dataset.cause === 'inside' ? ICON.fail : ICON.warn);
   c.textContent = st === 'cancelled' ? c.dataset.done : c.dataset.text;
+  if (st === 'idle') setTimeout(pairRefresh, 0);
 }
 function flashPair(p, st, then) {
   pairState(p, st);
@@ -214,3 +216,37 @@ document.addEventListener('click', function (e) {
   if (box) setTimeout(function () { setModule(box, false); }, 700);
 });
 
+
+// (0.2.8-beta.26, F9, F12.4) Cancel | Save while there is nothing to save: truly disabled (greyed, not focusable). The first change
+// enables the pair and Save pulses for about 5 seconds, then stays in full color; Save or Cancel brings it back. What the
+// form held when it appeared (or was opened, or last saved) is compared with what it holds now. + Add pop-ups keep their
+// buttons enabled: a new calendar or feed can be added with the defaults.
+var pairBase = new WeakMap();
+function pairSig(p) {
+  var f = document.getElementById(p.dataset.pair);
+  if (!f) return null;
+  if (formId(f) === 'ruleform') return typeof ruleSig === 'function' && ruleDialog.open ? ruleSig() : null;
+  var s = [];
+  new FormData(f).forEach(function (v, k) { if (k !== 'csrf') s.push(k + '=' + (typeof v === 'string' ? v : v.name + ':' + v.size)); });
+  return s.join('&');
+}
+function pairReset(p) { if (p && pairBase) pairBase.delete(p); setTimeout(pairRefresh, 0); }
+function pairRefresh() {
+  document.querySelectorAll('.pairbtns').forEach(function (p) {
+    if (p.dataset.state !== 'idle') return;
+    var sv = p.querySelector('.psave'), c = p.querySelector('.pcancel');
+    if (!sv || !c || p.closest('dialog.addpop')) return;
+    if (p.closest('#ruledialog') && !editing) return;                      // (a new rule: Apply stays available)
+    var sig = pairSig(p);
+    if (sig === null) return;
+    if (!pairBase.has(p)) pairBase.set(p, sig);
+    var dirty = sig !== pairBase.get(p), rx = !!(p.closest('#ruledialog') && condBox.querySelector('.cond.rxbad'));
+    sv.disabled = !dirty || rx; c.disabled = !dirty && !p.closest('dialog');   // (a pop-up's Cancel closes it: always available)
+    if (dirty && p.dataset.dirty !== '1') p.dataset.dirty = '1'; else if (!dirty) delete p.dataset.dirty;
+  });
+}
+['input', 'change', 'keyup'].forEach(function (t) { document.addEventListener(t, function () { setTimeout(pairRefresh, 0); }, true); });
+document.addEventListener('click', function () { setTimeout(pairRefresh, 30); }, true);
+document.addEventListener('paircancel', function () { setTimeout(pairRefresh, 0); }, true);
+new MutationObserver(function () { clearTimeout(pairRefresh.t); pairRefresh.t = setTimeout(pairRefresh, 60); }).observe(document.body, { childList: true, subtree: true });
+pairRefresh();

@@ -98,13 +98,13 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pr = q(".pairbtns")
         ok(pr and round(pr["width"]) == 130 and round(pr["height"]) == 34, "F3: Cancel | Save is the theme's pair")
         pg.evaluate("document.getElementById('eventdialog').close()"); pg.wait_for_timeout(300)
-        # F5: + at the bottom right of All Rules and Event Templates
+        # F5 (beta.26, F18): + in the top right corner of All Rules and Event Templates
         for sec in ("#rules", "#templates"):
             pg.click(f"{sec} > .cfgline .cfgtoggle"); pg.wait_for_timeout(200)
-            r = pg.evaluate(f"""() => {{ const s = document.querySelector('{sec}').getBoundingClientRect(), p = document.querySelector('{sec} .sfoot .plus').getBoundingClientRect();
-                                return [Math.round(s.right - p.right), Math.round(s.bottom - p.bottom), document.querySelectorAll('{sec} > .shead .plus').length]; }}""")
-            ok(17 <= r[0] <= 21 and r[1] <= 21 and r[2] == 0, f"F5: {sec}: + at the bottom right, none in the header {r}")
-        pg.click("#templates .sfoot .plus"); pg.wait_for_timeout(200)
+            r = pg.evaluate(f"""() => {{ const s = document.querySelector('{sec}').getBoundingClientRect(), p = document.querySelector('{sec} > .shead .plus').getBoundingClientRect();
+                                return [Math.round(s.right - p.right), Math.round(p.top - s.top), document.querySelectorAll('{sec} .sfoot').length]; }}""")
+            ok(17 <= r[0] <= 21 and r[1] < 30 and r[2] == 0, f"F5/F18: {sec}: + in the top right corner, none at the bottom {r}")
+        pg.click("#templates > .shead .plus"); pg.wait_for_timeout(200)
         ok(pg.eval_on_selector("#tpladd", "d => d.open") and pg.locator("#tpladd .tagrow").count() == 1,
            "…Event Templates' + opens its pop-up (0.2.8-beta.15: every + is a centred pop-up)")
         pg.click("#tpladd .pcancel"); pg.wait_for_timeout(200)

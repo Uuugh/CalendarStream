@@ -65,3 +65,11 @@
     .ev[open] .body { display:none }
     .day { break-inside:avoid }
   }
+
+  /* (0.2.8-beta.26, F9, F12.4, F12.5) Nothing to save: Cancel | Save are disabled and plainly inactive (greyed, faded). The first
+     change turns them on and Save pulses in the pressed look for about 5 seconds (5 pulses), then stays in full color; no
+     pulse with reduced motion. Cancel grows over the pair in 1 s, and shrinks back in 1 s. */
+  .pairbtns button:disabled { opacity:.45; filter:grayscale(1); cursor:default }
+  .pairbtns[data-state="idle"][data-dirty="1"] .psave:not(:disabled) { animation:pulse-run 1s ease-out 5 }
+  .pairbtns[data-state="cancelled"] button, .pairbtns[data-state="idle"][data-prev="cancelled"] button { transition-duration:1s }
+  @media (prefers-reduced-motion:reduce) { .pairbtns .psave { animation:none !important } }

@@ -103,7 +103,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             radii = pg.evaluate("""() => [...document.querySelectorAll('button, input, select, .chip, .rulebox, .box, .card, .statusbox, .okslot')].filter(e => e.offsetParent)
                 .map(e => getComputedStyle(e)).filter(s => parseFloat(s.borderTopLeftRadius) >= parseFloat(s.height) / 2 - 0.5 && parseFloat(s.height) > 12 && !s.borderTopLeftRadius.endsWith('%')).length""")
             ok(radii == 0, f"{scheme}: no pill-shaped controls ({radii})")
-            ok(pg.locator("svg.mi").count() > 20 and pg.evaluate("[...document.querySelectorAll('svg')].every(s => s.querySelector(':scope > use[href^=\"#mi-\"]') || s.querySelector(':scope > symbol[id^=\"mi-\"]'))"), f"{scheme}: every icon on the page is a Material Symbol")
+            ok(pg.locator("svg.mi").count() > 20 and pg.evaluate("[...document.querySelectorAll('svg')].every(s => s.matches('.gripdots') || s.querySelector(':scope > use[href^=\"#mi-\"]') || s.querySelector(':scope > symbol[id^=\"mi-\"]'))"), f"{scheme}: every icon on the page is a Material Symbol")
             ok(not errs, f"{scheme}: no script errors {errs}")
             pg.close()
         pg = b.new_page(viewport={"width": 1400, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
@@ -147,7 +147,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         got = [pg.input_value(f"{box} input[name=url]"), slot.get_attribute("data-state")]
         ok(got[0] == "https://example.org/work.ics" and got[1] in ("ok", "needs"), f"…✕ undoes the typing and the slot goes back ({got})")
         # the bottom pair says Cancelled
-        pg.locator(f"{box} .pcancel").click(); pg.wait_for_timeout(200)
+        pg.fill(f"{box} .nameinput", "Changed name"); pg.locator(f"{box} .pcancel").click(); pg.wait_for_timeout(200)
         ok(pg.inner_text(f"{box} .pcancel").strip() == "Cancelled", "F1.3: Cancel | Save says Cancelled")
         ok(not errs, f"no script errors {errs}")
         # Phone width: the header row keeps the title and status; the lines go under it

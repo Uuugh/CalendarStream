@@ -60,7 +60,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                     seen = w; break
             ok(seen and seen[2] == "done" and seen[1] == seen[3] == "Updated", f"I1 ({which}): both say Updated together {seen}")
             pg.wait_for_timeout(1500)
-            ok("v0.2.7-beta.3" in pg.inner_text(".topbar") and pg.locator("#updates .upgradebtn").count() == 0, "…then the page reloads with the new version")
+            ok("v0.2.7-beta.3" in pg.inner_text(".curver") and pg.locator("#updates .upgradebtn").count() == 0, "…then the page reloads with the new version")
             U.__version__ = main.__version__ = "0.2.7-beta.2"
         # a refused update: both say Update failed, and both go back together
         open(tok.name, "w").write("other")

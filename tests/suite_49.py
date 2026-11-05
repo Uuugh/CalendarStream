@@ -253,7 +253,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg = b.new_page(); errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.route("http://cs.test/**", answer)
         pg.goto("http://cs.test/"); pg.wait_for_timeout(500)
-        pg.evaluate("document.querySelector('#rules .sfoot .newrule').click()"); pg.wait_for_timeout(200)
+        pg.evaluate("document.querySelector('#rules > .shead .newrule').click()"); pg.wait_for_timeout(200)
         pg.select_option("#ruledialog .cond .cop", "regex"); pg.wait_for_timeout(100)
         pg.eval_on_selector("#ruledialog .rxsamples", "t => { t.value = '✈️ RDO day'; }")
         pg.fill("#ruledialog .cond .cval", "RDO"); pg.wait_for_timeout(1200)

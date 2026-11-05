@@ -2,7 +2,10 @@
   <section class="card section modsection{% if sections.templates %} open{% endif %}" id="templates" data-section="templates" aria-labelledby="tplstitle">
     <div class="shead">
       <span class="bigtitle" id="tplstitle">{{ icons.templates|safe }}{{ _('Event Templates') }}{{ help(_('Ready-made events, for rules that add events and for adding an event by hand.')) }}</span>
+      {% set tp_all = templates|selectattr("all_day")|list|length %}
+      <div class="slines" id="tpllines"><div class="sline">{{ _('{n} all-day', n=tp_all) }}</div><div class="sline">{{ _('{n} timed', n=templates|length - tp_all) }}</div></div>
       <div class="statusbox countbox good" id="tplcount">{{ chip('good', _('1 Template') if templates|length == 1 else _('{n} Templates', n=templates|length)) }}</div>
+      <button type="button" class="ghost plus opendlg" data-dialog="tpladd" aria-haspopup="dialog" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 24) }}</button>
     </div>
     {{ sectionline("templates", sections.templates) }}
     <div class="sbody" id="templates-body"{% if not sections.templates %} hidden{% endif %}>
@@ -16,7 +19,5 @@
         {{ pair("tplform") }}
       </div>
     </form>
-    {# + in the bottom right corner (0.2.8-beta.11) #}
-    <div class="sfoot"><button type="button" class="ghost plus opendlg" data-dialog="tpladd" aria-haspopup="dialog" title="{{ _('Add a template') }}" aria-label="{{ _('Add a template') }}">{{ icon("add", 24) }}</button></div>
     </div>
   </section>

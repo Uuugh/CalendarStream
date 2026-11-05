@@ -94,7 +94,7 @@ function updateNow(started) {
                        show('failed', T.updateFailed); text.insertAdjacentHTML('afterbegin', ICON.fail); slot.title = why || ''; btn.disabled = false;
                        setTimeout(function () { if (slot.dataset.state === 'failed') show('ready'); }, 2400); }
   function done(version) {
-    document.querySelectorAll('.topbar .curver').forEach(function (a) {
+    document.querySelectorAll('.curver').forEach(function (a) {
       a.textContent = 'v' + version; a.href = a.href.replace(/\/v[^\/]*$/, '/v' + version);
     });
     var foot = document.querySelector('.foot');

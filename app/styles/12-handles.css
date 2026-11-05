@@ -45,3 +45,16 @@
   .rulemenu form { margin:0 } .rulemenu .linkbtn { display:flex; align-items:center; gap:6px; width:100%; height:30px; padding:0 8px; border-radius:6px; color:var(--text); text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
   .rulemenu .linkbtn:hover { background:var(--soft); text-decoration:none }
   .rulemenu .newrule { color:var(--accent); font-weight:600 }
+  /* (0.2.8-beta.26, F12.7) The reorder grip: two columns of three dots, left of the element in the margin that is already there,
+     faint, shown on hover, on keyboard focus inside the row and on touch screens; ▲ ▼ stay on the right (the keyboard way). */
+  .modrow, .ruleline { position:relative }
+  .handle .hgrip { position:absolute; left:-15px; top:50%; transform:translateY(-50%); width:10px; height:16px; color:var(--muted); opacity:0; transition:opacity .15s }
+  .modrow > .handle .hgrip { top:25px }
+  .ruleline > .handle .hgrip { height:16px }
+  .modrow:hover > .handle .hgrip, .ruleline:hover > .handle .hgrip, .modrow:focus-within > .handle .hgrip, .ruleline:focus-within > .handle .hgrip, .handle .hgrip:hover { opacity:.55 }
+  .handle .hgrip:hover { opacity:1; color:var(--accent) }
+  @media (hover:none) { .handle .hgrip { opacity:.45 } }
+  @media (prefers-reduced-motion:reduce) { .handle .hgrip { transition:none } }
+  /* (F12.6) The trash icons' lines tinted red (the button itself unchanged): a bit of --bad in --muted, always at least 3:1 on --card; fully red on hover */
+  svg.trashmark { color:color-mix(in srgb, var(--bad) var(--trashtint, 30%), var(--muted)) }
+  button:hover > svg.trashmark, button:focus-visible > svg.trashmark, button.danger > svg.trashmark { color:var(--bad) }

@@ -20,6 +20,9 @@ releases it. Read when the Developer says DEPLOY.
    numbered #1, #2… for the CHANGELOG.
 2. **Translations:** update every language, then run the translation test (`tests/run.sh 17`). Translations are
    only ever updated here, even if betas show some English words.
+   A translation too long for its place is abbreviated ("Sync" for "synchronisation"), and only then; a word that fits
+   stays in full. The longest Status/Action words are checked against the 132 px button, and the Cancel | Save
+   words ("Abbrechen", "Speichern", "Enregistrer") against their 65 px halves.
 3. **Documentation:** CHANGELOG.md (also the GitHub release notes); the README screenshots if the page changed a
    lot (the made-up demo schedule, never the Developer's real one); the Theme Rules pictures if the theme changed
    (theme.md).

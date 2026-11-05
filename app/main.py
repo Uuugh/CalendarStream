@@ -514,12 +514,31 @@ def event_templates() -> list[dict]:
 SECTIONS = {"status": True, "activity": False, "rules": False, "templates": False, "googlesync": False}
 
 
+FOLD_AFTER = 24 * 3600      # (0.2.8-beta.26, F20) a section or module left open folds again after this many seconds
+
+
 def section_state() -> dict:
     """Open/closed: the page's sections, and the Configure part of each source's box ("src:<id>")
-    and destination's box ("dest:<id>", "dest:google" for the Google account)."""
+    and destination's box ("dest:<id>", "dest:google" for the Google account). One left open for 24 hours folds
+    by itself (F20): the first time it is seen open is its start (ui_opened), however it was opened."""
     saved = store.get("ui_sections") or {}
     found = {k: bool(saved.get(k, default)) for k, default in SECTIONS.items()}
     found.update({k: bool(v) for k, v in saved.items() if k.startswith(("src:", "dest:"))})
+    opened = store.get("ui_opened") or {}
+    now, changed, folds = datetime.now(timezone.utc).timestamp(), False, False
+    for k in list(found):
+        if k not in ("rules", "templates", "activity") and not k.startswith(("src:", "dest:")):
+            continue                                     # (Calendar, Calendars and Feeds have no Expand line)
+        if found[k]:
+            if k not in opened:
+                opened[k] = now; changed = True
+            elif now - opened[k] > FOLD_AFTER:
+                found[k] = False; saved[k] = False; opened.pop(k); changed = folds = True
+        elif k in opened:
+            opened.pop(k); changed = True
+    if changed:
+        if folds: store.set("ui_sections", saved)
+        store.set("ui_opened", opened)
     return found
 
 
@@ -2212,7 +2231,7 @@ def united_original(uid: str, sid: str = "ccs") -> Event | None:
 EVENT_COLORS = {hex_ for _, hex_ in GOOGLE_COLORS.values()}   # Google's 11 event colors
 
 # Icons for the event tools (Material Symbols): a bin to delete, two sheets to duplicate.
-TRASH_ICON = icons.svg("delete", 17)
+TRASH_ICON = icons.svg("delete", 17, "trashmark")
 COPY_ICON = icons.svg("content_copy", 17)
 
 

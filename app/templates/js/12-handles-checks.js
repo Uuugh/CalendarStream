@@ -13,7 +13,7 @@
     fetch(m[0], { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } }).then(function (r) {
       if (!r.ok) return;
       // the other lists that show the same rules (All Rules, the calendars) and the calendar follow
-      var sel = kind === 'rule' ? ['#rules .rulelist', '#ruleconflicts', '#rulecount', '.box.src .srcrules', '#cal'] : kind === 'source' ? ['#sources', '#cal'] : [];
+      var sel = kind === 'rule' ? ['#rules .rulelist', '#ruleconflicts', '#rulelines', '#rulecount', '.box.src .srcrules', '#cal'] : kind === 'source' ? ['#sources', '#cal'] : [];
       if (sel.length) swapIn(location.href, sel).then(function () { initCal(); bindAll(); reopenEvents(); });
     });
   }

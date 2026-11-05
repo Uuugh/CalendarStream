@@ -9,7 +9,45 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.25**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.26**
+
+## 0.2.8-beta.26 — 2026-11-04
+
+The Theme build.
+
+### Added
+- **F9, F12.4** A module's (or editor's) Cancel | Save are disabled, greyed and faded, while there is nothing to save; the
+  first change turns them on and Save pulses for about 5 seconds, then stays in full color, so unsaved changes (a rule in a
+  source, say) are easy to see. A pop-up's Cancel stays available, and a + Add pop-up can be saved with its defaults.
+- **F11** The logo's mark (no words) left of the title, the title in the logo's colors (Calendar navy, Stream blue; light and
+  dark), the version out of the title (the update notice stays) and in the footer with © CalendarStream, and a matching
+  favicon. **R6** The logo is in `app/static/logo/` (the full mark and the small sizes made from it).
+- **F13** Every section's header reads icon · title · space · status lines · health · +: All Rules and Event Templates show up
+  to three status lines (the conflicts, otherwise how many); Calendars and Feeds none.
+- **F12.5** Cancel grows over the pair in 1 s and shrinks back in 1 s.
+- **F12.7** The reorder handle is a grip of two columns of three faint dots, left of the element, shown on hover, on keyboard
+  focus and on touch; ▲ ▼ stay.
+- **F12.6** Trash icons have their lines tinted red (the button unchanged).
+- **F20** A section or module left open folds again after 24 hours.
+- **F23** A good status word (Validated, Healthy, Up to date…) shrinks to its ✓ after showing its word; the word stays as its
+  tooltip and accessible name.
+
+### Changed
+- **I4** History's three latest lines sit on the right side of its header, left-aligned.
+- **I5** The rule dialog's Add emoji field starts empty (no airplane).
+- **I6** A folded module or section has the same bottom padding as an open one.
+- **F10** Section borders 35% of their color, module borders 45%; Feeds a clear blue, All Rules lavender, Event Templates
+  copper. **F12.3** Module backgrounds subdued (header 6%, body 3%).
+- **F12.1** A label sits 1 px over its field. **F12.2** 2 px less above and below a module's Close line.
+- **F18** + is in the upper right corner of All Rules (and Event Templates), like the other sections. **F11.4** Calendars,
+  Feeds, All Rules and Event Templates say "Expand to Configure".
+- **F21** All borders are 1 px wide.
+
+### Build rules
+- **R2** The roadmap (0.2.9 Microsoft 365 / Outlook, 0.2.12 CalDAV, 0.2.13, 0.2.14, 0.4.1–0.4.3, 0.6.1, 0.7.0 Phone mode,
+  0.10 Native mobile apps, 0.11 Business website). **R10** A translation is abbreviated only when it doesn't fit its place
+  (5-deploy.md). **R12** `tests/run.sh` runs the suites with the clock fixed at 2026-10-30 12:00 (libfaketime, installed by
+  `tests/tools/setup.sh`), so the made-up schedule's dates never lapse. theme.md follows each change above.
 
 ## 0.2.8-beta.25 — 2026-11-04
 

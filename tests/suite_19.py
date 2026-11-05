@@ -73,7 +73,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
     # CCS+ wording and Google client fold
     main.logins.save_ccs("U123456", "pw12345"); main.state.last_auth_ok = True
     p = c.get("/").text
-    ok(len(re.findall(r'title="Validated: CCS\+ sign-in"><svg[^>]*>.*?</svg>Validated</span>', p)) == 1, "✓ Validated right of the CCS+ boxes")
+    ok(len(re.findall(r'title="Validated: CCS\+ sign-in"><svg[^>]*>.*?</svg><span class="okword">Validated</span></span>', p)) == 1, "✓ Validated right of the CCS+ boxes")
     main.store.set("google_client", {"id": "123-abc.apps.googleusercontent.com", "secret": main.google._seal("s3cret"),
                                      "check": {"ok": True, "message": "Google accepted the client ID and secret", "at": "2026-10-20T20:00:00+00:00"}})
     main.google._client = None

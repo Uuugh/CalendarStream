@@ -27,6 +27,8 @@ mkdir -p /var/run/postgresql && chown postgres /var/run/postgresql
 if ! PGPASSWORD=testpw psql -qw -h 127.0.0.1 -p "$PORT" -U ccs -d postgres -c "SELECT 1" >/dev/null 2>&1; then
   su postgres -c "psql -qw -p $PORT -d postgres -c \"CREATE ROLE ccs LOGIN CREATEDB PASSWORD 'testpw'\""
 fi
+# libfaketime: tests/run.sh fixes the clock at 2026-10-30 12:00 so the demo schedule's dates never lapse (R12)
+command -v faketime >/dev/null || { apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq faketime >/dev/null; }
 python3 -c "import fastapi, psycopg, icalendar, recurring_ical_events" 2>/dev/null ||
   pip install -q -r "$ROOT/requirements.txt" --break-system-packages
 # Playwright: cloud sessions come with it (never install a second copy there); elsewhere, install it.

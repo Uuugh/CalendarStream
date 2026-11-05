@@ -110,7 +110,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                 const x = cs(m); return [x.getPropertyValue('--mc').trim(), x.borderTopColor, x.backgroundImage]; });
               return {secs, mods, line, card}; }""")
             colors = [s[0] for s in r["secs"]]
-            ok(len(set(colors)) == 6 and all(s[1] == "1px" and s[2] for s in r["secs"]), f"F7 ({scheme}): six sections, six border colors, 2 px (1 px and an inset line) {colors}")
+            ok(len(set(colors)) == 6 and all(s[1] == "1px" for s in r["secs"]), f"F7 ({scheme}): six sections, six border colors, 1 px (beta.26, F21) {colors}")
             ok(len({s[3] for s in r["secs"]}) == 1, f"F7 ({scheme}): every section on the same --card background")
             ok(r["mods"] and all(m[0] and "linear-gradient" in m[2] and m[1] not in colors for m in r["mods"]),
                f"F7 ({scheme}): each module bordered in its own color, a tinted header over a tinted body")

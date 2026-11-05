@@ -222,7 +222,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.keyboard.press("Escape")
 
         # F14, I6: the rule dialog
-        pg.evaluate("document.querySelector('#rules .sfoot .newrule').click()"); pg.wait_for_timeout(300)
+        pg.evaluate("document.querySelector('#rules > .shead .newrule').click()"); pg.wait_for_timeout(300)
         pg.click("#ruledialog .acts .aadd"); pg.wait_for_timeout(100)
         pg.select_option("#ruledialog .act:last-child .atype", "event"); pg.wait_for_timeout(200)
         g2 = pg.evaluate("""() => { const box = document.querySelector('#ruledialog .acts').getBoundingClientRect();

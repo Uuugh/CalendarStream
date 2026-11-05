@@ -112,7 +112,7 @@ function actFields(a) {
   }
   // Emoji: the field, the common ones, then a search field for every emoji (0.2.8-beta.17, was a face+ button):
   // typing in it (or clicking it) opens the full list under the line, ten a line, filtered as you type
-  if (t === 'emoji') return '<input type="text" class="aval emoji" maxlength="16" value="' + esc(a.emoji || '') + '" aria-label="' + esc(RD.t.emoji) + '" placeholder="✈️">'
+  if (t === 'emoji') return '<input type="text" class="aval emoji" maxlength="16" value="' + esc(a.emoji || '') + '" aria-label="' + esc(RD.t.emoji) + '">'
       + '<span class="helpdot notedot emowarn" tabindex="0" role="button" aria-label="' + esc(RD.t.olderWindows) + '" aria-expanded="false"'
       + (emoNewer(a.emoji) ? '' : ' hidden') + '>' + RD.info_icon + '<span class="helptip" role="tooltip">' + esc(RD.t.olderWindows) + '</span></span>'
       + '<span class="emojis">' + RD.emoji.map(function (x) { return '<button type="button" class="ghost emo">' + x + '</button>'; }).join('') + '</span>'
@@ -393,7 +393,15 @@ function openRule(rule, sid) {
   ruleForm.querySelector('.rdmsg').hidden = true;
   pairState(ruleForm.querySelector('.pairbtns'), 'idle');
   drawConds(); drawActs();
+  pairReset(ruleForm.querySelector('.pairbtns'));
   ruleDialog.showModal();
+}
+// (0.2.8-beta.26, F12.4) What the dialog holds now, as one string: Apply is available once it differs from what it opened with
+function ruleSig() {
+  var sel = applyChosen();
+  return JSON.stringify([ruleForm.querySelector('.rdname').value,
+    Array.prototype.map.call(condBox.querySelectorAll('.cond'), readCond), Array.prototype.map.call(actBox.querySelectorAll('.act'), readAct),
+    sel.indexOf('all') >= 0 ? 'all' : sel]);
 }
 // Apply: the rule as JSON in the form's "rule" field (the page's saving script sends it)
 ruleForm.addEventListener('submit', function (e) {

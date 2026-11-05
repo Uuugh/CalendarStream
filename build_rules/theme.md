@@ -42,9 +42,12 @@ palette, Google Calendar's 11 colors, is the color box's: section 14.)
 | `--warn` / `--warnbg` | #946a24 / #faf3e6 | #fbbf24 / #2b2110 | amber: a problem outside CalendarStream |
 | `--bad` / `--badbg` | #b4483c / #faeeeb | #f87171 / #2d1414 | red: CalendarStream itself failed |
 
-Section colors (0.2.8-beta.24, F7), each a muted border (mixed half with `--line`) on `--card`: Calendar slate blue
-#5b6f9a, Calendars teal #2a9d8f, Feeds violet #7c5cc4, All Rules amber #c08a2b, Event Templates green #4c9a5b,
-History grey #8a8f98 (section 9).
+Section colors (0.2.8-beta.24, F7; 0.2.8-beta.26, F10), each a muted border (35% of the color, mixed with `--line`) on `--card`:
+Calendar slate blue #5b6f9a, Calendars teal #2a9d8f, Feeds a clear blue #2f86c8 (not the buttons' #40609c, not Calendar's slate),
+All Rules lavender #9b8ad6, Event Templates copper #b8733a, History grey #8a8f98 (section 9).
+
+The title's two words use the logo's colors (0.2.8-beta.26, F11.3): `--logo-cal` (Calendar: navy #0b1f44, light #e6e8ec in dark)
+and `--logo-stream` (Stream: #1a8cff, #4aa8ff in dark).
 
 ## 3. Icons
 
@@ -57,8 +60,8 @@ Picture 2·4. Rounded rectangles only, never pills. Controls 8 px (`--r`); secti
 12 px (`--rbox`); small marks (a color, today, a switch) 4–6 px.
 
 Sizes: 50 px module headers, 34 px controls (fields, buttons), the 132 × 50 px Status/Action buttons, the 130 × 34 px
-Cancel/Save buttons. Sections and modules have a 2 px border (a module with 1 px less padding all round, a section
-drawn as 1 px plus a 1 px inset line, so both keep their size); everything else 1 px.
+Cancel/Save buttons. Every border is 1 px (0.2.8-beta.26, F21: sections and modules were 2 px). The one 2 px line is today's
+day in the calendar (Clarifications), and the focus outline.
 
 ## 5. Static & Icon buttons
 
@@ -69,7 +72,11 @@ place shows ✓ once saved, then ✕ | ✓ while typing (✕ puts it back, ✓ s
 ## 6. Responsive Cancel/Save buttons
 
 Picture 2·6. Cancel | Save, 130 × 34 px, at the bottom of what it saves; the pressed side fills the pair ("Saved",
-"Cancelled") for 3 s. A question's answers can be the same pair (No | Yes). **Blue** is for these and every other
+"Cancelled") for 3 s. With nothing to save (F12.4) both are truly disabled: greyed and faded, not focusable, announced as
+unavailable (a pop-up's Cancel, which only closes it, stays available; so do the buttons of a + Add pop-up, which can be
+saved with its defaults). The first change (F9) turns them on and Save pulses in the pressed look for about 5 seconds, then
+stays in full color (WCAG 2.2.2); Save or Cancel brings the inactive look back. Cancel grows over the whole pair in 1 s and
+shrinks back in 1 s. A question's answers can be the same pair (No | Yes). **Blue** is for these and every other
 pressable button only: `--accent` fill, `--onaccent` words; never a status.
 
 ## 7. Responsive Status/Action buttons
@@ -133,7 +140,9 @@ fades, spins or pulses: each state simply replaces the last, with the same words
 | Pop-up opens | a click that opens one (every +, a question) | fade + scale 0.96 → 1; the backdrop (rgba(0,0,0,.55), the page blurred 2 px) fades in | 0.2 s ease-out | — |
 | Color box / emoji list | a click | opens under it at once | instant | until a choice or a click elsewhere |
 | Regex test box | typing | ✓ / ✕ redrawn | 300 ms after the last key | — |
-| Cancel \| Save | press | the pressed side grows over the pair (flex) and fades its words | 0.3 s ease | 3 s, then idle |
+| Cancel \| Save | press | the pressed side grows over the pair (flex) and fades its words; Cancel takes 1 s, in and back | 0.3 s ease (Cancel 1 s) | 3 s, then idle |
+| Save pulse | the first change in a form | Save pulses in the pressed look (`pulse-run`) once a second, 5 times, then stays in full color; none with reduced motion | 1 s ease-out × 5 | about 5 s |
+| Good status word | a green status appears | the word shows 2.4 s, then shrinks to its ✓ (the word stays as its tooltip and accessible name); count boxes keep their numbers | 0.5 s ease | — |
 | Field saved in place | Save | ✓ fades in (`slotfade`) | 0.45 s ease (messages 0.3 s) | until typing |
 | Expand / Close | press | the triangles turn (Close points up) | 0.15 s | — |
 | Copy | press | the icon becomes "Copied" | instant | 1.8 s |
@@ -146,15 +155,17 @@ box, the kind (fixed text), "Last synced 00:31" and the Status/Action buttons on
 (plain text; a field of the same size while expanded) with a raised (i), "Next check @ 00:44" on the right. Expand
 sits in the bottom border; open, a Close line sits under the header.
 
-Colors (0.2.8-beta.24, F7): a module's border is its calendar's or feed's color at 65%, its header a 10% tint and the
-rest a 5% tint of it, in light and dark; each section has its own muted border (section 2) on `--card`, so
+Colors (0.2.8-beta.24, F7; 0.2.8-beta.26, F10, F12.3): a module's border is its calendar's or feed's color at 45%, its header a 6%
+tint and the rest a 3% tint of it, in light and dark; each section has its own muted border (section 2) on `--card`, so
 sections and modules are told apart while everything else stays as it was.
 
 (i) is info, about this module: what it is, then its note when it has one; (?) is help (section 12).
 
 ## 10. Handles
 
-Picture 2·10. ▲ ☰ ▼ in the section's right margin; none with nothing to reorder.
+Picture 2·10. ▲ ▼ in the section's right margin; none with nothing to reorder. The grip (0.2.8-beta.26, F12.7: two columns of
+three faint dots, like Gmail's) sits left of the element, in the margin that is already there, shown on hover, on keyboard focus
+in the row and on touch screens; drag it to reorder, or use ▲ ▼ with the keyboard. Every request about the "hamburger slider" means this grip.
 
 ## 11. Pop-ups
 
@@ -206,12 +217,14 @@ on the event.
 
 Picture 2·17. R11, 0.2.8-beta.21; tried for now and adapted as needed:
 - 5 px between parts: sections, modules, the parts of a module or a pop-up, buttons in a row.
-- 2 px between a label and its field (the label over it; From and To beside their dates, 5 px).
+- 1 px between a label and its field (the label over it; From and To beside their dates, 5 px). (0.2.8-beta.26, F12.1: was 2 px.)
 - 9 px inside a module's border at the sides, 5 px top and bottom; the 50 px header unchanged. A box
   inside a module (Include, an instruction tile) is 5 px 9 px too.
 - 12 px inside every pop-up, so all pop-ups and all modules are formatted alike.
 - No other padding or margin (F9). The one exception: a folded module or module-like section keeps 14 px
   below it, for the Expand line in its border.
+- A module's Close line has 2 px less above and below it (0.2.8-beta.26, F12.2). The bottom padding is the same folded and open:
+  5 px in a module, 18 px (as at its top) in a module-like section (0.2.8-beta.26, I6).
 - The rule lives in `app/styles/17-spacing.css`, last, so it wins; the theme suite measures it.
 
 ## 18. The event pop-up
@@ -259,8 +272,18 @@ one here, with its card.
 - One look per meaning, everywhere: green is done or OK; the pressed look (blue words on the box) is
   in action or waiting on you; amber is a problem outside CalendarStream (United, Google, GitHub, the
   internet); red is CalendarStream itself failing; blue fills are pressable buttons only. (Pictures 2·6, 2·7)
-- Module-like sections (All Rules, Event Templates): the count box in the top right corner; + in the
-  bottom right corner of the open section. (Part 1)
+- Every section's header reads: icon · title · space · status lines · health · +. Calendars and Feeds have no status lines; All Rules and
+  Event Templates up to three (the conflicts or errors, otherwise how many), with their count box and +; History its three
+  latest lines, left-aligned, on the right before its Healthy box. + is in the top right corner of every section that has
+  one. (0.2.8-beta.26, F13, I4, F18; Part 1)
+- A good status word (Validated, Healthy, Up to date…) shrinks to its ✓ after showing its word; the word stays as the tooltip
+  and accessible name. Count boxes keep their numbers. (0.2.8-beta.26, F23; Picture 2·8)
+- Calendars, Feeds, All Rules and Event Templates say "Expand to Configure"; History says "Expand for Details". (0.2.8-beta.26, F11.4)
+- The title bar: the logo's mark (no words) left of the title, the title in the logo's colors, the version in the footer with ©
+  CalendarStream; a matching favicon, one transparent file for light and dark. (0.2.8-beta.26, F11)
+- Trash icons: the icon's lines tinted red (30% `--bad` in `--muted`, at least 3:1), the button itself unchanged; fully red on
+  hover. (0.2.8-beta.26, F12.6)
+- A section or module left open folds again after 24 hours. (0.2.8-beta.26, F20)
 - A box means you can change it: fixed text (a title, the release channel) is plain text, never in a
   field box. A group that looks like a module but has nothing to fold (Settings → Updates) uses the
   module header layout, always open, with no Expand. (Part 1)
@@ -280,8 +303,8 @@ one here, with its card.
 - Fields everywhere, pop-ups included: a 12 px muted label over a 34 px field, 2 px apart; a value that
   can't be changed (an event's calendar) is plain text. Related fields share a line (Calendar | Title,
   Location beside the event's color, link and duplicate; Starts | Ends, each with its Time under it). (Picture 2·1)
-- Every section's + is in a corner: the top right (Calendars, Feeds, the calendar), or the bottom right
-  of an open module-like section. The calendar's search icon sits left of its Time Zone. (Part 1)
+- Every section's + is in its top right corner (Calendars, Feeds, All Rules, Event Templates, the calendar). The calendar's search
+  icon sits left of its Time Zone. (Part 1)
 - A credentials row (Client ID / secret) ends with a trash, which asks before deleting. A Settings
   group that works shows everything at once, nothing under Expand: its header (like Updates), its
   credentials row, and its Remove (red, lower left, like a module's) with its options beside it; the
@@ -301,7 +324,7 @@ one here, with its card.
   as the 130 × 34 Cancel/Save buttons (0.2.8-beta.23, F16).
 - (i) is info (what the module is, then your note); (?) is help (how to). (Pictures 2·9, 2·12)
 - Every + opens a centred pop-up, the page dimmed and out of focus behind it. (Picture 2·11)
-- Modules have a 2 px border, with 1 px less padding all round, so they keep their size. (Picture 2·9)
+- Every border is 1 px wide, sections and modules included. (0.2.8-beta.26, F21; Picture 2·4)
 - A module's name is its label: plain text until the module is expanded, then a field of the same size. (Picture 2·9)
 - One color palette everywhere: Google Calendar's 11 colors, in the color box. (Picture 2·14)
 - A deleted event stays struck through and greyed, saying where it was deleted, with Restore, until its
@@ -314,7 +337,7 @@ one here, with its card.
 - A Google module's colors end with a muted line, "Color change does not carry to Google", while Google refuses the
   color: only after it refused the RGB color, the nearest calendar color and a full update (0.2.8-beta.21, I1).
   (0.2.8-beta.19, I1.1)
-- Spacing: 5 px between parts, 2 px between a label and its field, 9 px inside a module's border (5 px top and
+- Spacing: 5 px between parts, 1 px between a label and its field, 9 px inside a module's border (5 px top and
   bottom), 12 px inside pop-ups; nothing extra. (0.2.8-beta.21, R11, F9; Picture 2·17)
 - (i) and (?) pop-ups open with their upper left at the icon; at the window's right edge their upper right sits
   at it; at the bottom their lower corners sit at it. In a pop-up, its edges count as the window's. (0.2.8-beta.21,
@@ -331,6 +354,6 @@ one here, with its card.
   bottom left, the Cancel/Save buttons at the right. On a phone, one column. (0.2.8-beta.22, F11; Picture 2·18)
   The end's column: Time with All-day Event on its label line, right of "Time *" (ticked, it stays there as the Time
   fields hide); Different end time zone beside Time zone's field, End time zone under it when ticked. (0.2.8-beta.24, F5)
-- Sections and modules are told apart by color, nothing else changing: each section's 2 px border its own muted
-  color on `--card`; each calendar's or feed's module bordered in its color at 65%, its header tinted 10% and the rest
-  5%; light and dark. (0.2.8-beta.24, F7; Pictures 2·2, 2·9)
+- Sections and modules are told apart by color, nothing else changing: each section's 1 px border its own muted
+  color (35%) on `--card`; each calendar's or feed's module bordered in its color at 45%, its header tinted 6% and the rest
+  3%; light and dark. (0.2.8-beta.24, F7; 0.2.8-beta.26, F10, F12.3; Pictures 2·2, 2·9)

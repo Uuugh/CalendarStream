@@ -35,7 +35,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     os.environ["IMAGE_TAG"] = "beta"
     REMOTE.update(VERSION="0.2.7-beta.2\n", STABLE="0.2.6\n")
     check(); p = c.get("/", auth=A).text
-    ok('/releases/tag/v0.2.7-beta.1"' in p and ">v0.2.7-beta.1</a>" in p and "CalendarStream v0.2.7-beta.1 ·" in p, "F1.1: the full version at the top (linked) and in the footer")
+    ok('/releases/tag/v0.2.7-beta.1"' in p and ">v0.2.7-beta.1</a>" in p and "© CalendarStream <a class=\"curver\"" in p, "F1.1 (beta.26, F11): the full version linked in the footer")
     ok(main.updates.available() == "0.2.7-beta.2" and "(v0.2.7-beta.2 is available)" in p, "F1.2: a beta install is offered the next beta")
     REMOTE["VERSION"] = "0.2.7\n"; check()
     ok(main.updates.available() == "0.2.7", "F1.2: …and the release it leads to")

@@ -200,7 +200,7 @@ document.addEventListener('click', function (e) {
     var body = new URLSearchParams({ csrf: CSRF, id: line.dataset.ruleId, sid: line.dataset.sid, on: '0' });
     line.classList.add('going');
     fetch('/rules/apply', { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
-      .then(function () { return swapIn(location.href, ['#src-' + line.dataset.sid + ' .rules', '#rules .rulelist', '#ruleconflicts', '#rulecount', '#cal', '#activity', '#ruledata']); })
+      .then(function () { return swapIn(location.href, ['#src-' + line.dataset.sid + ' .rules', '#rules .rulelist', '#ruleconflicts', '#rulelines', '#rulecount', '#cal', '#activity', '#ruledata']); })
       .then(function () { RD = JSON.parse(document.getElementById('ruledata').textContent); initCal(); bindAll(); reopenEvents(); });
     return;
   }
