@@ -1,22 +1,63 @@
-# CalendarStream
+<h1><img src="build_rules/CalendarStream_Logo.png" alt="" width="38" height="38" align="absmiddle"> CalendarStream</h1>
 
-Maintains a Google Calendar in sync with your United Airlines CCS+ schedule.
+**Self-hosted calendar aggregation, synchronization, automation, and publishing.**
 
-United Airlines' CCS+ does not provide a method to keep your Google Calendar up to date
-automatically. United instead offers an official **Calendar Sync** download (`Calendar.ics`),
-protected by your UID and a Calendar Sync password, which must be downloaded and re-imported into
-Google Calendar by hand.
+Bring all your calendars into one place, reshape their events with rules, manage your schedule from one page, and publish the result to Google Calendar or to shareable ICS feeds. CalendarStream runs in Docker on your own computer or server, so your calendars, credentials and history stay under your control. It is free for non-commercial use.
 
-CalendarStream automates this process by downloading the official `.ics` file on a timer and
-either:
+## What CalendarStream does
 
-1. writes it into a Google calendar of its own (updated within minutes, with rule colors), or
-2. republishes it as a feed that Google, Apple Calendar and others can subscribe to.
+| Capability | Features |
+| --- | --- |
+| **Calendar sources** | Combine local CalendarStream calendars, Google and Apple private iCal links, any ICS/webcal feed, and schedule downloads such as United Airlines CCS+ Calendar Sync, as many as you like |
+| **Synchronization** | Scheduled and manual source refresh; Google one-way or two-way synchronization for CalendarStream-created destination calendars; webhook notifications when configured |
+| **Calendar publishing** | Create multiple independent Google destinations or subscribable ICS feeds, selecting sources and date ranges for each |
+| **Rules and automation** | Match event text, dates, times, weekdays, and duration; combine conditions with AND/OR and groups; use patterns and regular expressions |
+| **Event transformation** | Set colors, add emoji, convert events to all-day, change durations, record source changes, and create related events automatically from templates |
+| **Event management** | Month, week, day, and list views; search; create, edit, duplicate, hide, restore, and link events; reminders, colors, time zones, and printable itineraries |
+| **History and recovery** | Sync status, change history, undo/redo, source-change indicators, and failure protection |
+| **Administration** | Browser-based setup, Docker deployment, PostgreSQL persistence, optional updates, local authentication, and light/dark themes |
 
-Other calendars can be added the same way: any `.ics` / `webcal://` feed (another airline, work,
-school, sports) becomes a source. Destinations (Google calendars and feed links, as many as you
-like) each pick which sources they get. A status page shows them all, lets you edit events, color
-or add events with rules, and walks you through setup.
+## How CalendarStream compares
+
+Hosted calendar-sync services such as OneCal, CalendarBridge, SyncGene and SYNCDATE, and the open-source CalendarSync command-line tool from inovex, each solve part of the same problem. This table comes from each product's own public pages, read on November 4, 2026. Prices and limits change, so check their pages. "Not listed" means the page did not mention it, not that the product lacks it.
+
+| | CalendarStream | OneCal | CalendarBridge | SyncGene | SYNCDATE | CalendarSync (inovex) |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Runs where** | Your own Docker host | Hosted; an on-premise plan on request | Hosted | Hosted (Microsoft Azure) | Hosted | A command-line tool you run yourself |
+| **Cost** | Free for non-commercial use | $5 to $25 per user a month, billed yearly | From $4 a month, billed yearly | Free plan (2 sources, no auto-sync); Premium $12.50 a month, billed yearly | Free plan (2 accounts, 1 sync); paid plans from $119.99 a year | Free (MIT license) |
+| **Two-way sync** | Google, for the calendars CalendarStream creates | Yes | Yes | Yes | Yes | No, one-way |
+| **Native Outlook / Microsoft 365 and iCloud** | Planned; their ICS/iCal links work today | Yes | Yes | Yes | Yes | Outlook yes; iCloud not listed |
+| **ICS / webcal feeds** | Any feed in; any number of feeds out, each with its own sources and dates | Public feeds in its unified view | ICS feeds in | Public sharing links on Premium | Subscribed ICS feeds in, read-only | Not listed |
+| **Event rules** | If/Then rules on text, dates, times, weekdays and length (patterns, regex, AND/OR, groups) that set colors, add emoji, make events all-day, change length, create related events and record changes | Filters; you choose which details sync | Filters and privacy levels | Folder mapping | Custom text for copies; if/otherwise rules on paid plans | Filters, and transformers for title, location, reminders and more |
+| **Busy-only copies** | Planned | Private event controls | Yes | Not listed | Yes, the default | Not listed |
+
+Sources: [OneCal](https://onecal.io/pricing/) · CalendarBridge [pricing](https://calendarbridge.com/pricing/) and [sync](https://calendarbridge.com/sync/) · [SyncGene](https://cirasync.com/de/syncgene/) · SYNCDATE [listing](https://workspace.google.com/marketplace/app/syncdate/761398899444) and [pricing](https://syncdate.app/pricing) · [CalendarSync](https://github.com/inovex/CalendarSync).
+
+**Where CalendarStream goes further:** rules that transform events instead of only filtering them, event templates and linked events (a drive to the airport that moves with its trip), a full calendar to edit, hide, restore and print from, a History with undo and redo, and feeds you publish for other people, all running on a host you control with no per-user fee.
+
+**Where others are ahead today:** native Outlook, Microsoft 365 and iCloud connections, busy-only copies, and a hosted service with no server to run. Direct Microsoft 365, Apple and CalDAV connections and busy-only privacy rules are on the [roadmap](build_rules/roadmap.md).
+
+## Future integrations
+
+**Planned for future releases:** direct Microsoft Outlook / Microsoft 365 and Apple Calendar integrations. These are roadmap goals, not currently available native synchronization connections. Existing ICS/iCal feeds from supported providers can already be imported where a feed URL is available.
+
+## Built for flexible calendar workflows
+
+**Collect and organize.** Import multiple calendars into a unified interface without giving up their individual identities. Use local calendars for events you create yourself and external sources for schedules managed elsewhere.
+
+**Transform and automate.** Rules can detect event titles, notes, dates, times, and durations, then apply consistent presentation or create additional events, for example a preparation event before a scheduled appointment.
+
+**Publish the result.** Choose which calendars appear in each destination. Share a subscribable feed with calendar applications or connect Google Calendar directly. Google destinations support one-way publishing or two-way editing of their managed calendars; external source systems themselves are not modified.
+
+**Stay in control.** Run CalendarStream on your own Docker host, inspect activity, and keep credentials and database files in your own deployment. A failed source download does not automatically erase the previously imported schedule.
+
+### Example uses
+
+- Combine work, personal, school, sports, and other ICS calendars into one view.
+- Share a curated calendar feed containing only selected sources and dates.
+- Add colors, labels, reminders, and automatically generated events based on schedule rules.
+- Keep a managed Google Calendar synchronized with a transformed schedule.
+- Bring in a schedule that is only offered as a download, such as United Airlines CCS+ Calendar Sync, as one of several sources.
 
 <p align="center">
   <img src="docs/screenshots/calendar-light.png" alt="The status page's month view in the light theme: the schedule and a work calendar, with RDO, VAC and SIM rule colors, the time zone, the views and the 12h/24h switch" width="49%">
@@ -75,8 +116,9 @@ answers) and the database password are kept.
 Then open the address it printed:
 
 1. **Create your login** with the setup code.
-2. **Calendars → +** → **United CCS+**, then enter your CCS+ Username (UID)
-   and Calendar Sync password. (Or add any calendar feed.)
+2. **Calendars → +**, then pick what to add: **Other** (any `.ics` or `webcal://` link), **Google** or
+   **Apple** (by private iCal link), a **CalendarStream** calendar of your own, or **United CCS+** (your
+   Username (UID) and Calendar Sync password).
 3. Optional, for Google Calendar kept in sync within seconds (with your rule colors and reminders):
    **☰ Settings → Google Calendar API Sync** (the admin turns it on once): ask Claude to set it up, or follow
    its guided setup in order. Publish the app, or add each person as a test user, **before** pressing
@@ -116,19 +158,21 @@ logins or setup codes lock an address out for 15 minutes.
 
 ## How syncing works
 
-- CalendarStream reads CCS+ with your own sign-in, only for your own schedule, with a browser-like client
-  (United's bot protection holds plain `curl` and Python's HTTP clients at times), and only fetches it again
-  when it changed. Other calendar links are downloaded with `curl`, which identifies itself. `CCS_CLIENT` in `.env`
-  chooses the CCS+ client: `auto` (the default: the browser-like client, again for longer, then `curl`), `browser`,
-  `browser-patient` (up to three tries) or `curl`. A download's record (Report a problem) names the one that answered.
-- Events keep United's IDs, times and details, except: day codes (RDO, HDO…) and other items with no
-  end become all-day or `DEFAULT_EVENT_HOURS` long, and 24-hour events (CCS+ writes full days as
-  00:01–23:59:59) become all-day with the original times in the notes.
+- Calendar links (Google, Apple, Other) are downloaded with `curl`, which identifies itself.
 - A failed download or a suddenly empty calendar keeps the previous schedule.
-- If the download is blocked, open the Calendar Sync link in a browser and use **Upload & publish**
-  in the CCS+ Calendar Sync box.
-- **Sign-in rejected** means CCS+ refused the Username or password; after two rejections, automatic
-  checks pause so your account isn't locked (press **Sync Now** after fixing them).
+- **United CCS+**, a schedule offered only as a download:
+  - CalendarStream reads CCS+ with your own sign-in, only for your own schedule, with a browser-like client
+    (United's bot protection holds plain `curl` and Python's HTTP clients at times), and only fetches it again
+    when it changed. `CCS_CLIENT` in `.env`
+    chooses the CCS+ client: `auto` (the default: the browser-like client, again for longer, then `curl`), `browser`,
+    `browser-patient` (up to three tries) or `curl`. A download's record (Report a problem) names the one that answered.
+  - Events keep United's IDs, times and details, except: day codes (RDO, HDO…) and other items with no
+    end become all-day or `DEFAULT_EVENT_HOURS` long, and 24-hour events (CCS+ writes full days as
+    00:01–23:59:59) become all-day with the original times in the notes.
+  - If the download is blocked, open the Calendar Sync link in a browser and use **Upload & publish**
+    in the CCS+ Calendar Sync box.
+  - **Sign-in rejected** means CCS+ refused the Username or password; after two rejections, automatic
+    checks pause so your account isn't locked (press **Sync Now** after fixing them).
 
 ## The status page
 
