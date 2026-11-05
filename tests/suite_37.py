@@ -108,7 +108,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # F2: Settings
     p = c.get("/?menu=settings").text
     menu = p[p.index('id="menu"'):p.index('</header>')]
-    ok(menu.count('class="okslot"') == 2 and "adminmail" not in menu, "F2.1: Public address saves like the login (✓ | ✕ ✓); beta.17: no Admin e-mail")
+    ok(menu.count('class="okslot"') == 0 and 'id="adminform"' in menu and "adminmail" not in menu, "F32: Administrator and Public address are one form with one Cancel | Save; no Admin e-mail")
     ok(">Check now<" in menu and "upgradebtn" not in menu, "no newer version: Check now")
     with patch.object(main.updates, "available", lambda: "9.9.9"):
         p = c.get("/?menu=settings").text

@@ -82,11 +82,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         loads = []; pg.on("load", lambda: loads.append(1))
         pg.goto("http://127.0.0.1:8096/?view=month"); pg.wait_for_timeout(400); loads.clear()
-        pg.click('.viewseg [data-view="week"]'); pg.wait_for_timeout(800)
-        ok(pg.locator(".weekgrid").count() == 1 and not loads and "view=" not in pg.url, "I1.1: Week shows straight away, without reloading the page")
-        pg.click('.viewseg [data-view="list"]'); pg.wait_for_timeout(800)
+        pg.select_option("#viewpick", "week"); pg.wait_for_timeout(800)
+        ok(pg.locator(".hourview").count() == 1 and not loads and "view=" not in pg.url, "I1.1: Week shows straight away, without reloading the page")
+        pg.select_option("#viewpick", "list"); pg.wait_for_timeout(800)
         ok(pg.locator(".agenda").count() == 1 and not loads, "…and List")
-        pg.click('.viewseg [data-view="month"]'); pg.wait_for_timeout(800)
+        pg.select_option("#viewpick", "month"); pg.wait_for_timeout(800)
         # sync: only the status, calendar and log change
         box = f"#src-{gid}"
         if pg.locator(f"#cfg-{gid}[hidden]").count(): pg.click(f"{box} .cfgtoggle")

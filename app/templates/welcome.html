@@ -26,7 +26,7 @@
   button.copy { margin:0; width:auto; flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; padding:0 10px;
                 background:var(--card); color:var(--accent); border:1px solid var(--line); font-size:13px }
 </style>
-<link rel="icon" type="image/png" sizes="32x32" href="/static/logo/favicon-32.png?v={{ version }}">
+{% if look.favicon %}<link rel="icon" href="{{ look.favicon }}">{% else %}<link rel="icon" type="image/png" sizes="32x32" href="/static/logo/favicon-32.png?v={{ version }}">{% endif %}
 <link rel="apple-touch-icon" href="/static/logo/apple-touch-icon.png?v={{ version }}">
 </head>
 <body>{{ icon_sprite() }}<main>

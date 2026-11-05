@@ -17,7 +17,7 @@ from fastapi import Depends, Form, HTTPException, Query, Request
 from fastapi.responses import Response
 
 from .. import main as core
-from ..main import (_invites, _local_time, _opt_day, _parse_month, _span, admin_email, ALARM_CHOICES, alarm_text,
+from ..main import (_hidden_by, _invites, _local_time, _opt_day, _parse_month, _span, admin_email, ALARM_CHOICES, alarm_text,
     all_rules, ALL_ZONES, app, base_url, cal_view, calendar_color, calendar_name, check_csrf, CLOCKS, COMMON_ZONES,
     COPY_ICON, customs_for, dates_for, default_sid, DELETED_WHERE, dest_google, DESTINATION_TYPES, destinations, display_tz,
     display_zone, EARLIEST, event_links, event_templates, feed_url, first_named_calendar, google, google_view,
@@ -108,6 +108,48 @@ def ui_view() -> str:
     """The calendar's view on the status page: month, week, day or list (agenda)."""
     view = store.get("ui_view")
     return view if view in VIEWS else "month"
+
+
+HIDE_KEY = re.compile(r"src:[A-Za-z0-9_]+|edited|stale|hidden|deleted")
+
+
+def calview_prefs() -> dict:
+    """The calendar's own view choices (0.2.8-beta.29, F15, F28), kept with the page's other ones: `full` (the Full page
+    view: every other section hidden), `hide` (what the key has switched off; only while full: leaving full page shows
+    it all again) and `stretch` (how many px the stretch handle added to a day's or hour's height)."""
+    saved = store.get("ui_calview")
+    saved = saved if isinstance(saved, dict) else {}
+    full = saved.get("full") is True
+    hide = [k for k in (saved.get("hide") or []) if isinstance(k, str) and HIDE_KEY.fullmatch(k)] if full else []
+    stretch = saved.get("stretch")
+    stretch = int(stretch) if isinstance(stretch, (int, float)) and not isinstance(stretch, bool) and 0 <= stretch <= 1200 else 0
+    return {"full": full, "hide": hide, "stretch": stretch}
+
+
+@app.post("/ui/calview", dependencies=[Depends(gui_auth)])
+async def set_calview(csrf: str = Form(""), full: str | None = Form(None), hide: str | None = Form(None),
+                      stretch: str | None = Form(None)):
+    """Remember the calendar's Full page view, what its key has switched off and its stretch (only what is sent changes)."""
+    check_csrf(csrf)
+    saved = store.get("ui_calview")
+    saved = dict(saved) if isinstance(saved, dict) else {}
+    if full is not None:
+        if full not in ("0", "1"):
+            raise HTTPException(400, "Unknown choice.")
+        saved["full"] = full == "1"
+        if full == "0":
+            saved["hide"] = []          # leaving full page shows everything again (F15.9)
+    if hide is not None:
+        keys = [k for k in hide.split(",") if k]
+        if len(keys) > 60 or not all(HIDE_KEY.fullmatch(k) for k in keys):
+            raise HTTPException(400, "Unknown key item.")
+        saved["hide"] = keys
+    if stretch is not None:
+        if not stretch.isdigit() or int(stretch) > 1200:
+            raise HTTPException(400, "Unknown stretch.")
+        saved["stretch"] = int(stretch)
+    store.set("ui_calview", saved)
+    return Response(status_code=204)
 
 
 # --- Routes ----------------------------------------------------------------------
@@ -270,11 +312,14 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
     lang = lang_for(request)
     sections = section_state()
     srcs = [source_view(request, sid, lang, sections) for sid in source_ids()]
+    calview = calview_prefs()
+    shown = view if view in VIEWS else ui_view()
     return page(request, "index.html", {
+        "calview": calview,
         "s": state, "cfg": settings, "history": history, "undo_top": undo_top, "redo_next": redo_next,
         "undo_keep": undo_keep(), "log_kinds": LOG_KINDS,
         "cal": (cal_search(events, q.strip()[:100], qsrc if qsrc in source_ids() else "", _opt_day(qfrom), _opt_day(qto), lang)
-                if q.strip() else cal_view(events, view if view in VIEWS else ui_view(), ref, lang)), "views": VIEWS,
+                if q.strip() else cal_view(events, shown, ref, lang, pad=6 if calview["full"] and shown == "month" else 0, hide=set(calview["hide"]))), "views": VIEWS,
         "view_explicit": store.get("ui_view") in VIEWS,
         "csrf": core.CSRF_TOKEN, "name": calendar_name(), "srcs": srcs,
         "new_stream": secrets.token_urlsafe(24),       # + Add a feed's link, whole from the start (0.2.8-beta.23, F13.1)
@@ -482,8 +527,9 @@ def print_page(request: Request, view: str = "", start: str = "", end: str = "",
     last = min(last, first + timedelta(days=731))
     lang = lang_for(request)
     weekends_on = weekends == "1" if weekends else prefs.get("weekends", True)
+    hide = set(calview_prefs()["hide"])       # what the key has switched off is not printed (F28)
     return page(request, "print.html", {
-        "pages": print_pages(store.load_events(), view, first, last, weekends_on, lang), "view": view,
+        "pages": print_pages([e for e in store.load_events() if not _hidden_by(e, hide)], view, first, last, weekends_on, lang), "view": view,
         "first": first, "last": last, "print_theme": theme if theme in ("light", "dark") else prefs.get("theme", "light"),
         "src_names": {sid: calendar_name(sid) for sid in source_ids()}}, lang=lang)
 

@@ -4,8 +4,10 @@ Part of app/main.py until 0.2.8-beta.20 (F12): the code is unchanged, only moved
 and helpers are in main.py (imported here); names the tests replace on main are read as core.<name>."""
 from __future__ import annotations
 
-from fastapi import Depends, Form, HTTPException, Request
-from fastapi.responses import RedirectResponse
+import base64
+
+from fastapi import Depends, Form, HTTPException, Request, UploadFile
+from fastapi.responses import RedirectResponse, Response
 
 from .. import main as core
 from ..main import (app, auto_update, check_csrf, mark_updating, EMAIL_RE, FieldError, GOOGLE_SETTINGS, gui_auth, public_url,
@@ -111,3 +113,131 @@ async def set_admin_email(csrf: str = Form(""), email: str = Form("")):
         store.set("admin_email", email)
         state.record("info", f"Admin e-mail set to {email}")
     return RedirectResponse("/?menu=settings#admin", status_code=303)
+
+
+@app.post("/settings/administrator", dependencies=[Depends(gui_auth)])
+async def set_administrator(request: Request, csrf: str = Form("")):
+    """☰ Settings › Administrator (0.2.8-beta.29, F32): the public address, the more addresses and the status-page
+    login in one Cancel | Save. The addresses are applied first; a changed user name or password needs the
+    current password, and ends every session (this browser is sent to the sign-in page)."""
+    from fastapi.responses import JSONResponse
+    from ..main import _count_failure, logins, renew_csrf, SESSION_COOKIE
+    from ..logins import LoginError
+    check_csrf(csrf)
+    form = await request.form()
+    user, password = str(form.get("user", "")).strip(), str(form.get("password", ""))
+    current, confirm = str(form.get("current", "")), str(form.get("confirm", ""))
+    login_changed = bool(password) or (user not in ("", logins.page_user))
+    if login_changed and not logins.check_page_login(logins.page_user, current):
+        _count_failure(core._client_ip(request))
+        raise FieldError("The current password isn't right.", "current")
+    main = str(form.get("main", "")).strip()
+    found, bad = [], []
+    for i, url in enumerate(form.getlist("url")):
+        url = str(url).strip()
+        if not url:
+            continue
+        try:
+            found.append(normalise_public_url(url))
+        except ValueError:
+            bad.append(f"url{i}")
+    try:
+        value = normalise_public_url(main) if main else ""
+    except ValueError:
+        value = None
+    if value is None or bad:
+        raise FieldError("Enter the address people use to reach this page, e.g. https://cal.example.com",
+                         *(["main"] if value is None else []), *bad)
+    if login_changed:
+        try:
+            logins.set_page_login(user or logins.page_user, password or current, confirm if password else None, strict=bool(password))
+        except LoginError as e:
+            raise HTTPException(400, str(e))
+    if value != (public_url() or ""):
+        if value:
+            store.set("public_url", value)
+            state.record("info", f"Public address set to {value}")
+        else:
+            store.delete("public_url")
+            state.record("info", "Public address removed")
+    found = [x for x in dict.fromkeys(found) if x != public_url()]
+    store.set("public_urls_extra", found)
+    if login_changed:
+        renew_csrf()
+        state.record("info", f"Status-page login changed (user \"{logins.page_user}\")")
+        back = JSONResponse({"redirect": "/login"})
+        back.delete_cookie(SESSION_COOKIE)
+        return back
+    return RedirectResponse(GOOGLE_SETTINGS.replace("#googlesync", "#public"), status_code=303)
+
+
+# --- Look: logo, favicon, animation (0.2.8-beta.29, F14) --------------------------------
+
+BRAND_MAX = 256 * 1024
+
+
+def _image_kind(data: bytes) -> str:
+    """The media type of an uploaded picture, by what it is (not by its name); '' if it isn't one we take."""
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    if data[:4] == b"\x00\x00\x01\x00":
+        return "image/x-icon"
+    if data[:3] == b"\xff\xd8\xff":
+        return "image/jpeg"
+    head = data[:600].lstrip().lower()
+    if (head.startswith(b"<svg") or head.startswith(b"<?xml")) and b"<svg" in data[:2000].lower() \
+            and b"<script" not in data.lower() and b"onload" not in data.lower():
+        return "image/svg+xml"
+    return ""
+
+
+@app.get("/brand/{kind}")
+def brand_image(kind: str):
+    """The uploaded logo or favicon. Public (the sign-in page shows the favicon); sandboxed so a picture never runs anything."""
+    saved = (store.get("brand") or {}).get(kind) if kind in ("logo", "favicon") else None
+    if not saved:
+        raise HTTPException(404, "No such picture.")
+    return Response(base64.b64decode(saved["b64"]), media_type=saved["mime"],
+                    headers={"Cache-Control": "private, max-age=86400", "Content-Security-Policy": "sandbox; default-src 'none'; style-src 'unsafe-inline'",
+                             "X-Content-Type-Options": "nosniff"})
+
+
+@app.post("/settings/look", dependencies=[Depends(gui_auth)])
+async def set_look(request: Request, csrf: str = Form("")):
+    """☰ Settings › Look: upload a logo and/or a favicon (or go back to CalendarStream's own), and set the buttons'
+    Animation intensity and duration (Reset puts both back to 100 %)."""
+    check_csrf(csrf)
+    form = await request.form()
+    saved = dict(store.get("brand") or {})
+    for kind in ("logo", "favicon"):
+        if form.get(f"remove_{kind}"):
+            saved.pop(kind, None)
+        up = form.get(kind)
+        if isinstance(up, UploadFile) or hasattr(up, "read"):
+            data = await up.read()
+            if not data:
+                continue
+            if len(data) > BRAND_MAX:
+                raise FieldError("That picture is over 256 KB.", kind)
+            mime = _image_kind(data)
+            if not mime:
+                raise FieldError("Use a PNG, SVG, WebP, JPEG or ICO picture.", kind)
+            saved[kind] = {"mime": mime, "b64": base64.b64encode(data).decode()}
+    if saved:
+        store.set("brand", saved)
+    else:
+        store.delete("brand")
+    if form.get("reset"):
+        store.delete("ui_anim")
+    else:
+        try:
+            i, d = int(form.get("intensity", 100)), int(form.get("duration", 100))
+        except ValueError:
+            raise FieldError("Intensity and duration are whole percentages.", "intensity", "duration")
+        if not (0 <= i <= 200 and 25 <= d <= 300):
+            raise FieldError("Intensity is 0–200 % and duration 25–300 %.", "intensity", "duration")
+        store.set("ui_anim", {"i": i, "d": d})
+    state.record("info", "Look changed (logo, favicon, animation)", kind="Settings")
+    return RedirectResponse("/?menu=settings", status_code=303)

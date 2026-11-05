@@ -18,7 +18,7 @@
   button { margin-top:18px; width:100%; height:34px; font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:var(--r); cursor:pointer }
   .err { display:flex; align-items:center; gap:6px; background:var(--warnbg); color:var(--warn); border-radius:var(--r); padding:8px 10px; font-size:13.5px; margin-bottom:12px }
 </style>
-<link rel="icon" type="image/png" sizes="32x32" href="/static/logo/favicon-32.png?v={{ version }}">
+{% if look.favicon %}<link rel="icon" href="{{ look.favicon }}">{% else %}<link rel="icon" type="image/png" sizes="32x32" href="/static/logo/favicon-32.png?v={{ version }}">{% endif %}
 <link rel="apple-touch-icon" href="/static/logo/apple-touch-icon.png?v={{ version }}">
 </head>
 <body>{{ icon_sprite() }}<main>

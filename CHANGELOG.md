@@ -9,7 +9,27 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.28**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.29**
+
+## 0.2.8-beta.29 — 2026-11-05
+
+The 5 Calendar build.
+
+### Added
+- **F15, F26** The calendar's header: a **view drop-down** and a segmented **12h | 24h** switch (the On | Off switch of a module looks the same);
+  the legend is now two parts, **Calendars** and **Key**, each with its (i), in columns. **F27** **Full page**: the Calendar fills the window and
+  the other sections are hidden (Back returns); in it a click on a Calendars or Key item hides or shows those events on the calendar and in
+  Print. **F28** Week and Day are an **hourly grid**; a **stretch handle** adds height (kept).
+- **F32, F33** ☰ Settings › **Administrator** is one section (login and public addresses), with a Signed in over Sign out Status/Action box
+  whose action becomes Cancel | Save. **F14** ☰ Settings › **Look**: your own logo and favicon, and the buttons' Animation intensity and
+  duration (Reset to defaults).
+
+### Changed
+- **I11** **Print** is laid out for the paper: landscape month, week and 5 days, portrait day and itinerary, Letter or A4, one sheet per
+  page, whole titles wrap, nothing cut, white paper unless Dark.
+
+### Waiting
+- F24 and I7 are still waiting; **F22** (the Theme Rules pictures) is not drawn yet.
 
 ## 0.2.8-beta.28 — 2026-11-05
 

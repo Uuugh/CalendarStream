@@ -1,11 +1,11 @@
   {# One event on the calendar: its title line, and its details (with Edit, Duplicate and Delete) when clicked. #}
-  {% macro evitem(it) -%}
+  {% macro evitem(it, pos=false) -%}
         {% set e = it.e %}
         {# its color as Google shows it (0.2.8-beta.10): its own or its rule's, else its calendar's #}
         {% set tc = it.tag_color or it.src_color or '#1d4ed8' %}
         {# deleted (0.2.8-beta.15): struck through and greyed, saying where, with Restore, until its Undo pops off #}
         {% set dl = e.deleted.split('|') if e.deleted else [] %}
-        <details data-uid="{{ e.uid }}" class="ev{% if e.all_day %} allday{% endif %}{% if e.origin in ('custom', 'rule') %} custom{% endif %}{% if e.hidden %} hidden{% endif %}{% if dl %} deleted{% endif %}{% if tc %} tint{% endif %}"{% if tc %} style="--cal:{{ tc }}"{% endif %}>
+        <details data-uid="{{ e.uid }}" class="ev{% if e.all_day %} allday{% endif %}{% if e.origin in ('custom', 'rule') %} custom{% endif %}{% if e.hidden %} hidden{% endif %}{% if dl %} deleted{% endif %}{% if tc %} tint{% endif %}{% if pos %} timed{% endif %}"{% if tc or pos %} style="{% if tc %}--cal:{{ tc }};{% endif %}{% if pos %}--m0:{{ it.m0 }};--m1:{{ it.m1 }};--lane:{{ it.lane }};--lanes:{{ it.lanes }}{% endif %}"{% endif %}>
           <summary title="{{ e.title }}{% if dl %} ({{ deleted_where.get(dl[0], '') }}){% elif e.hidden %} ({{ _('hidden from Google') }}){% endif %}">{% if it.when %}<span class="t">{{ it.when }}</span>{% endif %}{{ e.title }}{% if dl %}{% elif e.stale %}<span class="mark" title="{{ _('United changed this since your edit') if e.source == 'ccs' else _('The feed changed this since your edit') }}">{{ icon("warning", 13) }}</span>{% elif e.edited %}<span class="mark" title="{{ _('Edited here') }}">{{ icon("edit", 13) }}</span>{% elif e.origin == 'rule' %}<span class="mark" title="{{ _('Added by a rule') }}">{{ icon("subdirectory_arrow_right", 13) }}</span>{% endif %}{% if e.alarms %}<span class="mark" title="{{ _('Has reminders') }}">{{ icon("alarm_on", 13) }}</span>{% endif %}</summary>
           <div class="body"><b>{{ e.title }}</b>
 {{ it.range }}{% if e.location %}
@@ -25,12 +25,23 @@
         </details>
   {%- endmacro %}
 
-  <div class="card" id="cal">
+  {# Full page (0.2.8-beta.29, F15.4): every other section is hidden; the key's items can then be clicked (F26, F28) #}
+  {% set full = calview.full %}{% set hide = calview.hide %}
+  {# One item of the key (F26, F28): in full page a button that dims it and hides its events here only; otherwise plain #}
+  {% macro legitem(key, sw="", mark=false) -%}
+  {%- if full -%}<button type="button" class="legitem{% if mark %} mark{% endif %}{% if key in hide %} dim{% endif %}" data-hide="{{ key }}" aria-pressed="{{ 'false' if key in hide else 'true' }}"{% if sw %} style="--sw:{{ sw }}"{% endif %}>{{ caller() }}</button>
+  {%- else -%}<span class="legitem{% if mark %} mark{% endif %}"{% if sw %} style="--sw:{{ sw }}"{% endif %}>{{ caller() }}</span>{%- endif -%}
+  {%- endmacro %}
+
+  <div class="card{% if full %} full{% endif %}" id="cal" style="--st:{{ calview.stretch }}px;--rows:{{ cal.weeks|length if cal.view == 'month' else 5 }}">
   {# An event's tools (Close, reminders, edit, duplicate, delete), made from this when it's opened
      (0.2.8-beta.4): once here instead of in every event, which made up most of the calendar's size. #}
   <template id="evtoolstpl" data-month="{{ cal.month }}" data-del-custom="{{ _('Delete this event?') }}&#10;{{ _('(It may be restored here or in History, Undo & Logs)') }}" data-del-source="{{ _('Hide this event from the feeds?') }}&#10;{{ _('(It may be shown again here or in History, Undo & Logs)') }}"><button type="button" class="linkbtn evclose">{{ _('Close') }}</button><span class="evicons"><a class="evicon evlinkto" href="" title="{{ _('Link to another event (move or delete with it)') }}" aria-label="{{ _('Link to another event') }}">{{ icon("link", 17) }}</a><button type="button" class="evicon evalarm" data-uid="" data-alarms="" title="{{ _('Reminders') }}" aria-label="{{ _('Reminders') }}">{{ icon("alarm", 17) }}</button><a class="evicon evedit" href="" title="{{ _('Edit') }}" aria-label="{{ _('Edit') }}">{{ icon("edit", 17) }}</a><a class="evicon evcopy" href="" title="{{ _('Duplicate') }}" aria-label="{{ _('Duplicate') }}">{{ copy_icon }}</a><form method="post" action="/event/delete" class="evdel" data-swap="#cal|#activity" data-confirm="" data-pair="1"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="uid" value=""><input type="hidden" name="month" value="{{ cal.month }}"><button class="evicon" title="{{ _('Delete') }}" aria-label="{{ _('Delete') }}">{{ trash }}</button></form><form method="post" action="/event/hide" class="evdel evhide" data-swap="#cal|#activity" data-confirm="" data-pair="1"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="uid" value=""><input type="hidden" name="month" value="{{ cal.month }}"><button class="evicon" title="{{ _('Hide') }}" aria-label="{{ _('Hide') }}">{{ icon("visibility_off", 17) }}</button></form></span></template>
     {% set step = {"month": (_('Previous month'), _('Next month')), "week": (_('Previous week'), _('Next week')), "day": (_('Previous day'), _('Next day')), "list": (_('Previous month'), _('Next month'))}[cal.view] %}
+    {# The top line (F15.1): the date on the left, the tools on the right with a space between them; the + stays in the top right
+       corner, and when the line doesn't fit the tools go under it, right-aligned (the page's script adds `two`). #}
     <div class="calhead">
+      <div class="calleft">
       <a class="navbtn" href="?date={{ cal.prev }}" title="{{ step[0] }}" aria-label="{{ step[0] }}">{{ icon("chevron_left", 20) }}</a>
       <a class="navbtn" href="?date={{ cal.next }}" title="{{ step[1] }}" aria-label="{{ step[1] }}">{{ icon("chevron_right", 20) }}</a>
       <a class="navbtn wide" href="/">{{ _('Today') }}</a>
@@ -47,56 +58,71 @@
           <div class="months">{% for i in range(12) %}<button type="button" data-m="{{ '%02d' % (i + 1) }}">{{ dates.mon[i] }}</button>{% endfor %}</div>
         </div>
       </div>
-      {# On the right: the time zone (this page only), the view, and the 12h / 24h switch. #}
+      </div>
+      {# On the right: the time zone (this page only), the view (a drop-down, F15.6), the 12h | 24h switch, Search, Print and Full page. #}
       <div class="calright">
-        {# Search (0.2.8-beta.11): opens the search line under this row #}
-        <button type="button" class="iconbtn searchbtn" id="searchbtn" aria-controls="calsearch" aria-expanded="{{ 'true' if cal.search else 'false' }}"
-                title="{{ _('Search the calendar') }}" aria-label="{{ _('Search the calendar') }}">{{ icon("search", 18) }}</button>
         <label class="tzlabel" for="tzpick"><span class="long">{{ _('Time Zone') }}</span><span class="short" title="{{ _('Time Zone') }}">{{ _('TZ') }}</span></label>
         <select id="tzpick" class="tzpick" aria-label="{{ _('Time zone') }}" title="{{ _('Show another time zone (this page only)') }}">
           <optgroup label="{{ _('Common') }}">{% for z in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
           <optgroup label="{{ _('All time zones') }}">{% for z in zones if z not in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
         </select>
         {% set view_names = {"month": _('Month'), "week": _('Week'), "day": _('Day'), "list": _('List')} %}
-        <button type="button" class="ghost cyclebtn viewcycle" data-view="{{ cal.view }}" title="{{ _('View: press for the next one') }}">{{ view_names[cal.view] }} {{ icon("sync", 15) }}</button>
-        <div class="viewseg" role="group" aria-label="{{ _('View') }}">
-          {% for v, label in (("month", _('Month')), ("week", _('Week')), ("day", _('Day')), ("list", _('List'))) %}<button type="button" data-view="{{ v }}" aria-pressed="{{ 'true' if cal.view == v else 'false' }}">{{ label }}</button>{% endfor %}
-        </div>
-        {# 12h / 24h switch: the only place the time format is set. #}
-        <div class="clockswitch" title="{{ _('Time format') }}">
-          <span>12h</span>
-          <button type="button" role="switch" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') }}"><span></span></button>
-          <span>24h</span>
-        </div>
+        <select id="viewpick" class="viewpick" aria-label="{{ _('View') }}" title="{{ _('View') }}">
+          {% for v, label in view_names.items() %}<option value="{{ v }}"{% if cal.view == v %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        {# 12h | 24h switch (F15.2): the numbers inside a rounded switch, its highlight sliding to the one in use; the only place the time format is set. #}
+        <button type="button" role="switch" class="segsw" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') }}" title="{{ _('Time format') }}"><span class="hl"></span><span class="lb">12h</span><span class="lb">24h</span></button>
+        {# Search (0.2.8-beta.11), left of Print (F15.3): opens the search line under this row #}
+        <button type="button" class="iconbtn searchbtn" id="searchbtn" aria-controls="calsearch" aria-expanded="{{ 'true' if cal.search else 'false' }}"
+                title="{{ _('Search the calendar') }}" aria-label="{{ _('Search the calendar') }}">{{ icon("search", 18) }}</button>
         {# Print Preview (F2.1): the view, dates, weekends and light or dark to print, with a preview. #}
         <button type="button" class="iconbtn printbtn" id="printbtn" title="{{ _('Print the calendar') }}" aria-label="{{ _('Print the calendar') }}">
           {{ icon("print", 18) }}</button>
-        {# + in the top right corner, like every section's (0.2.8-beta.11): add an event #}
-        <button type="button" class="ghost plus calplus" data-add="/event?date={{ cal.today.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event') }}" aria-label="{{ _('Add an event') }}">{{ icon("add", 24) }}</button>
+        {# Full page (F15.4): hides every other section; the icon then becomes Back #}
+        <button type="button" class="iconbtn fullbtn" id="fullbtn" aria-pressed="{{ 'true' if full else 'false' }}"
+                title="{{ _('Back') if full else _('Full page') }}" aria-label="{{ _('Back') if full else _('Full page') }}">{{ icon("arrow_back" if full else "fullscreen", 18) }}</button>
       </div>
+      {# + in the top right corner, like every section's (0.2.8-beta.11): add an event #}
+      <button type="button" class="ghost plus calplus" data-add="/event?date={{ cal.today.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event') }}" aria-label="{{ _('Add an event') }}">{{ icon("add", 24) }}</button>
     </div>
-    {# The search line (0.2.8-beta.11): words, which calendar, from and to, and ✕ to close it #}
+    {# The search line (0.2.8-beta.11): words, which calendar, from and to (as hints in the date fields, F15.3), and ✕ to close it #}
     <form class="calsearch" id="calsearch" role="search" onsubmit="return false"{% if not cal.search %} hidden{% endif %}>
       <span class="inbox"><input type="search" id="calq" name="q" value="{{ cal.search.q if cal.search else '' }}" maxlength="100" autocomplete="off"
              placeholder="{{ _('Search titles, places and notes') }}" aria-label="{{ _('Search') }}"></span>
       <select name="qsrc" aria-label="{{ _('Calendar') }}"><option value="">{{ _('All calendars') }}</option>{% for x in srcs %}<option value="{{ x.id }}"{% if cal.search and cal.search.src == x.id %} selected{% endif %}>{{ x.name }}</option>{% endfor %}</select>
-      {{ daterange("qfrom", "qto", cal.search['from'] if cal.search else '', cal.search.to if cal.search else '') }}
+      <span class="hinted">{{ daterange("qfrom", "qto", cal.search['from'] if cal.search else '', cal.search.to if cal.search else '') }}</span>
       <button type="button" class="iconbtn" id="calqclose" title="{{ _('Close the search') }}" aria-label="{{ _('Close the search') }}">{{ icon("close", 18) }}</button>
     </form>
-    <div id="calbody">
-    {% if cal.view in ("month", "week") %}
-    <div class="scroll"><div class="month{% if cal.view == 'week' %} weekgrid{% endif %}">
+    <div id="calbody" data-view="{{ cal.view }}">
+    {% if cal.view == "month" %}
+    <div class="scroll"><div class="month">
       {% for d in cal.dow %}<div class="dow">{{ d }}</div>{% endfor %}
-      {% for week in cal.weeks %}{% for day in week %}
-      <div class="day{% if not day.in_month and cal.view == 'month' %} out{% endif %}{% if day.date == cal.today %} today{% endif %}" data-add="/event?date={{ day.date.isoformat() }}&amp;month={{ cal.month }}" title="{{ _('Click an empty spot to add an event on {day}', day=dates.day(day.date)) }}">
+      {% for week in cal.weeks %}{% set wx = cal.week_ext[loop.index0] %}{% for day in week %}
+      <div class="day{% if not day.in_month %} out{% endif %}{% if day.date == cal.today %} today{% endif %}"{% if wx %} data-x="{{ wx }}"{% endif %} data-add="/event?date={{ day.date.isoformat() }}&amp;month={{ cal.month }}" title="{{ _('Click an empty spot to add an event on {day}', day=dates.day(day.date)) }}">
         <div class="dayhead"><span class="num">{{ day.date.day }}</span>
           <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">{{ icon("add", 16) }}</a></div>
         {% for it in day["items"] %}{{ evitem(it) }}{% endfor %}
       </div>
       {% endfor %}{% endfor %}
     </div></div>
+    {% elif cal.view in ("week", "day") %}
+    {# Week and Day (F15.9): an hourly grid, the all-day events above it, a timed event as tall as it lasts #}
+    {% set cols = cal.weeks[0] if cal.view == "week" else cal.days %}
+    <div class="hourview" style="--cols:{{ cols|length }}">
+      <div class="hhead"><div class="hgut"></div>
+        {% for day in cols %}<div class="hdayhead{% if day.date == cal.today %} today{% endif %}"><span class="hdow">{{ cal.dow[loop.index0] if cal.view == "week" else dates.day(day.date) }}</span>{% if cal.view == "week" %} <span class="num">{{ day.date.day }}</span>{% endif %}
+          <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">{{ icon("add", 16) }}</a></div>{% endfor %}
+      </div>
+      <div class="hallday"><div class="hgut">{{ _('all-day') }}</div>
+        {% for day in cols %}<div class="hallcell" data-add="/event?date={{ day.date.isoformat() }}&amp;month={{ cal.month }}">{% for it in day["items"] if it.m0 is none %}{{ evitem(it) }}{% endfor %}</div>{% endfor %}
+      </div>
+      <div class="hscroll"><div class="hbody">
+        <div class="hgut hlabels">{% for h in cal.hours %}<div class="hlab">{{ h }}</div>{% endfor %}</div>
+        {% for day in cols %}<div class="hcol{% if day.date == cal.today %} today{% endif %}" data-add="/event?date={{ day.date.isoformat() }}&amp;month={{ cal.month }}">{% for it in day["items"] if it.m0 is not none %}{{ evitem(it, true) }}{% endfor %}</div>{% endfor %}
+      </div></div>
+    </div>
     {% else %}
-    {# Day and list: one row per day with events (the day view shows its day even when empty). #}
+    {# List: one row per day with events. #}
     <div class="agenda">
       {% for day in cal.days %}
       <div class="aday{% if day.date == cal.today %} today{% endif %}">
@@ -108,10 +134,25 @@
     </div>
     {% endif %}
     </div>
+    {# The key (F15.8, F26): Calendars on the left (columns of three from the left, with an (i)), a vertical rule, Key on the
+       right (stacks of three from the right); when they don't fit, the columns grow a row taller. In full page a click on an
+       item dims it and hides its events here only (F15.9, F28). #}
     <div class="legend">
-      {# The key: each calendar in its color (when it has one), then "Added here", then the rules' colors. #}
-      {% for x in srcs %}<span style="--sw:color-mix(in srgb, {{ x.color or '#1d4ed8' }} 18%, var(--card))">{{ x.name }}</span>{% endfor %}{% for r in all_rules if r.used %}{% for a in r.actions if a.type == 'color' %}<span style="--sw:color-mix(in srgb, {{ a.color }} 18%, var(--card))">{{ r.title or (r.conds[0].value if r.conds and r.conds[0].type == 'text' else r.label) }}</span>{% endfor %}{% endfor %}
-      <span class="legendkey" style="--sw:transparent">{{ icon("edit", 14) }} {{ _('edited') }} · {{ icon("warning", 14) }} {{ _('United changed it since') }} · <s>{{ _('struck') }}</s> {{ _('hidden from Google') }} · <s class="legdel">{{ _('struck, grey') }}</s> {{ _('deleted (Restore, or History › Undo)') }}</span>
-      {{ help(_('The schedule as sent to your feeds. Event › details or edit · empty spot (or +) › add one. Never changes CCS+.'), 'right') }}
+      <div class="legpart legcals">
+        <div class="legtitle">{{ _('Calendars') }}{{ notedot(_('Full page: click a calendar to hide or show its events on the calendar only. Nothing changes in Sources, Feeds, Rules or the other sections.')) }}</div>
+        <div class="legcols">{% for x in srcs %}{% call legitem('src:' ~ x.id, 'color-mix(in srgb, ' ~ (x.color or '#1d4ed8') ~ ' 18%, var(--card))') %}{{ x.name }}{% endcall %}{% endfor %}</div>
+      </div>
+      <div class="legvr" role="separator" aria-orientation="vertical"></div>
+      <div class="legpart legkeys">
+        <div class="legtitle">{{ _('Key') }}{{ notedot(_('Full page: click an item to hide or show those events on the calendar only. Deleted events can be restored from the event or History › Undo.')) }}</div>
+        <div class="legcols rtl">
+          {% for r in all_rules if r.used %}{% for a in r.actions if a.type == 'color' %}<span class="legitem" style="--sw:color-mix(in srgb, {{ a.color }} 18%, var(--card))">{{ r.title or (r.conds[0].value if r.conds and r.conds[0].type == 'text' else r.label) }}</span>{% endfor %}{% endfor %}
+          {% call legitem('edited', mark=true) %}{{ icon("edit", 14) }} {{ _('Edited') }}{% endcall %}
+          {% call legitem('stale', mark=true) %}{{ icon("warning", 14) }} {{ _('United changed it since') }}{% endcall %}
+          {% call legitem('hidden', mark=true) %}<s>{{ _('Hidden from Google') }}</s>{% endcall %}
+          {% call legitem('deleted', mark=true) %}<s class="legdel">{{ _('Deleted') }}</s>{% endcall %}
+        </div>
+      </div>
     </div>
+    {% if cal.view != "list" and not full %}<button type="button" class="calstretch" id="calstretch" aria-label="{{ _('Stretch the calendar (drag, or ↑ ↓)') }}" title="{{ _('Stretch the calendar (drag, or ↑ ↓)') }}">{{ icon("unfold_more", 16) }}</button>{% endif %}
   </div>

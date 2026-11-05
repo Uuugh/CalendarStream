@@ -5,32 +5,56 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ _('Print Preview') }}</title>
 {% include "_theme.html" %}
-{# Print Preview's page (F2.1): the calendar from `first` to `last` as chosen (itinerary, day, 5-day,
-   week or month; with or without weekends; light or dark), one page per month, week or day. #}
+{# Print Preview's page (F2.1; 0.2.8-beta.29, I11): the calendar from `first` to `last` as chosen (itinerary, day,
+   5-day, week or month; with or without weekends; light or dark). Print has its own paper layout: each sheet is
+   one page of whatever paper the printer has (landscape for the month, week and 5-day, portrait for the day and
+   the itinerary), its weeks (or the week, or the day) share the page's height, whole titles wrap, and the paper is
+   white unless Dark is chosen. The calendar's full-page rules (F15.4, F27) never apply here. Every size is in
+   units of the sheet (cqmin), so the preview and the paper look alike; a script shrinks a day that would not fit. #}
 <style>
   * { box-sizing:border-box }
-  body { margin:0; font:12px/1.35 var(--font); background:var(--bg); color:var(--text); padding:16px }
-  .sheet { break-after:page; margin:0 0 24px }
+  html[data-theme="light"] { --bg:#fff; --card:#fff; --soft:#f4f4f2; --line:#c9c9c9; --text:#111; --muted:#555 }
+  html, body { margin:0 }
+  body { font:12px/1.3 var(--font); background:var(--bg); color:var(--text) }
+  /* paper: landscape or portrait, on whatever paper the printer has */
+  @page land { size:landscape; margin:8mm }
+  @page port { size:portrait; margin:8mm }
+  .sheet[data-paper="land"] { page:land } .sheet[data-paper="port"] { page:port }
+  .sheet { --fs:2.1cqmin; container-type:size; display:flex; flex-direction:column; font-size:var(--fs); line-height:1.28; overflow:hidden;
+           break-after:page; break-inside:avoid }
   .sheet:last-child { break-after:auto }
-  h1 { font-size:18px; margin:0 0 8px }
-  .grid { display:grid; border-top:1px solid var(--line); border-left:1px solid var(--line) }
-  .dow { font-weight:600; color:var(--muted); text-align:center; padding:3px 0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--soft) }
-  .day { min-height:86px; padding:3px; border-right:1px solid var(--line); border-bottom:1px solid var(--line) }
-  .day.out { background:var(--soft) } .day.out .num { opacity:.6 }
-  .week .day { min-height:380px }
-  .num { font-weight:600; margin-bottom:2px }
-  .ev { margin:1px 0; padding:1px 4px; border-radius:4px; background:var(--ev); color:var(--evtext); overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-  .week .ev, .list .ev { white-space:normal }
+  .sheet.flow { container-type:normal; --fs:12px; overflow:visible; break-inside:auto }
+  h1 { font-size:calc(var(--fs) * 1.7); margin:0 0 .4em; flex:0 0 auto }
+  .grid { display:grid; flex:1 1 0; min-height:0; border-top:1px solid var(--line); border-left:1px solid var(--line) }
+  .dow { font-weight:600; color:var(--muted); text-align:center; padding:.2em 0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--soft) }
+  .cell { --s:1; font-size:calc(var(--fs) * var(--s)); min-height:0; min-width:0; overflow:hidden; padding:.25em; border-right:1px solid var(--line); border-bottom:1px solid var(--line) }
+  .cell.out { background:var(--soft) } .cell.out .num { opacity:.6 }
+  .num { font-weight:600; margin-bottom:.15em }
+  .ev { margin:.1em 0; padding:.05em .3em; border-radius:.3em; background:var(--ev); color:var(--evtext); white-space:normal; overflow-wrap:anywhere }
   .ev.custom { background:var(--custom); color:var(--customtext) }
   .ev.tint { background:color-mix(in srgb, var(--cal) 18%, var(--card)); color:color-mix(in srgb, var(--cal) 70%, var(--text)) }
   .ev.hidden { text-decoration:line-through; opacity:.6 }
-  .t { font-variant-numeric:tabular-nums; opacity:.85; margin-right:4px }
-  .list .aday { display:grid; grid-template-columns:150px 1fr; gap:10px; padding:5px 2px; border-bottom:1px solid var(--line); break-inside:avoid }
+  .t { font-variant-numeric:tabular-nums; opacity:.85; margin-right:.3em }
+  .dayone { flex:1 1 0; min-height:0 }
+  .dayone .ev { margin:.25em 0; padding:.2em .5em }
+  .list .aday { display:grid; grid-template-columns:12em 1fr; gap:.8em; padding:.4em .2em; border-bottom:1px solid var(--line); break-inside:avoid }
   .list .adate { font-weight:600 }
-  .list .loc { color:var(--muted) }
+  .loc { color:var(--muted) }
   .empty { color:var(--muted) }
-  @media print { body { padding:0 } * { -webkit-print-color-adjust:exact; print-color-adjust:exact } }
-  @page { margin:12mm }
+  /* the preview: each sheet shown as a page, in the paper's proportion (Letter for English, A4 for the other languages) */
+  @media screen {
+    body { padding:12px; background:var(--soft) }
+    .sheet { width:min(100%, 1100px); margin:0 auto 16px; padding:2.2%; background:var(--card); border:1px solid var(--line); box-shadow:0 2px 10px rgba(0,0,0,.12) }
+    .sheet[data-paper="land"] { aspect-ratio:{{ '11 / 8.5' if html_lang == 'en' else '297 / 210' }} }
+    .sheet[data-paper="port"] { width:min(100%, 760px); aspect-ratio:{{ '8.5 / 11' if html_lang == 'en' else '210 / 297' }} }
+    .sheet.flow { aspect-ratio:auto }
+  }
+  @media print {
+    * { -webkit-print-color-adjust:exact; print-color-adjust:exact }
+    body { background:var(--bg) }
+    .sheet { width:100%; height:100vh; padding:0; border:0; box-shadow:none; margin:0 }
+    .sheet.flow { height:auto }
+  }
 </style>
 </head>
 <body>
@@ -41,26 +65,46 @@
 </div>
 {%- endmacro %}
 {% for p in pages %}
-<section class="sheet">
-  {% if view == "itinerary" %}
+{% if view == "itinerary" %}
+<section class="sheet flow" data-paper="port">
     <h1>{{ dates.day(first) }}, {{ first.year }} – {{ dates.day(last) }}, {{ last.year }}</h1>
     <div class="list">
       {% for day in p.days %}<div class="aday"><div class="adate">{{ dates.day(day.date) }}</div><div>{% for it in day["items"] %}{{ item(it, true) }}{% endfor %}</div></div>
       {% else %}<p class="empty">{{ _('No events.') }}</p>{% endfor %}
     </div>
-  {% elif view == "day" %}
+</section>
+{% elif view == "day" %}
+<section class="sheet" data-paper="port">
     <h1>{{ p.title }}</h1>
-    <div class="list">{% for day in p.days %}{% for it in day["items"] %}{{ item(it, true) }}{% else %}<p class="empty">{{ _('No events.') }}</p>{% endfor %}{% endfor %}</div>
-  {% else %}
+    <div class="dayone cell">{% for day in p.days %}{% for it in day["items"] %}{{ item(it, true) }}{% else %}<p class="empty">{{ _('No events.') }}</p>{% endfor %}{% endfor %}</div>
+</section>
+{% else %}
+<section class="sheet" data-paper="land">
     <h1>{{ p.title }}</h1>
-    <div class="grid {{ 'week' if view in ('week', '5day') else 'month' }}" style="grid-template-columns:repeat({{ p.cols }}, minmax(0, 1fr))">
+    <div class="grid {{ 'week' if view in ('week', '5day') else 'month' }}" style="grid-template-columns:repeat({{ p.cols }}, minmax(0, 1fr)); grid-template-rows:auto repeat({{ p.weeks|length }}, minmax(0, 1fr))">
       {% for d in p.dow %}<div class="dow">{{ d }}</div>{% endfor %}
       {% for week in p.weeks %}{% for day in week %}
-      <div class="day{% if view == 'month' and not day.in_month %} out{% endif %}"><div class="num">{{ day.date.day }}</div>{% for it in day["items"] %}{{ item(it, view != 'month') }}{% endfor %}</div>
+      <div class="cell day{% if view == 'month' and not day.in_month %} out{% endif %}"><div class="num">{{ day.date.day }}</div>{% for it in day["items"] %}{{ item(it, view != 'month') }}{% endfor %}</div>
       {% endfor %}{% endfor %}
     </div>
-  {% endif %}
 </section>
+{% endif %}
 {% endfor %}
+<script>
+/* A day (or the day's list) that would not fit its share of the page gets smaller type until it does (never cut). */
+(function () {
+  function fit() {
+    document.querySelectorAll('.cell').forEach(function (c) {
+      var s = 1; c.style.setProperty('--s', '1');
+      while (c.scrollHeight > c.clientHeight + 1 && s > 0.4) { s -= 0.04; c.style.setProperty('--s', s.toFixed(2)); }
+    });
+    document.documentElement.setAttribute('data-fit', 'done');
+  }
+  var t = null; function later() { clearTimeout(t); t = setTimeout(fit, 60); }
+  window.addEventListener('load', fit); window.addEventListener('resize', later);
+  window.addEventListener('beforeprint', fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
+</script>
 </body>
 </html>

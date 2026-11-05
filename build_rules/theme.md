@@ -363,3 +363,23 @@ one here, with its card.
   3%; light and dark. (0.2.8-beta.24, F7; 0.2.8-beta.26, F10, F12.3; Pictures 2·2, 2·9)
 - The 2/3-line (0.2.8-beta.28, F31): the status lines of every module and section sit in a rounded box (1 px border, soft fill, text left-aligned), one standard width, centered across the header, shown only while collapsed. (Picture 2·9)
 - The On | Off switch (0.2.8-beta.28, F25): at the upper right of an expanded module, like the 12h | 24h switch; Off dims the module grey and the setting is never lost. (Picture 2·9)
+- The calendar's header (0.2.8-beta.29, F15, F26): the view is a drop-down (Month, Week, 5 days, Day, List), the 12h | 24h choice is a segmented
+  switch (the highlight slides to the one in use; 28 px high, rounded 8 px), and the On | Off switch of a module looks the same. Time Zone,
+  view, 12h | 24h, search, Print and Full page sit in the right group; the + is the upper right corner. When they do not fit one line the right
+  group drops to a second line. (Suites 21, 64)
+- The calendar's key (0.2.8-beta.29, F15): two parts under the calendar, Calendars (each with its (i)) and Key (rule colors, Edited, United
+  changed it since, Hidden from Google, Deleted), side by side, a thin vertical line between, in as many columns of at most three rows as the
+  width needs. Only in Full page do clicks hide or show an item's events (on the calendar and in Print only). (Suites 21, 64)
+- Week and Day show an hourly grid (0.2.8-beta.29, F28): all 24 hours in a scrolling area (it starts at the first event or 7 am), events
+  placed by their time, side by side when they overlap, all-day events above. The stretch handle adds height to a day or hour and is kept.
+  (Suite 64)
+- Full page (0.2.8-beta.29, F27): the Calendar fills the window and every other section is hidden; the button's icon becomes Back. A day is at
+  most 2:3 (width:length); extra weeks of the next and the previous month are added until the page is full. (Suite 64)
+- Print (0.2.8-beta.29, I11) lays each sheet out for the paper: landscape for the month, week and 5 days, portrait for the day and the
+  itinerary; Letter for English, A4 otherwise; one sheet per page, whole titles wrap, a day that would not fit gets smaller type, and
+  the paper is white unless Dark is chosen. (Suite 64)
+- Administrator (0.2.8-beta.29, F32, F33) is one Settings section: the login and the public addresses in one form. Its Status/Action box says
+  Signed in (green; Not signed in in yellow) over Sign out; when something changes, the action half becomes Cancel | Save at the action's text
+  size. The current password is asked only when the user name or password changes. (Suite 64)
+- Look (0.2.8-beta.29, F14) is the last Settings section: your own logo and favicon (PNG, SVG, WebP, JPEG or ICO up to 256 KB), and
+  the buttons' Animation intensity and duration (percent), with Reset to defaults and one Cancel | Save. (Suite 64)

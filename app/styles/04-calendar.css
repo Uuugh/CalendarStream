@@ -18,11 +18,6 @@
   .monthpick .months button:hover { background:var(--soft) }
   .monthpick .months button.on { background:var(--accent); color:var(--onaccent); border-color:var(--accent); font-weight:700 }
   .calright { margin-left:auto; display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end }
-  .viewseg { display:inline-flex; border:1px solid var(--line); border-radius:var(--r); overflow:hidden }
-  .viewseg button { height:28px; padding:0 10px; border:0; border-radius:0; background:transparent; color:var(--muted); font-size:12.5px; font-weight:600 }
-  .viewseg button + button { border-left:1px solid var(--line) }
-  .viewseg button[aria-pressed="true"] { background:var(--accent); color:var(--onaccent) }
-  .weekgrid .day { min-height:220px } .weekgrid .ev summary { white-space:normal }
   .agenda { border-top:1px solid var(--line) }
   .aday { display:grid; grid-template-columns:150px 1fr; gap:12px; padding:8px 4px; border-bottom:1px solid var(--line); font-size:13px }
   .aday .adate { font-weight:600; display:flex; align-items:baseline; gap:6px }
@@ -32,11 +27,6 @@
   .aitems .ev summary { white-space:normal; padding:3px 8px }
   .aitems p { margin:3px 0 }
   @media (max-width:600px) { .aday { grid-template-columns:1fr; gap:4px } .calright { margin-left:0; justify-content:flex-start } }
-  .clockswitch { display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); font-weight:600 }
-  .clockswitch button { position:relative; width:38px; height:22px; border-radius:11px; border:1px solid var(--line); background:var(--soft); padding:0; cursor:pointer }
-  .clockswitch button span { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:5px; background:var(--muted); transition:left .15s, background .15s }
-  .clockswitch button[aria-checked=true] { background:var(--accent); border-color:var(--accent) }
-  .clockswitch button[aria-checked=true] span { left:18px; background:var(--onaccent) }
   .navbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border:1px solid var(--line);
             border-radius:var(--r); text-decoration:none; color:var(--accent); font-size:18px; font-weight:700 }
   .navbtn.wide { width:auto; padding:0 12px; font-size:14px }
@@ -73,8 +63,6 @@
   .add { visibility:hidden; text-decoration:none; font-weight:700; font-size:15px; line-height:1; padding:0 4px; border-radius:4px; color:var(--accent) }
   .day:hover .add, .add:focus { visibility:visible } .add:hover { background:var(--soft) }
   @media (hover:none) { .add { visibility:visible; opacity:.6 } }
-  .legend { display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin:8px 0 0 }
-  .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; background:var(--sw) }
   /* The chosen calendar color tints United's events (timed lighter, all-day stronger) */
   .ev.tint { background:color-mix(in srgb, var(--cal) var(--tint, 18%), var(--card)); color:color-mix(in srgb, var(--cal) var(--tinttext, 70%), var(--text)) }
 

@@ -51,7 +51,6 @@
   /* The rule-line pair: 130 × 26 px inside its 34 px line */
   /* Guide headings: underlined (F3.3) */
   .setupguide .h4 { text-decoration:underline; text-underline-offset:3px }
-  .calright .printbtn { height:28px; width:32px }
   /* Printing: only the calendar, in black on white, with whole event titles */
   @media print {
     :root { --bg:#fff; --card:#fff; --text:#000; --muted:#444; --line:#bbb; color-scheme:light }
@@ -61,7 +60,7 @@
     #cal { border:0; padding:0; margin:0 }
     .calhead .title { font-size:20px; padding:0 }
     .ev summary { white-space:normal; overflow:visible }
-    .ev, .legend span::before { -webkit-print-color-adjust:exact; print-color-adjust:exact }
+    .ev, .legitem::before { -webkit-print-color-adjust:exact; print-color-adjust:exact }
     .ev[open] .body { display:none }
     .day { break-inside:avoid }
   }

@@ -58,7 +58,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.click("#src-ccs .slotsave"); pg.wait_for_timeout(3500); ok(state() == "failed" and "Failed" in pg.inner_text("#src-ccs .slotmsg") and pg.locator("#src-ccs .slotnote").count() == 1, "a wrong password: ✗ Verification failed, with the reason")
         pg.fill("#src-ccs input[name=uid]", "U123457"); pg.wait_for_timeout(200); ok(state() == "edit" and pg.locator("#src-ccs .slotnote").count() == 0, "typing again: Save and Cancel, reason cleared")
         pg.goto("http://127.0.0.1:8093/?menu=settings"); pg.wait_for_timeout(300)
-        pg.fill("#lnew", "x"); pg.wait_for_timeout(300); ok(pg.is_visible("#pagelogin .slotcancel") and pg.is_visible("#lcur"), "page login: Save and Cancel, current password asked")
+        pg.fill("#lnew", "x"); pg.wait_for_timeout(300); ok(pg.is_visible("#pagelogin .pcancel") and pg.is_visible("#lcur"), "page login: Save and Cancel, current password asked")
         r = c.post("/setup/ccs", data={"csrf": csrf, "uid": "bad id!", "password": ""}, headers={"X-CS-Async": "1"})
         ok(r.status_code == 400 and "Username" in r.json().get("detail", ""), "a refused save answers with the reason (for under the boxes)")
         r = c.post("/verify", data={"csrf": csrf, "kind": "nope"}, headers={"X-CS-Async": "1"})

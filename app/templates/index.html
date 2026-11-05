@@ -1,16 +1,16 @@
 <!doctype html>
-<html lang="{{ html_lang }}"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}>
+<html lang="{{ html_lang }}"{% if theme in ("light", "dark") %} data-theme="{{ theme }}"{% endif %}{% if look.style %} style="{{ look.style }}"{% endif %}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CalendarStream</title>
 {% include "_theme.html" %}
-<link rel="icon" type="image/png" sizes="32x32" href="/static/logo/favicon-32.png?v={{ version }}">
+{% if look.favicon %}<link rel="icon" href="{{ look.favicon }}"><link rel="apple-touch-icon" href="{{ look.favicon }}">{% else %}<link rel="icon" type="image/png" sizes="32x32" href="/static/logo/favicon-32.png?v={{ version }}">
 <link rel="icon" type="image/png" sizes="192x192" href="/static/logo/icon-192.png?v={{ version }}">
-<link rel="apple-touch-icon" href="/static/logo/apple-touch-icon.png?v={{ version }}">
+<link rel="apple-touch-icon" href="/static/logo/apple-touch-icon.png?v={{ version }}">{% endif %}
 <link rel="stylesheet" href="/assets/app.css?v={{ version }}">
 </head>
-<body>{{ icon_sprite() }}{% import "_macros.html" as m with context %}
+<body{% if calview.full %} class="calfull"{% endif %}>{{ icon_sprite() }}{% import "_macros.html" as m with context %}
   {# (?): an explanation that shows on hover, on focus, or when clicked; raised like a superscript right
      after the word it explains (F1.2). `text` may hold <b>. #}
   {# Google Calendar API Sync's details once connected (0.2.8-beta.9/10): laid out like a login (the Client ID
@@ -71,7 +71,7 @@
   <form method="post" action="{{ action }}" class="powerform" data-swap="#sources|#destinations|#cal|#activity">
     <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="{{ field }}" value="{{ id }}">
     <input type="hidden" name="on" value="{{ '1' if off else '0' }}">
-    <span class="powerword">{{ _('On') }}</span><button type="submit" role="switch" class="powerbtn" aria-checked="{{ 'false' if off else 'true' }}" aria-label="{{ _('On | Off') }}" title="{{ _('Switch this module Off (unavailable, greyed out) or On') }}"><span></span></button><span class="powerword">{{ _('Off') }}</span>
+    <button type="submit" role="switch" class="segsw rev powerbtn" aria-checked="{{ 'false' if off else 'true' }}" aria-label="{{ _('On | Off') }}" title="{{ _('Switch this module Off (unavailable, greyed out) or On') }}"><span class="hl"></span><span class="lb">{{ _('On') }}</span><span class="lb">{{ _('Off') }}</span></button>
   </form>
   {%- endmacro %}
 
@@ -207,7 +207,7 @@
 {% include "index/templates-dialog.html" %}
 
 {% include "index/calendar-dialogs.html" %}
-<script type="application/json" id="pagedata">{{ {"csrf": csrf, "view": cal.view, "viewExplicit": view_explicit, "theme": theme, "openMenu": open_menu,
+<script type="application/json" id="pagedata">{{ {"csrf": csrf, "view": cal.view, "viewExplicit": view_explicit, "full": calview.full, "stretch": calview.stretch, "theme": theme, "openMenu": open_menu,
   "printPrefs": print_prefs, "printView": {"list": "itinerary"}.get(cal.view, cal.view)}|tojson }}</script>
 <script src="/assets/page-{{ version }}-{{ lang }}.js"></script>
 {% include "_pwfield.html" %}

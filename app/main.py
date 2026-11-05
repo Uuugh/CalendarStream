@@ -570,7 +570,7 @@ def page(request: Request, name: str, context: dict, status_code: int = 200, lan
         **context, "lang": lang, "html_lang": i18n.HTML_LANG[lang], "langs": i18n.LANGS,
         "lang_choice": store.get("ui_lang") if store.get("ui_lang") in i18n.LANGS else "auto",
         "_": lambda text, **kw: i18n.tr(lang, text, **kw), "msg": lambda text: i18n.message(lang, text),
-        "dates": dates_for(lang), "theme": ui_theme(), "clock": ui_clock(),
+        "dates": dates_for(lang), "theme": ui_theme(), "clock": ui_clock(), "look": look(),
         "update": {"available": updates.available(), "channel": release_channel(), "frequency": updates.frequency(),
                    "frequencies": list(FREQUENCIES), "info": updates.info(), "releases": RELEASES,
                    "checked": _local_time(updates.info().get("checked"), lang),
@@ -578,6 +578,27 @@ def page(request: Request, name: str, context: dict, status_code: int = 200, lan
                    "updater": updater.ready, "can_update": updater.ready and not updater.pinned(),
                    "auto": auto_update()}, "version": __version__,
     }, status_code=status_code)
+
+
+ANIM_DEFAULT = {"i": 100, "d": 100}
+
+
+def look() -> dict:
+    """(0.2.8-beta.29, F14) ☰ Settings › Look: the Developer's own logo and favicon (uploaded; None = CalendarStream's own)
+    and the buttons' Animation (intensity, duration; percent, 100 = as designed)."""
+    saved = store.get("brand") or {}
+    out = {"logo": None, "favicon": None, "anim": dict(ANIM_DEFAULT)}
+    for kind in ("logo", "favicon"):
+        if saved.get(kind):
+            out[kind] = f"/brand/{kind}?v={hashlib.md5(saved[kind]['b64'].encode()).hexdigest()[:8]}"
+    a = store.get("ui_anim") or {}
+    for k, lo, hi in (("i", 0, 200), ("d", 25, 300)):
+        try:
+            out["anim"][k] = min(hi, max(lo, int(a.get(k, 100))))
+        except (TypeError, ValueError):
+            pass
+    out["style"] = "" if out["anim"] == ANIM_DEFAULT else f"--anim-i:{out['anim']['i'] / 100:g};--anim-d:{out['anim']['d'] / 100:g}"
+    return out
 
 
 THEMES = ("system", "light", "dark")
@@ -2132,9 +2153,43 @@ def _span(e: Event, tz: ZoneInfo | None = None) -> tuple[date, date, datetime | 
     return s.date(), last, s, t
 
 
-def cal_view(events: list[Event], view: str, ref: date, lang: str = "en") -> dict:
+def _hidden_by(e: Event, hide: set[str]) -> bool:
+    """Is `e` one of the kinds the key has switched off (0.2.8-beta.29, F28)? A calendar ("src:<id>"), edited here,
+    changed by United since ("stale"), hidden from Google ("hidden") or deleted ("deleted")."""
+    if not hide:
+        return False
+    return (f"src:{e.source}" in hide or ("deleted" in hide and bool(e.deleted))
+            or (not e.deleted and (("hidden" in hide and e.hidden) or ("stale" in hide and e.stale)
+                                   or ("edited" in hide and e.edited and not e.stale))))
+
+
+def _lanes(items: list[dict]) -> None:
+    """Side-by-side places for the timed events of one day in the hourly grid (0.2.8-beta.29, F15.9): every
+    cluster of events that overlap shares the width, each in its own lane."""
+    timed = sorted((i for i in items if i["m0"] is not None), key=lambda i: (i["m0"], -i["m1"]))
+    cluster: list[dict] = []
+    ends: list[int] = []
+    def close():
+        for i in cluster:
+            i["lanes"] = max(1, len(ends))
+    for it in timed:
+        if cluster and it["m0"] >= max(i["m1"] for i in cluster):
+            close(); cluster, ends = [], []
+        lane = next((n for n, end in enumerate(ends) if end <= it["m0"]), len(ends))
+        if lane == len(ends):
+            ends.append(it["m1"])
+        else:
+            ends[lane] = it["m1"]
+        it["lane"] = lane
+        cluster.append(it)
+    close()
+
+
+def cal_view(events: list[Event], view: str, ref: date, lang: str = "en", pad: int = 0, hide: set[str] | None = None) -> dict:
     """The calendar around `ref`: a month grid, one week, one day, or a list of a month's days
-    with events. ‹ › move by a month, week or day."""
+    with events. ‹ › move by a month, week or day. `pad` (full page, F27) adds that many weeks after and before
+    the month's own (next month's first); `hide` is what the key has switched off (F28)."""
+    events = [e for e in events if not _hidden_by(e, hide or set())]
     tz = display_tz()
     dates = dates_for(lang)
     hm = dates.clock
@@ -2153,6 +2208,8 @@ def cal_view(events: list[Event], view: str, ref: date, lang: str = "en") -> dic
     else:       # month grid or list: the month's weeks / days
         weeks = pycal.Calendar(firstweekday=6).monthdatescalendar(ref.year, ref.month)
         first_day, last_day = (weeks[0][0], weeks[-1][-1]) if view == "month" else (month_first, month_last)
+        if view == "month" and pad:
+            first_day, last_day = first_day - timedelta(days=7 * pad), last_day + timedelta(days=7 * pad)
         prev = month_first - timedelta(days=1)
         nxt = month_last + timedelta(days=1)
         title = dates.title(ref)
@@ -2178,16 +2235,31 @@ def cal_view(events: list[Event], view: str, ref: date, lang: str = "en") -> dic
                 when = f"→ {hm(t)}"
             else:
                 when = cont
+            m0 = m1 = None
+            if s is not None:      # minutes into this day, for the hourly grid (Week and Day)
+                m0 = 0 if d > d0 else s.hour * 60 + s.minute
+                m1 = 1440 if d < d1 else min(1440, max(m0 + 15, t.hour * 60 + t.minute if t.date() == d else 1440))
             by_day.setdefault(d, []).append({"e": e, "when": when, "first": d == d0,
                                              "tag_color": e.color or e.rule_color,
                                              "src_color": colors.get(e.source, ""),
-                                             "multi": d0 != d1, "range": _range_text(e, s, t, lang)})
+                                             "multi": d0 != d1, "range": _range_text(e, s, t, lang),
+                                             "m0": m0, "m1": m1, "lane": 0, "lanes": 1})
             d += timedelta(days=1)
+    for items in by_day.values():
+        _lanes(items)
     days = [first_day + timedelta(days=i) for i in range((last_day - first_day).days + 1)]
     cell = lambda d: {"date": d, "in_month": d.month == ref.month, "items": by_day.get(d, [])}
+    weeks_out = [[cell(d) for d in days[i:i + 7]] for i in range(0, len(days), 7)] if view in ("month", "week") else []
+    # full page (F27): each added week says where it comes from, "n1" the first week after the month, "p1" the first before it…
+    ext = [""] * len(weeks_out)
+    if view == "month" and pad:
+        for k in range(pad):
+            ext[len(weeks_out) - 1 - k] = f"n{pad - k}"
+            ext[k] = f"p{pad - k}"
     return {
         "view": view, "title": title, "dow": dates.dow, "ref": ref.isoformat(),
-        "weeks": [[cell(d) for d in days[i:i + 7]] for i in range(0, len(days), 7)] if view in ("month", "week") else [],
+        "weeks": weeks_out, "week_ext": ext, "pad": pad,
+        "hours": [re.sub(r":00(?=[ap]m)", "", hm(datetime(2000, 1, 1, h))) for h in range(24)] if view in ("week", "day") else [],
         "days": [cell(d) for d in days if view == "day" or by_day.get(d)] if view in ("day", "list") else [],
         "prev": prev.isoformat(), "next": nxt.isoformat(), "month": f"{ref:%Y-%m}",
         "today": now().astimezone(tz).date(), "count": count,

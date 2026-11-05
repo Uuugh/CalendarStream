@@ -67,7 +67,7 @@
     .editor .tagrow input[name=tpl_title] { flex-basis:100% }
   }
   @media (max-width:700px) {
-    .viewseg, .topbar .seg { display:none }
+    .topbar .seg { display:none }
     .cyclebtn { display:inline-flex; height:28px; padding:0 10px; font-size:12.5px }
     .topbar .themecycle { height:34px; width:38px; padding:0 }
   }

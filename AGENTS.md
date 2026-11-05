@@ -25,7 +25,7 @@ manage it all. See README.md for what it does.
   - `ui_ux.md`: usability and accessibility of the page (WCAG 2.2 AA, ARIA, keyboard, focus, motion); theme.md decides exact looks.
   - `roadmap.md`: what's planned.
 
-## Code map (0.2.8-beta.20, F12; 0.2.8-beta.21; 0.2.8-beta.26; 0.2.8-beta.28)
+## Code map (0.2.8-beta.20, F12; 0.2.8-beta.21; 0.2.8-beta.26; 0.2.8-beta.28; 0.2.8-beta.29)
 
 Read only the part you need. Each file's first lines say what it holds.
 
@@ -49,7 +49,7 @@ shared things from `main` by name; anything the tests replace on `main` (`downlo
 | `events.py` | `/event`, `/event/…` (save, hide, revert, restore, alarms, delete, done, pick: Link to › Event's small calendar, `event-pick.html`) |
 | `history.py` | `/history/…` (undo, keep, container log) |
 | `account.py` | `/welcome`, `/login`, `/unlock/{token}`, `/logout`, `/settings/login` |
-| `settings.py` | `/settings/public-url`, `/settings/public-extra`, `/settings/admin-email`, `/settings/updates`, `/update/now` |
+| `settings.py` | `/settings/administrator`, `/settings/look`, `/brand/{kind}`, `/settings/public-url`, `/settings/public-extra`, `/settings/admin-email`, `/settings/updates`, `/update/now` |
 | `google.py` | `/google/…`, `/invite/{token}` |
 | `status.py` | `/api/status`, `/report/data`, `/debug/{name}`, `/healthz` |
 
@@ -78,7 +78,7 @@ never reordered: `01-base`, `02-topbar-settings`, `03-sections-editors`, `04-cal
 `12-handles`, `13-popups`, `14-rule-dialog`, `15-features` (Remove a calendar, Updates, Google API Sync,
 search, import, date ranges, History…), `16-feeds`, `17-spacing` (0.2.8-beta.21, R11: the theme's spacing rule,
 last so it wins; a spacing change goes here), `18-two-three-line` (0.2.8-beta.28, F31: the 2/3-line box of the status lines in
-module and section headers, last so it wins). A style for one area can live in more than one part:
+module and section headers), `19-calendar` (0.2.8-beta.29: the calendar's header, switches, hourly grid, key, Full page, Administrator, Look; last so it wins). A style for one area can live in more than one part:
 grep `app/styles/` for its class. New styles go at the end of the part for their area, unless they must win
 over a later part.
 

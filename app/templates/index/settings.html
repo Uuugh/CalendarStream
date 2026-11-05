@@ -4,58 +4,49 @@
       </button>
       <div class="menu" id="menu" role="dialog" aria-label="{{ _('Settings') }}" hidden>
         <div class="title">{{ _('Settings') }}</div>
-        {# Laid out like the other logins; "✓ Signed in" until something is typed, then the
-           current password (and the new one again) are asked for and Save appears. #}
+        {# (0.2.8-beta.29, F32, F33) One Administrator section: the status page's login and its public addresses, one form,
+           one Cancel | Save. Its Status/Action box says "Signed in" over "Sign out"; the action half becomes the pair
+           (Cancel | Save, at the action's text size) as soon as something is changed. The current password is asked
+           for only when the user name or the password changes. #}
         <div class="mgroup" id="pagelogin">
           <div class="mhead">{{ _('Administrator') }}</div>
-          <form method="post" action="/settings/login" class="clientform watch" autocomplete="off">
+          <form method="post" action="/logout" id="signoutform" class="signout"><input type="hidden" name="csrf" value="{{ csrf }}"></form>
+          <form method="post" action="/settings/administrator" id="adminform" class="clientform adminform" autocomplete="off" data-swap="#pagelogin|#destinations">
             <input type="hidden" name="csrf" value="{{ csrf }}">
+            <div class="module bare adminhead"><div class="statusbox adminbox {{ 'good' if page_user else 'warn' }}">
+              {{ chip('good' if page_user else 'warn', _('Signed in') if page_user else _('Not signed in')) }}
+              <span class="syncform adminact"><button type="submit" form="signoutform" class="syncnow" data-state="idle"><span class="sn idle">{{ icon("logout", 14) }}{{ _('Sign out') }}</span></button></span>
+              {{ pair("adminform") }}
+            </div></div>
             <div class="pair">
               <label class="fld" for="luser"><span>{{ _('User name') }}</span>
                 <input type="text" id="luser" name="user" value="{{ page_user }}" required maxlength="64" autocomplete="username" spellcheck="false"></label>
               <label class="fld" for="lnew"><span>{{ _('Password') }}</span>
                 <input type="password" id="lnew" name="password" data-strength data-rules autocomplete="new-password" placeholder="{{ _('Type a new one to change it') }}"></label>
-              {{ m.okbutton(true, _('Signed in'), _('Save')) }}
             </div>
             <div class="pair more" hidden>
               <label class="fld" for="lcur"><span>{{ _('Current password') }}</span>
-                <input type="password" id="lcur" name="current" autocomplete="current-password" data-required></label>
+                <input type="password" id="lcur" name="current" autocomplete="current-password"></label>
               <label class="fld" for="lconf"><span>{{ _('New password again') }}</span>
                 <input type="password" id="lconf" name="confirm" autocomplete="new-password"></label>
             </div>
             <p class="mnote more" style="margin:6px 0 0" hidden>{{ _('Then sign in again with the new login.') }}</p>
-          </form>
-          <form method="post" action="/logout" class="signout"><input type="hidden" name="csrf" value="{{ csrf }}">
-            <button class="ghost">{{ icon("logout", 16) }} {{ _('Sign out') }}</button></form>
-        </div>
-
-        {# Right under the page login. "This page" sits inside the box; Save is on the same line. #}
-        <div class="mgroup" id="public">
-          <div class="mhead">{{ _('Public address') }}{{ help(_('This page’s https:// address, e.g. <code>https://cal.example.com</code>: for feed links and Google sign-in.'), 'left') }}</div>
-          {# F2.1 (0.2.8-beta.3): like every field changed in place: ✓ Saved, then ✕ | ✓ while typing #}
-          <form method="post" action="/settings/public-url" class="clientform watch" data-swap="#public|#destinations">
-            <input type="hidden" name="csrf" value="{{ csrf }}">
-            <div class="pair">
-              <div class="inbox">
-                <input type="text" class="code" id="publicurl" name="url" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
-                <button type="button" class="inboxbtn" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
+            <div class="k" id="public">{{ _('Public address') }}{{ help(_('This page’s https:// address, e.g. <code>https://cal.example.com</code>: for feed links and Google sign-in.'), 'left') }}</div>
+            <div class="inbox">
+              <input type="text" class="code" id="publicurl" name="main" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
+              <button type="button" class="inboxbtn" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
+            </div>
+            {% if not public.url %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
+            <div class="publicextra">
+              <div class="k">{{ _('More addresses') }}{{ help(_('Other addresses people reach this page at (another domain). A Calendar Feed’s link can use any of them; Google’s sign-in uses the one above.'), 'left') }}</div>
+              <div class="extrarows">
+                {% for u in public.extra %}<div class="extrarow"><input type="text" class="code" name="url" value="{{ u }}" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
+                  <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div>{% endfor %}
               </div>
-              {{ m.okbutton(public.url, _('Saved'), _('Save'), name="action", value="save") }}
+              <div class="extrafoot"><button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button></div>
+              <template class="extratpl"><div class="extrarow"><input type="text" class="code" name="url" value="" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
+                <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div></template>
             </div>
-          </form>
-          {% if not public.url %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
-          {# More addresses (0.2.8-beta.17, F11): each always editable, + for another; a feed link can use any #}
-          <form method="post" action="/settings/public-extra" class="clientform publicextra" id="publicextra" data-swap="#public|#destinations">
-            <input type="hidden" name="csrf" value="{{ csrf }}">
-            <div class="k">{{ _('More addresses') }}{{ help(_('Other addresses people reach this page at (another domain). A Calendar Feed’s link can use any of them; Google’s sign-in uses the one above.'), 'left') }}</div>
-            <div class="extrarows">
-              {% for u in public.extra %}<div class="extrarow"><input type="text" class="code" name="url" value="{{ u }}" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
-                <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div>{% endfor %}
-            </div>
-            <div class="extrafoot"><button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button>
-              {{ pair("publicextra") }}</div>
-            <template class="extratpl"><div class="extrarow"><input type="text" class="code" name="url" value="" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
-              <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div></template>
           </form>
         </div>
 
@@ -130,6 +121,27 @@
             {% if update.info.error %}<p class="check bad">{{ icon("cancel", 15) }} {{ msg(update.info.error) }}</p>{% endif %}
             {% if not update.updater %}<p class="mnote" style="margin:5px 0 0">{{ _('To update from here: run the installer again › Update from the status page: yes.') }}</p>
             {% elif update.can_update is false %}<p class="mnote" style="margin:5px 0 0">{{ _('This install runs an exact version (IMAGE_TAG): update it with the installer.') }}</p>{% endif %}
+          </form>
+        </div>
+        {# (0.2.8-beta.29, F14) Look: your own logo and favicon, and the buttons' animation. One form, one Cancel | Save. #}
+        <div class="mgroup" id="look">
+          <div class="mhead">{{ _('Look') }}{{ help(_('Your own logo (shown by the title) and favicon: a PNG, SVG, WebP, JPEG or ICO picture up to 256 KB. Animation sets how strong and how long the buttons’ pulses and slides are.'), 'left') }}</div>
+          <form method="post" action="/settings/look" id="lookform" class="clientform lookform" enctype="multipart/form-data" data-reload="1" autocomplete="off">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <div class="pair">
+              <label class="fld" for="lookLogo"><span>{{ _('Logo') }}</span><input type="file" id="lookLogo" name="logo" accept="image/png,image/svg+xml,image/webp,image/jpeg,image/x-icon"></label>
+              <label class="fld" for="lookFav"><span>{{ _('Favicon') }}</span><input type="file" id="lookFav" name="favicon" accept="image/png,image/svg+xml,image/webp,image/jpeg,image/x-icon"></label>
+            </div>
+            <div class="pair lookrm">
+              <label class="chk"><input type="checkbox" name="remove_logo" value="1"{% if not look.logo %} disabled{% endif %}> {{ _('Use CalendarStream’s logo') }}</label>
+              <label class="chk"><input type="checkbox" name="remove_favicon" value="1"{% if not look.favicon %} disabled{% endif %}> {{ _('Use CalendarStream’s favicon') }}</label>
+            </div>
+            <div class="k">{{ _('Animation') }}</div>
+            <div class="pair animrow">
+              <label class="fld" for="animI"><span>{{ _('Intensity') }} <output id="animIo">{{ look.anim.i }}%</output></span><input type="range" id="animI" name="intensity" min="0" max="200" step="5" value="{{ look.anim.i }}"></label>
+              <label class="fld" for="animD"><span>{{ _('Duration') }} <output id="animDo">{{ look.anim.d }}%</output></span><input type="range" id="animD" name="duration" min="25" max="300" step="5" value="{{ look.anim.d }}"></label>
+            </div>
+            <div class="lookfoot"><button type="button" class="ghost" id="animReset">{{ _('Reset to defaults') }}</button>{{ pair("lookform") }}</div>
           </form>
         </div>
       </div>

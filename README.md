@@ -182,8 +182,10 @@ logins or setup codes lock an address out for 15 minutes.
 
 - **Calendar:** every source's events (views, months and the time zone change in place, without
   reloading the page). On the right: the **Time Zone** it's shown in (**TZ** when
-  space is tight; on this page only, the feeds and Google keep `TZ`), **Month / Week / Day / List**, the **12h / 24h** switch,
-  and **Print** (Print Preview, below). Click the title to jump to any month. Click an event to
+  space is tight; on this page only, the feeds and Google keep `TZ`), a **view drop-down** (Month, Week, 5 days, Day, List), the **12h | 24h** switch, search,
+  **Print** (Print Preview, below) and **Full page** (the calendar fills the window; **Back** returns; in it, clicking an item of the
+  **Calendars** or **Key** parts under the calendar hides or shows its events). Week and Day are an hourly grid; a handle under the
+  calendar stretches its height. Click the title to jump to any month. Click an event to
   open it; it stays open (also while the calendar is redrawn) until its **Close** (on the left). On
   the right of its details: the **link** (opens the event at "Linked to"), the bell (**reminders**: up to five, from "at the start" to "1 week before", sent to
   Google and written into the feeds), **✎ Edit** (title, times, notes), **duplicate**
@@ -212,7 +214,8 @@ logins or setup codes lock an address out for 15 minutes.
 - **Print Preview:** the pages as they'll print, with **Print**. Choose **Itinerary**, **Day**,
   **5-day** (Monday to Friday), **Week** or **Month**, with or without weekends, light or dark, and
   the dates (From / To, or **All**: the first event to the last); it opens with your last print's
-  choices (or the calendar's view the first time). One page per month, week or day.
+  choices (or the calendar's view the first time). Each sheet is one page of the paper you print on (landscape for the month, week and
+  5 days; portrait for the day and the itinerary; Letter or A4), white unless you choose Dark; nothing is cut.
 - The page's sections: **Calendar** at the top, then **Calendars**, **Feeds**, **All Rules**,
   **Event Templates** and **History, Undo & Logs**, each with a small icon and the same kind of
   section title row. On a wide screen they sit in two columns (Calendars | Feeds, All Rules |
@@ -377,9 +380,9 @@ logins or setup codes lock an address out for 15 minutes.
   (`docker compose logs`) has a one-time link, good for an hour, that lets that browser in; or restart
   CalendarStream (`docker compose restart`).
 - **☰ Settings** (a light blue panel): site settings only: **Administrator** (the login, with a
-  show-password eye and a strength bar, like every password box, and **Sign out**), the public address (and
+  show-password eye and a strength bar, like every password box, **Signed in** over **Sign out**, and the public address with
   **More addresses**, for other domains this page is reached at: each editable, **+** for another; a feed's
-  link can use any of them), **Google Calendar API Sync** (for the admin, laid out like a login: Client ID
+  link can use any of them), **Look** (your own logo and favicon, and the buttons' Animation intensity and duration), **Google Calendar API Sync** (for the admin, laid out like a login: Client ID
   with Copy and Client secret, editable at any time, and a Status/Action box: **Healthy**, Not set up or the
   fault, over **Connect**, **Reconnect** or **Fix**, which saves and checks the client and the redirect
   address with Google, stopping with the fix as a click path; one **Remove**; no Gmail is signed in here:

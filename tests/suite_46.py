@@ -66,8 +66,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         # F4: + in the calendar's top right corner; search left of Time Zone
         r = pg.evaluate("""() => { const c = document.getElementById('cal').getBoundingClientRect(), h = document.querySelector('#cal .calhead').getBoundingClientRect(),
                           p = document.querySelector('.calplus').getBoundingClientRect(), s = document.getElementById('searchbtn').getBoundingClientRect(),
-                          t = document.querySelector('.tzlabel').getBoundingClientRect(); return [Math.round(c.right - p.right), Math.round(p.top - h.top), s.right <= t.left, Math.abs(s.top - t.top) < 20]; }""")
-        ok(17 <= r[0] <= 21 and r[1] <= 2 and r[2] and r[3], f"F4: + in the calendar's top right corner; search just left of Time Zone {r}")
+                          t = document.querySelector('.tzlabel').getBoundingClientRect(); return [Math.round(c.right - p.right), Math.round(p.top - h.top), t.right <= s.left, Math.abs(s.top - t.top) < 20]; }""")
+        ok(17 <= r[0] <= 21 and r[1] <= 2 and r[2] and r[3], f"F4: + in the calendar's top right corner; search in the right group, after Time Zone (beta.29) {r}")
         pg.click("#searchbtn"); pg.fill("#calq", "union"); pg.wait_for_timeout(1300)
         ok(pg.is_visible("#calsearch") and pg.locator("#calbody details.ev").count() > 0 and all("Union" in t for t in pg.locator("#calbody details.ev summary").all_inner_texts()),
            "F4: the search line lists matches as you type")

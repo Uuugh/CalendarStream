@@ -119,6 +119,13 @@ function sendSwap(f, body) {
     .then(function (r) {
       if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { var er = new Error(j.detail || ('HTTP ' + r.status)); er.status = r.status; er.fields = r.headers.get('X-CS-Fields') || ''; throw er; });
       var json = (r.headers.get('content-type') || '').indexOf('json') >= 0;
+      if (json) {     // (0.2.8-beta.29, F32) a changed login ends every session: go to the sign-in page
+        return r.clone().json().catch(function () { return {}; }).then(function (j) {
+          if (j && j.redirect) { location.href = j.redirect; return new Promise(function () {}); }
+          return fetch(location.pathname + location.search, { cache: 'no-store', credentials: 'same-origin' })
+            .then(function (page) { var url = page.url; return page.text().then(function (html) { return { html: html, url: url }; }); });
+        });
+      }
       // a JSON answer (the rule dialog's): the page is fetched for the swap
       return (json ? fetch(location.pathname + location.search, { cache: 'no-store', credentials: 'same-origin' }) : Promise.resolve(r))
         .then(function (page) { var url = page.url; return page.text().then(function (html) { return { html: html, url: url }; }); });
@@ -184,6 +191,7 @@ document.addEventListener('submit', function (e) {
     var p2 = pairFor(f) || pair;                      // the pair may have been swapped for a new one
     if (p2) flashPair(p2, 'saved');
     if (formId(f) === 'ruleform') setTimeout(function () { ruleDialog.close(); }, 900);
+    if (f.dataset.reload) setTimeout(function () { location.href = '/?menu=settings'; }, 900);
     var dl = f.closest('dialog.addpop'); if (dl) setTimeout(function () { dl.close(); f.reset(); }, 900);    // a + pop-up closes once saved
     var copy = new URL(res.url, location.href).searchParams.get('rule');     // after Copy in All Rules
     if (copy && RD.rules[copy]) openRule(RD.rules[copy]);
@@ -251,3 +259,42 @@ document.addEventListener('click', function () { setTimeout(pairRefresh, 30); },
 document.addEventListener('paircancel', function () { setTimeout(pairRefresh, 0); }, true);
 new MutationObserver(function () { clearTimeout(pairRefresh.t); pairRefresh.t = setTimeout(pairRefresh, 60); }).observe(document.body, { childList: true, subtree: true });
 pairRefresh();
+
+
+// (0.2.8-beta.29, F32) Settings > Administrator: the current password and the repeat are asked for only while the
+// user name or the password is changed; Cancel puts them away again.
+(function () {
+  var f = document.getElementById('adminform');
+  if (!f || f._admin) return;
+  f._admin = true;
+  function more() {
+    var u = f.elements.user, pw = f.elements.password;
+    var on = !!pw.value || u.value.trim() !== u.defaultValue;
+    f.querySelectorAll('.more').forEach(function (el) { el.hidden = !on; });
+    f.elements.current.required = on;
+  }
+  f.addEventListener('input', more);
+  f.addEventListener('paircancel', function () { setTimeout(more, 0); });
+})();
+
+
+// (0.2.8-beta.29, F14) Settings > Look: the animation sliders act at once (the page shows them); Reset puts both back to 100 %.
+// A saved Look redraws the whole page (the logo and favicon are in its head).
+(function () {
+  var f = document.getElementById('lookform');
+  if (!f || f._look) return;
+  f._look = true;
+  var I = document.getElementById('animI'), D = document.getElementById('animD');
+  function apply() {
+    var r = document.documentElement.style;
+    r.setProperty('--anim-i', (I.value / 100).toString()); r.setProperty('--anim-d', (D.value / 100).toString());
+    document.getElementById('animIo').textContent = I.value + '%'; document.getElementById('animDo').textContent = D.value + '%';
+  }
+  I.addEventListener('input', apply); D.addEventListener('input', apply);
+  f.addEventListener('paircancel', function () { setTimeout(apply, 0); });
+  document.getElementById('animReset').addEventListener('click', function () {
+    I.value = 100; D.value = 100; apply();
+    I.dispatchEvent(new Event('input', { bubbles: true }));
+    I.defaultValue = '100'; D.defaultValue = '100';
+  });
+})();

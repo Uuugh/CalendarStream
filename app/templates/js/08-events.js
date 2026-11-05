@@ -4,7 +4,7 @@
   document.addEventListener('click', function (e) {
     var close = e.target.closest('.evclose');
     if (close) { close.closest('details.ev').open = false; return; }
-    var day = e.target.closest('.day');
+    var day = e.target.closest('.day, .hcol, .hallcell');
     if (day && !e.target.closest('details.ev, a, button') && day.dataset.add) openEvent(day.dataset.add);
   });
 })();

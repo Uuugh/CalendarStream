@@ -1,7 +1,7 @@
   <header class="topbar"{% if update.can_update %} data-canupdate="{{ version }}"{% endif %}>
     {# The version links to its release notes on GitHub; a newer one shows as "(v0.2.0 is available)". #}
     {# F11.1/F11.3 (0.2.8-beta.26; 0.2.8-beta.28, F31: CalendarStream_Logo_Light and _Dark without their words, the light one on light pages, the dark one on dark): the logo's mark, then the title in the logo's colors; the version is in the footer, only the update notice stays here. #}
-    <h1><img class="logomark lt" src="/static/logo/mark-light-72.png?v={{ version }}" alt="" width="39" height="36"><img class="logomark dk" src="/static/logo/mark-dark-72.png?v={{ version }}" alt="" width="39" height="36"><span class="ttext"><span class="tw1">Calendar</span><span class="tw2">Stream</span></span><span class="ver">{% if update.available %}
+    <h1><img class="logomark lt" src="{{ look.logo or '/static/logo/mark-light-72.png?v=' ~ version }}" alt="" width="39" height="36"><img class="logomark dk" src="{{ look.logo or '/static/logo/mark-dark-72.png?v=' ~ version }}" alt="" width="39" height="36"><span class="ttext"><span class="tw1">Calendar</span><span class="tw2">Stream</span></span><span class="ver">{% if update.available %}
       <a class="newver" href="{{ update.releases }}/tag/v{{ update.available }}" target="_blank" rel="noopener"
          title="{{ _('What’s new in it (GitHub)') if update.can_update else _('Run the installer again to update.') }}">{{ _('(v{v} is available)', v=update.available) }}</a>
       {# With the updater container: Update now → Downloading… → Restarting… → gone, with the new version shown. #}

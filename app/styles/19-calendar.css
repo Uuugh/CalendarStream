@@ -1,0 +1,105 @@
+  /* ---- 0.2.8-beta.29: the Calendar build (F15, F26, F27, F28), last so it wins ----------------------------------------------
+     The top line, the 12h | 24h and On | Off switches, the view drop-down, the hourly Week and Day grid, the key, Full page, the
+     stretch handle and the search line's date hints. */
+  #cal { position:relative }
+  /* F15.1: the date on the left, the tools on the right with a space between; + stays in the top right corner; too narrow: the tools go under */
+  .calhead { display:flex; align-items:center; gap:12px; flex-wrap:nowrap }
+  .calhead .calleft { display:flex; align-items:center; gap:8px; flex:0 0 auto }
+  .calhead .calright { margin-left:auto; display:flex; align-items:center; gap:12px; flex:0 0 auto; flex-wrap:nowrap; justify-content:flex-end }
+  .calhead .calplus { flex:0 0 auto }
+  .calhead.two { display:grid; grid-template-columns:minmax(0, 1fr) auto; row-gap:6px }
+  .calhead.two .calleft { grid-column:1; grid-row:1; flex-wrap:wrap }
+  .calhead.two .calplus { grid-column:2; grid-row:1 }
+  .calhead.two .calright { grid-column:1 / -1; grid-row:2; margin-left:0; justify-content:flex-end; flex-wrap:wrap }
+  .calright .iconbtn { height:28px; width:32px }
+  /* F15.6: the view, a drop-down */
+  select.viewpick { font:inherit; font-size:13px; color:var(--text); background:transparent; border:1px solid var(--line); border-radius:var(--r); height:28px; padding:0 4px; cursor:pointer }
+  select.viewpick:hover, select.viewpick:focus { background:var(--soft) }
+  /* F15.2, F25: a rounded switch with its two words inside and a highlight that slides to the one in use (12h | 24h; On | Off) */
+  .segsw { position:relative; display:inline-grid; grid-template-columns:1fr 1fr; align-items:center; height:28px; min-height:0; padding:2px; margin:0;
+           border:1px solid var(--line); border-radius:var(--r); background:var(--soft); color:var(--muted); font:inherit; font-size:12.5px; font-weight:600;
+           cursor:pointer; isolation:isolate; flex:0 0 auto }
+  .segsw .lb { position:relative; z-index:1; padding:0 9px; text-align:center; line-height:22px; transition:color .15s }
+  .segsw .hl { position:absolute; z-index:0; top:2px; bottom:2px; left:2px; width:calc(50% - 2px); border-radius:5px; background:var(--accent); transition:transform .18s ease }
+  .segsw[aria-checked="true"] .hl { transform:translateX(100%) }
+  .segsw[aria-checked="false"] .lb:nth-child(2), .segsw[aria-checked="true"] .lb:nth-child(3) { color:var(--onaccent) }
+  .segsw.rev[aria-checked="true"] .hl { transform:none } .segsw.rev[aria-checked="false"] .hl { transform:translateX(100%) }
+  .segsw.rev[aria-checked="true"] .lb:nth-child(2), .segsw.rev[aria-checked="false"] .lb:nth-child(3) { color:var(--onaccent) }
+  .segsw.rev[aria-checked="true"] .lb:nth-child(3), .segsw.rev[aria-checked="false"] .lb:nth-child(2) { color:var(--muted) }
+  .segsw[aria-checked="true"]:not(.rev) .lb:nth-child(2), .segsw[aria-checked="false"]:not(.rev) .lb:nth-child(3) { color:var(--muted) }
+  @media (prefers-reduced-motion:reduce) { .segsw .hl, .segsw .lb { transition:none } }
+  /* F15.3: From and To are hints inside the search line's date fields, written in the date's format */
+  #calsearch .hinted .fld { position:relative }
+  #calsearch .hinted .fld > span:first-child { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
+  #calsearch .hinted .fld::after { content:attr(data-hint); display:none; position:absolute; left:10px; right:26px; top:50%; transform:translateY(-50%);
+                                   overflow:hidden; white-space:nowrap; font-size:12.5px; color:var(--muted); pointer-events:none }
+  #calsearch .hinted .fld:has(input[data-empty="1"]:not(:focus))::after { display:block }
+  #calsearch .hinted input[data-empty="1"]:not(:focus) { color:transparent }
+  /* F15.9: Week and Day: an hourly grid, the all-day events above it, a timed event as tall as it lasts */
+  .hourview { --hh:44px; --gut:54px; border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:var(--card) }
+  .hourview .hhead, .hourview .hallday, .hourview .hbody { display:grid; grid-template-columns:var(--gut) repeat(var(--cols), minmax(0, 1fr)) }
+  .hourview .hgut { color:var(--muted); font-size:11px; padding:3px 6px 0 0; text-align:right; white-space:nowrap }
+  .hourview .hhead { background:var(--soft); border-bottom:1px solid var(--line) }
+  .hdayhead { display:flex; align-items:center; gap:5px; padding:4px 6px; border-left:1px solid var(--line); font-size:12px; font-weight:600; color:var(--muted); min-width:0 }
+  .hdayhead .hdow { white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .hdayhead.today .num { background:var(--accent); color:var(--card) }
+  .hdayhead .add { margin-left:auto }
+  .hdayhead:hover .add { visibility:visible }
+  .hourview .hallday { border-bottom:1px solid var(--line); min-height:24px }
+  .hallcell { border-left:1px solid var(--line); padding:2px; min-width:0 }
+  .hallcell .ev summary { white-space:normal }
+  .hscroll { overflow-y:auto; overflow-x:hidden; max-height:calc(560px + var(--st, 0px)) }
+  .hourview .hbody { position:relative; height:calc(24 * var(--hh)) }
+  .hlabels { display:grid; grid-template-rows:repeat(24, var(--hh)); padding:0 !important }
+  .hlab { font-size:11px; color:var(--muted); text-align:right; padding-right:6px; transform:translateY(-.6em) }
+  .hlab:first-child { visibility:hidden }
+  .hcol { position:relative; border-left:1px solid var(--line); min-width:0;
+          background-image:repeating-linear-gradient(to bottom, var(--line) 0, var(--line) 1px, transparent 1px, transparent var(--hh)) }
+  .hcol.today { background-color:color-mix(in srgb, var(--accent) 5%, transparent) }
+  .hcol .ev.timed { position:absolute; margin:0; top:calc(var(--m0) * var(--hh) / 60); height:calc((var(--m1) - var(--m0)) * var(--hh) / 60 - 1px);
+                    left:calc(var(--lane) * 100% / var(--lanes) + 1px); width:calc(100% / var(--lanes) - 3px); overflow:hidden }
+  .hcol .ev.timed summary { white-space:normal; padding:1px 4px; font-size:11.5px; overflow:hidden; text-overflow:clip }
+  .hcol .ev.timed[open] { z-index:4; height:auto; min-height:calc((var(--m1) - var(--m0)) * var(--hh) / 60 - 1px); left:1px; width:calc(100% - 3px); overflow:visible;
+                          box-shadow:0 4px 14px rgba(0,0,0,.25) }
+  /* the key (F15.8, F26): Calendars | Key, columns of three from the left and from the right; a row taller when they don't fit */
+  .legend { display:flex; align-items:stretch; gap:12px; flex-wrap:nowrap; font-size:12px; color:var(--muted); margin:8px 0 0 }
+  .legpart { min-width:0 }
+  .legcals { flex:1 1 0 } .legkeys { flex:0 1 auto; max-width:50% }
+  .legtitle { display:flex; align-items:center; gap:2px; margin:0 0 3px; font-size:12px; font-weight:700; color:var(--text) }
+  .legvr { flex:0 0 1px; align-self:stretch; background:var(--line) }
+  .legcols { display:grid; grid-auto-flow:column; grid-template-rows:repeat(var(--rows, 3), auto); justify-content:start; gap:3px 16px }
+  .legcols.rtl { direction:rtl } .legcols.rtl > * { direction:ltr; justify-self:start }
+  .legitem { display:inline-flex; align-items:center; gap:5px; font:inherit; font-size:12px; color:inherit; background:transparent; border:0; border-radius:4px;
+             padding:1px 4px; margin:-1px -4px; text-align:left; white-space:nowrap }
+  .legitem::before { content:""; flex:0 0 10px; width:10px; height:10px; border-radius:3px; background:var(--sw, transparent) }
+  .legitem.mark::before { display:none }
+  button.legitem { cursor:pointer; min-height:0; height:auto; width:auto; justify-content:flex-start; justify-self:start; line-height:1.3 }
+  button.legitem:hover { background:var(--soft) }
+  button.legitem[aria-pressed="false"], .legitem.dim { opacity:.45 }
+  /* F15.7: the stretch handle in the calendar's lower left corner */
+  .calstretch { position:absolute; left:3px; bottom:2px; width:18px; height:18px; min-height:0; padding:0; display:inline-flex; align-items:center; justify-content:center;
+                background:transparent; border:0; border-radius:var(--r); color:var(--muted); cursor:ns-resize; touch-action:none }
+  .calstretch:hover, .calstretch:focus-visible { background:var(--soft); color:var(--accent) }
+  /* month: each day as tall as the stretch gives it */
+  .month .day { min-height:calc(96px + var(--st, 0px) / var(--rows, 5)) }
+  /* F15.4, F27: Full page: every other section is hidden; the month fills the browser */
+  body.calfull .sections { display:none }
+  #cal.full .month { min-width:0 }
+  #cal.full .month .day { min-height:0; overflow:auto }
+  #cal.full .month { grid-auto-rows:minmax(0, 1fr) }
+  @media (max-width:700px) { .calhead .calleft { flex-wrap:wrap } }
+
+/* (0.2.8-beta.29, F32, F33) Settings > Administrator: a Status/Action box; its action half becomes Cancel | Save */
+.adminhead { margin:0 0 8px; padding:0; display:flex; justify-content:flex-end }
+.adminbox { position:relative }
+.adminbox .pairbtns { display:none; position:absolute; inset:auto 0 0 0; height:24px; width:100%; margin:0; gap:0 }
+.adminbox .pairbtns button { flex:1 1 0; height:24px; min-height:0; padding:0 4px; font-size:12.5px; border-radius:6px }
+.adminbox:has(.pairbtns[data-dirty], .pairbtns:not([data-state="idle"])) .pairbtns { display:flex }
+.adminbox:has(.pairbtns[data-dirty], .pairbtns:not([data-state="idle"])) .adminact { visibility:hidden }
+.adminform .inbox, .adminform .publicextra { margin-top:4px }
+
+/* (0.2.8-beta.29, F14) Settings > Look */
+.lookform input[type=range] { width:100%; accent-color:var(--run) }
+.lookform .lookfoot { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:8px }
+.lookform .lookrm .chk { font-size:12.5px }
+.lookform output { color:var(--muted); font-weight:400 }

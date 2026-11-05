@@ -92,7 +92,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
            "I3: the calendar key, the feeds' calendar colors and the rule badges follow, in place")
         # Settings saved in place
         pg.click("#menubtn"); pg.wait_for_timeout(150)
-        pg.fill("#publicurl", "https://cal2.example.com"); pg.click("#public .slotsave"); pg.wait_for_timeout(1500)
+        pg.fill("#publicurl", "https://cal2.example.com"); pg.click("#adminform .psave"); pg.wait_for_timeout(1500)
         ok(main.public_url() == "https://cal2.example.com" and not loads and pg.is_visible("#menu") and "cal2.example.com" in pg.inner_html("#destinations"),
            "Settings: Public address saved in place (menu still open, no reload; the feeds' links follow)")
         pg.select_option("#updfreq", "monthly"); pg.wait_for_timeout(1200)

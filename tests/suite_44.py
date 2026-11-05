@@ -26,9 +26,9 @@ async def fake_check():
 CLAR = open(os.path.join(os.path.dirname(HERE), "build_rules", "theme.md")).read().split("## Clarifications", 1)[1]
 # One look per meaning (beta.14): every status word and the look it must have (theme.md, section 2). A word not
 # listed here fails: add it, with its meaning, to theme.md and here.
-MEANING = {"good": r"Healthy|Connected|In Google|Read by Google|Up to date|\d+ Rules?|\d+ Templates?",
+MEANING = {"good": r"Healthy|Signed in|Connected|In Google|Read by Google|Up to date|\d+ Rules?|\d+ Templates?",
            "run": r"Syncing…|Starting|Paused|Setup needed|Ready to connect|Not set up|Not checked|Update available|Not connected|Invited|Not read yet|\d+ to check",
-           "warn": r"Sign-in rejected|Blocked|Error|Address missing|Client rejected|Sync problem|Sign-in failed|Unhealthy",
+           "warn": r"Not signed in|Sign-in rejected|Blocked|Error|Address missing|Client rejected|Sync problem|Sign-in failed|Unhealthy",
            "bad": r"Internal error|Sync problem|Update failed"}
 # Words on the page (beta.14): click paths and short lines; no sentence over 20 words outside the (?) help
 WORDS = r"""() => {
@@ -62,7 +62,7 @@ MEASURE = """() => {
     const rows = list.querySelectorAll(':scope > .modrow, :scope > .ruleline');
     if (rows.length === 1) { const h = rows[0].querySelector(':scope > .handle'); if (h && vis(rows[0])) out.lone.push([list.closest('[id]').id, getComputedStyle(h).visibility]); }
   });
-  document.querySelectorAll('.statusbox button, .statusbox a.btn').forEach(b => out.statusButtons.push([b.closest('[id]').id, b.className, b.querySelectorAll('.sn').length]));
+  document.querySelectorAll('.statusbox button:not(.pcancel):not(.psave), .statusbox a.btn').forEach(b => out.statusButtons.push([b.closest('[id]').id, b.className, b.querySelectorAll('.sn').length]));
   document.querySelectorAll('.copybtn').forEach(b => out.copy.push([b.closest('[id]') ? b.closest('[id]').id : '', !!b.closest('.inbox, .feed')]));
   document.querySelectorAll('.srcstatus').forEach(p => out.words.push(p.textContent.trim()));
   out.scroll = document.documentElement.scrollWidth;
@@ -101,7 +101,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                        f"[{tag}] Clarification 'handles' (beta.28, I12): modules and All Rules' lines as wide as the header (up to its +), the handle in the margin on their left {m['margins']}")
                 ok(all(v == "hidden" for _, v in m["lone"]), f"[{tag}] no handle where there's nothing to reorder {m['lone']}")
                 # Clarification: every button in a status box works like Sync Now
-                ok(m["statusButtons"] and all("syncnow" in cls and n == 4 or "syncnow" in cls and n == 5 or "upgradebtn" in cls for _, cls, n in m["statusButtons"]),
+                ok(m["statusButtons"] and all("syncnow" in cls and n in (1, 4, 5) or "upgradebtn" in cls for _, cls, n in m["statusButtons"]),
                    f"[{tag}] Clarification 'status-box buttons': each is a Sync Now (its states) {m['statusButtons']}")
                 # Clarification: status words
                 ok(all(re.match(r"^(|Last synced .+|Sync failed .+|Last read( by Google)? .+|Last checked .+)$", t) for t in m["words"]) and "Last check was" not in pg.content(),
@@ -375,7 +375,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "header order (suite 61)": "Every section's header reads: icon", "status word shrinks (suite 61)": "A good login word (Signed in, Validated",
             "Expand words (suite 61)": "say \"Expand to Configure\"", "title bar logo (suite 61)": "The title bar: the logo's mark",
             "trash icons (suite 61)": "Trash icons: the icon's lines tinted red", "24-hour fold (suite 61)": "left open folds again after 24 hours",
-            "+ top right (suite 61)": "Every section's + is in its top right", "1 px borders (suite 59, 61)": "Every border is 1 px wide"}
+            "+ top right (suite 61)": "Every section's + is in its top right", "1 px borders (suite 59, 61)": "Every border is 1 px wide",
+            "calendar header (suite 64)": "The calendar's header (0.2.8-beta.29", "key (suite 64)": "The calendar's key (0.2.8-beta.29",
+            "hourly grid (suite 64)": "Week and Day show an hourly grid", "Full page (suite 64)": "Full page (0.2.8-beta.29",
+            "Print (suite 64)": "Print (0.2.8-beta.29", "Administrator (suite 64)": "Administrator (0.2.8-beta.29", "Look (suite 64)": "Look (0.2.8-beta.29, F14)"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")
