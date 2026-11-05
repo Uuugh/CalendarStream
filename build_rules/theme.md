@@ -4,7 +4,7 @@ Read before changing how the page looks. Written so anyone (the Developer, Claud
 a change against it without asking: every look, status, transition and word rule is here, each with the
 card of the **CalendarStream Theme Rules** picture that shows it.
 
-- The picture: `build_rules/CalendarStream_Theme_Rules_Light.png` and `…_Dark.png`, drawn from the page
+- The picture: `build_rules/CalendarStream_Theme_Rules_Light.png` and `…_Dark.png` (each also as a `.pdf`, made from the picture), drawn from the page
   itself (every size in it is measured). **Part 1** is the whole page with each part named where it is,
   a module open in every section. **Part 2** is numbered cards; "Picture 2·5" below means part 2, card 5.
 - The stylesheet is `app/styles/*.css` (sent as one file, in their number order), the script
@@ -13,7 +13,7 @@ card of the **CalendarStream Theme Rules** picture that shows it.
 - When the theme changes, update this file and redraw the picture (at the latest in the Deploy's documentation part, 5-deploy.md). A rule
   here with no card, or a card with no rule, is a mistake: fix whichever is missing.
 
-The sections below follow the picture's Part 2, card by card (0.2.8-beta.24, R1): section N is card 2·N.
+The sections below follow the picture's Part 2, card by card (0.2.8-beta.24, R1): section N is card 2·N (R1: 16 cards; the color box and emoji sit on card 11 with Pop-ups, Spacing on card 9 with Modules).
 **Cancel/Save buttons** = the pair at the bottom right of a module or pop-up (section 6). **Status/Action
 buttons** = a status box: the state, with its action under it (section 7). Other words (Cancel | Yes, No | Yes)
 are still used where they fit.
@@ -161,11 +161,23 @@ sections and modules are told apart while everything else stays as it was.
 
 (i) is info, about this module: what it is, then its note when it has one; (?) is help (section 12).
 
+### Spacing (was card 17)
+
+R11, 0.2.8-beta.21; tried for now and adapted as needed:
+- 5 px between parts: sections, modules, the parts of a module or a pop-up, buttons in a row.
+- 1 px between a label and its field (the label over it; From and To beside their dates, 5 px). (0.2.8-beta.26, F12.1: was 2 px.)
+- 9 px inside a module's border at the sides, 5 px top and bottom; the 50 px header unchanged. A box
+  inside a module (Include, an instruction tile) is 5 px 9 px too.
+- 12 px inside every pop-up, so all pop-ups and all modules are formatted alike.
+- No other padding or margin (F9). The one exception: a folded module or module-like section keeps 14 px
+  below it, for the Expand line in its border.
+- A module's Close line has 2 px less above and below it (0.2.8-beta.26, F12.2). The bottom padding is the same folded and open:
+  5 px in a module, 18 px (as at its top) in a module-like section (0.2.8-beta.26, I6).
+- The rule lives in `app/styles/17-spacing.css`, last, so it wins; the theme suite measures it.
+
 ## 10. Handles
 
-Picture 2·10. ▲ ▼ in the section's right margin; none with nothing to reorder. The grip (0.2.8-beta.26, F12.7: two columns of
-three faint dots, like Gmail's) sits left of the element, in the margin that is already there, shown on hover, on keyboard focus
-in the row and on touch screens; drag it to reorder, or use ▲ ▼ with the keyboard. Every request about the "hamburger slider" means this grip.
+Picture 2·10. ▲ ▼ in the section's right margin; none with nothing to reorder. The grip (0.2.8-beta.26, F12.7: two columns of three faint dots, like Gmail's) sits left of the element, in the margin that is already there; drag it to reorder, or use ▲ ▼ with the keyboard. Every request about the "hamburger slider" means this grip.
 
 ## 11. Pop-ups
 
@@ -174,6 +186,16 @@ Picture 2·11. Pop-ups and drop-downs: 12 px corners, 12 px padding, ← and the
 is one too, never the browser's alert / confirm box: its answers on one line, or one under the other when they're
 sentences; a second line under the question is a note, muted and not bold. A choice of calendars is a drop-down
 of ticks.
+
+### Color box and emoji (was card 14)
+
+The palette (names and codes, from `GOOGLE_COLORS` in `app/gsync.py`): Tomato #d50000 · Flamingo #e67c73 · Tangerine #f4511e · Banana #f6bf26 · Sage #33b679 · Basil #0b8043 · Peacock #039be5 · Blueberry #3f51b5 · Lavender #7986cb · Grape #8e24aa · Graphite #616161. Card 11 shows each with its name and code.
+
+**Color box**: one palette everywhere, Google Calendar's 11 colors (what Google shows for an event):
+calendars, feeds, rules, event templates, events. A click opens it (in a module: while expanded); the choice goes
+with the module's Save. **Emoji**: the common ones beside the field, then a rounded "Search for more emojis" field
+that opens every emoji (Unicode up to Emoji 13.0, no flags, drawn by the device): ten a line, scrolling, filtered
+as you type. One older Windows may not draw has a small i (Clarifications).
 
 ## 12. (?) help
 
@@ -189,47 +211,25 @@ e.g. "Google Cloud › Clients › CalendarStream › Authorized redirect URIs �
 paragraphs: the why goes in the (?). Status words are a word or two (section 7). The theme suite fails a
 sentence on the page longer than 20 words (the (?), the calendar and the log aside).
 
-## 14. Color box and emoji
+## 14. Date range and Import row
 
-Picture 2·14. **Color box**: one palette everywhere, Google Calendar's 11 colors (what Google shows for an event):
-calendars, feeds, rules, event templates, events. A click opens it (in a module: while expanded); the choice goes
-with the module's Save. **Emoji**: the common ones beside the field, then a rounded "Search for more emojis" field
-that opens every emoji (Unicode up to Emoji 13.0, no flags, drawn by the device): ten a line, scrolling, filtered
-as you type. One older Windows may not draw has a small i (Clarifications).
-
-## 15. Date range and Import row
-
-Picture 2·15. **Date range**: From | To | ☐ All, in that order, everywhere a range is asked for (search, feeds,
+Picture 2·14. **Date range**: From | To | ☐ All, in that order, everywhere a range is asked for (search, feeds,
 Print Preview, Import). All clears the dates and greys them; typing in is done after unticking it. All is what an
 empty range means. **Import row**: the heading, the file field (a file icon and "Choose Calendar.ics…", filling the
 line), the dates, the button on the right. The same row in every calendar; CCS+'s is Manual Upload (it replaces the
 schedule, so no dates).
 
-## 16. Deleted events and History
+## 15. Deleted events and History
 
-Picture 2·16. **Deleted event**: struck through and greyed, saying where it was deleted (CalendarStream, Google
+Picture 2·15. **Deleted event**: struck through and greyed, saying where it was deleted (CalendarStream, Google
 Calendar, United, the feed), with Restore, until its Undo pops off History. **History**: Time | Type | Event | Undo;
 a filter (Type, words, time) on top; folded, the latest lines with Undo / Redo where it applies (a stack: newest
 first). Something done outside CalendarStream (deleted in Google, removed by United) has no Undo icon: Restore is
 on the event.
 
-## 17. Spacing
+## 16. The event pop-up
 
-Picture 2·17. R11, 0.2.8-beta.21; tried for now and adapted as needed:
-- 5 px between parts: sections, modules, the parts of a module or a pop-up, buttons in a row.
-- 1 px between a label and its field (the label over it; From and To beside their dates, 5 px). (0.2.8-beta.26, F12.1: was 2 px.)
-- 9 px inside a module's border at the sides, 5 px top and bottom; the 50 px header unchanged. A box
-  inside a module (Include, an instruction tile) is 5 px 9 px too.
-- 12 px inside every pop-up, so all pop-ups and all modules are formatted alike.
-- No other padding or margin (F9). The one exception: a folded module or module-like section keeps 14 px
-  below it, for the Expand line in its border.
-- A module's Close line has 2 px less above and below it (0.2.8-beta.26, F12.2). The bottom padding is the same folded and open:
-  5 px in a module, 18 px (as at its top) in a module-like section (0.2.8-beta.26, I6).
-- The rule lives in `app/styles/17-spacing.css`, last, so it wins; the theme suite measures it.
-
-## 18. The event pop-up
-
-Picture 2·18. Its layout is in the Clarifications (0.2.8-beta.22, F11; 0.2.8-beta.24, F5).
+Picture 2·16. Its layout is in the Clarifications (0.2.8-beta.22, F11; 0.2.8-beta.24, F5).
 
 ## Enforced by tests
 
@@ -318,7 +318,7 @@ one here, with its card.
 - Light is the Soft palette (warm off-white, muted blue accent), still named Light with its icon. (Picture 2·2)
 - In-page instructions are click paths (Settings › Google › New Project › Name: CalendarStream › Save),
   not paragraphs, everywhere on the site; the explanations go in the (?). (Picture 2·13)
-- Every date range has All: From | To | ☐ All (search, Print Preview, Import). (Picture 2·15) A feed module's Include says it in words instead: Dates (optional; empty = all), From over To (0.2.8-beta.17).
+- Every date range has All: From | To | ☐ All (search, Print Preview, Import). (Picture 2·14) A feed module's Include says it in words instead: Dates (optional; empty = all), From over To (0.2.8-beta.17).
 - No browser alert or confirm boxes: every question and notice is the page's own pop-up. (Picture 2·11)
   Deleting or hiding an event asks the question, a note in muted words on the line under it, and No | Yes
   as the 130 × 34 Cancel/Save buttons (0.2.8-beta.23, F16).
@@ -326,19 +326,19 @@ one here, with its card.
 - Every + opens a centred pop-up, the page dimmed and out of focus behind it. (Picture 2·11)
 - Every border is 1 px wide, sections and modules included. (0.2.8-beta.26, F21; Picture 2·4)
 - A module's name is its label: plain text until the module is expanded, then a field of the same size. (Picture 2·9)
-- One color palette everywhere: Google Calendar's 11 colors, in the color box. (Picture 2·14)
+- One color palette everywhere: Google Calendar's 11 colors, in the color box. (Picture 2·11)
 - A deleted event stays struck through and greyed, saying where it was deleted, with Restore, until its
-  Undo pops off History. (Picture 2·16)
+  Undo pops off History. (Picture 2·15)
 - Importing a calendar file is one row in every calendar: heading, the file field filling the line, the
-  dates, the button on the right (CCS+: Manual Upload). (Picture 2·15)
-- Emoji: the common ones, then a rounded "Search for more emojis" field that opens every emoji, ten a line, scrolling, filtered as you type. (Picture 2·14)
+  dates, the button on the right (CCS+: Manual Upload). (Picture 2·14)
+- Emoji: the common ones, then a rounded "Search for more emojis" field that opens every emoji, ten a line, scrolling, filtered as you type. (Picture 2·11)
 - Emoji older Windows may not draw (newer than Emoji 12.0, and flags): a small i at the emoji's upper right in the
   list, and the page's own (i) beside the field when one is chosen, both "May not show on older Windows". (0.2.8-beta.19, F8)
 - A Google module's colors end with a muted line, "Color change does not carry to Google", while Google refuses the
   color: only after it refused the RGB color, the nearest calendar color and a full update (0.2.8-beta.21, I1).
   (0.2.8-beta.19, I1.1)
 - Spacing: 5 px between parts, 1 px between a label and its field, 9 px inside a module's border (5 px top and
-  bottom), 12 px inside pop-ups; nothing extra. (0.2.8-beta.21, R11, F9; Picture 2·17)
+  bottom), 12 px inside pop-ups; nothing extra. (0.2.8-beta.21, R11, F9; Picture 2·9)
 - (i) and (?) pop-ups open with their upper left at the icon; at the window's right edge their upper right sits
   at it; at the bottom their lower corners sit at it. In a pop-up, its edges count as the window's. (0.2.8-beta.21,
   F4; Picture 2·12)
@@ -351,7 +351,7 @@ one here, with its card.
 - The event pop-up: ← and its title, with its tools in the upper right corner (Choose from template; Print and
   Duplicate); the fields on the left, Notes on the right as tall as them (dragging Notes taller grows the pop-up);
   Link to below, closed until Event or Rule; Delete (Hide or Show for a calendar source's event, with its (i)) at the
-  bottom left, the Cancel/Save buttons at the right. On a phone, one column. (0.2.8-beta.22, F11; Picture 2·18)
+  bottom left, the Cancel/Save buttons at the right. On a phone, one column. (0.2.8-beta.22, F11; Picture 2·16)
   The end's column: Time with All-day Event on its label line, right of "Time *" (ticked, it stays there as the Time
   fields hide); Different end time zone beside Time zone's field, End time zone under it when ticked. (0.2.8-beta.24, F5)
 - Sections and modules are told apart by color, nothing else changing: each section's 1 px border its own muted
