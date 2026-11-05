@@ -34,9 +34,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             for sec, mod in (("#sources", "#src-ccs"), ("#destinations", ".box.dest")):
                 r = pg.evaluate("""([sec, mod]) => { const q = s => document.querySelector(s).getBoundingClientRect();
                   const m = document.querySelector(mod), h = m.closest('.modrow').querySelector(':scope > .handle').getBoundingClientRect();
-                  return {sec: q(sec).right, plus: q(sec + ' > .cardhead .plus').right, mod: m.getBoundingClientRect().right, h: h.right, hl: h.left} }""", [sec, mod])
+                  return {sl: q(sec).left, sec: q(sec).right, plus: q(sec + ' > .cardhead .plus').right, mod: m.getBoundingClientRect().right, h: h.right, hl: h.left} }""", [sec, mod])
                 ok(abs(r["mod"] - r["plus"]) <= 1, f"I1 ({w} px): {sec}: the module's right edge lines up with the + ({r})")
-                ok(r["hl"] >= r["mod"] and r["h"] <= r["sec"] - 1, f"…its handle sits in the section's right margin")
+                ok(r["h"] <= r["mod"] and r["hl"] >= r["sl"], f"…its handle sits in the section's left margin (beta.28, I12)")
             ok(pg.evaluate("document.documentElement.scrollWidth") <= w, f"…no sideways scroll at {w} px")
             ok(not errs, f"no script errors {errs}")
         b.close()

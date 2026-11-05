@@ -35,22 +35,22 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     code = main.logins.setup_code
     ok(bool(re.match(r"^[0-9A-F]{4}-[0-9A-F]{4}$", code or "")), f"setup code made: {code}")
     post = lambda **d: c.post("/welcome", data={"csrf": csrf, **d}, follow_redirects=False)
-    r = post(code="0000-0000", user="pilot", password="longenough", confirm="longenough")
+    r = post(code="0000-0000", user="pilot", password="Longenough1!", confirm="Longenough1!")
     ok(r.status_code == 400 and "That setup code isn" in r.text and not main.logins.has_page_login, "wrong code refused")
     ok(post(code=code, user="pilot", password="short", confirm="short").status_code == 400, "short password refused")
-    ok(post(code=code, user="pilot", password="longenough", confirm="different1").status_code == 400, "mismatch refused")
-    ok(post(code=code, user="pi lot", password="longenough", confirm="longenough").status_code == 400, "space in name refused")
-    r = post(code=code.lower().replace("-", ""), user="pilot", password="longenough", confirm="longenough")
+    ok(post(code=code, user="pilot", password="Longenough1!", confirm="different1").status_code == 400, "mismatch refused")
+    ok(post(code=code, user="pi lot", password="Longenough1!", confirm="Longenough1!").status_code == 400, "space in name refused")
+    r = post(code=code.lower().replace("-", ""), user="pilot", password="Longenough1!", confirm="Longenough1!")
     ok(r.status_code == 303 and main.logins.has_page_login and main.logins.setup_code is None, "login created (code case/dash-insensitive)")
-    ok("longenough" not in str(main.store.get("page_login")), "password stored hashed")
-    ok(c.get("/welcome", follow_redirects=False).status_code == 303 and post(code=code, user="x", password="aaaaaaaa", confirm="aaaaaaaa").status_code == 303
+    ok("Longenough1!" not in str(main.store.get("page_login")), "password stored hashed")
+    ok(c.get("/welcome", follow_redirects=False).status_code == 303 and post(code=code, user="x", password="Abcdefg1!xyz", confirm="Abcdefg1!xyz").status_code == 303
        and main.logins.page_user == "pilot", "welcome closed once a login exists")
     ok("cs_session" in c.cookies, "the new login is signed in already (0.2.8-beta.15)")
     c.cookies.clear()
     ok(c.get("/", headers={"accept": "text/html"}, follow_redirects=False).headers.get("location", "").startswith("/login")
        and c.get("/").status_code == 401 and c.get("/api/status").status_code == 401 and c.get("/api/status", auth=("pilot", "wrong")).status_code == 401,
        "page needs the login (the page goes to the sign-in page)")
-    A = ("pilot", "longenough")
+    A = ("pilot", "Longenough1!")
     t0 = time.time(); [c.get("/api/status", auth=A) for _ in range(5)]; dt = time.time() - t0
     p = c.get("/", auth=A).text
     ok('id="luser" name="user" value="pilot"' in p and "Signed in" in p, "settings shows the user")
@@ -72,17 +72,17 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(c.post("/setup/ccs", auth=A, data={"csrf": "x", "uid": "U1", "password": "x"}).status_code == 400, "needs CSRF")
     # Change the page login
     chg = lambda **d: c.post("/settings/login", auth=A, data={"csrf": csrf, **d}, follow_redirects=False)
-    ok(chg(current="nope", user="pilot", password="newpassword", confirm="newpassword").status_code == 400, "wrong current password refused")
-    ok(chg(current="longenough", user="pilot", password="newpassword", confirm="other").status_code == 400, "mismatch refused")
-    r = chg(current="longenough", user="captain", password="newpassword", confirm="newpassword")
-    ok(r.status_code == 303 and c.get("/", auth=A).status_code == 401 and c.get("/", auth=("captain", "newpassword")).status_code == 200, "login changed")
-    A = ("captain", "newpassword")
+    ok(chg(current="nope", user="pilot", password="Newpassword1!", confirm="Newpassword1!").status_code == 400, "wrong current password refused")
+    ok(chg(current="Longenough1!", user="pilot", password="Newpassword1!", confirm="other").status_code == 400, "mismatch refused")
+    r = chg(current="Longenough1!", user="captain", password="Newpassword1!", confirm="Newpassword1!")
+    ok(r.status_code == 303 and c.get("/", auth=A).status_code == 401 and c.get("/", auth=("captain", "Newpassword1!")).status_code == 200, "login changed")
+    A = ("captain", "Newpassword1!")
     old_csrf = csrf
     csrf = re.search(r'name="csrf" value="([^"]+)"', c.get("/", auth=A).text)[1]
-    ok(csrf != old_csrf and c.post("/settings/login", auth=A, data={"csrf": old_csrf, "current": "newpassword", "user": "x"}, follow_redirects=False).status_code == 400,
+    ok(csrf != old_csrf and c.post("/settings/login", auth=A, data={"csrf": old_csrf, "current": "Newpassword1!", "user": "x"}, follow_redirects=False).status_code == 400,
        "changing the login renews the form token; the old one is refused")
-    r = c.post("/settings/login", auth=A, data={"csrf": csrf, "current": "newpassword", "user": "cap"}, follow_redirects=False)
-    ok(r.status_code == 303 and c.get("/", auth=("cap", "newpassword")).status_code == 200, "rename only, password kept")
+    r = c.post("/settings/login", auth=A, data={"csrf": csrf, "current": "Newpassword1!", "user": "cap"}, follow_redirects=False)
+    ok(r.status_code == 303 and c.get("/", auth=("cap", "Newpassword1!")).status_code == 200, "rename only, password kept")
     log = " | ".join(h["msg"] for h in main.store.recent_log(30))
-    ok(not any(x in log for x in ("s3cret", "newpassword", "longenough")), "no password in the log")
+    ok(not any(x in log for x in ("s3cret", "Newpassword1!", "Longenough1!")), "no password in the log")
 print("FAILED:", fails) if fails else print("ALL PASSED")

@@ -1,6 +1,6 @@
 // Remove a calendar (0.2.8-beta.15): Merge its events into another calendar (not itself; a new CalendarStream
 // one is always offered) or Delete them; "Download a copy (.ics) first"; with a Merge and rules of its
-// own, whether they move with them. The last CalendarStream calendar says Empty: it stays.
+// own, whether they move with them. The last CalendarStream calendar says so in the pop-up: it stays and is only emptied.
 document.addEventListener('click', function (e) {
   var b = e.target.closest('.removecal');
   if (!b) return;

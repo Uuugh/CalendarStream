@@ -25,7 +25,7 @@ manage it all. See README.md for what it does.
   - `ui_ux.md`: usability and accessibility of the page (WCAG 2.2 AA, ARIA, keyboard, focus, motion); theme.md decides exact looks.
   - `roadmap.md`: what's planned.
 
-## Code map (0.2.8-beta.20, F12; 0.2.8-beta.21; 0.2.8-beta.26)
+## Code map (0.2.8-beta.20, F12; 0.2.8-beta.21; 0.2.8-beta.26; 0.2.8-beta.28)
 
 Read only the part you need. Each file's first lines say what it holds.
 
@@ -68,7 +68,7 @@ reordered: `01-base` (texts, pop-up questions, copy, login fields), `02-calendar
 Sync Now), `05-report` (Report a problem; + Add a calendar's presets), `06-rules` (the rule dialog, emoji),
 `07-saving` (rows, + menus, asking first, saving in place, Cancel | Save), `08-events`, `09-remove-import`,
 `10-fields` (History's filter, file and date fields, pop-ups), `11-reminders-print`, `12-handles-checks`
-(dragging, refused fields, copy), `13-feeds`, `14-status-fold` (the ✓ shrink of good status words, the 24-hour fold).
+(dragging, refused fields, copy), `13-feeds`, `14-status-fold` (the ✓ shrink of good status words, the 24-hour fold), `15-field-notes` (0.2.8-beta.28: the note under a field while typing).
 
 **`app/styles/NN-<what>.css`**: the page's stylesheet, sent as one file (`/assets/app.css`) in number order.
 The order is the cascade's (a later rule wins a tie), so the parts are named for what they mostly hold and
@@ -77,7 +77,8 @@ never reordered: `01-base`, `02-topbar-settings`, `03-sections-editors`, `04-cal
 `09-spacing-print`, `10-calendar-module`, `11-modules` (the theme's modules, color box, status, Sync Now),
 `12-handles`, `13-popups`, `14-rule-dialog`, `15-features` (Remove a calendar, Updates, Google API Sync,
 search, import, date ranges, History…), `16-feeds`, `17-spacing` (0.2.8-beta.21, R11: the theme's spacing rule,
-last so it wins; a spacing change goes here). A style for one area can live in more than one part:
+last so it wins; a spacing change goes here), `18-two-three-line` (0.2.8-beta.28, F31: the 2/3-line box of the status lines in
+module and section headers, last so it wins). A style for one area can live in more than one part:
 grep `app/styles/` for its class. New styles go at the end of the part for their area, unless they must win
 over a later part.
 

@@ -29,7 +29,11 @@
           <form method="post" action="/sources/add" class="opt presetform" id="addsrc-ccs" data-for="ccs" hidden data-swap="#sources|#destinations|#cal|#rules|#activity|#ruledata|#removeform .rmopts|#ruledialog .rdapply .ddmenu">
             <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="type" value="ccs">
             <div><b>{{ _('United CCS+ Calendar Sync') }}</b>
-              <div class="subtitle">{{ _('Your CCS+ schedule. Username and Calendar Sync password next.') }}</div></div>
+              <div class="subtitle">{{ _('Your CCS+ schedule. Username and Calendar Sync password next.') }}</div>
+              <div class="startrules"><div class="k">{{ _('It comes with these rules (untick to leave one out):') }}</div>
+                <input type="hidden" name="starters" value="1">
+                <label class="inline"><input type="checkbox" name="starter" value="allday24" checked> {{ _('24-hour events → all day') }}</label>
+                <label class="inline"><input type="checkbox" name="starter" value="noend" checked> {{ _('Items without an end → 1:00') }}</label></div></div>
             {{ pair("addsrc-ccs") }}
           </form>
           {% endif %}
@@ -66,7 +70,7 @@
        Upload (the Site Address and how often it's checked, the login and how to set it up), Manual
        Upload (CCS+), and its Rules; then Remove (lower left) and Cancel | Save. Its handle is on the right. #}
     <div class="modrow" data-id="{{ x.id }}">
-    <div class="box module src cfgbox{% if x.open %} cfgopen{% endif %}" style="--mc:{{ x.color or '#3f51b5' }}" id="src-{{ x.id }}" data-section="src:{{ x.id }}" data-sid="{{ x.id }}">
+    <div class="box module src cfgbox{% if x.open %} cfgopen{% endif %}{% if x.off %} off{% endif %}" style="--mc:{{ x.color or '#3f51b5' }}" id="src-{{ x.id }}" data-section="src:{{ x.id }}" data-sid="{{ x.id }}">
       {# The module header (50 px; all a folded module shows): color | title over note | the last download
          and the next check | status over Sync Now. While expanded, the color, title and note are fields
          of the same size. #}
@@ -82,6 +86,10 @@
             <div class="namebox srcname showonly" title="{{ x.name }}">{{ x.name }}</div>
             <input type="text" class="namebox nameinput editonly" form="srcform-{{ x.id }}" name="name" value="{{ x.name }}" maxlength="100" aria-label="{{ _('Label') }}" placeholder="{{ _('Label') }}">
             {{ notedot(about.get(x.preset or x.type, about.feed), x.note) }}
+            {# (0.2.8-beta.28, I2) Default: right of the title. The default one says so, always; the other CalendarStream calendars show it
+               greyed, as a button that makes them the default, while expanded (the others are read-only: they can't be the default) #}
+            <span class="defslot">{% if x.default %}<span class="deflabel" title="{{ _('Events you add here go to this calendar unless you choose another') }}">{{ _('Default') }}</span>
+              {%- elif local %}<form method="post" action="/sources/default" class="inline defform editonly" data-swap=".defslot|#cal|#activity"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}"><button class="defbtn" title="{{ _('Make this the default: events you add go here unless you choose another') }}">{{ _('Default') }}</button></form>{% endif %}</span>
           </div>
         </div>
         {# "Last check was successful @ 14:34" over "Next check @ 14:49" (on the right, beside Sync Now);
@@ -103,7 +111,7 @@
 
       {{ cfgline(x.id, x.open) }}
       <div class="cfgbody" id="cfg-{{ x.id }}"{% if not x.open %} hidden{% endif %}>
-        {% if x.default %}<div class="deflabel" title="{{ _('Events you add here go to this calendar unless you choose another') }}">{{ _('Default') }}</div>{% endif %}
+        {{ powerswitch("/sources/power", "sid", x.id, x.off) }}
         {# (a form of its own only for the field styles: the note is saved with the module's Cancel | Save) #}
         <form class="notewrap" onsubmit="return false"><div class="pair notepair">
           <label class="fld"><span>{{ _('Note') }}</span><input type="text" class="noteinput" form="srcform-{{ x.id }}" name="note" value="{{ x.note }}" maxlength="120" placeholder="{{ _('Optional: shown in the (i) after the label') }}"></label>
@@ -224,7 +232,7 @@
           {% set emptyonly = local and srcs|selectattr("type", "equalto", "local")|list|length == 1 %}
           {% set own = x.rules|selectattr("local")|list %}
           <button type="button" class="ghost danger removecal" data-sid="{{ x.id }}" data-name="{{ x.name }}" data-empty="{{ '1' if emptyonly else '' }}"
-                  data-rules="{{ own|length }}" title="{{ _('Empty this calendar') if emptyonly else _('Remove this calendar') }}">{{ trash }} {{ _('Empty') if emptyonly else _('Remove') }}</button>
+                  data-rules="{{ own|length }}" title="{{ _('Remove this calendar') }}">{{ trash }} {{ _('Remove') }}</button>
           {{ pair("srcform-" ~ x.id) }}
         </div>
       </div>

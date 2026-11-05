@@ -119,8 +119,9 @@ def now():
 #
 # A source is where events come from: United's CCS+ Calendar Sync (ID "ccs", at most one), any .ics
 # feed link (type "ics", IDs such as "f3a9c1"), or a local calendar (0.2.8: type "local", IDs such as
-# "l3a9c1"), which only holds events added here. The first source is the default calendar: events
-# added here go to it unless another is chosen. Each source has its own name, color (the
+# "l3a9c1"), which only holds events added here. The default calendar (kv "default_source", a CalendarStream
+# calendar; before 0.2.8-beta.28 the top one) takes the events added here unless another is chosen; the order of
+# the sources is only the priority when events conflict. Each source has its own name, color (the
 # default color of its events), rules, check interval, status and events. CCS+ keeps the database
 # keys used before 0.2 ("calendar_name", "status"…); a feed source's keys are the same plus ":<id>" (skey).
 #
@@ -155,6 +156,17 @@ def source_ids() -> list[str]:
     return [x["id"] for x in sources()]
 
 
+def default_sid() -> str:
+    """The default calendar (0.2.8-beta.28, I2): the one kv "default_source" names when it is still a CalendarStream
+    calendar, else the first CalendarStream calendar, else the first source. Its place in the list doesn't matter."""
+    found = sources()
+    want = store.get("default_source")
+    local = [x["id"] for x in found if x.get("type") == "local"]
+    if want in local:
+        return want
+    return (local or [x["id"] for x in found] or [""])[0]
+
+
 def destinations(kind: str | None = None) -> list[dict]:
     """The destinations (or those of one type), in the order they were added. Sources that were
     removed are left out of their lists."""
@@ -177,7 +189,9 @@ def destinations(kind: str | None = None) -> list[dict]:
                       "color": str(d.get("color") or "").lower() if COLOR_RE.match(str(d.get("color") or "")) else "",
                       # 0.2.8-beta.17: its note (in the header's (i)), and a Calendar Feed's address (one of ☰ Settings')
                       "note": " ".join(str(d.get("note") or "").split())[:300],
-                      "base": str(d.get("base") or "") if d["type"] == "feed" else ""})
+                      "base": str(d.get("base") or "") if d["type"] == "feed" else "",
+                      # 0.2.8-beta.28, F25: Off = unavailable to everyone subscribed; the setting is kept
+                      "off": bool(d.get("off"))})
     return found
 
 
@@ -195,7 +209,7 @@ def destination(did: str) -> dict | None:
 
 def save_destinations(found: list[dict]):
     store.set("destinations", [{k: d.get(k, "") for k in ("id", "type", "name", "sources", "token", "start", "end", "for",
-                                                          "account", "oneway", "color", "note", "base")} for d in found])
+                                                          "account", "oneway", "color", "note", "base")} | {"off": bool(d.get("off"))} for d in found])
 
 
 def new_did() -> str:
@@ -378,9 +392,9 @@ def first_named_calendar() -> str:
 
 
 def ensure_local():
-    """There's always a CalendarStream (local) calendar, and the top calendar (the default for events added
-    here) is always one (0.2.8-beta.15; before, one was made once). A missing one is made, in every feed;
-    if another kind is on top, the first CalendarStream calendar moves up."""
+    """There's always a CalendarStream (local) calendar, and the default calendar (the one events added here go to) is
+    always one (0.2.8-beta.15; since 0.2.8-beta.28 it needn't be on top: kv "default_source"). A missing one is made, in
+    every feed; an old install's top CalendarStream calendar becomes the default once."""
     found = sources()
     locals_ = [x for x in found if x.get("type") == "local"]
     if not locals_:
@@ -389,8 +403,9 @@ def ensure_local():
         store.set(f"calendar_name:{sid}", "CalendarStream" if store.get("local_made") else "Local")
         save_destinations([{**d, "sources": [sid] + d["sources"]} for d in destinations()])
         store.set("local_made", True)
-    elif found[0].get("type") != "local":
-        store.set("sources", [locals_[0]] + [x for x in found if x is not locals_[0]])
+        store.set("default_source", sid)
+    elif store.get("default_source") not in [x["id"] for x in locals_]:
+        store.set("default_source", locals_[0]["id"])
 
 
 def is_local(sid: str) -> bool:
@@ -701,8 +716,8 @@ MODULE_ABOUT = {"local": "Only the events you add here. Goes into every feed.",
                 "apioff": "Needs Google Calendar API Sync, which your admin turns on in ☰ Settings."}
 
 SOURCE_BASES = ("calendar_name", "calendar_color", "calendar_tags", "rule_subs", "defaults", "note", "sync_interval",
-                "http_cache", "status", "feed_reads")
-UNDO_KEYS = ("sources", "destinations", "rules", "event_templates", "event_alarms", "event_links", "rule_conflicts_ignored")
+                "http_cache", "status", "feed_reads", "off")
+UNDO_KEYS = ("sources", "default_source", "destinations", "rules", "event_templates", "event_alarms", "event_links", "rule_conflicts_ignored")
 UNDO_KEEP = 100         # changes remembered for Undo, unless History says otherwise (20 until 0.2.8-beta.23, F15)
 
 
@@ -825,12 +840,17 @@ async def ensure_watch(sid: str):
             state.record("warn", f"Google: instant updates aren't available ({e}); changes made in Google are checked daily instead")
 
 
+def source_off(sid: str) -> bool:
+    """0.2.8-beta.28, F25: a calendar switched Off is unavailable (greyed in every feed that has it selected; the selection is kept)."""
+    return bool(store.get(skey(sid, "off")))
+
+
 def dest_events(d: dict) -> list[Event]:
-    """A destination's events: those of its sources, within its dates (Start / End; empty = no limit)."""
+    """A destination's events: those of its sources (not those switched Off), within its dates (Start / End; empty = no limit)."""
     def inside(e: Event) -> bool:
         first, last, _, _ = _span(e, TZ)
         return (not d.get("start") or last.isoformat() >= d["start"]) and (not d.get("end") or first.isoformat() <= d["end"])
-    return sorted((e for sid in d["sources"] for e in store.load_events(sid) if inside(e)), key=lambda e: e.start)
+    return sorted((e for sid in d["sources"] if not source_off(sid) for e in store.load_events(sid) if inside(e)), key=lambda e: e.start)
 
 
 def event_colorer():
@@ -984,6 +1004,8 @@ COLOR_WAY_TEXT = {"rgb": "as its RGB color", "colorId": "as the nearest of Googl
 async def _sync_account(g: Google, dests: list[dict], total: int, color_for, full: bool) -> bool:
     try:
         for d in dests:
+            if d.get("off"):      # F25: switched Off
+                continue
             first = date.fromisoformat(d["start"]) if d.get("start") else EARLIEST
             who = "Google" if total == 1 else f"Google, {d['name']}"
             if full and not d["oneway"]:    # two-way: what changed in Google comes here first (0.2.8-beta.10)

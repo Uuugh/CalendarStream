@@ -496,6 +496,19 @@ def starters(no_end_type: str, no_end_hours: float, allday_24h: bool) -> list[di
     return [normalize(r) for r in found]
 
 
+def ccs_starters(which, sid: str = "ccs") -> list[dict]:
+    """The rules a CCS+ calendar added through + comes with (0.2.8-beta.28, F16.1), for that calendar only: "noend" = items
+    without an end time last 1:00; "allday24" = 24-hour events become all-day. The Developer can remove either while adding."""
+    found = []
+    if "noend" in which:
+        found.append({"id": "t" + secrets.token_hex(3), "title": "Items without an end time", "apply": [sid],
+                      "conds": [{"type": "length", "op": "is", "minutes": 0}], "actions": [{"type": "change", "to": "length", "minutes": 60}]})
+    if "allday24" in which:
+        found.append({"id": "t" + secrets.token_hex(3), "title": "24-hour events", "apply": [sid],
+                      "conds": [{"type": "length", "op": "days", "minutes": 1440}], "actions": [{"type": "change", "to": "allday"}]})
+    return [normalize(r) for r in found]
+
+
 # --- Matching ---------------------------------------------------------------------------------
 
 def _text_regex(c: dict):

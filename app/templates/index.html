@@ -65,6 +65,16 @@
   <span class="pairbtns" data-state="idle" data-pair="{{ form }}"><button type="button" class="ghost pcancel" data-text="{{ _('Cancel') }}" data-done="{{ _('Cancelled') }}">{{ _('Cancel') }}</button><button class="psave" form="{{ form }}" data-text="{{ save or _('Save') }}" data-busy="{{ _('Saving…') }}" data-done="{{ _('Saved') }}">{{ save or _('Save') }}</button></span>
   {%- endmacro %}
 
+  {# (0.2.8-beta.28, F25) The On | Off switch of a module, upper right of its configuration, below the rule: like the 12h | 24h one.
+     Off dims the module; the setting is never lost. It acts at once (it is not a Cancel | Save field). #}
+  {% macro powerswitch(action, field, id, off) -%}
+  <form method="post" action="{{ action }}" class="powerform" data-swap="#sources|#destinations|#cal|#activity">
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="{{ field }}" value="{{ id }}">
+    <input type="hidden" name="on" value="{{ '1' if off else '0' }}">
+    <span class="powerword">{{ _('On') }}</span><button type="submit" role="switch" class="powerbtn" aria-checked="{{ 'false' if off else 'true' }}" aria-label="{{ _('On | Off') }}" title="{{ _('Switch this module Off (unavailable, greyed out) or On') }}"><span></span></button><span class="powerword">{{ _('Off') }}</span>
+  </form>
+  {%- endmacro %}
+
   {# A status chip: an icon for its state (good, warn, bad, run) and a word or two. #}
   {% macro chip(cls, text) -%}
   <span class="chip {{ cls }}" title="{{ text }}">{{ icon({"good": "check_circle", "warn": "warning", "bad": "error", "run": "sync"}.get(cls, "info"), 15) }}<span class="chiptext">{{ text }}</span></span>

@@ -47,10 +47,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(main.sources()[0]["type"] == "local" and len(locals_()) == 1, "a CalendarStream calendar is there, on top (the default)")
     lid = locals_()[0]
     r = post("/sources/move", sid="ccs", before=lid)
-    ok(r.status_code == 400 and "always a CalendarStream calendar" in r.json()["detail"], "another kind can't go on top (400, said why)")
+    ok(r.status_code == 200 and main.default_sid() == lid, "another kind can go on top; the default stays the CalendarStream calendar (beta.28, I2)")
+    post("/sources/move", sid=lid, before="ccs")
     p = page()
-    ok(re.search(rf'data-sid="{lid}" data-name="[^"]*" data-empty="1"', p) is not None and "Empty this calendar" in p,
-       "the last CalendarStream calendar's trash says Empty")
+    ok(re.search(rf'data-sid="{lid}" data-name="[^"]*" data-empty="1"', p) is not None and "Empty this calendar" not in p,
+       "the last CalendarStream calendar's trash says Remove (the pop-up says it only empties; beta.28, F16.2)")
 
     # --- Rules: Title / Any text, matches pattern, contains regex ------------------------------------
     c.post("/event/save", data={"csrf": csrf, "title": "Trip E1234", "start_date": (TODAY + timedelta(days=3)).isoformat(),

@@ -121,7 +121,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         folded = peek()
         pg.evaluate("document.querySelector('#activity').classList.add('open')"); pg.wait_for_timeout(100)
         opened = peek()
-        ok(folded and folded[0] and folded[1] == 3 and folded[2] <= 1 and folded[3] and opened and opened[0], f"F15.1: three lines beside Healthy, left-aligned, folded {folded} and open {opened}")
+        ok(folded and folded[0] and folded[1] == 3 and folded[2] <= 10 and folded[3] and opened and not opened[0], f"F15.1 (beta.28, F31): three lines in the 2/3-line box, left-aligned, shown folded, not open {folded} and open {opened}")
         pg.evaluate("document.querySelector('#activity').classList.remove('open')")
         # F16: deleting from the calendar asks with No | Yes
         pg.evaluate(f"document.querySelector('details[data-uid=\"{cu}\"]').open = true"); pg.wait_for_timeout(200)

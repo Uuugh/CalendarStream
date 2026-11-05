@@ -142,7 +142,7 @@ function followSync(sid) {
       var head = sid === 'google' ? ['.box.dest .srcright', '.box.dest .statusbox', '#googlesync']
                                   : ['#src-' + sid + ' .srcright', '#src-' + sid + ' .statusbox'];
       swapIn(location.href, ['#cal', '#activity'].concat(head)).then(function () {
-        initCal(); bindAll();
+        initCal(); bindAll(); reopenEvents();
         syncDone(sid, !!me && (sid === 'google' ? !me.error : me.status === 'ok'));
         var b = moduleOf(sid); if (b) b._following = false;
       });

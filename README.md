@@ -1,4 +1,4 @@
-<h1><img src="build_rules/CalendarStream_Logo.png" alt="" width="38" height="38" align="absmiddle"> CalendarStream</h1>
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="build_rules/CalendarStream_Mark_Dark.png"><img src="build_rules/CalendarStream_Mark_Light.png" alt="" width="41" height="38" align="absmiddle"></picture> CalendarStream</h1>
 
 **Self-hosted calendar aggregation, synchronization, automation, and publishing.**
 
@@ -204,7 +204,7 @@ logins or setup codes lock an address out for 15 minutes.
   titles, places and notes, one calendar or all, from and to (a year back to a year ahead when empty);
   matches are listed by day while you type, and ✕ brings the calendar back. On a computer, adding and editing an
   event (and the rule dialog) open in a pop-up; on a phone they're a full page with a **←** back
-  button. New events go into the top calendar (the **Default**). Events can have their own color (one of
+  button. New events go into the **Default** calendar. An event can have an **Online Meeting** link (found in a calendar's own conference field or a Zoom, Meet, Teams or Webex link in its notes or location; sent to the feeds as the event's URL). Events can have their own color (one of
   Google's 11), which wins over rules; otherwise all of a calendar's events (timed or all-day) share
   its color, which is also the color Google shows. The key under the calendar lists each calendar and the rules' colors.
   Edits survive new downloads; ✎ marks an edited event, ⚠ one its source changed since. Nothing is
@@ -252,8 +252,9 @@ logins or setup codes lock an address out for 15 minutes.
   ("How to …") keep their own size.
 - **Calendars** (**+** adds one, ending with Cancel | Save). There's always a **CalendarStream**
   calendar (a new install's is named Local): it holds the events you add here, and you can add more
-  (**+ → CalendarStream**). The top calendar is the **Default** (the one new events go into; its expanded
-  module says so), and it's always a CalendarStream calendar. Other presets: **United CCS+** (once),
+  (**+ → CalendarStream**). The **Default** (the one new events go into; labelled right of its title) is always a CalendarStream
+  calendar, and any of them can be made the default with the greyed **Default** button in its expanded module; the list's order is only the
+  priority when events conflict. Every calendar and feed has an **On | Off** switch in its expanded module (Off: unavailable, greyed out). Other presets: **United CCS+** (once),
   **Google** and **Apple** calendars (by their private iCal link, with step-by-step help for finding
   it) and **Other** (any link starting with `webcal://` or ending in `.ics`; repeating events are
   shown from a year back to two years ahead). Each calendar is a **module**. Its header is 50 px

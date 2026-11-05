@@ -159,6 +159,8 @@ Colors (0.2.8-beta.24, F7; 0.2.8-beta.26, F10, F12.3): a module's border is its 
 tint and the rest a 3% tint of it, in light and dark; each section has its own muted border (section 2) on `--card`, so
 sections and modules are told apart while everything else stays as it was.
 
+**The 2/3-line** (0.2.8-beta.28, F31): every module's two status lines, and the up to three lines of All Rules, Event Templates and History's latest, sit in one rounded box (1 px `--line` border, the `--soft` fill, text left-aligned), one standard width (`--tl-w`), centered across the header when there is room, and shown only while the module or section is collapsed. **Default** (I2) sits right of a CalendarStream calendar's title; the other CalendarStream calendars show it greyed, as a button, while expanded. **The On | Off switch** (F25) is a switch like 12h | 24h, at the upper right of an expanded module; Off dims the module.
+
 (i) is info, about this module: what it is, then its note when it has one; (?) is help (section 12).
 
 ### Spacing (was card 17)
@@ -177,7 +179,7 @@ R11, 0.2.8-beta.21; tried for now and adapted as needed:
 
 ## 10. Handles
 
-Picture 2·10. ▲ ▼ in the section's right margin; none with nothing to reorder. The grip (0.2.8-beta.26, F12.7: two columns of three faint dots, like Gmail's) sits left of the element, in the margin that is already there; drag it to reorder, or use ▲ ▼ with the keyboard. Every request about the "hamburger slider" means this grip.
+Picture 2·10. (0.2.8-beta.28, I12) One handle in the margin on the left of the module or rule line: ▲ above, the grip (two columns of three faint dots, like Gmail's), ▼ below; always visible; none with nothing to reorder; nothing in the right margin. Drag the grip to reorder, or use ▲ ▼ with the keyboard. Every request about the "hamburger slider" means this grip.
 
 ## 11. Pop-ups
 
@@ -251,9 +253,10 @@ The Developer's decisions about how the page looks. Always keep them: every chan
 the picture's last card shows this list (it's read from here when the picture is drawn). Add each new
 one here, with its card.
 
-- Module handles (▲ ☰ ▼) sit in the section's right margin: they take up no extra space, and modules
-  (and All Rules' lines) are as wide as the section header (their right edge lines up with its +).
-  No handle where there's nothing to reorder (a list of one). (Picture 2·10)
+- Module handles (▲ grip ▼; 0.2.8-beta.28, I12) sit in the margin on the left of the module or rule line: they take up no extra space,
+  they are always visible (faint), never over a box, and modules (and All Rules' lines) are as wide as the section header (their right
+  edge lines up with its +). The grip is two columns of three dots; it is centered on the module's 50 px header or on the rule line. No
+  handle where there's nothing to reorder (a list of one). (Picture 2·10)
 - Calendar and feed module headers share one layout. Line 1: the color (calendars only), the module's
   kind (fixed text, 17 px, 15 on a phone where it may take two lines: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar,
   Calendar Feed…), then on the right "Last synced 00:31" and the Status/Action buttons (Healthy…). Line 2: its
@@ -280,7 +283,7 @@ one here, with its card.
   stays as the tooltip and accessible name. The Status/Action buttons (Healthy, Up to date, Connected, Read by Google, the
   counts) never lose a word. (0.2.8-beta.26, F23; 0.2.8-beta.27, I10; Picture 2·8)
 - Calendars, Feeds, All Rules and Event Templates say "Expand to Configure"; History says "Expand for Details". (0.2.8-beta.26, F11.4)
-- The title bar: the logo's mark (no words) left of the title, the title in the logo's colors, the version in the footer with ©
+- The title bar: the logo's mark (no words; the Light mark on light pages, the Dark mark on dark ones) left of the title, the title in the logo's colors, the version in the footer with ©
   CalendarStream; a matching favicon, one transparent file for light and dark. (0.2.8-beta.26, F11)
 - Trash icons: the icon's lines tinted red (30% `--bad` in `--muted`, at least 3:1), the button itself unchanged; fully red on
   hover. (0.2.8-beta.26, F12.6)
@@ -358,3 +361,5 @@ one here, with its card.
 - Sections and modules are told apart by color, nothing else changing: each section's 1 px border its own muted
   color (35%) on `--card`; each calendar's or feed's module bordered in its color at 45%, its header tinted 6% and the rest
   3%; light and dark. (0.2.8-beta.24, F7; 0.2.8-beta.26, F10, F12.3; Pictures 2·2, 2·9)
+- The 2/3-line (0.2.8-beta.28, F31): the status lines of every module and section sit in a rounded box (1 px border, soft fill, text left-aligned), one standard width, centered across the header, shown only while collapsed. (Picture 2·9)
+- The On | Off switch (0.2.8-beta.28, F25): at the upper right of an expanded module, like the 12h | 24h switch; Off dims the module grey and the setting is never lost. (Picture 2·9)

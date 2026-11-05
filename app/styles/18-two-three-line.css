@@ -1,0 +1,36 @@
+/* (0.2.8-beta.28, F31) The 2/3-line: every module's two status lines, and every section's up to three (All Rules, Event Templates,
+   History's latest), in one rounded box (1 px border, the soft fill), the text left-aligned, one standard width (--tl-w, sized to fit
+   the usual longest line; a longer one ends in …), centered across the header on a wide screen, and shown only while the module or
+   section is collapsed. Last, so it wins over the older header rules. */
+:root { --tl-w:240px }
+.sections .module .srcright, .modsection > .shead .slines, #activity > .shead .peek.latest {
+  box-sizing:border-box; width:var(--tl-w); flex:0 1 var(--tl-w); max-width:100%; margin:0; padding:2px 8px;
+  border:1px solid var(--line); border-radius:8px; background:var(--soft);
+  font-size:12px; line-height:14px; text-align:left; justify-items:start; overflow:hidden; max-height:50px }
+.sections .module .srcright { display:grid; gap:2px; align-content:center; margin-left:auto }
+.sections .module .srcright p, .sections .module .srcright .srcnext, .sections .box.src .srcright p, .sections .box.dest .srcright p {
+  font-size:12px; line-height:14px; text-align:left; justify-self:start }
+.sections .module .srchead > .statusbox { margin-left:0 }
+.sections .module.cfgopen .srcright, .modsection.open > .shead .slines, #activity.open > .shead .peek.latest { display:none }
+.sections .module.cfgopen .srchead > .statusbox { margin-left:auto }
+#activity > .shead .peek.latest { gap:0; margin-left:auto }
+#activity > .shead .peek.latest .peekline { height:14px; line-height:14px; font-size:12px }
+#activity > .shead .peek.latest .undobtn { width:22px; height:14px; min-height:0; padding:0 }
+#activity > .shead .peek.latest .undobtn svg { width:12px; height:12px }
+.modsection > .shead .slines { gap:0 }
+@container (min-width:720px) {
+  .sections .module .srchead { position:relative }
+  .sections .module .srcright { position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); margin:0 }
+  .sections .module .srchead > .statusbox { margin-left:auto }
+}
+@container (max-width:540px) {
+  .sections .module .srcright { flex:1 1 100%; width:auto; margin-left:0 }
+}
+@media (min-width:900px) {
+  .modsection > .shead, #activity > .shead { position:relative }
+  .modsection > .shead .slines, #activity > .shead .peek.latest { position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); margin:0 }
+  .modsection > .shead .slines + .statusbox, #activity > .shead .peek.latest + .statusbox, .modsection > .shead .countbox { margin-left:auto }
+}
+@media (max-width:899px) {
+  .modsection > .shead .slines, #activity > .shead .peek.latest { margin-left:auto }
+}

@@ -55,6 +55,7 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'ccs'; 
 ALTER TABLE events ADD COLUMN IF NOT EXISTS alarms text NOT NULL DEFAULT '';      -- 0.2.8: reminders, minutes before ("15,60")
 ALTER TABLE events ADD COLUMN IF NOT EXISTS rule_color text NOT NULL DEFAULT '';  -- 0.2.8: the color its rules give it
 ALTER TABLE events ADD COLUMN IF NOT EXISTS deleted text NOT NULL DEFAULT '';     -- 0.2.8-beta.15: deleted (kept struck through until its Undo pops off)
+ALTER TABLE events ADD COLUMN IF NOT EXISTS meeting text NOT NULL DEFAULT '';     -- 0.2.8-beta.28, F6: its online meeting link
 -- What was last written to Google Calendar for each event (see gsync.py)
 CREATE TABLE IF NOT EXISTS google_events (
     uid        text PRIMARY KEY,            -- CalendarStream / CCS+ event UID
@@ -150,7 +151,7 @@ class Store:
 
     # --- events ------------------------------------------------------------
     _COLS = ('title, start, "end", all_day, location, description, uid, origin, edited, stale, hidden, free, color, source, '
-             'alarms, rule_color, deleted')
+             'alarms, rule_color, deleted, meeting')
 
     def replace_events(self, events: list[Event], source: str = "ccs"):
         """Swap in a source's new set of events in one transaction, so the feed never sees a half-written set."""
@@ -159,10 +160,10 @@ class Store:
                 c.execute("DELETE FROM events WHERE source = %s", (source,))
                 with c.cursor() as cur:
                     cur.executemany(
-                        f"INSERT INTO events ({self._COLS}) VALUES ({', '.join(['%s'] * 17)}) "
+                        f"INSERT INTO events ({self._COLS}) VALUES ({', '.join(['%s'] * 18)}) "
                         "ON CONFLICT (uid) DO NOTHING",
                         [(e.title, e.start, e.end, e.all_day, e.location, e.description, e.uid,
-                          e.origin, e.edited, e.stale, e.hidden, e.free, e.color, source, e.alarms, e.rule_color, e.deleted) for e in events])
+                          e.origin, e.edited, e.stale, e.hidden, e.free, e.color, source, e.alarms, e.rule_color, e.deleted, e.meeting) for e in events])
 
     def load_events(self, source: str | None = None) -> list[Event]:
         """All events, or one source's."""
@@ -427,8 +428,8 @@ class Store:
                 c.execute("DELETE FROM custom_events WHERE coalesce(data->>'source', 'ccs') = %s", (sid,))
                 with c.cursor() as cur:
                     if part["events"]:
-                        cur.executemany(f"INSERT INTO events ({self._COLS}) VALUES ({', '.join(['%s'] * 17)}) ON CONFLICT (uid) DO NOTHING",  # nosec B608: fixed columns
-                                        [tuple(r) for r in part["events"]])
+                        cur.executemany(f"INSERT INTO events ({self._COLS}) VALUES ({', '.join(['%s'] * 18)}) ON CONFLICT (uid) DO NOTHING",  # nosec B608: fixed columns
+                                        [tuple(r) + ("",) * (18 - len(r)) for r in part["events"]])   # (older snapshots have no Online Meeting)
                     for uid, data in part["edits"].items():
                         cur.execute("INSERT INTO event_edits (uid, data) VALUES (%s, %s) ON CONFLICT (uid) DO UPDATE SET data = EXCLUDED.data",
                                     (uid, Jsonb(data)))

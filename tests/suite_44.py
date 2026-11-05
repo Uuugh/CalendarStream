@@ -56,7 +56,7 @@ MEASURE = """() => {
     const sec = row.closest('section'), h = row.querySelector(':scope > .handle'), box = row.firstElementChild;
     const plus = sec.querySelector('.cardhead .plus, .shead .plus');
     if (!vis(row)) return;
-    out.margins.push([sec.id, Math.round(R(box).right), Math.round(R(plus).right), Math.round(R(h).left), Math.round(R(h).right), Math.round(R(sec).right)]);
+    out.margins.push([sec.id, Math.round(R(box).right), Math.round(R(plus).right), Math.round(R(h).left), Math.round(R(h).right), Math.round(R(sec).right), Math.round(R(box).left), Math.round(R(sec).left)]);
   });
   document.querySelectorAll('.sortable, .rulelist').forEach(list => {
     const rows = list.querySelectorAll(':scope > .modrow, :scope > .ruleline');
@@ -97,8 +97,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                    f"[{tag}] Clarification 'module headers': the kind (fixed text, 17 px (15 on a phone), no box) over the name {m['kinds']}")
                 # Clarification: handles in the section's right margin
                 if w > 600:
-                    ok(m["margins"] and all(abs(box - plus) <= 1 and hl >= box and hr <= sr - 1 for _s, box, plus, hl, hr, sr in m["margins"]),
-                       f"[{tag}] Clarification 'handles': modules and All Rules' lines as wide as the header (up to its +), handles in the margin {m['margins']}")
+                    ok(m["margins"] and all(abs(box - plus) <= 1 and hr <= bl and hl >= sl for _s, box, plus, hl, hr, sr, bl, sl in m["margins"]),
+                       f"[{tag}] Clarification 'handles' (beta.28, I12): modules and All Rules' lines as wide as the header (up to its +), the handle in the margin on their left {m['margins']}")
                 ok(all(v == "hidden" for _, v in m["lone"]), f"[{tag}] no handle where there's nothing to reorder {m['lone']}")
                 # Clarification: every button in a status box works like Sync Now
                 ok(m["statusButtons"] and all("syncnow" in cls and n == 4 or "syncnow" in cls and n == 5 or "upgradebtn" in cls for _, cls, n in m["statusButtons"]),
@@ -371,6 +371,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "folded (i)": "A folded module's (i) is a superscript", "From / To": "An Include box's calendars",
             "today": "Today has a 2 px accent border", "event pop-up": "The event pop-up",
             "section and module colors (suite 59)": "Sections and modules are told apart by color",
+            "2/3-line (suite 63)": "The 2/3-line (0.2.8-beta.28", "On Off (suite 63)": "The On | Off switch (0.2.8-beta.28",
             "header order (suite 61)": "Every section's header reads: icon", "status word shrinks (suite 61)": "A good login word (Signed in, Validated",
             "Expand words (suite 61)": "say \"Expand to Configure\"", "title bar logo (suite 61)": "The title bar: the logo's mark",
             "trash icons (suite 61)": "Trash icons: the icon's lines tinted red", "24-hour fold (suite 61)": "left open folds again after 24 hours",

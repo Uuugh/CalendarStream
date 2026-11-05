@@ -17,8 +17,8 @@ from fastapi.responses import JSONResponse, RedirectResponse, Response
 
 from .. import main as core
 from ..main import (_FIELDS, _is_async, _moved, _opt_day, _sid, all_rules, app, apply_calendar, background,
-    calendar_color, calendar_name, Change, check_csrf, COLOR_RE, customs_for, destinations, ensure_local,
-    event_alarms, event_links, google, google_redirect_uri, gui_auth, lang_for, last_local, logins, MAX_INTERVAL,
+    calendar_color, calendar_name, Change, check_csrf, COLOR_RE, customs_for, default_sid, destinations, ensure_local,
+    event_alarms, event_links, google, google_redirect_uri, gui_auth, is_local, lang_for, last_local, logins, MAX_INTERVAL,
     MIN_INTERVAL, new_local, now, rebuild, RULES_PARSE, save_destinations, save_rules, sent_fields, skey,
     SOURCE_BASES, set_event_links, source_ids, SOURCE_PRESETS, sources, st, start_source, State, state, states, stop_source, store,
     TZ, united_original)
@@ -97,7 +97,8 @@ def _feed_link(url: str) -> str:
 
 @app.post("/sources/add", dependencies=[Depends(gui_auth)])
 async def add_source(csrf: str = Form(""), type_: str = Form("", alias="type"), url: str = Form(""),
-                     name: str = Form(""), note: str = Form(""), preset: str = Form("other")):
+                     name: str = Form(""), note: str = Form(""), preset: str = Form("other"),
+                     starter: list[str] = Form([]), starters: str = Form("")):
     """Calendars → +: a preset: a local calendar (events added here only), United's CCS+ Calendar Sync
     (once), a Google or Apple calendar (its private iCal link), or any other .ics feed link."""
     check_csrf(csrf)
@@ -115,6 +116,8 @@ async def add_source(csrf: str = Form(""), type_: str = Form("", alias="type"), 
             raise HTTPException(400, "CCS+ Calendar Sync is already a source.")
         found.append({"id": "ccs", "type": "ccs"})
         sid = "ccs"
+        if starters:     # F16.1: the rules it comes with (the form lists them, each can be taken off before adding)
+            save_rules(all_rules() + rules_mod.ccs_starters(starter, sid))
     elif type_ == "ics":
         url = _feed_link(url)
         if any(x.get("url") == url for x in found):
@@ -140,18 +143,28 @@ async def add_source(csrf: str = Form(""), type_: str = Form("", alias="type"), 
 @app.post("/sources/move", dependencies=[Depends(gui_auth)])
 async def move_source(request: Request, csrf: str = Form(""), sid: str = Form(""), before: str = Form(""),
                       after: str = Form("")):
-    """Drag (or ▲ ▼) a calendar module: the order of the calendars. The top one is the default
-    calendar for events added here."""
+    """Drag (or ▲ ▼) a calendar module: the order of the calendars, which is the priority when events conflict
+    (0.2.8-beta.28, I2: it no longer decides the default calendar)."""
     check_csrf(csrf)
-    ch = Change()
     found = sources()
     moved = _moved(found, sid, before, after)
-    if moved and moved[0].get("type") != "local":
-        raise HTTPException(400, "The top calendar is always a CalendarStream calendar: it's the default for events added here.")
     if moved != found:
         store.set("sources", moved)
-        if found[0]["id"] != moved[0]["id"]:
-            ch.done("Calendar", f"Default calendar: {calendar_name(moved[0]['id'])}")
+    return {"ok": True} if _is_async(request) else RedirectResponse("/#sources", status_code=303)
+
+
+@app.post("/sources/default", dependencies=[Depends(gui_auth)])
+async def default_source(request: Request, csrf: str = Form(""), sid: str = Form("")):
+    """The Default button of a CalendarStream calendar (0.2.8-beta.28, I2): events added here go to it unless another is
+    chosen. Only a CalendarStream (local) calendar can be the default: the others are read-only."""
+    check_csrf(csrf)
+    sid = _sid(sid)
+    if not is_local(sid):
+        raise HTTPException(400, "Only a CalendarStream calendar can be the default: the others are read-only.")
+    if default_sid() != sid:
+        ch = Change()
+        store.set("default_source", sid)
+        ch.done("Calendar", f"Default calendar: {calendar_name(sid)}")
     return {"ok": True} if _is_async(request) else RedirectResponse("/#sources", status_code=303)
 
 
@@ -548,3 +561,19 @@ async def upload(csrf: str = Form(""), file: UploadFile = File(...)):
     finally:
         state.save()
     return RedirectResponse("/#src-ccs", status_code=303)
+
+
+@app.post("/sources/power", dependencies=[Depends(gui_auth)])
+async def power_source(request: Request, csrf: str = Form(""), sid: str = Form(""), on: str = Form("1")):
+    """The On | Off switch of a calendar (0.2.8-beta.28, F25): Off makes it unavailable (its events leave every feed, which
+    shows it greyed); the selection in the feeds is kept, so On restores it."""
+    check_csrf(csrf)
+    sid = _sid(sid)
+    ch = Change(sids=[sid])
+    store.set(skey(sid, "off"), on != "1")
+    ch.done("Calendar", f"Calendar {calendar_name(sid)} switched {'Off' if on != '1' else 'On'}")
+    for d in destinations():
+        if sid in d["sources"] and d["type"] == "google":
+            core.request_google_sync(full=True)
+            break
+    return RedirectResponse("/#sources", status_code=303)

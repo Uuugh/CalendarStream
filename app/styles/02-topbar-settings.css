@@ -67,5 +67,9 @@
   /* (0.2.8-beta.26, F11) The logo's mark left of the title, the title in the logo's colors (Calendar navy, Stream blue; light and dark), the version in the footer */
   .topbar h1 { display:flex; align-items:center; gap:8px; overflow:visible }
   .topbar h1 .logomark { height:36px; width:auto; flex:0 0 auto }
+  /* (0.2.8-beta.28, F31) the light logo on light pages, the dark one on dark; no words under it beside the title */
+  .topbar h1 .logomark.dk { display:none }
+  @media (prefers-color-scheme:dark) { :root:not([data-theme="light"]) .topbar h1 .logomark.lt { display:none } :root:not([data-theme="light"]) .topbar h1 .logomark.dk { display:inline } }
+  :root[data-theme="dark"] .topbar h1 .logomark.lt { display:none } :root[data-theme="dark"] .topbar h1 .logomark.dk { display:inline }
   .topbar h1 .tw1 { color:var(--logo-cal) } .topbar h1 .tw2 { color:var(--logo-stream) }
   .foot a.curver { color:inherit; text-decoration:none } .foot a.curver:hover { text-decoration:underline }

@@ -47,10 +47,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
 
     # --- F11 / R6: the title, the logo, the footer -------------------------------------------------------------------------
     h1 = p[p.index("<h1>"):p.index("</h1>")]
-    ok('class="logomark"' in h1 and '<span class="tw1">Calendar</span><span class="tw2">Stream</span>' in h1 and "curver" not in h1 and "<a " not in h1, "F11.1/F11.3: the mark, then Calendar and Stream in the logo's colors, no version in the title")
+    ok('class="logomark lt"' in h1 and 'class="logomark dk"' in h1 and '<span class="tw1">Calendar</span><span class="tw2">Stream</span>' in h1 and "curver" not in h1 and "<a " not in h1, "F11.1/F11.3: the mark, then Calendar and Stream in the logo's colors, no version in the title")
     foot = p[p.index('<footer class="foot">'):p.index("</footer>")]
     ok("© CalendarStream" in foot and 'class="curver"' in foot and f"v{main.__version__}" in foot, "F11.2: the footer says © CalendarStream and the version")
-    ok('rel="icon"' in p and "/static/logo/favicon-32.png" in p and all(c.get(f"/static/logo/{n}").status_code == 200 for n in ("mark-72.png", "favicon-32.png", "icon-192.png", "apple-touch-icon.png", "CalendarStream_Logo.png")),
+    ok('rel="icon"' in p and "/static/logo/favicon-32.png" in p and all(c.get(f"/static/logo/{n}").status_code == 200 for n in ("mark-light-72.png", "mark-dark-72.png", "favicon-32.png", "icon-192.png", "apple-touch-icon.png")),
        "F11.3/R6: a favicon, and the logo files are served from the repo")
     ok("--logo-cal:#0b1f44" in p and "--logo-stream:#1a8cff" in p and "--logo-cal:#e6e8ec" in p and "--logo-stream:#4aa8ff" in p, "F11.3: the title's colors are tokens, light and dark")
 
@@ -81,12 +81,13 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             ok(all(x[0] == "1px" and x[1] == "none" for x in r["secs"]) and r["mod"][0] == "1px", f"[{scheme}] F21: every section and module border is 1 px {r['secs']} {r['mod']}")
             ok(r["sc"] == ["#2f86c8", "#9b8ad6", "#b8733a"], f"[{scheme}] F10: Feeds blue, All Rules lavender, Event Templates copper {r['sc']}")
             # F13: a header's order, + in the corner; I4: History's lines on the right
+            if pg.locator('#rules.open').count(): pg.click('#rules > .cfgline .cfgtoggle'); pg.wait_for_timeout(300)      # (the lines show only while folded, beta.28)
             g = pg.evaluate("""() => { const q = s => document.querySelector(s).getBoundingClientRect(), sec = q('#rules');
                 const lines = q('#rulelines'), box = q('#rulecount'), plus = q('#rules .shead .plus'), title = q('#rulestitle'), act = q('#activity .peek.latest'), ab = q('#activity .statusbox'), asec = q('#activity');
                 return { order: title.right <= lines.left && lines.right <= box.left + 1 && box.right <= plus.left + 6, corner: sec.right - plus.right, left: getComputedStyle(document.querySelector('#activity .peek.latest')).textAlign,
                          hist: [asec.right - ab.right, ab.left - act.right], far: act.left - q('#activitytitle, #activity .bigtitle').right } }""")
             ok(g["order"] and 15 <= g["corner"] <= 21, f"[{scheme}] F13/F18: All Rules: title · lines · count box · + in the corner {g}")
-            ok(g["left"] == "left" and g["hist"][1] < 20 and g["far"] > 20, f"[{scheme}] I4: History's lines are left-aligned and sit on the right, by its Healthy box {g['hist']} {g['far']}")
+            ok(g["left"] == "left" and g["hist"][1] >= 0 and g["far"] > 20, f"[{scheme}] I4 (beta.28, F31): History's lines are left-aligned in the 2/3-line box, centered, before its Healthy box {g['hist']} {g['far']}")
             # F12.4 / F9: Cancel | Save disabled with nothing to save; a change turns them on and Save pulses
             pg.evaluate("document.querySelector('#src-ccs .cfgtoggle').click()"); pg.wait_for_timeout(400)
             pair = "#src-ccs .pairbtns"
@@ -111,7 +112,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             gr = pg.evaluate("""() => { const row = document.querySelector('#rules .ruleline'); const g = row.querySelector('.hgrip'), cs = getComputedStyle(g), svg = g.querySelector('svg.gripdots');
                 const t = document.querySelector('#rules .delrule svg.trashmark'), muted = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
                 return { dots: svg ? svg.querySelectorAll('circle').length : 0, op: cs.opacity, left: g.getBoundingClientRect().right <= row.getBoundingClientRect().left + 1, trash: t ? getComputedStyle(t).color : '' } }""")
-            ok(gr["dots"] == 6 and gr["op"] == "0" and gr["left"], f"[{scheme}] F12.7: a grip of two columns of three dots, left of the row, hidden until hover {gr}")
+            ok(gr["dots"] == 6 and gr["op"] == "0.55" and gr["left"], f"[{scheme}] F12.7 (beta.28, I12): a grip of two columns of three dots, left of the row, always visible (faint) {gr}")
             pg.hover("#rules .ruleline"); pg.wait_for_timeout(400)
             ok(pg.eval_on_selector("#rules .ruleline .hgrip", "g => parseFloat(getComputedStyle(g).opacity) > 0.4"), f"[{scheme}] F12.7: …shown on hover")
             ok(gr["trash"] != "" and gr["trash"] != pg.evaluate("getComputedStyle(document.querySelector('#rules .editrule')).color"), f"[{scheme}] F12.6: the trash icon's lines are tinted ({gr['trash']})")

@@ -51,7 +51,7 @@
     <div class="ficols">
       <div class="destcals"><div class="k">{{ _('Calendars') }}{{ help(_('Each event keeps its calendar’s colors and rules.')) }}</div>
         <div class="srcpicks">
-          {% for x in srcs %}<label class="srcpick"><input type="checkbox" name="sources" value="{{ x.id }}" form="{{ form }}"{% if picked is none or x.id in picked %} checked{% endif %} data-name="{{ x.name }}" data-note="{{ x.note }}"{% if x.type == 'local' %} data-local="1"{% endif %}>
+          {% for x in srcs %}<label class="srcpick{% if x.off %} off{% endif %}"><input type="checkbox" name="sources" value="{{ x.id }}" form="{{ form }}"{% if picked is none or x.id in picked %} checked{% endif %} data-name="{{ x.name }}" data-note="{{ x.note }}"{% if x.type == 'local' %} data-local="1"{% endif %}>
             <span class="swatch" style="--c:{{ x.color or '#1d4ed8' }}" aria-hidden="true"></span> {{ x.name }}</label>{% endfor %}
           {% if not srcs %}<span class="mnote">{{ _('Add a calendar first.') }}</span>{% endif %}
         </div></div>
@@ -143,7 +143,7 @@
     {% elif d.cal.calendar_id %}{% set dcls, dlabel = "good", _('Connected') %}
     {% else %}{% set dcls, dlabel = "run", _('Starting') %}{% endif %}
     <div class="modrow" data-id="{{ d.id }}">
-    <div class="box module cfgbox dest{% if not feed %} gdest{% endif %}{% if d.open %} cfgopen{% endif %}" style="--mc:{{ d.color or '#3f51b5' }}" id="dest-{{ d.id }}" data-section="dest:{{ d.id }}">
+    <div class="box module cfgbox dest{% if not feed %} gdest{% endif %}{% if d.open %} cfgopen{% endif %}{% if d.off %} off{% endif %}" style="--mc:{{ d.color or '#3f51b5' }}" id="dest-{{ d.id }}" data-section="dest:{{ d.id }}">
       <div class="srchead">
         {{ colorbox("destform-" ~ d.id, d.color, _('Its color (expand to change it)'), d.open, _('Color change does not carry to Google') if not feed and d.cal and d.cal.color_refused == d.color else "") }}
         {% set kind = _('Calendar Feed') if feed else (_('Google 1-way Sync') if d.oneway else _('Google 2-way Sync')) %}
@@ -168,6 +168,7 @@
       </div>
       {{ cfgline("dest-" ~ d.id, d.open) }}
       <div class="cfgbody" id="cfg-dest-{{ d.id }}"{% if not d.open %} hidden{% endif %}>
+      {{ powerswitch("/destinations/power", "did", d.id, d.off) }}
       <form method="post" action="/destinations/update" class="clientform destform" id="destform-{{ d.id }}" data-swap="#dest-{{ d.id }}|#activity">
         <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="did" value="{{ d.id }}">
       </form>

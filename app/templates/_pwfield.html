@@ -21,13 +21,23 @@
   .pw .pwbar[data-level="3"] i { width:75%; background:var(--accent) }
   .pw .pwbar[data-level="4"] i { width:100%; background:var(--ok) }
   .pw .pwsay { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
+  /* (0.2.8-beta.28, F8) A note under the field while typing, in the standard colors: green when it's good, amber saying why when it isn't */
+  .fnote { display:block; margin:2px 0 0; font-size:12.5px; line-height:16px; color:var(--warn) }
+  .fnote.good { color:var(--ok) } .fnote[hidden] { display:none }
+  .pwrules { list-style:none; margin:2px 0 0; padding:0; font-size:12.5px; line-height:16px; display:grid; gap:0 }
+  .pwrules li { color:var(--muted) } .pwrules li.met { color:var(--ok) } .pwrules[hidden] { display:none }
+  .pwrules li::before { content:"○ " } .pwrules li.met::before { content:"✓ " }
 </style>
 <script>
 (function () {
   var T = { show: {{ _('Show password')|string|tojson }}, hide: {{ _('Hide password')|string|tojson }},
             strength: {{ _('Password strength: {level}')|string|tojson }},
             levels: [{{ _('Too short')|string|tojson }}, {{ _('Weak')|string|tojson }}, {{ _('Fair')|string|tojson }},
-                     {{ _('Good')|string|tojson }}, {{ _('Strong')|string|tojson }}] };
+                     {{ _('Good')|string|tojson }}, {{ _('Strong')|string|tojson }}],
+            why: { short: {{ _('short')|string|tojson }}, repeat: {{ _('a repeat or a run')|string|tojson }}, guess: {{ _('easy to guess')|string|tojson }},
+                   kinds: {{ _('add capitals, numbers or symbols')|string|tojson }} },
+            rules: [{{ _('12 characters or more')|string|tojson }}, {{ _('A capital letter')|string|tojson }}, {{ _('A number')|string|tojson }},
+                    {{ _('A symbol')|string|tojson }}, {{ _('No character 3 or more times in a row')|string|tojson }}] };
   var EYE = {{ (icon("visibility", 18, "on") ~ icon("visibility_off", 18, "off"))|string|tojson }};
   var COMMON = /^(password|passw0rd|qwerty|qwertz|azerty|letmein|welcome|admin|united|calendar|iloveyou|abc123|monkey|dragon|football|baseball|sunshine|princess|starwars|trustno1|111111|123123|000000|654321|123456789?|1234567890|12345678)$/i;
 
@@ -51,6 +61,17 @@
     if (COMMON.test(pw.replace(/[0-9!.]+$/, '')) || COMMON.test(pw)) bits = Math.min(bits, 20);
     if (/^[A-Za-z][a-z]+[0-9]{1,4}[!.?]?$/.test(pw)) bits = Math.min(bits, 45);   // "Summer2026": a word and a number
     return bits < 35 ? 1 : bits < 50 ? 2 : bits < 70 ? 3 : 4;
+  }
+
+  // Why a password isn't Good yet, in a word or two (F8)
+  function why(pw, min) {
+    if (pw.length < Math.max(min, 12)) return T.why.short;
+    if (/(.)\1\1/.test(pw) || /(abc|bcd|cde|123|234|345|456|567|678|789)/i.test(pw)) return T.why.repeat;
+    if (COMMON.test(pw.replace(/[0-9!.]+$/, '')) || /^[A-Za-z][a-z]+[0-9]{1,4}[!.?]?$/.test(pw)) return T.why.guess;
+    return T.why.kinds;
+  }
+  function ruleState(pw) {
+    return [pw.length >= 12, /[A-Z]/.test(pw), /[0-9]/.test(pw), /[^A-Za-z0-9\s]/.test(pw), !/(.)\1\1/.test(pw)];
   }
 
   document.querySelectorAll('input[type=password]').forEach(function (input, n) {
@@ -82,12 +103,33 @@
     say.className = 'pwsay'; say.id = 'pwsay' + n; say.setAttribute('aria-live', 'polite');
     wrap.appendChild(bar); wrap.appendChild(say);
     input.setAttribute('aria-describedby', ((input.getAttribute('aria-describedby') || '') + ' ' + say.id).trim());
+    // The note under the field (F8): the strength, with why when it isn't Good; and for CalendarStream's own login password
+    // (data-rules) each rule, ticking green as it's met. Advice only, except those rules: Save refuses until they are all met.
+    var note = document.createElement('span');
+    note.className = 'fnote'; note.hidden = true; note.setAttribute('aria-live', 'polite');
+    var rules = null;
+    var holder = wrap.closest('label') || wrap.parentNode;
+    holder.appendChild(note);
+    if (input.hasAttribute('data-rules')) {
+      rules = document.createElement('ul'); rules.className = 'pwrules'; rules.hidden = true;
+      T.rules.forEach(function (r) { var li = document.createElement('li'); li.textContent = r; rules.appendChild(li); });
+      holder.appendChild(rules);
+    }
     function update() {
       var v = input.value, l = level(v, min), text = T.strength.replace('{level}', T.levels[l]);
       wrap.classList.toggle('typed', v.length > 0);
       bar.setAttribute('data-level', String(l));
       wrap.title = v ? text : '';
       say.textContent = v ? text : '';
+      note.hidden = !v;
+      note.classList.toggle('good', l >= 3);
+      note.textContent = v ? text + (l >= 3 ? '' : ': ' + why(v, min)) : '';
+      if (rules) {
+        var met = ruleState(v);
+        rules.hidden = !v;
+        Array.prototype.forEach.call(rules.children, function (li, i) { li.classList.toggle('met', met[i]); });
+        input.setCustomValidity(!v || met.every(Boolean) ? '' : T.rules.filter(function (r, i) { return !met[i]; }).join('; '));
+      }
     }
     input.addEventListener('input', update);
     update();

@@ -14,14 +14,14 @@
               <label class="fld" for="luser"><span>{{ _('User name') }}</span>
                 <input type="text" id="luser" name="user" value="{{ page_user }}" required maxlength="64" autocomplete="username" spellcheck="false"></label>
               <label class="fld" for="lnew"><span>{{ _('Password') }}</span>
-                <input type="password" id="lnew" name="password" minlength="8" data-strength autocomplete="new-password" placeholder="{{ _('Type a new one to change it') }}"></label>
+                <input type="password" id="lnew" name="password" data-strength data-rules autocomplete="new-password" placeholder="{{ _('Type a new one to change it') }}"></label>
               {{ m.okbutton(true, _('Signed in'), _('Save')) }}
             </div>
             <div class="pair more" hidden>
               <label class="fld" for="lcur"><span>{{ _('Current password') }}</span>
                 <input type="password" id="lcur" name="current" autocomplete="current-password" data-required></label>
               <label class="fld" for="lconf"><span>{{ _('New password again') }}</span>
-                <input type="password" id="lconf" name="confirm" minlength="8" autocomplete="new-password"></label>
+                <input type="password" id="lconf" name="confirm" autocomplete="new-password"></label>
             </div>
             <p class="mnote more" style="margin:6px 0 0" hidden>{{ _('Then sign in again with the new login.') }}</p>
           </form>

@@ -19,8 +19,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     w = c.get("/welcome").text
     wtok = re.search(r'name="csrf" value="([^"]+)"', w)[1]
     ok(wtok != main.CSRF_TOKEN, "the first-visit page has its own token")
-    main.logins.set_page_login("pilot", "longenough1", "longenough1")
-    A = ("pilot", "longenough1")
+    main.logins.set_page_login("pilot", "Longenough1!", "Longenough1!")
+    A = ("pilot", "Longenough1!")
     ok(c.post("/settings/public-url", auth=A, data={"csrf": wtok, "url": "x.com"}).status_code == 400, "the first-visit token can't post status-page forms")
     p = c.get("/", auth=A).text; csrf = re.search(r'name="csrf" value="([^"]+)"', p)[1]
     ok("https://css.uuugh.com/google/callback" in p, "no public address: the redirect URI uses the address the page is opened at")

@@ -134,8 +134,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.click("#src-ccs .cfgtoggle"); pg.wait_for_timeout(150)
         ok(pg.evaluate("getComputedStyle(document.querySelector('#src-ccs .colorpick')).pointerEvents") != "none", "expanded: it changes it")
         # status lines on the right
+        # (beta.28, F31: the lines are in the 2/3-line box, which shows only while collapsed, text left-aligned)
+        pg.click("#src-ccs .cfgtoggle"); pg.wait_for_timeout(150)
         R_ = pg.locator("#src-ccs .srcright").bounding_box(); S_ = pg.locator("#src-ccs .srcstatus").bounding_box()
-        ok(abs((R_["x"] + R_["width"]) - (S_["x"] + S_["width"])) < 2, "Last check was successful … on the right")
+        ok(R_ is not None and S_ is not None and S_["x"] >= R_["x"] and S_["x"] + S_["width"] <= R_["x"] + R_["width"] + 1, "Last check was successful … in the 2/3-line box")
+        pg.click("#src-ccs .cfgtoggle"); pg.wait_for_timeout(150)
         # Sync Now: the button fills the status box while it syncs
         MODE["slow"] = 1.5
         pg.click("#src-ccs .syncnow"); pg.wait_for_timeout(450)

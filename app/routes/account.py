@@ -150,7 +150,7 @@ def change_login(request: Request, csrf: str = Form(""), current: str = Form("")
         _count_failure(ip)
         raise HTTPException(400, "The current password isn't right.")
     try:
-        logins.set_page_login(user or logins.page_user, password or current, confirm if password else None)
+        logins.set_page_login(user or logins.page_user, password or current, confirm if password else None, strict=bool(password))
     except LoginError as e:
         raise HTTPException(400, str(e))
     renew_csrf()

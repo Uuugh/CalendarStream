@@ -23,9 +23,15 @@
   /* Expand / Close */
   .cfgtoggle .closeword { display:none }
   .cfgtoggle[aria-expanded="true"] .expandword { display:none } .cfgtoggle[aria-expanded="true"] .closeword { display:inline }
-  /* The default calendar: under the Close line, on the right */
-  .deflabel { display:block; width:max-content; margin:0 0 0 auto; height:22px; line-height:22px; padding:0 8px; border-radius:6px; font-size:12px; font-weight:700;
-              color:var(--accent); background:var(--runbg) }
+  /* The default calendar (0.2.8-beta.28, I2): "Default" right of its title, always; the other CalendarStream calendars show it greyed,
+     as the button that makes them the default, while expanded */
+  .module .nameline > .defslot { flex:0 0 auto; margin-left:6px; display:flex; align-items:center }
+  .module .nameline > .defslot:empty { display:none }
+  .defslot form { margin:0 }
+  .deflabel, .defbtn { display:block; width:max-content; height:22px; line-height:20px; padding:0 8px; border-radius:6px; font-size:12px; font-weight:700;
+                       border:1px solid transparent; color:var(--accent); background:var(--runbg) }
+  .defbtn { min-height:0; color:var(--muted); background:var(--soft); border-color:var(--line); cursor:pointer }
+  .defbtn:hover, .defbtn:focus-visible { color:var(--accent); border-color:var(--accent) }
   .module .srcright .srcnext { justify-self:end; text-align:right }
   /* A calendar's two status lines ("Last check was successful @ 20:10", "0 events added here") on the right, by its status (0.2.8-beta.3) */
   .box.src .srcright, .box.dest .srcright { justify-items:end } .box.src .srcright p, .box.dest .srcright p { text-align:right }   /* both lines on the right (beta.5) */
@@ -55,6 +61,19 @@
   .handle .hgrip:hover { opacity:1; color:var(--accent) }
   @media (hover:none) { .handle .hgrip { opacity:.45 } }
   @media (prefers-reduced-motion:reduce) { .handle .hgrip { transition:none } }
+  /* (0.2.8-beta.28, I12) One handle, left of the module or rule line, in the margin that is already there (a section's 18 px side
+     padding; in a module, a 16 px gutter inside its padding): ▲ above, the grip (two columns of three dots), ▼ below. Always
+     visible (faint), never over a box, centered on the module's 50 px header or on the rule line. Nothing in the right margin.
+     (The Thens' handles in the rule dialog keep their own layout: .act > .handle.) */
+  .sortable.modules > .modrow, #rules .rulelist > .ruleline { margin-right:0 }
+  .modrow > .handle, .ruleline > .handle { position:absolute; left:-16px; top:0; bottom:0; width:14px; height:auto; margin:0; flex:none;
+                                           display:flex; flex-direction:column; align-items:center; justify-content:center }
+  .modrow > .handle { bottom:auto; height:50px }
+  .modrow > .handle .hmove, .ruleline > .handle .hmove { width:14px; height:12px; flex:0 0 12px }
+  .modrow > .handle .hgrip, .ruleline > .handle .hgrip { position:static; transform:none; left:auto; top:auto; width:10px; height:16px; flex:0 0 16px; opacity:.55 }
+  .modrow > .handle .hgrip:hover, .ruleline > .handle .hgrip:hover { opacity:1; color:var(--accent) }
+  .ruleline .handle .hmove { height:9px; flex-basis:9px } .ruleline .handle .hgrip { height:14px; flex-basis:14px }
+  .srcrules:has(> .ruleline) { padding-left:16px }
   /* (F12.6) The trash icons' lines tinted red (the button itself unchanged): a bit of --bad in --muted, always at least 3:1 on --card; fully red on hover */
   svg.trashmark { color:color-mix(in srgb, var(--bad) var(--trashtint, 30%), var(--muted)) }
   button:hover > svg.trashmark, button:focus-visible > svg.trashmark, button.danger > svg.trashmark { color:var(--bad) }

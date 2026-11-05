@@ -9,7 +9,32 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.27**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.28**
+
+## 0.2.8-beta.28 — 2026-11-05
+
+The 4 Sources build.
+
+### Added
+- **F6** An **Online Meeting** field under Location in the event pop-up, with a button that opens the link. A calendar's events fill it from
+  their own conference field, or a Zoom, Meet, Teams or Webex link in the notes or location (one already filled is never written over). The
+  feeds send it as the event's URL and as the first line of the notes; Google gets the same first line (and it is not read back as a change).
+- **F25** An **On | Off** switch at the upper right of an expanded calendar or feed. Off greys the module; a source that is Off is left out of
+  every feed (greyed there, selection kept); a feed that is Off answers 503, so subscribers' apps keep their last copy.
+- **F16.1** + Add a calendar › United CCS+ comes with its rules (24-hour events → all day, items without an end → 1:00), each removable
+  while adding. **F8** A note under a password or stream name while typing (strength, and why when it is not Good); CalendarStream's own
+  login password must have 12 characters or more, a capital, a number, a symbol and no character three times in a row (each rule ticks
+  green). Existing passwords keep working. **F31** The Light and Dark logo marks; the **2/3-line** box for module and section status lines.
+
+### Changed
+- **I2** The default calendar needn't be on top: a **Default** label right of its title, and a greyed **Default** button on the other
+  CalendarStream calendars while expanded. The list's order is only the priority when events conflict. **I12** One handle (▲ grip ▼) in the
+  left margin, always visible. **F7** Any stream name saves (1–128 letters, digits, - or _). **F16.2/F16.3** Empty is Remove (the pop-up says
+  when it only empties the last CalendarStream calendar); Cancel | Remove look like Cancel | Save, "Download a copy (.ics) first" shares
+  their line, "Delete them" is "Delete".
+
+### Fixed
+- **I9** Events opened in the calendar stay open when a module is saved or Sync Now redraws the page.
 
 ## 0.2.8-beta.27 — 2026-11-05
 

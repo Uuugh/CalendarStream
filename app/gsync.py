@@ -24,6 +24,7 @@ from urllib.parse import parse_qs, quote, urlencode, urlparse
 
 import httpx
 
+from .calsync import meeting_link, notes_with_meeting
 from .secretbox import SecretBox
 
 log = logging.getLogger("calendar_stream.google")
@@ -123,7 +124,7 @@ def event_body(e, tz_name: str, color_id: str = "") -> dict:
         "status": "confirmed",
         "summary": e.title,
         "location": e.location,
-        "description": (e.description + "\n\n" if e.description else "") + SYNC_NOTE,
+        "description": (notes_with_meeting(e) + "\n\n" if notes_with_meeting(e) else "") + SYNC_NOTE,
         "start": start, "end": end,
         "transparency": "transparent" if e.free else "opaque",
         # Only the reminders set on the status page (Google allows five); none otherwise (decision 3)
@@ -1000,6 +1001,10 @@ def google_fields(ev: dict) -> dict:
     notes = (ev.get("description") or "")
     if notes.endswith(SYNC_NOTE):
         notes = notes[: -len(SYNC_NOTE)]
+    # (0.2.8-beta.28, F6) the online meeting link CalendarStream puts first isn't part of the notes
+    first, _, rest = notes.strip().partition("\n")
+    if first.strip() and first.strip() == meeting_link(first.strip()) and (not rest.strip() or rest.startswith("\n")):
+        notes = rest
     return {"title": (ev.get("summary") or "")[:200], "all_day": all_day,
             "start": start.get("date") if all_day else start.get("dateTime", ""),
             "end": end.get("date") if all_day else end.get("dateTime", ""),

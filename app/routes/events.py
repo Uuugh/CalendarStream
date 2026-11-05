@@ -16,7 +16,7 @@ from fastapi.responses import RedirectResponse, Response
 from .. import main as core
 from ..main import (_is_async, _parse_month, _range_text, _span, ALARM_CHOICES, alarm_text, all_rules, ALL_ZONES,
     app, calendar_color, calendar_name, Change, check_csrf, COMMON_ZONES, COPY_ICON, dates_for, delete_events,
-    display_tz, display_zone, event_alarms, EVENT_COLORS, event_links, event_templates, gui_auth, lang_for, now,
+    default_sid, display_tz, display_zone, event_alarms, EVENT_COLORS, event_links, event_templates, gui_auth, lang_for, now,
     page, rebuild, rule_label, save_rules, show_duration, source, source_ids, state, store, TRASH_ICON, TZ,
     united_original, unmark_deleted, valid_zone)
 from .. import rules as rules_mod
@@ -69,8 +69,8 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         if not source_ids():
             raise HTTPException(400, "Add a calendar source first (Calendar Sources → +).")
         e = Event(title=found.title, start=found.start, end=found.end, all_day=found.all_day, location=found.location,
-                  description=found.description, origin="custom", color=found.color,
-                  source=found.source if found.source in source_ids() else source_ids()[0])
+                  description=found.description, origin="custom", color=found.color, meeting=found.meeting,
+                  source=found.source if found.source in source_ids() else default_sid())
         uid = ""
     elif uid:
         e = store.get_event(uid)
@@ -86,7 +86,7 @@ def edit_event(request: Request, uid: str = "", date_: str = Query("", alias="da
         except ValueError:
             day = now().date()
         e = Event(title="", start=day.isoformat(), end=(day + timedelta(days=1)).isoformat(), all_day=False,
-                  origin="custom", source=source_ids()[0])       # the default calendar: the top one
+                  origin="custom", source=default_sid())       # the default calendar
         e.start = datetime.combine(day, datetime.min.time().replace(hour=9), display_tz()).isoformat()
         e.end = datetime.combine(day, datetime.min.time().replace(hour=10), display_tz()).isoformat()
     original = united_original(uid, e.source) if e.origin == "united" and uid else None
@@ -215,8 +215,16 @@ def parse_clock(text: str) -> str:
     return f"{h:02d}:{mi:02d}"
 
 
+def _meeting_value(text: str) -> str:
+    """The Online Meeting field (0.2.8-beta.28, F6): a web link, or empty; anything else is refused."""
+    value = (text or "").strip()[:500]
+    if value and not re.match(r"^https?://\S+$", value, re.I):
+        raise HTTPException(400, "Online Meeting is a link starting with https://")
+    return value
+
+
 def _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description,
-                     color: str = "", start_tz: str = "", end_tz: str = "") -> dict:
+                     color: str = "", start_tz: str = "", end_tz: str = "", meeting: str = "") -> dict:
     title = " ".join((title or "").split())
     color = (color or "").lower()
     if color and color not in EVENT_COLORS:
@@ -241,7 +249,7 @@ def _event_from_form(title, all_day, start_date, start_time, end_date, end_time,
         raise HTTPException(400, "Check the dates and times.")
     return {"title": title[:200], "start": start, "end": end, "all_day": bool(all_day),
             "location": (location or "").strip()[:200], "description": (description or "").strip()[:4000],
-            "color": color,
+            "meeting": _meeting_value(meeting), "color": color,
             # remembered so the event page opens in the same time zones next time
             "start_tz": start_tz if valid_zone(start_tz) else "", "end_tz": end_tz if valid_zone(end_tz) else ""}
 
@@ -252,15 +260,16 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
                      end_date: str = Form(""), end_time: str = Form(""), location: str = Form(""),
                      description: str = Form(""), hidden: str = Form(""), color: str = Form(""),
                      start_tz: str = Form(""), end_tz: str = Form(""), end_tz_differs: str = Form(""),
-                     source_: str = Form("", alias="source"), embed: str = Form(""), link_to: str = Form("")):
+                     source_: str = Form("", alias="source"), embed: str = Form(""), link_to: str = Form(""),
+                     meeting: str = Form("")):
     """Save the event page: an edit of a source's event, or an added event (into `source`). end_tz is
     only used when "The end is in a different time zone" is ticked."""
     check_csrf(csrf)
     end_tz = end_tz if end_tz_differs else start_tz      # one time zone for both unless asked otherwise
     known = store.get_event(uid) if uid else None
-    ch = Change(whole=[known.source if known else (source_ if source_ in source_ids() else (source_ids() or ["ccs"])[0])])
+    ch = Change(whole=[known.source if known else (source_ if source_ in source_ids() else (default_sid() or "ccs"))])
     data = _event_from_form(title, all_day, start_date, start_time, end_date, end_time, location, description,
-                            color, start_tz, end_tz)
+                            color, start_tz, end_tz, meeting)
     current, done = known, ""
     if current and current.origin == "rule":
         raise HTTPException(400, "This event is made by a rule; change the rule or its event template instead.")
@@ -270,14 +279,14 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
             raise HTTPException(404, "That event isn't in the current schedule any more.")
         was_hidden = bool((store.get_edits().get(uid) or {}).get("hidden"))     # (F11.3: Hide and Show have their own button)
         unchanged = not hidden and uid not in store.get_edits() and all(
-            data[k] == getattr(current, k) for k in ("title", "start", "end", "all_day", "location", "description", "color"))
+            data[k] == getattr(current, k) for k in ("title", "start", "end", "all_day", "location", "description", "color", "meeting"))
         if not unchanged:       # (only its link changed: it isn't marked as edited)
             store.set_edit(uid, {**data, "hidden": bool(hidden) or was_hidden, "base": original.fingerprint()})
             done = f"Edited \"{original.title}\" ({original.start[:10]})" + (" and hid it from Google" if hidden and not was_hidden else "")
         sid = current.source
         save_link(uid, link_to, current.source)
     else:
-        sid = current.source if current else (source_ if source_ in source_ids() else (source_ids() or [""])[0])
+        sid = current.source if current else (source_ if source_ in source_ids() else (default_sid() or ""))
         if sid not in source_ids():
             raise HTTPException(400, "Add a calendar source first (Calendar Sources → +).")
         new_uid = uid if current else f"cs-{secrets.token_hex(8)}@calendar_stream"
@@ -309,8 +318,8 @@ async def hide_event(request: Request, csrf: str = Form(""), uid: str = Form("")
     if show:
         if edit and edit.get("hidden"):
             rest = {k: v for k, v in edit.items() if k not in ("hidden", "base")}
-            same = all(rest.get(k) == getattr(original, k) for k in ("title", "start", "end", "all_day", "location", "description", "color")) \
-                and set(rest) <= {"title", "start", "end", "all_day", "location", "description", "color"}
+            same = all(rest.get(k, getattr(original, k)) == getattr(original, k) for k in ("title", "start", "end", "all_day", "location", "description", "color", "meeting")) \
+                and set(rest) <= {"title", "start", "end", "all_day", "location", "description", "color", "meeting"}
             if same:            # hidden was its only change: it's as its source has it again
                 store.delete_edit(uid)
             else:

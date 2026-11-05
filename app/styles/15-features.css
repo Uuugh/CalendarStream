@@ -38,7 +38,7 @@
 /* 0.2.8-beta.9: no handle where there's nothing to reorder (one module, one rule) */
 .sortable > .modrow:only-child > .handle, .sortable > .ruleline:only-child > .handle, .rulelist > .ruleline:only-child > .handle { visibility:hidden }
 /* All Rules: the rule lines' handles sit in the section's right margin, like the modules' */
-#rules .rulelist > .ruleline { gap:2px; margin-right:-16px }
+#rules .rulelist > .ruleline { gap:2px; margin-right:0 }   /* (beta.28, I12: the handle is on the left now) */
 #rules .rulelist > .ruleline > .handle { flex-basis:14px; width:14px }
 #rules .rulelist > .ruleline > .handle .hmove { width:14px }
 .gconnwrap { margin-bottom:6px }
@@ -176,3 +176,24 @@ details.gsteps ol > li.done { color:var(--muted) }
 .okmark .okword { display:inline-block; max-width:12em; overflow:hidden; vertical-align:bottom; white-space:nowrap; transition:max-width .5s ease, opacity .4s ease }
 .okmark.shrunk { gap:0 }
 @media (prefers-reduced-motion:reduce) { .okmark .okword { transition:none } }
+
+/* (0.2.8-beta.28, F16.3) Remove a calendar: "Download a copy (.ics) first" on the line of Cancel | Remove, which are the Cancel | Save pair's look */
+#removedialog .rmfoot { align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap }
+#removedialog .rmfoot .rmdl { margin:0 }
+#removedialog .rmpair { display:inline-flex; width:130px; height:34px; flex:0 0 130px; border-radius:var(--r); overflow:hidden }
+#removedialog .rmpair button { flex:0 0 65px; width:65px; height:34px; padding:0; justify-content:center; white-space:nowrap; overflow:hidden; min-width:0 }
+#removedialog .rmpair .rmcancel { border-radius:var(--r) 0 0 8px; border-right-width:0 }
+#removedialog .rmpair .rmgo { border-radius:0 8px 8px 0 }
+/* (F16.1) + Add a calendar › CCS+: the two rules it comes with */
+#addsrc-ccs .startrules { display:grid; gap:2px; margin-top:6px; font-size:13px }
+#addsrc-ccs .startrules label { display:flex; align-items:center; gap:6px }
+/* (0.2.8-beta.28, F25) The On | Off switch of a module (upper right of its configuration, below the rule), like the 12h | 24h one; Off dims the module */
+.powerform { display:flex; align-items:center; justify-content:flex-end; gap:6px; margin:0 0 5px; font-size:12.5px; font-weight:600; color:var(--muted) }
+.powerform .powerbtn { position:relative; width:38px; height:22px; min-height:0; border-radius:11px; border:1px solid var(--line); background:var(--soft); padding:0; cursor:pointer }
+.powerform .powerbtn span { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:5px; background:var(--muted); transition:left .15s, background .15s }
+.powerform .powerbtn[aria-checked=true] { background:var(--accent); border-color:var(--accent) }
+.powerform .powerbtn[aria-checked=true] span { left:18px; background:var(--onaccent) }
+@media (prefers-reduced-motion:reduce) { .powerform .powerbtn span { transition:none } }
+.box.module.off > :not(.cfgbody) { opacity:.55; filter:grayscale(1) }
+.box.module.off .cfgbody > :not(.powerform) { opacity:.55; filter:grayscale(1) }
+.srcpick.off { opacity:.5; filter:grayscale(1); text-decoration:line-through }

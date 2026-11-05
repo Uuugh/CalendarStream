@@ -104,7 +104,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
        and main.destination(work["id"])["sources"] == [sid], "a second feed with only Work")
     ok(c.get(f"/subscribe/{work['token']}").status_code == 200 and "Work only" in c.get(f"/subscribe/{work['token']}").text, "each feed has its own subscribe page")
     # Stream names
-    ok(post("/feed/stream", did=work["id"], stream="short").status_code == 400, "a stream name is at least 16 characters")
+    ok(post("/feed/stream", did=work["id"], stream="bad name!").status_code == 400, "a stream name is letters, digits, - or _ (beta.28, F7: no minimum)")
+    ok(post("/feed/stream", did=work["id"], stream="OneWay").status_code != 400, "a short stream name saves (beta.28, F7)")
     ok(post("/feed/stream", did=work["id"], stream=every["token"]).status_code == 400, "not one another feed uses")
     ok(post("/feed/stream", did=work["id"], stream="https://cal.example.com/calendar/MyOldStreamName_123456.ics").status_code == 303
        and main.destination(work["id"])["token"] == "MyOldStreamName_123456", "a pasted old link sets the stream name")

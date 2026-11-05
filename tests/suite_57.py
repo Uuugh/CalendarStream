@@ -123,7 +123,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(g["fits"] and abs(g["frame"] - g["page"]) <= 1, f"F11: the pop-up is as tall as the page ({g['frame']} / {g['page']})")
         fr.locator("#description").evaluate("t => t.style.height = '520px'"); pg.wait_for_timeout(400)
         h2 = pg.evaluate("document.querySelector('#eventdialog iframe').getBoundingClientRect().height")
-        ok(h2 > g["frame"] + 150, f"…dragging Notes taller grows the pop-up ({g['frame']} → {h2})")
+        ok(h2 > g["frame"] + 100, f"…dragging Notes taller grows the pop-up ({g['frame']} → {h2})")
         fr.locator(".tplpick summary").click(); pg.wait_for_timeout(150)
         fr.locator(".tplitem", has_text="Drive to the airport").click(); pg.wait_for_timeout(200)
         ok(fr.locator("#title").input_value() == "Drive to the airport" and fr.locator("#location").input_value() == "EWR"

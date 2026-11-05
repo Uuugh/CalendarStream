@@ -100,9 +100,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(r.status_code == 303 and dentist.source == L, "a new event goes into the top calendar")
     ok('<option value="local"' in p or 'data-preset="local"' in p, "F3.2.4: Local calendar in + Add")
     # 0.2.8-beta.15: a CalendarStream calendar is always on top, so CCS+ can't be moved above the last one
-    ok(post("/sources/move", sid=L, after="ccs").status_code == 400 and main.source_ids()[0] == L, "F1.2: the top stays a CalendarStream calendar (0.2.8-beta.15)")
+    # (beta.28, I2: the default needn't be on top; the order is only the priority)
+    post("/sources/move", sid=L, after="ccs")
+    ok(main.source_ids()[0] == "ccs" and main.default_sid() == L, "I2: moving CCS+ above it is fine, and the CalendarStream calendar stays the Default (beta.28)")
     p = c.get("/?month=2026-10").text
-    ok(p.index('class="deflabel"') > p.index(f'id="src-{L}"') and p.index('class="deflabel"') < p.index('id="src-ccs"'), "…and it's still the Default")
+    ok(p.count('class="deflabel"') == 1 and p.index('class="deflabel"') > p.index(f'id="src-{L}"'), "…the Default label is on it")
     post("/sources/move", sid=L, before="ccs")
     # F2.2.5: reminders
     ok(post("/event/alarms", uid=dentist.uid, minutes=["15", "60", "7"]).status_code == 303 and main.store.get_event(dentist.uid).alarms == "15,60", "reminders saved (only the choices offered)")

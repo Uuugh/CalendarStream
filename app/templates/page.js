@@ -12,3 +12,4 @@
 {% include "js/12-handles-checks.js" %}
 {% include "js/13-feeds.js" %}
 {% include "js/14-status-fold.js" %}
+{% include "js/15-field-notes.js" %}

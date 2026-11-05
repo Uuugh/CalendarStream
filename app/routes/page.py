@@ -19,10 +19,10 @@ from fastapi.responses import Response
 from .. import main as core
 from ..main import (_invites, _local_time, _opt_day, _parse_month, _span, admin_email, ALARM_CHOICES, alarm_text,
     all_rules, ALL_ZONES, app, base_url, cal_view, calendar_color, calendar_name, check_csrf, CLOCKS, COMMON_ZONES,
-    COPY_ICON, customs_for, dates_for, DELETED_WHERE, dest_google, DESTINATION_TYPES, destinations, display_tz,
+    COPY_ICON, customs_for, dates_for, default_sid, DELETED_WHERE, dest_google, DESTINATION_TYPES, destinations, display_tz,
     display_zone, EARLIEST, event_links, event_templates, feed_url, first_named_calendar, google, google_view,
     gui_auth, ignored_conflicts, interval_minutes, lang_for, LOG_KINDS, logins, MODULE_ABOUT, notify_address, now,
-    page, public_addresses, public_url, rule_label, rule_label_html, section_state, SECTIONS, skey, source,
+    page, public_addresses, source_off, public_url, rule_label, rule_label_html, section_state, SECTIONS, skey, source,
     source_ids, SOURCE_PRESETS, source_rules, source_url, st, state, store, subscribe_links, templates, THEMES,
     TRASH_ICON, TZ, undo_keep, valid_zone)
 from .. import i18n, icons, rules as rules_mod
@@ -120,7 +120,7 @@ def source_view(request: Request, sid: str, lang: str, sections: dict) -> dict:
         S.status, S.message = "ok", ""
     url = source_url(sid)
     d = dates_for(lang)
-    view = {"id": sid, "type": kind, "name": calendar_name(sid), "default": source_ids()[:1] == [sid],
+    view = {"id": sid, "type": kind, "name": calendar_name(sid), "default": default_sid() == sid, "off": source_off(sid),
             "color": calendar_color(sid), "s": S, "interval": interval_minutes(sid),
             "url": url, "host": urlparse(url).hostname or url,
             # Configure is folded unless it's been opened, or something needs doing

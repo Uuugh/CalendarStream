@@ -230,6 +230,12 @@
           <span class="inbox"><input type="text" id="location" name="location" value="{{ e.location }}" maxlength="200"><a class="inboxbtn" id="mapbtn" target="_blank" rel="noopener"
             href="https://www.google.com/maps/search/?api=1&query={{ e.location|urlencode }}" title="{{ _('Check or find the place on Google Maps') }}" aria-label="{{ _('Open the place on Google Maps') }}">{{ icon("map", 17) }}</a></span>
         </div>
+        <div>
+          <label for="meeting">{{ _('Online Meeting') }}</label>
+          {# (0.2.8-beta.28, F6) a Zoom, Google Meet, Teams or Webex link; a button in the field opens it, like Location's map #}
+          <span class="inbox"><input type="text" id="meeting" name="meeting" value="{{ e.meeting }}" maxlength="500" inputmode="url" spellcheck="false" autocomplete="off"><a class="inboxbtn" id="meetbtn" target="_blank" rel="noopener noreferrer"
+            href="{{ e.meeting if e.meeting.startswith(('http://', 'https://')) else '' }}" title="{{ _('Open the online meeting') }}" aria-label="{{ _('Open the online meeting') }}"{% if not e.meeting.startswith(('http://', 'https://')) %} hidden{% endif %}>{{ icon("link", 17) }}</a></span>
+        </div>
         <div class="calrow">
           <div>
             <label for="source" class="withinfo">{{ _('Calendar') }}{% if e.origin == "custom" %}
@@ -531,6 +537,13 @@ document.querySelectorAll('.infodot').forEach(function (dot) {
   if (!loc || !map) return;
   function set() { map.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(loc.value.trim()); }
   loc.addEventListener('input', set); set();
+})();
+// The Online Meeting button opens what's in the field, once it is a link (0.2.8-beta.28, F6)
+(function () {
+  var f = document.getElementById('meeting'), b = document.getElementById('meetbtn');
+  if (!f || !b) return;
+  function set() { var v = f.value.trim(), ok = /^https?:\/\//i.test(v); b.hidden = !ok; if (ok) b.href = v; else b.removeAttribute('href'); }
+  f.addEventListener('input', set); set();
 })();
 {% if embed %}
 // In the status page's pop-up: ← and Cancel close it; Print opens Print Preview there, on this event's day;

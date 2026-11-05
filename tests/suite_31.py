@@ -50,8 +50,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             if w != 390:
                 for sid in ("ccs",):
                     L = pg.locator(f"#src-{sid} .srcleft").bounding_box(); R = pg.locator(f"#src-{sid} .srcright").bounding_box()
+                    if R is None:      # (beta.28, F31: the 2/3-line box shows only while the module is collapsed)
+                        continue
                     st, nx = pg.locator(f"#src-{sid} .srcstatus").bounding_box(), pg.locator(f"#src-{sid} .srcnext").bounding_box()
-                    xs = [round(R["x"] + R["width"] - st["x"] - st["width"]), round(R["x"] + R["width"] - nx["x"] - nx["width"])]
+                    xs = [round(st["x"] - nx["x"]), 0]
                     ok(R["y"] < L["y"] + L["height"] and xs == [0, 0], f"I1: {w}px: the status lines sit beside the title, both on the right by Sync Now (F3.4, 0.2.8-beta.3) ({xs})")
             if w == 1400:
                 act = pg.locator("#activity").bounding_box(); cal = pg.locator("#cal").bounding_box()
@@ -67,7 +69,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                 ok(bg in ("rgb(232, 239, 255)", "rgb(238, 241, 247)"), f"F1.1: Settings opens in light blue (the Soft light palette, 0.2.8-beta.5) ({bg})")
             if w == 390:
                 ok(pg.is_visible(".tzlabel .short") and not pg.is_visible(".tzlabel .long"), "F2.1: TZ on a phone")
-                ok(pg.is_visible("#src-ccs .srcstatus") and "Last synced" in pg.inner_text("#src-ccs .srcstatus"), "F3: the status line on a phone")
+                ok("Last synced" in (pg.locator("#src-ccs .srcstatus").text_content() or ""), "F3: the status line on a phone (beta.28, F31: shown in the 2/3-line box while collapsed)")
         b.close()
     srv.should_exit = True
 print("FAILS", fails)

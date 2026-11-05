@@ -41,6 +41,31 @@ class Download:
     debug: dict | None = None
 
 
+# --- Online meetings (0.2.8-beta.28, F6) -----------------------------------------------------------------
+_LINK_END = r"[^\s<>\"')\]]+"
+MEETING_RE = re.compile(
+    r"https?://(?:[\w-]+\.)*(?:zoom\.us|zoomgov\.com)/" + _LINK_END + r"|https?://meet\.google\.com/" + _LINK_END
+    + r"|https?://teams\.(?:microsoft|live)\.com/" + _LINK_END + r"|https?://(?:[\w-]+\.)*webex\.com/" + _LINK_END, re.I)
+
+
+def meeting_link(text: str) -> str:
+    """The first Zoom, Google Meet, Teams or Webex link in a text, or ""."""
+    m = MEETING_RE.search(text or "")
+    return m.group(0).rstrip(".,;:") if m else ""
+
+
+def event_meeting(ev) -> str:
+    """The online meeting of a calendar file's event: its own conference field (RFC 7986 CONFERENCE, Google's and Microsoft's
+    extensions), else a meeting link in its notes, location or URL."""
+    for prop in ("CONFERENCE", "X-GOOGLE-CONFERENCE", "X-MICROSOFT-SKYPETEAMSMEETINGURL", "X-MICROSOFT-ONLINEMEETINGEXTERNALLINK"):
+        got = ev.get(prop)
+        for one in (got if isinstance(got, list) else [got]):
+            text = str(one or "").strip()
+            if text.lower().startswith(("http://", "https://")):
+                return text[:500]
+    return meeting_link(f"{ev.get('DESCRIPTION', '')}\n{ev.get('LOCATION', '')}\n{ev.get('URL', '')}")[:500]
+
+
 @dataclass
 class Event:
     title: str
@@ -62,6 +87,7 @@ class Event:
     rule_color: str = ""     # the color its rules give it (#rrggbb), or ""; its own color still wins (0.2.8)
     deleted: str = ""        # 0.2.8-beta.15: deleted, but kept (struck through, greyed) until its Undo pops off:
                              # "<where>|<when>" (where: calendarstream, google, united, feed); "gone" after that
+    meeting: str = ""        # 0.2.8-beta.28, F6: its online meeting (a Zoom, Google Meet, Teams or Webex link), or ""
     # Not stored: set while a download is read, for the rules (app/rules.py)
     no_end: bool = field(default=False, compare=False)    # it had no end time (its end is its start)
     ruled: bool = field(default=False, compare=False)     # a rule changed its time
@@ -452,6 +478,7 @@ def _event(ev, tz: ZoneInfo, defaults: Defaults, uid: str = "", source: str = "c
         free=str(ev.get("TRANSP", "")).upper() == "TRANSPARENT",
         source=source,
         no_end=no_end,
+        meeting=event_meeting(ev),
     )
 
 
@@ -526,14 +553,14 @@ def _edited(original: Event, ed: dict) -> Event:
                  location=ed.get("location", ""), description=ed.get("description", ""), uid=original.uid,
                  origin="united", edited=True, stale=ed.get("base") != original.fingerprint(),
                  hidden=bool(ed.get("hidden")), free=original.free, color=ed.get("color", ""), source=original.source,
-                 deleted=ed.get("deleted", ""))
+                 deleted=ed.get("deleted", ""), meeting=ed["meeting"] if "meeting" in ed else original.meeting)
 
 
 def _custom(c: dict, source: str) -> Event:
     return Event(title=c["title"], start=c["start"], end=c["end"], all_day=bool(c["all_day"]),
                  location=c.get("location", ""), description=c.get("description", ""), uid=c["uid"],
                  origin="custom", color=c.get("color", ""), source=source, hidden=bool(c.get("deleted")),
-                 deleted=c.get("deleted", ""))
+                 deleted=c.get("deleted", ""), meeting=c.get("meeting", ""))
 
 
 def build_feed(events: list[Event], name: str, tz_name: str, color: str = "") -> bytes:
@@ -602,15 +629,27 @@ def _write_times(ev, e: Event):
         ev.add("dtend", _utc(e.end))
 
 
+def notes_with_meeting(e: Event) -> str:
+    """An event's notes as the feeds and Google get them: its online meeting link first, then a blank line, then the notes."""
+    if not e.meeting:
+        return e.description
+    return e.meeting + ("\n\n" + e.description if e.description else "")
+
+
 def _write_fields(ev, e: Event, marker: str):
-    for prop in ("SUMMARY", "LOCATION", "DESCRIPTION", "X-ALT-DESC", "X-CALENDAR-STREAM"):
+    for prop in ("SUMMARY", "LOCATION", "DESCRIPTION", "X-ALT-DESC", "X-CALENDAR-STREAM", "URL"):
         ev.pop(prop, None)
     ev.add("summary", e.title)
     _write_times(ev, e)
     if e.location:
         ev.add("location", e.location)
-    if e.description:
-        ev.add("description", e.description)
+    # (0.2.8-beta.28, F6) the online meeting: the event's URL (Apple shows its video button) and the first line of the notes (a link in every app)
+    notes = notes_with_meeting(e)
+    if e.meeting:
+        ev.pop("URL", None)
+        ev.add("url", e.meeting)
+    if notes:
+        ev.add("description", notes)
     ev.add("x-calendar-stream", marker)
 
 

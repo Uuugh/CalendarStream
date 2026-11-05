@@ -17,7 +17,18 @@ import secrets
 from .secretbox import SecretBox, check_password, hash_password
 
 UID_RE = re.compile(r"^[A-Za-z0-9._@-]{2,64}$")
-MIN_PASSWORD = 8
+MIN_PASSWORD = 8               # (what CalendarStream's own login needed until 0.2.8-beta.27)
+LOGIN_MIN = 12                 # 0.2.8-beta.28, F8: CalendarStream's own login password: 12 or more, a capital, a number, a symbol,
+                               # and no character three or more times in a row (passwords for other services keep their own rules)
+
+
+def password_rules(password: str) -> list[tuple[str, bool]]:
+    """(rule, met) for each rule CalendarStream's own login password has to meet (F8)."""
+    return [("12 characters or more", len(password) >= LOGIN_MIN),
+            ("A capital letter", bool(re.search(r"[A-Z]", password))),
+            ("A number", bool(re.search(r"[0-9]", password))),
+            ("A symbol", bool(re.search(r"[^A-Za-z0-9\s]", password))),
+            ("No character 3 or more times in a row", not re.search(r"(.)\1\1", password))]
 
 
 class LoginError(ValueError):
@@ -86,12 +97,18 @@ class Logins:
     def page_user(self) -> str:
         return (self.page_login() or {}).get("user", "")
 
-    def set_page_login(self, user: str, password: str, confirm: str | None = None):
+    def set_page_login(self, user: str, password: str, confirm: str | None = None, strict: bool = True):
+        """Save the status-page login. `strict` (F8): a password being set or changed has to meet the rules (password_rules);
+        an existing one that's only kept (a rename) isn't checked again."""
         user = user.strip()
         if not user or len(user) > 64 or any(c.isspace() or c == ":" for c in user):
             raise LoginError("Choose a user name without spaces or colons.")
-        if len(password) < MIN_PASSWORD:
-            raise LoginError(f"Choose a password of at least {MIN_PASSWORD} characters.")
+        if strict:
+            unmet = [rule for rule, met in password_rules(password) if not met]
+            if unmet:
+                raise LoginError("The password needs: " + "; ".join(r[0].lower() + r[1:] for r in unmet) + ".")
+        elif len(password) < 1:
+            raise LoginError("Choose a password.")
         if confirm is not None and password != confirm:
             raise LoginError("The two passwords don't match.")
         self.store.set("page_login", {"user": user, "password": hash_password(password)})

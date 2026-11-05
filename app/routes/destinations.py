@@ -42,7 +42,7 @@ def note_feed_read(user_agent: str, did: str):
 
 # --- Stream names: the secret part of each feed's links ---------------------------------------
 
-STREAM_RE = re.compile(r"^[A-Za-z0-9_-]{16,128}$")
+STREAM_RE = re.compile(r"^[A-Za-z0-9_-]{1,128}$")      # (0.2.8-beta.28, F7: no minimum; the page's meter advises, it never refuses)
 
 
 def dest_for_token(token: str) -> dict | None:
@@ -72,7 +72,7 @@ def _stream_value(stream: str, did: str = "") -> str:
     if m:
         value = m.group(1)
     if not STREAM_RE.match(value):
-        raise FieldError("A stream name is 16 to 128 letters, digits, - or _ (or paste a whole old feed link).", "stream")
+        raise FieldError("A stream name is up to 128 letters, digits, - or _ (or paste a whole old feed link).", "stream")
     if any(x["token"] == value for x in destinations("feed") if x["id"] != did):
         raise FieldError("Another feed already uses that stream name.", "stream")
     return value
@@ -238,7 +238,7 @@ async def set_stream(csrf: str = Form(""), did: str = Form(""), stream: str = Fo
     if m:
         value = m.group(1)
     if not STREAM_RE.match(value):
-        raise HTTPException(400, "A stream name is 16 to 128 letters, digits, - or _ (or paste a whole old feed link).")
+        raise HTTPException(400, "A stream name is up to 128 letters, digits, - or _ (or paste a whole old feed link).")
     if any(x["token"] == value for x in destinations("feed") if x["id"] != did):
         raise HTTPException(400, "Another feed already uses that stream name.")
     save_destinations([{**x, "token": value} if x["id"] == did else x for x in destinations()])
@@ -268,6 +268,8 @@ def calendar(token: str, request: Request):
     d = dest_for_token(token)
     if not d:
         raise HTTPException(404)
+    if d.get("off"):      # F25: switched Off: "unavailable", so subscribers' apps keep their last copy
+        raise HTTPException(503, "This calendar feed is switched off.", headers={"Retry-After": "3600"})
     note_feed_read(request.headers.get("user-agent", ""), d["id"])
     # its own color (0.2.8-beta.15), else its one calendar's: apps that read a calendar's color use it
     color = d["color"] or (calendar_color(d["sources"][0]) if len(d["sources"]) == 1 else "")
@@ -279,3 +281,18 @@ def calendar(token: str, request: Request):
     if tag in [t.strip() for t in request.headers.get("if-none-match", "").split(",")]:
         return Response(status_code=304, headers=headers)
     return Response(ics, media_type="text/calendar; charset=utf-8", headers=headers)
+
+
+@app.post("/destinations/power", dependencies=[Depends(gui_auth)])
+async def power_destination(request: Request, csrf: str = Form(""), did: str = Form(""), on: str = Form("1")):
+    """The On | Off switch of a feed (0.2.8-beta.28, F25). Off: a Calendar feed answers 503 (unavailable), a Google calendar stops
+    being updated; nothing is lost, and On brings it back."""
+    check_csrf(csrf)
+    ch = Change()
+    d = _did(did)
+    d["off"] = on != "1"
+    save_destinations([d if x["id"] == did else x for x in destinations()])
+    ch.done("Feed", f"Destination \"{d['name']}\" switched {'Off' if d['off'] else 'On'}")
+    if d["type"] == "google" and not d["off"]:
+        request_google_sync(full=True)
+    return RedirectResponse(f"/#dest-{did}", status_code=303)

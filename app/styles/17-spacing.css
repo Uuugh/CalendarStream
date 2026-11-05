@@ -17,7 +17,6 @@
   .srcfoot { margin-top:5px; gap:5px }
   .editor .eactions { margin-top:5px; gap:5px }
   .ccsform .siteaddr + .pair { margin-top:3px }      /* 5 px under the address (the field row adds 2) */
-  .cfgbody > .deflabel { margin-bottom:5px } .cfgbody > .deflabel + .notewrap { margin-top:0 }
 
   /* Instruction tiles (details.guide): like the other boxes inside a module, 5 px 9 px, their parts 5 px apart */
   details.guide { padding:5px 9px } details.guide[open] { padding-bottom:5px }
@@ -46,6 +45,7 @@
   #removedialog .rmnote { margin:0 } #removedialog .rmopts { gap:5px; margin:5px 0 0 }
   #removedialog .rmdl { margin-top:5px }
   #removedialog .eactions { margin-top:5px }
+  #removedialog .rmfoot .rmdl { margin-top:0 }
   #conflictdialog .cfpair { margin-bottom:5px }
   #tpladdform .editor { margin-bottom:5px } #tpladdform > p.mnote { margin:0 0 5px }
   #reportdialog .eactions { margin-top:5px; gap:5px }

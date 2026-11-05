@@ -111,6 +111,7 @@ function swapFrom(html, selectors) {
   });
   if (selectors.indexOf('#cal') >= 0) initCal();
   bindAll();
+  if (selectors.indexOf('#cal') >= 0 && typeof reopenEvents === 'function') reopenEvents();     // (0.2.8-beta.28, I9) events opened in the calendar stay open after a module's Save
 }
 function sendSwap(f, body) {
   var sels = (f.dataset.swap || '').split('|').filter(Boolean);
