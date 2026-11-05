@@ -103,10 +103,14 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/in
 [`install.sh`](install.sh) asks four questions (press Enter for the default):
 
 1. which release to install, `latest` (stable) or `beta` (`stable`);
-2. the folder for `docker-compose.yml` and `.env` (`~/stacks/calendarstream`);
-3. the folder for CalendarStream's config and data, the database and `.secrets/` (the same folder);
-4. whether to allow updating from the status page (`no`): yes adds a small updater container (see
+2. the folder for `docker-compose.yml` and `.env` (`~/stacks/calendarstream`, or the next free number, `calendarstream2`, when that name is taken);
+3. the folder for CalendarStream's config and data, the database and `.secrets/` (a `data` subfolder of the stack folder);
+4. whether to allow updating from the status page (`yes`): adds a small updater container (see
    [Updating](#updating)).
+
+A second CalendarStream on the same server works: the installer sees the first one's containers and adds a
+number to the new ones' names (`calendar_stream2`, `calendar_stream_db2`, `calendar_stream_updater2`) and a
+port of their own (8080, then 8080 + the number − 1); both are kept in the stack's `.env` (`STACK_NO`, `PORT`).
 
 It then downloads `docker-compose.yml` and `.env`, creates a random database password, starts
 CalendarStream and prints its address and a **setup code**. Running it again updates

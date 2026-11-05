@@ -39,7 +39,7 @@ bindTags();
 
 // + in the corner of Calendar Sources / Calendar Destinations opens its menu.
 function bindAdd() { each('.addwrap', 'add', function (w) {
-  var btn = w.querySelector('.plus, .addrule'), pop = w.querySelector('dialog.addpop');
+  var btn = w.querySelector('.addreuse') || w.querySelector('.plus, .addrule'), pop = w.querySelector('dialog.addpop');
   if (pop) {      // (0.2.8-beta.15) a centred pop-up, the page dimmed behind it
     btn.addEventListener('click', function () {
       pop.showModal(); btn.setAttribute('aria-expanded', 'true');
@@ -49,7 +49,7 @@ function bindAdd() { each('.addwrap', 'add', function (w) {
     pop.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { pop.close(); }); });
     return;
   }
-  var menu = w.querySelector('.addmenu');
+  var menu = w.querySelector('.addmenu'); if (!menu || btn.classList.contains('newrule')) return;
   function set(open) { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); }
   btn.addEventListener('click', function (e) {
     e.stopPropagation(); set(menu.hidden);

@@ -200,22 +200,20 @@
         </form>
         <div class="rules" id="rules-{{ x.id }}">
           <div class="cfgheadrow"><h3 class="cfghead">{{ _('Rules') }}{{ help(_('This calendar’s rules. Higher wins (color, emoji, time). Handle or ▲ ▼ › priority · ✎ edits (every calendar it applies to) · bin › off this calendar.')) }}</h3>
-            {# Add a rule (0.2.8-beta.15): straight to the new rule pop-up; a menu only when other calendars'
-               rules could be used here too #}
+            {# Add a rule (0.2.8-beta.27, I1): always straight to the new rule pop-up. When other calendars' rules could be used
+               here too, a small separate ▾ lists them (it never holds a new-rule line) #}
             {% set reusable = [] %}{% for r in all_rules if x.name not in r.used and r.apply != 'all' %}{% if reusable.append(r) %}{% endif %}{% endfor %}
-            {% if not reusable %}<button type="button" class="ghost addrule newrule" data-sid="{{ x.id }}">{{ icon("add", 17) }}{{ _('Add a rule') }}</button>
-            {% else %}
             <div class="addwrap">
-              <button type="button" class="ghost addrule" aria-haspopup="menu" aria-expanded="false" data-sid="{{ x.id }}">{{ icon("add", 17) }}{{ _('Add a rule') }}</button>
+              <button type="button" class="ghost addrule newrule" data-sid="{{ x.id }}">{{ icon("add", 17) }}{{ _('Add a rule') }}</button>
+              {% if reusable %}<button type="button" class="ghost addreuse" aria-haspopup="menu" aria-expanded="false" data-sid="{{ x.id }}" title="{{ _('Use a rule from another calendar') }}" aria-label="{{ _('Use a rule from another calendar') }}">{{ icon("arrow_drop_down", 20) }}</button>
               <div class="addmenu rulemenu" role="menu" hidden>
-                <button type="button" class="linkbtn newrule" data-sid="{{ x.id }}" role="menuitem">{{ icon("add", 16) }} {{ _('New rule…') }}</button>
                 {% for r in reusable %}
                 <form method="post" action="/rules/apply" class="inline" data-swap="#src-{{ x.id }} .rules|#rules .rulelist|#ruleconflicts|#rulelines|#rulecount|#cal|#activity|#ruledata">
                   <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ r.id }}"><input type="hidden" name="sid" value="{{ x.id }}">
                   <button class="linkbtn" role="menuitem" title="{{ _('Use this rule in {name} too', name=x.name) }}">{{ r.html }}</button></form>
                 {% endfor %}
-              </div>
-            </div>{% endif %}</div>
+              </div>{% endif %}
+            </div></div>
           <div class="srcrules sortable" data-kind="rule" data-scope="{{ x.id }}">{% for r in x.rules %}{{ src_rule(r, x) }}{% else %}<p class="mnote norules">{{ _('No rules yet.') }}</p>{% endfor %}</div>
         </div>
 

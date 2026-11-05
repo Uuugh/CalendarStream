@@ -20,7 +20,7 @@ from ..main import (_FIELDS, _is_async, _moved, _opt_day, _sid, all_rules, app, 
     calendar_color, calendar_name, Change, check_csrf, COLOR_RE, customs_for, destinations, ensure_local,
     event_alarms, event_links, google, google_redirect_uri, gui_auth, lang_for, last_local, logins, MAX_INTERVAL,
     MIN_INTERVAL, new_local, now, rebuild, RULES_PARSE, save_destinations, save_rules, sent_fields, skey,
-    SOURCE_BASES, source_ids, SOURCE_PRESETS, sources, st, start_source, State, state, states, stop_source, store,
+    SOURCE_BASES, set_event_links, source_ids, SOURCE_PRESETS, sources, st, start_source, State, state, states, stop_source, store,
     TZ, united_original)
 from .. import i18n, rules as rules_mod
 from ..calsync import build_feed, check_calendar, parse_feed, SourceError
@@ -348,12 +348,13 @@ def copy_events(sid: str, target: str) -> int:
                 alarms[uid] = alarms.pop(e.uid)
             if e.uid in found:
                 found[uid] = found.pop(e.uid)
+                found[uid]["own"] = target
         for link in found.values():
             if link["to"] == e.uid:
                 link.update(to=uid, src=target)
         n += 1
     store.set("event_alarms", alarms)
-    store.set("event_links", found)
+    set_event_links(found)       # (0.2.8-beta.27, F3) links are rules: they follow their events to the new calendar
     return n
 
 

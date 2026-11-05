@@ -9,7 +9,38 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.26**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.27**
+
+## 0.2.8-beta.27 — 2026-11-05
+
+The 3 Rules + installer build.
+
+### Added
+- **F4** Two new Thens: **Delete this event** (leaves the event out of the feeds, struck through like Hide; shown as "Deleted by a
+  rule", with no Restore: change or remove the rule to bring it back) and **Move this event** (by a set ± hours:minutes, or, in a
+  link rule, with its linked event).
+- **F3** Event pop-up › Link to makes one **link rule** for the event (in All Rules, and in Link to › Rule): if the linked event is
+  deleted → Delete this event; if it moves → Move this event (by the same amount). It replaces the Delete with it / Move with it boxes;
+  the two Thens are each removable. Existing links are turned into such rules at start-up.
+- **F30** Rules › Then: **Add** (to Title, Notes, Location: puts text at the end of the field, notes on a new line, never overwriting).
+- **F19** A grip on each Then reorders it (top first = highest priority; top to bottom = left to right, e.g. emojis).
+- **F29** Installer: **F29.1** the stack folder defaults to `~/stacks/calendarstream` (numbered when taken: `calendarstream2`);
+  **F29.2** the data folder defaults to a `data` subfolder of the stack folder; **F29.3** "Allow updating from the status page"
+  defaults to yes on a new install; **F29.4** a second CalendarStream on the same server is detected: its containers get a number
+  (`calendar_stream2`, `calendar_stream_db2`, `calendar_stream_updater2`) and its own port (`STACK_NO`, `PORT` in `.env`).
+
+### Changed
+- **F30** Rules › Then › Change takes its "to" inside the dropdown (to all-day, to a length of, to Title, to Notes, to Location).
+- **F19** The Then "Record changes" is now "Record changes in the event notes section".
+- **F17.1** Event pop-up: "Different end time zone" sits on Time zone's label line (as All-day Event is on Time's); ticked, its time
+  zone box shows under it, with no "End time zone" label.
+- **I10** Status/Action buttons (Healthy, Up to date, Connected…) never lose their words; only login blocks shrink to their ✓.
+- **I3** The bin on a read-only event (made outside CalendarStream) is now **Hide**; an event added in CalendarStream is deleted.
+
+### Fixed
+- **I1** + Add a rule always opens the new-rule pop-up (reusing another calendar's rule is a separate ▾ beside it); a picked
+  emoji now counts as a change at once, and Enter in the emoji search picks the first one instead of submitting.
+- Settling a rule conflict by dropping the lower rule's Then now drops the right kind of Then (Change to Title vs to Notes).
 
 ## 0.2.8-beta.26 — 2026-11-04
 

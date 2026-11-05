@@ -82,16 +82,16 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
 
         # --- F5: where they sit, and All-day stays put as the Time fields hide ----------------------------------------
         bb = lambda sel: pg.locator(sel).bounding_box()
-        ad, tl, ef = bb("label.allday"), bb("label[for=end_time]"), bb("#end_time")
+        ad, tl, ef = bb(".endtime label.allday"), bb("label[for=end_time]"), bb("#end_time")
         ok(abs((ad["y"] + ad["height"] / 2) - (tl["y"] + tl["height"] / 2)) <= 3 and ad["x"] > tl["x"] + tl["width"] and ad["y"] + ad["height"] <= ef["y"] + 1,
            "F5: All-day Event on the end's Time label line, right of Time *")
-        zd, sz = bb(".tzdiff label"), bb("#start_tz")
-        ok(zd["x"] >= sz["x"] + sz["width"] and abs((zd["y"] + zd["height"] / 2) - (sz["y"] + sz["height"] / 2)) <= 4, "F5: Different end time zone beside Time zone's field")
+        zd, sl = bb(".tzdiff label"), bb("#start_tz_label")
+        ok(zd["x"] >= sl["x"] + sl["width"] and abs((zd["y"] + zd["height"] / 2) - (sl["y"] + sl["height"] / 2)) <= 4, "F17.1: Different end time zone on Time zone's label line")
         pg.check("#end_tz_differs"); pg.wait_for_timeout(100)
         ez = bb(".endzone")
-        ok(ez and ez["y"] >= zd["y"] + zd["height"] - 1 and abs(ez["x"] - ef["x"]) <= 1, "F5: ticked, End time zone shows under it, in the end's column")
+        ok(ez and ez["y"] >= zd["y"] + zd["height"] - 1 and abs(ez["x"] - ef["x"]) <= 1, "F17.1: ticked, its time zone box shows under it, in the end's column, with no End time zone label")
         pg.check("#all_day"); pg.wait_for_timeout(100)
-        ad2 = bb("label.allday")
+        ad2 = bb(".endtime label.allday")
         ok(abs(ad2["x"] - ad["x"]) <= 1 and abs(ad2["y"] - ad["y"]) <= 1 and not pg.is_visible("#end_time") and not pg.is_visible("#start_time")
            and not pg.is_visible(".tzdiff"), "F5: ticked, All-day Event stays in its spot while the Time fields hide")
 

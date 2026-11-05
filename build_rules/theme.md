@@ -276,8 +276,9 @@ one here, with its card.
   Event Templates up to three (the conflicts or errors, otherwise how many), with their count box and +; History its three
   latest lines, left-aligned, on the right before its Healthy box. + is in the top right corner of every section that has
   one. (0.2.8-beta.26, F13, I4, F18; Part 1)
-- A good status word (Validated, Healthy, Up to date…) shrinks to its ✓ after showing its word; the word stays as the tooltip
-  and accessible name. Count boxes keep their numbers. (0.2.8-beta.26, F23; Picture 2·8)
+- A good login word (Signed in, Validated, a connection status inside a module) shrinks to its ✓ after about 2.4 s; the word
+  stays as the tooltip and accessible name. The Status/Action buttons (Healthy, Up to date, Connected, Read by Google, the
+  counts) never lose a word. (0.2.8-beta.26, F23; 0.2.8-beta.27, I10; Picture 2·8)
 - Calendars, Feeds, All Rules and Event Templates say "Expand to Configure"; History says "Expand for Details". (0.2.8-beta.26, F11.4)
 - The title bar: the logo's mark (no words) left of the title, the title in the logo's colors, the version in the footer with ©
   CalendarStream; a matching favicon, one transparent file for light and dark. (0.2.8-beta.26, F11)

@@ -132,3 +132,18 @@
   .modsection > .shead .countbox { margin-left:auto }      /* the count box at the top right; + at the bottom right (0.2.8-beta.11) */
   .modsection .sfoot { display:flex; justify-content:flex-end; margin-top:5px }
   .countbox .chip { font-weight:600 }
+  /* ---- 0.2.8-beta.27 ------------------------------------------------------------------------------------------
+     F19: each Then has a handle (▲ grip ▼) at its left, in the row (the same pieces as a module's or a rule's handle, so a
+     later change to the handle reaches them too). F30: Change / Add take a text. F3: a link rule says what it follows. */
+  .act > .handle { flex:0 0 18px; width:18px; margin:0; align-self:center }
+  .act > .handle .hmove { height:10px }
+  .act > .handle .hgrip { position:static; transform:none; left:auto; top:auto; width:10px; height:14px; opacity:.55 }
+  .act > .handle .hgrip:hover { opacity:1; color:var(--accent) }
+  .act.dragging { opacity:.55 }
+  .act .atext { flex:1 1 200px; min-width:140px; height:30px }
+  .act textarea.atext { height:auto; min-height:34px; resize:vertical }
+  .ruleform .linkinfo { margin:2px 0 6px }
+
+/* 0.2.8-beta.27 (I1): Add a rule always opens the new-rule pop-up; a small ▾ beside it lists other calendars' rules to reuse */
+.cfgheadrow .addwrap { display:flex; align-items:center; gap:4px }
+button.addreuse { padding:0 4px; margin:0; height:30px }

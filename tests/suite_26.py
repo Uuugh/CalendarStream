@@ -80,7 +80,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     bad = c.post("/rules/save", auth=A, data={"csrf": csrf, "rule": '{"conds": [], "actions": [{"type": "event", "template": "nope"}], "apply": "all"}'}, follow_redirects=False)
     ok(bad.status_code == 400, "an Add event rule needs an event template (or a new event's title)")
     p = c.get("/?month=2026-10", auth=A).text
-    ok("All Rules" in p and "Tag Colors" not in p and 'id="ruledialog"' in p and p.count('class="ghost unapply"') >= 4 and p.count('class="linkbtn newrule"') >= 3,
+    ok("All Rules" in p and "Tag Colors" not in p and 'id="ruledialog"' in p and p.count('class="ghost unapply"') >= 4 and p.count('class="ghost addrule newrule"') >= 3,
        "All Rules; each calendar's rules with a bin, and + Add a rule → New rule…")
     ok(p.count('<use href="#mi-delete"') >= 3, "the bin is an icon")
     e = c.get("/event?date=2026-10-12", auth=A).text

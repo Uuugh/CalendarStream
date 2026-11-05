@@ -164,7 +164,7 @@
   <details class="guide rulesguide"><summary>{{ _('How rules work') }}</summary>
     <p>{{ _('<b>If</b> conditions › <b>Then</b> actions. <b>If</b>: <b>Title</b> or <b>Any text</b> (title, place, notes) · is, contains, whole word, begins, ends · matches pattern: <code>*</code> any text, <code>#</code> a digit, <code>?</code> one character · contains regex · <b>Aa</b> = exact capitals · <b>Date</b> / <b>Time</b> (is, after, before, between) · <b>Day(s)</b> · <b>Length</b> (0 = no end; whole days = 24 h, 48 h…).') }}</p>
     <p>{{ _('<b>&amp;</b> (and) or <b>|</b> (or) › the next line (and first) · <b>✕</b> › takes a line out · grey <b>(</b> <b>)</b> › group lines: (RDO | VAC) &amp; Day(s) is Sat, Sun.') }}</p>
-    <p>{{ _('<b>Then</b>: <b>Color</b> · <b>Add emoji</b> (before the title) · <b>Create event</b> (a template or new, before / after it) · <b>Change</b> (all-day or a length) · <b>Record changes</b> (a note + a log line).') }}</p>
+    <p>{{ _('<b>Then</b>: <b>Color</b> · <b>Add emoji</b> (before the title) · <b>Create event</b> (a template or new, before / after it) · <b>Change</b> (all-day, a length, or the title, notes or location) · <b>Add</b> (text at the end of the title, notes or location) · <b>Move this event</b> (by a set time) · <b>Delete this event</b> · <b>Record changes in the event notes section</b> (a note + a log line). The handle on a Then moves it: the top one comes first (the highest priority).') }}</p>
     <p>{{ _('<b>Priority:</b> higher wins (color, emoji, time), even over a calendar’s own · ☰ handle or ▲ ▼ changes it · <b>Apply to</b>: which calendars · conflicts: All Rules offers a fix.') }}</p>
   </details>
   {%- endmacro %}

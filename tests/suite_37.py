@@ -76,7 +76,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # F3.2: linked events
     trip = next(e for e in main.store.load_events("ccs") if e.title.startswith("UA") and not e.all_day and e.start[:7] == "2026-10")
     r = post("/event/save", month="2026-10", title="Pack", start_date=trip.start[:10], start_time="06:00", end_date=trip.start[:10], end_time="06:30",
-             source=L, link_to=trip.uid, link_delete="1", link_move="1")
+             source=L, link_to=trip.uid)
     pack = next(e for e in main.store.load_events(L) if e.title == "Pack")
     ok(main.event_links()[pack.uid]["to"] == trip.uid and main.event_links()[pack.uid]["src"] == "ccs", "an added event linked to a trip")
     e = c.get(f"/event?uid={pack.uid}&month=2026-10").text
@@ -144,7 +144,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         MODE["slow"] = 0; pg.wait_for_timeout(4500)
         ok(pg.is_visible("#src-ccs .statusbox .chip"), "…then Healthy again")
         # F4.1: Apply to: a drop-down, starting with this calendar (from a module) or All (from All Rules)
-        pg.click("#rules-ccs .addrule"); pg.click("#rules-ccs .rulemenu .newrule"); pg.wait_for_timeout(200)
+        pg.click("#rules-ccs .newrule"); pg.wait_for_timeout(200)
         ok(pg.eval_on_selector_all("#ruledialog .rdapply input:checked", "i => i.map(x => x.value)") == ["ccs"] and "United CCS Schedule" in pg.inner_text("#ruledialog .ddbtn"),
            "a rule made in a calendar starts with that calendar")
         pg.click("#ruledialog .ddbtn"); pg.wait_for_timeout(100)
@@ -184,8 +184,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.click('.linkkind [data-kind="event"]'); pg.wait_for_timeout(700)
         ok(pg.is_visible("#pickdialog") and pg.locator("#pickdialog button.pkev").count() > 5, "Link to › Event: the events around it (0.2.8-beta.23, F1: a small calendar)")
         pg.locator("#pickdialog button.pkev").first.click(); pg.wait_for_timeout(200)
-        ok(pg.is_visible("#linkevent") and pg.is_checked("input[name=link_delete]") and pg.is_checked("input[name=link_move]"),
-           "…one picked: Delete with it, Move with it")
+        ok(pg.is_visible("#linkevent") and pg.is_visible(".linknote"),
+           "…one picked: Saving makes a rule (Delete this event, Move this event)")
         ok(not errs, f"no script errors {errs}")
         b.close()
     srv.should_exit = True

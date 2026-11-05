@@ -159,7 +159,7 @@ async def resolve_rules(request: Request, csrf: str = Form(""), key: str = Form(
         found[ids.index(a["id"])] = rules_mod.merge(a, b)
         found.pop(ids.index(b["id"]))
     else:
-        left = [x for x in b["actions"] if x["type"] != c["action"]]
+        left = [x for x in b["actions"] if rules_mod.shadow_kind(x) != c["action"]]
         if left:
             found[ids.index(b["id"])] = {**b, "actions": left}
         else:

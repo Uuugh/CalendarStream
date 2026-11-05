@@ -371,7 +371,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "folded (i)": "A folded module's (i) is a superscript", "From / To": "An Include box's calendars",
             "today": "Today has a 2 px accent border", "event pop-up": "The event pop-up",
             "section and module colors (suite 59)": "Sections and modules are told apart by color",
-            "header order (suite 61)": "Every section's header reads: icon", "status word shrinks (suite 61)": "A good status word (Validated",
+            "header order (suite 61)": "Every section's header reads: icon", "status word shrinks (suite 61)": "A good login word (Signed in, Validated",
             "Expand words (suite 61)": "say \"Expand to Configure\"", "title bar logo (suite 61)": "The title bar: the logo's mark",
             "trash icons (suite 61)": "Trash icons: the icon's lines tinted red", "24-hour fold (suite 61)": "left open folds again after 24 hours",
             "+ top right (suite 61)": "Every section's + is in its top right", "1 px borders (suite 59, 61)": "Every border is 1 px wide"}

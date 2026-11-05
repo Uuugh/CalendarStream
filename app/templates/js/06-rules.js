@@ -131,10 +131,27 @@ function actFields(a) {
     return h + '<span class="evpart"><input type="text" class="aoff dur" value="' + hm(a.offset || 0) + '" title="' + esc(RD.t.time) + '" aria-label="' + esc(RD.t.time) + '">'
       + '<select class="awhen">' + opts(RD.when, a.when || 'before_start') + '</select></span>';
   }
-  if (t === 'change') return '<span class="mnote">' + esc(RD.t.changeTo) + '</span><select class="ato"><option value="allday"' + (a.to === 'allday' ? ' selected' : '') + '>' + esc(RD.t.toAllDay)
-      + '</option><option value="length"' + (a.to === 'length' ? ' selected' : '') + '>' + esc(RD.t.toLength) + '</option></select>'
-      + (a.to === 'length' ? '<input type="text" class="amin dur" value="' + hm(a.minutes || 60) + '" title="' + esc(RD.t.length) + '">' : '');
+  // (0.2.8-beta.27, F30) Change and Add: the "to" is inside the dropdown ("to all-day", "to Title"…); a text field follows
+  // the ones that take a text. Change: the time (all-day, a length) or a field; Add: the end of a field.
+  if (t === 'change' || t === 'add') {
+    var to = a.to || (t === 'add' ? 'title' : 'allday'),
+        list = (t === 'change' ? [['allday', RD.t.toAllDay], ['length', RD.t.toLength]] : []).concat([['title', RD.t.toTitle], ['notes', RD.t.toNotes], ['location', RD.t.toLocation]]);
+    var h2 = '<select class="ato" aria-label="' + esc(RD.actionNames[t]) + '">' + opts(list, to) + '</select>';
+    if (to === 'length') return h2 + '<input type="text" class="amin dur" value="' + hm(a.minutes || 60) + '" title="' + esc(RD.t.length) + '">';
+    if (to === 'allday') return h2;
+    return h2 + (to === 'notes'
+      ? '<textarea class="atext" rows="2" maxlength="1000" placeholder="' + esc(RD.t.text) + '" aria-label="' + esc(RD.t.text) + '">' + esc(a.text || '') + '</textarea>'
+      : '<input type="text" class="atext" maxlength="200" value="' + esc(a.text || '') + '" placeholder="' + esc(RD.t.text) + '" aria-label="' + esc(RD.t.text) + '">');
+  }
+  // Move this event (F4): by a set time, + or − hours:minutes; in a link rule, with the linked event
+  if (t === 'move') return a.with_link ? '<span class="mnote">' + esc(RD.t.withLink) + '</span>'
+      : '<input type="text" class="amove dur" value="' + signedHm(a.minutes || 0) + '" placeholder="+1:00" title="' + esc(RD.t.moveBy) + '" aria-label="' + esc(RD.t.moveBy) + '">';
   return '';
+}
+function signedHm(min) { return min ? (min < 0 ? '−' : '+') + hm(Math.abs(min)) : ''; }
+function signedMinutes(text) {
+  var m = /^\s*([+\-−]?)\s*(\d{1,3})(?::(\d{1,2}))?\s*$/.exec(text || '');
+  return m ? (m[1] === '-' || m[1] === '−' ? -1 : 1) * (+m[2] * 60 + +(m[3] || 0)) : NaN;
 }
 function nearestPalette(hex) {
   function rgb(h) { return [1, 3, 5].map(function (i) { return parseInt(h.substr(i, 2), 16); }); }
@@ -144,13 +161,26 @@ function nearestPalette(hex) {
     if (d < dist) { dist = d; best = p[0]; } });
   return best;
 }
+// (0.2.8-beta.27, F19) Each Then has a handle: ▲ ▼ (the keyboard way) and a grip to drag; the top Then is the highest priority
+// (a color before an emoji), and top to bottom is left to right (the emojis in front of the title).
+var THEN_HANDLE = '<span class="handle thenhandle"><button type="button" class="hmove" data-dir="up">' + {{ icon("arrow_drop_up", 18)|string|tojson }} + '</button>'
+  + '<span class="hgrip" draggable="true" aria-hidden="true"><svg class="gripdots" width="10" height="16" viewBox="0 0 10 16" fill="currentColor" focusable="false"><circle cx="2.5" cy="3" r="1.4"/><circle cx="7.5" cy="3" r="1.4"/><circle cx="2.5" cy="8" r="1.4"/><circle cx="7.5" cy="8" r="1.4"/><circle cx="2.5" cy="13" r="1.4"/><circle cx="7.5" cy="13" r="1.4"/></svg></span>'
+  + '<button type="button" class="hmove" data-dir="down">' + {{ icon("arrow_drop_down", 18)|string|tojson }} + '</button></span>';
 function actRow(a) {
   a = a || { type: 'color', color: '#d50000' };
   var row = document.createElement('div');
   row.className = 'act';
-  row.innerHTML = '<select class="atype" aria-label="Then">' + opts(RD.actions, a.type) + '</select><span class="afields">' + actFields(a) + '</span>'
+  if (a.with_link) row.dataset.withLink = '1';
+  // a link rule (F3) has only its two Thens
+  var kinds = editing && editing.link ? RD.actions.filter(function (k) { return k[0] === 'delete' || k[0] === 'move'; }) : RD.actions;
+  row.innerHTML = THEN_HANDLE + '<select class="atype" aria-label="Then">' + opts(kinds, a.type) + '</select><span class="afields">' + actFields(a) + '</span>'
     + '<button type="button" class="ghost adel" title="' + esc(RD.t.remove) + '" aria-label="' + esc(RD.t.remove) + '">' + {{ icon("close", 16)|string|tojson }} + '</button>'
     + '<button type="button" class="ghost aadd" title="+" aria-label="+">' + {{ icon("add", 16)|string|tojson }} + '</button>';
+  row.querySelectorAll('.hmove').forEach(function (b) {
+    var name = RD.actionNames[a.type] || a.type, up = b.dataset.dir === 'up';
+    b.title = b.ariaLabel = (up ? RD.t.thenUp : RD.t.thenDown).replace('{name}', name);
+  });
+  row.querySelector('.hgrip').title = RD.t.thenDrag;
   return row;
 }
 // Reading a line back
@@ -178,7 +208,13 @@ function readAct(row) {
     if (!a.template && f('.anew.title')) { a.title = f('.anew.title').value; a.all_day = f('.anew.allday').checked; a.minutes = minutesOf(f('.anew.minutes').value) || 60; a.location = f('.anew.location').value; }
   }
   // (.amin isn't there yet just after "to a length" is picked: the row is redrawn with it)
-  if (a.type === 'change') { a.to = f('.ato').value; if (a.to === 'length') a.minutes = (f('.amin') && minutesOf(f('.amin').value)) || 60; }
+  if (a.type === 'change') {
+    a.to = f('.ato').value;
+    if (a.to === 'length') a.minutes = (f('.amin') && minutesOf(f('.amin').value)) || 60;
+    else if (a.to !== 'allday') a.text = f('.atext') ? f('.atext').value : '';
+  }
+  if (a.type === 'add') { a.to = f('.ato').value; a.text = f('.atext') ? f('.atext').value : ''; }
+  if (a.type === 'move') { if (row.dataset.withLink) a.with_link = true; else a.minutes = (f('.amove') && signedMinutes(f('.amove').value)) || 0; }
   return a;
 }
 // Brackets: each level of nesting in its own color; the last line's and / or adds a line
@@ -210,7 +246,11 @@ function pairOpen(row) {
 }
 function drawActs() {
   var rows = actBox.querySelectorAll('.act');
-  rows.forEach(function (row, i) { row.querySelector('.aadd').hidden = i < rows.length - 1; row.querySelector('.adel').hidden = rows.length < 2;
+  var link = !!(editing && editing.link), both = link && rows.length >= 2;
+  rows.forEach(function (row, i) { row.querySelector('.aadd').hidden = i < rows.length - 1 || both; row.querySelector('.adel').hidden = rows.length < 2;
+                                   row.querySelector('.handle').style.visibility = rows.length < 2 ? 'hidden' : '';
+                                   row.querySelector('.hmove[data-dir="up"]').style.visibility = i === 0 ? 'hidden' : '';
+                                   row.querySelector('.hmove[data-dir="down"]').style.visibility = i === rows.length - 1 ? 'hidden' : '';
                                    emoWarn(row); });
 }
 condBox.addEventListener('click', function (e) {
@@ -280,10 +320,22 @@ condBox.addEventListener('focusout', function (e) {     // the edited titles are
 actBox.addEventListener('click', function (e) {
   var row = e.target.closest('.act');
   if (!row) return;
-  if (e.target.closest('.aadd')) { var a = actRow({ type: 'emoji', emoji: '' }); actBox.appendChild(a); drawActs(); return; }
+  var mv = e.target.closest('.hmove');
+  if (mv) {       // F19: ▲ ▼ move the Then one place (the keyboard way); the focus stays on the button
+    var up = mv.dataset.dir === 'up', sib = up ? row.previousElementSibling : row.nextElementSibling;
+    if (sib) { if (up) actBox.insertBefore(row, sib); else actBox.insertBefore(sib, row); drawActs(); }
+    var keep = row.querySelector('.hmove[data-dir="' + mv.dataset.dir + '"]');
+    (keep && keep.style.visibility !== 'hidden' ? keep : row.querySelector('.hmove[data-dir="' + (up ? 'down' : 'up') + '"]')).focus();
+    return;
+  }
+  if (e.target.closest('.aadd')) {
+    var used = Array.prototype.map.call(actBox.querySelectorAll('.atype'), function (x) { return x.value; });
+    var a = actRow(editing && editing.link ? (used.indexOf('delete') < 0 ? { type: 'delete' } : { type: 'move', with_link: true }) : { type: 'emoji', emoji: '' });
+    actBox.appendChild(a); drawActs(); return;
+  }
   if (e.target.closest('.adel')) { row.remove(); drawActs(); return; }
   var emo = e.target.closest('.emo');
-  if (emo) { row.querySelector('.aval.emoji').value = emo.textContent; emoWarn(row); var pk = row.querySelector('.emopick');
+  if (emo) { var ef = row.querySelector('.aval.emoji'); ef.value = emo.textContent; ef.dispatchEvent(new Event('input', { bubbles: true })); emoWarn(row); var pk = row.querySelector('.emopick');
              if (pk && !pk.hidden) { row.querySelector('.emofind').value = ''; emoOpen(row, false); } }
   if (e.target.closest('.emofind')) { emoOpen(row, true); return; }
   var pal = e.target.closest('.pal');
@@ -343,11 +395,39 @@ actBox.addEventListener('keydown', function (e) {
   if (e.key === 'Escape' && e.target.matches('.emofind') && !e.target.closest('.act').querySelector('.emopick').hidden) {
     e.preventDefault(); e.stopPropagation(); e.target.value = ''; emoOpen(e.target.closest('.act'), false);
   }
+  // (0.2.8-beta.27, I1) Enter in the emoji search picks the first emoji it shows; it never saves the rule with nothing picked
+  if (e.key === 'Enter' && e.target.matches('.emofind')) {
+    e.preventDefault();
+    var first = e.target.closest('.act').querySelector('.emogrid .emo');
+    if (first) first.click();
+  }
+});
+// F19: the grip drags a Then to another place (the handle's ▲ ▼ are the keyboard way)
+var thenDrag = null;
+actBox.addEventListener('dragstart', function (e) {
+  var g = e.target.closest && e.target.closest('.hgrip');
+  if (!g) return;
+  thenDrag = g.closest('.act'); thenDrag.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  try { e.dataTransfer.setData('text/plain', ''); e.dataTransfer.setDragImage(thenDrag, 20, 20); } catch (err) {}
+});
+actBox.addEventListener('dragover', function (e) {
+  if (!thenDrag) return;
+  var over = e.target.closest && e.target.closest('.act');
+  if (!over || over === thenDrag) return;
+  e.preventDefault();
+  var r = over.getBoundingClientRect();
+  actBox.insertBefore(thenDrag, e.clientY > r.top + r.height / 2 ? over.nextSibling : over);
+});
+actBox.addEventListener('drop', function (e) { if (thenDrag) e.preventDefault(); });
+actBox.addEventListener('dragend', function () {
+  if (!thenDrag) return;
+  thenDrag.classList.remove('dragging'); thenDrag = null; drawActs(); setTimeout(pairRefresh, 0);
 });
 actBox.addEventListener('change', function (e) {
   var row = e.target.closest('.act');
   if (!row) return;
-  if (e.target.matches('.atype')) { row.replaceWith(actRow({ type: e.target.value })); drawActs(); }
+  if (e.target.matches('.atype')) { row.replaceWith(actRow({ type: e.target.value, with_link: e.target.value === 'move' && !!(editing && editing.link) })); drawActs(); }
   else if (e.target.matches('.atpl, .ato')) { var a = readAct(row); if (e.target.matches('.atpl') && !e.target.value) a.title = ''; row.replaceWith(actRow(a)); drawActs(); }
 });
 // Apply to: ticks in a drop-down. "All calendars" and single calendars exclude each other.
@@ -385,6 +465,10 @@ function openRule(rule, sid) {
   title.textContent = rule ? title.dataset.edit : title.dataset.new;
   ruleForm.querySelector('.rdname').value = rule ? rule.title : '';
   condBox.innerHTML = ''; actBox.innerHTML = ''; rxBlock();
+  // (0.2.8-beta.27, F3) a link rule has no If lines: it says which event it follows
+  var isLink = !!(rule && rule.link), info = ruleForm.querySelector('.linkinfo');
+  ruleForm.querySelector('.rdif').hidden = isLink; condBox.hidden = isLink; info.hidden = !isLink;
+  if (isLink) info.textContent = RD.t.linkInfo.replace('{name}', rule.link.name || '?');
   (rule && rule.conds.length ? rule.conds : [null]).forEach(function (c) { condBox.appendChild(condRow(c)); });
   (rule ? rule.actions : [null]).forEach(function (a) { actBox.appendChild(actRow(a)); });
   // A new rule made in a calendar applies to that calendar; one made in All Rules to every calendar (F4.1)
@@ -413,6 +497,7 @@ ruleForm.addEventListener('submit', function (e) {
   var rule = { id: editing ? editing.id : '', title: ruleForm.querySelector('.rdname').value, conds: conds,
                actions: Array.prototype.map.call(actBox.querySelectorAll('.act'), readAct),
                apply: sel.indexOf('all') >= 0 ? 'all' : sel };
+  if (editing && editing.link) { rule.link = editing.link; rule.conds = []; }
   ruleForm.elements.rule.value = JSON.stringify(rule);
   msg.hidden = true;
 });

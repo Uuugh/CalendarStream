@@ -29,8 +29,21 @@ Action types:
   emoji    "emoji": put in front of the title
   event    add an event: "template" (an event template's ID), or a new one ("title", "minutes",
            "all_day", "location"); "offset" minutes "when" (before_start / after_start / after_end)
-  change   the event's time: "to" "allday" (all-day, on the days it covers) or "length" ("minutes")
+  change   "to" "allday" (all-day, on the days it covers) or "length" ("minutes"): the event's time; or "title",
+           "notes", "location" ("text"): that field becomes the text (0.2.8-beta.27, F30)
+  add      "to" "title" | "notes" | "location", "text": the text goes at the end of the field (notes: on a new line);
+           what is there is never written over (0.2.8-beta.27, F30)
+  move     "minutes" (signed): the event moves by that much; "with_link" (only in a link rule): by as much as the
+           event it is linked to moves (0.2.8-beta.27, F4)
+  delete   the event is deleted: left out of the feeds, struck through on the page (0.2.8-beta.27, F4)
   changes  record the changes the source makes to it (a note on the event, a line in the log)
+
+A link rule (0.2.8-beta.27, F3) is made by the event pop-up's Link to: it has a "link" and no conditions, and
+only the two Thens delete / move. It follows one event, so it is never matched against events here:
+    "link": {"uid": this event's ID, "own": its calendar, "to": the linked event's ID, "src": the linked event's
+             calendar, "at": the linked event's start when last seen, "name": its title}
+"Delete" makes this event go when the linked one is gone; "move" (with_link) makes it move when the linked
+event's start moves (app/links.py works out what to do; app/main.py follow_links does it).
 """
 
 from __future__ import annotations
@@ -46,6 +59,7 @@ from zoneinfo import ZoneInfo
 import regex as rxe     # (0.2.8-beta.18, review #2.1) a regex engine with a time limit
 
 from .calsync import Event
+from .links import shifted
 
 COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 ID_RE = re.compile(r"^[a-z0-9]{1,16}$")
@@ -70,7 +84,12 @@ OPS = {
     "length": {"is": "is", "days": "is whole days"},
 }
 ACTION_TYPES = {"color": "Color", "emoji": "Add emoji to title", "event": "Create event", "change": "Change",
-                "changes": "Record changes"}
+                "add": "Add", "move": "Move this event", "delete": "Delete this event",
+                "changes": "Record changes in the event notes section"}
+LINK_ACTIONS = ("delete", "move")          # the only Thens of a link rule
+TEXT_FIELDS = {"title": "Title", "notes": "Notes", "location": "Location"}
+MAX_NOTES = 1000                           # a Change / Add to Notes
+MAX_MOVE = 7 * 24 * 60                     # Move this event: up to a week either way
 WHEN = {"before_start": "before the start", "after_start": "after the start", "after_end": "after the end"}
 DAY_NAMES = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
@@ -169,10 +188,30 @@ def test_text(value: str, op: str, case: bool, samples: list[str]) -> dict:
     return {"error": "", "results": results}
 
 
-def _action(a, templates: set[str] | None = None) -> dict | None:
+def _text(value, field: str, multiline: bool = False) -> str:
+    """The text of a Change / Add: Notes keep their lines, the others are one line."""
+    if multiline:
+        return "\n".join(x.rstrip() for x in str(value or "").replace("\r", "").split("\n")).strip()[:MAX_NOTES]
+    return " ".join(str(value or "").split())[:MAX_TEXT if field != "title" else 200]
+
+
+def _action(a, templates: set[str] | None = None, linked: bool = False) -> dict | None:
     if not isinstance(a, dict) or a.get("type") not in ACTION_TYPES:
         return None
     kind = a["type"]
+    if linked and kind not in LINK_ACTIONS:
+        return None
+    if kind == "delete":
+        return {"type": kind}
+    if kind == "move":
+        if a.get("with_link") and linked:
+            return {"type": kind, "minutes": 0, "with_link": True}
+        minutes = _int(a.get("minutes"), -MAX_MOVE, MAX_MOVE)
+        return {"type": kind, "minutes": minutes, "with_link": False} if minutes and not linked else None
+    if kind == "add":
+        field = a.get("to") if a.get("to") in TEXT_FIELDS else "title"
+        text = _text(a.get("text"), field, field == "notes")
+        return {"type": kind, "to": field, "text": text} if text else None
     if kind == "color":
         color = str(a.get("color") or "")
         return {"type": kind, "color": color.lower()} if COLOR_RE.match(color) else None
@@ -193,8 +232,26 @@ def _action(a, templates: set[str] | None = None) -> dict | None:
     if kind == "change":
         if a.get("to") == "allday":
             return {"type": kind, "to": "allday"}
+        if a.get("to") in TEXT_FIELDS:
+            field = a["to"]
+            text = _text(a.get("text"), field, field == "notes")
+            if not text and field == "title":      # a title can't be empty (Notes and Location can be emptied)
+                return None
+            return {"type": kind, "to": field, "text": text}
         return {"type": kind, "to": "length", "minutes": _int(a.get("minutes"), 5, 7 * 24 * 60, 60)}
     return {"type": "changes"}
+
+
+def _link(raw) -> dict | None:
+    """A link rule's "link", checked (None: not a link rule)."""
+    if not isinstance(raw, dict):
+        return None
+    uid, to = str(raw.get("uid") or "")[:300], str(raw.get("to") or "")[:300]
+    if not uid or not to or uid == to:
+        return None
+    own, src = str(raw.get("own") or ""), str(raw.get("src") or "")
+    return {"uid": uid, "own": own if SID_RE.match(own) else "", "to": to, "src": src if SID_RE.match(src) else "",
+            "at": str(raw.get("at") or "")[:40], "name": " ".join(str(raw.get("name") or "").split())[:200]}
 
 
 def balanced(conds: list[dict]) -> bool:
@@ -227,24 +284,29 @@ def normalize(raw, sids: list[str] | None = None, templates: set[str] | None = N
         return bad(f"Up to {MAX_CONDS} conditions in a rule.")
     if strict and len([a for a in raw.get("actions") or [] if a]) > MAX_ACTIONS:
         return bad(f"Up to {MAX_ACTIONS} actions in a rule.")
-    conds = [c for c in (_cond(c) for c in (raw.get("conds") or [])[:MAX_CONDS]) if c]
-    if strict and len(conds) != len([c for c in raw.get("conds") or [] if c]):
+    link = _link(raw.get("link"))
+    # a link rule follows one event: no conditions (the page's Link to makes it; the rule dialog only lets its two Thens go)
+    conds = [] if link else [c for c in (_cond(c) for c in (raw.get("conds") or [])[:MAX_CONDS]) if c]
+    if strict and not link and len(conds) != len([c for c in raw.get("conds") or [] if c]):
         return bad("Fill in every condition (or take the empty ones out).")
     if conds and not balanced(conds):
         if strict:
             return bad("The brackets don't pair up: every ( needs a ) after it.")
         for c in conds:
             c["open"] = c["close"] = 0
-    actions = [a for a in (_action(a, templates) for a in (raw.get("actions") or [])[:MAX_ACTIONS]) if a]
+    actions = [a for a in (_action(a, templates, bool(link)) for a in (raw.get("actions") or [])[:MAX_ACTIONS]) if a]
     if not actions:
         return bad("Add at least one Then.")
     apply = raw.get("apply")
     if apply != "all":
         apply = [s for s in dict.fromkeys(apply if isinstance(apply, list) else []) if SID_RE.match(str(s))
                  and (sids is None or s in sids)]
-    return {"id": rid if ID_RE.match(rid) else "t" + secrets.token_hex(3),
-            "title": " ".join(str(raw.get("title") or "").split())[:MAX_TITLE], "conds": conds, "actions": actions,
-            "apply": apply}
+    out = {"id": rid if ID_RE.match(rid) else "t" + secrets.token_hex(3),
+           "title": " ".join(str(raw.get("title") or "").split())[:MAX_TITLE], "conds": conds, "actions": actions,
+           "apply": apply}
+    if link:
+        out["link"] = link
+    return out
 
 
 def normalize_all(raw, sids: list[str] | None = None) -> list[dict]:
@@ -304,7 +366,16 @@ def move(rules: list[dict], rid: str, before: str = "", after: str = "") -> list
 # never gets to: that's a conflict. Two rules with the same conditions and the same actions are
 # duplicates.
 
-SHADOWED = ("color", "emoji", "change")      # the actions only the highest matching rule applies
+SHADOWED = ("color", "emoji", "change", "change:title", "change:notes", "change:location",
+            "add:title", "add:notes", "add:location", "move")
+# the actions only the highest matching rule applies ("change" is the time; a text change or an add is one per field)
+
+
+def shadow_kind(a: dict) -> str:
+    """Which of the SHADOWED actions `a` is (its type, or "change:<field>" / "add:<field>" for a text field)."""
+    if a["type"] in ("change", "add") and a.get("to") in TEXT_FIELDS:
+        return f"{a['type']}:{a['to']}"
+    return a["type"]
 
 
 def _cond_key(c: dict) -> tuple:
@@ -337,6 +408,7 @@ def conflicts(rules: list[dict], sids: list[str], ignored=()) -> list[dict]:
     rule's id, "b": the lower one's, "action": the action b loses (shadowed), "calendars": where}.
     Those in `ignored` (conflict_key) are left out."""
     found = []
+    rules = [r for r in rules if not r.get("link")]       # a link rule follows one event: it conflicts with nothing
     for i, a in enumerate(rules):
         for b in rules[i + 1:]:
             cals = shared_calendars(a, b, sids)
@@ -347,7 +419,7 @@ def conflicts(rules: list[dict], sids: list[str], ignored=()) -> list[dict]:
             if a["conds"] and acts(a) == acts(b):
                 hit = [{"kind": "duplicate", "a": a["id"], "b": b["id"], "calendars": cals}]
             else:
-                kinds = [k for k in SHADOWED if any(x["type"] == k for x in a["actions"]) and any(x["type"] == k for x in b["actions"])]
+                kinds = [k for k in SHADOWED if any(shadow_kind(x) == k for x in a["actions"]) and any(shadow_kind(x) == k for x in b["actions"])]
                 hit = [{"kind": "shadowed", "a": a["id"], "b": b["id"], "action": k, "calendars": cals} for k in kinds]
             found += [h for h in hit if conflict_key(h) not in ignored]
     return found
@@ -573,32 +645,47 @@ class Ruleset:
         self.tz = tz
         self.templates = templates or {}
         self.no_end = no_end            # what an event with no end time gets when no rule changes it
-        self.rules = [(r, _compile(r["conds"])) for r in rules]
+        # (0.2.8-beta.27, F3) a link rule follows one event and is never matched here: app/links.py works it out
+        self.rules = [(r, _compile(r["conds"])) for r in rules if not r.get("link")]
 
-    def _first(self, kind: str, e: Event, info: dict):
+    def _first_where(self, wanted, e: Event, info: dict):
         for r, test in self.rules:
             for a in r["actions"]:
-                if a["type"] == kind and test(e, info):
+                if wanted(a) and test(e, info):
                     return a
         return None
 
-    def _all_of_first(self, kind: str, e: Event, info: dict) -> list[dict]:
-        """Every `kind` action of the highest matching rule that has one (a rule can add two emojis)."""
+    def _first(self, kind: str, e: Event, info: dict):
+        return self._first_where(lambda a: a["type"] == kind, e, info)
+
+    def _all_where(self, wanted, e: Event, info: dict) -> list[dict]:
+        """Every action `wanted` accepts, of the highest matching rule that has one."""
         for r, test in self.rules:
-            found = [a for a in r["actions"] if a["type"] == kind]
+            found = [a for a in r["actions"] if wanted(a)]
             if found and test(e, info):
                 return found
         return []
 
+    def _all_of_first(self, kind: str, e: Event, info: dict) -> list[dict]:
+        """Every `kind` action of the highest matching rule that has one (a rule can add two emojis)."""
+        return self._all_where(lambda a: a["type"] == kind, e, info)
+
     def change_times(self, events: list[Event]) -> list[Event]:
-        """The time changes (before any edit): the first matching "Change" rule for each event; an event
-        with no end time that no rule changes gets the default (DEFAULT_EVENT_TYPE / _HOURS)."""
+        """The time changes (before any edit): the first matching "Change" rule for each event, then the first
+        matching "Move this event" (F4); an event with no end time that no rule changes gets the default
+        (DEFAULT_EVENT_TYPE / _HOURS)."""
         out = []
         for e in events:
-            a = self._first("change", e, event_info(e, self.tz))
+            info = event_info(e, self.tz)
+            a = self._first_where(lambda x: x["type"] == "change" and x["to"] in ("allday", "length"), e, info)
             if a is None and e.no_end:
                 a = {"to": "allday"} if self.no_end[0] == "allday" else {"to": "length", "minutes": round(self.no_end[1] * 60)}
-            out.append(self._changed(e, a) if a else e)
+            ev = self._changed(e, a) if a else e
+            m = self._first("move", e, info)
+            if m and m["minutes"]:
+                start, end = shifted(ev.start, ev.end, timedelta(minutes=m["minutes"]))
+                ev = replace(ev, start=start, end=end, ruled=True)
+            out.append(ev)
         return out
 
     def _changed(self, e: Event, a: dict) -> Event:
@@ -614,7 +701,9 @@ class Ruleset:
                        description=f"{note}\n{e.description}".strip()[:2000], no_end=False, ruled=True)
 
     def finish(self, events: list[Event]) -> list[Event]:
-        """After edits: each event's rule color, and its emoji in front of the title."""
+        """After edits: each event's rule color, its text changes and adds (F30), its emoji in front of the title,
+        and its deletion (F4). An event edited here keeps its own title, notes and location (a Change leaves
+        them); an Add never writes over anything."""
         out = []
         for e in events:
             if e.origin == "rule":
@@ -622,11 +711,24 @@ class Ruleset:
                 continue
             info = event_info(e, self.tz)
             color = self._first("color", e, info)
+            text = {"title": e.title, "notes": e.description, "location": e.location}
+            for field in TEXT_FIELDS:
+                a = None if e.edited else self._first_where(
+                    lambda x, f=field: x["type"] == "change" and x.get("to") == f, e, info)
+                if a:
+                    text[field] = a["text"]
+                for a in self._all_where(lambda x, f=field: x["type"] == "add" and x.get("to") == f, e, info):
+                    text[field] = (f"{text[field]}\n{a['text']}" if text[field] else a["text"]) if field == "notes" \
+                        else f"{text[field]} {a['text']}".strip()
             emoji = " ".join(a["emoji"] for a in self._all_of_first("emoji", e, info))
-            title = e.title
+            title = text["title"]
             if emoji and not title.startswith(emoji):
                 title = f"{emoji} {title}"
-            out.append(replace(e, title=title, rule_color=color["color"] if color else ""))
+            ev = replace(e, title=title, description=text["notes"][:4000], location=text["location"][:200],
+                         rule_color=color["color"] if color else "")
+            if not e.hidden and not e.deleted and self._first("delete", e, info):
+                ev = replace(ev, hidden=True, deleted="rule|")     # left out of the feeds, struck through; the rule says so
+            out.append(ev)
         return out
 
     def made(self, events: list[Event], tz: ZoneInfo) -> list[Event]:
@@ -636,6 +738,8 @@ class Ruleset:
             if e.origin == "rule" or e.hidden:
                 continue
             info = event_info(e, self.tz)
+            if self._first("delete", e, info):      # an event a rule deletes makes no companions
+                continue
             for r, test in self.rules:
                 for i, a in enumerate(r["actions"]):
                     if a["type"] != "event" or not test(e, info):
@@ -714,8 +818,18 @@ def action_text(a: dict, tr, color_name, templates: dict[str, dict]) -> str:
         return (f"{tr('Create')} “{t['title'] if t else '?'}”, "
                 + tr("{time} {when}", time=_hm(a["offset"]), when=tr(WHEN[a["when"]])))
     if a["type"] == "change":
+        if a["to"] in TEXT_FIELDS:
+            return tr("Change {field} to “{text}”", field=tr(TEXT_FIELDS[a["to"]]), text=a["text"])
         return tr("Change to all-day") if a["to"] == "allday" else tr("Change length to {length}", length=_hm(a["minutes"]))
-    return tr("Record changes")
+    if a["type"] == "add":
+        return tr("Add “{text}” to {field}", text=a["text"].replace("\n", " ⏎ "), field=tr(TEXT_FIELDS[a["to"]]))
+    if a["type"] == "delete":
+        return tr("Delete this event")
+    if a["type"] == "move":
+        if a.get("with_link"):
+            return tr("Move this event with the linked event")
+        return tr("Move this event by {time}", time=("−" if a["minutes"] < 0 else "+") + _hm(abs(a["minutes"])))
+    return tr("Record changes in the event notes section")
 
 
 def actions_text(rule: dict, tr, color_name, templates: dict[str, dict]) -> str:
@@ -727,6 +841,10 @@ def label(rule: dict, tr, color_name, templates: dict[str, dict]) -> str:
     """A rule in one line: its title, else 'If … → …'."""
     if rule["title"]:
         return rule["title"]
+    link = rule.get("link")
+    if link:
+        return (tr("Linked to “{name}”", name=link["name"] or "?") + " → "
+                + "; ".join(action_text(a, tr, color_name, templates) for a in rule["actions"]))
     conds = rule["conds"]
     parts = []
     for i, c in enumerate(conds):

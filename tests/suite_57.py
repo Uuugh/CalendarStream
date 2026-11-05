@@ -89,7 +89,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
 
     # An added event: Delete at the bottom left (asks first); linked, Link to opens at Event
     post("/event/save", title="Lunch", start_date="2026-10-14", end_date="2026-10-14", start_time="12:00", end_time="13:00",
-         start_tz="America/New_York", end_tz="America/New_York", source=L, link_to=U, link_delete="1", link_move="1")
+         start_tz="America/New_York", end_tz="America/New_York", source=L, link_to=U)
     cu = next(x.uid for x in main.store.load_events() if x.title == "Lunch")
     p = ev(f"uid={cu.replace('@', '%40')}&month=2026-10&embed=1")
     bottom = p[p.index('class="actions bottom"'):p.index("</form>")]

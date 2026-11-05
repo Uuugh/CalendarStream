@@ -17,8 +17,8 @@ from .. import main as core
 from ..main import (_is_async, _parse_month, _range_text, _span, ALARM_CHOICES, alarm_text, all_rules, ALL_ZONES,
     app, calendar_color, calendar_name, Change, check_csrf, COMMON_ZONES, COPY_ICON, dates_for, delete_events,
     display_tz, display_zone, event_alarms, EVENT_COLORS, event_links, event_templates, gui_auth, lang_for, now,
-    page, rebuild, rule_label, show_duration, source, source_ids, state, store, TRASH_ICON, TZ, united_original,
-    unmark_deleted, valid_zone)
+    page, rebuild, rule_label, save_rules, show_duration, source, source_ids, state, store, TRASH_ICON, TZ,
+    united_original, unmark_deleted, valid_zone)
 from .. import rules as rules_mod
 from ..calsync import Event
 from ..gsync import GOOGLE_COLORS
@@ -119,7 +119,8 @@ def event_rules(e: Event) -> list[dict]:
     matches it, highest first."""
     rs = rules_mod.Ruleset(rules_mod.for_source(all_rules(), e.source), TZ)
     info = rules_mod.event_info(e, TZ)
-    found = []
+    found = [{"id": r["id"], "label": rule_label(r)} for r in rules_mod.for_source(all_rules(), e.source)
+             if (r.get("link") or {}).get("uid") == e.uid]       # (F3) the link rule that makes it follow another event
     for r, test in rs.rules:
         try:
             if test(e, info):
@@ -152,15 +153,30 @@ def pick_event(request: Request, uid: str = "", month: str | None = None):
     return page(request, "event-pick.html", {"cal": cal, "uid": uid, "this_month": f"{today:%Y-%m}", "starts": starts}, lang=lang)
 
 
-def save_link(uid: str, to: str, delete: bool, move: bool):
-    """Link an event to another one (or unlink it, with no `to`)."""
-    found = event_links()
+def save_link(uid: str, to: str, own: str):
+    """Link an event to another one (or unlink it, with no `to`): one link rule for this event (0.2.8-beta.27, F3):
+    "If the linked event is deleted → Delete this event; if it moves → Move this event". Linked to the same event
+    again, the rule is left as it is (its Thens may have been taken out of it); linked to another, it follows that."""
+    rules = all_rules()
+    mine = [r for r in rules if (r.get("link") or {}).get("uid") == uid]
     other = store.get_event(to) if to and to != uid else None
+    if other is not None and (other.hidden or other.deleted):
+        other = None        # a deleted event can't be followed (the link would delete this one at once)
     if other is None:
-        found.pop(uid, None)
-    else:
-        found[uid] = {"to": other.uid, "src": other.source, "at": other.start, "delete": delete, "move": move}
-    store.set("event_links", found)
+        if mine:
+            save_rules([r for r in rules if r not in mine])
+        return
+    if mine and mine[0]["link"]["to"] == other.uid:
+        return
+    link = {"uid": uid, "own": own, "to": other.uid, "src": other.source, "at": other.start, "name": other.title}
+    if mine:
+        save_rules([{**r, "link": link} if r is mine[0] else r for r in rules if r not in mine[1:]])
+        return
+    rule = rules_mod.normalize({"id": "t" + secrets.token_hex(3), "conds": [], "apply": [own], "link": link,
+                                "actions": [{"type": "delete"}, {"type": "move", "minutes": 0, "with_link": True}]}, source_ids())
+    if rule:
+        rules.insert(rules_mod.insert_position(rules, rule), rule)
+        save_rules(rules)
 
 
 def _event_back(month: str, embed: str) -> RedirectResponse:
@@ -236,8 +252,7 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
                      end_date: str = Form(""), end_time: str = Form(""), location: str = Form(""),
                      description: str = Form(""), hidden: str = Form(""), color: str = Form(""),
                      start_tz: str = Form(""), end_tz: str = Form(""), end_tz_differs: str = Form(""),
-                     source_: str = Form("", alias="source"), embed: str = Form(""), link_to: str = Form(""),
-                     link_delete: str = Form(""), link_move: str = Form("")):
+                     source_: str = Form("", alias="source"), embed: str = Form(""), link_to: str = Form("")):
     """Save the event page: an edit of a source's event, or an added event (into `source`). end_tz is
     only used when "The end is in a different time zone" is ticked."""
     check_csrf(csrf)
@@ -260,14 +275,14 @@ async def save_event(csrf: str = Form(""), uid: str = Form(""), month: str = For
             store.set_edit(uid, {**data, "hidden": bool(hidden) or was_hidden, "base": original.fingerprint()})
             done = f"Edited \"{original.title}\" ({original.start[:10]})" + (" and hid it from Google" if hidden and not was_hidden else "")
         sid = current.source
-        save_link(uid, link_to, bool(link_delete), bool(link_move))
+        save_link(uid, link_to, current.source)
     else:
         sid = current.source if current else (source_ if source_ in source_ids() else (source_ids() or [""])[0])
         if sid not in source_ids():
             raise HTTPException(400, "Add a calendar source first (Calendar Sources → +).")
         new_uid = uid if current else f"cs-{secrets.token_hex(8)}@calendar_stream"
         store.set_custom(new_uid, {**data, "source": sid})
-        save_link(new_uid, link_to, bool(link_delete), bool(link_move))
+        save_link(new_uid, link_to, sid)
         done = f"{'Updated' if current else 'Added'} \"{data['title']}\" ({data['start'][:10]})"
     rebuild(sid)
     if done:
@@ -330,6 +345,8 @@ async def restore_event(request: Request, csrf: str = Form(""), uid: str = Form(
     e = store.get_event(uid)
     if not e or not e.deleted or e.deleted == "gone":
         raise HTTPException(404, "That event can't be restored any more.")
+    if e.deleted.startswith("rule|"):
+        raise HTTPException(400, "A rule deletes this event; change or remove the rule to bring it back.")
     unmark_deleted(uid)
     store.forget_deleted(uid)
     rebuild(e.source)

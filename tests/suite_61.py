@@ -49,7 +49,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     h1 = p[p.index("<h1>"):p.index("</h1>")]
     ok('class="logomark"' in h1 and '<span class="tw1">Calendar</span><span class="tw2">Stream</span>' in h1 and "curver" not in h1 and "<a " not in h1, "F11.1/F11.3: the mark, then Calendar and Stream in the logo's colors, no version in the title")
     foot = p[p.index('<footer class="foot">'):p.index("</footer>")]
-    ok("© CalendarStream" in foot and 'class="curver"' in foot and "v0.2.8-beta.26" in foot, "F11.2: the footer says © CalendarStream and the version")
+    ok("© CalendarStream" in foot and 'class="curver"' in foot and f"v{main.__version__}" in foot, "F11.2: the footer says © CalendarStream and the version")
     ok('rel="icon"' in p and "/static/logo/favicon-32.png" in p and all(c.get(f"/static/logo/{n}").status_code == 200 for n in ("mark-72.png", "favicon-32.png", "icon-192.png", "apple-touch-icon.png", "CalendarStream_Logo.png")),
        "F11.3/R6: a favicon, and the logo files are served from the repo")
     ok("--logo-cal:#0b1f44" in p and "--logo-stream:#1a8cff" in p and "--logo-cal:#e6e8ec" in p and "--logo-stream:#4aa8ff" in p, "F11.3: the title's colors are tokens, light and dark")
@@ -101,9 +101,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             ok(pg.eval_on_selector(pair, "p => p.querySelector('.psave').disabled") is True, f"[{scheme}] F12.4: after Cancel they are inactive again")
             # F23: good status words shrink to their ✓, counts keep their words
             pg.wait_for_timeout(2500)
-            sh = pg.evaluate("""() => ({ shrunk: [...document.querySelectorAll('.chip.good.shrunk')].map(e => e.getAttribute('aria-label') || ''), count: document.querySelector('#rulecount .chip').classList.contains('shrunk'),
-                                       txt: document.querySelector('.chip.good.shrunk .chiptext') && getComputedStyle(document.querySelector('.chip.good.shrunk .chiptext')).maxWidth })""")
-            ok(len(sh["shrunk"]) >= 1 and all(sh["shrunk"]) and sh["count"] is False and sh["txt"] == "0px", f"[{scheme}] F23: a good status word shrinks to its ✓ and keeps its name; the count box keeps its words {sh}")
+            sh = pg.evaluate("""() => ({ boxes: document.querySelectorAll('.statusbox .chip.good').length, boxShrunk: document.querySelectorAll('.statusbox .chip.shrunk').length,
+                                       marks: document.querySelectorAll('.okmark').length, markShrunk: [...document.querySelectorAll('.okmark.shrunk')].map(e => e.getAttribute('aria-label') || ''),
+                                       txt: document.querySelector('.statusbox .chip.good .chiptext') && getComputedStyle(document.querySelector('.statusbox .chip.good .chiptext')).maxWidth })""")
+            ok(sh["boxes"] >= 1 and sh["boxShrunk"] == 0 and sh["txt"] != "0px" and (sh["marks"] == 0 or (len(sh["markShrunk"]) >= 1 and all(sh["markShrunk"]))),
+               f"[{scheme}] I10: Status/Action buttons keep their words (Healthy…); a login block's word shrinks to its ✓ and keeps its name {sh}")
             # F12.7 / F12.6 / F12.1
             if pg.locator('#rules-body[hidden]').count(): pg.click('#rules > .cfgline .cfgtoggle'); pg.wait_for_timeout(300)
             gr = pg.evaluate("""() => { const row = document.querySelector('#rules .ruleline'); const g = row.querySelector('.hgrip'), cs = getComputedStyle(g), svg = g.querySelector('svg.gripdots');

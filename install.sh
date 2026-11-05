@@ -28,11 +28,17 @@ this_ip() {   # this computer's address on the network (Linux, then macOS)
   printf '%s' "$ip"
 }
 
-# Where an earlier install is: the current folder if it holds CalendarStream, else the usual place.
-if [ -f docker-compose.yml ] && grep -q calendarstream docker-compose.yml 2>/dev/null; then
+# Where an earlier install is: the current folder if it holds CalendarStream, else the usual place,
+# ~/stacks/calendarstream (0.2.8-beta.27, F29.1). If that folder is taken by something that isn't CalendarStream,
+# the default is the next free number: calendarstream2, calendarstream3…
+is_ours() { [ -f "$1/docker-compose.yml" ] && grep -q calendar_stream "$1/docker-compose.yml" 2>/dev/null; }
+if is_ours "$PWD"; then
   OLD_DIR="$PWD"
 else
-  OLD_DIR="$HOME/stacks/calendarstream"
+  OLD_DIR="$HOME/stacks/calendarstream"; n=2
+  while [ -e "$OLD_DIR" ] && ! is_ours "$OLD_DIR" && [ -n "$(ls -A "$OLD_DIR" 2>/dev/null)" ]; do
+    OLD_DIR="$HOME/stacks/calendarstream$n"; n=$((n + 1))
+  done
 fi
 OLD_ENV="$OLD_DIR/.env"
 
@@ -53,18 +59,40 @@ mkdir -p "$DIR"
 cd "$DIR"
 
 # 3. The config and data folder (MNT_DOCKER): the database (calendar_stream/postgres) and .secrets/.
-#    Always asked, so you can confirm it; the default is the current one, or the stack folder.
+#    Always asked, so you can confirm it; the default is the current one, or a "data" subfolder of the stack
+#    folder (0.2.8-beta.27, F29.2), so each stack keeps its own.
 CURRENT_DATA="${MNT_DOCKER:-$(env_value .env MNT_DOCKER)}"
-MNT_DOCKER="$(absolute "$(ask "Folder for CalendarStream's config and data (database, .secrets)" "${CURRENT_DATA:-$DIR}")")"
+MNT_DOCKER="$(absolute "$(ask "Folder for CalendarStream's config and data (database, .secrets)" "${CURRENT_DATA:-$DIR/data}")")"
 mkdir -p "$MNT_DOCKER/.secrets"
 
 # 4. Updating from the status page: an optional small updater container (Watchtower) that pulls the
 #    new image and restarts CalendarStream when you press "Update now". It needs access to Docker,
-#    so it's only added if you say yes. The default is your current choice (no on a new install).
+#    so it's only added if you say yes. The default is your current choice (yes on a new install, F29.3).
 CURRENT_PROFILES="$(env_value .env COMPOSE_PROFILES)"
-case ",$CURRENT_PROFILES," in *,updater,*) UPD_DEFAULT=yes ;; *) UPD_DEFAULT=no ;; esac
+case ",$CURRENT_PROFILES," in *,updater,*) UPD_DEFAULT=yes ;;
+  ,,) if [ -f .env ] && grep -q '^COMPOSE_PROFILES=' .env; then UPD_DEFAULT=no; else UPD_DEFAULT=yes; fi ;;
+  *) UPD_DEFAULT=no ;; esac
 UPDATER="$(ask "Allow updating from the status page (adds a small updater container with access to Docker), yes or no" "$UPD_DEFAULT" | tr '[:upper:]' '[:lower:]')"
 case "$UPDATER" in y|yes) UPDATER=yes ;; n|no) UPDATER=no ;; *) echo "Please answer yes or no." >&2; exit 1 ;; esac
+
+# 5. More than one CalendarStream on this server (0.2.8-beta.27, F29.4). Containers have fixed names, so a second
+#    stack gets a number added to them (calendar_stream2, calendar_stream_db2, calendar_stream_updater2) and its own
+#    port. An existing stack keeps the number it has (STACK_NO in its .env). A new folder gets the lowest free number
+#    when another stack's containers are already here.
+STACK_NO="$(env_value .env STACK_NO)"
+PORT="$(env_value .env PORT)"
+if [ -z "$STACK_NO" ] && [ ! -f .env ]; then
+  taken="$(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -E '^calendar_stream(_db|_updater)?[0-9]*$' || true)"
+  if [ -n "$taken" ]; then
+    STACK_NO=2
+    while printf '%s\n' "$taken" | grep -qx "calendar_stream$STACK_NO"; do STACK_NO=$((STACK_NO + 1)); done
+    echo "Another CalendarStream is already on this server: this one's containers get the number $STACK_NO."
+  fi
+fi
+if [ -z "$PORT" ]; then
+  PORT=8080
+  if [ -n "$STACK_NO" ]; then PORT=$((8078 + STACK_NO)); fi
+fi
 
 IP="$(this_ip)"
 # (The public address used to be asked here and written to .env as PUBLIC_URL. It's now set on the
@@ -93,6 +121,8 @@ set_env() {   # $1 = name, $2 = value ("sed -i.bak" works with both GNU and macO
 }
 set_env IMAGE_TAG "$IMAGE_TAG"
 set_env MNT_DOCKER "$MNT_DOCKER"
+set_env STACK_NO "$STACK_NO"
+set_env PORT "$PORT"
 set_env COMPOSE_PROFILES "$([ "$UPDATER" = yes ] && echo updater || true)"
 
 # The database password, made once at random. It also encrypts the passwords CalendarStream
@@ -108,7 +138,7 @@ fi
 
 # Start it, or update it to the newest image of the chosen release. Saying no to the updater after
 # a yes removes its container.
-[ "$UPDATER" = yes ] || docker rm -f calendar_stream_updater >/dev/null 2>&1 || true
+[ "$UPDATER" = yes ] || docker rm -f "calendar_stream_updater$STACK_NO" >/dev/null 2>&1 || true
 docker compose up -d
 
 # First install only: the status page asks for this code before you create your login.
@@ -122,7 +152,7 @@ for _ in $(seq 30); do
 done
 echo
 echo "CalendarStream ($([ "$IMAGE_TAG" = latest ] && echo stable || echo "$IMAGE_TAG")): docker-compose.yml and .env in $DIR, config and data in $MNT_DOCKER"
-echo "Open http://${IP:-localhost}:8080 (or your public https:// address)"
+echo "Open http://${IP:-localhost}:$PORT (or your public https:// address)"
 [ "$UPDATER" = yes ] && echo "Updater on: \"Update now\" appears next to the version when a newer one is out."
 if [ -n "$code" ]; then
   echo "New install: enter the ${code} there to create your login."

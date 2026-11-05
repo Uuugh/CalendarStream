@@ -19,7 +19,7 @@
   }
   document.addEventListener('click', function (e) {
     var b = e.target.closest('.handle .hmove');
-    if (!b) return;
+    if (!b || b.closest('.act')) return;          // (a Then's handle in the rule dialog: 06-rules.js)
     var row = rowOf(b), all = rows(row.parentNode), i = all.indexOf(row);
     if (b.dataset.dir === 'up' && i > 0) row.parentNode.insertBefore(row, all[i - 1]);
     else if (b.dataset.dir === 'down' && i < all.length - 1) row.parentNode.insertBefore(row, all[i + 1].nextSibling);
@@ -29,7 +29,7 @@
   var dragging = null;
   document.addEventListener('dragstart', function (e) {
     var grip = e.target.closest && e.target.closest('.hgrip');
-    if (!grip) return;
+    if (!grip || grip.closest('.act')) return;
     dragging = rowOf(grip); dragging.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
     try { e.dataTransfer.setData('text/plain', ''); e.dataTransfer.setDragImage(dragging, 20, 20); } catch (err) {}

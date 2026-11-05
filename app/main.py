@@ -1128,13 +1128,61 @@ def publish(raw: bytes | None, sha: str | None = None, sid: str = "ccs") -> tupl
     return events, previous
 
 
-# --- Linked events (F3.2): see app/links.py -------------------------------------------------------
+# --- Linked events (F3.2; since 0.2.8-beta.27, F3: link rules): see app/links.py ------------------------------------
 
 _following = False
 
 
 def event_links() -> dict[str, dict]:
-    return links_mod.clean(store.get("event_links"))
+    """{following event's ID: its link}, read from the link rules (the event pop-up's Link to makes them)."""
+    return links_mod.from_rules(all_rules())
+
+
+def set_event_links(found: dict[str, dict]):
+    """Write links back to their rules: a link's rule follows its event's ID, the linked event, its calendar and the
+    start last seen; a link taken out of `found` takes its rule with it. (Rules without a link are left alone.)"""
+    by_rule = {link["rule"]: (uid, link) for uid, link in found.items() if link.get("rule")}
+    out = []
+    for r in all_rules():
+        link = r.get("link")
+        if link:
+            hit = by_rule.get(r["id"])
+            if not hit:
+                continue
+            uid, l = hit
+            own = l.get("own") or link["own"]
+            r = {**r, "link": {**link, "uid": uid, "to": l["to"], "src": l["src"], "at": l["at"], "own": own, "name": l.get("name", link["name"])}}
+            if own != link["own"] and r["apply"] == [link["own"]]:
+                r["apply"] = [own]
+        out.append(r)
+    save_rules(out)
+
+
+def link_rule_for(uid: str) -> dict | None:
+    return next((r for r in all_rules() if (r.get("link") or {}).get("uid") == uid), None)
+
+
+def migrate_links():
+    """0.2.8-beta.27 (F3), once: the links kept in kv "event_links" become link rules (Delete this event / Move this
+    event with the linked event, as the two boxes were ticked), so they show in All Rules, each Then removable."""
+    old = links_mod.clean(store.get("event_links"))
+    if not old:
+        return
+    found = all_rules()
+    have = {(r.get("link") or {}).get("uid") for r in found}
+    for uid, l in old.items():
+        e = store.get_event(uid)
+        other = store.get_event(l["to"])
+        actions = ([{"type": "delete"}] if l["delete"] else []) + ([{"type": "move", "minutes": 0, "with_link": True}] if l["move"] else [])
+        if uid in have or not actions or e is None:
+            continue
+        rule = rules_mod.normalize({"id": "t" + secrets.token_hex(3), "conds": [], "actions": actions, "apply": [e.source],
+                                    "link": {"uid": uid, "own": e.source, "to": l["to"], "src": l["src"], "at": l["at"],
+                                             "name": other.title if other else ""}}, source_ids())
+        if rule:
+            found.append(rule)
+    save_rules(found)
+    store.set("event_links", {})
 
 
 def follow_links(sid: str, events: list[Event]):
@@ -1151,7 +1199,7 @@ def follow_links(sid: str, events: list[Event]):
     for step in todo:
         kind, uid = step[0], step[1]
         if kind == "seen":
-            found[uid]["at"] = step[2]
+            found[uid]["at"], found[uid]["name"] = step[2], step[3]
             continue
         if kind == "unlink":
             found.pop(uid, None)
@@ -1179,7 +1227,7 @@ def follow_links(sid: str, events: list[Event]):
                     store.set_edit(uid, {**base, "start": start, "end": end})
             state.record("info", f"Moved \"{e.title}\" to {start[:16].replace('T', ' ')} with the event it's linked to")
         touched.add(e.source)
-    store.set("event_links", found)
+    set_event_links(found)
     _following = True
     try:
         for one in touched:
@@ -1204,7 +1252,7 @@ def _hide(e: Event):
 # Undo pops off History; it's in no feed meanwhile. Undo (Restore) brings it back. After that it's gone:
 # an added event for good, a source's event hidden (its source would only send it again).
 
-DELETED_WHERE = {"calendarstream": "Deleted in CalendarStream", "google": "Deleted in Google Calendar",
+DELETED_WHERE = {"calendarstream": "Deleted in CalendarStream", "google": "Deleted in Google Calendar", "rule": "Deleted by a rule",
                  "united": "Removed by United (CCS+)", "feed": "Gone from the feed"}
 
 
@@ -1638,6 +1686,7 @@ async def lifespan(_app):
     migrate_sources()
     migrate_destinations()
     migrate_rules()
+    migrate_links()
     tail_logs()
     ensure_local()
     share_converted_rules()

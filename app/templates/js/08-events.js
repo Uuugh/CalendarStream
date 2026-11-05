@@ -16,7 +16,7 @@ document.addEventListener('toggle', function (e) {
   }
 }, true);
 // An opened event gets its tools from #evtoolstpl (0.2.8-beta.4): its reminders, edit and delete
-// fitted to it (a rule's event can't be edited or deleted; a hidden one can't be deleted again).
+// fitted to it (a rule's event can't be edited or deleted; a hidden one can't be deleted again; a source's event is hidden, not deleted).
 function fillTools(d) {
   var box = d.querySelector('.evtools'), tpl = document.getElementById('evtoolstpl');
   if (!box || !tpl || box.dataset.filled) return;
@@ -31,10 +31,13 @@ function fillTools(d) {
   var lk = box.querySelector('.evlinkto');
   if (origin === 'rule') lk.remove(); else { lk.href = '/event?uid=' + q + '&month=' + month + '&link=1'; if (box.dataset.linked) lk.classList.add('on'); }
   box.querySelector('.evcopy').href = '/event?copy=' + q + '&month=' + month;
-  var del = box.querySelector('.evdel');
+  // (0.2.8-beta.27, I3) the bin deletes an event added here; an event from a calendar source can only be hidden (its source
+  // would send it again), so it gets its own tool: Hide, with its own question
+  var del = box.querySelector('.evdel:not(.evhide)'), hide = box.querySelector('.evhide');
   if (box.dataset.deleted) { [edit, lk, bell].forEach(function (x) { if (x && x.parentNode) x.remove(); }); }   // deleted: only Restore and Duplicate
-  if (origin === 'rule' || box.dataset.hidden) del.remove();
-  else { del.elements.uid.value = uid; del.dataset.confirm = origin === 'custom' ? tpl.dataset.delCustom : tpl.dataset.delSource; }
+  if (origin === 'rule' || box.dataset.hidden || box.dataset.deleted) { del.remove(); hide.remove(); }
+  else if (origin === 'custom') { hide.remove(); del.elements.uid.value = uid; del.dataset.confirm = tpl.dataset.delCustom; }
+  else { del.remove(); hide.elements.uid.value = uid; hide.dataset.confirm = tpl.dataset.delSource; }
   box.dataset.filled = '1';
   bindConfirm();
 }

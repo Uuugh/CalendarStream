@@ -67,7 +67,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok("/event?date=" not in pk and "data-add" not in pk and "evedit" not in pk, "F1: nothing to add or edit there")
     ok(c.get("/event/pick?month=2026-11&uid=").status_code == 200 and "November 2026" in c.get("/event/pick?month=2026-11").text, "F1: ‹ › move it a month")
     post("/event/save", uid=cu, title="Lunch", start_date="2026-10-14", end_date="2026-10-14", start_time="12:00", end_time="13:00",
-         start_tz="America/New_York", end_tz="America/New_York", link_to=U, link_delete="1", link_move="1")
+         start_tz="America/New_York", end_tz="America/New_York", link_to=U)
     p = ev(f"uid={q(cu)}&month=2026-10&embed=1")
     lk = p[p.index('id="linkbox"'):p.index('class="actions bottom"')]
     ok(f'value="{U}"' in lk and re.search(r'id="linkpicked" title="Pick another event">RDO · Fri Oct 2</button>', lk) and 'class="seg on" data-kind="event"' in lk
