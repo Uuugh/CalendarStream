@@ -66,9 +66,10 @@ Commit and push; the release workflow tags `v<version>` and publishes the `beta`
 out, the readings it took, anything still waiting, and how many lines have changed since the `reviewed` branch (a
 prompt for a REVIEW, which starts only when the Developer says it: 4-review.md, Chunks).
 
-HANDOFF (step 1.1) gives the same message at any time.
+HANDOFF (step 1.1) is given only when the Developer asks for it, at any time — by name, or by saying they're
+starting a new conversation. BUILD's own report does not end with one unprompted; the Developer asks separately.
 
-Then the handoff, as Claude's last message in the conversation (R17: one message, with no separate "New
+When it is given, it is Claude's last message in the conversation (R17: one message, with no separate "New
 conversation…" line before it): the message to paste as the new conversation's first, in one block. It names the
 repo (Uuugh/CalendarStream) and says it is not on disk and must be cloned from GitHub (add_repo) before `tests/tools/setup.sh` and the version now current (an R-only build keeps it); the Dashboard's link; "Read
 CLAUDE.md, run tests/tools/setup.sh, read the Dashboard"; the next command from "Waiting on"; and anything in
