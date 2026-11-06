@@ -11,6 +11,12 @@ Command: **PLAN**. Read when the Developer says PLAN, and before every BUILD.
     the Developer which reading it took;
   - a **?** answered with Claude's suggestion; it joins the list only when the Developer agrees.
 
+## Before PLAN shows
+
+Claude first reads the Dashboard, including each item's Good | Bad verdict and remark saved in its database (the `tests`
+collection, read with ArtifactData). A Bad reopens its item. A remark that asks for something new becomes a new F or I.
+Each is shown in the list with the Developer's words.
+
 ## PLAN shows
 
 1. Every waiting F, I and R, numbered.

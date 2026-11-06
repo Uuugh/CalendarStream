@@ -28,7 +28,7 @@ Read when planning a version.
 
 0.3 Theming
 0.3.0 Phone mode: Settings a full page, with a back button in its left corner.
-0.3.1 Printing
+0.3.1 Printing (I11 moved here Nov 6: Print layout work after beta.31's orientation toggle)
 
 0.4 Backups
 
