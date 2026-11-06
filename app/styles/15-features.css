@@ -180,6 +180,11 @@ details.gsteps ol > li.done { color:var(--muted) }
 .okmark .okword { display:inline-block; max-width:12em; overflow:hidden; vertical-align:bottom; white-space:nowrap; transition:max-width .5s ease, opacity .4s ease }
 .okmark.shrunk { gap:0 }
 @media (prefers-reduced-motion:reduce) { .okmark .okword { transition:none } }
+/* (0.2.8-beta.33, I21/F45) A shrunk status that isn't an ongoing health check vanishes entirely, instead of
+   keeping its icon forever: it fades and collapses to nothing, giving the line its space back. */
+.chip.gone, .okmark.gone { max-width:0; max-height:0; opacity:0; margin:0; padding:0; overflow:hidden;
+  transition:max-width .4s ease, opacity .3s ease, margin .4s ease, padding .4s ease }
+@media (prefers-reduced-motion:reduce) { .chip.gone, .okmark.gone { transition:none } }
 
 /* (0.2.8-beta.28, F16.3) Remove a calendar: "Download a copy (.ics) first" on the line of Cancel | Remove, which are the Cancel | Save pair's look */
 #removedialog .rmfoot { align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap }

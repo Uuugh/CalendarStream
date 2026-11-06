@@ -17,13 +17,16 @@
 {%- endmacro %}
 
 {# The end of a login line: "✓ <ok_text>" while the saved values are good and untouched, otherwise the
-   button. Typing in the form swaps the mark for the button (see the "watch" script on the page). #}
-{% macro okbutton(ok, ok_text, button, ok_title="", name="", value="") -%}
+   button. Typing in the form swaps the mark for the button (see the "watch" script on the page). `keep`:
+   true (the default) for a mark that can become unhealthy (CCS+ or a feed's "Validated") — it shrinks to
+   its icon and stays; false for a plain one-off confirmation (e.g. History's "Saved") — it shrinks, then
+   vanishes entirely (0.2.8-beta.33, I21/F45). #}
+{% macro okbutton(ok, ok_text, button, ok_title="", name="", value="", keep=True) -%}
 {# One slot to the right of a login's boxes: "✓ Validated" (or Signed in); typing swaps it for ✕ and ✓
    (Cancel and Save) side by side. Cancel grows to fill the slot, then fades back to ✓. Save grows, says Saved,
    then Verifying… (yellow), then ✓ Validated (green) or ✗ Failed (red, the reason under the boxes). With nothing
    valid saved yet, the slot is just Save. The states are set by the script in index.html. #}
-<span class="okslot" data-state="{{ 'ok' if ok else 'needs' }}">
+<span class="okslot" data-state="{{ 'ok' if ok else 'needs' }}"{% if not keep %} data-fold-vanish="1"{% endif %}>
   <span class="okmark"{% if ok_title %} title="{{ ok_title }}"{% endif %}>{{ icon("check_circle", 15) }}<span class="okword">{{ ok_text }}</span></span>
   <span class="slotmsg" aria-live="polite"></span>
   {# While typing, Cancel and Save are icons only (F1.4): ✕ and ✓, named by their title. #}

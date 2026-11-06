@@ -22,8 +22,8 @@ from ..main import (_hidden_by, _invites, _local_time, _opt_day, _parse_month, _
     COPY_ICON, customs_for, dates_for, default_sid, DELETED_WHERE, dest_google, DESTINATION_TYPES, destinations, display_tz,
     display_zone, EARLIEST, event_links, event_templates, feed_url, first_named_calendar, google, google_view,
     gui_auth, ignored_conflicts, interval_minutes, lang_for, LOG_KINDS, logins, MODULE_ABOUT, notify_address, now,
-    page, public_addresses, source_off, public_url, rule_label, rule_label_html, section_state, SECTIONS, skey, source,
-    source_ids, SOURCE_PRESETS, source_rules, source_url, st, state, store, subscribe_links, templates, THEMES,
+    page, public_addresses, source_off, public_url, rule_label, rule_label_html, rule_used, section_state, SECTIONS, skey,
+    source, source_ids, SOURCE_PRESETS, source_rules, source_url, st, state, store, subscribe_links, templates, THEMES,
     TRASH_ICON, TZ, undo_keep, valid_zone)
 from .. import i18n, icons, rules as rules_mod
 from ..calsync import Event
@@ -340,9 +340,11 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
         "csrf": core.CSRF_TOKEN, "name": calendar_name(), "srcs": srcs,
         "new_stream": secrets.token_urlsafe(24),       # + Add a feed's link, whole from the start (0.2.8-beta.23, F13.1)
         "dests": [dest_view(request, d, lang, sections) for d in destinations()], "dest_types": DESTINATION_TYPES,
-        # every rule, highest priority first, with its label and calendars (All Rules; "+ Add a rule")
+        # every rule, highest priority first, with its label and calendars (All Rules; "+ Add a rule").
+        # (0.2.8-beta.33, I35) "used" is named from rule_used(), not all_rules()'s own (already-stripped) apply:
+        # see its docstring. A rule set to All calendars has nothing to name.
         "all_rules": [{**r, "label": rule_label(r, lang), "html": rule_label_html(r, lang),
-                       "used": [calendar_name(x) for x in source_ids() if rules_mod.applies(r, x)]} for r in all_rules()],
+                       "used": [] if r["apply"] == "all" else rule_used(r["id"])} for r in all_rules()],
         "rule_js": rule_js(lang),
         "rule_conflicts": rule_conflicts(lang),
         "linked": linked_titles(),

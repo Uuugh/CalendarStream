@@ -57,7 +57,7 @@
       <form method="post" action="/history/keep" class="clientform watch keepform" data-swap="#activity">
         <input type="hidden" name="csrf" value="{{ csrf }}">
         <label>{{ _('Remember the last') }} <input type="number" name="keep" min="1" max="200" value="{{ undo_keep }}" aria-label="{{ _('Changes remembered for Undo') }}"> {{ _('changes for Undo') }}</label>
-        {{ m.okbutton(true, _('Saved'), _('Save')) }}
+        {{ m.okbutton(true, _('Saved'), _('Save'), keep=False) }}
       </form>
       <a class="btn2 ghostbtn" href="/history/container" target="_blank" rel="noopener">{{ icon("terminal", 16) }} {{ _('Container log') }}</a>
     </div>

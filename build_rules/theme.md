@@ -414,6 +414,9 @@ one here, with its card.
 - A status word (0.2.8-beta.32, I21) always shows its icon and words together inside a Status/Action button. Elsewhere, it shows icon and words,
   then collapses to just its icon (the words stay as its tooltip and accessible name); how long it shows first follows the Animation duration
   setting. (Suite 66)
+- A collapsed status word (0.2.8-beta.33, I21/F45) then vanishes entirely, giving its line the space back, unless it's an ongoing health check
+  the Developer should keep seeing (something that can become unhealthy, e.g. CCS+ or a feed's "Validated"); a plain one-off confirmation such
+  as History's "Saved" after changing how many changes are remembered goes all the way. (Suite 67)
 - Administrator's public addresses (0.2.8-beta.32, I22) are one list of rows (the page's own address first, then any others), each with its own
   trash can; + sits at the end of the first row. Trashing a row takes it out, or, when it's the only row left, clears it instead. (Suite 66)
 - The event pop-up's Different end time zone (0.2.8-beta.32, I31) has the tooltip "End Time zone"; the pop-up never resizes as All-day Event or
@@ -423,3 +426,5 @@ one here, with its card.
 - The 2/3-line box (0.2.8-beta.32, I27) is invisible now, not boxed: no border, no fill. It sits right-aligned next to its Status/Action
   button instead of centered across the header, and still shows only while collapsed. (Suite 66)
 - Cancel in the rule dialog (0.2.8-beta.32, I18), opened from the event pop-up, reopens it exactly as it was, unsaved edits included. (Suite 66)
+- Escape in the rule dialog (0.2.8-beta.33, I37) cancels exactly like the Cancel button, not like a plain dialog close: opened from the event
+  pop-up, it brings that back too, the same as I18. (Suite 67)

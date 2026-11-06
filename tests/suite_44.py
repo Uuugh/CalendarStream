@@ -391,7 +391,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "End Time zone title (suite 66)": "The event pop-up's Different end time zone (0.2.8-beta.32",
             "card padding (suite 66)": "The first theme after install (0.2.8-beta.32, F38)",
             "rule dialog Cancel (suite 66)": "Cancel in the rule dialog (0.2.8-beta.32, I18)",
-            "2/3-line invisible (suite 66)": "The 2/3-line box (0.2.8-beta.32, I27)"}
+            "2/3-line invisible (suite 66)": "The 2/3-line box (0.2.8-beta.32, I27)",
+            "status word vanish (suite 67)": "A collapsed status word (0.2.8-beta.33, I21/F45) then vanish",
+            "rule dialog Escape (suite 67)": "Escape in the rule dialog (0.2.8-beta.33, I37) cancels exact"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

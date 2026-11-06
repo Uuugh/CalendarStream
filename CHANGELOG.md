@@ -9,7 +9,25 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.32**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.33**
+
+## 0.2.8-beta.33 — 2026-11-06
+
+Build 9.
+
+### Fixed
+- **I35** A rule's All Rules badge no longer says "No calendar yet" for a rule whose calendar was later
+  removed — it keeps naming that calendar (by its own last-known name, or a generic fallback) instead of
+  looking indistinguishable from a rule that was genuinely never given one.
+- **I37** Escape in the rule dialog now cancels exactly like the Cancel button. Writing a new rule from the
+  event pop-up and pressing Escape (instead of clicking Cancel) used to close the rule dialog the plain way,
+  which left the event pop-up closed too; now it comes back, the same as Cancel already did (I18).
+
+### Changed
+- **I21 / F45** A collapsed status word now vanishes entirely (giving its line the space back) unless it's an
+  ongoing health check the Developer should keep seeing (something that can become unhealthy, e.g. CCS+ or a
+  feed's "Validated"); a plain one-off confirmation such as History's "Saved" after changing how many changes
+  are remembered goes all the way, instead of keeping its ✓ forever.
 
 ## 0.2.8-beta.32 — 2026-11-06
 

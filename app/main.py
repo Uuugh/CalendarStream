@@ -306,6 +306,19 @@ def all_rules() -> list[dict]:
     return rules_mod.normalize_all(store.get("rules"), source_ids())
 
 
+def rule_used(rid: str) -> list[str]:
+    """(0.2.8-beta.33, I35) The calendar(s) a rule names, for its All Rules badge: from the raw, unstripped
+    apply list still on file, not all_rules()'s own (which normalizes a rule's apply against today's live
+    sources, so a now-removed calendar silently empties it - fine for matching events, but indistinguishable,
+    in the badge, from a rule that's genuinely never had one chosen). Each name may be stale (the calendar's
+    own name, or a generic fallback, if that's gone too); "all" or no match gives none."""
+    raw = next((r for r in (store.get("rules") or []) if isinstance(r, dict) and r.get("id") == rid), None)
+    apply = (raw or {}).get("apply")
+    if not isinstance(apply, list):
+        return []
+    return [calendar_name(x) for x in apply if isinstance(x, str) and x]
+
+
 def save_rules(found: list[dict]):
     store.set("rules", found[:rules_mod.MAX_RULES])
 

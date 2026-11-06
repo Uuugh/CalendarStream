@@ -456,8 +456,13 @@ applyBox.addEventListener('change', function (e) {
   drawApply();
 });
 ruleDialog.addEventListener('click', function (e) { if (!applyMenuEl().hidden && !applyBox.contains(e.target)) openApply(false); });
-ruleDialog.addEventListener('keydown', function (e) {   // Escape closes the menu first, then the dialog
-  if (e.key === 'Escape' && !applyMenuEl().hidden) { e.preventDefault(); openApply(false); applyBtn.focus(); }
+ruleDialog.addEventListener('keydown', function (e) {   // Escape closes the menu first, then Cancel, not a plain dialog close
+  if (e.key !== 'Escape') return;
+  if (!applyMenuEl().hidden) { e.preventDefault(); openApply(false); applyBtn.focus(); return; }
+  // (0.2.8-beta.33, I37) Escape must cancel exactly like the Cancel button (07-saving.js): opened from the
+  // event pop-up, it brings that back instead of leaving with nothing, as the dialog's own native close would.
+  var c = ruleDialog.querySelector('.pairbtns .pcancel');
+  if (c && !c.disabled) { e.preventDefault(); c.click(); }
 });
 // (0.2.8-beta.32, I18) set when the rule dialog is opened from the event pop-up (Link › Rule, Create new):
 // Cancel then reopens that pop-up as it was, instead of just closing (07-saving.js).
