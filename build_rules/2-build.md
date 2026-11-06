@@ -2,10 +2,20 @@
 
 Command: **BUILD** `[F|f I|i R|r] [b m M]` (GO and EOF are aliases). Read when the Developer says BUILD. Claude first checks its model (0-overview.md, Conversations).
 
+## The start-of-BUILD box
+
+BUILD opens with one short rounded box (the style of the app's status boxes), two lines, each green when good and amber
+otherwise:
+- **Model:** "Model: Sonnet 5.5" (green) when it is the model; "Model: Sonnet 5.5 not selected. (Optional)" (amber)
+  otherwise. The Developer sets Medium effort (Claude can't see it) and switches models; Claude never does.
+- **Usage:** "Usage: 11% / 47%" (green, the Developer's session % / weekly %) once a reading is given; "Usage: Missing"
+  (amber) until then.
+The repo is not part of the box; a handoff tells Claude to clone it when it is not on disk.
+
 ## Usage readings
 
 Claude can't see the usage meters, so the Developer's readings are the only actual costs.
-- **Before a BUILD:** unless the BUILD message or the conversation already gives a current reading, Claude asks for the
+- **Before a BUILD:** the Developer gives the reading in the new conversation (always); unless the BUILD message or the conversation already gives a current reading, Claude asks for the
   current session % and weekly % (one short question) and waits. With none given, it says so and goes on, and the
   Dashboard marks that build's actual as unknown.
 - **After a BUILD:** Claude's report ends by asking for the same two readings, and the next BUILD's "before" is not asked
@@ -60,7 +70,7 @@ HANDOFF (step 1.1) gives the same message at any time.
 
 Then the handoff, as Claude's last message in the conversation (R17: one message, with no separate "New
 conversation…" line before it): the message to paste as the new conversation's first, in one block. It names the
-repo (Uuugh/CalendarStream) and the version now current (an R-only build keeps it); the Dashboard's link; "Read
+repo (Uuugh/CalendarStream) and says it is not on disk and must be cloned from GitHub (add_repo) before `tests/tools/setup.sh` and the version now current (an R-only build keeps it); the Dashboard's link; "Read
 CLAUDE.md, run tests/tools/setup.sh, read the Dashboard"; the next command from "Waiting on"; and anything in
 flight (a review turn, a release still running, a fix waiting for something from the Developer). Never the
 Developer's real data.

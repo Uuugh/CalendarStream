@@ -44,9 +44,9 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   carries on in a conversation that has already been summarized, Claude reminds them, in one line at the top of
   each reply, to start a new one from the handoff.
 - The Developer doesn't need reminding about REVIEW.
-- At BUILD, Claude checks which model it is running on. If it isn't Sonnet 5.5, Claude says so before building and
-  reminds the Developer to set Medium effort (Claude can't see that setting). Only the Developer switches models.
-  Opus is for PLAN and for REVIEW of risky items.
+- At BUILD, Claude checks which model it is running on and shows the start-of-BUILD box (2-build.md): Model and Usage,
+  green when good, amber otherwise. If it isn't Sonnet 5.5, the Developer is reminded to set Medium effort (Claude
+  can't see that setting). Only the Developer switches models. Opus is for PLAN and for REVIEW of risky items.
 
 ## Commands
 
