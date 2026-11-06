@@ -2,6 +2,17 @@
 
 Command: **BUILD** `[F|f I|i R|r] [b m M]` (GO and EOF are aliases). Read when the Developer says BUILD. Claude first checks its model (0-overview.md, Conversations).
 
+## Usage readings
+
+Claude can't see the usage meters, so the Developer's readings are the only actual costs.
+- **Before a BUILD:** unless the BUILD message or the conversation already gives a current reading, Claude asks for the
+  current session % and weekly % (one short question) and waits. With none given, it says so and goes on, and the
+  Dashboard marks that build's actual as unknown.
+- **After a BUILD:** Claude's report ends by asking for the same two readings, and the next BUILD's "before" is not asked
+  for again if it was given then.
+- Claude records each build on the Dashboard: its estimate (session and weekly), the readings, and its projection for the
+  next build.
+
 ## What BUILD builds
 
 - **BUILD**: every waiting input. **BUILD** with F, I and/or R: exactly those kinds; the rest stay waiting.
