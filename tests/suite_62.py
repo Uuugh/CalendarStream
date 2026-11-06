@@ -67,9 +67,10 @@ ok('class="ghost addrule newrule"' in src and "New rule…" not in src and "addr
 
 # --- F17.1: Different end time zone on Time zone's label line ------------------------------------------------------------------
 evh = read("app", "templates", "event.html")
-tz = evh[evh.index('class="timed tzdiff"'):]
-tz = tz[:tz.index("</div></div>") + 12]
-ok('class="lblline"' in tz and 'class="endzone"' in tz and tz.index("end_tz_differs") < tz.index('zonepick("end_tz"'), "F17.1: Different end time zone on a label line, its time zone box under it")
+tz = evh[evh.index('class="endtime"'):]
+tz = tz[:tz.index("</div>", tz.index('class="endzone"')) + 6]
+ok('class="lblline"' in tz and 'id="end_tz_differs"' in tz and 'class="endzone"' in tz and tz.index("end_tz_differs") < tz.index('zonepick("end_tz"'),
+   "F17.1 (beta.31, I19): Different end time zone on the end Time's label line, its time zone box under the times")
 ok('for="end_tz"' not in evh, "F17.1: no End time zone label")
 
 # --- I10: only the login blocks shrink -------------------------------------------------------------------------------------------

@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="/static/logo/apple-touch-icon.png?v={{ version }}">{% endif %}
 <link rel="stylesheet" href="/assets/app.css?v={{ version }}">
 </head>
-<body{% if calview.full %} class="calfull"{% endif %}>{{ icon_sprite() }}{% import "_macros.html" as m with context %}
+<body class="{% if calview.full %}calfull{% endif %}{% if look.grips == 'right' %} gripsright{% endif %}">{{ icon_sprite() }}{% import "_macros.html" as m with context %}
   {# (?): an explanation that shows on hover, on focus, or when clicked; raised like a superscript right
      after the word it explains (F1.2). `text` may hold <b>. #}
   {# Google Calendar API Sync's details once connected (0.2.8-beta.9/10): laid out like a login (the Client ID
@@ -62,7 +62,7 @@
   {# Cancel and Save as one 130 × 34 px pair (F1.4). Save sends `form` in the background (F1.5);
      the pressed side fills the pair and says Saved / Cancelled for 3 seconds (see the script). #}
   {% macro pair(form, save=none) -%}
-  <span class="pairbtns" data-state="idle" data-pair="{{ form }}"><button type="button" class="ghost pcancel" data-text="{{ _('Cancel') }}" data-done="{{ _('Cancelled') }}">{{ _('Cancel') }}</button><button class="psave" form="{{ form }}" data-text="{{ save or _('Save') }}" data-busy="{{ _('Saving…') }}" data-done="{{ _('Saved') }}">{{ save or _('Save') }}</button></span>
+  <span class="pairbtns" data-state="idle" data-pair="{{ form }}"><button type="button" class="ghost pcancel" title="{{ _('Cancel') }}" data-text="{{ _('Cancel') }}" data-done="{{ _('Cancelled') }}">{{ _('Cancel') }}</button><button class="psave" form="{{ form }}" title="{{ save or _('Save') }}" data-text="{{ save or _('Save') }}" data-busy="{{ _('Saving…') }}" data-done="{{ _('Saved') }}">{{ save or _('Save') }}</button></span>
   {%- endmacro %}
 
   {# (0.2.8-beta.28, F25) The On | Off switch of a module, upper right of its configuration, below the rule: like the 12h | 24h one.

@@ -32,5 +32,9 @@
       <button type="button" data-theme-choice="system" title="{{ _('Match system') }}" aria-label="{{ _('Match system theme') }}">
         {{ icon("contrast", 18) }}</button>
     </div>
+    {# Full page (F15.4; 0.2.8-beta.31, F34, F35): left of ☰; hides every other section, and the icon then becomes Windows' restore down (two squares) #}
+    <button type="button" class="iconbtn fullbtn" id="fullbtn" aria-pressed="{{ 'true' if calview.full else 'false' }}"
+            data-full-title="{{ _('Full page') }}" data-back-title="{{ _('Back') }}"
+            title="{{ _('Back') if calview.full else _('Full page') }}" aria-label="{{ _('Back') if calview.full else _('Full page') }}">{{ icon("filter_none" if calview.full else "fullscreen", 20) }}</button>
 {% include "index/settings.html" %}
   </header>

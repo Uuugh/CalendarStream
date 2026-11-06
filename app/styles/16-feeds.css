@@ -106,7 +106,8 @@
   dialog#adddest2[open] { grid-template-columns:minmax(0, 1fr) } #adddest > * { min-width:0 }
   @media (max-width:700px) {
     .addname { flex-wrap:wrap; gap:5px } .addname > .addfield { flex:1 1 100% }
-    .module.cfgopen .nameline { flex-wrap:wrap; gap:5px } .module.cfgopen .nameline > .namebox { flex:1 1 100% }
+    /* I2: Default stays beside the title on its row; only Notes (full width) wraps below */
+    .module.cfgopen .nameline { flex-wrap:wrap; gap:5px } .module.cfgopen .nameline > .namebox { flex:1 1 auto; min-width:0 }
     .module.cfgopen .nameline > .notebox { flex:1 1 100%; margin-left:0 }
     .feedlink select.fbase { max-width:38% }
   }

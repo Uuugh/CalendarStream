@@ -30,6 +30,7 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 - "Waiting on" spells out the recommended path: the exact command to say next, when (for example after a usage
   reset), in which conversation, and how the remaining builds are split (for the least usage, 1-plan.md point 5),
   with the reason when it saves usage (a new conversation, a smaller build, waiting for a reset).
+- The list of the F, I and R inputs is titled **Inputs Status**.
 - It is one artifact, "CalendarStream Dashboard", kept from conversation to conversation: a new conversation
   opens it from the link in the handoff (or the artifact list) and updates that one, never a copy.
 
@@ -43,9 +44,9 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   carries on in a conversation that has already been summarized, Claude reminds them, in one line at the top of
   each reply, to start a new one from the handoff.
 - The Developer doesn't need reminding about REVIEW.
-- At BUILD, Claude checks which model it is running on. If it isn't Sonnet 5.5, Claude says so before building and
-  reminds the Developer to set Medium effort (Claude can't see that setting). Only the Developer switches models.
-  Opus is for PLAN and for REVIEW of risky items.
+- At BUILD, Claude checks which model it is running on and shows the start-of-BUILD box (2-build.md): Model and Usage,
+  green when good, amber otherwise. If it isn't Sonnet 5.5, the Developer is reminded to set Medium effort (Claude
+  can't see that setting). Only the Developer switches models. Opus is for PLAN and for REVIEW of risky items.
 
 ## Commands
 
@@ -89,3 +90,4 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 - `ui_ux.md`: usability and accessibility of the page; theme.md wins where they differ.
 - `roadmap.md`: what's planned.
 - `low-findings.md`: Low review findings waiting for their code to change.
+- `build-costs.md`: what each BUILD cost (estimate and the Developer's readings, by model), used to predict the next.

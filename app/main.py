@@ -328,7 +328,7 @@ def color_name(color: str) -> str:
 
 def rule_label(r: dict, lang: str = "en") -> str:
     """A rule in one line: its title, else e.g. 'Text contains “RDO” → Color (Tomato)'."""
-    tr = lambda text, **kw: str(i18n.tr(lang, text, **kw))
+    tr = lambda t, **kw: str(i18n.tr(lang, t, **kw))
     return rules_mod.label(r, tr, color_name, {t["id"]: t for t in event_templates()})
 
 
@@ -569,7 +569,7 @@ def page(request: Request, name: str, context: dict, status_code: int = 200, lan
     return templates.TemplateResponse(request, name, {
         **context, "lang": lang, "html_lang": i18n.HTML_LANG[lang], "langs": i18n.LANGS,
         "lang_choice": store.get("ui_lang") if store.get("ui_lang") in i18n.LANGS else "auto",
-        "_": lambda text, **kw: i18n.tr(lang, text, **kw), "msg": lambda text: i18n.message(lang, text),
+        "_": lambda t, **kw: i18n.tr(lang, t, **kw), "msg": lambda text: i18n.message(lang, text),
         "dates": dates_for(lang), "theme": ui_theme(), "clock": ui_clock(), "look": look(),
         "update": {"available": updates.available(), "channel": release_channel(), "frequency": updates.frequency(),
                    "frequencies": list(FREQUENCIES), "info": updates.info(), "releases": RELEASES,
@@ -587,7 +587,8 @@ def look() -> dict:
     """(0.2.8-beta.29, F14) ☰ Settings › Look: the Developer's own logo and favicon (uploaded; None = CalendarStream's own)
     and the buttons' Animation (intensity, duration; percent, 100 = as designed)."""
     saved = store.get("brand") or {}
-    out = {"logo": None, "favicon": None, "anim": dict(ANIM_DEFAULT)}
+    out = {"logo": None, "favicon": None, "anim": dict(ANIM_DEFAULT),
+           "grips": "right" if store.get("ui_grips") == "right" else "left"}      # (0.2.8-beta.31, F36.1) the reorder grips' side
     for kind in ("logo", "favicon"):
         if saved.get(kind):
             out[kind] = f"/brand/{kind}?v={hashlib.md5(saved[kind]['b64'].encode()).hexdigest()[:8]}"
@@ -2156,6 +2157,10 @@ def _span(e: Event, tz: ZoneInfo | None = None) -> tuple[date, date, datetime | 
 def _hidden_by(e: Event, hide: set[str]) -> bool:
     """Is `e` one of the kinds the key has switched off (0.2.8-beta.29, F28)? A calendar ("src:<id>"), edited here,
     changed by United since ("stale"), hidden from Google ("hidden") or deleted ("deleted")."""
+    # (0.2.8-beta.31, I3) an event added here and deleted here is gone from the calendar at once ("we control the calendar");
+    # it is still in History › Undo until that pops off. Events a source sent stay struck through (their own Restore).
+    if e.deleted and e.origin == "custom" and e.deleted.split("|")[0] == "calendarstream":
+        return True
     if not hide:
         return False
     return (f"src:{e.source}" in hide or ("deleted" in hide and bool(e.deleted))
@@ -2383,7 +2388,7 @@ ALARM_CHOICES = (0, 5, 10, 15, 30, 60, 120, 1440, 2880, 10080)    # minutes befo
 
 def alarm_text(minutes: int, lang: str = "en") -> str:
     """e.g. "at the start", "15 min before", "1 day before"."""
-    tr = lambda text, **kw: str(i18n.tr(lang, text, **kw))
+    tr = lambda t, **kw: str(i18n.tr(lang, t, **kw))
     if minutes == 0:
         return tr("at the start")
     for size, one, many in ((10080, "1 week before", "{n} weeks before"), (1440, "1 day before", "{n} days before"),

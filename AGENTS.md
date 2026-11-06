@@ -25,6 +25,7 @@ manage it all. See README.md for what it does.
   - `ui_ux.md`: usability and accessibility of the page (WCAG 2.2 AA, ARIA, keyboard, focus, motion); theme.md decides exact looks.
   - `roadmap.md`: what's planned.
   - `low-findings.md`: Low review findings waiting for their code to change.
+  - `build-costs.md`: what each BUILD cost, to predict the next.
 
 ## Code map (0.2.8-beta.20, F12; 0.2.8-beta.21; 0.2.8-beta.26; 0.2.8-beta.28; 0.2.8-beta.29)
 

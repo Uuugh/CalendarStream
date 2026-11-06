@@ -77,7 +77,7 @@ function fitFull() {
   var cal = document.getElementById('cal'), body = document.getElementById('calbody');
   if (!cal || !body || !cal.classList.contains('full')) return;
   var legend = cal.querySelector('.legend');
-  var avail = Math.max(260, window.innerHeight - body.getBoundingClientRect().top - (legend ? legend.offsetHeight : 0) - 28);
+  var avail = Math.max(260, window.innerHeight - body.getBoundingClientRect().top - (legend ? legend.offsetHeight : 0) - 36);   // (beta.31, I14: 28 left the page 4 px too tall)
   var view = body.dataset.view, month = body.querySelector('.month');
   if (view === 'month' && month) {
     var extras = {}, base = 0;
@@ -113,6 +113,11 @@ function fitFull() {
       var to = fb.getAttribute('aria-pressed') !== 'true';
       savePref('/ui/calview', { full: to ? '1' : '0' }, function () {
         document.body.classList.toggle('calfull', to);
+        // (0.2.8-beta.31, F34, F35) the button is in the title bar now, outside the calendar: change it here
+        fb.setAttribute('aria-pressed', String(to));
+        var tt = to ? fb.dataset.backTitle : fb.dataset.fullTitle;
+        fb.title = tt; fb.setAttribute('aria-label', tt);
+        var use = fb.querySelector('use'); if (use) use.setAttribute('href', '#mi-' + (to ? 'filter_none' : 'fullscreen'));
         loadCal(location.href);
       });
       return;
@@ -123,7 +128,7 @@ function fitFull() {
       var off = it.getAttribute('aria-pressed') === 'true';
       it.setAttribute('aria-pressed', String(!off)); it.classList.toggle('dim', off);
       var keys = Array.prototype.map.call(document.querySelectorAll('#cal .legitem.dim[data-hide]'), function (x) { return x.dataset.hide; });
-      savePref('/ui/calview', { hide: keys.join(',') }, function () { loadCal(location.href); });
+      savePref('/ui/calview', { hide: keys.join(',') || '-' }, function () { loadCal(location.href); });   // (beta.31, I15: '-' = none; an empty value is not sent)
     }
   });
   // F15.7: the stretch handle in the calendar's lower left corner: drag (or ↑ ↓) to make the calendar taller or shorter
@@ -140,6 +145,26 @@ function fitFull() {
   });
   document.addEventListener('pointermove', function (e) { if (drag) drag.now = stretch(drag.cal, drag.st + (e.clientY - drag.y)); });
   document.addEventListener('pointerup', function () { if (drag && drag.now !== null) remember(drag.now); drag = null; });
+  // (0.2.8-beta.31, I20) the hour-height handle left of the times: drag (or ↑ ↓) to make each hour shorter or taller
+  var hdrag = null, hsaver = null;
+  function hourSet(view, px) { px = Math.max(20, Math.min(120, Math.round(px))); view.style.setProperty('--hhu', px + 'px');
+    var g = view.querySelector('#hourgrip'); if (g) g.setAttribute('aria-valuenow', String(px)); return px; }
+  function hourKeep(px) { clearTimeout(hsaver); hsaver = setTimeout(function () { savePref('/ui/calview', { hour: String(px) }); }, 400); }
+  document.addEventListener('pointerdown', function (e) {
+    var g = e.target.closest('#hourgrip'); if (!g) return;
+    var v = g.closest('.hourview');
+    hdrag = { y: e.clientY, h: parseFloat(g.getAttribute('aria-valuenow')) || 44, v: v, now: null };
+    if (g.setPointerCapture) g.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  document.addEventListener('pointermove', function (e) { if (hdrag) hdrag.now = hourSet(hdrag.v, hdrag.h + (e.clientY - hdrag.y) / 6); });
+  document.addEventListener('pointerup', function () { if (hdrag && hdrag.now !== null) hourKeep(hdrag.now); hdrag = null; });
+  document.addEventListener('keydown', function (e) {
+    var g = e.target.closest && e.target.closest('#hourgrip');
+    if (!g || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
+    var v = g.closest('.hourview'), now = parseFloat(g.getAttribute('aria-valuenow')) || 44;
+    e.preventDefault(); hourKeep(hourSet(v, now + (e.key === 'ArrowDown' ? 4 : -4)));
+  });
   document.addEventListener('keydown', function (e) {
     var h = e.target.closest && e.target.closest('#calstretch');
     if (!h || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;

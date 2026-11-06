@@ -32,7 +32,7 @@
   }
   function picked(group, attr) { var b = dlg.querySelector(group + ' [aria-checked=true]'); return b ? b.dataset[attr] : ''; }
   function url() {
-    var q = new URLSearchParams({ view: picked('.viewpick', 'v'), theme: picked('.themepick', 't'),
+    var q = new URLSearchParams({ view: picked('.viewpick', 'v'), theme: picked('.themepick', 't'), orient: picked('.orientpick', 'o') || 'auto',
                                   weekends: f.elements.weekends.checked ? '1' : '0', start: f.elements.start.value, end: f.elements.end.value,
                                   all: f.querySelector('.rangeall').checked ? '1' : '' });
     return '/print?' + q.toString();
@@ -42,7 +42,7 @@
   function open(start, end, view) {
     f.elements.start.value = start; f.elements.end.value = end;
     var all = f.querySelector('.rangeall'); all.checked = false; f.querySelectorAll('.daterange input[type=date]').forEach(function (i) { i.readOnly = false; i.classList.remove('off'); });
-    pick('.viewpick', 'v', view); pick('.themepick', 't', prefs.theme || 'light');
+    pick('.viewpick', 'v', view); pick('.themepick', 't', prefs.theme || 'light'); pick('.orientpick', 'o', prefs.orient || 'auto');
     f.elements.weekends.checked = prefs.weekends !== false;
     frame.src = url(); dlg.showModal();
   }
@@ -60,12 +60,13 @@
   var askedDay = new URLSearchParams(location.search).get('print');
   if (askedDay) window.openPrintDay(askedDay);
   dlg.querySelectorAll('.viewpick [data-v]').forEach(function (b) { b.addEventListener('click', function () { pick('.viewpick', 'v', b.dataset.v); refresh(); }); });
+  dlg.querySelectorAll('.orientpick [data-o]').forEach(function (b) { b.addEventListener('click', function () { pick('.orientpick', 'o', b.dataset.o); refresh(); }); });
   dlg.querySelectorAll('.themepick [data-t]').forEach(function (b) { b.addEventListener('click', function () { pick('.themepick', 't', b.dataset.t); refresh(); }); });
   f.addEventListener('change', refresh);
   dlg.querySelector('.ppcancel').addEventListener('click', function () { dlg.close(); });
   dlg.querySelector('.ppprint').addEventListener('click', function () {
-    prefs = { view: oneDay && picked('.viewpick', 'v') === 'day' ? (prefs.view || calView) : picked('.viewpick', 'v'), theme: picked('.themepick', 't'), weekends: f.elements.weekends.checked };
-    savePref('/ui/print', { view: prefs.view, theme: prefs.theme, weekends: prefs.weekends ? '1' : '0' });
+    prefs = { view: oneDay && picked('.viewpick', 'v') === 'day' ? (prefs.view || calView) : picked('.viewpick', 'v'), theme: picked('.themepick', 't'), weekends: f.elements.weekends.checked, orient: picked('.orientpick', 'o') || 'auto' };
+    savePref('/ui/print', { view: prefs.view, theme: prefs.theme, weekends: prefs.weekends ? '1' : '0', orient: prefs.orient });
     frame.contentWindow.focus(); frame.contentWindow.print();
   });
 })();

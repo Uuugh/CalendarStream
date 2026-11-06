@@ -11,6 +11,12 @@ Command: **PLAN**. Read when the Developer says PLAN, and before every BUILD.
     the Developer which reading it took;
   - a **?** answered with Claude's suggestion; it joins the list only when the Developer agrees.
 
+## Before PLAN shows
+
+Claude first reads the Dashboard, including each item's Good | Bad verdict and remark saved in its database (the `tests`
+collection, read with ArtifactData). A Bad reopens its item. A remark that asks for something new becomes a new F or I.
+Each is shown in the list with the Developer's words.
+
 ## PLAN shows
 
 1. Every waiting F, I and R, numbered.
@@ -19,7 +25,9 @@ Command: **PLAN**. Read when the Developer says PLAN, and before every BUILD.
 4. Anything to decide first, as a question with Claude's suggested answer. Any Low finding waiting in low-findings.md
    for code this plan changes is named, to be done in the same build.
 5. The recommended builds, always split for the least usage: one build, unless splitting saves more, with the
-   reason (each build pays its setup, test runs and release once). Checked again when new inputs come in.
+   reason (each build pays its setup, test runs and release once). Checked again when new inputs come in. Each build's
+   cost is estimated from build-costs.md (session and weekly %); the Dashboard plots every planned build on its cost graph and
+   marks where each should end on its session and weekly meters, numbered by build.
 
 The same list is shown before every BUILD, including what that BUILD leaves waiting, so the Developer's messages keep
 the record if a session ends.

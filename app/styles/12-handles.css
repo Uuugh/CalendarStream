@@ -73,7 +73,16 @@
   .modrow > .handle .hgrip, .ruleline > .handle .hgrip { position:static; transform:none; left:auto; top:auto; width:10px; height:16px; flex:0 0 16px; opacity:.55 }
   .modrow > .handle .hgrip:hover, .ruleline > .handle .hgrip:hover { opacity:1; color:var(--accent) }
   .ruleline .handle .hmove { height:9px; flex-basis:9px } .ruleline .handle .hgrip { height:14px; flex-basis:14px }
-  .srcrules:has(> .ruleline) { padding-left:16px }
+  /* I12 (Nov 5): the 16px gutter read as "more padding in Rules"; a rule line's handle is 14px wide, so the
+     gutter needs only that much, not 16 */
+  .ruleline > .handle { left:-14px; width:12px }
+  .srcrules:has(> .ruleline) { padding-left:14px }
   /* (F12.6) The trash icons' lines tinted red (the button itself unchanged): a bit of --bad in --muted, always at least 3:1 on --card; fully red on hover */
   svg.trashmark { color:color-mix(in srgb, var(--bad) var(--trashtint, 30%), var(--muted)) }
   button:hover > svg.trashmark, button:focus-visible > svg.trashmark, button.danger > svg.trashmark { color:var(--bad) }
+
+  /* (0.2.8-beta.31, F36.1) Settings › Look › Reorder grips › Right: the same handle in the right margin instead (the module's own
+     right margin is the section's 18 px side padding, as on the left; a rule list gets its gutter on the right) */
+  body.gripsright .modrow > .handle { left:auto; right:-16px }
+  body.gripsright .ruleline > .handle { left:auto; right:-14px }
+  body.gripsright .srcrules:has(> .ruleline) { padding-left:0; padding-right:14px }

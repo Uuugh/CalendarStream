@@ -119,7 +119,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     post("/event/alarms", uid=dentist.uid)
     ok(main.store.get_event(dentist.uid).alarms == "", "no choices: no reminders")
     # F2.1: Print Preview
-    ok(post("/ui/print", view="week", weekends="0", theme="dark").status_code in (200, 204) and main.print_prefs() == {"view": "week", "weekends": False, "theme": "dark"}, "print choices remembered")
+    ok(post("/ui/print", view="week", weekends="0", theme="dark").status_code in (200, 204) and main.print_prefs() == {"view": "week", "weekends": False, "theme": "dark", "orient": "auto"}, "print choices remembered (beta.31: with the orientation)")
     pp = c.get("/print?start=2026-10-12&end=2026-10-17").text
     ok('data-theme="dark"' in pp and "repeat(5," in pp and pp.count('class="sheet"') == 1 and "Dentist" in pp, "Print: last choices (week, no weekends, dark)")
     pp = c.get("/print?view=month&start=2026-10-01&end=2026-11-30&weekends=1&theme=light").text

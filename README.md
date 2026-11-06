@@ -183,9 +183,9 @@ logins or setup codes lock an address out for 15 minutes.
 - **Calendar:** every source's events (views, months and the time zone change in place, without
   reloading the page). On the right: the **Time Zone** it's shown in (**TZ** when
   space is tight; on this page only, the feeds and Google keep `TZ`), a **view drop-down** (Month, Week, 5 days, Day, List), the **12h | 24h** switch, search,
-  **Print** (Print Preview, below) and **Full page** (the calendar fills the window; **Back** returns; in it, clicking an item of the
+  **Print** (Print Preview, below) and **Full page** (the button beside ☰; the calendar fills the window; **Back** returns; in it, clicking an item of the
   **Calendars** or **Key** parts under the calendar hides or shows its events). Week and Day are an hourly grid; a handle under the
-  calendar stretches its height. Click the title to jump to any month. Click an event to
+  calendar stretches its height (in Week and Day, also the height of an hour). Click the title to jump to any month. Click an event to
   open it; it stays open (also while the calendar is redrawn) until its **Close** (on the left). On
   the right of its details: the **link** (opens the event at "Linked to"), the bell (**reminders**: up to five, from "at the start" to "1 week before", sent to
   Google and written into the feeds), **✎ Edit** (title, times, notes), **duplicate**

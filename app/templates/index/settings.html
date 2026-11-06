@@ -13,7 +13,7 @@
           <form method="post" action="/logout" id="signoutform" class="signout"><input type="hidden" name="csrf" value="{{ csrf }}"></form>
           <form method="post" action="/settings/administrator" id="adminform" class="clientform adminform" autocomplete="off" data-swap="#pagelogin|#destinations">
             <input type="hidden" name="csrf" value="{{ csrf }}">
-            <div class="module bare adminhead"><div class="statusbox adminbox {{ 'good' if page_user else 'warn' }}">
+            <div class="module bare adminhead"><div class="statusbox adminbox {{ 'good' if page_user else 'warn' }}" style='--ic-x:{{ icon_mask("close") }};--ic-ok:{{ icon_mask("check") }}'>
               {{ chip('good' if page_user else 'warn', _('Signed in') if page_user else _('Not signed in')) }}
               <span class="syncform adminact"><button type="submit" form="signoutform" class="syncnow" data-state="idle"><span class="sn idle">{{ icon("logout", 14) }}{{ _('Sign out') }}</span></button></span>
               {{ pair("adminform") }}
@@ -135,6 +135,12 @@
             <div class="pair lookrm">
               <label class="chk"><input type="checkbox" name="remove_logo" value="1"{% if not look.logo %} disabled{% endif %}> {{ _('Use CalendarStream’s logo') }}</label>
               <label class="chk"><input type="checkbox" name="remove_favicon" value="1"{% if not look.favicon %} disabled{% endif %}> {{ _('Use CalendarStream’s favicon') }}</label>
+            </div>
+            {# (0.2.8-beta.31, F36.1) the reorder grips: left (the default) or right of a module or rule line, always in the margin #}
+            <div class="k">{{ _('Reorder grips') }}</div>
+            <div class="pair gripside" role="radiogroup" aria-label="{{ _('Reorder grips') }}">
+              <label class="chk"><input type="radio" name="grips" value="left"{% if look.grips != 'right' %} checked{% endif %}> {{ _('Left') }}</label>
+              <label class="chk"><input type="radio" name="grips" value="right"{% if look.grips == 'right' %} checked{% endif %}> {{ _('Right') }}</label>
             </div>
             <div class="k">{{ _('Animation') }}</div>
             <div class="pair animrow">

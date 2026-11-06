@@ -34,9 +34,11 @@ def pick(saved: str | None, accept_language: str = "") -> str:
     return "en"
 
 
-def tr(lang: str, text: str, **params) -> Markup:
+def tr(lang: str, text: str, /, **params) -> Markup:
     """Translate a page text. Texts come from the templates (trusted, may hold simple HTML);
-    the values put into {placeholders} are escaped."""
+    the values put into {placeholders} are escaped. `text` is positional-only (I24) so a call
+    with a {text} placeholder - tr("...{text}...", text=value) - doesn't collide with this
+    parameter's own name."""
     found = CATALOGS[lang].get(text, text) if lang in CATALOGS else text
     return Markup(found).format(**params) if params else Markup(found)
 

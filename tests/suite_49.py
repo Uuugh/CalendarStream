@@ -89,8 +89,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     trip = next(x for x in main.store.load_events(lid) if "E1234" in x.title)
     post("/event/delete", uid=trip.uid)
     p = c.get(f"/?date={trip.start[:10]}", headers={"accept": "text/html"}).text   # its month (3 days ahead can be next month)
-    ok(re.search(rf'data-uid="{re.escape(trip.uid)}" class="ev[^"]*deleted', p) and "Deleted in CalendarStream" in p and "/event/restore" in p,
-       "a deleted event stays, struck through, saying where, with Restore")
+    ok(trip.uid not in p and main.store.get_event(trip.uid).deleted,
+       "I3 (beta.31): an event added here, deleted here, is gone from the calendar at once (kept for History › Undo)")
     post("/event/restore", uid=trip.uid)
     ok(not main.store.get_event(trip.uid).deleted, "Restore brings it back")
     post("/event/delete", uid=trip.uid)

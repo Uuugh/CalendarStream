@@ -7,6 +7,8 @@ card of the **CalendarStream Theme Rules** picture that shows it.
 - The picture: `build_rules/CalendarStream_Theme_Rules_Light.png` and `…_Dark.png` (each also as a `.pdf`, made from the picture), drawn from the page
   itself (every size in it is measured). **Part 1** is the whole page with each part named where it is,
   a module open in every section. **Part 2** is numbered cards; "Picture 2·5" below means part 2, card 5.
+  Since 0.2.8-beta.31 (F22) Part 2 (the cards) is at the top, under the title, and Part 1 (the whole page) follows it;
+  the parts keep their numbers.
 - The stylesheet is `app/styles/*.css` (sent as one file, in their number order), the script
   `app/templates/js/*.js` (put together by `page.js`, made once per language; AGENTS.md has the map),
   the color tokens `app/templates/_theme.html`. Change those, never inline copies.
@@ -332,7 +334,8 @@ one here, with its card.
 - A module's name is its label: plain text until the module is expanded, then a field of the same size. (Picture 2·9)
 - One color palette everywhere: Google Calendar's 11 colors, in the color box. (Picture 2·11)
 - A deleted event stays struck through and greyed, saying where it was deleted, with Restore, until its
-  Undo pops off History. (Picture 2·15)
+  Undo pops off History. (0.2.8-beta.31, I3: an event added here and deleted here is not drawn at all; History › Undo still brings it
+  back.) (Picture 2·15)
 - Importing a calendar file is one row in every calendar: heading, the file field filling the line, the
   dates, the button on the right (CCS+: Manual Upload). (Picture 2·14)
 - Emoji: the common ones, then a rounded "Search for more emojis" field that opens every emoji, ten a line, scrolling, filtered as you type. (Picture 2·11)
@@ -383,3 +386,15 @@ one here, with its card.
   size. The current password is asked only when the user name or password changes. (Suite 64)
 - Look (0.2.8-beta.29, F14) is the last Settings section: your own logo and favicon (PNG, SVG, WebP, JPEG or ICO up to 256 KB), and
   the buttons' Animation intensity and duration (percent), with Reset to defaults and one Cancel | Save. (Suite 64)
+- Full page's button (0.2.8-beta.31, F34, F35) is in the title bar, left of ☰; its icon becomes Windows' restore down (two squares). In every
+  view the page fits the window exactly, with no scrollbar of its own, and the calendar fills the width. (Suite 65)
+- The hour height handle (0.2.8-beta.31, I20) is left of the times in Week and Day, inside the gutter's padding: drag it (or ↑ ↓) to make each
+  hour 20 to 120 px; the height is kept. (Suite 65)
+- Print's orientation (0.2.8-beta.31, I11): Auto (each view's best fit), Landscape or Portrait, one segmented choice in Print Preview; the paper's
+  margins are 5 mm, so the sheet uses the page. (Suite 65)
+- The reorder grips' side (0.2.8-beta.31, F36.1): ☰ Settings › Look › Reorder grips, Left (the default) or Right; the handle stays in the margin,
+  never over a box. (Suite 65)
+- The Administrator's status box (0.2.8-beta.31, I22) sits on the section's heading line; while nothing is changed its Cancel | Save are the
+  standard ✕ and ✓. (Suite 65)
+- The event pop-up's rows (0.2.8-beta.31, I19, I17): All-day Event is on the Ends line and Different end time zone on the end Time's line (a line
+  higher each); its icons stay together on one line, shrinking before they wrap. (Suite 65)
