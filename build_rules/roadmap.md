@@ -66,8 +66,3 @@ Read when planning a version.
 - Beyond the responsive web page.
 
 0.12 Business website
-
-## Low findings
-
-Low findings from whole-app reviews (build_rules/4-review.md), done when that code is next changed. Each: the audit
-issue, #N, file:line, what to do. Taken off when done.

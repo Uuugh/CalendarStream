@@ -16,7 +16,8 @@ Command: **PLAN**. Read when the Developer says PLAN, and before every BUILD.
 1. Every waiting F, I and R, numbered.
 2. For each, what Claude would do, in a line or two.
 3. For an R that changes these rules: the actual new wording. BUILD is then the Developer's yes to exactly that.
-4. Anything to decide first, as a question with Claude's suggested answer.
+4. Anything to decide first, as a question with Claude's suggested answer. Any Low finding waiting in low-findings.md
+   for code this plan changes is named, to be done in the same build.
 5. The recommended builds, always split for the least usage: one build, unless splitting saves more, with the
    reason (each build pays its setup, test runs and release once). Checked again when new inputs come in.
 

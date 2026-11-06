@@ -59,7 +59,7 @@ instructions, ready to paste.
    and lists the findings in CHANGELOG.md (#1, #2…).
 9. When every issue is closed, Claude moves `reviewed` to the commit the review covered.
 
-- High and Medium findings are fixed in the review; Low ones may go to roadmap.md (Low findings), done when that
+- High and Medium findings are fixed in the review; Low ones may go to low-findings.md, done when that
   code is next changed.
 - After round 1, no new findings except on lines the fixes changed.
 - Every comment starts with its author in bold (**Claude**; **Reviewer (ChatGPT), round N**): both may post as

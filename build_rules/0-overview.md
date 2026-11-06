@@ -87,4 +87,5 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 
 - `theme.md`: how the page looks, with the Theme Rules pictures.
 - `ui_ux.md`: usability and accessibility of the page; theme.md wins where they differ.
-- `roadmap.md`: what's planned, and Low review findings waiting for their code to change.
+- `roadmap.md`: what's planned.
+- `low-findings.md`: Low review findings waiting for their code to change.
