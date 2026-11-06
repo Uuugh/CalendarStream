@@ -35,4 +35,4 @@ Actual = after − before (a session reset in between makes the session actual u
    yet; assume 0.25: a session is about a quarter of a week's allowance on this plan, to be corrected by the data).
 4. After each BUILD, add the row, recompute the ratios here, and say in the report how far the last estimate was off.
 5. Note the model (Sonnet, Opus…) and effort; costs are only compared within the same model.
-| beta.31 (7 Calendar + carryover + F22 + R1) | Nov 6 | Sonnet 5 → 5.5 | 14 done, 6 deferred | 30, +210/−76 | 50 | 13 | 0 / 41 | – | ? | ? | After-reading to be asked; R1's zones were already built in BUILD R |
+| beta.31 (7 Calendar + carryover + F22 + R1) | Nov 6 | Sonnet 5 → 5.5 | 14 done, 6 deferred | 30, +210/−76 | 50 | 13 | 0 / 41 | 0 (new session) / 46 | ? | 5 | Nov 6, 9:52 AM reading; the session reset in between so the session actual is unknown; week estimate 13, actual 5; R1's zones were already built in BUILD R |
