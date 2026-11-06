@@ -21,7 +21,7 @@ Actual = after − before (a session reset in between makes the session actual u
 | beta.28 (4 Sources) | Nov 4 | – | 9 | 56, +637/−138 | 37 | – | – | – | ? | ? | |
 | beta.29 (5 Calendar) | Nov 5 | – | 8 | 37, +924/−192 | 41 | – | – | – | ? | ? | |
 | R (cost tracking, no version) | Nov 5 | Sonnet 5.5 | 3 R | docs, rules, Dashboard | 8 | 2 | 8 / 28 | 24 / 30 (Nov 5, 10:50 PM; also covers the TEST and PLAN of the next conversation) | ? | ? | First row with a weekly estimate; the reading is not a clean after-reading, so the actual stays unknown |
-| R (split marks on the Dashboard, no version) | Nov 5 | Sonnet 5.5 | 1 R | docs, rules, Dashboard | 5 | 1 | 24 / 30 | ? / ? | ? | ? | Estimated at build time |
+| R (split marks on the Dashboard, no version) | Nov 5 | Sonnet 5.5 | 1 R | docs, rules, Dashboard | 5 | 1 | 24 / 30 | 28 / 31 | 4 | 1 | Estimated at build time; the after-reading also covers the R1 follow-ups in the chat; ratio 0.8 |
 
 ## How to predict
 
