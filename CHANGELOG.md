@@ -16,6 +16,9 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 Build 9.
 
 ### Fixed
+- **I22** Trashing the Administrator domain row with another public-address row present used to remove the
+  whole domain row — its only + button and its main-address field gone for good, with no way to ever add
+  one back. It now always just clears the field instead, the same as when it's the only row.
 - **I35** A rule's All Rules badge no longer says "No calendar yet" for a rule whose calendar was later
   removed — it keeps naming that calendar (by its own last-known name, or a generic fallback) instead of
   looking indistinguishable from a rule that was genuinely never given one.

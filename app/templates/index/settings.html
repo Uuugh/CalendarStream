@@ -33,7 +33,8 @@
             <p class="mnote more" style="margin:6px 0 0" hidden>{{ _('Then sign in again with the new login.') }}</p>
             {# (0.2.8-beta.32, I22) one unified list of address rows: the domain row (the page's own address, with
                This page and + at its end) first, then any extra addresses below, each with its own trash can.
-               Trashing the domain row, when it's the only row, clears it rather than leaving none. #}
+               Trashing an extra row takes it out; trashing the domain row always just clears it (0.2.8-beta.33:
+               it holds the only + button, so it's never removed outright). #}
             <div class="k" id="public">{{ _('Public address') }}{{ help(_('This page’s https:// address, e.g. <code>https://cal.example.com</code>: for feed links and Google sign-in. + adds another address (another domain) that also reaches this page; a Calendar Feed’s link can use any of them, Google’s sign-in uses the one above.'), 'left') }}</div>
             <div class="extrarows" id="publicrows">
               <div class="extrarow domainrow">

@@ -58,7 +58,9 @@
     if (sc) { copyText(sc.closest('.sendto').querySelector('.sendbtn').dataset.url, sc); setTimeout(closeSend, 1200); return; }
     if (!t.closest('.sendmenu')) closeSend();
     // ☰ Settings › Public address (F11; 0.2.8-beta.32, I22): + adds a row, at the end of the domain row; the
-    // trash takes a row out (Save keeps it), or, when the domain row is the only one, clears it instead.
+    // trash takes an extra row out (Save keeps it). The domain row holds the main field and the only + button,
+    // so its trash never removes the row itself (0.2.8-beta.33, I22: it used to, once another row existed,
+    // leaving no main field and no way to ever add one back) - it always just clears that field instead.
     var add = t.closest('.extraadd');
     if (add) {
       var form = add.closest('form'), rows = form.querySelector('.extrarows');
@@ -69,7 +71,7 @@
     var del = t.closest('.extradel');
     if (del) {
       var row = del.closest('.extrarow'), input = row.querySelector('input');
-      if (row.classList.contains('domainrow') && row.parentNode.children.length === 1) { input.value = ''; input.focus(); }
+      if (row.classList.contains('domainrow')) { input.value = ''; input.focus(); }
       else row.remove();
     }
   });

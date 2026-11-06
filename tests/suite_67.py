@@ -1,9 +1,11 @@
 """0.2.8-beta.33 tests (build 9): a status word that isn't an ongoing health check vanishes entirely after
 shrinking to its icon, instead of keeping the icon forever (I21/F45); Escape in the rule dialog cancels exactly
 like the Cancel button, so creating a rule from the event pop-up and pressing Escape brings the event pop-up
-back instead of leaving with nothing (I37). Settings > Administrator's public-address rows keep Cancel | Save
-working through add/trash and typing (I22/I25, investigated: not reproducible here - see build-costs.md and
-the Dashboard's notes on this item)."""
+back instead of leaving with nothing (I37). Settings > Administrator's public-address rows: trashing the
+domain row with another row present used to remove the whole row - its only + button and its "main" field
+gone for good - instead of just clearing it, the way it already did when it was the only row (I22, found and
+fixed here with a browser repro). I25's own claim (typing not registering at all) stays not reproducible from
+the code, confirming the Dashboard's own automated check - see build-costs.md and the Dashboard's notes."""
 import os, re, sys, threading, time
 os.environ.update(DB_HOST=os.environ.get("TEST_DB_HOST", "127.0.0.1"), DB_PORT=os.environ.get("TEST_DB_PORT", "5432"), DB_NAME=sys.argv[1], DB_USER=os.environ.get("TEST_DB_USER", "ccs"), DB_PASSWORD=os.environ.get("TEST_DB_PASSWORD", "testpw"),
                   GUI_USERNAME="t", GUI_PASSWORD="password1", TZ="America/New_York", PUBLIC_URL="")
@@ -98,6 +100,22 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(pg2.eval_on_selector("#ruledialog", "el => el.open") is False, "I37: Escape closes the rule dialog")
         ok(pg2.eval_on_selector("#eventdialog", "el => el.open"), "I37: Escape, like Cancel, brings the event pop-up back - it doesn't close with the rule dialog")
         pg2.close()
+
+        # --- Playwright: I22, trashing the domain row with another row present clears it, never removes it ---
+        pg3 = b.new_page(viewport={"width": 1230, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
+        pg3.goto(f"http://127.0.0.1:{PORT}/?menu=settings")
+        pg3.wait_for_selector("#publicurl")
+        pg3.click("#publicrows .domainrow .extraadd")
+        pg3.wait_for_timeout(150)
+        pg3.click("#publicrows .domainrow .extradel")
+        pg3.wait_for_timeout(150)
+        ok(pg3.eval_on_selector_all("#publicrows input[name=main]", "els => els.length") == 1,
+           "I22: the domain row (and its only main field) is still there after trashing it with another row present")
+        ok(pg3.eval_on_selector_all("#publicrows .extraadd", "els => els.length") == 1,
+           "I22: its + button is still there too, so another address can still be added")
+        ok(pg3.eval_on_selector("#publicurl", "el => el.value") == "",
+           "I22: trashing the domain row clears it, same as when it was the only row")
+        pg3.close()
         b.close()
 
 print(f"\n{fails} failure(s)" if fails else "\nAll passed")

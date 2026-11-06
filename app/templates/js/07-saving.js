@@ -59,6 +59,13 @@ function bindAdd() { each('.addwrap', 'add', function (w) {
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
 }); }
 bindAdd();
+// (0.2.8-beta.33, I32) A + pop-up's own submit button, disabled while its fetch is in flight (below), is freed
+// again once the pop-up closes - saved, cancelled, or stepped back from - so reopening it to add another
+// doesn't find it stuck disabled from a previous add.
+function bindAddPopReset() { each('dialog.addpop', 'addpopreset', function (d) {
+  d.addEventListener('close', function () { d.querySelectorAll('button[type=submit]:disabled, button:not([type]):disabled').forEach(function (b) { b.disabled = false; }); });
+}); }
+bindAddPopReset();
 
 // Removing a source, destination or event asks first.
 // A + that opens a pop-up of its own (0.2.8-beta.15: Event Templates); [data-close] inside closes it
@@ -96,7 +103,7 @@ each('[data-fill]', 'fill', function (b) {
 // back; everything else (what's being typed elsewhere, open boxes, the scroll) stays as it is.
 function bindAll() {
   RD = JSON.parse(document.getElementById('ruledata').textContent);     // the rules, as now saved
-  bindWatch(); bindFiles(); bindCfg(); bindSrc(); bindPresets(); bindTags(); bindAdd(); bindConfirm(); bindGuide();
+  bindWatch(); bindFiles(); bindCfg(); bindSrc(); bindPresets(); bindTags(); bindAdd(); bindAddPopReset(); bindConfirm(); bindGuide();
   each('[data-fill]', 'fill', function (b) { b.addEventListener('click', function () { document.getElementById(b.dataset.fill).value = location.origin; }); });
   each('.disconnectform', 'disconnect', function (f) { guard(f, T.disconnect); });
   initSections();
@@ -180,12 +187,16 @@ document.addEventListener('submit', function (e) {
   if (e.defaultPrevented || !f.matches || !f.matches('form[data-swap]')) return;
   var btn = e.submitter;
   if (btn && btn.name === 'then' && btn.value === 'connect') return;     // Connect me goes on to Google's sign-in
+  if (btn && btn.disabled) return;          // (0.2.8-beta.33, I32) already sending: a second click/Enter is ignored,
+                                             // not a second destination (and a second invite) made from it
   e.preventDefault();
   var body = new FormData(f), pair = pairFor(f);
   clearFix(f);
   if (btn && btn.name) body.append(btn.name, btn.value);
   if (btn && btn.classList.contains('checknow')) { checkNow(f, btn, body); return; }
   if (pair) pairState(pair, 'saving');
+  else if (btn) btn.disabled = true;         // a pair shows "Saving…" and disables itself; a plain form (+ Add) has no
+                                              // pair, so its own submit button is disabled here instead, until it answers
   var old = f.parentNode && f.parentNode.querySelector('.pairfail:not(.rdmsg)'); if (old) old.remove();   // (the rule dialog keeps its own)
   sendSwap(f, body).then(function (res) {
     var p2 = pairFor(f) || pair;                      // the pair may have been swapped for a new one
@@ -199,6 +210,7 @@ document.addEventListener('submit', function (e) {
     // amber when what was typed was refused (4xx: waiting on you); red when CalendarStream itself failed
     var inside = !err.status || err.status >= 500;
     if (err.fields) markFix(f, err.fields);
+    if (!pair && btn) btn.disabled = false;   // (0.2.8-beta.33, I32) failed: let a plain form's button be tried again
     if (pair) {
       if (inside) pair.dataset.cause = 'inside'; else delete pair.dataset.cause;
       pairState(pair, 'failed');

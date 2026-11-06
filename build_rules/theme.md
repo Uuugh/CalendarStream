@@ -418,7 +418,8 @@ one here, with its card.
   the Developer should keep seeing (something that can become unhealthy, e.g. CCS+ or a feed's "Validated"); a plain one-off confirmation such
   as History's "Saved" after changing how many changes are remembered goes all the way. (Suite 67)
 - Administrator's public addresses (0.2.8-beta.32, I22) are one list of rows (the page's own address first, then any others), each with its own
-  trash can; + sits at the end of the first row. Trashing a row takes it out, or, when it's the only row left, clears it instead. (Suite 66)
+  trash can; + sits at the end of the first row. Trashing an extra row takes it out; trashing the domain row always clears it instead, never
+  removing the row itself (0.2.8-beta.33: it holds the only + button, so removing it would leave no way to ever add one back). (Suite 66, Suite 67)
 - The event pop-up's Different end time zone (0.2.8-beta.32, I31) has the tooltip "End Time zone"; the pop-up never resizes as All-day Event or
   Different end time zone are ticked (its height is planned for both on at once). (Suite 66)
 - The first theme after install (0.2.8-beta.32, F38) is System. Every section's `.card` padding is 12 px, not 18 (the margin is unchanged); the
