@@ -35,6 +35,9 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   opens it from the link in the handoff (or the artifact list) and updates that one, never a copy.
 - Claude republishes it after every PLAN, and both before and after every BUILD — not only at the end of a
   BUILD's report — so it stays current even if a BUILD is interrupted, split, or stopped partway through.
+- Inputs Status lists only what is still waiting on someone. Once the Developer confirms an item is fixed, or
+  moves it to the roadmap, it comes off the list entirely — not kept as a compacted line. Its build still names
+  it in that beta's "Where things stand" entry, which is the permanent record.
 
 ## Conversations
 
