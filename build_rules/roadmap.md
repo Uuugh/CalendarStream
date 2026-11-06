@@ -26,10 +26,13 @@ Read when planning a version.
 0.2.14 Cloud / attachment integration (the last 0.2.x)
 - Attachments in an area at the bottom of an event's Notes (was F17.2).
 
-0.3 Backups
-- Backups.
+0.3 Theming
+0.3.0 Phone mode: Settings a full page, with a back button in its left corner.
+0.3.1 Printing
 
-0.4 Additional Users
+0.4 Backups
+
+0.5 Additional Users
 - Login via authentik.
 - Each new login is a new user. The new user will need to add their own calendars unless a calendar has been shared with them
 - Add share calendar with other users toggle to the top right of status and setup
@@ -37,32 +40,32 @@ Read when planning a version.
 - keep the built-in login as a fallback admin, so a broken authentik doesn't lock you out. And today's data should belong to whoever logs in first.
 - put the share switch on each source and destination rather than one page-wide toggle. Sharing is per calendar, and you may want to share your schedule but not a personal feed.
 - An unlock e-mail or code for a sign-in that's locked out.
-- 0.4.1 Multi-user accounts and permissions, for family / team installs (the first part of this).
-- 0.4.2 Privacy / busy-only output rules, for safe work / personal sharing.
-- 0.4.3 A public REST API and webhooks, for outside automation.
+- 0.5.1 Multi-user accounts and permissions, for family / team installs (the first part of this).
+- 0.5.2 Privacy / busy-only output rules, for safe work / personal sharing.
+- 0.5.3 A public REST API and webhooks, for outside automation.
 
-0.5 Notifications
-- triggers  are defined in rules say the may be resued
+0.6 App integration
+0.6.0 NextCloud
+
+0.7 Notifications
+0.7.1 triggers  are defined in rules say the may be resued
   - trip added, changed or dropped
   - failed sync, a sign-in rejected
   - settings allows options for (Apprise library): email, ntfy, Pushover, Telegram and others
 
-0.6 Invitations/Booking
-- 0.6.1 Booking links and availability, like the scheduling platforms (the first part of this). The rest is filled in at its first PLAN.
+0.8 Invitations/Booking
+0.8.1 Booking links and availability, like the scheduling platforms (the first part of this). The rest is filled in at its first PLAN.
 
-0.7 Theming
-- 0.7.0 Phone mode: Settings a full page, with a back button in its left corner.
-
-0.8 Admin dashboard
+0.9 Admin dashboard
 - API usage.
 - A business dashboard of usage and cost: APIs, subscriptions, servers, domains, internet, PC purchases.
 
-0.9 Documentation
+0.10 Documentation
 
-0.10 Native mobile apps
+0.11 Native mobile apps
 - Beyond the responsive web page.
 
-0.11 Business website
+0.12 Business website
 
 ## Low findings
 
