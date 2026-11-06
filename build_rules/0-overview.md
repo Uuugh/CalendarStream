@@ -33,6 +33,8 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 - The list of the F, I and R inputs is titled **Inputs Status**.
 - It is one artifact, "CalendarStream Dashboard", kept from conversation to conversation: a new conversation
   opens it from the link in the handoff (or the artifact list) and updates that one, never a copy.
+- Claude republishes it after every PLAN, and both before and after every BUILD — not only at the end of a
+  BUILD's report — so it stays current even if a BUILD is interrupted, split, or stopped partway through.
 
 ## Conversations
 
