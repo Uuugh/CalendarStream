@@ -42,7 +42,8 @@ Documentation-only changes (README, CLAUDE.md, AGENTS.md, build_rules/) don't ch
 ## After
 
 Commit and push; the release workflow tags `v<version>` and publishes the `beta` image. Claude reports what came
-out, the readings it took, and anything still waiting.
+out, the readings it took, anything still waiting, and how many lines have changed since the `reviewed` branch (a
+prompt for a REVIEW, which starts only when the Developer says it: 4-review.md, Chunks).
 
 HANDOFF (step 1.1) gives the same message at any time.
 

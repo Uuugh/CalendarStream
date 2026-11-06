@@ -8,6 +8,11 @@ Claude answers; the Developer decides anything still disputed. Each REVIEW after
 - **The changes** since the last review (the `reviewed` branch): two issues, a (Programming) and b (Security).
 - **The whole app**, one issue per area with both checklists: at every DEPLOY, when there's no `reviewed`
   branch yet, or when more than about 3,000 lines changed since the last review.
+- **Chunks:** one issue never covers more than about 1,000 changed lines (the studies find a reviewer's yield falls
+  past about 500 lines or 90 minutes). A changes-only review over that is split by commit range or by area into
+  issues `Review a (Programming) 1/3: v<version>`… and `Review b (Security) 1/3…`, each its own two rounds. Claude
+  says in each BUILD's report how many lines have changed since `reviewed`; it only tells the Developer, never
+  starts a review.
 
 | Area | What it covers |
 |---|---|
@@ -49,8 +54,9 @@ Claude (reply) › "Do REVIEW 3" › ChatGPT (round 2) › "Do REVIEW 4" › Cla
 Developer decides, or says OK when nothing is disputed. Every REVIEW to ChatGPT reprints the Reviewer's
 instructions, ready to paste.
 4. **Round 1, the Reviewer:** its findings; label › `review:awaiting-claude`.
-5. **Claude's reply** (at the Developer's REVIEW): each finding Accepted (fixed in commit …; a change of behavior
-   is the next beta), Rejected (why) or Partly; label › `review:awaiting-reviewer`; "Your move: send REVIEW to
+5. **Claude's reply** (at the Developer's REVIEW): before accepting a High or Medium finding, Claude reproduces it (a
+   failing test, or the demo data); one it can't reproduce is Rejected, "not reproducible", with what it tried. Each
+   finding Accepted (fixed in commit …; a change of behavior is the next beta), Rejected (why) or Partly; label › `review:awaiting-reviewer`; "Your move: send REVIEW to
    ChatGPT."
 6. **Round 2, the Reviewer:** Agree or Hold on each finding; label › `review:awaiting-claude`.
 7. **Claude's summary** (at the Developer's REVIEW): what was fixed, and a table of the findings still disputed,
@@ -89,10 +95,11 @@ final say on anything you and Claude don't agree on.
 - Read the checklist(s), 0-overview.md, and theme.md and ui_ux.md if the page is in scope, all at the rules commit. Read the
   code to check and the test suites that cover it (`tests/`).
 - Post ONE comment, starting with "**Reviewer (ChatGPT), round 1** · rules `<commit>`". Each finding:
-  `#N [High | Medium | Low] path/file:line: what goes wrong (a concrete input or situation and the wrong result),
-  and what would fix it.` High = a security hole, data loss or wrong calendar data; Medium = a bug users would
+  `#N [High | Medium | Low] (confidence: high | medium | low) path/file:line: what goes wrong (a concrete input or
+  situation and the wrong result), and what would fix it.` High = a security hole, data loss or wrong calendar data; Medium = a bug users would
   hit, a broken project rule, or new behavior without a test; Low = clarity, naming, comments, docs. Only
-  problems you can point to in the code, not style ruff already checks. A change to this file in the code you
+  problems you can point to in the code, not style ruff already checks. A finding you can't tie to a concrete input and
+  wrong result is Low, whatever it seems. A change to this file in the code you
   check: a Low finding, so the Developer sees it. None: "No findings."
 - Then remove the label `review:awaiting-reviewer` and add `review:awaiting-claude`.
 
