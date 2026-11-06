@@ -459,7 +459,11 @@ ruleDialog.addEventListener('click', function (e) { if (!applyMenuEl().hidden &&
 ruleDialog.addEventListener('keydown', function (e) {   // Escape closes the menu first, then the dialog
   if (e.key === 'Escape' && !applyMenuEl().hidden) { e.preventDefault(); openApply(false); applyBtn.focus(); }
 });
-function openRule(rule, sid) {
+// (0.2.8-beta.32, I18) set when the rule dialog is opened from the event pop-up (Link › Rule, Create new):
+// Cancel then reopens that pop-up as it was, instead of just closing (07-saving.js).
+var ruleFromEvent = false;
+function openRule(rule, sid, fromEvent) {
+  ruleFromEvent = !!fromEvent;
   editing = rule;
   var title = document.getElementById('rdtitle');
   title.textContent = rule ? title.dataset.edit : title.dataset.new;
@@ -512,8 +516,8 @@ ruleForm.querySelector('.rdremove').addEventListener('click', function () {
   });
 });
 // A new rule made for an event (Link › Rule › Create new, 0.2.8-beta.15): Title is <its title> and Date is <its day>
-function openRuleFor(title, day, sid) {
-  openRule(null, sid);
+function openRuleFor(title, day, sid, fromEvent) {
+  openRule(null, sid, fromEvent);
   condBox.innerHTML = '';
   condBox.appendChild(condRow({ type: 'text', op: 'is', value: title, case: false, open: 0, close: 0, join: 'and' }));
   condBox.appendChild(condRow({ type: 'date', op: 'is', value: day, value2: '', open: 0, close: 0, join: 'and' }));

@@ -38,3 +38,58 @@ document.querySelectorAll('dialog.popup .dlgback').forEach(function (b) {
   b.addEventListener('click', function () { b.closest('dialog').close(); });
 });
 
+// History's headers slide (drag) to reorder, or focus one and press ← → (0.2.8-beta.32, F44).
+// #activity is swapped in whole on undo/redo, so every listener here is delegated at document level.
+function histColOrder(table) { return Array.from(table.querySelectorAll('thead .histcol')).map(function (th) { return th.dataset.col; }); }
+function moveHistCol(table, fromCol, toCol) {
+  if (fromCol === toCol) return;
+  var headRow = table.querySelector('thead tr'), ths = Array.from(headRow.children);
+  var fromTh = ths.filter(function (th) { return th.dataset.col === fromCol; })[0], toTh = ths.filter(function (th) { return th.dataset.col === toCol; })[0];
+  if (!fromTh || !toTh) return;
+  var forward = ths.indexOf(fromTh) < ths.indexOf(toTh);
+  if (forward) toTh.after(fromTh); else toTh.before(fromTh);
+  table.querySelectorAll('tbody tr').forEach(function (tr) {
+    var tds = Array.from(tr.children);
+    var fromTd = tds.filter(function (td) { return td.dataset.col === fromCol; })[0], toTd = tds.filter(function (td) { return td.dataset.col === toCol; })[0];
+    if (!fromTd || !toTd) return;
+    if (forward) toTd.after(fromTd); else toTd.before(fromTd);
+  });
+  savePref('/ui/history', { order: histColOrder(table).join(',') });
+}
+var histDragCol = null;
+document.addEventListener('dragstart', function (e) {
+  var th = e.target.closest && e.target.closest('.histcol'); if (!th) return;
+  histDragCol = th.dataset.col;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', histDragCol);
+});
+document.addEventListener('dragover', function (e) {
+  var th = e.target.closest && e.target.closest('.histcol'); if (!th || !histDragCol) return;
+  e.preventDefault();
+  th.classList.add('dragover');
+});
+document.addEventListener('dragleave', function (e) {
+  var th = e.target.closest && e.target.closest('.histcol'); if (th) th.classList.remove('dragover');
+});
+document.addEventListener('drop', function (e) {
+  var th = e.target.closest && e.target.closest('.histcol'); if (!th || !histDragCol) return;
+  e.preventDefault();
+  th.classList.remove('dragover');
+  moveHistCol(th.closest('table'), histDragCol, th.dataset.col);
+  histDragCol = null;
+});
+document.addEventListener('dragend', function () {
+  document.querySelectorAll('.histcol.dragover').forEach(function (th) { th.classList.remove('dragover'); });
+  histDragCol = null;
+});
+document.addEventListener('keydown', function (e) {
+  var th = e.target.closest && e.target.closest('.histcol'); if (!th) return;
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  var table = th.closest('table'), ths = Array.from(table.querySelectorAll('thead .histcol'));
+  var i = ths.indexOf(th), j = e.key === 'ArrowLeft' ? i - 1 : i + 1;
+  if (j < 0 || j >= ths.length) return;
+  e.preventDefault();
+  moveHistCol(table, th.dataset.col, ths[j].dataset.col);
+  th.focus();
+});
+

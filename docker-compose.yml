@@ -9,7 +9,7 @@ services:
     image: ghcr.io/uuugh/calendarstream:${IMAGE_TAG:-latest}
     # Check for a newer image on every "up", so the moving tags (latest, beta) update
     pull_policy: always
-    container_name: calendar_stream${STACK_NO:-}
+    container_name: ${STACK_PREFIX:-calendar_stream}${STACK_NO:-}
     env_file: .env
     ports:
       - "${PORT:-8080}:8080"
@@ -26,12 +26,12 @@ services:
       # and https are seen. Only these addresses are believed.
       - FORWARDED_ALLOW_IPS=${FORWARDED_ALLOW_IPS:-127.0.0.1}
       # All project data is stored in the database container below
-      - DB_HOST=calendar_stream_db${STACK_NO:-}
+      - DB_HOST=${STACK_PREFIX:-calendar_stream}_db${STACK_NO:-}
       - DB_NAME=${DB_NAME:-calendar_stream}
       - DB_USER=${DB_USER:-ccs}
       - DB_PASSWORD_FILE=/run/secrets/DB_PASSWORD
       # The updater (when it's running): asked to update this container by "Update now"
-      - UPDATER_URL=http://calendar_stream_updater${STACK_NO:-}:8080
+      - UPDATER_URL=http://${STACK_PREFIX:-calendar_stream}_updater${STACK_NO:-}:8080
       - UPDATER_TOKEN_FILE=/run/secrets/UPDATER_TOKEN
     secrets:
       - DB_PASSWORD
@@ -43,7 +43,7 @@ services:
 
   calendar_stream_db:
     image: postgres:18-alpine
-    container_name: calendar_stream_db${STACK_NO:-}
+    container_name: ${STACK_PREFIX:-calendar_stream}_db${STACK_NO:-}
     environment:
       - POSTGRES_DB=${DB_NAME:-calendar_stream}
       - POSTGRES_USER=${DB_USER:-ccs}
@@ -68,7 +68,7 @@ services:
   # other containers here (no ports are published).
   calendar_stream_updater:
     image: nickfedor/watchtower:latest
-    container_name: calendar_stream_updater${STACK_NO:-}
+    container_name: ${STACK_PREFIX:-calendar_stream}_updater${STACK_NO:-}
     profiles: [updater]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

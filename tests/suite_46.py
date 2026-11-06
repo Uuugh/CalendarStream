@@ -66,8 +66,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         # F4: + in the calendar's top right corner; search left of Time Zone
         r = pg.evaluate("""() => { const c = document.getElementById('cal').getBoundingClientRect(), h = document.querySelector('#cal .calhead').getBoundingClientRect(),
                           p = document.querySelector('.calplus').getBoundingClientRect(), s = document.getElementById('searchbtn').getBoundingClientRect(),
-                          t = document.querySelector('.tzlabel').getBoundingClientRect(); return [Math.round(c.right - p.right), Math.round(p.top - h.top), t.right <= s.left, Math.abs(s.top - t.top) < 20]; }""")
-        ok(17 <= r[0] <= 21 and r[1] <= 2 and r[2] and r[3], f"F4: + in the calendar's top right corner; search in the right group, after Time Zone (beta.29) {r}")
+                          t = document.querySelector('.tzwrap').getBoundingClientRect(); return [Math.round(c.right - p.right), Math.round(p.top - h.top), t.right <= s.left, Math.abs(s.top - t.top) < 20]; }""")
+        ok(11 <= r[0] <= 15 and r[1] <= 2 and r[2] and r[3], f"F4: + in the calendar's top right corner; search in the right group, after Time Zone (beta.29; 0.2.8-beta.32, F41: .tzwrap, the globe icon, not .tzlabel) {r}")
         pg.click("#searchbtn"); pg.fill("#calq", "union"); pg.wait_for_timeout(1300)
         ok(pg.is_visible("#calsearch") and pg.locator("#calbody details.ev").count() > 0 and all("Union" in t for t in pg.locator("#calbody details.ev summary").all_inner_texts()),
            "F4: the search line lists matches as you type")
@@ -104,7 +104,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             pg.click(f"{sec} > .cfgline .cfgtoggle"); pg.wait_for_timeout(200)
             r = pg.evaluate(f"""() => {{ const s = document.querySelector('{sec}').getBoundingClientRect(), p = document.querySelector('{sec} > .shead .plus').getBoundingClientRect();
                                 return [Math.round(s.right - p.right), Math.round(p.top - s.top), document.querySelectorAll('{sec} .sfoot').length]; }}""")
-            ok(17 <= r[0] <= 21 and r[1] < 30 and r[2] == 0, f"F5/F18: {sec}: + in the top right corner, none at the bottom {r}")
+            ok(11 <= r[0] <= 15 and r[1] < 30 and r[2] == 0, f"F5/F18: {sec}: + in the top right corner, none at the bottom {r}")
         pg.click("#templates > .shead .plus"); pg.wait_for_timeout(200)
         ok(pg.eval_on_selector("#tpladd", "d => d.open") and pg.locator("#tpladd .tagrow").count() == 1,
            "…Event Templates' + opens its pop-up (0.2.8-beta.15: every + is a centred pop-up)")

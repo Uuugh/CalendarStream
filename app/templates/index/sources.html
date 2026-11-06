@@ -1,6 +1,6 @@
   <section class="card" id="sources" aria-labelledby="sourcestitle">
     <div class="cardhead">
-      <h2 class="bigtitle" id="sourcestitle">{{ icons.calendars|safe }}{{ _('Calendars') }}
+      <h2 class="bigtitle" id="sourcestitle">{{ icons.calendars|safe }}{{ _('Sources') }}
         {{ help(_('Where events come from: <b>Local</b>, CCS+, Google, Apple or any link. The top one is the <b>default</b> for events you add. Handle or ▲ ▼ reorders.')) }}</h2>
       <div class="addwrap">
         <button type="button" class="ghost plus" aria-haspopup="dialog" aria-expanded="false" aria-controls="addsrc"
@@ -86,10 +86,12 @@
             <div class="namebox srcname showonly" title="{{ x.name }}">{{ x.name }}</div>
             <input type="text" class="namebox nameinput editonly" form="srcform-{{ x.id }}" name="name" value="{{ x.name }}" maxlength="100" aria-label="{{ _('Label') }}" placeholder="{{ _('Label') }}">
             {{ notedot(about.get(x.preset or x.type, about.feed), x.note) }}
-            {# (0.2.8-beta.28, I2) Default: right of the title. The default one says so, always; the other CalendarStream calendars show it
-               greyed, as a button that makes them the default, while expanded (the others are read-only: they can't be the default) #}
+            {# (0.2.8-beta.28, I2; 0.2.8-beta.32) Default: right of the title. The default one says so, always; the other CalendarStream
+               calendars show it greyed, as a button that makes them the default, while expanded; a read-only calendar (CCS+, Google,
+               Apple, a feed) shows it too, greyed and disabled, with a tooltip saying why (events can't be added to it) #}
             <span class="defslot">{% if x.default %}<span class="deflabel" title="{{ _('Events you add here go to this calendar unless you choose another') }}">{{ _('Default') }}</span>
-              {%- elif local %}<form method="post" action="/sources/default" class="inline defform editonly" data-swap=".defslot|#cal|#activity"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}"><button class="defbtn" title="{{ _('Make this the default: events you add go here unless you choose another') }}">{{ _('Default') }}</button></form>{% endif %}</span>
+              {%- elif local %}<form method="post" action="/sources/default" class="inline defform editonly" data-swap=".defslot|#cal|#activity"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="sid" value="{{ x.id }}"><button class="defbtn" title="{{ _('Make this the default: events you add go here unless you choose another') }}">{{ _('Default') }}</button></form>
+              {%- else %}<button type="button" class="defbtn editonly" disabled title="{{ _('Only a CalendarStream calendar can be the default: events can’t be added to a read-only calendar') }}" aria-label="{{ _('Default (unavailable: read-only calendar)') }}">{{ _('Default') }}</button>{% endif %}</span>
           </div>
         </div>
         {# "Last check was successful @ 14:34" over "Next check @ 14:49" (on the right, beside Sync Now);
@@ -111,11 +113,14 @@
 
       {{ cfgline(x.id, x.open) }}
       <div class="cfgbody" id="cfg-{{ x.id }}"{% if not x.open %} hidden{% endif %}>
-        {{ powerswitch("/sources/power", "sid", x.id, x.off) }}
-        {# (a form of its own only for the field styles: the note is saved with the module's Cancel | Save) #}
-        <form class="notewrap" onsubmit="return false"><div class="pair notepair">
-          <label class="fld"><span>{{ _('Note') }}</span><input type="text" class="noteinput" form="srcform-{{ x.id }}" name="note" value="{{ x.note }}" maxlength="120" placeholder="{{ _('Optional: shown in the (i) after the label') }}"></label>
-        </div></form>
+        {# (0.2.8-beta.31, I26) On | Off sits on the note's own line, at its end, instead of a row of its own #}
+        <div class="notepowerrow">
+          {# (a form of its own only for the field styles: the note is saved with the module's Cancel | Save) #}
+          <form class="notewrap" onsubmit="return false"><div class="pair notepair">
+            <label class="fld"><span>{{ _('Note') }}</span><input type="text" class="noteinput" form="srcform-{{ x.id }}" name="note" value="{{ x.note }}" maxlength="120" placeholder="{{ _('Optional: shown in the (i) after the label') }}"></label>
+          </div></form>
+          {{ powerswitch("/sources/power", "sid", x.id, x.off) }}
+        </div>
         {% if not local %}
         {# How often it's checked: beside the Site Address #}
         {% set interval %}<form class="intervalform cfgside" method="post" action="/setup/interval" data-swap="#src-{{ x.id }}>.srchead|#activity">

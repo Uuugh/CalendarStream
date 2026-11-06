@@ -398,3 +398,28 @@ one here, with its card.
   standard ✕ and ✓. (Suite 65)
 - The event pop-up's rows (0.2.8-beta.31, I19, I17): All-day Event is on the Ends line and Different end time zone on the end Time's line (a line
   higher each); its icons stay together on one line, shrinking before they wrap. (Suite 65)
+- A calendar's On | Off switch and its note (0.2.8-beta.32, I26) sit on one line: the switch, then the note's text, inline. (Suite 66)
+- Default (0.2.8-beta.32, I2) greys out and disables, with a tooltip saying why, on any read-only calendar (CCS+, Google, Apple, a feed): events
+  can't be added there, so it can't be the default. (Suite 66)
+- The calendars module (0.2.8-beta.32, I28) is called Sources. (Suite 66)
+- History's Accepted sign-in (0.2.8-beta.32, I29) is a ✓ with no words (the word stays as its tooltip and accessible name). (Suite 66)
+- Appearance (0.2.8-beta.32, F39) is Look's new name (translated at Deploy). (Suite 66)
+- A rule's key name (0.2.8-beta.32, F42) is cut to 25 characters, with its full name as the tooltip. (Suite 66)
+- Time Zone (0.2.8-beta.32, F41) is a globe icon; its tooltip names the zone, and it opens the same picker. (Suite 66)
+- 12h | 24h (0.2.8-beta.32, F43) is one clock icon; its tooltip names the current mode, and it toggles on a click. (Suite 66)
+- The calendar grid (0.2.8-beta.32, F40) turns the page on a horizontal swipe (left: next, right: previous) on a touch screen; a vertical swipe
+  still scrolls. (Suite 66)
+- History's headers (0.2.8-beta.32, F44) slide (drag) to reorder, or, focused, move with ← →; Undo starts at the end, not between Type and Event.
+  (Suite 66)
+- A status word (0.2.8-beta.32, I21) always shows its icon and words together inside a Status/Action button. Elsewhere, it shows icon and words,
+  then collapses to just its icon (the words stay as its tooltip and accessible name); how long it shows first follows the Animation duration
+  setting. (Suite 66)
+- Administrator's public addresses (0.2.8-beta.32, I22) are one list of rows (the page's own address first, then any others), each with its own
+  trash can; + sits at the end of the first row. Trashing a row takes it out, or, when it's the only row left, clears it instead. (Suite 66)
+- The event pop-up's Different end time zone (0.2.8-beta.32, I31) has the tooltip "End Time zone"; the pop-up never resizes as All-day Event or
+  Different end time zone are ticked (its height is planned for both on at once). (Suite 66)
+- The first theme after install (0.2.8-beta.32, F38) is System. Every section's `.card` padding is 12 px, not 18 (the margin is unchanged); the
+  reorder grips sit closer in, at the new padding's edge. (Suite 66)
+- The 2/3-line box (0.2.8-beta.32, I27) is invisible now, not boxed: no border, no fill. It sits right-aligned next to its Status/Action
+  button instead of centered across the header, and still shows only while collapsed. (Suite 66)
+- Cancel in the rule dialog (0.2.8-beta.32, I18), opened from the event pop-up, reopens it exactly as it was, unsaved edits included. (Suite 66)

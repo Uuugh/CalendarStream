@@ -98,8 +98,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(main.undo_keep() == 37 and 'value="37"' in c.get("/").text, "F15: …a number saved is kept")
     post("/history/keep", keep="100")
     page = c.get("/").text
-    hd = re.search(r'<thead><tr><th class="htime">.*?</tr></thead>', page)[0]
-    ok(re.findall(r'<th class="(\w*)"|<th>', hd) == ["htime", "htype", "hundo", ""], f"F15.2: Undo between Type and Event")
+    # (0.2.8-beta.32, F44 superseded F15.2: History's headers now drag to reorder, and Undo's default moved
+    # to the end instead of between Type and Event)
+    hd = re.search(r'<thead><tr>[\s\S]*?</tr></thead>', page)[0]
+    ok(re.findall(r'data-col="(\w+)"', hd) == ["time", "type", "event", "undo"], f"F44: default header order is Time, Type, Event, Undo (Undo last) {hd}")
 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:

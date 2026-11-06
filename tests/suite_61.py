@@ -86,7 +86,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                 const lines = q('#rulelines'), box = q('#rulecount'), plus = q('#rules .shead .plus'), title = q('#rulestitle'), act = q('#activity .peek.latest'), ab = q('#activity .statusbox'), asec = q('#activity');
                 return { order: title.right <= lines.left && lines.right <= box.left + 1 && box.right <= plus.left + 6, corner: sec.right - plus.right, left: getComputedStyle(document.querySelector('#activity .peek.latest')).textAlign,
                          hist: [asec.right - ab.right, ab.left - act.right], far: act.left - q('#activitytitle, #activity .bigtitle').right } }""")
-            ok(g["order"] and 15 <= g["corner"] <= 21, f"[{scheme}] F13/F18: All Rules: title · lines · count box · + in the corner {g}")
+            ok(g["order"] and 11 <= g["corner"] <= 15, f"[{scheme}] F13/F18: All Rules: title · lines · count box · + in the corner {g}")   # (0.2.8-beta.32, F38: 12px card padding, not 18)
             ok(g["left"] == "left" and g["hist"][1] >= 0 and g["far"] > 20, f"[{scheme}] I4 (beta.28, F31): History's lines are left-aligned in the 2/3-line box, centered, before its Healthy box {g['hist']} {g['far']}")
             # F12.4 / F9: Cancel | Save disabled with nothing to save; a change turns them on and Save pulses
             pg.evaluate("document.querySelector('#src-ccs .cfgtoggle').click()"); pg.wait_for_timeout(400)

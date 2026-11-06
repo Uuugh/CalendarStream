@@ -214,7 +214,14 @@ document.addEventListener('click', function (e) {
   var p = c.closest('.pairbtns'), f = document.getElementById(p.dataset.pair);
   if (f) { f.reset(); f.dispatchEvent(new CustomEvent('paircancel')); }
   var old = p.parentNode.querySelector('.pairfail:not(.rdmsg)'); if (old) old.remove();
-  if (f && formId(f) === 'ruleform') { pairState(p, 'cancelled'); setTimeout(function () { ruleDialog.close(); }, 700); return; }
+  if (f && formId(f) === 'ruleform') {
+    pairState(p, 'cancelled');
+    // (0.2.8-beta.32, I18) opened from the event pop-up: reopen it as it was, unsaved edits included, instead of
+    // just closing (its iframe wasn't wiped: eventSuspend, 08-events.js).
+    var backToEvent = ruleFromEvent;
+    setTimeout(function () { ruleDialog.close(); if (backToEvent) eventDialog.showModal(); }, 700);
+    return;
+  }
   var dl = c.closest('dialog.addpop'); if (dl && !dl.querySelector('.addbody, .addmenu')) { pairState(p, 'cancelled'); setTimeout(function () { dl.close(); }, 700); return; }
   flashPair(p, 'cancelled');
   // In + Add a calendar (0.2.8-beta.9), Cancel closes the menu once it has shown "Cancelled"

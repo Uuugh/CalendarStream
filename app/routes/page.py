@@ -110,6 +110,16 @@ def ui_view() -> str:
     return view if view in VIEWS else "month"
 
 
+HIST_COLS = ("time", "type", "event", "undo")   # (0.2.8-beta.32, F44) Undo starts at the end, not between Type and Event
+
+
+def hist_order() -> list[str]:
+    """History's column order (0.2.8-beta.32, F44): the Developer's saved order, or HIST_COLS, dragged headers."""
+    saved = store.get("ui_hist_order")
+    cols = saved.split(",") if isinstance(saved, str) else None
+    return list(cols) if cols and sorted(cols) == sorted(HIST_COLS) else list(HIST_COLS)
+
+
 HIDE_KEY = re.compile(r"src:[A-Za-z0-9_]+|edited|stale|hidden|deleted")
 
 
@@ -323,7 +333,7 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
     return page(request, "index.html", {
         "calview": calview,
         "s": state, "cfg": settings, "history": history, "undo_top": undo_top, "redo_next": redo_next,
-        "undo_keep": undo_keep(), "log_kinds": LOG_KINDS,
+        "undo_keep": undo_keep(), "log_kinds": LOG_KINDS, "hist_order": hist_order(),
         "cal": (cal_search(events, q.strip()[:100], qsrc if qsrc in source_ids() else "", _opt_day(qfrom), _opt_day(qto), lang)
                 if q.strip() else cal_view(events, shown, ref, lang, pad=6 if calview["full"] and shown == "month" else 0, hide=set(calview["hide"]))), "views": VIEWS,
         "view_explicit": store.get("ui_view") in VIEWS,
@@ -447,6 +457,17 @@ async def set_view(csrf: str = Form(""), view: str = Form("")):
     if view not in VIEWS:
         raise HTTPException(400, "Unknown view.")
     store.set("ui_view", view)
+    return Response(status_code=204)
+
+
+@app.post("/ui/history", dependencies=[Depends(gui_auth)])
+async def set_hist_order(csrf: str = Form(""), order: str = Form("")):
+    """Remember History's column order (0.2.8-beta.32, F44: its headers slide to reorder)."""
+    check_csrf(csrf)
+    cols = order.split(",")
+    if sorted(cols) != sorted(HIST_COLS):
+        raise HTTPException(400, "Unknown column order.")
+    store.set("ui_hist_order", order)
     return Response(status_code=204)
 
 

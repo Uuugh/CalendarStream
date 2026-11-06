@@ -67,7 +67,7 @@ Sources: [OneCal](https://onecal.io/pricing/) · CalendarBridge [pricing](https:
 <details>
 <summary>More screenshots, light and dark: calendars, feeds, rules, event templates, adding an event, Settings, phone, activity</summary>
 <p align="center">
-  <img src="docs/screenshots/sources-light.png" alt="Calendars: United CCS+ Calendar Sync expanded (Site Address, Username, password, upload, its rules) and a work calendar feed (light theme)" width="49%">
+  <img src="docs/screenshots/sources-light.png" alt="Sources: United CCS+ Calendar Sync expanded (Site Address, Username, password, upload, its rules) and a work calendar feed (light theme)" width="49%">
   <img src="docs/screenshots/sources-dark.png" alt="The same in the dark theme" width="49%"><br><br>
   <img src="docs/screenshots/destinations-light.png" alt="Feeds: a Google calendar and a calendar feed with its buttons, dates, sources and feed link and subscribe page (light theme)" width="49%">
   <img src="docs/screenshots/destinations-dark.png" alt="The same in the dark theme" width="49%"><br><br>
@@ -100,17 +100,21 @@ use the feed instead.
 bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/install.sh)
 ```
 
-[`install.sh`](install.sh) asks four questions (press Enter for the default):
+[`install.sh`](install.sh) asks five questions (press Enter for the default):
 
-1. which release to install, `latest` (stable) or `beta` (`stable`);
-2. the folder for `docker-compose.yml` and `.env` (`~/stacks/calendarstream`, or the next free number, `calendarstream2`, when that name is taken);
-3. the folder for CalendarStream's config and data, the database and `.secrets/` (a `data` subfolder of the stack folder);
-4. whether to allow updating from the status page (`yes`): adds a small updater container (see
+1. the subdomain (`calendarstream`): also the stack name and the container prefix;
+2. which release to install, `latest` (stable) or `beta` (`stable`);
+3. the app's folder (the current folder plus the subdomain, e.g. `./calendarstream`; a folder already there,
+   and not this one, is called out — use it anyway, a numbered name, another path, or cancel);
+4. the folders for `docker-compose.yml`/`.env` and for CalendarStream's config and data, the database and
+   `.secrets/` (the app folder's own `etc` and `data` subfolders; on an update, wherever they already are);
+5. whether to allow updating from the status page (`yes`): adds a small updater container (see
    [Updating](#updating)).
 
 A second CalendarStream on the same server works: the installer sees the first one's containers and adds a
-number to the new ones' names (`calendar_stream2`, `calendar_stream_db2`, `calendar_stream_updater2`) and a
-port of their own (8080, then 8080 + the number − 1); both are kept in the stack's `.env` (`STACK_NO`, `PORT`).
+number to the new ones' names (`calendarstream2`, `calendarstream_db2`, `calendarstream_updater2`, or
+whatever subdomain you chose) and a port of their own (8080, then 8080 + the number − 1); both are kept in
+the stack's `.env` (`STACK_NO`, `PORT`).
 
 It then downloads `docker-compose.yml` and `.env`, creates a random database password, starts
 CalendarStream and prints its address and a **setup code**. Running it again updates
@@ -120,7 +124,7 @@ answers) and the database password are kept.
 Then open the address it printed:
 
 1. **Create your login** with the setup code.
-2. **Calendars → +**, then pick what to add: **Other** (any `.ics` or `webcal://` link), **Google** or
+2. **Sources → +**, then pick what to add: **Other** (any `.ics` or `webcal://` link), **Google** or
    **Apple** (by private iCal link), a **CalendarStream** calendar of your own, or **United CCS+** (your
    Username (UID) and Calendar Sync password).
 3. Optional, for Google Calendar kept in sync within seconds (with your rule colors and reminders):
@@ -141,6 +145,7 @@ explained in [`.env.default`](.env.default):
 
 | Setting | Default | Notes |
 |---|---|---|
+| `STACK_PREFIX` | `calendar_stream` | The subdomain chosen at install: the stack name and the container prefix; the installer asks |
 | `MNT_DOCKER` | the stack folder | Where the database (`calendar_stream/postgres`) and `.secrets/` live; the installer asks |
 | `TZ` | `America/Chicago` | Time zone the schedule is shown in |
 | `IMAGE_TAG` | `latest` | `latest` (stable), `beta` (newest) or a version, e.g. `0.2.7` or `0.2.7-beta.1`; the installer asks |
@@ -181,10 +186,12 @@ logins or setup codes lock an address out for 15 minutes.
 ## The status page
 
 - **Calendar:** every source's events (views, months and the time zone change in place, without
-  reloading the page). On the right: the **Time Zone** it's shown in (**TZ** when
-  space is tight; on this page only, the feeds and Google keep `TZ`), a **view drop-down** (Month, Week, 5 days, Day, List), the **12h | 24h** switch, search,
+  reloading the page). On a touch screen, swipe the grid left or right to turn the page (vertical scrolling
+  is unchanged). On the right: a globe icon for the **Time Zone** it's shown in (the zone itself is its
+  tooltip; on this page only, the feeds and Google keep `TZ`), a **view drop-down** (Month, Week, 5 days, Day, List),
+  a clock icon for **12h | 24h** (the current mode is its tooltip), search,
   **Print** (Print Preview, below) and **Full page** (the button beside ☰; the calendar fills the window; **Back** returns; in it, clicking an item of the
-  **Calendars** or **Key** parts under the calendar hides or shows its events). Week and Day are an hourly grid; a handle under the
+  **Sources** or **Key** parts under the calendar hides or shows its events). Week and Day are an hourly grid; a handle under the
   calendar stretches its height (in Week and Day, also the height of an hour). Click the title to jump to any month. Click an event to
   open it; it stays open (also while the calendar is redrawn) until its **Close** (on the left). On
   the right of its details: the **link** (opens the event at "Linked to"), the bell (**reminders**: up to five, from "at the start" to "1 week before", sent to
@@ -216,9 +223,9 @@ logins or setup codes lock an address out for 15 minutes.
   the dates (From / To, or **All**: the first event to the last); it opens with your last print's
   choices (or the calendar's view the first time). Each sheet is one page of the paper you print on (landscape for the month, week and
   5 days; portrait for the day and the itinerary; Letter or A4), white unless you choose Dark; nothing is cut.
-- The page's sections: **Calendar** at the top, then **Calendars**, **Feeds**, **All Rules**,
+- The page's sections: **Calendar** at the top, then **Sources**, **Feeds**, **All Rules**,
   **Event Templates** and **History, Undo & Logs**, each with a small icon and the same kind of
-  section title row. On a wide screen they sit in two columns (Calendars | Feeds, All Rules |
+  section title row. On a wide screen they sit in two columns (Sources | Feeds, All Rules |
   Event Templates), with History across the full width; on a narrow screen or a phone
   they're one column, the calendar opens on the List view, the view and theme switches become one
   button each that steps through the choices, and long labels get shorter ("Expand", "Check every
@@ -253,11 +260,13 @@ logins or setup codes lock an address out for 15 minutes.
   for its Expand line) and around subsection titles (Automatic Upload, Manual Upload, Rules), 2 px
   between everything else; text boxes and rule lines are 34 px rounded rectangles; instruction tiles
   ("How to …") keep their own size.
-- **Calendars** (**+** adds one, ending with Cancel | Save). There's always a **CalendarStream**
+- **Sources** (**+** adds one, ending with Cancel | Save). There's always a **CalendarStream**
   calendar (a new install's is named Local): it holds the events you add here, and you can add more
   (**+ → CalendarStream**). The **Default** (the one new events go into; labelled right of its title) is always a CalendarStream
-  calendar, and any of them can be made the default with the greyed **Default** button in its expanded module; the list's order is only the
-  priority when events conflict. Every calendar and feed has an **On | Off** switch in its expanded module (Off: unavailable, greyed out). Other presets: **United CCS+** (once),
+  calendar, and any of them can be made the default with the greyed **Default** button in its expanded module (greyed and
+  disabled, with a tooltip, on a read-only source: events can't be added there); the list's order is only the
+  priority when events conflict. Every calendar and feed has an **On | Off** switch inline with its note in its expanded
+  module (Off: unavailable, greyed out). Other presets: **United CCS+** (once),
   **Google** and **Apple** calendars (by their private iCal link, with step-by-step help for finding
   it) and **Other** (any link starting with `webcal://` or ending in `.ics`; repeating events are
   shown from a year back to two years ahead). Each calendar is a **module**. Its header is 50 px
@@ -364,7 +373,8 @@ logins or setup codes lock an address out for 15 minutes.
 - **Event Templates** (like All Rules: "2 Templates" in a box, Expand to Configure, **+** in the top right corner, Cancel | Save): ready-made events (title, length or all day, location, color) for Add-event
   rules and for **Choose from template** when adding an event by hand.
 - **History, Undo & Logs** (a module like the others: it opens only from its Expand line): each check
-  and what changed, for each source, then every line as **Time | Type | Undo | Event**, with a filter
+  and what changed, for each source, then every line as **Time | Type | Event | Undo** (drag a header to
+  reorder them, or focus one and press ← →), with a filter
   (a Type, words, a time). Changes made on the page can be **undone** and **redone** (newest first);
   it remembers the last 100 (you choose how many). A deleted event stays struck through and greyed,
   saying where it was deleted (here, in Google Calendar, by United, gone from the feed), with
@@ -380,9 +390,10 @@ logins or setup codes lock an address out for 15 minutes.
   (`docker compose logs`) has a one-time link, good for an hour, that lets that browser in; or restart
   CalendarStream (`docker compose restart`).
 - **☰ Settings** (a light blue panel): site settings only: **Administrator** (the login, with a
-  show-password eye and a strength bar, like every password box, **Signed in** over **Sign out**, and the public address with
-  **More addresses**, for other domains this page is reached at: each editable, **+** for another; a feed's
-  link can use any of them), **Look** (your own logo and favicon, and the buttons' Animation intensity and duration), **Google Calendar API Sync** (for the admin, laid out like a login: Client ID
+  show-password eye and a strength bar, like every password box, **Signed in** over **Sign out**, and the public
+  address as one list of rows, each editable with its own trash can, **+** at the end of the first row for
+  another domain this page is reached at; a feed's link can use any of them), **Appearance** (your own logo and
+  favicon, and the buttons' Animation intensity and duration), **Google Calendar API Sync** (for the admin, laid out like a login: Client ID
   with Copy and Client secret, editable at any time, and a Status/Action box: **Healthy**, Not set up or the
   fault, over **Connect**, **Reconnect** or **Fix**, which saves and checks the client and the redirect
   address with Google, stopping with the fix as a click path; one **Remove**; no Gmail is signed in here:

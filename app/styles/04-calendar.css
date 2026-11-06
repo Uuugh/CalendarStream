@@ -2,8 +2,6 @@
   .calhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px }
   .calhead .title { font-size:18px; font-weight:700; min-width:150px }
   .monthwrap { position:relative }
-  select.tzpick { font:inherit; font-size:13px; color:var(--text); background:transparent; border:1px solid var(--line); border-radius:var(--r); height:28px; padding:0 4px; max-width:200px; cursor:pointer }
-  select.tzpick:hover, select.tzpick:focus { background:var(--soft) }
   .calhead button.title { background:transparent; color:var(--text); border:0; padding:4px 6px; border-radius:var(--r); cursor:pointer; text-align:left; font-family:inherit }
   .calhead button.title:hover, .calhead button.title[aria-expanded=true] { background:var(--soft) }
   .calhead .caret { font-size:12px; color:var(--muted) }

@@ -57,7 +57,8 @@
     var sc = t.closest('.sendcopy');
     if (sc) { copyText(sc.closest('.sendto').querySelector('.sendbtn').dataset.url, sc); setTimeout(closeSend, 1200); return; }
     if (!t.closest('.sendmenu')) closeSend();
-    // ☰ Settings › More addresses (F11): + adds a row; the trash takes one out (Save keeps it)
+    // ☰ Settings › Public address (F11; 0.2.8-beta.32, I22): + adds a row, at the end of the domain row; the
+    // trash takes a row out (Save keeps it), or, when the domain row is the only one, clears it instead.
     var add = t.closest('.extraadd');
     if (add) {
       var form = add.closest('form'), rows = form.querySelector('.extrarows');
@@ -66,7 +67,11 @@
       return;
     }
     var del = t.closest('.extradel');
-    if (del) del.closest('.extrarow').remove();
+    if (del) {
+      var row = del.closest('.extrarow'), input = row.querySelector('input');
+      if (row.classList.contains('domainrow') && row.parentNode.children.length === 1) { input.value = ''; input.focus(); }
+      else row.remove();
+    }
   });
   function closeSend() {
     document.querySelectorAll('.sendmenu:not([hidden])').forEach(function (m) {

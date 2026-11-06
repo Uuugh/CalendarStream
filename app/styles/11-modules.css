@@ -31,6 +31,10 @@
   .module .nameline > .namebox { flex:1 1 auto; width:auto }
   .module .nameline > .notedot { margin-left:2px; top:-.35em }
   .module .notewrap { margin:0 0 5px } .module .notepair { max-width:540px; margin-top:0 }
+  /* (0.2.8-beta.32, I26) the On | Off switch inline with the note, at the end of its line, instead of a row of its own */
+  .module .notepowerrow { display:flex; align-items:flex-end; gap:8px; margin:0 0 5px }
+  .module .notepowerrow .notewrap { flex:1 1 auto; min-width:0; margin:0 }
+  .module .notepowerrow .powerform { flex:0 0 auto; margin:0 }
   .module .editonly { display:none } .module.cfgopen .editonly { display:block } .module.cfgopen .showonly { display:none !important }
   .sections .module input.namebox { height:24px; line-height:22px }
   .module input.namebox:focus { outline:2px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset:0 }

@@ -39,8 +39,8 @@
 .sortable > .modrow:only-child > .handle, .sortable > .ruleline:only-child > .handle, .rulelist > .ruleline:only-child > .handle { visibility:hidden }
 /* All Rules: the rule lines' handles sit in the section's right margin, like the modules' */
 #rules .rulelist > .ruleline { gap:2px; margin-right:0 }   /* (beta.28, I12: the handle is on the left now) */
-#rules .rulelist > .ruleline > .handle { flex-basis:14px; width:14px }
-#rules .rulelist > .ruleline > .handle .hmove { width:14px }
+#rules .rulelist > .ruleline > .handle { flex-basis:10px; width:10px }   /* (0.2.8-beta.32, F38: 12px padding, not 18) */
+#rules .rulelist > .ruleline > .handle .hmove { width:10px }
 .gconnwrap { margin-bottom:6px }
 
 /* Settings → Google Calendar API Sync (0.2.8-beta.10): the two ways to set it up, and the guided steps */
@@ -136,9 +136,13 @@ details.gsteps ol > li.done { color:var(--muted) }
 .histfilter { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:10px 0 6px; color:var(--muted) }
 .histfilter select, .histfilter input { height:34px; width:auto }
 .histfilter .hfwords { flex:1 1 160px; min-width:0 }
-.logwin .htime { width:140px } .logwin .htype { width:90px } .logwin .hundo { width:40px; padding-left:2px; padding-right:2px; text-align:center }
-.logwin td:nth-child(2) { color:var(--muted); font-size:12.5px }
+.logwin [data-col="time"] { width:140px } .logwin [data-col="type"] { width:90px } .logwin .hundo { width:40px; padding-left:2px; padding-right:2px; text-align:center }
+.logwin td[data-col="type"] { color:var(--muted); font-size:12.5px }
 .logwin .undobtn { width:30px; height:26px; padding:0 }
+/* (0.2.8-beta.32, F44) History's headers slide (drag) to reorder; Undo starts at the end by default. */
+.logwin .histcol { cursor:grab; user-select:none }
+.logwin .histcol:focus-visible { outline:2px solid var(--accent); outline-offset:-2px }
+.logwin .histcol.dragover { box-shadow:inset 2px 0 0 var(--accent) }
 .vh { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0) }
 .histfoot { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin:8px 0 0 }
 .histfoot .keepform { display:flex; align-items:center; gap:8px; margin:0; font-size:13.5px }

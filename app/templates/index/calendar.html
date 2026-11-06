@@ -61,17 +61,18 @@
       </div>
       {# On the right: the time zone (this page only), the view (a drop-down, F15.6), the 12h | 24h switch, Search and Print (Full page moved to the title bar, left of ☰: 0.2.8-beta.31, F34). #}
       <div class="calright">
-        <label class="tzlabel" for="tzpick"><span class="long">{{ _('Time Zone') }}</span><span class="short" title="{{ _('Time Zone') }}">{{ _('TZ') }}</span></label>
-        <select id="tzpick" class="tzpick" aria-label="{{ _('Time zone') }}" title="{{ _('Show another time zone (this page only)') }}">
-          <optgroup label="{{ _('Common') }}">{% for z in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
-          <optgroup label="{{ _('All time zones') }}">{% for z in zones if z not in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
-        </select>
+        {# (0.2.8-beta.32, F41) a globe icon, the zone in its tooltip, opening the same picker (the select itself, unchanged) #}
+        <span class="tzwrap iconbtn" title="{{ _('Time zone: {zone}', zone=zone.replace('_', ' ')) }}">{{ icon("public", 18) }}
+          <select id="tzpick" class="tzpick" aria-label="{{ _('Time zone: {zone}', zone=zone.replace('_', ' ')) }}" title="{{ _('Show another time zone (this page only)') }}">
+            <optgroup label="{{ _('Common') }}">{% for z in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
+            <optgroup label="{{ _('All time zones') }}">{% for z in zones if z not in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
+          </select></span>
         {% set view_names = {"month": _('Month'), "week": _('Week'), "day": _('Day'), "list": _('List')} %}
         <select id="viewpick" class="viewpick" aria-label="{{ _('View') }}" title="{{ _('View') }}">
           {% for v, label in view_names.items() %}<option value="{{ v }}"{% if cal.view == v %} selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
-        {# 12h | 24h switch (F15.2): the numbers inside a rounded switch, its highlight sliding to the one in use; the only place the time format is set. #}
-        <button type="button" role="switch" class="segsw" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') }}" title="{{ _('Time format') }}"><span class="hl"></span><span class="lb">12h</span><span class="lb">24h</span></button>
+        {# (0.2.8-beta.32, F43) 12h | 24h is one clock icon that toggles, the current mode in its tooltip; the only place the time format is set. #}
+        <button type="button" role="switch" class="iconbtn clockbtn" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') if dates.h24 else _('12-hour times') }}" title="{{ _('Time format: 24h (click for 12h)') if dates.h24 else _('Time format: 12h (click for 24h)') }}">{{ icon("schedule", 18) }}</button>
         {# Search (0.2.8-beta.11), left of Print (F15.3): opens the search line under this row #}
         <button type="button" class="iconbtn searchbtn" id="searchbtn" aria-controls="calsearch" aria-expanded="{{ 'true' if cal.search else 'false' }}"
                 title="{{ _('Search the calendar') }}" aria-label="{{ _('Search the calendar') }}">{{ icon("search", 18) }}</button>
@@ -145,7 +146,8 @@
       <div class="legpart legkeys">
         <div class="legtitle">{{ _('Key') }}{{ notedot(_('Full page: click an item to hide or show those events on the calendar only. Deleted events can be restored from the event or History › Undo.')) }}</div>
         <div class="legcols rtl">
-          {% for r in all_rules if r.used %}{% for a in r.actions if a.type == 'color' %}<span class="legitem" style="--sw:color-mix(in srgb, {{ a.color }} 18%, var(--card))">{{ r.title or (r.conds[0].value if r.conds and r.conds[0].type == 'text' else r.label) }}</span>{% endfor %}{% endfor %}
+          {# (0.2.8-beta.32, F42) a rule's name in the key: cut to 25 characters at most #}
+          {% for r in all_rules if r.used %}{% set rname = r.title or (r.conds[0].value if r.conds and r.conds[0].type == 'text' else r.label) %}{% for a in r.actions if a.type == 'color' %}<span class="legitem" style="--sw:color-mix(in srgb, {{ a.color }} 18%, var(--card))" title="{{ rname }}">{{ rname|truncate(25, true, '…', 0) }}</span>{% endfor %}{% endfor %}
           {% call legitem('edited', mark=true) %}{{ icon("edit", 14) }} {{ _('Edited') }}{% endcall %}
           {% call legitem('stale', mark=true) %}{{ icon("warning", 14) }} {{ _('United changed it since') }}{% endcall %}
           {% call legitem('hidden', mark=true) %}<s>{{ _('Hidden from Google') }}</s>{% endcall %}

@@ -38,9 +38,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
         ok(not pg.is_visible("#monthpick"), "clicking elsewhere closes the picker")
         pg.goto("http://127.0.0.1:8090/?month=2026-10"); pg.wait_for_timeout(200)
         sw = pg.locator("#clockswitch"); box = sw.bounding_box(); cal = pg.locator("#cal").bounding_box()
-        knob = pg.locator("#clockswitch .hl").bounding_box()
-        ok(round(box["height"]) == 28 and box["y"] <= knob["y"] and knob["y"] + knob["height"] <= box["y"] + box["height"] + 0.5,
-           f"12h/24h segmented switch (beta.29: 12h | 24h, 28 px high), highlight inside the track ({box['width']:.0f}x{box['height']:.0f})")
+        # (0.2.8-beta.32, F43) 12h | 24h is one clock icon that toggles (no more segmented track/highlight)
+        ok(sw.get_attribute("role") == "switch" and "Time format" in (sw.get_attribute("title") or ""),
+           f"12h/24h is a clock icon toggle (0.2.8-beta.32, F43), its tooltip names the mode ({box['width']:.0f}x{box['height']:.0f})")
         dot = pg.locator(".legend .helpdot").first.bounding_box()
         ok(round(dot["height"]) == 15, "legend help dot: one 15 px help icon (F1.2, 0.2.8)")
         ok(sw.get_attribute("aria-checked") == "false" and "9:45am" in pg.content() and cal["x"] + cal["width"] - (box["x"] + box["width"]) < 330, "12h/24h switch in the header's right group (beta.29: view, switch, search, Print, Full page, +), 12-hour by default (English)")

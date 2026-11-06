@@ -48,6 +48,9 @@ function reopenEvents() {
 // The event page: in a pop-up on a computer (adding, editing or duplicating an event), the page itself
 // on a phone (F1.3). The pop-up tells this page when it's saved; then the calendar is redrawn.
 var eventDialog = document.getElementById('eventdialog'), eventFrame = eventDialog.querySelector('iframe');
+// (0.2.8-beta.32, I18) Going to the rule dialog from the event pop-up closes it without wiping its iframe, so
+// Cancel in the rule dialog can bring it back exactly as it was, unsaved edits included (07-saving.js).
+var eventSuspend = false;
 function narrow() { return window.matchMedia('(max-width: 700px)').matches; }
 function openEvent(url) {
   if (narrow()) { location.href = url; return; }
@@ -67,10 +70,10 @@ window.addEventListener('message', function (e) {
   if (e.data && e.data.kind === 'calendarstream:event-size' && e.source === eventFrame.contentWindow) { eventFrame.style.height = (+e.data.height || 0) + 'px'; return; }
   if (e.data && e.data.kind === 'calendarstream:print') { if (window.openPrintDay) window.openPrintDay(e.data.date); return; }
   // Link › Rule in the event pop-up (0.2.8-beta.15): its rule, or a new one for it, opens in the rule dialog
-  if (e.data && e.data.kind === 'calendarstream:open-rule') { eventDialog.close(); if (RD.rules[e.data.id]) openRule(RD.rules[e.data.id]); return; }
-  if (e.data && e.data.kind === 'calendarstream:new-rule') { eventDialog.close(); openRuleFor(e.data.title, e.data.date, e.data.sid); return; }
+  if (e.data && e.data.kind === 'calendarstream:open-rule') { eventSuspend = true; eventDialog.close(); if (RD.rules[e.data.id]) openRule(RD.rules[e.data.id], undefined, true); return; }
+  if (e.data && e.data.kind === 'calendarstream:new-rule') { eventSuspend = true; eventDialog.close(); openRuleFor(e.data.title, e.data.date, e.data.sid, true); return; }
   if (e.data !== 'calendarstream:event-saved') return;
   eventDialog.close(); eventFrame.src = 'about:blank';
   swapIn(location.href, ['#cal', '#activity', '.box.src .srcright']).then(function () { initCal(); bindAll(); reopenEvents(); });
 });
-eventDialog.addEventListener('close', function () { eventFrame.src = 'about:blank'; });
+eventDialog.addEventListener('close', function () { if (!eventSuspend) eventFrame.src = 'about:blank'; eventSuspend = false; });

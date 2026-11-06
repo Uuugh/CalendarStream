@@ -26,7 +26,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(feeds[-1]["name"] == main.calendar_name("ccs"), "F4.2: an empty Name gets the source's name")
     p = c.get("/").text
     ok('class="namebox nameinput" name="name" maxlength="100" aria-label="Label" placeholder="Label"' in p, "F4.2: the Name's hint (beta.17: Label, as in the module)")
-    ok('<span class="long">Time Zone</span><span class="short" title="Time Zone">TZ</span>' in p, "F2.1: Time Zone (TZ when tight)")
+    ok('class="tzwrap iconbtn" title="Time zone: America/New York"' in p and 'id="tzpick"' in p, "F41 (0.2.8-beta.32): Time Zone is a globe icon, the zone in its tooltip")
     ok('<p class="srcstatus">Last synced <b>' in p, "F3 (0.2.8-beta.5): the status line is short everywhere: Last synced (time)")
     ok("<span>Username</span>" in p and "<span>UID</span>" not in p, "F3.3: Username")
     order = [m.group(1) for m in re.finditer(r'<section class="card[^"]*" id="([a-z]+)"', p)]
@@ -68,7 +68,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                 bg = pg.evaluate("getComputedStyle(document.getElementById('menu')).backgroundColor")
                 ok(bg in ("rgb(232, 239, 255)", "rgb(238, 241, 247)"), f"F1.1: Settings opens in light blue (the Soft light palette, 0.2.8-beta.5) ({bg})")
             if w == 390:
-                ok(pg.is_visible(".tzlabel .short") and not pg.is_visible(".tzlabel .long"), "F2.1: TZ on a phone")
+                ok(pg.is_visible(".tzwrap") and pg.locator(".tzwrap").get_attribute("title") == "Time zone: America/New York", "F41 (0.2.8-beta.32): the globe icon (and its tooltip) still shows on a phone")
                 ok("Last synced" in (pg.locator("#src-ccs .srcstatus").text_content() or ""), "F3: the status line on a phone (beta.28, F31: shown in the 2/3-line box while collapsed)")
         b.close()
     srv.should_exit = True

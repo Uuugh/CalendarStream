@@ -19,7 +19,7 @@ absolute() {   # ~ and relative paths -> absolute (portable: macOS has no "realp
   printf '%s' "${p%/}"
 }
 env_value() {   # $1 = file, $2 = name: the value in a .env file, without quotes
-  [ -f "$1" ] && sed -n "s/^$2=//p" "$1" | tail -1 | tr -d '"'"'" || true
+  [ -n "$1" ] && [ -f "$1" ] && sed -n "s/^$2=//p" "$1" | tail -1 | tr -d '"'"'" || true
 }
 this_ip() {   # this computer's address on the network (Linux, then macOS)
   local ip
@@ -27,20 +27,25 @@ this_ip() {   # this computer's address on the network (Linux, then macOS)
   [ -n "$ip" ] || ip="$(ipconfig getifaddr en0 2>/dev/null || true)"
   printf '%s' "$ip"
 }
+slugify() {   # lowercase, letters, digits, . _ - only (a valid Docker name and folder name)
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9._-' '-' | sed 's/^[-.]*//;s/[-.]*$//'
+}
 
 # Where an earlier install is: the current folder if it holds CalendarStream, else the usual place,
-# ~/stacks/calendarstream (0.2.8-beta.27, F29.1). If that folder is taken by something that isn't CalendarStream,
-# the default is the next free number: calendarstream2, calendarstream3…
+# ~/stacks/calendarstream (0.2.8-beta.27, F29.1). Its .env (if any) carries over the subdomain, the
+# release channel and the rest, so an update just re-confirms them.
 is_ours() { [ -f "$1/docker-compose.yml" ] && grep -q calendar_stream "$1/docker-compose.yml" 2>/dev/null; }
-if is_ours "$PWD"; then
-  OLD_DIR="$PWD"
-else
-  OLD_DIR="$HOME/stacks/calendarstream"; n=2
-  while [ -e "$OLD_DIR" ] && ! is_ours "$OLD_DIR" && [ -n "$(ls -A "$OLD_DIR" 2>/dev/null)" ]; do
-    OLD_DIR="$HOME/stacks/calendarstream$n"; n=$((n + 1))
-  done
+if is_ours "$PWD"; then OLD_DIR="$PWD"
+elif is_ours "$HOME/stacks/calendarstream"; then OLD_DIR="$HOME/stacks/calendarstream"
+else OLD_DIR=""
 fi
-OLD_ENV="$OLD_DIR/.env"
+OLD_ENV="${OLD_DIR:+$OLD_DIR/.env}"
+
+# 0. (0.2.8-beta.32, F37) The subdomain: also the stack name and the container prefix. calendarstream by
+#    default (or, on an existing install, whatever it's already using).
+SUB_DEFAULT="$(slugify "$(env_value "$OLD_ENV" STACK_PREFIX)")"
+SUBDOMAIN="$(slugify "$(ask "Subdomain (also the stack name and the container prefix)" "${SUB_DEFAULT:-calendarstream}")")"
+[ -n "$SUBDOMAIN" ] || SUBDOMAIN=calendarstream
 
 # 1. Which release: stable (the "latest" image, the default) or beta (the newest, still being tested).
 CURRENT="$(env_value "$OLD_ENV" IMAGE_TAG)"
@@ -53,19 +58,46 @@ case "$CHANNEL" in
   *) echo "Please answer latest (stable) or beta." >&2; exit 1 ;;
 esac
 
-# 2. The stack folder: where docker-compose.yml and .env go.
-DIR="$(absolute "$(ask "Folder for docker-compose.yml and .env" "$OLD_DIR")")"
+# 2. The app's folder: <current path>/<subdomain> by default (0.2.8-beta.32, F37). If that's already where
+#    we are, or nothing's there yet, it's offered straight away, with "etc" and "data" as its default
+#    subfolders (etc for docker-compose.yml and .env, data for the database and secrets). An existing
+#    install keeps its own folder. Otherwise (something else is already there) it's a conflict.
+if [ -n "$OLD_DIR" ]; then
+  APP_DIR="$OLD_DIR"
+else
+  APP_DEFAULT="$PWD/$SUBDOMAIN"
+  if [ "$PWD" != "$APP_DEFAULT" ] && [ -e "$APP_DEFAULT" ]; then
+    echo
+    echo "$APP_DEFAULT already exists. Are you aware of it?"
+    echo "  1) Use it anyway"
+    echo "  2) Use a numbered name instead ($APP_DEFAULT-2, $APP_DEFAULT-3, …)"
+    echo "  3) Enter another path"
+    echo "  4) Cancel"
+    case "$(ask "Choice" "1")" in
+      2) n=2; while [ -e "$APP_DEFAULT-$n" ]; do n=$((n + 1)); done; APP_DEFAULT="$APP_DEFAULT-$n" ;;
+      3) APP_DEFAULT="$(absolute "$(ask "Folder for CalendarStream" "$APP_DEFAULT")")" ;;
+      4) echo "Cancelled."; exit 0 ;;
+      *) ;;   # 1, or anything else typed: use it anyway
+    esac
+  fi
+  APP_DIR="$(absolute "$(ask "Folder for CalendarStream" "$APP_DEFAULT")")"
+fi
+mkdir -p "$APP_DIR"
+
+# 3. The stack folder: where docker-compose.yml and .env go. Defaults to the app folder's own "etc"
+#    subfolder on a new install (0.2.8-beta.32, F37), or to wherever they already are on an update.
+DIR="$(absolute "$(ask "Folder for docker-compose.yml and .env" "${OLD_DIR:-$APP_DIR/etc}")")"
 mkdir -p "$DIR"
 cd "$DIR"
 
-# 3. The config and data folder (MNT_DOCKER): the database (calendar_stream/postgres) and .secrets/.
-#    Always asked, so you can confirm it; the default is the current one, or a "data" subfolder of the stack
-#    folder (0.2.8-beta.27, F29.2), so each stack keeps its own.
+# 4. The config and data folder (MNT_DOCKER): the database (calendar_stream/postgres) and .secrets/.
+#    Always asked, so you can confirm it; the default is the current one, or the app folder's own "data"
+#    subfolder (0.2.8-beta.27, F29.2; 0.2.8-beta.32, F37), so each stack keeps its own.
 CURRENT_DATA="${MNT_DOCKER:-$(env_value .env MNT_DOCKER)}"
-MNT_DOCKER="$(absolute "$(ask "Folder for CalendarStream's config and data (database, .secrets)" "${CURRENT_DATA:-$DIR/data}")")"
+MNT_DOCKER="$(absolute "$(ask "Folder for CalendarStream's config and data (database, .secrets)" "${CURRENT_DATA:-$APP_DIR/data}")")"
 mkdir -p "$MNT_DOCKER/.secrets"
 
-# 4. Updating from the status page: an optional small updater container (Watchtower) that pulls the
+# 5. Updating from the status page: an optional small updater container (Watchtower) that pulls the
 #    new image and restarts CalendarStream when you press "Update now". It needs access to Docker,
 #    so it's only added if you say yes. The default is your current choice (yes on a new install, F29.3).
 CURRENT_PROFILES="$(env_value .env COMPOSE_PROFILES)"
@@ -75,18 +107,18 @@ case ",$CURRENT_PROFILES," in *,updater,*) UPD_DEFAULT=yes ;;
 UPDATER="$(ask "Allow updating from the status page (adds a small updater container with access to Docker), yes or no" "$UPD_DEFAULT" | tr '[:upper:]' '[:lower:]')"
 case "$UPDATER" in y|yes) UPDATER=yes ;; n|no) UPDATER=no ;; *) echo "Please answer yes or no." >&2; exit 1 ;; esac
 
-# 5. More than one CalendarStream on this server (0.2.8-beta.27, F29.4). Containers have fixed names, so a second
-#    stack gets a number added to them (calendar_stream2, calendar_stream_db2, calendar_stream_updater2) and its own
+# 6. More than one CalendarStream on this server (0.2.8-beta.27, F29.4). Containers have fixed names, so a second
+#    stack gets a number added to them (<prefix>2, <prefix>_db2, <prefix>_updater2) and its own
 #    port. An existing stack keeps the number it has (STACK_NO in its .env). A new folder gets the lowest free number
 #    when another stack's containers are already here.
 STACK_NO="$(env_value .env STACK_NO)"
 PORT="$(env_value .env PORT)"
 if [ -z "$STACK_NO" ] && [ ! -f .env ]; then
-  taken="$(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -E '^calendar_stream(_db|_updater)?[0-9]*$' || true)"
+  taken="$(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -E "^${SUBDOMAIN}(_db|_updater)?[0-9]*\$" || true)"
   if [ -n "$taken" ]; then
     STACK_NO=2
-    while printf '%s\n' "$taken" | grep -qx "calendar_stream$STACK_NO"; do STACK_NO=$((STACK_NO + 1)); done
-    echo "Another CalendarStream is already on this server: this one's containers get the number $STACK_NO."
+    while printf '%s\n' "$taken" | grep -qx "$SUBDOMAIN$STACK_NO"; do STACK_NO=$((STACK_NO + 1)); done
+    echo "Another CalendarStream with this subdomain is already on this server: this one's containers get the number $STACK_NO."
   fi
 fi
 if [ -z "$PORT" ]; then
@@ -120,6 +152,7 @@ set_env() {   # $1 = name, $2 = value ("sed -i.bak" works with both GNU and macO
   fi
 }
 set_env IMAGE_TAG "$IMAGE_TAG"
+set_env STACK_PREFIX "$SUBDOMAIN"
 set_env MNT_DOCKER "$MNT_DOCKER"
 set_env STACK_NO "$STACK_NO"
 set_env PORT "$PORT"
@@ -138,7 +171,7 @@ fi
 
 # Start it, or update it to the newest image of the chosen release. Saying no to the updater after
 # a yes removes its container.
-[ "$UPDATER" = yes ] || docker rm -f "calendar_stream_updater$STACK_NO" >/dev/null 2>&1 || true
+[ "$UPDATER" = yes ] || docker rm -f "${SUBDOMAIN}_updater$STACK_NO" >/dev/null 2>&1 || true
 docker compose up -d
 
 # First install only: the status page asks for this code before you create your login.

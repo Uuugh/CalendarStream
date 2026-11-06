@@ -272,4 +272,22 @@ document.addEventListener('keydown', function (e) { if (e.key === 'Escape') clos
     loadCal(u.toString());
   }
 })();
+// F40: a horizontal swipe on the calendar grid moves to the next or previous period (left = next, right =
+// previous), the same as ‹ ›; vertical scrolling is left untouched (no preventDefault, measured on release).
+(function () {
+  var sx = 0, sy = 0, tracking = false;
+  document.addEventListener('touchstart', function (e) {
+    tracking = !!e.target.closest('#calbody') && e.touches.length === 1;
+    if (tracking) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }
+  }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (!tracking) return;
+    tracking = false;
+    var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;   // too short, or more vertical than horizontal
+    var links = Array.prototype.filter.call(document.querySelectorAll('#cal .calhead a.navbtn'), function (a) { return !a.classList.contains('wide'); });
+    var a = dx > 0 ? links[0] : links[1];   // swipe right -> previous (links[0]); swipe left -> next (links[1])
+    if (a) loadCal(a.href);
+  }, { passive: true });
+})();
 

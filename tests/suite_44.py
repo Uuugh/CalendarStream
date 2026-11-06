@@ -117,7 +117,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                     for sec, box in (("#rules", "#rulecount"), ("#templates", "#tplcount")):
                         r = pg.evaluate(f"""() => {{ const s = document.querySelector('{sec}').getBoundingClientRect(), p = document.querySelector('{sec} > .shead .plus').getBoundingClientRect(),
                                          b = document.querySelector('{box}').getBoundingClientRect(); return [s.right - p.right, p.top - s.top, s.right - b.right, b.top - s.top, document.querySelectorAll('{sec} .sfoot').length]; }}""")
-                        ok(17 <= r[0] <= 21 and r[1] < 30 and 55 <= r[2] <= 70 and r[3] < 30 and r[4] == 0,
+                        ok(11 <= r[0] <= 15 and r[1] < 30 and 55 <= r[2] <= 70 and r[3] < 30 and r[4] == 0,   # (0.2.8-beta.32, F38: 12px card padding, not 18)
                            f"[{tag}] Clarification '+ in the corner': {sec} the count box, then + in the top right corner, none at the bottom {r}")
                     # Clarification: a note is a raised (i) after the name, only when there is one
                     ok(pg.locator(f"#src-{wid} .nameline .notedot").count() == 1 and "Shared with the office" in pg.locator(f"#src-{wid} .nameline .helptip").text_content()
@@ -381,7 +381,17 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "Print (suite 64)": "Print (0.2.8-beta.29", "Administrator (suite 64)": "Administrator (0.2.8-beta.29", "Look (suite 64)": "Look (0.2.8-beta.29, F14)",
             "Full page button (suite 65)": "Full page's button (0.2.8-beta.31", "hour height (suite 65)": "The hour height handle (0.2.8-beta.31",
             "print orientation (suite 65)": "Print's orientation (0.2.8-beta.31", "grips side (suite 65)": "The reorder grips' side (0.2.8-beta.31",
-            "Administrator box (suite 65)": "The Administrator's status box (0.2.8-beta.31", "event rows (suite 65)": "The event pop-up's rows (0.2.8-beta.31"}
+            "Administrator box (suite 65)": "The Administrator's status box (0.2.8-beta.31", "event rows (suite 65)": "The event pop-up's rows (0.2.8-beta.31",
+            "On|Off note (suite 66)": "A calendar's On | Off switch and its note (0.2.8-beta.32", "Default disabled (suite 66)": "Default (0.2.8-beta.32, I2) greys out",
+            "Sources name (suite 66)": "The calendars module (0.2.8-beta.32, I28)", "Accepted mark (suite 66)": "History's Accepted sign-in (0.2.8-beta.32",
+            "Appearance name (suite 66)": "Appearance (0.2.8-beta.32, F39)", "key name cut (suite 66)": "A rule's key name (0.2.8-beta.32",
+            "Time Zone icon (suite 66)": "Time Zone (0.2.8-beta.32, F41)", "12h24h icon (suite 66)": "12h | 24h (0.2.8-beta.32, F43)",
+            "calendar swipe (suite 66)": "The calendar grid (0.2.8-beta.32, F40)", "History drag (suite 66)": "History's headers (0.2.8-beta.32, F44)",
+            "status word hold (suite 66)": "A status word (0.2.8-beta.32, I21)", "public addresses list (suite 66)": "Administrator's public addresses (0.2.8-beta.32",
+            "End Time zone title (suite 66)": "The event pop-up's Different end time zone (0.2.8-beta.32",
+            "card padding (suite 66)": "The first theme after install (0.2.8-beta.32, F38)",
+            "rule dialog Cancel (suite 66)": "Cancel in the rule dialog (0.2.8-beta.32, I18)",
+            "2/3-line invisible (suite 66)": "The 2/3-line box (0.2.8-beta.32, I27)"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

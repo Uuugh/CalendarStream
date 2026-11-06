@@ -79,11 +79,16 @@ ok("closest('.statusbox, .countbox')" in fold, "I10: Status/Action buttons (ever
 
 # --- F29: the installer ----------------------------------------------------------------------------------------------------------
 inst = read("install.sh"); comp = read("docker-compose.yml")
-ok('"$HOME/stacks/calendarstream"' in inst and 'calendarstream$n' in inst, "F29.1: the stack folder defaults to ~/stacks/calendarstream, numbered when taken")
-ok('"${CURRENT_DATA:-$DIR/data}"' in inst, "F29.2: the data folder defaults to a subfolder of the stack folder")
+# F29.1/F29.2's folder defaults were superseded by the installer rewrite (0.2.8-beta.32, F37: the app folder
+# defaults to <current path>/<subdomain>, with a conflict prompt, and the data folder to its own "data"
+# subfolder); see suite 66's own F37 checks for the current defaults.
+ok('"$PWD/$SUBDOMAIN"' in inst and "are you aware of it" in inst.lower(), "F29.1: the app folder defaults to the current path plus the subdomain, asking first on a conflict (0.2.8-beta.32, F37)")
+ok('"${CURRENT_DATA:-$APP_DIR/data}"' in inst, "F29.2: the data folder defaults to a subfolder of the app folder (0.2.8-beta.32, F37)")
 ok("UPD_DEFAULT=yes" in inst and inst.count("UPD_DEFAULT=no") == 2, "F29.3: Allow updating from the status page defaults to yes on a new install")
-ok("STACK_NO" in inst and "calendar_stream_updater$STACK_NO" in inst and "container_name: calendar_stream${STACK_NO:-}" in comp and "calendar_stream_updater${STACK_NO:-}" in comp
-   and "calendar_stream_db${STACK_NO:-}" in comp and "${PORT:-8080}:8080" in comp, "F29.4: a second stack gets a number on its container names, and its own port")
+ok("STACK_NO" in inst and "${SUBDOMAIN}_updater$STACK_NO" in inst
+   and "container_name: ${STACK_PREFIX:-calendar_stream}${STACK_NO:-}" in comp and "${STACK_PREFIX:-calendar_stream}_updater${STACK_NO:-}" in comp
+   and "${STACK_PREFIX:-calendar_stream}_db${STACK_NO:-}" in comp and "${PORT:-8080}:8080" in comp,
+   "F29.4: a second stack gets a number on its container names, and its own port (0.2.8-beta.32, F37: the subdomain can prefix the name too)")
 import subprocess
 ok(subprocess.run(["bash", "-n", os.path.join(REPO, "install.sh")]).returncode == 0, "F29: install.sh is valid bash")
 print("FAILED:", fails) if fails else print("ALL PASSED")

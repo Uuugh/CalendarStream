@@ -56,10 +56,14 @@
   #reportdialog .eactions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-top:16px }
   #reportdialog .noacct { font-size:12.5px; color:var(--muted); margin:10px 0 0 }
   .foot .linkbtn { font-size:inherit; text-decoration:underline; color:inherit }
-  /* Words with a short form (Time Zone → TZ, minutes → min…): the short one shows when space is tight. */
+  /* Words with a short form (minutes → min…): the short one shows when space is tight. */
   .short { display:none }
-  .tzlabel { font-size:12.5px; font-weight:600; color:var(--muted); white-space:nowrap }
-  @media (max-width:900px) { .tzlabel .long { display:none } .tzlabel .short { display:inline } }
+  /* (0.2.8-beta.32, F41) Time Zone: a globe icon with the zone as its tooltip; the native select sits over it,
+     invisible, so a click or tap opens the same picker as before */
+  .tzwrap { position:relative; cursor:pointer }
+  .tzwrap select.tzpick { position:absolute; inset:0; width:100%; height:100%; margin:0; padding:0; border:0;
+    background:transparent; opacity:0; cursor:pointer; appearance:none }
+  .tzwrap .mi { pointer-events:none }
   /* Event template rows wrap when their section is narrow (half the page, or a phone). */
   #templates form.tagsform { container-type:inline-size }
   @container (max-width:700px) {

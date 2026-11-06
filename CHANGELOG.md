@@ -9,7 +9,43 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.31**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.32**
+
+## 0.2.8-beta.32 — 2026-11-06
+
+Build 8: Fixes + Settings + Calendar + History + Setup. Left for later, with reasons: I13 (needs steps to reproduce),
+I25 (needs steps), F24 (needs a change to the updater's protocol), I7 (on hold); F36.2 deleted by the Developer.
+
+### Added
+- **F44** History's headers reorder by dragging them (or ← → when one is focused); Undo moves to the end, no longer
+  between Type and Event.
+- **F40** The calendar grid turns the page on a horizontal swipe on a touch screen (left: next, right: previous);
+  vertical scrolling is unchanged.
+- **F37** The installer asks for a subdomain (also the stack name and the container prefix), defaulting to
+  `calendarstream`; the app's default path is the current path plus the subdomain, with `etc` and `data` as its
+  default subfolders. A path that's already taken is called out ("are you aware of it?") with a choice: use it
+  anyway, a numbered name, another path, or cancel.
+
+### Changed
+- **I2** Default greys out and disables, with a tooltip saying why, on any read-only calendar.
+- **I18** Cancel in the rule dialog, opened from the event pop-up, reopens it exactly as it was, unsaved edits included.
+- **I21** A status word always keeps its icon and words together inside a Status/Action button; elsewhere it shows
+  both, then collapses to just its icon, after a hold that follows the Animation duration setting.
+- **I22** Administrator's public addresses are one list of rows (the page's own address first), each with its own
+  trash can; + sits at the end of the first row; trashing the only row left clears it.
+- **I26** A calendar's On | Off switch sits inline with its note, instead of on its own line.
+- **I27** The 2/3-line box is invisible (no border or fill), right-aligned next to the Status/Action button, instead
+  of centered across the header.
+- **I28** The Calendars module is renamed Sources.
+- **I29** History's Accepted sign-in is a ✓ with no words (the word stays as its tooltip and accessible name).
+- **I31** Different end time zone's tooltip is "End Time zone"; the event pop-up never resizes as All-day Event or
+  Different end time zone are ticked.
+- **F38** The first theme after a fresh install is System; every section's card padding is 12 px, not 18 (the margin
+  is unchanged); the reorder grips move in to match.
+- **F39** Look is renamed Appearance (translated at Deploy).
+- **F41** Time Zone is a globe icon; its tooltip names the zone, and it opens the same picker.
+- **F42** A rule's key name is cut to 25 characters, with the full name as its tooltip.
+- **F43** 12h | 24h is one clock icon that toggles on a click, the current mode in its tooltip.
 
 ## 0.2.8-beta.31 — 2026-11-06
 

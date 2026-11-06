@@ -31,22 +31,25 @@
                 <input type="password" id="lconf" name="confirm" autocomplete="new-password"></label>
             </div>
             <p class="mnote more" style="margin:6px 0 0" hidden>{{ _('Then sign in again with the new login.') }}</p>
-            <div class="k" id="public">{{ _('Public address') }}{{ help(_('This page’s https:// address, e.g. <code>https://cal.example.com</code>: for feed links and Google sign-in.'), 'left') }}</div>
-            <div class="inbox">
-              <input type="text" class="code" id="publicurl" name="main" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
-              <button type="button" class="inboxbtn" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
+            {# (0.2.8-beta.32, I22) one unified list of address rows: the domain row (the page's own address, with
+               This page and + at its end) first, then any extra addresses below, each with its own trash can.
+               Trashing the domain row, when it's the only row, clears it rather than leaving none. #}
+            <div class="k" id="public">{{ _('Public address') }}{{ help(_('This page’s https:// address, e.g. <code>https://cal.example.com</code>: for feed links and Google sign-in. + adds another address (another domain) that also reaches this page; a Calendar Feed’s link can use any of them, Google’s sign-in uses the one above.'), 'left') }}</div>
+            <div class="extrarows" id="publicrows">
+              <div class="extrarow domainrow">
+                <div class="inbox">
+                  <input type="text" class="code" id="publicurl" name="main" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
+                  <button type="button" class="inboxbtn" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
+                </div>
+                <button type="button" class="ghost iconbtn extradel" title="{{ _('Clear this address') }}" aria-label="{{ _('Clear this address') }}">{{ trash }}</button>
+                <button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button>
+              </div>
+              {% for u in public.extra %}<div class="extrarow"><input type="text" class="code" name="url" value="{{ u }}" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
+                <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div>{% endfor %}
             </div>
             {% if not public.url %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
-            <div class="publicextra">
-              <div class="k">{{ _('More addresses') }}{{ help(_('Other addresses people reach this page at (another domain). A Calendar Feed’s link can use any of them; Google’s sign-in uses the one above.'), 'left') }}</div>
-              <div class="extrarows">
-                {% for u in public.extra %}<div class="extrarow"><input type="text" class="code" name="url" value="{{ u }}" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
-                  <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div>{% endfor %}
-              </div>
-              <div class="extrafoot"><button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button></div>
-              <template class="extratpl"><div class="extrarow"><input type="text" class="code" name="url" value="" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
-                <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div></template>
-            </div>
+            <template class="extratpl"><div class="extrarow"><input type="text" class="code" name="url" value="" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
+              <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div></template>
           </form>
         </div>
 
@@ -125,7 +128,7 @@
         </div>
         {# (0.2.8-beta.29, F14) Look: your own logo and favicon, and the buttons' animation. One form, one Cancel | Save. #}
         <div class="mgroup" id="look">
-          <div class="mhead">{{ _('Look') }}{{ help(_('Your own logo (shown by the title) and favicon: a PNG, SVG, WebP, JPEG or ICO picture up to 256 KB. Animation sets how strong and how long the buttons’ pulses and slides are.'), 'left') }}</div>
+          <div class="mhead">{{ _('Appearance') }}{{ help(_('Your own logo (shown by the title) and favicon: a PNG, SVG, WebP, JPEG or ICO picture up to 256 KB. Animation sets how strong and how long the buttons’ pulses and slides are.'), 'left') }}</div>
           <form method="post" action="/settings/look" id="lookform" class="clientform lookform" enctype="multipart/form-data" data-reload="1" autocomplete="off">
             <input type="hidden" name="csrf" value="{{ csrf }}">
             <div class="pair">
