@@ -10,8 +10,8 @@ Claude can't see the usage meters, so the Developer's readings are the only actu
   Dashboard marks that build's actual as unknown.
 - **After a BUILD:** Claude's report ends by asking for the same two readings, and the next BUILD's "before" is not asked
   for again if it was given then.
-- Claude records each build on the Dashboard: its estimate (session and weekly), the readings, and its projection for the
-  next build.
+- Claude records each build in build-costs.md (estimate session and weekly, model, size, readings) and on the
+  Dashboard's cost graph, with its projection for the next build; the estimate comes from build-costs.md, How to predict.
 
 ## What BUILD builds
 
