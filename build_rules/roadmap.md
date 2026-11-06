@@ -7,10 +7,12 @@ Read when planning a version.
 0.3 Theming
 0.3.0 Phone mode: Settings a full page, with a back button in its left corner.
 0.3.1 Printing
-0.3.2 Cloud / attachment integration
+0.3.2 More themes
+- option to change based on local time (vs system)
+0.3.3 Cloud / attachment integration
 - Attachments in an area at the bottom of an event's Notes
 
-0.4 More sources and destinations (0.2.8-beta.10: two-way sync with the Google calendars CalendarStream makes)
+0.4 More sources and destinations 
 0.4.1 Microsoft 365 / Outlook
 - Outlook 1-way and 2-way Sync through Microsoft 365 OAuth (Microsoft Graph), for work-calendar integrations: a Microsoft API module in ☰ Settings (an app registered once
   in Microsoft's Azure portal), then Connect me / Invite someone in each module, like Google.
