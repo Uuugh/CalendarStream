@@ -13,8 +13,8 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 
 ## 0.2.8-beta.30 — 2026-11-05
 
-Part of the 6 Fixes + Settings build (the rest — I13, I15, I18, I22, F36, F24 — needs more reproduction
-or is bigger new UI work, and is left for the next build so it isn't guessed at).
+Part of the 6 Fixes + Settings build (the rest — I3, I13, I15, I18, I22, F36, F24 — needs more
+reproduction or is bigger new UI work, and is left for the next build so it isn't guessed at).
 
 ### Fixed
 - **I24** The server crashed on every page load once a rule had a "Change field to text" or "Add text to
@@ -31,7 +31,7 @@ or is bigger new UI work, and is left for the next build so it isn't guessed at)
   width), in response to "the padding in Rules increased."
 
 ### Waiting
-- I7 still on hold. I13, I15, I18, I22, F36, F24, F22 still waiting.
+- I7 still on hold. I3, I13, I15, I18, I22, F36, F24, F22 still waiting.
 
 ## 0.2.8-beta.29 — 2026-11-05
 
