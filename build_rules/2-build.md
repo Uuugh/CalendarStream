@@ -4,10 +4,10 @@ Command: **BUILD** `[F|f I|i R|r] [b m M]` (GO and EOF are aliases). Read when t
 
 ## The start-of-BUILD box
 
-BUILD opens with one short rounded box (the style of the app's status boxes), two lines, each green when good and amber
-otherwise:
-- **Model:** "Model: Sonnet 5.5" (green) when it is the model; "Model: Sonnet 5.5 not selected. (Optional)" (amber)
-  otherwise. The Developer sets Medium effort (Claude can't see it) and switches models; Claude never does.
+BUILD opens with one short rounded box (the style of the app's status boxes), two lines:
+- **Model:** "Model: Sonnet 5.5" (green) when it is the model; "Model: Sonnet 5.5 not selected. (Optional)" (white/neutral,
+  not amber — it's optional, not missing) otherwise. The Developer sets Medium effort (Claude can't see it) and switches
+  models; Claude never does.
 - **Usage:** "Usage: 11% / 47%" (green, the Developer's session % / weekly %) once a reading is given; "Usage: Missing"
   (amber) until then.
 The repo is not part of the box; a handoff tells Claude to clone it when it is not on disk.
