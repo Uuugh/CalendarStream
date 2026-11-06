@@ -9,7 +9,29 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.29**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.30**
+
+## 0.2.8-beta.30 — 2026-11-05
+
+Part of the 6 Fixes + Settings build (the rest — I13, I15, I18, I22, F36, F24 — needs more reproduction
+or is bigger new UI work, and is left for the next build so it isn't guessed at).
+
+### Fixed
+- **I24** The server crashed on every page load once a rule had a "Change field to text" or "Add text to
+  field" action (e.g. a title/notes/location change): the translator's own `text` parameter collided with
+  the `{text}` placeholder's keyword, two layers deep (the per-call wrapper, and `i18n.tr` itself). Fixed
+  at the root: `i18n.tr`'s `text` parameter is now positional-only, and the wrapper that was shadowing it
+  (and two others that could have hit the same thing) renamed.
+- **I23** A new rule saved with no title now gets one from its If/Then (as a calendar's color already
+  defaults when none is chosen), instead of failing on save (a consequence of I24: generating a name from
+  an untitled rule's actions is exactly what crashed).
+- **I2** The default calendar's "Default" label stays beside its title on narrow screens instead of
+  dropping to its own line under Close.
+- **I12** The margin added for the rule-line reorder handle trimmed from 16px to 14px (the handle's actual
+  width), in response to "the padding in Rules increased."
+
+### Waiting
+- I7 still on hold. I13, I15, I18, I22, F36, F24, F22 still waiting.
 
 ## 0.2.8-beta.29 — 2026-11-05
 

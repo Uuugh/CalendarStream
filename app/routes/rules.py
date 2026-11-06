@@ -62,6 +62,8 @@ async def save_rule(request: Request, csrf: str = Form(""), rule: str = Form("")
         checked = rules_mod.normalize(raw, source_ids(), {t["id"] for t in event_templates()}, strict=True)
     except (ValueError, TypeError) as e:
         raise HTTPException(400, str(e) if isinstance(e, rules_mod.RuleError) else "That rule couldn't be read.")
+    if not checked["title"]:       # I23: no title given - name it from its If/Then, as a color defaults when none is chosen
+        checked["title"] = rule_label(checked, lang_for(request))
     found = all_rules()
     ids = [r["id"] for r in found]
     if raw.get("id") in ids:

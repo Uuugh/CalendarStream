@@ -72,7 +72,7 @@ def page_js(request: Request, version: str, lang: str):
     if version != core.__version__ or lang not in i18n.LANGS:
         raise HTTPException(404)
     make = lambda: templates.env.get_template("page.js").render(
-        _=lambda text, **kw: i18n.tr(lang, text, **kw), lang=lang).encode()
+        _=lambda t, **kw: i18n.tr(lang, t, **kw), lang=lang).encode()
     return _send_asset(request, f"page-{lang}.js", make, "text/javascript; charset=utf-8")
 
 
@@ -378,7 +378,7 @@ CONFLICT_WHAT = {"color": "color", "emoji": "emoji", "change": "time"}
 
 def rule_conflicts(lang: str = "en") -> list[dict]:
     """The rules' conflicts in words, each with what can be done about it (All Rules shows them)."""
-    tr = lambda text, **kw: str(i18n.tr(lang, text, **kw))
+    tr = lambda t, **kw: str(i18n.tr(lang, t, **kw))
     found, sids = all_rules(), source_ids()
     by_id = {r["id"]: r for r in found}
     out = []

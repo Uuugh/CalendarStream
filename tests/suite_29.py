@@ -40,6 +40,13 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(len(eff) == 3 and "“RDO” → Color (Tomato)" in words[0] and "“VAC” → Color (Basil)" in words[1] and eff[2]["actions"] == [{"type": "change", "to": "length", "minutes": 120}]
        and all(r["apply"] == ["ccs"] for r in eff), f"0.2.5 → 0.2.8: own rules, then templates, then items without an end (2:00); 24-hour events kept ({words})")
     ok(main.store.get("calendar_tags") is None and main.store.get("defaults") is None, "the old settings are gone")
+    # I24: a "Change field to text" action must not crash rule_label (or the page) - 0.2.8-beta.29 regression
+    r24 = main.rules_mod.normalize({"id": "r24", "conds": [], "actions": [{"type": "change", "to": "title", "text": "Reserve"}], "apply": "all"})
+    main.save_rules([r24] + main.all_rules())
+    label24 = main.rule_label(main.all_rules()[0])
+    ok(label24 == "Every event → Change Title to “Reserve”", f"I24: rule_label handles Change-field-to-text ({label24})")
+    ok(c.get("/", auth=A).status_code == 200, "I24: the page still loads (no 500) with that rule saved")
+    main.save_rules([r for r in main.all_rules() if r["id"] != "r24"])
     p = c.get("/", auth=A).text
     ok("(Tomato)" in p and re.search(r'<span class="ruleused calbadge" data-cal="one" style="--c1:#[0-9a-f]{6}">United CCS Schedule</span>', p) is not None, "All Rules lists them, with who uses them")
     # Note (F3.1)

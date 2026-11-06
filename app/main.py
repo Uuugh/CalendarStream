@@ -328,7 +328,7 @@ def color_name(color: str) -> str:
 
 def rule_label(r: dict, lang: str = "en") -> str:
     """A rule in one line: its title, else e.g. 'Text contains “RDO” → Color (Tomato)'."""
-    tr = lambda text, **kw: str(i18n.tr(lang, text, **kw))
+    tr = lambda t, **kw: str(i18n.tr(lang, t, **kw))
     return rules_mod.label(r, tr, color_name, {t["id"]: t for t in event_templates()})
 
 
@@ -569,7 +569,7 @@ def page(request: Request, name: str, context: dict, status_code: int = 200, lan
     return templates.TemplateResponse(request, name, {
         **context, "lang": lang, "html_lang": i18n.HTML_LANG[lang], "langs": i18n.LANGS,
         "lang_choice": store.get("ui_lang") if store.get("ui_lang") in i18n.LANGS else "auto",
-        "_": lambda text, **kw: i18n.tr(lang, text, **kw), "msg": lambda text: i18n.message(lang, text),
+        "_": lambda t, **kw: i18n.tr(lang, t, **kw), "msg": lambda text: i18n.message(lang, text),
         "dates": dates_for(lang), "theme": ui_theme(), "clock": ui_clock(), "look": look(),
         "update": {"available": updates.available(), "channel": release_channel(), "frequency": updates.frequency(),
                    "frequencies": list(FREQUENCIES), "info": updates.info(), "releases": RELEASES,
@@ -2383,7 +2383,7 @@ ALARM_CHOICES = (0, 5, 10, 15, 30, 60, 120, 1440, 2880, 10080)    # minutes befo
 
 def alarm_text(minutes: int, lang: str = "en") -> str:
     """e.g. "at the start", "15 min before", "1 day before"."""
-    tr = lambda text, **kw: str(i18n.tr(lang, text, **kw))
+    tr = lambda t, **kw: str(i18n.tr(lang, t, **kw))
     if minutes == 0:
         return tr("at the start")
     for size, one, many in ((10080, "1 week before", "{n} weeks before"), (1440, "1 day before", "{n} days before"),
