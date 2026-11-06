@@ -20,7 +20,8 @@ Command: **PLAN**. Read when the Developer says PLAN, and before every BUILD.
    for code this plan changes is named, to be done in the same build.
 5. The recommended builds, always split for the least usage: one build, unless splitting saves more, with the
    reason (each build pays its setup, test runs and release once). Checked again when new inputs come in. Each build's
-   cost is estimated from build-costs.md (session and weekly %).
+   cost is estimated from build-costs.md (session and weekly %); the Dashboard plots every planned build on its cost graph and
+   marks where each should end on its session and weekly meters, numbered by build.
 
 The same list is shown before every BUILD, including what that BUILD leaves waiting, so the Developer's messages keep
 the record if a session ends.

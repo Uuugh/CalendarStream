@@ -3,7 +3,9 @@
 What each BUILD cost, to predict the next one. Claude can't see the usage meters, so **actual** comes only from the
 Developer's readings (2-build.md, Usage readings): the session % and the weekly % before and after a BUILD.
 Claude fills a row at the end of each BUILD, asks for the after-reading in its report, and fills the actual when it
-arrives. The Dashboard's cost graph draws these rows.
+arrives. The Dashboard's cost graph draws these rows, and, to their right, each build PLAN recommends (numbered by build); the two
+meters under it carry a numbered mark where each planned build should end (the session meter starts again from 0 for a
+build planned after the session reset).
 
 Read by PLAN (1-plan.md, point 5) for its estimates and by BUILD (2-build.md) for its estimate and projection.
 
@@ -19,6 +21,7 @@ Actual = after − before (a session reset in between makes the session actual u
 | beta.28 (4 Sources) | Nov 4 | – | 9 | 56, +637/−138 | 37 | – | – | – | ? | ? | |
 | beta.29 (5 Calendar) | Nov 5 | – | 8 | 37, +924/−192 | 41 | – | – | – | ? | ? | |
 | R (cost tracking, no version) | Nov 5 | Sonnet 5.5 | 3 R | docs, rules, Dashboard | 8 | 2 | 8 / 28 | 24 / 30 (Nov 5, 10:50 PM; also covers the TEST and PLAN of the next conversation) | ? | ? | First row with a weekly estimate; the reading is not a clean after-reading, so the actual stays unknown |
+| R (split marks on the Dashboard, no version) | Nov 5 | Sonnet 5.5 | 1 R | docs, rules, Dashboard | 5 | 1 | 24 / 30 | ? / ? | ? | ? | Estimated at build time |
 
 ## How to predict
 

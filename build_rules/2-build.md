@@ -11,7 +11,7 @@ Claude can't see the usage meters, so the Developer's readings are the only actu
 - **After a BUILD:** Claude's report ends by asking for the same two readings, and the next BUILD's "before" is not asked
   for again if it was given then.
 - Claude records each build in build-costs.md (estimate session and weekly, model, size, readings) and on the
-  Dashboard's cost graph, with its projection for the next build; the estimate comes from build-costs.md, How to predict.
+  Dashboard's cost graph, with its projection for each planned build (1-plan.md, point 5); the estimate comes from build-costs.md, How to predict.
 
 ## What BUILD builds
 
