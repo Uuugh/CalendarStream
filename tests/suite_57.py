@@ -43,13 +43,13 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     labels = re.findall(r'<label for="(\w+)"[^>]*>[^<]*<span class="req"', p)
     ok(labels == ["title", "start_date", "end_date", "start_time", "end_time"], f"F11: Title, Starts, Ends and both Times have their * ({labels})")
     ok(">Change color</span>" in p and p.index('id="title"') < p.index('id="location"') < p.index('id="source"') < p.index('id="colorpick"')
-       < p.index('id="start_date"') < p.index('id="end_date"') < p.index('id="start_time"') < p.index('id="all_day"')
-       < p.index('id="end_time"') < p.index('id="start_tz"') < p.index('id="end_tz_differs"') < p.index('id="end_tz"') < p.index('id="description"') < p.index('id="linkbox"'),
-       "F11: the fields in the picture's order, Notes after them, Link to below")
+       < p.index('id="start_date"') < p.index('id="all_day"') < p.index('id="end_date"') < p.index('id="start_time"')
+       < p.index('id="end_tz_differs"') < p.index('id="end_time"') < p.index('id="start_tz"') < p.index('id="end_tz"') < p.index('id="description"') < p.index('id="linkbox"'),
+       "F11 (beta.31, I19: All-day Event on Ends' line, Different end time zone on the end Time's line): the fields in order, Notes after them, Link to below")
     lk = p[p.index('id="linkbox"'):p.index('class="actions bottom"')]
-    ok(re.search(r'class="seg" data-kind="event"', lk) and re.search(r'data-kind="rule"[^>]*disabled', lk) and 'data-kind="remove"' in lk
+    ok(re.search(r'class="seg" data-kind="event"', lk) and re.search(r'data-kind="rule"', lk) and not re.search(r'data-kind="rule"[^>]*disabled', lk) and 'data-kind="remove"' in lk
        and re.search(r'id="linkevent" hidden', lk) and 'id="linkbtn"' not in p,
-       "F11.2: Link to starts closed, with Event | Rule (not until it's saved) | Remove (beta.23, F2: an ✕)")
+       "F11.2: Link to starts closed, with Event | Rule (active in Add event too: beta.31, I18) | Remove (beta.23, F2: an ✕)")
     ok("evdelbtn" not in p and "evhidebtn" not in p and 'name="hidden"' not in p, "a new event has no Delete or Hide")
 
     p = ev(f"uid={U}&month=2026-10&embed=1")

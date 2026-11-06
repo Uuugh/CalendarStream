@@ -116,19 +116,21 @@ HIDE_KEY = re.compile(r"src:[A-Za-z0-9_]+|edited|stale|hidden|deleted")
 def calview_prefs() -> dict:
     """The calendar's own view choices (0.2.8-beta.29, F15, F28), kept with the page's other ones: `full` (the Full page
     view: every other section hidden), `hide` (what the key has switched off; only while full: leaving full page shows
-    it all again) and `stretch` (how many px the stretch handle added to a day's or hour's height)."""
+    it all again) and `stretch` (how many px the stretch handle added to a day's height) and `hour` (the height of one hour in Week and Day, I20)."""
     saved = store.get("ui_calview")
     saved = saved if isinstance(saved, dict) else {}
     full = saved.get("full") is True
     hide = [k for k in (saved.get("hide") or []) if isinstance(k, str) and HIDE_KEY.fullmatch(k)] if full else []
     stretch = saved.get("stretch")
     stretch = int(stretch) if isinstance(stretch, (int, float)) and not isinstance(stretch, bool) and 0 <= stretch <= 1200 else 0
-    return {"full": full, "hide": hide, "stretch": stretch}
+    hour = saved.get("hour")        # (0.2.8-beta.31, I20) the height of one hour in Week and Day, px
+    hour = int(hour) if isinstance(hour, (int, float)) and not isinstance(hour, bool) and 20 <= hour <= 120 else 44
+    return {"full": full, "hide": hide, "stretch": stretch, "hour": hour}
 
 
 @app.post("/ui/calview", dependencies=[Depends(gui_auth)])
 async def set_calview(csrf: str = Form(""), full: str | None = Form(None), hide: str | None = Form(None),
-                      stretch: str | None = Form(None)):
+                      stretch: str | None = Form(None), hour: str | None = Form(None)):
     """Remember the calendar's Full page view, what its key has switched off and its stretch (only what is sent changes)."""
     check_csrf(csrf)
     saved = store.get("ui_calview")
@@ -140,7 +142,7 @@ async def set_calview(csrf: str = Form(""), full: str | None = Form(None), hide:
         if full == "0":
             saved["hide"] = []          # leaving full page shows everything again (F15.9)
     if hide is not None:
-        keys = [k for k in hide.split(",") if k]
+        keys = [k for k in hide.split(",") if k and k != "-"]       # ("-" = none: an empty form value reads as "not sent", so the last one switched on again was never saved: I15)
         if len(keys) > 60 or not all(HIDE_KEY.fullmatch(k) for k in keys):
             raise HTTPException(400, "Unknown key item.")
         saved["hide"] = keys
@@ -148,6 +150,10 @@ async def set_calview(csrf: str = Form(""), full: str | None = Form(None), hide:
         if not stretch.isdigit() or int(stretch) > 1200:
             raise HTTPException(400, "Unknown stretch.")
         saved["stretch"] = int(stretch)
+    if hour is not None:
+        if not hour.isdigit() or not 20 <= int(hour) <= 120:
+            raise HTTPException(400, "Unknown hour height.")
+        saved["hour"] = int(hour)
     store.set("ui_calview", saved)
     return Response(status_code=204)
 
@@ -463,14 +469,16 @@ PRINT_VIEWS = ("itinerary", "day", "5day", "week", "month")
 def print_prefs() -> dict:
     """The last print's choices (Print Preview starts with them): view, weekends, theme; {} before the first."""
     saved = store.get("ui_print") or {}
-    return {k: saved[k] for k in ("view", "weekends", "theme") if k in saved} if isinstance(saved, dict) else {}
+    return {k: saved[k] for k in ("view", "weekends", "theme", "orient") if k in saved} if isinstance(saved, dict) else {}
 
 
 @app.post("/ui/print", dependencies=[Depends(gui_auth)])
-async def set_print(csrf: str = Form(""), view: str = Form(""), weekends: str = Form("1"), theme: str = Form("light")):
+async def set_print(csrf: str = Form(""), view: str = Form(""), weekends: str = Form("1"), theme: str = Form("light"),
+                    orient: str = Form("auto")):
     check_csrf(csrf)
     store.set("ui_print", {"view": view if view in PRINT_VIEWS else "month", "weekends": weekends == "1",
-                           "theme": "dark" if theme == "dark" else "light"})
+                           "theme": "dark" if theme == "dark" else "light",
+                           "orient": orient if orient in ("land", "port") else "auto"})
     return {"ok": True}
 
 
@@ -512,7 +520,7 @@ def print_pages(events: list[Event], view: str, first: date, last: date, weekend
 
 @app.get("/print", dependencies=[Depends(gui_auth)])
 def print_page(request: Request, view: str = "", start: str = "", end: str = "", weekends: str = "",
-               theme: str = "", all_: str = Query("", alias="all")):
+               theme: str = "", orient: str = "", all_: str = Query("", alias="all")):
     """Print Preview's page: the calendar as chosen, ready to print (the preview shows it in a frame)."""
     prefs = print_prefs()
     view = view if view in PRINT_VIEWS else prefs.get("view") or {"list": "itinerary"}.get(ui_view(), ui_view())
@@ -531,6 +539,7 @@ def print_page(request: Request, view: str = "", start: str = "", end: str = "",
     return page(request, "print.html", {
         "pages": print_pages([e for e in store.load_events() if not _hidden_by(e, hide)], view, first, last, weekends_on, lang), "view": view,
         "first": first, "last": last, "print_theme": theme if theme in ("light", "dark") else prefs.get("theme", "light"),
+        "orient": orient if orient in ("land", "port") else (prefs.get("orient", "auto") if orient == "" else "auto"),
         "src_names": {sid: calendar_name(sid) for sid in source_ids()}}, lang=lang)
 
 

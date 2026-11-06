@@ -80,3 +80,9 @@
   /* (F12.6) The trash icons' lines tinted red (the button itself unchanged): a bit of --bad in --muted, always at least 3:1 on --card; fully red on hover */
   svg.trashmark { color:color-mix(in srgb, var(--bad) var(--trashtint, 30%), var(--muted)) }
   button:hover > svg.trashmark, button:focus-visible > svg.trashmark, button.danger > svg.trashmark { color:var(--bad) }
+
+  /* (0.2.8-beta.31, F36.1) Settings › Look › Reorder grips › Right: the same handle in the right margin instead (the module's own
+     right margin is the section's 18 px side padding, as on the left; a rule list gets its gutter on the right) */
+  body.gripsright .modrow > .handle { left:auto; right:-16px }
+  body.gripsright .ruleline > .handle { left:auto; right:-14px }
+  body.gripsright .srcrules:has(> .ruleline) { padding-left:0; padding-right:14px }

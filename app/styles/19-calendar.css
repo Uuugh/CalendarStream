@@ -3,15 +3,15 @@
      stretch handle and the search line's date hints. */
   #cal { position:relative }
   /* F15.1: the date on the left, the tools on the right with a space between; + stays in the top right corner; too narrow: the tools go under */
-  .calhead { display:flex; align-items:center; gap:12px; flex-wrap:nowrap }
+  .calhead { display:flex; align-items:center; gap:8px; flex-wrap:nowrap }   /* (beta.31, I16) tighter: 12 → 8 */
   .calhead .calleft { display:flex; align-items:center; gap:8px; flex:0 0 auto }
-  .calhead .calright { margin-left:auto; display:flex; align-items:center; gap:12px; flex:0 0 auto; flex-wrap:nowrap; justify-content:flex-end }
+  .calhead .calright { margin-left:auto; display:flex; align-items:center; gap:5px; flex:0 0 auto; flex-wrap:nowrap; justify-content:flex-end }
   .calhead .calplus { flex:0 0 auto }
   .calhead.two { display:grid; grid-template-columns:minmax(0, 1fr) auto; row-gap:6px }
   .calhead.two .calleft { grid-column:1; grid-row:1; flex-wrap:wrap }
   .calhead.two .calplus { grid-column:2; grid-row:1 }
   .calhead.two .calright { grid-column:1 / -1; grid-row:2; margin-left:0; justify-content:flex-end; flex-wrap:wrap }
-  .calright .iconbtn { height:28px; width:32px }
+  .calright .iconbtn { height:28px; width:28px }
   /* F15.6: the view, a drop-down */
   select.viewpick { font:inherit; font-size:13px; color:var(--text); background:transparent; border:1px solid var(--line); border-radius:var(--r); height:28px; padding:0 4px; cursor:pointer }
   select.viewpick:hover, select.viewpick:focus { background:var(--soft) }
@@ -19,7 +19,7 @@
   .segsw { position:relative; display:inline-grid; grid-template-columns:1fr 1fr; align-items:center; height:28px; min-height:0; padding:2px; margin:0;
            border:1px solid var(--line); border-radius:var(--r); background:var(--soft); color:var(--muted); font:inherit; font-size:12.5px; font-weight:600;
            cursor:pointer; isolation:isolate; flex:0 0 auto }
-  .segsw .lb { position:relative; z-index:1; padding:0 9px; text-align:center; line-height:22px; transition:color .15s }
+  .segsw .lb { position:relative; z-index:1; padding:0 6px; text-align:center; line-height:22px; transition:color .15s }
   .segsw .hl { position:absolute; z-index:0; top:2px; bottom:2px; left:2px; width:calc(50% - 2px); border-radius:5px; background:var(--accent); transition:transform .18s ease }
   .segsw[aria-checked="true"] .hl { transform:translateX(100%) }
   .segsw[aria-checked="false"] .lb:nth-child(2), .segsw[aria-checked="true"] .lb:nth-child(3) { color:var(--onaccent) }
@@ -36,8 +36,12 @@
   #calsearch .hinted .fld:has(input[data-empty="1"]:not(:focus))::after { display:block }
   #calsearch .hinted input[data-empty="1"]:not(:focus) { color:transparent }
   /* F15.9: Week and Day: an hourly grid, the all-day events above it, a timed event as tall as it lasts */
-  .hourview { --hh:44px; --gut:54px; border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:var(--card) }
+  .hourview { --hh:var(--hhu, 44px); --gut:54px; border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:var(--card) }
   .hourview .hhead, .hourview .hallday, .hourview .hbody { display:grid; grid-template-columns:var(--gut) repeat(var(--cols), minmax(0, 1fr)) }
+  .hourview .hhead .hgut { position:relative }
+  .hourgrip { position:absolute; left:2px; top:50%; transform:translateY(-50%); width:18px; height:22px; min-height:0; padding:0; display:inline-flex; align-items:center; justify-content:center;
+              background:transparent; border:0; border-radius:var(--r); color:var(--muted); cursor:ns-resize; touch-action:none }
+  .hourgrip:hover, .hourgrip:focus-visible { background:var(--soft); color:var(--accent) }
   .hourview .hgut { color:var(--muted); font-size:11px; padding:3px 6px 0 0; text-align:right; white-space:nowrap }
   .hourview .hhead { background:var(--soft); border-bottom:1px solid var(--line) }
   .hdayhead { display:flex; align-items:center; gap:5px; padding:4px 6px; border-left:1px solid var(--line); font-size:12px; font-weight:600; color:var(--muted); min-width:0 }
@@ -84,13 +88,23 @@
   .month .day { min-height:calc(96px + var(--st, 0px) / var(--rows, 5)) }
   /* F15.4, F27: Full page: every other section is hidden; the month fills the browser */
   body.calfull .sections { display:none }
+  /* (beta.31, I14) Full page fills the browser: the page's own width cap, bottom padding and footer would add a second scrollbar */
+  body.calfull main { max-width:none; padding:8px 8px 0 }
+  body.calfull .foot { display:none }
   #cal.full .month { min-width:0 }
   #cal.full .month .day { min-height:0; overflow:auto }
   #cal.full .month { grid-auto-rows:minmax(0, 1fr) }
   @media (max-width:700px) { .calhead .calleft { flex-wrap:wrap } }
 
 /* (0.2.8-beta.29, F32, F33) Settings > Administrator: a Status/Action box; its action half becomes Cancel | Save */
-.adminhead { margin:0 0 8px; padding:0; display:flex; justify-content:flex-end }
+/* (0.2.8-beta.31, I22) the Status/Action box sits on the "Administrator" heading's own line (a row less), and its Cancel | Save are the standard ✕ and ✓ while idle */
+#pagelogin { position:relative }
+#pagelogin > .mhead { padding-right:150px; min-height:28px; display:flex; align-items:center }
+.adminhead { position:absolute; top:6px; right:6px; margin:0; padding:0; display:flex; justify-content:flex-end }
+.adminbox .pairbtns[data-state="idle"] button { font-size:0; display:inline-flex; align-items:center; justify-content:center }
+.adminbox .pairbtns[data-state="idle"] button::before { content:""; width:16px; height:16px; background:currentColor; -webkit-mask:var(--ic) center/contain no-repeat; mask:var(--ic) center/contain no-repeat }
+.adminbox .pairbtns[data-state="idle"] .pcancel { --ic:var(--ic-x) }
+.adminbox .pairbtns[data-state="idle"] .psave { --ic:var(--ic-ok) }
 .adminbox { position:relative }
 .adminbox .pairbtns { display:none; position:absolute; inset:auto 0 0 0; height:24px; width:100%; margin:0; gap:0 }
 .adminbox .pairbtns button { flex:1 1 0; height:24px; min-height:0; padding:0 4px; font-size:12.5px; border-radius:6px }

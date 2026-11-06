@@ -108,7 +108,10 @@
   .ev .evtools { flex-wrap:wrap-reverse; justify-content:space-between; align-items:center; row-gap:1px }   /* narrow: the icons go above Close (beta.11) */
   /* the icons right-aligned (0.2.8-beta.11): in a narrow day they take whole lines above Close (the
      tools wrap in reverse), each line flush right, never under Close */
-  .ev .evtools .evicons { display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:1px; margin-left:auto; flex:1 1 auto; max-width:100% }
+  /* (0.2.8-beta.31, I17) the icons stay together on one line (they shrink before they wrap), beside Close when both fit */
+  .ev .evtools .evicons { display:flex; flex-wrap:nowrap; justify-content:flex-end; align-items:center; gap:0; margin-left:auto; flex:0 1 auto; max-width:100%; min-width:0 }
+  .ev .evtools .evicons > * { flex:0 1 24px; min-width:16px; display:flex; justify-content:center }
+  .ev .evtools .evicons .evicon { width:100%; max-width:24px; min-width:16px }
   .ev .evtools .evicon.on { color:var(--accent) }
   .alarmpop { position:absolute; z-index:40; width:240px; padding:12px; border:1px solid var(--line); border-radius:var(--rbox); background:var(--card); box-shadow:0 10px 30px rgba(0,0,0,.2) }
   .alarmpop .title { display:flex; align-items:center; font-weight:700; font-size:14px; margin-bottom:5px }

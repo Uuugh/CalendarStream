@@ -229,8 +229,15 @@ async def set_look(request: Request, csrf: str = Form("")):
         store.set("brand", saved)
     else:
         store.delete("brand")
+    grips = form.get("grips")
+    if grips in ("left", "right"):          # (0.2.8-beta.31, F36.1) which side of a module or rule line the reorder grip is on
+        if grips == "right":
+            store.set("ui_grips", "right")
+        else:
+            store.delete("ui_grips")
     if form.get("reset"):
         store.delete("ui_anim")
+        store.delete("ui_grips")
     else:
         try:
             i, d = int(form.get("intensity", 100)), int(form.get("duration", 100))
@@ -239,5 +246,5 @@ async def set_look(request: Request, csrf: str = Form("")):
         if not (0 <= i <= 200 and 25 <= d <= 300):
             raise FieldError("Intensity is 0–200 % and duration 25–300 %.", "intensity", "duration")
         store.set("ui_anim", {"i": i, "d": d})
-    state.record("info", "Look changed (logo, favicon, animation)", kind="Settings")
+    state.record("info", "Look changed (logo, favicon, grips, animation)", kind="Settings")
     return RedirectResponse("/?menu=settings", status_code=303)

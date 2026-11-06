@@ -55,10 +55,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # --- F5: the event pop-up's markup ---------------------------------------------------------------------------------
     p = c.get("/event?date=2026-10-21&month=2026-10&embed=1").text
     ok('grid2 ticks' not in p and "The end is in a different time zone" not in p, "F5: the All-day line is gone")
+    ed = p[p.index('class="enddate"'):p.index('id="end_date"')]
+    ok(ed.index('for="end_date"') < ed.index('id="all_day"') and "All-day Event" in ed, "F5 (beta.31, I19): All-day Event on Ends' label line, after Ends")
     et = p[p.index('class="endtime"'):p.index('id="end_time"')]
-    ok(et.index('for="end_time"') < et.index('id="all_day"') and "All-day Event" in et, "F5: All-day Event on the end's Time label line, after Time")
-    ok('class="timed tzdiff"' in p and "Different end time zone" in p and p.index('id="start_tz"') < p.index('id="end_tz_differs"') < p.index('name="end_tz"'),
-       "F5: Different end time zone after Time zone, End time zone under it")
+    ok(et.index('for="end_time"') < et.index('id="end_tz_differs"') and "Different end time zone" in et, "F5 (beta.31, I19): Different end time zone on the end Time's label line, after Time")
+    ok('class="timed tzdiff"' in p and p.index('id="start_tz"') < p.index('name="end_tz"'), "F5: the end's time zone box sits under it, after Time zone")
 
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
@@ -82,16 +83,17 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
 
         # --- F5: where they sit, and All-day stays put as the Time fields hide ----------------------------------------
         bb = lambda sel: pg.locator(sel).bounding_box()
-        ad, tl, ef = bb(".endtime label.allday"), bb("label[for=end_time]"), bb("#end_time")
-        ok(abs((ad["y"] + ad["height"] / 2) - (tl["y"] + tl["height"] / 2)) <= 3 and ad["x"] > tl["x"] + tl["width"] and ad["y"] + ad["height"] <= ef["y"] + 1,
-           "F5: All-day Event on the end's Time label line, right of Time *")
-        zd, sl = bb(".tzdiff label"), bb("#start_tz_label")
-        ok(zd["x"] >= sl["x"] + sl["width"] and abs((zd["y"] + zd["height"] / 2) - (sl["y"] + sl["height"] / 2)) <= 4, "F17.1: Different end time zone on Time zone's label line")
+        el, ad, ef = bb("#end_label"), bb(".enddate label.allday"), bb("#end_date")
+        ok(abs((ad["y"] + ad["height"] / 2) - (el["y"] + el["height"] / 2)) <= 3 and ad["x"] > el["x"] + el["width"] and ad["y"] + ad["height"] <= ef["y"] + 1,
+           "I19: All-day Event on Ends' label line, right of Ends *")
+        tl, zd, et = bb("label[for=end_time]"), bb(".endtime label.allday"), bb("#end_time")
+        ok(zd["x"] > tl["x"] + tl["width"] - 1 and abs((zd["y"] + zd["height"] / 2) - (tl["y"] + tl["height"] / 2)) <= 4 and zd["y"] + zd["height"] <= et["y"] + 1,
+           "I19: Different end time zone on the end Time's label line, right of Time *")
         pg.check("#end_tz_differs"); pg.wait_for_timeout(100)
         ez = bb(".endzone")
-        ok(ez and ez["y"] >= zd["y"] + zd["height"] - 1 and abs(ez["x"] - ef["x"]) <= 1, "F17.1: ticked, its time zone box shows under it, in the end's column, with no End time zone label")
+        ok(ez and ez["y"] >= et["y"] + et["height"] - 1 and abs(ez["x"] - et["x"]) <= 1, "F17.1: ticked, its time zone box shows under the times, in the end's column, with no End time zone label")
         pg.check("#all_day"); pg.wait_for_timeout(100)
-        ad2 = bb(".endtime label.allday")
+        ad2 = bb(".enddate label.allday")
         ok(abs(ad2["x"] - ad["x"]) <= 1 and abs(ad2["y"] - ad["y"]) <= 1 and not pg.is_visible("#end_time") and not pg.is_visible("#start_time")
            and not pg.is_visible(".tzdiff"), "F5: ticked, All-day Event stays in its spot while the Time fields hide")
 

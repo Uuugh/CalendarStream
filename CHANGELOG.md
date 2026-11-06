@@ -9,7 +9,31 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.30**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.31**
+
+## 0.2.8-beta.31 — 2026-11-06
+
+Build 7: Calendar + carryover + F22 pictures + R1. Left for later, with reasons: I13 (no way to
+reproduce it), I21 (which status box is meant?), F24 (needs a change to the updater's protocol), F36.2
+(unclear), I7 (on hold), I25 (record only).
+
+### Added
+- **F34/F35** Reorder grips can sit on the right: Settings › Look › "Reorder grips" Left | Right.
+- **F36.1** Print Preview chooses the paper's orientation (Landscape | Portrait), remembered; page margins 5 mm.
+- **I11 / hour handle** A handle under the Week and Day grid stretches the height of an hour (keyboard too); remembered.
+- **F22** The Theme Rules pictures are recomposed with Part 2 on top (see theme.md).
+
+### Changed
+- **I14 / I20** Full page: the button sits in the title bar beside ☰ (its icon changes to Back's), the page fills the window and its footer is hidden.
+- **I19** The event pop-up's rows: All-day Event beside the end date's label, Different end time zone beside the end Time's label.
+- **I22** The event pop-up's icons shrink to fit instead of wrapping.
+- **Administrator** status box on the right of its header, with ✕ / ✓ icons on the idle buttons.
+
+### Fixed
+- **I15** Switching the last hidden calendar back on was never saved (an empty value was read as not sent).
+- **I3** An event added in CalendarStream and then deleted no longer comes back as a struck-through item.
+- **I17** Deleted and hidden events no longer count in the cell's overflow.
+- **I18** The pop-up's Rule button works from an unsaved Add-event (it reads the live title and date).
 
 ## 0.2.8-beta.30 — 2026-11-05
 

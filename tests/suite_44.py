@@ -378,7 +378,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "+ top right (suite 61)": "Every section's + is in its top right", "1 px borders (suite 59, 61)": "Every border is 1 px wide",
             "calendar header (suite 64)": "The calendar's header (0.2.8-beta.29", "key (suite 64)": "The calendar's key (0.2.8-beta.29",
             "hourly grid (suite 64)": "Week and Day show an hourly grid", "Full page (suite 64)": "Full page (0.2.8-beta.29",
-            "Print (suite 64)": "Print (0.2.8-beta.29", "Administrator (suite 64)": "Administrator (0.2.8-beta.29", "Look (suite 64)": "Look (0.2.8-beta.29, F14)"}
+            "Print (suite 64)": "Print (0.2.8-beta.29", "Administrator (suite 64)": "Administrator (0.2.8-beta.29", "Look (suite 64)": "Look (0.2.8-beta.29, F14)",
+            "Full page button (suite 65)": "Full page's button (0.2.8-beta.31", "hour height (suite 65)": "The hour height handle (0.2.8-beta.31",
+            "print orientation (suite 65)": "Print's orientation (0.2.8-beta.31", "grips side (suite 65)": "The reorder grips' side (0.2.8-beta.31",
+            "Administrator box (suite 65)": "The Administrator's status box (0.2.8-beta.31", "event rows (suite 65)": "The event pop-up's rows (0.2.8-beta.31"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

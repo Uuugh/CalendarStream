@@ -59,7 +59,7 @@
         </div>
       </div>
       </div>
-      {# On the right: the time zone (this page only), the view (a drop-down, F15.6), the 12h | 24h switch, Search, Print and Full page. #}
+      {# On the right: the time zone (this page only), the view (a drop-down, F15.6), the 12h | 24h switch, Search and Print (Full page moved to the title bar, left of ☰: 0.2.8-beta.31, F34). #}
       <div class="calright">
         <label class="tzlabel" for="tzpick"><span class="long">{{ _('Time Zone') }}</span><span class="short" title="{{ _('Time Zone') }}">{{ _('TZ') }}</span></label>
         <select id="tzpick" class="tzpick" aria-label="{{ _('Time zone') }}" title="{{ _('Show another time zone (this page only)') }}">
@@ -78,9 +78,6 @@
         {# Print Preview (F2.1): the view, dates, weekends and light or dark to print, with a preview. #}
         <button type="button" class="iconbtn printbtn" id="printbtn" title="{{ _('Print the calendar') }}" aria-label="{{ _('Print the calendar') }}">
           {{ icon("print", 18) }}</button>
-        {# Full page (F15.4): hides every other section; the icon then becomes Back #}
-        <button type="button" class="iconbtn fullbtn" id="fullbtn" aria-pressed="{{ 'true' if full else 'false' }}"
-                title="{{ _('Back') if full else _('Full page') }}" aria-label="{{ _('Back') if full else _('Full page') }}">{{ icon("arrow_back" if full else "fullscreen", 18) }}</button>
       </div>
       {# + in the top right corner, like every section's (0.2.8-beta.11): add an event #}
       <button type="button" class="ghost plus calplus" data-add="/event?date={{ cal.today.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event') }}" aria-label="{{ _('Add an event') }}">{{ icon("add", 24) }}</button>
@@ -108,8 +105,10 @@
     {% elif cal.view in ("week", "day") %}
     {# Week and Day (F15.9): an hourly grid, the all-day events above it, a timed event as tall as it lasts #}
     {% set cols = cal.weeks[0] if cal.view == "week" else cal.days %}
-    <div class="hourview" style="--cols:{{ cols|length }}">
-      <div class="hhead"><div class="hgut"></div>
+    <div class="hourview" style="--cols:{{ cols|length }};--hhu:{{ calview.hour }}px">
+      {# (0.2.8-beta.31, I20) left of the times, in the gutter: drag it (or ↑ ↓) to make each hour shorter or taller #}
+      <div class="hhead"><div class="hgut"><button type="button" class="hourgrip" id="hourgrip" role="slider" aria-orientation="vertical" aria-label="{{ _('Height of an hour') }}"
+        aria-valuemin="20" aria-valuemax="120" aria-valuenow="{{ calview.hour }}" title="{{ _('Drag to make each hour shorter or taller') }}">{{ icon("unfold_more", 16) }}</button></div>
         {% for day in cols %}<div class="hdayhead{% if day.date == cal.today %} today{% endif %}"><span class="hdow">{{ cal.dow[loop.index0] if cal.view == "week" else dates.day(day.date) }}</span>{% if cal.view == "week" %} <span class="num">{{ day.date.day }}</span>{% endif %}
           <a class="add" href="/event?date={{ day.date.isoformat() }}&month={{ cal.month }}" title="{{ _('Add an event on {day}', day=dates.day(day.date)) }}" aria-label="{{ _('Add event') }}">{{ icon("add", 16) }}</a></div>{% endfor %}
       </div>

@@ -587,7 +587,8 @@ def look() -> dict:
     """(0.2.8-beta.29, F14) ☰ Settings › Look: the Developer's own logo and favicon (uploaded; None = CalendarStream's own)
     and the buttons' Animation (intensity, duration; percent, 100 = as designed)."""
     saved = store.get("brand") or {}
-    out = {"logo": None, "favicon": None, "anim": dict(ANIM_DEFAULT)}
+    out = {"logo": None, "favicon": None, "anim": dict(ANIM_DEFAULT),
+           "grips": "right" if store.get("ui_grips") == "right" else "left"}      # (0.2.8-beta.31, F36.1) the reorder grips' side
     for kind in ("logo", "favicon"):
         if saved.get(kind):
             out[kind] = f"/brand/{kind}?v={hashlib.md5(saved[kind]['b64'].encode()).hexdigest()[:8]}"
@@ -2156,6 +2157,10 @@ def _span(e: Event, tz: ZoneInfo | None = None) -> tuple[date, date, datetime | 
 def _hidden_by(e: Event, hide: set[str]) -> bool:
     """Is `e` one of the kinds the key has switched off (0.2.8-beta.29, F28)? A calendar ("src:<id>"), edited here,
     changed by United since ("stale"), hidden from Google ("hidden") or deleted ("deleted")."""
+    # (0.2.8-beta.31, I3) an event added here and deleted here is gone from the calendar at once ("we control the calendar");
+    # it is still in History › Undo until that pops off. Events a source sent stay struck through (their own Restore).
+    if e.deleted and e.origin == "custom" and e.deleted.split("|")[0] == "calendarstream":
+        return True
     if not hide:
         return False
     return (f"src:{e.source}" in hide or ("deleted" in hide and bool(e.deleted))

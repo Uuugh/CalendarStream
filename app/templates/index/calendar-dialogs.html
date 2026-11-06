@@ -17,6 +17,10 @@
     </div>
     <label class="ppweekends"><input type="checkbox" name="weekends" checked> {{ _('Include weekends') }}</label>
     {{ daterange("start", "end", "", "", allon=false) }}
+    {# (0.2.8-beta.31, I11) Orientation: Auto = each view's best fit; Landscape or Portrait sets every sheet #}
+    <div class="seg orientpick" role="radiogroup" aria-label="{{ _('Page orientation') }}">
+      <button type="button" data-o="auto" role="radio" aria-checked="true" title="{{ _('Best fit for each view') }}">{{ _('Auto') }}</button><button type="button" data-o="land" role="radio" aria-checked="false" title="{{ _('Landscape') }}">{{ _('Landscape') }}</button><button type="button" data-o="port" role="radio" aria-checked="false" title="{{ _('Portrait') }}">{{ _('Portrait') }}</button>
+    </div>
     <div class="seg themepick" role="radiogroup" aria-label="{{ _('Colors') }}">
       <button type="button" data-t="light" role="radio" aria-checked="true" title="{{ _('Light') }}">{{ icon("light_mode", 18) }}</button><button type="button" data-t="dark" role="radio" aria-checked="false" title="{{ _('Dark') }}">{{ icon("dark_mode", 18) }}</button>
     </div>
