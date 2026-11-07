@@ -9,7 +9,12 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.38**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.39**
+
+## 0.2.8-beta.39 — 2026-11-07
+
+### Fixed
+- **Build mistake**: 0.2.8-beta.38 was published from a commit whose GitHub Tests run was red (`app/google/traffic_log.py`'s header was missing `Holds:`, so suite 75 failed; `build_rules/dependencies.md` was stale). The code was otherwise unaffected; this beta only fixes the header, regenerates `dependencies.md`, and updates the three suites (31, 34, 61) that counted the page's sections, icons and Expand lines before F59 added one.
 
 ## 0.2.8-beta.38 — 2026-11-07
 
