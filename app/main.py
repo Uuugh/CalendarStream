@@ -48,19 +48,7 @@ log = logging.getLogger("calendar_stream")
 logging.getLogger("httpx").setLevel(logging.WARNING)   # one line per Google request is too chatty
 
 
-class _LogTail(logging.Handler):
-    """The container's log as it's written (what `docker logs` shows for this app), kept in memory for
-    History › Container log (0.2.8-beta.15): the last LOG_TAIL_LINES lines."""
-    def __init__(self, keep: int):
-        super().__init__()
-        self.lines: deque[str] = deque(maxlen=keep)
-        self.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
-
-    def emit(self, record):
-        try:
-            self.lines.append(self.format(record))
-        except Exception:  # noqa: BLE001 - a line that can't be formatted is reported the logging way, never raised
-            self.handleError(record)
+from .log_tail import _LogTail
 
 
 LOG_TAIL_LINES = 3000
@@ -2210,26 +2198,7 @@ def _hidden_by(e: Event, hide: set[str]) -> bool:
                                    or ("edited" in hide and e.edited and not e.stale))))
 
 
-def _lanes(items: list[dict]) -> None:
-    """Side-by-side places for the timed events of one day in the hourly grid (0.2.8-beta.29, F15.9): every
-    cluster of events that overlap shares the width, each in its own lane."""
-    timed = sorted((i for i in items if i["m0"] is not None), key=lambda i: (i["m0"], -i["m1"]))
-    cluster: list[dict] = []
-    ends: list[int] = []
-    def close():
-        for i in cluster:
-            i["lanes"] = max(1, len(ends))
-    for it in timed:
-        if cluster and it["m0"] >= max(i["m1"] for i in cluster):
-            close(); cluster, ends = [], []
-        lane = next((n for n, end in enumerate(ends) if end <= it["m0"]), len(ends))
-        if lane == len(ends):
-            ends.append(it["m1"])
-        else:
-            ends[lane] = it["m1"]
-        it["lane"] = lane
-        cluster.append(it)
-    close()
+from .calendars.view_helpers import _lanes
 
 
 def cal_view(events: list[Event], view: str, ref: date, lang: str = "en", pad: int = 0, hide: set[str] | None = None) -> dict:
@@ -2341,12 +2310,7 @@ def _parse_month(value: str | None) -> tuple[int, int]:
     return today.year, today.month
 
 
-def _opt_day(value: str) -> date | None:
-    try:
-        d = date.fromisoformat(value)
-        return d if 2000 <= d.year <= 2100 else None
-    except ValueError:
-        return None
+from .calendars.view_helpers import _opt_day
 
 
 # --- Helpers the routes of more than one area use (app/routes/) ------------------------------------

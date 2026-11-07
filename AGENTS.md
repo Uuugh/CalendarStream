@@ -31,6 +31,14 @@ manage it all. See README.md for what it does.
 
 Read only the part you need. Each file's first lines say what it holds.
 
+**`app/calendars/event.py`**: the `Event` data model (including alarms and fingerprint).
+**`app/calendars/defaults.py`**: the `Defaults` data model for missing event end times.
+**`app/calendars/meeting.py`**: meeting link extraction from calendar event properties and text.
+**`app/calendars/view_helpers.py`**: calendar grid lane placement and optional date parsing; compatibility re-exports in `app/main.py`.
+**`app/calsync.py`**: downloads, calendar parsing and feed generation; re-exports `Event` and `Defaults` for existing callers.
+**`app/rules_words.py`**: human-readable rule labels and text formatting, re-exported by `app/rules.py` for existing callers.
+**`app/log_tail.py`**: bounded in-memory logging handler, imported and re-exported by `app/main.py`.
+
 **`app/main.py`**: everything shared, in sections headed `# --- …` (grep for them): logging, the store, the
 Google accounts; calendar sources and destinations; rules and their migration; event templates; History, Undo
 and Logs; Google Calendar sync and two-way sync; publishing calendars, linked and deleted events; the
