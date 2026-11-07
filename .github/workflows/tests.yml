@@ -10,9 +10,7 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: tests-${{ github.ref }}
-  cancel-in-progress: true
+# (no concurrency group: every checkpoint commit gets its own run and result, R20)
 
 jobs:
   suites:

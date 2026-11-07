@@ -326,7 +326,7 @@ class GoogleApi:
             async with httpx.AsyncClient(timeout=TIMEOUT) as client:
                 r = await client.post(self.TOKEN_URL, data=form)
         except httpx.HTTPError as e:
-            raise GoogleError(f"Couldn't reach Google ({type(e).__name__}).")
+            raise GoogleError(f"Couldn't reach Google ({type(e).__name__}).", transient=True)
         try:
             body = r.json()
         except ValueError:
@@ -374,7 +374,7 @@ class GoogleApi:
                                              headers={"Authorization": f"Bearer {token}"})
             except httpx.HTTPError as e:
                 if attempt == 4:
-                    raise GoogleError(f"Couldn't reach Google Calendar ({type(e).__name__}).")
+                    raise GoogleError(f"Couldn't reach Google Calendar ({type(e).__name__}).", transient=True)
                 await asyncio.sleep(delay)
                 delay *= 2
                 continue
@@ -402,8 +402,8 @@ class GoogleApi:
             log.warning("Google Calendar refused %s %s: HTTP %s %s", method, path.split("?")[0], r.status_code,
                         r.text[:2000])
             raise GoogleError(f"Google Calendar refused {method} {path.split('?')[0]}: HTTP {r.status_code}"
-                              + (f" {reason}" if reason else "") + (f", “{said}”" if said else ""))
-        raise GoogleError("Google Calendar is busy; CalendarStream will try again later.")
+                              + (f" {reason}" if reason else "") + (f", “{said}”" if said else ""), status=r.status_code)
+        raise GoogleError("Google Calendar is busy; CalendarStream will try again later.", transient=True)
 
 
 def _error_reason(r: httpx.Response) -> str:
