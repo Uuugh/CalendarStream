@@ -49,4 +49,13 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(any("Google Calendar API Sync is set up" in m and "needs its own sign-in" in m for m in lines) and not any("is ready" in m for m in lines),
        "…and says the client is set up, not that it is ready")
     ok(any("Google, Sister: not signed in" in m for m in lines), "…and names the module that isn't signed in, and why")
+    # --- F58 7: a failing Google is remembered per account, waited out, and forgiven by a success ------------------
+    import time as _t
+    from app.google.errors import GoogleError as _GE
+    h = main.google_health
+    h.check_and_recover("", _GE("busy", status=503))
+    ok(h.get("")["state"] == "degraded" and not h.may_sync(""), "a failing sync marks the account degraded and waiting")
+    ok(asyncio.run(main.google_sync_once(True)) is True, "…and the next sync skips it quietly, not hammering Google")
+    h.reset("")
+    ok(h.may_sync("") and h.get("")["state"] == "healthy", "a new sign-in clears it")
 print(f"{fails} failed" if fails else "ALL PASSED"); sys.exit(1 if fails else 0)

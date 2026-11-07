@@ -35,6 +35,7 @@ from . import rules as rules_mod
 from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, apply_changes, build_feed,
                       download, parse, parse_feed)
 from .config import normalise_public_url, settings
+from .google.health import GoogleHealth
 from .gsync import CALENDAR_COLORS, GOOGLE_COLORS, Google, GoogleError, nearest_calendar_color, nearest_color_id
 from .logins import Logins
 from .secretbox import SecretBox
@@ -86,6 +87,9 @@ def google_for(account: str = "") -> Google:
     if account not in _accounts:
         _accounts[account] = Google(store, box, settings.timezone, account)
     return _accounts[account]
+
+
+google_health = GoogleHealth(store)   # (0.2.8-beta.35, F58 7) each account's health and back-off
 
 
 def dest_google(d: dict) -> Google:
@@ -1038,6 +1042,8 @@ async def google_sync_once(full: bool) -> bool:
                 g = google_for(account)
                 if mine and g.connected:
                     _unsigned_said.difference_update(d["id"] for d in mine)
+                    if not google_health.may_sync(account):      # waiting out a back-off after a failure
+                        continue
                     ok = await _sync_account(g, mine, len(dests), color_for, full) and ok
                 else:
                     _say_not_signed_in(mine)
@@ -1102,9 +1108,11 @@ async def _sync_account(g: Google, dests: list[dict], total: int, color_for, ful
                     state.record("info", f"{who}: color set in Google Calendar{how}", kind="Google")
             _remember_calendar(d["id"], g)
             await ensure_watch(d["id"])
+        google_health.record_success(g.account)
         return True
     except GoogleError as e:
         message = str(e)
+        google_health.check_and_recover(g.account, e)
     except Exception as e:      # keep the loop alive whatever happens
         message = f"Google sync failed: {type(e).__name__}: {e}"
     if message != g.info().get("last_error"):   # log each new problem once

@@ -166,6 +166,7 @@ async def google_callback(request: Request, state_: str = Query("", alias="state
                               if error in ("access_denied", "") else f"Google sign-in failed: {error[:80]}.")
         async with google_job.lock:      # no sync may start while the calendars are being found or made
             info = await g.finish_sign_in(state_, code)
+            core.google_health.reset(g.account)      # (F58 7) a new sign-in forgets the account's past failures
             g.record_error("")
             found = []
             for d in mods:     # each of its Google modules' calendar: the one from before (I5: also after a new sign-in), or a new one
@@ -389,6 +390,7 @@ async def _invite_finish(request: Request, token: str, state_: str, code: str, e
             raise GoogleError("Google sign-in was cancelled. Open the invite link again to try once more.")
         async with google_job.lock:
             info = await g.finish_sign_in(state_, code)
+            core.google_health.reset(g.account)      # (F58 7) a new sign-in forgets the account's past failures
             await g.ensure_calendar(d["id"], d["name"], _remembered_calendar(d["id"]))
             if d["account"] != inv["account"]:      # the module moves to the invited person's account only now
                 save_destinations([{**d, "account": inv["account"]} if x["id"] == d["id"] else x for x in destinations()])
