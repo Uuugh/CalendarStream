@@ -36,6 +36,7 @@ Read only the part you need. Each file's first lines say what it holds.
 **`app/calendars/meeting.py`**: meeting link extraction from calendar event properties and text.
 **`app/calsync.py`**: downloads, calendar parsing and feed generation; re-exports `Event` and `Defaults` for existing callers.
 **`app/rules_words.py`**: human-readable rule labels and text formatting, re-exported by `app/rules.py` for existing callers.
+**`app/log_tail.py`**: bounded in-memory logging handler, imported and re-exported by `app/main.py`.
 
 **`app/main.py`**: everything shared, in sections headed `# --- …` (grep for them): logging, the store, the
 Google accounts; calendar sources and destinations; rules and their migration; event templates; History, Undo
