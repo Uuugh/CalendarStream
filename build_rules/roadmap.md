@@ -9,6 +9,9 @@ Read when planning a version.
 0.3.1 Printing
 0.3.2 More themes
 - option to change based on local time (vs system)
+- F53 (Settings, Updates): built beta.33 as "✓ v&lt;version&gt;" at rest instead of "✓ Up to date" — moved here
+  Nov 6 (Developer) for further refinement as part of broader theming/status-wording work, rather than staying
+  a closed Dashboard item.
 0.3.3 Cloud / attachment integration
 - Attachments in an area at the bottom of an event's Notes
 
