@@ -35,6 +35,9 @@ Claude answers; the Developer decides anything still disputed. Each REVIEW after
 
 ## How a review runs
 
+0. **Independent result:** the workflow `.github/workflows/tests.yml` runs `tests/run.sh`, `pip-audit` and `bandit` on GitHub
+   for every push to main (Actions › Tests). The Reviewer reads that run for the commit under review instead of
+   relying on Claude's own report; a commit with no green run is a finding.
 1. **REVIEW.** Claude runs what the Reviewer can't: `tests/run.sh` and the scans (`pip-audit -r requirements.txt`,
    `bandit -r app`; trivy's result is the release workflow's scan of that beta, 2-build.md). When the page is in
    scope: fresh screenshots (light, dark, a phone, any pop-up that changed), committed to the `review-files`

@@ -11,6 +11,11 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 
 **Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.35**
 
+## Unreleased (rules, no version)
+
+### Added
+- **Tests workflow** (`.github/workflows/tests.yml`): runs `tests/run.sh`, `pip-audit` and `bandit` on GitHub for every push to main, so the Reviewer can read an independent result (4-review.md, step 0).
+
 ## 0.2.8-beta.35 — 2026-11-06
 
 REVIEW 2 fixes for review issues #8 (tests) and #9 (Google API).
