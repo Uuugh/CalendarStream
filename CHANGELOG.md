@@ -9,7 +9,17 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.33**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.34**
+
+## 0.2.8-beta.34 — 2026-11-06
+
+Ships what beta.33 announced but never contained: its image was built from the first of three commits
+(the release workflow builds only when `VERSION` changes), so F46–F52, F56, F57, I22, I32 and R7 were missing from
+it. No new code; the same items as beta.33's entry below.
+
+### Changed
+- **Release rule** (2-build.md): the commit that bumps `VERSION` carries all the code, and the workflow's run is
+  checked to be for HEAD.
 
 ## 0.2.8-beta.33 — 2026-11-06
 
