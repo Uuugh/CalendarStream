@@ -42,4 +42,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     main._unsigned_said.discard(sis["id"])
     asyncio.run(main.google_sync_once(True))
     ok(len(said()) == 2, "…until it is forgotten (after a sign-in, say) and it is signed out again")
+    # --- F58 5 (review #9 finding 2): the API Sync's last step no longer says "ready" ---------------------------
+    r = c.post("/google/step", data={"csrf": csrf, "step": "go"})
+    ok(r.status_code == 200 and r.json().get("ok") is True, "the last connect step succeeds")
+    lines = log(10)
+    ok(any("Google Calendar API Sync is set up" in m and "needs its own sign-in" in m for m in lines) and not any("is ready" in m for m in lines),
+       "…and says the client is set up, not that it is ready")
+    ok(any("Google, Sister: not signed in" in m for m in lines), "…and names the module that isn't signed in, and why")
 print(f"{fails} failed" if fails else "ALL PASSED"); sys.exit(1 if fails else 0)

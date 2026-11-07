@@ -22,6 +22,7 @@ from ..main import (_did, _invites, _is_async, _remember_calendar, _remembered_c
     _shared_grant, app, basic, check_csrf, dest_google, destination, destinations, forget_invites, google,
     google_accounts, google_for, google_job, google_redirect_uri, GOOGLE_SETTINGS, google_view, gui_auth,
     make_invite, page, request_google_sync, save_destinations, state, store)
+from ..google.readiness import Readiness, ReadinessStage
 from ..gsync import GoogleError
 
 
@@ -110,11 +111,16 @@ async def google_step(request: Request, csrf: str = Form(""), step: str = Form("
         return JSONResponse({"ok": True, "step": step, "confirmed": ok is True})
     if step == "go":
         # 0.2.8-beta.17 (F13): ☰ Settings sets up the API only; each Google module connects its own account
-        state.record("info", "Google Calendar API Sync is ready: the Google modules can be added in Feeds", kind="Google")
-        # (0.2.8-beta.34, review #9 finding 2) "ready" is the client only: name each module that has no signed-in account
+        # (0.2.8-beta.35, F58 5, review #9 finding 2) "set up" is the client only: it no longer says "ready", and each
+        # module's own stage is told apart (client, sign-in, Google's answer, a sync)
+        state.record("info", "Google Calendar API Sync is set up: the OAuth client is saved. Each Google module still "
+                             "needs its own sign-in before it syncs", kind="Google")
         for d in destinations("google"):
-            if not dest_google(d).connected:
-                state.record("warn", f"Google, {d['name']}: not signed in to a Google account yet: open it and Connect me", kind="Google")
+            g = dest_google(d)
+            r = Readiness.of(configured=google.configured, authorized=g.connected, last_error=g.info().get("last_error"),
+                             last_sync=g.cal_info(d["id"]).get("last_sync"))
+            if not r.working:
+                state.record("warn" if r.stage is not ReadinessStage.NOT_SYNCED else "info", f"Google, {d['name']}: {r.text}", kind="Google")
         return JSONResponse({"ok": True, "step": step, "url": ""})
     raise HTTPException(400, "Unknown step.")
 
