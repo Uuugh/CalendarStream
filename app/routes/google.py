@@ -10,6 +10,7 @@ import hashlib
 import hmac
 import re
 import secrets
+import time
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from fastapi import Depends, Form, HTTPException, Query, Request
@@ -133,7 +134,7 @@ async def google_connect(request: Request, csrf: str = Form("")):
 def callback_auth(request: Request, creds: HTTPBasicCredentials | None = Depends(basic)):
     """Google's sign-in comes back here: the status page's login, except for an invited person's sign-in
     (0.2.8-beta.17), whose single-use state from the invite page is the permission."""
-    if request.query_params.get("state", "") in _invite_states:
+    if _invite_state_has(request.query_params.get("state", "")):
         return
     gui_auth(request, creds)
 
@@ -141,11 +142,11 @@ def callback_auth(request: Request, creds: HTTPBasicCredentials | None = Depends
 @app.get("/google/callback", dependencies=[Depends(callback_auth)])
 async def google_callback(request: Request, state_: str = Query("", alias="state"), code: str = "", error: str = ""):
     """Google sends the browser back here after the consent page, with a one-time code."""
-    invited = _invite_states.pop(state_, None)
+    invited = _invite_state_take(state_)
     if invited is not None:
         return await _invite_finish(request, invited, state_, code, error)
     # (0.2.8-beta.15) the account this sign-in was started for: the first one, or a Google module's own
-    g = next((x for x in [google_for(a) for a in google_accounts()] if state_ in x._pending), google)
+    g = next((x for x in [google_for(a) for a in google_accounts()] if x.owns_sign_in(state_)), google)
     mods = [d for d in destinations("google") if d["account"] == g.account]
     # (0.2.8-beta.18, F1) a module's Connect me comes back to that module (open), saying Connected or what went wrong
     back = f"/#dest-{mods[0]['id']}" if g.account and mods else GOOGLE_SETTINGS
@@ -284,7 +285,30 @@ def google_open(request: Request, did: str, check: int = Query(0)):
         return {}
     g._update_cal(did, shown=True)
     return {"url": url}
-_invite_states: dict[str, str] = {}      # Google sign-in state -> invite token, while the invited person signs in
+INVITE_STATES_KEY = "google_invite_states"   # (0.2.8-beta.35, F58 4) in the database, so a restart mid-sign-in is survived
+
+
+def _invite_state_has(state_: str) -> bool:
+    rec = (store.get(INVITE_STATES_KEY) or {}).get(state_)
+    return bool(rec) and rec.get("expires", 0) > time.time()
+
+
+def _invite_state_add(state_: str, token: str):
+    """Google sign-in state -> invite token, while the invited person signs in (expiring, kept small)."""
+    now = time.time()
+    states = {k: v for k, v in (store.get(INVITE_STATES_KEY) or {}).items() if v.get("expires", 0) > now}
+    while len(states) >= 50:
+        states.pop(next(iter(states)))
+    states[state_] = {"token": token, "expires": now + 15 * 60}
+    store.set(INVITE_STATES_KEY, states)
+
+
+def _invite_state_take(state_: str) -> str | None:
+    """The invite token for this sign-in state, once: it is gone after."""
+    states = store.get(INVITE_STATES_KEY) or {}
+    rec = states.pop(state_, None)
+    store.set(INVITE_STATES_KEY, states)
+    return rec["token"] if rec and rec.get("expires", 0) > time.time() else None
 
 
 def _invite(token: str) -> dict:
@@ -342,9 +366,7 @@ def invite_go(request: Request, token: str, form: str = Form("")):
     g = google_for(inv["account"])
     url = g.sign_in_url(view["redirect_uri"])
     state_ = parse_qs(urlparse(url).query).get("state", [""])[0]
-    while len(_invite_states) >= 50:          # (kept small: each Continue adds one until Google sends them back)
-        _invite_states.pop(next(iter(_invite_states)))
-    _invite_states[state_] = token
+    _invite_state_add(state_, token)
     return RedirectResponse(url, status_code=303)
 
 

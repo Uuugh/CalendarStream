@@ -138,10 +138,16 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(r.status_code == 400, "F1: Continue needs the page's form token")
         r = anon.post(f"/invite/{token}", data={"form": form[1]}, follow_redirects=False)
         ok(r.status_code == 303 and r.headers["location"].startswith(M + "/auth"), "F1: Continue goes to Google's sign-in")
+        from urllib.parse import parse_qs
+        st = parse_qs(urlparse(r.headers["location"]).query)["state"][0]
+        ok(st in (main.store.get("google_invite_states") or {}) and any(st in v for v in [main.store.get("google_signins") or {}]),
+           "F58 4: the invite's sign-in state is saved in the database (a restart before Google answers doesn't lose it)")
         S["email"] = "mom@example.com"
         r = sign_in(r.headers["location"], anon)
         mom = by_name("For Mom"); gm = main.dest_google(mom)
         cal = main.google_for(mom["account"]).cal_info(mom["id"]).get("calendar_id")
+        ok(st not in (main.store.get("google_invite_states") or {}) and st not in (main.store.get("google_signins") or {}),
+           "F58 4: …and used up once Google has answered")
         ok(r.status_code == 200 and "Done" in r.text and gm.connected and gm.info().get("email") == "mom@example.com",
            "F1: the invited person's sign-in connects the module")
         ok(cal and S["calendars"][cal]["owner"] == "mom@example.com", "F1: …its calendar is made in their Google Calendar")

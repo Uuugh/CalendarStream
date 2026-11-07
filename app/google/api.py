@@ -6,7 +6,7 @@ Holds: GoogleApi (one Google account's connection; the calendar and event work i
 Depends on: app/secretbox.py (encrypts the secrets), app/google/errors.py; httpx; the store it is given.
 Used by: app/gsync.py (Google extends it, and re-exports it for the rest of the app).
 Reads/writes: the database through the `store` it is given (keys `google_client`, `google[:account]`,
-  `google_token[:account]`); the network (Google's sign-in, token and Calendar endpoints); the clock.
+  `google_token[:account]`, `google_signins`); the network (Google's sign-in, token and Calendar endpoints); the clock.
 Dart note: `class GoogleApi`, data layer. `store` becomes a `KeyValueStore` interface and the HTTP client an injected
   `http.Client` so tests can fake both. The three endpoint URLs are constructor arguments there; here they are
   attributes so the test suites can point them at the mock Google (gsync passes its own module values through,
@@ -39,6 +39,7 @@ SCOPE_CALENDAR = "https://www.googleapis.com/auth/calendar.app.created"
 SCOPES = ("openid", "email", SCOPE_CALENDAR)
 
 SIGN_IN_TTL = 15 * 60       # seconds a sign-in started here stays valid
+SIGNINS_KEY = "google_signins"   # database key: sign-ins started and not finished, by state (all accounts)
 MAX_PENDING = 20            # sign-ins started but not finished, kept at most
 TIMEOUT = httpx.Timeout(20.0, connect=10.0)
 FRESH_TOKEN = 60.0         # seconds an access token counts as just issued: a 401 with it isn't fixed by another (I1)
@@ -76,7 +77,6 @@ class GoogleApi:
         self._token_key = "google_token" + (f":{account}" if account else "")
         self._client: tuple[str, str] | None = None              # (kept for callers from before; read each time now)
         self.tz_name = tz_name
-        self._pending: dict[str, tuple[str, str, float]] = {}   # state -> (PKCE verifier, redirect URI, expiry)
         self._access: tuple[str, float] | None = None            # (access token, expiry)
         self._access_at = 0.0     # (0.2.8-beta.21, I1) when Google issued the access token (time.monotonic())
         self._lock = asyncio.Lock()
@@ -251,12 +251,16 @@ class GoogleApi:
     def sign_in_url(self, redirect_uri: str) -> str:
         """Start a sign-in: the Google consent page to send the browser to. A one-time `state` value
         ties Google's answer to this request, and PKCE ties the code to this server."""
-        now = time.monotonic()
-        self._pending = {s: p for s, p in self._pending.items() if p[2] > now}
-        while len(self._pending) >= MAX_PENDING:
-            self._pending.pop(next(iter(self._pending)))
+        # (0.2.8-beta.35, F58 4) kept in the database, not in memory, so a restart between this page and Google's
+        # answer doesn't lose it; the PKCE verifier is stored encrypted, and used once (finish_sign_in)
+        now = time.time()
+        pending = {k: v for k, v in (self.store.get(SIGNINS_KEY) or {}).items() if v.get("expires", 0) > now}
+        while len(pending) >= MAX_PENDING:
+            pending.pop(next(iter(pending)))
         state, verifier = secrets.token_urlsafe(24), secrets.token_urlsafe(48)
-        self._pending[state] = (verifier, redirect_uri, now + SIGN_IN_TTL)
+        pending[state] = {"account": self.account, "verifier": self._seal(verifier), "redirect": redirect_uri,
+                          "expires": now + SIGN_IN_TTL}
+        self.store.set(SIGNINS_KEY, pending)
         return self.AUTH_URL + "?" + urlencode({
             "client_id": self.client_id,
             "redirect_uri": redirect_uri,
@@ -269,13 +273,27 @@ class GoogleApi:
             "code_challenge_method": "S256",
         })
 
+    def owns_sign_in(self, state: str) -> bool:
+        """Was this sign-in `state` started for this account, and is it still valid?"""
+        rec = (self.store.get(SIGNINS_KEY) or {}).get(state or "")
+        return bool(rec) and rec.get("account") == self.account and rec.get("expires", 0) > time.time()
+
+    def _take_sign_in(self, state: str) -> dict | None:
+        """Use a started sign-in up: returned once, then gone (a second answer for the same state finds nothing)."""
+        pending = self.store.get(SIGNINS_KEY) or {}
+        rec = pending.pop(state or "", None)
+        self.store.set(SIGNINS_KEY, pending)
+        if not rec or rec.get("account") != self.account or rec.get("expires", 0) < time.time():
+            return None
+        return rec
+
     async def finish_sign_in(self, state: str, code: str) -> dict:
         """Handle Google's answer: swap the code for tokens, check the permission was granted and
         save the refresh token. The calendars are made (or found again) by the next sync. Returns the info."""
-        pending = self._pending.pop(state or "", None)
-        if not pending or pending[2] < time.monotonic():
+        pending = self._take_sign_in(state)
+        if not pending:
             raise GoogleError("This Google sign-in has expired or was already used. Try Connect again.")
-        verifier, redirect_uri, _ = pending
+        verifier, redirect_uri = self._unseal(pending["verifier"]), pending["redirect"]
         tokens = await self._token_request({
             "grant_type": "authorization_code", "code": code, "redirect_uri": redirect_uri,
             "code_verifier": verifier,
