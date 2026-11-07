@@ -36,6 +36,7 @@ from .calsync import (AuthError, BlockedError, Defaults, Event, SourceError, app
                       download, parse, parse_feed)
 from .config import normalise_public_url, settings
 from .google.health import GoogleHealth
+from .google.traffic_log import TrafficLog as GoogleTrafficLog
 from .gsync import CALENDAR_COLORS, GOOGLE_COLORS, Google, GoogleError, nearest_calendar_color, nearest_color_id
 from .logins import Logins
 from .secretbox import SecretBox
@@ -76,7 +77,8 @@ def tail_logs():
 TZ = ZoneInfo(settings.timezone)
 store = Store(settings.dsn)
 box = SecretBox(settings.db_password)
-google = Google(store, box, settings.timezone)        # the first Google account (connected in Settings)
+google_traffic = GoogleTrafficLog()   # (F59) every account's calls to Google, shared, for the Beta traffic view
+google = Google(store, box, settings.timezone, traffic=google_traffic)   # the first Google account (connected in Settings)
 ACCOUNT_RE = re.compile(r"^(|a[0-9a-f]{6})$")
 _accounts: dict[str, Google] = {"": google}
 
@@ -85,7 +87,7 @@ def google_for(account: str = "") -> Google:
     """A Google account's connection (0.2.8-beta.15: each Google module can use its own Gmail; they share
     the OAuth client). "" is the first one."""
     if account not in _accounts:
-        _accounts[account] = Google(store, box, settings.timezone, account)
+        _accounts[account] = Google(store, box, settings.timezone, account, traffic=google_traffic)
     return _accounts[account]
 
 

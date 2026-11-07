@@ -44,7 +44,18 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     r = c.post("/google/connect", data={"csrf": csrf}, follow_redirects=False)
     back = G.get(r.headers["location"], follow_redirects=False); cb = urlparse(back.headers["location"])
     c.get(cb.path + "?" + cb.query, follow_redirects=False)
+    # F59: the traffic view saw the sign-in's token exchange, unredacted (checked before the sync's many Calendar
+    # API calls push it out of the bounded log)
+    tok = next(t for t in main.google_traffic.recent() if t.url.endswith("/token"))
+    ok(mockgoogle.CLIENT_SECRET in tok.request_body, "F59: the client secret is not hidden from the traffic view")
     asyncio.run(main.google_sync_once(True))
+    traf = main.google_traffic.recent()
+    api_calls = [t for t in traf if "/calendar/v3" in t.url]
+    ok(bool(api_calls) and all(t.request_headers.get("Authorization", "").startswith("Bearer ") for t in api_calls),
+       "F59: each Calendar API call's bearer token is kept too")
+    ok(all(isinstance(t.status, int) for t in api_calls), "F59: each call's response status was recorded")
+    main.google_traffic.clear()
+    ok(main.google_traffic.recent() == [], "F59: Clear empties the traffic log")
     cal = main.google.cal_info(d["id"])["calendar_id"]
     rows = main.store.google_rows(d["id"])
     uid, row = next((u, r) for u, r in rows.items() if S["events"][cal].get(r["google_id"], {}).get("status") != "cancelled")

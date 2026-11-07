@@ -3,7 +3,9 @@ an account's saved details, and the authenticated request to Calendar's API.
 
 Holds: GoogleApi (one Google account's connection; the calendar and event work is in app/gsync.py's Google, which
   builds on it until F58 checkpoint 8 moves that into app/google/sync.py).
-Depends on: app/secretbox.py (encrypts the secrets), app/google/errors.py; httpx; the store it is given.
+Depends on: app/secretbox.py (encrypts the secrets), app/google/errors.py, app/google/traffic_entry.py,
+  app/google/traffic_log.py (F59: every call to Google is recorded there, unredacted, for the Beta traffic view);
+  httpx; the store it is given.
 Used by: app/gsync.py (Google extends it, and re-exports it for the rest of the app).
 Reads/writes: the database through the `store` it is given (keys `google_client`, `google[:account]`,
   `google_token[:account]`, `google_signins`); the network (Google's sign-in, token and Calendar endpoints); the clock.
@@ -29,6 +31,8 @@ import httpx
 
 from ..secretbox import SecretBox
 from .errors import AccessRevoked, Conflict, GoogleError
+from .traffic_entry import TrafficEntry
+from .traffic_log import TrafficLog
 
 log = logging.getLogger("calendar_stream.google")
 
@@ -66,9 +70,10 @@ CLIENT_ID_RE = re.compile(r"^[A-Za-z0-9_.-]{10,200}\.apps\.googleusercontent\.co
 
 
 class GoogleApi:
-    def __init__(self, store, box: SecretBox, tz_name: str, account: str = ""):
+    def __init__(self, store, box: SecretBox, tz_name: str, account: str = "", traffic: TrafficLog | None = None):
         self.store = store
         self.box = box
+        self.traffic = traffic or TrafficLog()   # (F59) every call is recorded here for the Beta traffic view
         # 0.2.8-beta.15: one Google account per instance (each Google module can use its own Gmail); the
         # first ("") keeps the keys it always had, so installs from before need nothing moved. The OAuth
         # client is shared by every account.
@@ -322,15 +327,19 @@ class GoogleApi:
 
     async def _token_request(self, form: dict) -> dict:
         form = {**form, "client_id": self.client_id, "client_secret": self.client_secret}
+        start = time.monotonic()
         try:
             async with httpx.AsyncClient(timeout=TIMEOUT) as client:
                 r = await client.post(self.TOKEN_URL, data=form)
         except httpx.HTTPError as e:
+            self._record_traffic("POST", self.TOKEN_URL, form, time.monotonic() - start, status="error",
+                                 response_body=f"{type(e).__name__}: {e}")
             raise GoogleError(f"Couldn't reach Google ({type(e).__name__}).", transient=True)
         try:
             body = r.json()
         except ValueError:
             body = {}
+        self._record_traffic("POST", self.TOKEN_URL, form, time.monotonic() - start, response=r)
         if r.status_code == 200 and body.get("access_token"):
             return body
         error = body.get("error", f"HTTP {r.status_code}")
@@ -353,6 +362,26 @@ class GoogleApi:
             self._access_at = time.monotonic()
             return self._access[0]
 
+    def _record_traffic(self, method: str, url: str, request_body, seconds: float, *, response: httpx.Response | None = None,
+                        status=None, response_body: str = "", request_headers: dict | None = None):
+        """(F59) One exchange, kept for the Beta traffic view. Nothing is redacted (not the access or
+        refresh token, not the client secret): the Developer asked to see everything, it's their own
+        account, and this never leaves memory (no database, report, log file or screenshot)."""
+        try:
+            req_body = request_body if isinstance(request_body, str) else json.dumps(request_body, default=str)
+        except TypeError:
+            req_body = str(request_body)
+        if response is not None:
+            status = response.status_code
+            response_body = response.text
+            response_headers = dict(response.headers)
+        else:
+            response_headers = {}
+        self.traffic.record(TrafficEntry(at=time.time(), account=self.account, method=method, url=url,
+                                         request_headers=dict(request_headers or {}), request_body=req_body,
+                                         status=status, response_headers=response_headers,
+                                         response_body=response_body[:20000], ms=seconds * 1000))
+
     # --- Calendar API -------------------------------------------------------------------------
 
     async def api(self, method: str, path: str, *, body: dict | None = None, params: dict | None = None,
@@ -368,16 +397,22 @@ class GoogleApi:
             # that got it: the next ways of setting a color aren't each retried with yet another token
             fresh = fresh or time.monotonic() - self._access_at < FRESH_TOKEN
             renewed = renewed or fresh
+            headers = {"Authorization": f"Bearer {token}"}
+            start = time.monotonic()
             try:
                 async with httpx.AsyncClient(timeout=TIMEOUT) as client:
                     r = await client.request(method, self.API_URL + path, json=body, params=params,
-                                             headers={"Authorization": f"Bearer {token}"})
+                                             headers=headers)
             except httpx.HTTPError as e:
+                self._record_traffic(method, self.API_URL + path, body or params, time.monotonic() - start,
+                                     status="error", response_body=f"{type(e).__name__}: {e}", request_headers=headers)
                 if attempt == 4:
                     raise GoogleError(f"Couldn't reach Google Calendar ({type(e).__name__}).", transient=True)
                 await asyncio.sleep(delay)
                 delay *= 2
                 continue
+            self._record_traffic(method, self.API_URL + path, body or params, time.monotonic() - start,
+                                 response=r, request_headers=headers)
             if r.status_code in (200, 201):
                 return r.json() if r.content else {}
             if r.status_code == 204:
