@@ -2,6 +2,7 @@
 developing a fix. One instance is shared by every Google account (app/main.py), so the view shows all of them
 together, in the order they happened.
 
+Holds: TrafficLog, a bounded, in-memory list of TrafficEntry.
 Depends on: app/google/traffic_entry.py.
 Used by: app/google/api.py (records each call), app/routes/google.py (the Beta traffic view, GET and Clear).
 Reads/writes: nothing; a bounded list in memory, cleared on restart and by the Clear button. Never the

@@ -1,7 +1,7 @@
 """F59: one exchange with Google (a request and its response), kept for the Beta traffic view.
 
-Holds: the time, which account made the call, the request (method, URL, headers, body) and the response
-(status, headers, body) or the error that stood in for one, and how long it took.
+Holds: TrafficEntry — the time, which account made the call, the request (method, URL, headers, body) and
+the response (status, headers, body) or the error that stood in for one, and how long it took.
 
 Depends on: nothing (plain data).
 Used by: app/google/traffic_log.py (keeps a bounded list of these), app/google/api.py (makes one per call),

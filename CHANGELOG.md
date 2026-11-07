@@ -9,7 +9,12 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.37**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.38**
+
+## 0.2.8-beta.38 — 2026-11-07
+
+### Added
+- **Beta: Google Traffic (F59)**: a section below History, Undo & Logs to start a Google module's sync by hand and watch every call this app makes to Google and Google's answer, nothing redacted (not tokens or the client secret) — for developing a real fix to I5. Each module's health chip and Sync Now button are duplicated there; a Clear button empties the log, which is never saved (memory only, cleared on restart).
 
 ## 0.2.8-beta.37 — 2026-11-07
 
