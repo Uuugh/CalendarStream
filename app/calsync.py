@@ -8,6 +8,7 @@ password, so this app downloads it on a timer and republishes it as a feed Googl
 """
 from __future__ import annotations
 
+import hashlib
 import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
