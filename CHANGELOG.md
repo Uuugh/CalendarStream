@@ -15,6 +15,7 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 
 ### Fixed
 - **F58 checkpoint 1 (I5)**: a Google module whose account has no sign-in was skipped by every sync without a word; History now says so once ("not signed in … so it isn't synced: open it and Connect me"). New suite 68.
+- **F58 checkpoint 3**: the Google sign-in, tokens and requests move to `app/google/api.py` (`GoogleApi`); `gsync.Google` builds on it with the same public behavior and the same module-level endpoints the suites set. New suite 70 (no app, database or network).
 - **F58 checkpoint 2**: `app/google/` begins: `errors.py` (the Google errors, moved out of `gsync.py`, which still offers them), `health_state.py`, `failure_kind.py`, `recovery_decision.py`, each with a Dart-ready header. New suite 69 (no app, database or network).
 
 ### Added
