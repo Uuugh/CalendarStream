@@ -74,7 +74,7 @@ A build is a series of **checkpoint commits**, so progress is easy to resume.
 - Before it is committed: the suites that touch the changed code pass locally (the full suite is run by the Tests
   workflow on GitHub for each push, not locally); a new module has its own fast test (R18) and its dependency
   header (R19); no real data is in it.
-- Its message names the build and step ("F58a 2/5: models.py + test"). It is pushed at once, and the build's
+- Its message names the build and step ("F58 2/10: models.py + test"). It is pushed at once, and the build's
   progress line on the Dashboard (done, next, left) is updated and republished.
 - Checkpoints don't change `VERSION`, so no image is built. The last one waits for a green Tests run on GitHub for
   its commit (the full suites, pip-audit), adds the CHANGELOG entry, bumps `VERSION` last ("One commit ships it",
