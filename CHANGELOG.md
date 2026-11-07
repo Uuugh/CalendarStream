@@ -9,9 +9,11 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.35**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.36**
 
-## Unreleased (rules, no version)
+## 0.2.8-beta.36 — 2026-11-07
+
+F58: the Google code split into small modules in `app/google/` (ten checkpoints), with review #9 findings 2 and 3 and review #8's test-runner follow-ups; rules R18–R20. Still open for the next build: `GoogleSync` becomes an injected client instead of a mixin, and `main.py` and the routes (an import cycle) are split.
 
 ### Fixed
 - **F58 checkpoint 1 (I5)**: a Google module whose account has no sign-in was skipped by every sync without a word; History now says so once ("not signed in … so it isn't synced: open it and Connect me"). New suite 68.
