@@ -15,6 +15,8 @@ Read when planning a version.
 - F53 (Settings, Updates): built beta.33 as "✓ v&lt;version&gt;" at rest instead of "✓ Up to date" — moved here
   Nov 6 (Developer) for further refinement as part of broader theming/status-wording work, rather than staying
   a closed Dashboard item.
+- F40 follow-up (Developer, Nov 7, on an otherwise-Good verdict): animation when advancing month/week/etc.,
+  with a selectable transition style in Theme settings (at least slide and page flip, plus others worth adding).
 0.3.3 Cloud / attachment integration
 - Attachments in an area at the bottom of an event's Notes
 
