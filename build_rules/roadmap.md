@@ -9,6 +9,9 @@ Read when planning a version.
 0.3.1 Printing
 0.3.2 More themes
 - option to change based on local time (vs system)
+- R2 (Developer, Nov 6): everything built has too much padding; rows wrap where a tighter fit would hold them.
+- I29 (Developer, Nov 6): History's "Accepted" sign-in is a check mark with no words; wants it as a status/action button.
+- F45 (Developer, Nov 6): History's status wording ("changes for Undo") and its button not collapsing correctly.
 - F53 (Settings, Updates): built beta.33 as "✓ v&lt;version&gt;" at rest instead of "✓ Up to date" — moved here
   Nov 6 (Developer) for further refinement as part of broader theming/status-wording work, rather than staying
   a closed Dashboard item.
