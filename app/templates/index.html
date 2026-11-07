@@ -208,7 +208,7 @@
 
 {% include "index/calendar-dialogs.html" %}
 <script type="application/json" id="pagedata">{{ {"csrf": csrf, "view": cal.view, "viewExplicit": view_explicit, "full": calview.full, "stretch": calview.stretch, "theme": theme, "openMenu": open_menu,
-  "printPrefs": print_prefs, "printView": {"list": "itinerary"}.get(cal.view, cal.view)}|tojson }}</script>
+  "fixApi": fix_api, "printPrefs": print_prefs, "printView": {"list": "itinerary"}.get(cal.view, cal.view)}|tojson }}</script>
 <script src="/assets/page-{{ version }}-{{ lang }}.js"></script>
 {% include "_pwfield.html" %}
 </body>

@@ -122,13 +122,19 @@ function fitFull() {
       });
       return;
     }
-    // F15.9, F28: in full page a click on a key item dims it and hides its events here only; leaving full page shows them again
+    // F15.9, F28: a click on a key item dims it and hides its events here only, in every mode (0.2.8-beta.33, F48);
+    // leaving full page (if that's where it was clicked) shows them again just the same
     var it = e.target.closest('#cal .legitem[data-hide]');
     if (it) {
       var off = it.getAttribute('aria-pressed') === 'true';
       it.setAttribute('aria-pressed', String(!off)); it.classList.toggle('dim', off);
       var keys = Array.prototype.map.call(document.querySelectorAll('#cal .legitem.dim[data-hide]'), function (x) { return x.dataset.hide; });
       savePref('/ui/calview', { hide: keys.join(',') || '-' }, function () { loadCal(location.href); });   // (beta.31, I15: '-' = none; an empty value is not sent)
+      return;
+    }
+    // F50: View All clears every dimmed Calendars/Key item at once
+    if (e.target.closest('#legviewall')) {
+      savePref('/ui/calview', { hide: '-' }, function () { loadCal(location.href); });
     }
   });
   // F15.7: the stretch handle in the calendar's lower left corner: drag (or ↑ ↓) to make the calendar taller or shorter
@@ -182,9 +188,27 @@ function initCal() {
     sw.setAttribute('aria-checked', String(to24));
     savePref('/ui/clock', { clock: to24 ? '24' : '12' }, function () { location.reload(); });
   });
-  // The view (0.2.8-beta.29, F15.6): a drop-down.
-  var vp = document.getElementById('viewpick');
-  if (vp) vp.addEventListener('change', function () { chooseView(vp.value); });
+  // The view (0.2.8-beta.29, F15.6; 0.2.8-beta.33, F52: icons, not words - a button + menu, like ☰ Settings).
+  // #cal (with #viewbtn/#viewmenu inside it) is swapped in fresh on every view or month change, so the
+  // outside-click/Escape listeners are bound to document ONCE (by id, re-read each time they fire) instead of
+  // piling up a pair per swap; the button and its options still get plain per-swap listeners, which die with
+  // the old nodes they're on.
+  var vbtn = document.getElementById('viewbtn'), vmenu = document.getElementById('viewmenu');
+  if (vbtn && vmenu) {
+    function closeView() { var m = document.getElementById('viewmenu'), b = document.getElementById('viewbtn'); if (m) m.hidden = true; if (b) b.setAttribute('aria-expanded', 'false'); }
+    vbtn.addEventListener('click', function (e) { e.stopPropagation(); var open = vmenu.hidden; closeView(); if (open) { vmenu.hidden = false; vbtn.setAttribute('aria-expanded', 'true'); } });
+    vmenu.querySelectorAll('[data-view]').forEach(function (b) {
+      b.addEventListener('click', function () { closeView(); chooseView(b.dataset.view); });
+    });
+    if (!initCal._viewDocBound) {
+      initCal._viewDocBound = true;
+      document.addEventListener('click', function (e) {
+        var m = document.getElementById('viewmenu'), b = document.getElementById('viewbtn');
+        if (m && !m.hidden && !m.contains(e.target) && e.target !== b) closeView();
+      });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeView(); });
+    }
+  }
   // The time zone (this page only).
   var sel = document.getElementById('tzpick');
   if (sel) sel.addEventListener('change', function () { savePref('/ui/tz', { tz: sel.value }, function () { loadCal(location.href); }); });

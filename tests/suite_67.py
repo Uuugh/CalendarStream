@@ -5,8 +5,13 @@ back instead of leaving with nothing (I37). Settings > Administrator's public-ad
 domain row with another row present used to remove the whole row - its only + button and its "main" field
 gone for good - instead of just clearing it, the way it already did when it was the only row (I22, found and
 fixed here with a browser repro). I25's own claim (typing not registering at all) stays not reproducible from
-the code, confirming the Dashboard's own automated check - see build-costs.md and the Dashboard's notes."""
+the code, confirming the Dashboard's own automated check - see build-costs.md and the Dashboard's notes.
+Settings: Updates moves to the top (F47) and its "up to date" status shows the running version (F53); Look is
+renamed Theme (F46). The calendar's view picker (Month/Week/Day/List) and the Light/Dark/System switch both
+become one icon with a dropdown menu, not a native <select> or a 3-button segmented control (F52, F57). The
+Calendars/Key footer's dim-and-hide click works in every mode, not just Full page (F48)."""
 import os, re, sys, threading, time
+from datetime import datetime, timezone
 os.environ.update(DB_HOST=os.environ.get("TEST_DB_HOST", "127.0.0.1"), DB_PORT=os.environ.get("TEST_DB_PORT", "5432"), DB_NAME=sys.argv[1], DB_USER=os.environ.get("TEST_DB_USER", "ccs"), DB_PASSWORD=os.environ.get("TEST_DB_PASSWORD", "testpw"),
                   GUI_USERNAME="t", GUI_PASSWORD="password1", TZ="America/New_York", PUBLIC_URL="")
 for k in ("CCS_USERNAME", "CCS_PASSWORD", "IMAGE_TAG", "http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY"): os.environ.pop(k, None)
@@ -115,8 +120,125 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
            "I22: its + button is still there too, so another address can still be added")
         ok(pg3.eval_on_selector("#publicurl", "el => el.value") == "",
            "I22: trashing the domain row clears it, same as when it was the only row")
+
+        # --- F56: changing the public address with Google already set up pops up a fix-it notice ---
+        # (an https address, not this test server's own http://127.0.0.1 one, so redirect_ok reads true)
+        main.store.set("public_url", "https://cal.example.com")
+        redirect0 = "https://cal.example.com/google/callback"
+        main.google.save_client("f56-test-client.apps.googleusercontent.com", "GOCSPX-f56testsecretvalue00")
+        main.google._save_check(True, "Google accepted the client ID and secret", redirect0, True)
+        before_gs = c.get("/?menu=settings", headers={"accept": "text/html"}).text
+        before_gs = before_gs[before_gs.index('id="googlesync"'):before_gs.index('id="look"')]
+        ok('class="gassist"' not in before_gs, "F56 setup: Google Calendar API Sync reads as healthy before the address changes")
+        pg3.fill("#publicurl", "https://cal.example.org")
+        pg3.dispatch_event("#publicurl", "input")
+        pg3.click('#pagelogin .psave')
+        pg3.wait_for_timeout(1200)
+        ok(pg3.eval_on_selector("#askdialog", "el => el.open") is True, "F56: saving a changed public address pops up a notice")
+        text = pg3.eval_on_selector("#askdialog .asktext", "el => el.textContent")
+        ok("redirect URI" in text and "Google Calendar API Sync" in text, f"F56: it says Google Calendar API Sync's redirect URI needs fixing ({text!r})")
+        ok(pg3.locator("#googlesync .gassist").count() == 1,
+           "F56: Google Calendar API Sync's own assist box is already drawn, redrawn by the save's own swap (no reload needed)")
+        pg3.click("#askdialog button")
+        pg3.wait_for_timeout(300)
+        ok(pg3.eval_on_selector("#askdialog", "el => el.open") is False, "F56: OK closes the notice")
+        main.store.set("public_url", "")    # leave it as it was found
+        main.store.delete("google_client")
         pg3.close()
         b.close()
+
+    # --- F46/F47/F53: Settings menu order and labels ---
+    from app import updates as updatesmod
+    main.store.set("update_check", {"checked": datetime.now(timezone.utc).isoformat(), "channel": updatesmod.channel(), "newest": main.__version__})
+    sp = c.get("/?menu=settings", headers={"accept": "text/html"}).text
+    first_group = re.search(r'<div class="mgroup" id="(\w+)"', sp)
+    ok(first_group is not None and first_group[1] == "updates", f"F47: Updates is the first Settings section ({first_group})")
+    ok(sp.index('id="updates"') < sp.index('id="pagelogin"') < sp.index('id="look"'),
+       "F47: Updates comes before Administrator, which comes before Theme")
+    look_mhead = sp[sp.index('id="look"'):][:400]
+    ok(">Theme<" in look_mhead, f"F46: the former Look/Appearance section is now called Theme ({look_mhead[:120]!r})")
+    ok(">Appearance<" not in sp, "F46: the old 'Appearance' label is gone from the page")
+    ok(re.search(rf'class="chip good"[^>]*title="v{re.escape(main.__version__)}"', sp),
+       f"F53: Updates' up-to-date status shows the running version (v{main.__version__}), not \"Up to date\"")
+
+    # --- F52: the view picker is a button + menu of icons, not a native <select> ---
+    cp = c.get("/?date=2026-10-14", headers={"accept": "text/html"}).text
+    ok('id="viewbtn"' in cp and 'id="viewmenu"' in cp and 'id="viewpick"' not in cp,
+       "F52: the view picker is a button + menu (#viewbtn/#viewmenu), not the old <select id=viewpick>")
+    ok(all(f'role="menuitemradio" data-view="{v}"' in cp for v in ("month", "week", "day", "list")),
+       "F52: the menu has one choice per view")
+    from playwright.sync_api import sync_playwright as _spw
+    with _spw() as pw4:
+        b4 = pw4.chromium.launch()
+        pg4 = b4.new_page(viewport={"width": 1230, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
+        pg4.goto(f"http://127.0.0.1:{PORT}/?date=2026-10-14")
+        pg4.wait_for_selector("#viewbtn")
+        ok(pg4.eval_on_selector("#viewmenu", "el => el.hidden"), "F52: the view menu starts closed")
+        pg4.click("#viewbtn")
+        ok(not pg4.eval_on_selector("#viewmenu", "el => el.hidden"), "F52: clicking the button opens the menu")
+        pg4.click("#viewmenu [data-view='week']")
+        pg4.wait_for_timeout(800)
+        ok(pg4.eval_on_selector("#viewmenu", "el => el.hidden"), "F52: picking a view closes the menu again")
+        ok(pg4.locator(".hourview").count() == 1, "F52: picking Week from the new menu actually switches the view")
+
+        # --- F48: the key/calendar dim-and-hide click works outside Full page too (just the Month view here) ---
+        pg4.goto(f"http://127.0.0.1:{PORT}/?date=2026-10-14")
+        pg4.wait_for_selector("#cal .legitem[data-hide='src:ccs']")
+        ok(pg4.eval_on_selector("#fullbtn", "el => el.getAttribute('aria-pressed')") == "false", "F48: not in Full page")
+        pg4.click("#cal .legitem[data-hide='src:ccs']"); pg4.wait_for_timeout(1000)
+        off = pg4.eval_on_selector("#cal .legitem[data-hide='src:ccs']", "el => el.getAttribute('aria-pressed')")
+        ok(off == "false", f"F48: clicking a Calendars key item in plain Month view dims/hides it too ({off})")
+        pg4.click("#cal .legitem[data-hide='src:ccs']"); pg4.wait_for_timeout(1000)   # leave it as it was found
+
+        # --- F57: Light/Dark/System is one icon, a button + menu like the view picker ---
+        ok(pg4.eval_on_selector("#thememenu", "el => el.hidden"), "F57: the theme menu starts closed")
+        before = pg4.eval_on_selector("#themebtn", "el => el.innerHTML")
+        pg4.click("#themebtn")
+        ok(not pg4.eval_on_selector("#thememenu", "el => el.hidden"), "F57: clicking the theme button opens its menu")
+        pg4.click("#thememenu [data-theme-choice='dark']")
+        pg4.wait_for_timeout(200)
+        ok(pg4.eval_on_selector("#thememenu", "el => el.hidden"), "F57: picking a theme closes the menu again")
+        ok(pg4.eval_on_selector("html", "el => el.getAttribute('data-theme')") == "dark", "F57: picking Dark actually applies it")
+        after = pg4.eval_on_selector("#themebtn", "el => el.innerHTML")
+        ok(after != before, "F57: the closed button's icon changes to match the new choice")
+        ok(pg4.eval_on_selector("#thememenu [data-theme-choice='dark']", "el => el.getAttribute('aria-checked')") == "true",
+           "F57: the menu marks the current choice")
+
+        # --- F51: the stretch handle lives inside #calbody now (bottom of the calendar, not the whole section) ---
+        inside = pg4.eval_on_selector("#calbody", "el => el.contains(document.getElementById('calstretch'))")
+        ok(inside, "F51: #calstretch is inside #calbody (the calendar itself), not below the key/footer")
+
+        # --- F49/F50: the vertical rule sits right after the Calendars list (not stretched out), and View All ---
+        pg4.goto(f"http://127.0.0.1:{PORT}/?date=2026-10-14")
+        pg4.wait_for_selector(".legvr")
+        gap = pg4.eval_on_selector_all(".legcals, .legvr", """els => els[1].getBoundingClientRect().left - els[0].getBoundingClientRect().right""")
+        ok(gap < 20, f"F49: the vertical rule sits close to the Calendars list, not stretched to the middle ({gap:.0f}px gap)")
+        ok(pg4.locator("#legviewall").count() == 0, "F50: View All is hidden when nothing is dimmed")
+        pg4.click("#cal .legitem[data-hide='src:ccs']"); pg4.wait_for_timeout(1000)
+        ok(pg4.locator("#legviewall").count() == 1, "F50: View All appears once something is dimmed")
+        pg4.click("#legviewall"); pg4.wait_for_timeout(1000)
+        restored = pg4.eval_on_selector("#cal .legitem[data-hide='src:ccs']", "el => el.getAttribute('aria-pressed')")
+        ok(restored == "true", f"F50: View All clears the dimmed item ({restored})")
+        ok(pg4.locator("#legviewall").count() == 0, "F50: View All hides itself again once nothing is dimmed")
+        pg4.close(); b4.close()
+
+# --- F55: the 8 master logo files moved from build_rules/ to app/static/logo/source/ ---
+REPO = os.path.dirname(HERE)
+LOGO_FILES = ["CalendarStream_Logo.png", "CalendarStream_Logo_Dark.png", "CalendarStream_Logo_Dark.svg",
+              "CalendarStream_Logo_Light.png", "CalendarStream_Logo_Light.svg", "CalendarStream_Logo w Text.png",
+              "CalendarStream_Mark_Dark.png", "CalendarStream_Mark_Light.png"]
+for fn in LOGO_FILES:
+    ok(os.path.exists(os.path.join(REPO, "app", "static", "logo", "source", fn)), f"F55: {fn} lives in app/static/logo/source/ now")
+    ok(not os.path.exists(os.path.join(REPO, "build_rules", fn)), f"F55: {fn} is gone from build_rules/")
+readme = read("README.md"); readme2 = read("README2.md")
+ok("app/static/logo/source/CalendarStream_Mark_Light.png" in readme and "build_rules/CalendarStream_Mark" not in readme,
+   "F55: README.md's logo link follows the move")
+ok("app/static/logo/source/CalendarStream_Logo.png" in readme2 and "build_rules/CalendarStream_Logo" not in readme2,
+   "F55: README2.md's logo link follows the move")
+# the Theme Rules pictures (diagrams, not logos) stay put in build_rules/
+ok(os.path.exists(os.path.join(REPO, "build_rules", "CalendarStream_Theme_Rules_Light.png")) and
+   os.path.exists(os.path.join(REPO, "build_rules", "CalendarStream_Theme_Rules_Dark.png")),
+   "F55: the Theme Rules pictures are not logos and stay in build_rules/")
 
 print(f"\n{fails} failure(s)" if fails else "\nAll passed")
 sys.exit(1 if fails else 0)

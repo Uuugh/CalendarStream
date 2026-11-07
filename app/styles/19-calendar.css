@@ -12,9 +12,18 @@
   .calhead.two .calplus { grid-column:2; grid-row:1 }
   .calhead.two .calright { grid-column:1 / -1; grid-row:2; margin-left:0; justify-content:flex-end; flex-wrap:wrap }
   .calright .iconbtn { height:28px; width:28px }
-  /* F15.6: the view, a drop-down */
-  select.viewpick { font:inherit; font-size:13px; color:var(--text); background:transparent; border:1px solid var(--line); border-radius:var(--r); height:28px; padding:0 4px; cursor:pointer }
-  select.viewpick:hover, select.viewpick:focus { background:var(--soft) }
+  /* F15.6: the view; 0.2.8-beta.33, F52: icons, not words - the closed button shows only the current view's icon,
+     the open menu shows each choice's icon left of its word (same pattern as the language menu). */
+  .viewwrap { position:relative }
+  .viewmenu { position:absolute; right:0; top:calc(100% + 6px); min-width:160px; z-index:11; background:var(--card);
+              border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18); padding:6px }
+  .viewmenu[hidden] { display:none }
+  .viewmenu button { display:flex; width:100%; align-items:center; gap:10px; background:transparent; color:var(--text);
+                     border:0; border-radius:6px; padding:7px 10px; font-weight:500; text-align:left }
+  .viewmenu button:hover, .viewmenu button:focus { background:var(--soft) }
+  .viewmenu button .mi { flex:0 0 auto; color:var(--muted) }
+  .viewmenu button[aria-checked="true"] { color:var(--accent) }
+  .viewmenu button[aria-checked="true"] .mi { color:var(--accent) }
   /* F15.2, F25: a rounded switch with its two words inside and a highlight that slides to the one in use (12h | 24h; On | Off) */
   .segsw { position:relative; display:inline-grid; grid-template-columns:1fr 1fr; align-items:center; height:28px; min-height:0; padding:2px; margin:0;
            border:1px solid var(--line); border-radius:var(--r); background:var(--soft); color:var(--muted); font:inherit; font-size:12.5px; font-weight:600;
@@ -70,8 +79,12 @@
   /* the key (F15.8, F26): Calendars | Key, columns of three from the left and from the right; a row taller when they don't fit */
   .legend { display:flex; align-items:stretch; gap:12px; flex-wrap:nowrap; font-size:12px; color:var(--muted); margin:8px 0 0 }
   .legpart { min-width:0 }
-  .legcals { flex:1 1 0 } .legkeys { flex:0 1 auto; max-width:50% }
+  /* (0.2.8-beta.33, F49) Calendars takes only the width its own list needs, so the vertical rule sits right after
+     it; Key (already right-aligned, stacks of three from the right) grows to fill what's left. */
+  .legcals { flex:0 1 auto } .legkeys { flex:1 1 auto }
   .legtitle { display:flex; align-items:center; gap:2px; margin:0 0 3px; font-size:12px; font-weight:700; color:var(--text) }
+  .legviewall { margin-left:auto; width:22px; height:22px; color:var(--muted) }   /* (0.2.8-beta.33, F50) */
+  .legviewall:hover, .legviewall:focus-visible { color:var(--accent) }
   .legvr { flex:0 0 1px; align-self:stretch; background:var(--line) }
   .legcols { display:grid; grid-auto-flow:column; grid-template-rows:repeat(var(--rows, 3), auto); justify-content:start; gap:3px 16px }
   .legcols.rtl { direction:rtl } .legcols.rtl > * { direction:ltr; justify-self:start }
@@ -82,10 +95,14 @@
   button.legitem { cursor:pointer; min-height:0; height:auto; width:auto; justify-content:flex-start; justify-self:start; line-height:1.3 }
   button.legitem:hover { background:var(--soft) }
   button.legitem[aria-pressed="false"], .legitem.dim { opacity:.45 }
-  /* F15.7: the stretch handle in the calendar's lower left corner */
+  /* F15.7: the stretch handle, at the bottom of the calendar itself (0.2.8-beta.33, F51: #calbody, not #cal - it no
+     longer sits below the key/footer); left by default, right when Reorder grips is set to Right. */
+  #calbody { position:relative }
+  #calbody:has(.calstretch) { padding-bottom:20px }   /* room for the handle so it doesn't sit over the grid's own content */
   .calstretch { position:absolute; left:3px; bottom:2px; width:18px; height:18px; min-height:0; padding:0; display:inline-flex; align-items:center; justify-content:center;
-                background:transparent; border:0; border-radius:var(--r); color:var(--muted); cursor:ns-resize; touch-action:none }
+                background:transparent; border:0; border-radius:var(--r); color:var(--muted); cursor:ns-resize; touch-action:none; z-index:1 }
   .calstretch:hover, .calstretch:focus-visible { background:var(--soft); color:var(--accent) }
+  body.gripsright .calstretch { left:auto; right:3px }
   /* month: each day as tall as the stretch gives it */
   .month .day { min-height:calc(96px + var(--st, 0px) / var(--rows, 5)) }
   /* F15.4, F27: Full page: every other section is hidden; the month fills the browser */

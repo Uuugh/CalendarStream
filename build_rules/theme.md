@@ -12,8 +12,9 @@ card of the **CalendarStream Theme Rules** picture that shows it.
 - The stylesheet is `app/styles/*.css` (sent as one file, in their number order), the script
   `app/templates/js/*.js` (put together by `page.js`, made once per language; AGENTS.md has the map),
   the color tokens `app/templates/_theme.html`. Change those, never inline copies.
-- When the theme changes, update this file and redraw the picture (at the latest in the Deploy's documentation part, 5-deploy.md). A rule
-  here with no card, or a card with no rule, is a mistake: fix whichever is missing.
+- When the theme changes, update this file. (0.2.8-beta.33, R7: the Developer no longer wants the pictures kept up to
+  date with every change - they stay as they are, a snapshot, not a thing to redraw each time. A new Clarification
+  with no card is expected now, not a mistake to fix.)
 
 The sections below follow the picture's Part 2, card by card (0.2.8-beta.24, R1): section N is card 2·N (R1: 16 cards; the color box and emoji sit on card 11 with Pop-ups, Spacing on card 9 with Modules).
 **Cancel/Save buttons** = the pair at the bottom right of a module or pop-up (section 6). **Status/Action
@@ -385,7 +386,8 @@ one here, with its card.
   Signed in (green; Not signed in in yellow) over Sign out; when something changes, the action half becomes Cancel | Save at the action's text
   size. The current password is asked only when the user name or password changes. (Suite 64)
 - Look (0.2.8-beta.29, F14) is the last Settings section: your own logo and favicon (PNG, SVG, WebP, JPEG or ICO up to 256 KB), and
-  the buttons' Animation intensity and duration (percent), with Reset to defaults and one Cancel | Save. (Suite 64)
+  the buttons' Animation intensity and duration (percent), with Reset to defaults and one Cancel | Save. (Suite 64; 0.2.8-beta.32, F39:
+  renamed Appearance; 0.2.8-beta.33, F46: renamed again to Theme, details to follow in 0.3 Theming — same section, same place.)
 - Full page's button (0.2.8-beta.31, F34, F35) is in the title bar, left of ☰; its icon becomes Windows' restore down (two squares). In every
   view the page fits the window exactly, with no scrollbar of its own, and the calendar fills the width. (Suite 65)
 - The hour height handle (0.2.8-beta.31, I20) is left of the times in Week and Day, inside the gutter's padding: drag it (or ↑ ↓) to make each
@@ -403,7 +405,30 @@ one here, with its card.
   can't be added there, so it can't be the default. (Suite 66)
 - The calendars module (0.2.8-beta.32, I28) is called Sources. (Suite 66)
 - History's Accepted sign-in (0.2.8-beta.32, I29) is a ✓ with no words (the word stays as its tooltip and accessible name). (Suite 66)
-- Appearance (0.2.8-beta.32, F39) is Look's new name (translated at Deploy). (Suite 66)
+- Appearance (0.2.8-beta.32, F39) is Look's new name (translated at Deploy); renamed again to Theme at 0.2.8-beta.33 (F46). (Suite 66)
+- Settings (0.2.8-beta.33, F47): Updates is the first section (above Administrator), since it's the one most worth seeing at a
+  glance; Theme stays last. (Suite 67)
+- Updates' "up to date" status (0.2.8-beta.33, F53) reads the running version itself ("v1.2.3"), not a plain "Up to date" — so
+  the version is visible without opening the title bar's own version link. (Suite 67)
+- The calendar's view picker (0.2.8-beta.33, F52) is icons, not words: closed, the button shows only the current view's
+  Material icon (Month calendar_month, Week view_week, Day view_day, List view_list); open, each choice shows its icon
+  left of its word, the same button + menu pattern as ☰ Settings and the language menu. (Suite 67)
+- The Calendars and Key footer's dim-and-hide click (0.2.8-beta.33, F48) works in every mode, not just Full page: a
+  Calendars or Key item is always the clickable button (F26, F28's "in full page" is gone). (Suite 67)
+- Light/Dark/System (0.2.8-beta.33, F57) is one icon, like the calendar's view picker: closed, the button shows only
+  the current choice's icon; open, each choice shows its icon left of its word, in a menu next to the language one.
+  (Suite 67)
+- The stretch handle (0.2.8-beta.33, F51) sits at the bottom of the calendar itself (inside its scrolling body), not
+  the bottom of the whole section below the Calendars/Key footer; left by default, right when Reorder grips is Right.
+  (Still open: in Week, Day and Itinerary the hours themselves don't yet grow the way Month's day cells do - left for
+  a later build.) (Suite 67)
+- Changing or setting the public address (0.2.8-beta.33, F56), with Google Calendar API Sync already set up, pops
+  up a notice that its redirect URI needs fixing, since the old one no longer matches: the Settings menu opens to
+  Google Calendar API Sync (already true of any Administrator save), which redraws at once with its own existing
+  "needs fixing" assist box - the pop-up only says to look there, it doesn't duplicate that guidance. (Suite 67)
+- View All (0.2.8-beta.33, F50) is an eye icon on the Key title's line, right-aligned, shown only once something is
+  dimmed; it clears every dimmed Calendars/Key item at once. The vertical rule between Calendars and Key (F49) now
+  sits right after the Calendars list's own width, not stretched out to the middle. (Suite 67)
 - A rule's key name (0.2.8-beta.32, F42) is cut to 25 characters, with its full name as the tooltip. (Suite 66)
 - Time Zone (0.2.8-beta.32, F41) is a globe icon; its tooltip names the zone, and it opens the same picker. (Suite 66)
 - 12h | 24h (0.2.8-beta.32, F43) is one clock icon; its tooltip names the current mode, and it toggles on a click. (Suite 66)

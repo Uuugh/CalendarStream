@@ -27,10 +27,12 @@
 
   {# Full page (0.2.8-beta.29, F15.4): every other section is hidden; the key's items can then be clicked (F26, F28) #}
   {% set full = calview.full %}{% set hide = calview.hide %}
-  {# One item of the key (F26, F28): in full page a button that dims it and hides its events here only; otherwise plain #}
+  {# One item of the key (F26, F28): a button that dims it and hides its events here only (0.2.8-beta.33, F48: every
+     mode, not just Full page). #}
+  {# (0.2.8-beta.33, F48) dim/hide on click is no longer Full page-only: it works in every mode (Month, Full, or any
+     other view/config), so it's always the clickable button. #}
   {% macro legitem(key, sw="", mark=false) -%}
-  {%- if full -%}<button type="button" class="legitem{% if mark %} mark{% endif %}{% if key in hide %} dim{% endif %}" data-hide="{{ key }}" aria-pressed="{{ 'false' if key in hide else 'true' }}"{% if sw %} style="--sw:{{ sw }}"{% endif %}>{{ caller() }}</button>
-  {%- else -%}<span class="legitem{% if mark %} mark{% endif %}"{% if sw %} style="--sw:{{ sw }}"{% endif %}>{{ caller() }}</span>{%- endif -%}
+  <button type="button" class="legitem{% if mark %} mark{% endif %}{% if key in hide %} dim{% endif %}" data-hide="{{ key }}" aria-pressed="{{ 'false' if key in hide else 'true' }}"{% if sw %} style="--sw:{{ sw }}"{% endif %}>{{ caller() }}</button>
   {%- endmacro %}
 
   <div class="card{% if full %} full{% endif %}" id="cal" style="--st:{{ calview.stretch }}px;--rows:{{ cal.weeks|length if cal.view == 'month' else 5 }}">
@@ -67,10 +69,18 @@
             <optgroup label="{{ _('Common') }}">{% for z in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
             <optgroup label="{{ _('All time zones') }}">{% for z in zones if z not in common_zones %}<option value="{{ z }}"{% if z == zone %} selected{% endif %}>{{ z.replace('_', ' ') }}{% if z == cfg.timezone %} ★{% endif %}</option>{% endfor %}</optgroup>
           </select></span>
+        {# (0.2.8-beta.33, F52) icons, not words: a button showing the current view's icon only; open, each
+           choice shows its icon left of its word. Same button+menu pattern as ☰ Settings and the language menu. #}
         {% set view_names = {"month": _('Month'), "week": _('Week'), "day": _('Day'), "list": _('List')} %}
-        <select id="viewpick" class="viewpick" aria-label="{{ _('View') }}" title="{{ _('View') }}">
-          {% for v, label in view_names.items() %}<option value="{{ v }}"{% if cal.view == v %} selected{% endif %}>{{ label }}</option>{% endfor %}
-        </select>
+        {% set view_icons = {"month": "calendar_month", "week": "view_week", "day": "view_day", "list": "view_list"} %}
+        <div class="viewwrap">
+          <button type="button" class="iconbtn viewbtn" id="viewbtn" aria-haspopup="menu" aria-expanded="false" aria-controls="viewmenu" title="{{ _('View: {v}', v=view_names[cal.view]) }}" aria-label="{{ _('View') }}">
+            {{ icon(view_icons[cal.view], 18) }}
+          </button>
+          <div class="viewmenu" id="viewmenu" role="menu" aria-label="{{ _('View') }}" hidden>
+            {% for v, label in view_names.items() %}<button type="button" role="menuitemradio" data-view="{{ v }}" aria-checked="{{ 'true' if cal.view == v else 'false' }}">{{ icon(view_icons[v], 18) }}{{ label }}</button>{% endfor %}
+          </div>
+        </div>
         {# (0.2.8-beta.32, F43) 12h | 24h is one clock icon that toggles, the current mode in its tooltip; the only place the time format is set. #}
         <button type="button" role="switch" class="iconbtn clockbtn" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') if dates.h24 else _('12-hour times') }}" title="{{ _('Time format: 24h (click for 12h)') if dates.h24 else _('Time format: 12h (click for 24h)') }}">{{ icon("schedule", 18) }}</button>
         {# Search (0.2.8-beta.11), left of Print (F15.3): opens the search line under this row #}
@@ -133,18 +143,24 @@
       {% else %}<p class="muted">{{ _('Nothing found.') if cal.search else _('No events this month.') }}</p>{% endfor %}
     </div>
     {% endif %}
+    {# F15.7; 0.2.8-beta.33, F51: the stretch handle sits at the bottom of the calendar itself (inside #calbody), not
+       the bottom of the whole section (below the key/footer); left or right follows the reorder grips setting. #}
+    {% if cal.view != "list" and not full %}<button type="button" class="calstretch" id="calstretch" aria-label="{{ _('Stretch the calendar (drag, or ↑ ↓)') }}" title="{{ _('Stretch the calendar (drag, or ↑ ↓)') }}">{{ icon("unfold_more", 16) }}</button>{% endif %}
     </div>
     {# The key (F15.8, F26): Calendars on the left (columns of three from the left, with an (i)), a vertical rule, Key on the
-       right (stacks of three from the right); when they don't fit, the columns grow a row taller. In full page a click on an
-       item dims it and hides its events here only (F15.9, F28). #}
+       right (stacks of three from the right); when they don't fit, the columns grow a row taller. A click on an
+       item dims it and hides its events here only, in every mode (F15.9, F28; 0.2.8-beta.33, F48). #}
     <div class="legend">
       <div class="legpart legcals">
-        <div class="legtitle">{{ _('Calendars') }}{{ notedot(_('Full page: click a calendar to hide or show its events on the calendar only. Nothing changes in Sources, Feeds, Rules or the other sections.')) }}</div>
+        <div class="legtitle">{{ _('Calendars') }}{{ notedot(_('Click a calendar to hide or show its events on the calendar only. Nothing changes in Sources, Feeds, Rules or the other sections.')) }}</div>
         <div class="legcols">{% for x in srcs %}{% call legitem('src:' ~ x.id, 'color-mix(in srgb, ' ~ (x.color or '#1d4ed8') ~ ' 18%, var(--card))') %}{{ x.name }}{% endcall %}{% endfor %}</div>
       </div>
       <div class="legvr" role="separator" aria-orientation="vertical"></div>
       <div class="legpart legkeys">
-        <div class="legtitle">{{ _('Key') }}{{ notedot(_('Full page: click an item to hide or show those events on the calendar only. Deleted events can be restored from the event or History › Undo.')) }}</div>
+        <div class="legtitle">{{ _('Key') }}{{ notedot(_('Click an item to hide or show those events on the calendar only. Deleted events can be restored from the event or History › Undo.')) }}
+          {# (0.2.8-beta.33, F50) View All: clears every dimmed Calendars/Key item at once #}
+          {% if hide %}<button type="button" class="ghost iconbtn legviewall" id="legviewall" title="{{ _('View All (show everything hidden by the key)') }}" aria-label="{{ _('View All') }}">{{ icon("visibility", 16) }}</button>{% endif %}
+        </div>
         <div class="legcols rtl">
           {# (0.2.8-beta.32, F42) a rule's name in the key: cut to 25 characters at most #}
           {% for r in all_rules if r.used %}{% set rname = r.title or (r.conds[0].value if r.conds and r.conds[0].type == 'text' else r.label) %}{% for a in r.actions if a.type == 'color' %}<span class="legitem" style="--sw:color-mix(in srgb, {{ a.color }} 18%, var(--card))" title="{{ rname }}">{{ rname|truncate(25, true, '…', 0) }}</span>{% endfor %}{% endfor %}
@@ -155,5 +171,4 @@
         </div>
       </div>
     </div>
-    {% if cal.view != "list" and not full %}<button type="button" class="calstretch" id="calstretch" aria-label="{{ _('Stretch the calendar (drag, or ↑ ↓)') }}" title="{{ _('Stretch the calendar (drag, or ↑ ↓)') }}">{{ icon("unfold_more", 16) }}</button>{% endif %}
   </div>

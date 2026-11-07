@@ -45,8 +45,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             pg.wait_for_timeout(800)
             ok(pg.get_attribute(btn, "data-state") == "done" and "Up to date" in pg.inner_text(btn), f"click {n}: then Up to date (green)")
             pg.wait_for_timeout(3000)
-            ok(len(checks) == n and pg.get_attribute(btn, "data-state") == "idle" and "Up to date" in pg.inner_text(box) and "Last checked" in pg.inner_text("#updates"),
-               f"click {n}: back to Check now, Updates redrawn (Up to date, Checked …)")
+            # (0.2.8-beta.33, F53) the status box shows the running version at rest ("v0.2.7-beta.2"), not "Up to date"
+            ok(len(checks) == n and pg.get_attribute(btn, "data-state") == "idle" and "v0.2.7-beta.2" in pg.inner_text(box) and "Last checked" in pg.inner_text("#updates"),
+               f"click {n}: back to Check now, Updates redrawn (v0.2.7-beta.2, Checked …)")
         answer["newest"] = "0.2.7-beta.3"
         pg.click(btn); pg.wait_for_timeout(1100)
         pg.locator(box).screenshot(path=os.path.join(tempfile.gettempdir(), "cs-found.png"))

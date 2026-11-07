@@ -28,7 +28,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     p = c.get("/", auth=A).text
     ok('id="updates"' in p and '<option value="weekly" selected>' in p and all(f'value="{f}"' in p for f in ("hourly", "monthly", "never")), "Settings: Check for updates, weekly by default")
     order = [m.group(1) for m in re.finditer(r'class="mgroup" id="([a-z]+)"', p)]
-    ok(order == ["pagelogin", "googlesync", "updates", "look"], f"order: Administrator (with the public address), Google Calendar sync (with the admin e-mail), updates ({order})")
+    # (0.2.8-beta.33, F47) Updates moved to the top of the menu, above Administrator
+    ok(order == ["updates", "pagelogin", "googlesync", "look"], f"order: updates, Administrator (with the public address), Google Calendar sync (with the admin e-mail) ({order})")
     # stable install: only STABLE is consulted, a newer beta is never offered
     os.environ["IMAGE_TAG"] = "latest"
     c.post("/settings/updates", auth=A, data={"csrf": csrf, "action": "check"})

@@ -4,6 +4,50 @@
       </button>
       <div class="menu" id="menu" role="dialog" aria-label="{{ _('Settings') }}" hidden>
         <div class="title">{{ _('Settings') }}</div>
+        {# Check for updates: how often, for this install's channel (beta or stable) only. #}
+        {# Updates (0.2.8-beta.5) laid out like a module header, with nothing to expand: its title over the
+           channel, the state over the next check (on the right), and the status box: the state over
+           Check now (or Update). Under it, how often to check and Auto-update, changed in place.
+           (0.2.8-beta.33, F47: moved to the top of the menu, above Administrator.) #}
+        {# (0.2.8-beta.33, F53) up to date shows the running version itself ("v1.2.3"), not a plain "Up to date" #}
+        {% set ucls, ulabel = ("run", _('Update available')) if update.available else (("good", _('v{v}', v=version)) if update.info.newest else ("run", _('Not checked'))) %}
+        <div class="mgroup" id="updates">
+          <form method="post" action="/settings/updates" class="clientform" data-swap="#updates|.topbar .ver">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="autoform" value="1">
+            <div class="module bare"><div class="srchead">
+              <div class="srcleft">
+                <div class="namebox srcname">{{ _('Updates') }}</div>
+                <div class="namebox srcnote">{{ _('Beta versions') if update.channel == 'beta' else _('Stable versions') }}</div>
+              </div>
+              <div class="srcright">
+                <p class="srcstatus">{% if update.available %}{{ _('Version <b>{v}</b> is out', v=update.available) }}{% elif update.checked %}{{ _('Last checked <b>{when}</b>', when=update.checked) }}{% else %}&nbsp;{% endif %}</p>
+                <p class="srcnext">{% if update.next %}{{ _('Next check @ {when}', when=update.next) }}{% else %}{{ _('Automatic checks are off') }}{% endif %}</p>
+              </div>
+              <div class="statusbox {{ ucls }}">
+                {{ chip(ucls, ulabel) }}
+                {# with a newer version out, Update instead of Check now (the updater, or how to update) #}
+                {# Update now works like Sync Now (0.2.8-beta.11): Updating… while it downloads and restarts, then Updated (or Failed) #}
+                {% if update.available and update.can_update %}<span class="syncform"><button type="button" class="syncnow upgradebtn" data-state="idle"><span class="sn idle">{{ icon("upgrade", 14) }}{{ _('Update now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}<span class="snword">{{ _('Downloading…') }}</span></span><span class="sn done">{{ icon("check", 14) }}<span class="snword">{{ _('Updated') }}</span></span><span class="sn fail">{{ icon("warning", 14) }}<span class="snword">{{ _('Update failed') }}</span></span></button></span>
+                {% elif update.available %}<a class="btn upgradebtn" href="https://github.com/Uuugh/CalendarStream#updating" target="_blank" rel="noopener" title="{{ _('Run the installer again to update.') }}">{{ icon("upgrade", 15) }}{{ _('Update now') }}</a>
+                {% else %}{# Check now works like Sync Now: Checking… → Up to date (green pulse), Update found (yellow) or Couldn't check (yellow) #}
+                <span class="syncform"><button class="syncnow checknow" name="action" value="check" data-state="idle"><span class="sn idle">{{ _('Check now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Checking…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Up to date') }}</span><span class="sn found">{{ icon("upgrade", 14) }}{{ _('Update found') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Couldn’t check') }}</span></button></span>{% endif %}
+              </div>
+            </div></div>
+            {# one line (0.2.8-beta.11): Check for updates [Hourly ▾] ☐ Auto-update #}
+            <div class="pair inline updrow">
+              <label class="rowlabel" for="updfreq">{{ _('Check for updates') }}</label>
+              <select id="updfreq" name="frequency" onchange="this.form.requestSubmit()">
+                {% for f in update.frequencies %}<option value="{{ f }}"{% if f == update.frequency %} selected{% endif %}>{{ {"hourly": _('Hourly'), "weekly": _('Weekly'), "monthly": _('Monthly'), "never": _('Never')}[f] }}</option>{% endfor %}
+              </select>
+              {# Auto-update: installs newer versions by itself; needs the updater #}
+              <label class="autoupd" title="{{ _('Install newer versions by themselves (with the updater)') if update.can_update else _('Needs the updater: run the installer again › Update from the status page: yes.') }}">
+                <input type="checkbox" name="auto" value="1"{% if update.auto %} checked{% endif %}{% if not update.can_update and not update.auto %} disabled{% endif %} onchange="this.form.requestSubmit()"> {{ _('Auto-update') }}</label>
+            </div>
+            {% if update.info.error %}<p class="check bad">{{ icon("cancel", 15) }} {{ msg(update.info.error) }}</p>{% endif %}
+            {% if not update.updater %}<p class="mnote" style="margin:5px 0 0">{{ _('To update from here: run the installer again › Update from the status page: yes.') }}</p>
+            {% elif update.can_update is false %}<p class="mnote" style="margin:5px 0 0">{{ _('This install runs an exact version (IMAGE_TAG): update it with the installer.') }}</p>{% endif %}
+          </form>
+        </div>
         {# (0.2.8-beta.29, F32, F33) One Administrator section: the status page's login and its public addresses, one form,
            one Cancel | Save. Its Status/Action box says "Signed in" over "Sign out"; the action half becomes the pair
            (Cancel | Save, at the action's text size) as soon as something is changed. The current password is asked
@@ -11,7 +55,10 @@
         <div class="mgroup" id="pagelogin">
           <div class="mhead">{{ _('Administrator') }}</div>
           <form method="post" action="/logout" id="signoutform" class="signout"><input type="hidden" name="csrf" value="{{ csrf }}"></form>
-          <form method="post" action="/settings/administrator" id="adminform" class="clientform adminform" autocomplete="off" data-swap="#pagelogin|#destinations">
+          {# data-swap includes #googlesync too (0.2.8-beta.33, F56): a changed address can make Google Calendar
+             API Sync's own assist box appear (its redirect URI no longer matches), so it's redrawn at once,
+             not only after a reload - which is when the pop-up this triggers (07-saving.js) says to look at it. #}
+          <form method="post" action="/settings/administrator" id="adminform" class="clientform adminform" autocomplete="off" data-swap="#pagelogin|#destinations|#googlesync">
             <input type="hidden" name="csrf" value="{{ csrf }}">
             <div class="module bare adminhead"><div class="statusbox adminbox {{ 'good' if page_user else 'warn' }}" style='--ic-x:{{ icon_mask("close") }};--ic-ok:{{ icon_mask("check") }}'>
               {{ chip('good' if page_user else 'warn', _('Signed in') if page_user else _('Not signed in')) }}
@@ -84,52 +131,9 @@
           {% endif %}
           {{ m.google_client(g, "f") }}
         </div>
-
-        {# Check for updates: how often, for this install's channel (beta or stable) only. #}
-        {# Updates (0.2.8-beta.5) laid out like a module header, with nothing to expand: its title over the
-           channel, the state over the next check (on the right), and the status box: the state over
-           Check now (or Update). Under it, how often to check and Auto-update, changed in place. #}
-        {% set ucls, ulabel = ("run", _('Update available')) if update.available else (("good", _('Up to date')) if update.info.newest else ("run", _('Not checked'))) %}
-        <div class="mgroup" id="updates">
-          <form method="post" action="/settings/updates" class="clientform" data-swap="#updates|.topbar .ver">
-            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="autoform" value="1">
-            <div class="module bare"><div class="srchead">
-              <div class="srcleft">
-                <div class="namebox srcname">{{ _('Updates') }}</div>
-                <div class="namebox srcnote">{{ _('Beta versions') if update.channel == 'beta' else _('Stable versions') }}</div>
-              </div>
-              <div class="srcright">
-                <p class="srcstatus">{% if update.available %}{{ _('Version <b>{v}</b> is out', v=update.available) }}{% elif update.checked %}{{ _('Last checked <b>{when}</b>', when=update.checked) }}{% else %}&nbsp;{% endif %}</p>
-                <p class="srcnext">{% if update.next %}{{ _('Next check @ {when}', when=update.next) }}{% else %}{{ _('Automatic checks are off') }}{% endif %}</p>
-              </div>
-              <div class="statusbox {{ ucls }}">
-                {{ chip(ucls, ulabel) }}
-                {# with a newer version out, Update instead of Check now (the updater, or how to update) #}
-                {# Update now works like Sync Now (0.2.8-beta.11): Updating… while it downloads and restarts, then Updated (or Failed) #}
-                {% if update.available and update.can_update %}<span class="syncform"><button type="button" class="syncnow upgradebtn" data-state="idle"><span class="sn idle">{{ icon("upgrade", 14) }}{{ _('Update now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}<span class="snword">{{ _('Downloading…') }}</span></span><span class="sn done">{{ icon("check", 14) }}<span class="snword">{{ _('Updated') }}</span></span><span class="sn fail">{{ icon("warning", 14) }}<span class="snword">{{ _('Update failed') }}</span></span></button></span>
-                {% elif update.available %}<a class="btn upgradebtn" href="https://github.com/Uuugh/CalendarStream#updating" target="_blank" rel="noopener" title="{{ _('Run the installer again to update.') }}">{{ icon("upgrade", 15) }}{{ _('Update now') }}</a>
-                {% else %}{# Check now works like Sync Now: Checking… → Up to date (green pulse), Update found (yellow) or Couldn't check (yellow) #}
-                <span class="syncform"><button class="syncnow checknow" name="action" value="check" data-state="idle"><span class="sn idle">{{ _('Check now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Checking…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Up to date') }}</span><span class="sn found">{{ icon("upgrade", 14) }}{{ _('Update found') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Couldn’t check') }}</span></button></span>{% endif %}
-              </div>
-            </div></div>
-            {# one line (0.2.8-beta.11): Check for updates [Hourly ▾] ☐ Auto-update #}
-            <div class="pair inline updrow">
-              <label class="rowlabel" for="updfreq">{{ _('Check for updates') }}</label>
-              <select id="updfreq" name="frequency" onchange="this.form.requestSubmit()">
-                {% for f in update.frequencies %}<option value="{{ f }}"{% if f == update.frequency %} selected{% endif %}>{{ {"hourly": _('Hourly'), "weekly": _('Weekly'), "monthly": _('Monthly'), "never": _('Never')}[f] }}</option>{% endfor %}
-              </select>
-              {# Auto-update: installs newer versions by itself; needs the updater #}
-              <label class="autoupd" title="{{ _('Install newer versions by themselves (with the updater)') if update.can_update else _('Needs the updater: run the installer again › Update from the status page: yes.') }}">
-                <input type="checkbox" name="auto" value="1"{% if update.auto %} checked{% endif %}{% if not update.can_update and not update.auto %} disabled{% endif %} onchange="this.form.requestSubmit()"> {{ _('Auto-update') }}</label>
-            </div>
-            {% if update.info.error %}<p class="check bad">{{ icon("cancel", 15) }} {{ msg(update.info.error) }}</p>{% endif %}
-            {% if not update.updater %}<p class="mnote" style="margin:5px 0 0">{{ _('To update from here: run the installer again › Update from the status page: yes.') }}</p>
-            {% elif update.can_update is false %}<p class="mnote" style="margin:5px 0 0">{{ _('This install runs an exact version (IMAGE_TAG): update it with the installer.') }}</p>{% endif %}
-          </form>
-        </div>
         {# (0.2.8-beta.29, F14) Look: your own logo and favicon, and the buttons' animation. One form, one Cancel | Save. #}
         <div class="mgroup" id="look">
-          <div class="mhead">{{ _('Appearance') }}{{ help(_('Your own logo (shown by the title) and favicon: a PNG, SVG, WebP, JPEG or ICO picture up to 256 KB. Animation sets how strong and how long the buttons’ pulses and slides are.'), 'left') }}</div>
+          <div class="mhead">{{ _('Theme') }}{{ help(_('Your own logo (shown by the title) and favicon: a PNG, SVG, WebP, JPEG or ICO picture up to 256 KB. Animation sets how strong and how long the buttons’ pulses and slides are.'), 'left') }}</div>
           <form method="post" action="/settings/look" id="lookform" class="clientform lookform" enctype="multipart/form-data" data-reload="1" autocomplete="off">
             <input type="hidden" name="csrf" value="{{ csrf }}">
             <div class="pair">

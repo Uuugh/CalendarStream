@@ -1,4 +1,4 @@
-<h1><img src="build_rules/CalendarStream_Logo.png" alt="" width="38" height="38" align="absmiddle"> CalendarStream</h1>
+<h1><img src="app/static/logo/source/CalendarStream_Logo.png" alt="" width="38" height="38" align="absmiddle"> CalendarStream</h1>
 
 **Self-hosted calendar aggregation, synchronization, automation, and publishing.**
 

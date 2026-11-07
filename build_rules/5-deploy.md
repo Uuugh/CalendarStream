@@ -24,8 +24,8 @@ releases it. Read when the Developer says DEPLOY.
    stays in full. The longest Status/Action words are checked against the 132 px button, and the Cancel | Save
    words ("Abbrechen", "Speichern", "Enregistrer") against their 65 px halves.
 3. **Documentation:** CHANGELOG.md (also the GitHub release notes); the README screenshots if the page changed a
-   lot (the made-up demo schedule, never the Developer's real one); the Theme Rules pictures if the theme changed
-   (theme.md).
+   lot (the made-up demo schedule, never the Developer's real one). (0.2.8-beta.33, R7: the Theme Rules pictures
+   are no longer redrawn here or anywhere else - they stay as they are.)
 4. Publish all that as the last beta, the **release candidate**, and ask the Developer to test it (with TEST, if
    they'd like Claude to follow along).
 

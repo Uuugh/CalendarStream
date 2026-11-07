@@ -1,6 +1,6 @@
   <header class="topbar"{% if update.can_update %} data-canupdate="{{ version }}"{% endif %}>
     {# The version links to its release notes on GitHub; a newer one shows as "(v0.2.0 is available)". #}
-    {# F11.1/F11.3 (0.2.8-beta.26; 0.2.8-beta.28, F31: CalendarStream_Logo_Light and _Dark without their words, the light one on light pages, the dark one on dark): the logo's mark, then the title in the logo's colors; the version is in the footer, only the update notice stays here. #}
+    {# F11.1/F11.3 (0.2.8-beta.26; 0.2.8-beta.28, F31: CalendarStream_Logo_Light and _Dark without their words, the light one on light pages, the dark one on dark; the master art is app/static/logo/source/, 0.2.8-beta.33, F55): the logo's mark, then the title in the logo's colors; the version is in the footer, only the update notice stays here. #}
     <h1><img class="logomark lt" src="{{ look.logo or '/static/logo/mark-light-72.png?v=' ~ version }}" alt="" width="39" height="36"><img class="logomark dk" src="{{ look.logo or '/static/logo/mark-dark-72.png?v=' ~ version }}" alt="" width="39" height="36"><span class="ttext"><span class="tw1">Calendar</span><span class="tw2">Stream</span></span><span class="ver">{% if update.available %}
       <a class="newver" href="{{ update.releases }}/tag/v{{ update.available }}" target="_blank" rel="noopener"
          title="{{ _('What’s new in it (GitHub)') if update.can_update else _('Run the installer again to update.') }}">{{ _('(v{v} is available)', v=update.available) }}</a>
@@ -23,14 +23,17 @@
         {% endfor %}
       </div>
     </div>
-    <button type="button" class="ghost cyclebtn themecycle" title="{{ _('Theme: press for the next one') }}" aria-label="{{ _('Color theme') }}"></button>
-    <div class="seg" role="group" aria-label="{{ _('Color theme') }}">
-      <button type="button" data-theme-choice="light" title="{{ _('Light') }}" aria-label="{{ _('Light theme') }}">
-        {{ icon("light_mode", 18) }}</button>
-      <button type="button" data-theme-choice="dark" title="{{ _('Dark') }}" aria-label="{{ _('Dark theme') }}">
-        {{ icon("dark_mode", 18) }}</button>
-      <button type="button" data-theme-choice="system" title="{{ _('Match system') }}" aria-label="{{ _('Match system theme') }}">
-        {{ icon("contrast", 18) }}</button>
+    {# (0.2.8-beta.33, F57) Light/Dark/System: one icon, like the calendar's view picker (F52) - closed shows only
+       the current choice's icon; open, each choice shows its icon left of its word. Same button + menu pattern
+       as the language menu. #}
+    <div class="themewrap">
+      <button type="button" class="iconbtn" id="themebtn" aria-haspopup="menu" aria-expanded="false" aria-controls="thememenu"
+              title="{{ _('Theme') }}" aria-label="{{ _('Color theme') }}"></button>
+      <div class="thememenu" id="thememenu" role="menu" aria-label="{{ _('Color theme') }}" hidden>
+        <button type="button" role="menuitemradio" data-theme-choice="light" aria-checked="false">{{ icon("light_mode", 18) }}{{ _('Light') }}</button>
+        <button type="button" role="menuitemradio" data-theme-choice="dark" aria-checked="false">{{ icon("dark_mode", 18) }}{{ _('Dark') }}</button>
+        <button type="button" role="menuitemradio" data-theme-choice="system" aria-checked="false">{{ icon("contrast", 18) }}{{ _('Match system') }}</button>
+      </div>
     </div>
     {# Full page (F15.4; 0.2.8-beta.31, F34, F35): left of ☰; hides every other section, and the icon then becomes Windows' restore down (two squares) #}
     <button type="button" class="iconbtn fullbtn" id="fullbtn" aria-pressed="{{ 'true' if calview.full else 'false' }}"

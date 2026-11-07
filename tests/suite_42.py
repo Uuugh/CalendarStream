@@ -58,10 +58,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         U.__version__ = main.__version__ = "0.2.7-beta.3"          # the restarted container
         pg.wait_for_timeout(3500)
         ok(pg.inner_text(".curver") == "v0.2.7-beta.3" and pg.locator(".updslot").count() == 0, "…the new version at the top")
-        ok(pg.locator("#updates button.upgradebtn").count() == 0 and pg.locator("#updates button.checknow").count() == 1 and "Up to date" in pg.inner_text("#updates"),
-           "I1.2: Settings → Updates goes back to Up to date with Check now")
+        # (0.2.8-beta.33, F53) at rest, up to date, the status box shows the running version itself ("v0.2.7-beta.3"), not "Up to date"
+        ok(pg.locator("#updates button.upgradebtn").count() == 0 and pg.locator("#updates button.checknow").count() == 1 and "v0.2.7-beta.3" in pg.inner_text("#updates"),
+           "I1.2: Settings → Updates goes back to v0.2.7-beta.3 with Check now")
         pg.click("#updates button.checknow"); pg.wait_for_timeout(4200)
-        ok(len(checks) == 2 and "Up to date" in pg.inner_text("#updates") and pg.locator("#updates button.checknow").count() == 1, "…and Check now works again")
+        ok(len(checks) == 2 and "v0.2.7-beta.3" in pg.inner_text("#updates") and pg.locator("#updates button.checknow").count() == 1, "…and Check now works again")
         ok(not errs, f"no script errors {errs}")
         b.close()
     fake.shutdown(); srv.should_exit = True

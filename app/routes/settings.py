@@ -10,7 +10,7 @@ from fastapi import Depends, Form, HTTPException, Request, UploadFile
 from fastapi.responses import RedirectResponse, Response
 
 from .. import main as core
-from ..main import (app, auto_update, check_csrf, mark_updating, EMAIL_RE, FieldError, GOOGLE_SETTINGS, gui_auth, public_url,
+from ..main import (app, auto_update, check_csrf, google, mark_updating, EMAIL_RE, FieldError, GOOGLE_SETTINGS, gui_auth, public_url,
     state, store, updater, updates)
 from ..config import normalise_public_url
 from ..updates import UpdaterError
@@ -153,6 +153,9 @@ async def set_administrator(request: Request, csrf: str = Form("")):
             logins.set_page_login(user or logins.page_user, password or current, confirm if password else None, strict=bool(password))
         except LoginError as e:
             raise HTTPException(400, str(e))
+    # (0.2.8-beta.33, F56) a changed (or newly set) main address breaks Google's redirect URI match, which Google
+    # sign-in uses: prompt to fix it, since it always becomes unhealthy otherwise.
+    domain_changed = bool(value) and value != (public_url() or "")
     if value != (public_url() or ""):
         if value:
             store.set("public_url", value)
@@ -168,6 +171,8 @@ async def set_administrator(request: Request, csrf: str = Form("")):
         back = JSONResponse({"redirect": "/login"})
         back.delete_cookie(SESSION_COOKIE)
         return back
+    if domain_changed and google.configured:
+        return RedirectResponse(GOOGLE_SETTINGS.replace("?menu=settings", "?menu=settings&fixapi=1"), status_code=303)
     return RedirectResponse(GOOGLE_SETTINGS.replace("#googlesync", "#public"), status_code=303)
 
 

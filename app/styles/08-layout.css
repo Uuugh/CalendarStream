@@ -40,6 +40,4 @@
     .sections { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:0 10px; align-items:start }
     .sections > #activity { grid-column:1 / -1 }      /* History, Undo & Logs: the full width */
   }
-  /* Narrow screens: the view and theme choices become one button each that steps through them */
-  .cyclebtn { display:none }
   #cal.loading { opacity:.6; transition:opacity .15s }

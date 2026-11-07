@@ -21,7 +21,7 @@ Claude answers; the Developer decides anything still disputed. Each REVIEW after
 | calendars | `app/calsync.py`, `app/routes/sources.py`, `app/routes/destinations.py`, the download parts of `app/main.py`, `app/links.py` |
 | database | `app/store.py`, Undo and History (`app/main.py`, `app/routes/history.py`), `app/secretbox.py` |
 | security | every route (`app/routes/`), the login, sessions and form token (`app/main.py`), escaping, `app/logins.py`, the Docker setup |
-| page | `app/templates/`, `app/styles/`, `app/static/`, against theme.md, ui_ux.md, its Clarifications and the Theme Rules pictures |
+| page | `app/templates/`, `app/styles/`, `app/static/`, against theme.md, ui_ux.md and its Clarifications (0.2.8-beta.33, R7: the Theme Rules pictures are no longer kept current, so a review doesn't check against them) |
 
 ## Which rules a review uses
 

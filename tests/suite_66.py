@@ -56,8 +56,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(re.search(r'class="extrarow domainrow">.*?extradel.*?extraadd', m, re.S), "I22: the domain row ends with its trash can, then +")
     ok('class="k">{0}'.format("More addresses") not in m, "I22: the separate \"More addresses\" heading is gone")
 
-    # --- F39: Look is now Appearance ---
-    ok(">Appearance<" in m or "Appearance" in m, "F39: the Appearance section is named Appearance")
+    # --- F39: Look is now Appearance; (0.2.8-beta.33, F46) renamed again, Appearance -> Theme ---
+    ok(">Theme<" in m or "Theme" in m, "F39/F46: the Look/Appearance section is now named Theme")
 
     # --- I29: History's Accepted sign-in is a check mark with no visible words ---
     h = page("?menu=settings#activity")

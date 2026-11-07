@@ -114,12 +114,12 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.goto(f"http://127.0.0.1:{port}/?month=2026-10&date=2026-10-14"); pg.wait_for_timeout(800)
         pg.evaluate("document.getElementById('fullbtn').click()"); pg.wait_for_timeout(900)
         for v in ("month", "week", "day", "list"):
-            pg.evaluate(f"(function(){{var s=document.getElementById('viewpick');s.value='{v}';s.dispatchEvent(new Event('change'))}})()"); pg.wait_for_timeout(1200)
+            pg.click("#viewbtn"); pg.click(f"#viewmenu [data-view='{v}']"); pg.wait_for_timeout(1200)
             h, w = pg.evaluate("[document.documentElement.scrollHeight, innerHeight]"), pg.evaluate("[document.documentElement.scrollWidth, innerWidth]")
             ok(h[0] <= h[1] and w[0] <= w[1], f"I14: Full page, {v}: no scrollbar ({h[0]} of {h[1]} px high)")
         calw = pg.evaluate("document.getElementById('cal').getBoundingClientRect().width")
         ok(calw >= 1200, f"I14: Full page fills the width ({calw:.0f} of 1230 px)")
-        pg.evaluate("(function(){var s=document.getElementById('viewpick');s.value='month';s.dispatchEvent(new Event('change'))})()"); pg.wait_for_timeout(1200)
+        pg.click("#viewbtn"); pg.click("#viewmenu [data-view='month']"); pg.wait_for_timeout(1200)
         # I15 in the browser: hide United, then show it again
         pg.click("#cal .legitem[data-hide='src:ccs']"); pg.wait_for_timeout(1000)
         off = pg.evaluate("document.querySelector(\"#cal .legitem[data-hide='src:ccs']\").getAttribute('aria-pressed')")

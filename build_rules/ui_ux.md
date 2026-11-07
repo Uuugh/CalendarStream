@@ -50,4 +50,4 @@ Use the existing `tests/suite_44.py` theme suite, `tests/run.sh`, and before/aft
 
 ## 6. Change management
 
-This document is a project-specific interpretation of standards, not a replacement for them. Changes to exact visual appearance or interaction timing require corresponding updates to `build_rules/theme.md`, its Theme Rules pictures, and the relevant tests, following existing repository workflow. New rules or conflicts require Developer approval through the Dashboard's PLAN/BUILD process.
+This document is a project-specific interpretation of standards, not a replacement for them. Changes to exact visual appearance or interaction timing require corresponding updates to `build_rules/theme.md` and the relevant tests, following existing repository workflow. (0.2.8-beta.33, R7: `theme.md`'s Theme Rules pictures are no longer updated to match.) New rules or conflicts require Developer approval through the Dashboard's PLAN/BUILD process.

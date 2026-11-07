@@ -249,37 +249,27 @@ function dropdown(btnId, menuId) {
   });
 })();
 
-// Light / dark / system theme. "system" removes the override so the device setting applies.
+// Light / dark / system theme (0.2.8-beta.33, F57: one icon, like the view picker - a button + menu).
+// "system" removes the override so the device setting applies.
 (function () {
-  var buttons = document.querySelectorAll('[data-theme-choice]');
+  var choices = document.querySelectorAll('[data-theme-choice]'), btn = document.getElementById('themebtn');
+  var setOpen = dropdown('themebtn', 'thememenu');
   function show(choice) {
-    buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.themeChoice === choice)); });
+    choices.forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.themeChoice === choice)); });
+    var cur = document.querySelector('[data-theme-choice="' + choice + '"]');
+    btn.innerHTML = cur.querySelector('.mi').outerHTML;   // the icon only, closed (the word stays in the menu and the title)
+    btn.title = cur.textContent.trim();
   }
-  buttons.forEach(function (b) {
+  choices.forEach(function (b) {
     b.addEventListener('click', function () {
       var choice = b.dataset.themeChoice;
       if (choice === 'system') document.documentElement.removeAttribute('data-theme');
       else document.documentElement.setAttribute('data-theme', choice);
-      show(choice);
+      show(choice); setOpen(false);
       savePref('/ui/theme', { theme: choice });
     });
   });
   show(PAGE.theme);
-  // Narrow screens: one button steps through light → dark → system.
-  var cyc = document.querySelector('.themecycle'), themes = ['light', 'dark', 'system'];
-  var current = PAGE.theme;
-  function label() {      // the same icon as the theme switch's button for it
-    cyc.innerHTML = document.querySelector('[data-theme-choice="' + current + '"]').innerHTML;
-    cyc.title = document.querySelector('[data-theme-choice="' + current + '"]').title;
-  }
-  label();
-  cyc.addEventListener('click', function () {
-    current = themes[(themes.indexOf(current) + 1) % themes.length];
-    if (current === 'system') document.documentElement.removeAttribute('data-theme');
-    else document.documentElement.setAttribute('data-theme', current);
-    show(current); label();
-    savePref('/ui/theme', { theme: current });
-  });
 })();
 
 // "This page" fills the public address with the address this page is open at.
@@ -296,6 +286,10 @@ document.getElementById('usethis').addEventListener('click', function () {
   if (PAGE.openMenu) {
     set(true);
     history.replaceState(null, '', location.pathname);   // a reload shouldn't open it again
+    // (0.2.8-beta.33, F56) a changed public address breaks Google Calendar API Sync's redirect URI match:
+    // say so, since the menu opening by itself isn't enough to notice it (the settings.py route's full-page
+    // fallback, for when its form is submitted without JS; the AJAX path's own prompt is in 07-saving.js).
+    if (PAGE.fixApi) tell(T.fixApi);
   }
   each('.disconnectform', 'disconnect', function (f) { guard(f, T.disconnect); });
 })();

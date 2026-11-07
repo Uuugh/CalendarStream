@@ -7,6 +7,7 @@ var T = {
   saved: {{ _('Saved')|string|tojson }}, verifying: {{ _('Verifying…')|string|tojson }},
   validated: {{ _('Validated')|string|tojson }}, verifyFailed: {{ _('Failed')|string|tojson }},
   disconnect: {{ _('Disconnect Google Calendar?')|string|tojson }},
+  fixApi: {{ _('The public address changed, so Google Calendar API Sync needs its redirect URI fixed.\nSee Google Calendar API Sync, below.')|string|tojson }},
   downloading: {{ _('Downloading…')|string|tojson }}, restarting: {{ _('Restarting…')|string|tojson }},
   updateFailed: {{ _('Update failed')|string|tojson }}, updated: {{ _('Updated')|string|tojson }}, updateSlow: {{ _('It’s taking longer than expected; check the updater container’s log.')|string|tojson }},
   syncing: {{ _('Syncing…')|string|tojson }}, saving: {{ _('Saving…')|string|tojson }},

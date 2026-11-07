@@ -26,7 +26,7 @@ async def fake_check():
 CLAR = open(os.path.join(os.path.dirname(HERE), "build_rules", "theme.md")).read().split("## Clarifications", 1)[1]
 # One look per meaning (beta.14): every status word and the look it must have (theme.md, section 2). A word not
 # listed here fails: add it, with its meaning, to theme.md and here.
-MEANING = {"good": r"Healthy|Signed in|Connected|In Google|Read by Google|Up to date|\d+ Rules?|\d+ Templates?",
+MEANING = {"good": r"Healthy|Signed in|Connected|In Google|Read by Google|v[\d.]+(?:-[\w.]+)?|\d+ Rules?|\d+ Templates?",
            "run": r"Syncing…|Starting|Paused|Setup needed|Ready to connect|Not set up|Not checked|Update available|Not connected|Invited|Not read yet|\d+ to check",
            "warn": r"Not signed in|Sign-in rejected|Blocked|Error|Address missing|Client rejected|Sync problem|Sign-in failed|Unhealthy",
            "bad": r"Internal error|Sync problem|Update failed"}
@@ -393,7 +393,15 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "rule dialog Cancel (suite 66)": "Cancel in the rule dialog (0.2.8-beta.32, I18)",
             "2/3-line invisible (suite 66)": "The 2/3-line box (0.2.8-beta.32, I27)",
             "status word vanish (suite 67)": "A collapsed status word (0.2.8-beta.33, I21/F45) then vanish",
-            "rule dialog Escape (suite 67)": "Escape in the rule dialog (0.2.8-beta.33, I37) cancels exact"}
+            "rule dialog Escape (suite 67)": "Escape in the rule dialog (0.2.8-beta.33, I37) cancels exact",
+            "Updates first (suite 67)": "Settings (0.2.8-beta.33, F47): Updates is the first section",
+            "Updates version status (suite 67)": "Updates' \"up to date\" status (0.2.8-beta.33, F53)",
+            "view picker icons (suite 67)": "The calendar's view picker (0.2.8-beta.33, F52)",
+            "dim-hide every mode (suite 67)": "The Calendars and Key footer's dim-and-hide click (0.2.8-beta.33, F48)",
+            "theme one icon (suite 67)": "Light/Dark/System (0.2.8-beta.33, F57)",
+            "stretch handle bottom (suite 67)": "The stretch handle (0.2.8-beta.33, F51)",
+            "View All + vr (suite 67)": "View All (0.2.8-beta.33, F50)",
+            "fix API pop-up (suite 67)": "Changing or setting the public address (0.2.8-beta.33, F56)"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

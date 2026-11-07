@@ -168,7 +168,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
         pg.fill("#lnew", "newpassword1"); pg.wait_for_timeout(50)
         ok(pg.is_visible("#lcur") and pg.is_visible("#lconf") and pg.is_visible("#pagelogin .psave") and pg.eval_on_selector("#lcur", "e => e.required"), "typing a new password asks for the current one and shows Save")
         groups = [pg.locator("#menu .mgroup").nth(i).get_attribute("id") for i in range(pg.locator("#menu .mgroup").count())]
-        ok(groups == ["pagelogin", "googlesync", "updates", "look"], f"Settings: site settings only, Google Calendar sync among them, the admin e-mail inside it (0.2.8-beta.15) ({groups})")
+        # (0.2.8-beta.33, F47) Updates moved to the top of the menu, above Administrator
+        ok(groups == ["updates", "pagelogin", "googlesync", "look"], f"Settings: site settings only, Google Calendar sync among them, the admin e-mail inside it (0.2.8-beta.15) ({groups})")
         box = pg.locator("#publicurl").bounding_box(); btn = pg.locator("#usethis").bounding_box()
         ok(btn["x"] > box["x"] and btn["x"] + btn["width"] <= box["x"] + box["width"], "This page inside the box (beta.29: one Administrator form, one Cancel | Save)")
         pg.locator("#menu").screenshot(path=os.path.join(tempfile.gettempdir(), "cs-menu4.png"))

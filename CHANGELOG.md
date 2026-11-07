@@ -15,6 +15,34 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 
 Build 9.
 
+### Added
+- **F49 / F50** The calendar key gets a vertical rule between Calendars and Key, and a View All button that
+  appears once anything is dimmed, clearing every dimmed item in one click.
+- **F56** Changing or setting the public address, with Google Calendar API Sync already set up, pops up a
+  notice that its redirect URI needs fixing — its own assist box, already there, is redrawn at once, so
+  there's no need to reload first to see it.
+
+### Changed
+- **I21 / F45** A collapsed status word now vanishes entirely (giving its line the space back) unless it's an
+  ongoing health check the Developer should keep seeing (something that can become unhealthy, e.g. CCS+ or a
+  feed's "Validated"); a plain one-off confirmation such as History's "Saved" after changing how many changes
+  are remembered goes all the way, instead of keeping its ✓ forever.
+- **I32** A double-submit of Google's sign-in step (`/google/step`) is now guarded against, since it was seen
+  returning 400 Bad Request and leaving an orphaned 2-way sync module (I36) behind. This doesn't yet explain
+  why a submit was repeated in the first place; left open pending a reproduction.
+- **F46** Settings' Look module is named Theme (its own history: Appearance, before that Look).
+- **F47** Settings → Updates moves to the top of the ☰ menu, above Administrator.
+- **F48** The calendar key's dim-hide (F28) now works outside Full page too, and the dimmed state persists
+  when leaving Full page instead of clearing (the opposite of F27's old behavior).
+- **F51** The stretch handle moves inside the calendar body, at its bottom instead of beside the key, and
+  follows the Reorder grips side.
+- **F52** The Month/Week/Day/List picker is a button + menu with an icon per view, matching the other
+  pickers, instead of a plain drop-down.
+- **F53** Settings → Updates, at rest, shows the running version itself ("v1.2.3") instead of a plain "Up to
+  date".
+- **F57** The title bar's Light/Dark/Match system theme picker is a button + menu, one icon, like the view
+  picker (F52), replacing the three-way cycling button.
+
 ### Fixed
 - **I22** Trashing the Administrator domain row with another public-address row present used to remove the
   whole domain row — its only + button and its main-address field gone for good, with no way to ever add
@@ -26,11 +54,13 @@ Build 9.
   event pop-up and pressing Escape (instead of clicking Cancel) used to close the rule dialog the plain way,
   which left the event pop-up closed too; now it comes back, the same as Cancel already did (I18).
 
-### Changed
-- **I21 / F45** A collapsed status word now vanishes entirely (giving its line the space back) unless it's an
-  ongoing health check the Developer should keep seeing (something that can become unhealthy, e.g. CCS+ or a
-  feed's "Validated"); a plain one-off confirmation such as History's "Saved" after changing how many changes
-  are remembered goes all the way, instead of keeping its ✓ forever.
+### Removed
+- **R7** build_rules/theme.md no longer asks for the Theme Rules pictures to be kept updated or checked; they're
+  a frozen snapshot from when they were made (F22), not refreshed with every theme change.
+
+Also: **F55** the logo's master art (CalendarStream_Logo*, used by the README) moves from build_rules/ to
+app/static/logo/source/, alongside the mark art F31 already vendors from it — a repo tidy-up, not a behavior
+change.
 
 ## 0.2.8-beta.32 — 2026-11-06
 

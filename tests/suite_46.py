@@ -36,14 +36,14 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         f = [d for d in main.destinations("feed")][0]
         fh = p[p.index(f'id="dest-{f["id"]}"'):]; fh = fh[:fh.index('class="cfgline"')]
         ok("Next push" not in fh, "…a calendar feed doesn't (the app reads it when it chooses)")
-        gs = p[p.index('id="googlesync"'):]; gs = gs[:gs.index('id="updates"')]
+        gs = p[p.index('id="googlesync"'):]; gs = gs[:gs.index('id="look"')]
         ok("credtrash" not in gs and 'id="fgremove"' in gs and 'data-confirm="Delete the client ID and secret?' in gs,
            "F2.3 (beta.18): one Remove for the credentials, asking first")
     p = c.get("/?menu=settings").text
     ud = p[p.index('id="updates"'):]; ud = ud[:ud.index("</form>")]
     ok(re.search(r'<div class="pair inline updrow">\s*<label class="rowlabel" for="updfreq">Check for updates</label>\s*<select id="updfreq"', ud) is not None and "autoupd" in ud,
        "F2.1: Check for updates, its menu and Auto-update on one line")
-    gs = p[p.index('id="googlesync"'):]; gs = gs[:gs.index('id="updates"')]
+    gs = p[p.index('id="googlesync"'):]; gs = gs[:gs.index('id="look"')]
     ok("credtrash" not in gs and ('id="fgremove"' in gs or "Not set up" in gs), "F2.3 (beta.18): no trash beside the credentials; one Remove")
     r = c.post("/google/client", data={"csrf": csrf, "action": "remove"}, follow_redirects=False)
     ok(r.status_code == 303 and not main.google.configured, "…which deletes the client ID and secret")

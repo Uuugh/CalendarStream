@@ -8,3 +8,4 @@ __pycache__/
 # The Developer's scratch work stays local (R19)
 docs/development/*
 !docs/development/README.md
+node_modules/

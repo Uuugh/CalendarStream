@@ -1,4 +1,4 @@
-<h1><picture><source media="(prefers-color-scheme: dark)" srcset="build_rules/CalendarStream_Mark_Dark.png"><img src="build_rules/CalendarStream_Mark_Light.png" alt="" width="41" height="38" align="absmiddle"></picture> CalendarStream</h1>
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="app/static/logo/source/CalendarStream_Mark_Dark.png"><img src="app/static/logo/source/CalendarStream_Mark_Light.png" alt="" width="41" height="38" align="absmiddle"></picture> CalendarStream</h1>
 
 **Self-hosted calendar aggregation, synchronization, automation, and publishing.**
 

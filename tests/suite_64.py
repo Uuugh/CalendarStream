@@ -32,7 +32,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     import seed; seed.demo(c, csrf, main)
     # --- header, view drop-down, switch, key (F15, F26) ---
     p = page("?date=2026-10-14")
-    ok('id="viewpick"' in p and 'id="clockswitch"' in p and "viewseg" not in p, "F15/F26: the view is a drop-down; 12h | 24h is a switch (0.2.8-beta.32, F43: one clock icon, not a segmented switch)")
+    ok('id="viewbtn"' in p and 'id="clockswitch"' in p and "viewseg" not in p, "F15/F26: the view is a drop-down (0.2.8-beta.33, F52: icons, a button + menu); 12h | 24h is a switch (0.2.8-beta.32, F43: one clock icon, not a segmented switch)")
     ok('legpart legcals' in p and 'legpart legkeys' in p, "F15: the legend is two parts, Calendars and Key")
     for v in ("week", "day"):
         post("/ui/view", view=v)
@@ -42,7 +42,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(post("/ui/calview", full="1").status_code in (200, 204, 303) and 'class="calfull"' in page(), "F27: Full page is saved and hides the other sections")
     ok(post("/ui/calview", full="1", hide="edited").status_code in (200, 204, 303) and main.store.get("ui_calview").get("hide") == ["edited"], "F15: the key's hidden set is kept while Full page is on")
     post("/ui/calview", stretch="1500"); ok(main.store.get("ui_calview").get("stretch", 0) <= 1200, "F28: the stretch is capped")
-    post("/ui/calview", full="0"); ok(not main.store.get("ui_calview").get("hide") and 'class="calfull"' not in page(), "F27: leaving Full page clears what the key hid")
+    post("/ui/calview", full="0"); ok(main.store.get("ui_calview").get("hide") == ["edited"] and 'class="calfull"' not in page(),
+       "F27: leaving Full page no longer clears what the key hid (0.2.8-beta.33, F48: hide works in every mode now)")
+    post("/ui/calview", hide="-")   # leave it clean for later suites/tests
     # --- Print (I11): real PDFs, Letter and A4 ---
     from playwright.sync_api import sync_playwright
     def pdf(view, fmt, theme="light"):

@@ -23,6 +23,7 @@ NAMES = [
     "smart_toy", "checklist", "swap_horiz", "map", "search", "upgrade", "visibility", "visibility_off", "warning",
     "add_reaction", "undo", "redo", "upload_file", "download", "filter_list", "terminal", "logout",
     "send", "mail", "sms", "share", "fullscreen", "unfold_more", "filter_none", "public", "schedule",
+    "view_week", "view_day", "view_list",   # 0.2.8-beta.33, F52: the Week/Day/List icons for the view picker
 ]
 
 

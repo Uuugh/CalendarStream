@@ -125,12 +125,12 @@ HIDE_KEY = re.compile(r"src:[A-Za-z0-9_]+|edited|stale|hidden|deleted")
 
 def calview_prefs() -> dict:
     """The calendar's own view choices (0.2.8-beta.29, F15, F28), kept with the page's other ones: `full` (the Full page
-    view: every other section hidden), `hide` (what the key has switched off; only while full: leaving full page shows
-    it all again) and `stretch` (how many px the stretch handle added to a day's height) and `hour` (the height of one hour in Week and Day, I20)."""
+    view: every other section hidden), `hide` (what the key has switched off, 0.2.8-beta.33, F48: in every mode, not
+    just while full) and `stretch` (how many px the stretch handle added to a day's height) and `hour` (the height of one hour in Week and Day, I20)."""
     saved = store.get("ui_calview")
     saved = saved if isinstance(saved, dict) else {}
     full = saved.get("full") is True
-    hide = [k for k in (saved.get("hide") or []) if isinstance(k, str) and HIDE_KEY.fullmatch(k)] if full else []
+    hide = [k for k in (saved.get("hide") or []) if isinstance(k, str) and HIDE_KEY.fullmatch(k)]
     stretch = saved.get("stretch")
     stretch = int(stretch) if isinstance(stretch, (int, float)) and not isinstance(stretch, bool) and 0 <= stretch <= 1200 else 0
     hour = saved.get("hour")        # (0.2.8-beta.31, I20) the height of one hour in Week and Day, px
@@ -148,9 +148,7 @@ async def set_calview(csrf: str = Form(""), full: str | None = Form(None), hide:
     if full is not None:
         if full not in ("0", "1"):
             raise HTTPException(400, "Unknown choice.")
-        saved["full"] = full == "1"
-        if full == "0":
-            saved["hide"] = []          # leaving full page shows everything again (F15.9)
+        saved["full"] = full == "1"     # (0.2.8-beta.33, F48: hide now works in every mode, so leaving full no longer clears it)
     if hide is not None:
         keys = [k for k in hide.split(",") if k and k != "-"]       # ("-" = none: an empty form value reads as "not sent", so the last one switched on again was never saved: I15)
         if len(keys) > 60 or not all(HIDE_KEY.fullmatch(k) for k in keys):
@@ -355,6 +353,9 @@ def index(request: Request, month: str | None = None, date_: str | None = Query(
         "palette": list(GOOGLE_COLORS.values()), "about": {k: str(i18n.tr(lang, v)) for k, v in MODULE_ABOUT.items()},
         "sections": sections, "zone": display_zone(), "zones": ALL_ZONES, "common_zones": COMMON_ZONES,
         "google": google_view(request, lang), "open_menu": request.query_params.get("menu") == "settings",
+        # (0.2.8-beta.33, F56) the Administrator save redirects here with ?fixapi=1 when the public address just
+        # changed and Google API Sync is configured: its redirect URI almost certainly needs updating now.
+        "fix_api": request.query_params.get("fixapi") == "1",
         # The first destination offers this page's address as the public one, if it's https:// (an
         # http://<IP>:8080 address would break Google sign-in, as the old installer default did).
         "public": {"url": public_url(), "here": (lambda u: u if u.startswith("https://") else "")(str(request.base_url).rstrip("/")),

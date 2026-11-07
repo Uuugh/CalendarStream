@@ -206,6 +206,10 @@ document.addEventListener('submit', function (e) {
     var dl = f.closest('dialog.addpop'); if (dl) setTimeout(function () { dl.close(); f.reset(); }, 900);    // a + pop-up closes once saved
     var copy = new URL(res.url, location.href).searchParams.get('rule');     // after Copy in All Rules
     if (copy && RD.rules[copy]) openRule(RD.rules[copy]);
+    // (0.2.8-beta.33, F56) ☰ Settings › Administrator: a changed public address breaks Google Calendar API
+    // Sync's redirect URI match; settings.py's redirect carries &fixapi=1 when that just happened. The swap
+    // never navigates, so there's no query string to clean up here (unlike PAGE.fixApi's full-page path).
+    if (new URL(res.url, location.href).searchParams.get('fixapi') === '1') tell(T.fixApi);
   }, function (err) {
     // amber when what was typed was refused (4xx: waiting on you); red when CalendarStream itself failed
     var inside = !err.status || err.status >= 500;

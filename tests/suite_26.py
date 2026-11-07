@@ -169,13 +169,13 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     for v, mark in (("week", 'class="hourview"'), ("day", 'class="hourview"'), ("list", 'class="agenda"'), ("month", 'class="month"')):
         c.post("/ui/view", auth=A, data={"csrf": csrf, "view": v})
         p = c.get("/?date=2026-10-14", auth=A).text
-        ok(main.ui_view() == v and mark in p and f'value="{v}" selected' in p, f"view: {v}")
+        ok(main.ui_view() == v and mark in p and f'data-view="{v}" aria-checked="true"' in p, f"view: {v}")
     c.post("/ui/view", auth=A, data={"csrf": csrf, "view": "week"})
     p = c.get("/?date=2026-10-14", auth=A).text
     ok("Sun Oct 11 – Sat Oct 17, 2026" in p and 'href="?date=2026-10-07"' in p and 'href="?date=2026-10-21"' in p, "week: title and ‹ › by a week")
     c.post("/ui/view", auth=A, data={"csrf": csrf, "view": "month"})
     head = p[p.index('class="calhead"'):p.index('id="searchbtn"')]
-    ok("times in" not in head and " events ·" not in head and head.index('id="tzpick"') < head.index('id="viewpick"') < head.index('id="clockswitch"'), "header: no event count; time zone, view, 12/24 on the right")
+    ok("times in" not in head and " events ·" not in head and head.index('id="tzpick"') < head.index('id="viewbtn"') < head.index('id="clockswitch"'), "header: no event count; time zone, view, 12/24 on the right")
     order = [p.index(x) for x in ('id="cal"', 'id="sources"', 'id="destinations"', 'id="rules"', 'id="templates"', 'id="activity"')]
     ok(order == sorted(order), "sections: Calendar, Sources, Destinations, Rules (with event templates), Activity")
     # An install from before 0.2 keeps CCS+, the feed and Google Autosync
