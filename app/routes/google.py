@@ -20,8 +20,8 @@ from fastapi.security import HTTPBasicCredentials
 from .. import main as core
 from ..main import (_did, _invites, _is_async, _remember_calendar, _remembered_calendar, _session_key,
     _shared_grant, app, basic, check_csrf, dest_google, destination, destinations, forget_invites, google,
-    google_accounts, google_for, google_job, google_redirect_uri, GOOGLE_SETTINGS, google_view, gui_auth,
-    make_invite, page, request_google_sync, save_destinations, state, store)
+    google_accounts, google_for, google_job, google_redirect_uri, GOOGLE_SETTINGS, google_traffic, google_view,
+    gui_auth, make_invite, page, request_google_sync, save_destinations, state, store)
 from ..google.readiness import Readiness, ReadinessStage
 from ..gsync import GoogleError
 
@@ -401,3 +401,20 @@ async def _invite_finish(request: Request, token: str, state_: str, code: str, e
     except GoogleError as e:
         return page(request, "invite.html", {"error": str(e), "token": token, "name": d["name"], "form": _invite_form_token(token)}, status_code=400)
     return page(request, "invite.html", {"error": "", "token": "", "name": d["name"], "form": "", "done": True})
+
+
+# --- Beta: Google traffic (F59) ---------------------------------------------------
+
+@app.get("/google/traffic", dependencies=[Depends(gui_auth)])
+def google_traffic_data():
+    """(F59) The last calls made to Google, newest first, for the Beta traffic section below Activity. Nothing
+    is redacted (not tokens or the client secret): this is the Developer's own account, shown only to them."""
+    return {"entries": [e.to_dict() for e in google_traffic.recent()]}
+
+
+@app.post("/google/traffic/clear", dependencies=[Depends(gui_auth)])
+async def google_traffic_clear(csrf: str = Form("")):
+    """(F59) Empty the traffic log (it isn't saved anywhere, so this just starts it fresh)."""
+    check_csrf(csrf)
+    google_traffic.clear()
+    return {"ok": True}

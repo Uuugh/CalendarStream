@@ -71,4 +71,17 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     rec = main.google_health.get("boom")
     ok(rec["kind"] == "unknown" and rec["state"] == "degraded", "…and the account's health records an unknown failure")
     main.google_health.reset("boom")
+    # --- F59: the Beta traffic section's routes -------------------------------------------------------------
+    from app.google.traffic_entry import TrafficEntry
+    main.google_traffic.record(TrafficEntry(at=1.0, account="", method="GET", url=M + "/calendar/v3/x",
+                                             request_headers={"Authorization": "Bearer sekret"}, status=200))
+    r = c.get("/google/traffic")
+    ok(r.status_code == 200 and r.json()["entries"][0]["request_headers"]["Authorization"] == "Bearer sekret",
+       "/google/traffic shows the recorded calls, unredacted")
+    r = c.post("/google/traffic/clear", data={"csrf": csrf})
+    ok(r.status_code == 200 and r.json()["ok"] is True and main.google_traffic.recent() == [],
+       "/google/traffic/clear empties it")
+    with TestClient(main.app, base_url="https://cal.example.com") as anon:
+        r = anon.get("/google/traffic")
+        ok(r.status_code in (401, 403), "the traffic view needs the status-page login too")
 print(f"{fails} failed" if fails else "ALL PASSED"); sys.exit(1 if fails else 0)
