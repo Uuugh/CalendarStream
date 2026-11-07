@@ -84,6 +84,29 @@ module and section headers), `19-calendar` (0.2.8-beta.29: the calendar's header
 grep `app/styles/` for its class. New styles go at the end of the part for their area, unless they must win
 over a later part.
 
+## How code is structured (R18, R19)
+
+The Developer ports this app to Dart, as a Flutter app, one file at a time, so Flutter's structure is the model
+and a file must stand alone and say what it needs.
+
+- **A module per responsibility.** New code is a module: one responsibility per file, a small interface, its
+  dependencies passed in (never reached for in `main.py`), and its own fast test that needs no app, Postgres or
+  browser unless that is what it tests. `main.py` gets no new sections; code a build changes moves out of it when
+  practical.
+- **One class per file** (R19), named for it in `snake_case` (Flutter's one public class per file). Loose
+  functions are grouped into a class or a small module first. Small private helpers stay in the file that uses them.
+- **Layers, as in a Flutter feature** (`data`, `domain`, `ui`): calendar and rule logic (`domain`) never imports
+  storage, network or the page (`data`, `ui`). Each feature (rules, calendars, Google, store) is one folder.
+- **Every file starts with a header** (a module docstring): what it holds; **Depends on** (other files of the app, by
+  path); **Used by**; what it reads or writes (database, network, files, the clock); **Dart note** (the class or
+  interface it becomes, its layer, and anything Dart does differently).
+- **No hidden dependencies:** no imports inside functions, no reading another module's globals, no `core.<name>`
+  lookups in a new file; what a file needs comes in through its constructor or arguments.
+- `build_rules/dependencies.md` maps who depends on whom, so the next file to port is one whose prerequisites are
+  done; it is rebuilt when a file moves (the first one is made when the first split is built).
+- Existing code is split this way when a build touches it (a plan says which areas, in which order); a split changes
+  no behavior and keeps the suites green.
+
 ## Before you push
 
 `tests/run.sh` passes, `pip-audit -r requirements.txt` finds nothing, and the Developer's real data

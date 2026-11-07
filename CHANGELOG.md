@@ -14,6 +14,7 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 ## Unreleased (rules, no version)
 
 ### Added
+- **Code structure rules** (AGENTS.md, R18, R19): new code is a module; one class per file, laid out like a Flutter feature (data, domain, ui); every file's header says what it depends on, who uses it and its Dart note; a dependency map for the Dart port.
 - **Tests workflow** (`.github/workflows/tests.yml`): runs `tests/run.sh`, `pip-audit` and `bandit` on GitHub for every push to main, so the Reviewer can read an independent result (4-review.md, step 0).
 - **Test-runner self-test** (`tests/tools/harness_selftest.sh`, review #8): injects a database that can't be made or seeded, a silent nonzero exit, a time-out and a leftover process, and checks `run.sh` catches each (`TEST_SUITE_TIMEOUT` sets the suite time-out, default 600 s). Runs first in the Tests workflow.
 
