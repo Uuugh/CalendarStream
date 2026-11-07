@@ -41,7 +41,7 @@ run() {   # run <suite number> <database> [argument]
     fi
   fi
   local out; local F=("${FAKE[@]}"); [ "$n" = 45 ] && F=()   # 45 compares the database's own timestamps (real clock) with the program's
-  out=$(timeout -k 5 600 "${F[@]}" python3 "suite_$n.py" "$db" "${@:3}" 2>&1); rc=$?
+  out=$(timeout -k 5 "${TEST_SUITE_TIMEOUT:-600}" "${F[@]}" python3 "suite_$n.py" "$db" "${@:3}" 2>&1); rc=$?
   pkill -f "python3 suite_$n.py $db" 2>/dev/null   # nothing of this suite outlives it (a timeout kills only the wrapper)
   ran=$((ran + 1))
   if [ $rc -ne 0 ] || echo "$out" | grep -qE "^FAIL |Traceback"; then

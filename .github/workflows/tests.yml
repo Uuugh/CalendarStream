@@ -21,9 +21,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install the app's packages (over Debian's own copies)
-        run: sudo pip install -q --break-system-packages --ignore-installed -r requirements.txt
+        run: sudo pip install -q --break-system-packages --ignore-installed -r requirements.txt pypdf
       - name: Set up the test machine (Postgres on 55432, packages, Chromium, faketime)
         run: sudo bash tests/tools/setup.sh
+      - name: Test the test runner itself (injected failures)
+        run: bash tests/tools/harness_selftest.sh
       - name: Run every suite (tests/run.sh)
         working-directory: tests
         env:

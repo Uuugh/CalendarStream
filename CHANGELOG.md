@@ -15,6 +15,7 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 
 ### Added
 - **Tests workflow** (`.github/workflows/tests.yml`): runs `tests/run.sh`, `pip-audit` and `bandit` on GitHub for every push to main, so the Reviewer can read an independent result (4-review.md, step 0).
+- **Test-runner self-test** (`tests/tools/harness_selftest.sh`, review #8): injects a database that can't be made or seeded, a silent nonzero exit, a time-out and a leftover process, and checks `run.sh` catches each (`TEST_SUITE_TIMEOUT` sets the suite time-out, default 600 s). Runs first in the Tests workflow.
 
 ## 0.2.8-beta.35 — 2026-11-06
 
