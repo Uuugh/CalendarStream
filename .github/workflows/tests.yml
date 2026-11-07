@@ -1,10 +1,13 @@
 # Runs the test suites and scans on GitHub, so the Reviewer (and anyone) can read an independent result:
-# Actions -> Tests -> the run for a commit. It builds nothing and publishes nothing.
+# Actions -> Tests -> the run for a commit. It builds nothing and publishes nothing. Also runs on a pull
+# request (any branch, including one pushed by an author with no local Postgres or Docker, such as
+# ChatGPT working the issue #12 reorg) so its own PR carries a real pass/fail, not just pushes to main.
 name: Tests
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
