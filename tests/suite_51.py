@@ -160,6 +160,16 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         allinv[tok3]["expires"] = time.time() - 1; main.store.set("google_invites", allinv)
         ok(anon.get(f"/invite/{tok3}", headers={"accept": "text/html"}).status_code == 404, "F1: an invite ends after 7 days")
         ok(anon.get("/invite/not-a-real-invite-token-at-all", headers={"accept": "text/html"}).status_code == 404, "F1: a made-up link finds nothing")
+        # review #9: inviting for a module on the owner's account ("") must not move it until the invitee signs in
+        main.save_destinations([{**d, "account": ""} if d["id"] == sis["id"] else d for d in dests()])
+        post("/google/invite", did=sis["id"], action="withdraw")
+        post("/google/invite", did=sis["id"])
+        sis = by_name("Sister")
+        inv = next(v for v in main.store.get("google_invites").values() if v["did"] == sis["id"] and v["expires"] > time.time())
+        ok(sis["account"] == "" and inv["from"] == "" and inv["account"].startswith("a"),
+           "review #9: inviting keeps the module on its account; the invite carries the new one")
+        post("/google/invite", did=sis["id"], action="withdraw")
+        ok(by_name("Sister")["account"] == "", "review #9: Withdraw leaves the module as it was")
 
         # --- I5: removing a module signed in with the same Gmail keeps the others signed in ------------------------
         S["email"] = "pilot@example.com"

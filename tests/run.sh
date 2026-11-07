@@ -29,16 +29,22 @@ fi
 failed=0; ran=0
 run() {   # run <suite number> <database> [argument]
   local n=$1 db=$2
-  "${PSQL[@]}" -d postgres -c "DROP DATABASE IF EXISTS $db" -c "CREATE DATABASE $db" 2>&1 | grep -v NOTICE
+  # (0.2.8-beta.34, review #8 findings 1, 3) a database that can't be made stops this suite as a failure, and so does
+  # any suite that exits nonzero or times out (124) without printing FAIL or a Traceback.
+  if ! dberr=$("${PSQL[@]}" -d postgres -c "DROP DATABASE IF EXISTS $db" -c "CREATE DATABASE $db" 2>&1); then
+    ran=$((ran + 1)); failed=$((failed + 1)); echo "suite $n ($db): FAIL database not made: $(echo "$dberr" | grep -v NOTICE | head -2 | tr '\n' ' ')"; return
+  fi
   # Suites from before 0.2 expect an install that already had CCS+ (as an upgraded one does); 26 starts fresh.
   if [ "$n" != 26 ]; then
     "${PSQL[@]}" -d "$db" -c "CREATE TABLE kv (key text PRIMARY KEY, value jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now()); INSERT INTO kv (key, value) VALUES ('sources', '[{\"id\": \"ccs\", \"type\": \"ccs\"}]'), ('destinations', '[\"feed\", \"google\"]')"
   fi
   local out; local F=("${FAKE[@]}"); [ "$n" = 45 ] && F=()   # 45 compares the database's own timestamps (real clock) with the program's
-  out=$(timeout 600 "${F[@]}" python3 "suite_$n.py" "$db" "${@:3}" 2>&1)
+  out=$(timeout -k 5 600 "${F[@]}" python3 "suite_$n.py" "$db" "${@:3}" 2>&1); rc=$?
+  pkill -f "python3 suite_$n.py $db" 2>/dev/null   # nothing of this suite outlives it (a timeout kills only the wrapper)
   ran=$((ran + 1))
-  if echo "$out" | grep -qE "^FAIL |Traceback"; then
+  if [ $rc -ne 0 ] || echo "$out" | grep -qE "^FAIL |Traceback"; then
     failed=$((failed + 1))
+    [ $rc -ne 0 ] && echo "suite $n ($db): FAIL exit status $rc$([ $rc = 124 ] && echo ' (timed out)')"
     echo "$out" | grep -E "^FAIL |Traceback|Error:" | head -8 | sed "s/^/suite $n ($db): /"; echo "$out" | grep -E "suite_[0-9]+.py\", line" | tail -2 | sed "s/^/suite $n at: /"
   fi
 }

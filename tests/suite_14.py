@@ -9,14 +9,15 @@ os.environ.update(DB_HOST=os.environ.get("TEST_DB_HOST", "127.0.0.1"), DB_PORT=o
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); sys.path.insert(0, HERE)
 import uvicorn, mockgoogle
+from serve import wait_up
 from datetime import timedelta
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from app import gsync, main
-M = "http://127.0.0.1:8099"
+M = "http://127.0.0.1:8114"
 gsync.AUTH_URL, gsync.TOKEN_URL, gsync.REVOKE_URL, gsync.API_URL = M + "/auth", M + "/token", M + "/revoke", M + "/calendar/v3"
-srv = uvicorn.Server(uvicorn.Config(mockgoogle.app, port=8099, log_level="warning"))
-threading.Thread(target=srv.run, daemon=True).start(); time.sleep(1)
+srv = uvicorn.Server(uvicorn.Config(mockgoogle.app, port=8114, log_level="warning"))
+threading.Thread(target=srv.run, daemon=True).start(); wait_up(srv, 8114)
 A = ("t", "p"); fails = 0
 def ok(c, label):
     global fails; fails += not c; print(("PASS " if c else "FAIL ") + label)

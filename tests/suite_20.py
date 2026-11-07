@@ -11,13 +11,14 @@ os.environ.update(DB_HOST=os.environ.get("TEST_DB_HOST", "127.0.0.1"), DB_PORT=o
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); sys.path.insert(0, HERE)
 import uvicorn, mockgoogle, httpx
+from serve import wait_up
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from app import gsync, main
-M = "http://127.0.0.1:8099"
+M = "http://127.0.0.1:8120"
 gsync.AUTH_URL, gsync.TOKEN_URL, gsync.REVOKE_URL, gsync.API_URL = M + "/auth", M + "/token", M + "/revoke", M + "/calendar/v3"
-srv = uvicorn.Server(uvicorn.Config(mockgoogle.app, port=8099, log_level="warning"))
-threading.Thread(target=srv.run, daemon=True).start(); time.sleep(1)
+srv = uvicorn.Server(uvicorn.Config(mockgoogle.app, port=8120, log_level="warning"))
+threading.Thread(target=srv.run, daemon=True).start(); wait_up(srv, 8120)
 DID = lambda: main.destinations('google')[0]['id']
 GI = lambda: {**main.google.info(), **(main.google.cal_info(main.destinations('google')[0]['id']) if main.destinations('google') else {})}
 S, A = mockgoogle.S, ("t", "p"); G = httpx.Client(); fails = 0

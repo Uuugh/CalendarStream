@@ -110,6 +110,10 @@ async def google_step(request: Request, csrf: str = Form(""), step: str = Form("
     if step == "go":
         # 0.2.8-beta.17 (F13): ☰ Settings sets up the API only; each Google module connects its own account
         state.record("info", "Google Calendar API Sync is ready: the Google modules can be added in Feeds", kind="Google")
+        # (0.2.8-beta.34, review #9 finding 2) "ready" is the client only: name each module that has no signed-in account
+        for d in destinations("google"):
+            if not dest_google(d).connected:
+                state.record("warn", f"Google, {d['name']}: not signed in to a Google account yet: open it and Connect me", kind="Google")
         return JSONResponse({"ok": True, "step": step, "url": ""})
     raise HTTPException(400, "Unknown step.")
 
@@ -286,7 +290,7 @@ _invite_states: dict[str, str] = {}      # Google sign-in state -> invite token,
 def _invite(token: str) -> dict:
     v = _invites().get(token) if re.fullmatch(r"[A-Za-z0-9_-]{20,64}", token or "") else None
     d = destination(v["did"]) if v else None
-    if not v or not d or d["type"] != "google" or d["account"] != v["account"]:
+    if not v or not d or d["type"] != "google" or d["account"] != v.get("from", v["account"]):
         raise HTTPException(404, "This invite has been used, has expired, or was withdrawn. Ask for a new one.")
     return {**v, "dest": d}
 
@@ -308,10 +312,10 @@ async def google_invite(request: Request, csrf: str = Form(""), did: str = Form(
         forget_invites(did)
         state.record("info", f"Google, {d['name']}: invite withdrawn", kind="Google")
     else:
-        if not d["account"]:       # a module from before beta.17 on the shared account: it gets its own now
-            d["account"] = "a" + secrets.token_hex(3)
-            save_destinations([d if x["id"] == did else x for x in destinations()])
-        make_invite(d)
+        # A module from before beta.17 is on the first account: the invited person gets a new one of their own, but
+        # the module moves to it only when they have signed in (0.2.8-beta.34, review #9 finding 1): an invite that is
+        # abandoned, expires, is withdrawn or fails leaves the module on the account it works with.
+        make_invite(d, d["account"] or "a" + secrets.token_hex(3))
     return RedirectResponse(f"/#dest-{did}", status_code=303)
 
 
@@ -358,6 +362,8 @@ async def _invite_finish(request: Request, token: str, state_: str, code: str, e
         async with google_job.lock:
             info = await g.finish_sign_in(state_, code)
             await g.ensure_calendar(d["id"], d["name"], _remembered_calendar(d["id"]))
+            if d["account"] != inv["account"]:      # the module moves to the invited person's account only now
+                save_destinations([{**d, "account": inv["account"]} if x["id"] == d["id"] else x for x in destinations()])
             _remember_calendar(d["id"], g)
         forget_invites(d["id"])
         state.record("info", f"Google, {d['name']}: {info.get('email') or 'the invited account'} connected through an invite", kind="Google")

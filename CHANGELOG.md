@@ -9,7 +9,16 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.34**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.35**
+
+## 0.2.8-beta.35 — 2026-11-06
+
+REVIEW 2 fixes for review issues #8 (tests) and #9 (Google API).
+
+### Fixed
+- **Invite someone** no longer moves the owner's working module to a new account when the invite is made; the module changes account only when the invitee signs in (#9).
+- **Sync Now / ready log** warns for each Google module not signed in yet, "open it and Connect me" (#9).
+- **Tests**: each Google-mock suite has its own port and waits for its server; `run.sh` fails fast on a missing database, kills a suite's leftovers and fails on a non-zero exit status or a time-out (#8).
 
 ## 0.2.8-beta.34 — 2026-11-06
 

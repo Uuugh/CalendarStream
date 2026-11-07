@@ -8,15 +8,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from unittest.mock import patch
 import uvicorn, httpx
+from serve import wait_up
 from app import main
 fails = 0
 def ok(c, label):
     global fails; fails += not c; print(("PASS " if c else "FAIL ") + label)
 async def noop(*a, **k): pass
 with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), patch.object(main, "update_loop", noop):
-    srv = uvicorn.Server(uvicorn.Config(main.app, port=8099, log_level="warning"))
-    threading.Thread(target=srv.run, daemon=True).start(); time.sleep(2)
-    c = httpx.Client(base_url="http://127.0.0.1:8099", auth=("t", "password1"))
+    srv = uvicorn.Server(uvicorn.Config(main.app, port=8131, log_level="warning"))
+    threading.Thread(target=srv.run, daemon=True).start(); wait_up(srv, 8131)
+    c = httpx.Client(base_url="http://127.0.0.1:8131", auth=("t", "password1"))
     csrf = re.search(r'name="csrf" value="([^"]+)"', c.get("/").text)[1]
     post = lambda path, **d: c.post(path, data={"csrf": csrf, **d})
     c.post("/setup/upload", data={"csrf": csrf}, files={"file": ("Calendar.ics", open(os.path.join(HERE, "data", "Demo.ics"), "rb").read())})
@@ -42,7 +43,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         for w in (1400, 900, 390):
             pg = b.new_page(viewport={"width": w, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
             errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
-            pg.goto("http://127.0.0.1:8099/?view=month"); pg.wait_for_timeout(400)
+            pg.goto("http://127.0.0.1:8131/?view=month"); pg.wait_for_timeout(400)
             over = pg.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
             ok(over <= 0 and not errs, f"F8.1: {w}px: no sideways scrolling ({over}px), no script errors")
             # I1 (0.2.7-beta.4): each source header fits: the status lines beside the title, both starting

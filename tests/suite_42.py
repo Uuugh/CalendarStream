@@ -13,6 +13,7 @@ for k in ("CCS_USERNAME", "CCS_PASSWORD", "http_proxy", "https_proxy", "HTTP_PRO
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from unittest.mock import patch
 import uvicorn, httpx
+from serve import wait_up
 from app import main, updates as U
 fails = 0
 def ok(c, label):
@@ -32,9 +33,9 @@ async def fake_check():
     main.store.set("update_check", r); return r
 with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), patch.object(main, "update_loop", noop), \
      patch.object(U, "__version__", "0.2.7-beta.2"), patch.object(main, "__version__", "0.2.7-beta.2"), patch.object(main.updates, "check", fake_check):
-    srv = uvicorn.Server(uvicorn.Config(main.app, port=8099, log_level="warning"))
-    threading.Thread(target=srv.run, daemon=True).start(); time.sleep(2.5)
-    c = httpx.Client(base_url="http://127.0.0.1:8099", auth=("t", "password1"))
+    srv = uvicorn.Server(uvicorn.Config(main.app, port=8142, log_level="warning"))
+    threading.Thread(target=srv.run, daemon=True).start(); wait_up(srv, 8142)
+    c = httpx.Client(base_url="http://127.0.0.1:8142", auth=("t", "password1"))
     c.get("/")
     main.store.set("update_check", {"checked": "2026-10-22T00:00:00+00:00", "channel": "beta", "newest": "0.2.7-beta.3"})
     ok(main.updater.ready, "the stand-in updater is found")
@@ -45,10 +46,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         b = pw.chromium.launch()
         pg = b.new_page(viewport={"width": 1300, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
-        pg.goto("http://127.0.0.1:8099/?menu=settings"); pg.wait_for_timeout(500)
+        pg.goto("http://127.0.0.1:8142/?menu=settings"); pg.wait_for_timeout(500)
         # Check now first: Settings is redrawn in place, Update still works afterwards
         main.store.set("update_check", {"checked": "2026-10-22T00:00:00+00:00", "channel": "beta", "newest": "0.2.7-beta.2"})
-        pg.goto("http://127.0.0.1:8099/?menu=settings"); pg.wait_for_timeout(500)
+        pg.goto("http://127.0.0.1:8142/?menu=settings"); pg.wait_for_timeout(500)
         pg.click("#updates button.checknow"); pg.wait_for_timeout(4200)
         ok(len(checks) == 1 and pg.locator("#updates button.upgradebtn").count() == 1 and "Update available" in pg.inner_text("#updates"),
            "Check now finds the newer version: Update available, Update")
