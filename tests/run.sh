@@ -36,7 +36,9 @@ run() {   # run <suite number> <database> [argument]
   fi
   # Suites from before 0.2 expect an install that already had CCS+ (as an upgraded one does); 26 starts fresh.
   if [ "$n" != 26 ]; then
-    "${PSQL[@]}" -d "$db" -c "CREATE TABLE kv (key text PRIMARY KEY, value jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now()); INSERT INTO kv (key, value) VALUES ('sources', '[{\"id\": \"ccs\", \"type\": \"ccs\"}]'), ('destinations', '[\"feed\", \"google\"]')"
+    if ! seederr=$("${PSQL[@]}" -d "$db" -c "CREATE TABLE kv (key text PRIMARY KEY, value jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now()); INSERT INTO kv (key, value) VALUES ('sources', '[{\"id\": \"ccs\", \"type\": \"ccs\"}]'), ('destinations', '[\"feed\", \"google\"]')" 2>&1); then
+      ran=$((ran + 1)); failed=$((failed + 1)); echo "suite $n ($db): FAIL database not seeded: $(echo "$seederr" | head -2 | tr '\n' ' ')"; return
+    fi
   fi
   local out; local F=("${FAKE[@]}"); [ "$n" = 45 ] && F=()   # 45 compares the database's own timestamps (real clock) with the program's
   out=$(timeout -k 5 600 "${F[@]}" python3 "suite_$n.py" "$db" "${@:3}" 2>&1); rc=$?
