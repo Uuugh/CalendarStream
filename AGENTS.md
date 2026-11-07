@@ -94,7 +94,7 @@ and a file must stand alone and say what it needs.
   browser unless that is what it tests. `main.py` gets no new sections; code a build changes moves out of it when
   practical.
 - **One class per file** (R19), named for it in `snake_case` (Flutter's one public class per file). Loose
-  functions are grouped into a class or a small module first. Small private helpers stay in the file that uses them.
+  functions are grouped into a class or a small module first. Small private helpers stay in the file that uses them. One exception, as in Dart: a closed family that a Dart `sealed class` or an enum would hold (an exception hierarchy, a set of states) shares one file.
 - **Layers, as in a Flutter feature** (`data`, `domain`, `ui`): calendar and rule logic (`domain`) never imports
   storage, network or the page (`data`, `ui`). Each feature (rules, calendars, Google, store) is one folder.
 - **Every file starts with a header** (a module docstring): what it holds; **Depends on** (other files of the app, by

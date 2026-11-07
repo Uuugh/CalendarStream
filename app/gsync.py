@@ -25,6 +25,7 @@ from urllib.parse import parse_qs, quote, urlencode, urlparse
 import httpx
 
 from .calsync import meeting_link, notes_with_meeting
+from .google.errors import AccessRevoked, CalendarMissing, Conflict, GoogleError  # (0.2.8-beta.35, F58 2) moved; still importable from here
 from .secretbox import SecretBox
 
 log = logging.getLogger("calendar_stream.google")
@@ -74,22 +75,6 @@ CAL_KEYS = ("calendar_id", "calendar_name", "synced_calendar", "created", "last_
 
 class _SkipRevoke(Exception):
     """Internal: disconnect without revoking the grant in Google."""
-
-class GoogleError(Exception):
-    """Something went wrong talking to Google; the message is shown on the status page."""
-
-
-class AccessRevoked(GoogleError):
-    """Google no longer accepts the stored sign-in (revoked, expired or the password changed)."""
-
-
-class Conflict(GoogleError):
-    """Google already has an event with that ID."""
-
-
-class CalendarMissing(GoogleError):
-    """CalendarStream's calendar was deleted in Google."""
-
 
 def _rgb(hex_color: str) -> tuple[int, int, int]:
     return tuple(int(hex_color[i:i + 2], 16) for i in (1, 3, 5))

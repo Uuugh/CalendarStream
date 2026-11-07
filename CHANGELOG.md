@@ -15,6 +15,7 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 
 ### Fixed
 - **F58 checkpoint 1 (I5)**: a Google module whose account has no sign-in was skipped by every sync without a word; History now says so once ("not signed in … so it isn't synced: open it and Connect me"). New suite 68.
+- **F58 checkpoint 2**: `app/google/` begins: `errors.py` (the Google errors, moved out of `gsync.py`, which still offers them), `health_state.py`, `failure_kind.py`, `recovery_decision.py`, each with a Dart-ready header. New suite 69 (no app, database or network).
 
 ### Added
 - **Checkpoints** (2-build.md, R20): a build is a series of small checkpoint commits, pushed as made; `VERSION` is bumped only by the last; BUILD runs through as many as it can; the full suite runs on GitHub.
