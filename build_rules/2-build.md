@@ -65,6 +65,31 @@ Documentation-only changes (README, CLAUDE.md, AGENTS.md, build_rules/) don't ch
   must change after the bump, bump to the next beta. After pushing, check the workflow's run was for the HEAD commit
   (`gh run list --workflow=release.yml`) and say so in the report.
 
+## Checkpoints (R20)
+
+A build is a series of **checkpoint commits**, so progress is easy to resume.
+
+- A checkpoint is one finished step that stands alone, sized by Claude's judgment, never leaving the app
+  half-changed (no dead code, no half-moved functions, no failing test).
+- Before it is committed: the suites that touch the changed code pass locally (the full suite is run by the Tests
+  workflow on GitHub for each push, not locally); a new module has its own fast test (R18) and its dependency
+  header (R19); no real data is in it.
+- Its message names the build and step ("F58a 2/5: models.py + test"). It is pushed at once, and the build's
+  progress line on the Dashboard (done, next, left) is updated and republished.
+- Checkpoints don't change `VERSION`, so no image is built. The last one waits for a green Tests run on GitHub for
+  its commit (the full suites, pip-audit), adds the CHANGELOG entry, bumps `VERSION` last ("One commit ships it",
+  above) and records the cost.
+- BUILD runs through as many checkpoints as it can without asking the Developer anything. It stops only for a
+  decision that can't be undone and could go either way, or the usage limit. A usage limit can cut in mid-step;
+  since a checkpoint is committed only when finished and green, that costs at most the step in progress.
+- A red Tests run on GitHub doesn't stop the build: fixing it is the next checkpoint. Claude carries on with the
+  next checkpoint while the previous one's run is in progress, unless the next depends on it. Never two local
+  test runs at once (they share the suites' databases).
+- For a risky build (the Google modules, anything that touches stored data or sign-in) the Reviewer reads each
+  checkpoint's diff and Tests run when the Developer sends it REVIEW; it reads only and never changes code, and
+  Claude checks everything it posts.
+- BUILD said again continues from the progress line, in a new conversation if needed (the HANDOFF names it).
+
 ## After
 
 Commit and push; the release workflow tags `v<version>` and publishes the `beta` image. Claude reports what came

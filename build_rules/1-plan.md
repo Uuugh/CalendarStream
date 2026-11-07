@@ -25,7 +25,8 @@ to roadmap.md **before** PLAN shows, so the list shown has neither (dashboard.md
 3. For an R that changes these rules: the actual new wording. BUILD is then the Developer's yes to exactly that.
 4. Anything to decide first, as a question with Claude's suggested answer. Any Low finding waiting in low-findings.md
    for code this plan changes is named, to be done in the same build.
-5. The recommended builds, always split for the least usage: one build, unless splitting saves more, with the
+5. The recommended builds, sized by checkpoint (2-build.md, Checkpoints): each build lists its checkpoints, so a stop
+   loses at most one. Always split for the least usage: one build, unless splitting saves more, with the
    reason (each build pays its setup, test runs and release once). Checked again when new inputs come in. Each build's
    cost is estimated from build-costs.md (session and weekly %); the Dashboard plots every planned build on its cost graph and
    marks where each should end on its session and weekly meters, numbered by build.
