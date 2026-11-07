@@ -13,6 +13,9 @@ I = issue, # = review item, R = README; numbers start again with each beta.
 
 ## Unreleased (rules, no version)
 
+### Fixed
+- **F58 checkpoint 1 (I5)**: a Google module whose account has no sign-in was skipped by every sync without a word; History now says so once ("not signed in … so it isn't synced: open it and Connect me"). New suite 68.
+
 ### Added
 - **Checkpoints** (2-build.md, R20): a build is a series of small checkpoint commits, pushed as made; `VERSION` is bumped only by the last; BUILD runs through as many as it can; the full suite runs on GitHub.
 - **Code structure rules** (AGENTS.md, R18, R19): new code is a module; one class per file, laid out like a Flutter feature (data, domain, ui); every file's header says what it depends on, who uses it and its Dart note; a dependency map for the Dart port.

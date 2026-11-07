@@ -1009,6 +1009,20 @@ async def apply_google_changes(d: dict, changes: list[dict]) -> list[str]:
     return lines
 
 
+_unsigned_said: set[str] = set()   # (0.2.8-beta.35, F58 1, I5) Google modules already reported as not signed in
+
+
+def _say_not_signed_in(mods: list[dict]):
+    """A Google module whose account has no sign-in is skipped by every sync; say so once (until it signs in),
+    so a feed that "does nothing" has a line in History saying why."""
+    for d in mods:
+        if d.get("off") or d["id"] in _unsigned_said:
+            continue
+        _unsigned_said.add(d["id"])
+        state.record("warn", f"Google, {d['name']}: not signed in to a Google account yet, so it isn't synced: open it and Connect me",
+                     kind="Google")
+
+
 async def google_sync_once(full: bool) -> bool:
     """Run one sync of every Google module, account by account (0.2.8-beta.15). Returns False if one failed."""
     async with google_job.lock:
@@ -1023,7 +1037,10 @@ async def google_sync_once(full: bool) -> bool:
                 mine = [d for d in dests if d["account"] == account]
                 g = google_for(account)
                 if mine and g.connected:
+                    _unsigned_said.difference_update(d["id"] for d in mine)
                     ok = await _sync_account(g, mine, len(dests), color_for, full) and ok
+                else:
+                    _say_not_signed_in(mine)
         finally:
             google_job.running = False
         return ok
