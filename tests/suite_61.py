@@ -56,7 +56,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
 
     # --- F11.4: Expand to Configure; I5: no airplane ---------------------------------------------------------------------------
     words = [w for w in re.findall(r'<span class="long">([^<]+)</span>', p) if w.startswith("Expand")]
-    ok(words.count("Expand to Configure") == len(words) - 1 and words.count("Expand for Details") == 1 and "Edit Configuration" not in p, f"F11.4: every Expand line says Expand to Configure but History's ({len(words)})")
+    ok(words.count("Expand to Configure") == len(words) - 2 and words.count("Expand for Details") == 2 and "Edit Configuration" not in p, f"F11.4: every Expand line says Expand to Configure but History's and Beta's ({len(words)})")
     ok('placeholder="✈️"' not in c.get("/assets/page-0.2.8-beta.26-en.js").text if False else 'placeholder="✈' not in c.get(re.search(r'src="(/assets/page[^"]+)"', p)[1]).text if re.search(r'src="(/assets/page[^"]+)"', p) else True, "I5: the Add emoji field has no airplane")
 
     # --- F20: a section left open folds after 24 hours -----------------------------------------------------------------------

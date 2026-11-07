@@ -31,7 +31,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok('<p class="srcstatus">Last synced <b>' in p, "F3 (0.2.8-beta.5): the status line is short everywhere: Last synced (time)")
     ok("<span>Username</span>" in p and "<span>UID</span>" not in p, "F3.3: Username")
     order = [m.group(1) for m in re.finditer(r'<section class="card[^"]*" id="([a-z]+)"', p)]
-    ok(order == ["sources", "destinations", "rules", "templates", "activity"], f"F5/F6/F7: section order ({order})")
+    ok(order == ["sources", "destinations", "rules", "templates", "activity", "beta"], f"F5/F6/F7: section order ({order})")
     ok(re.search(r'id="rulestitle"><svg[^>]*>.*?</svg>All Rules<span class="helpdot', p) and re.search(r'id="tplstitle"><svg[^>]*>.*?</svg>Event Templates<span class="helpdot', p) and ">History, Undo &amp; Logs</span>" in p, "F5.2/F6/F7.1: section names (0.2.8-beta.15: History, Undo & Logs)")
     did = feeds[-1]["id"]
     ok(f'id="dest-{did}" data-section="dest:{did}"' in p and f'aria-controls="cfg-dest-{did}"' in p and f'id="cfg-dest-{did}" hidden' in p, "F4.1: a destination folds under Configure")

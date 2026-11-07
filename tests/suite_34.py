@@ -23,7 +23,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     main.store.set("public_url", "https://cal.example.com")
     c.post("/destinations/add", data={"csrf": csrf, "type": "feed", "name": "Everything"})
     p = c.get("/").text
-    ok('id="sourcestitle"><svg class="mi secicon"' in p and ">Calendars<" in p and "Feeds" in p and p.count('class="mi secicon"') == 5, f"({p.count('class=\"mi secicon\"')}) F1.3/F3.1/F4: section icons; Calendars and Feeds")
+    ok('id="sourcestitle"><svg class="mi secicon"' in p and ">Calendars<" in p and "Feeds" in p and p.count('class="mi secicon"') == 6, f"({p.count('class=\"mi secicon\"')}) F1.3/F3.1/F4: section icons; Calendars and Feeds")
     ok("Expand to Configure" in p and "Expand for Details or to Edit Configuration" not in p and '<span class="short">Expand</span>' in p, "F1.2 (beta.26, F11.4): Expand to Configure (Expand for Details stays for History)")
     ok('class="helpdot' in p and "What other apps get" in p and 'class=&#34;' not in p, "F1.1: explanations behind (?)")
     key = p.split('class="legend"')[1].split("</div>")[0]
