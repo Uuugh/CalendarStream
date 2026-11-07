@@ -58,4 +58,17 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(asyncio.run(main.google_sync_once(True)) is True, "…and the next sync skips it quietly, not hammering Google")
     h.reset("")
     ok(h.may_sync("") and h.get("")["state"] == "healthy", "a new sign-in clears it")
+    # --- REVIEW 2 (#11 #1): an unexpected failure (not a GoogleError) is classified and remembered too ---------------
+    class _Boom:
+        account = "boom"
+        def info(self): return {}
+        def record_error(self, m): self.m = m
+        async def pull(self, *a, **k): return []
+        async def sync(self, *a, **k): raise ValueError("malformed event")
+    b = _Boom()
+    ok(asyncio.run(main._sync_account(b, [{"id": "x", "name": "X", "start": "", "oneway": True, "color": ""}], 1, None, True)) is False,
+       "a sync that raises a ValueError fails the sync")
+    rec = main.google_health.get("boom")
+    ok(rec["kind"] == "unknown" and rec["state"] == "degraded", "…and the account's health records an unknown failure")
+    main.google_health.reset("boom")
 print(f"{fails} failed" if fails else "ALL PASSED"); sys.exit(1 if fails else 0)

@@ -306,7 +306,7 @@ class GoogleApi:
         if not refresh:
             raise GoogleError("Google didn't send a lasting sign-in (refresh token). Try Connect again.")
         claims = _id_token_claims(tokens.get("id_token", ""))
-        email = claims.get("email", "") if claims.get("aud") in (self.client_id, None) else ""
+        email = claims.get("email", "") if claims.get("aud") == self.client_id else ""   # (REVIEW 2, #11 #4) a missing audience is not trusted
 
         previous = self.info()
         if previous.get("email") and email and previous["email"] != email:

@@ -54,6 +54,18 @@ try:
     asyncio.run(g.finish_sign_in("not-a-state", "code")); ok(False, "an unknown state is refused")
 except Exception as e:
     ok("expired or was already used" in str(e), "an unknown state is refused")
+# REVIEW 2 (#11 #4): the account's e-mail is taken from the ID token only when its audience is this client
+import base64, json as _json
+def _jwt(claims): return "h." + base64.urlsafe_b64encode(_json.dumps(claims).encode()).decode().rstrip("=") + ".s"
+from app.google.api import SCOPE_CALENDAR
+for label, claims, want in (("a missing audience", {"email": "x@y.z"}, ""), ("another client's audience", {"aud": "other", "email": "x@y.z"}, ""),
+                            ("this client's audience", {"aud": g.client_id, "email": "x@y.z"}, "x@y.z")):
+    acct = GoogleApi(store, box, "UTC", "aud" + str(len(label)))
+    st = parse_qs(urlparse(acct.sign_in_url("https://cal.example.com/google/callback")).query)["state"][0]
+    async def _tr(form, _c=claims): return {"scope": SCOPE_CALENDAR, "refresh_token": "r", "access_token": "a", "id_token": _jwt(_c)}
+    acct._token_request = _tr
+    asyncio.run(acct.finish_sign_in(st, "code"))
+    ok(acct.info().get("email", "") == want, f"the ID token's e-mail is used only with the right audience ({label})")
 ok(gsync.Google.__mro__[1] is GoogleApi, "gsync's Google builds on GoogleApi (the facade)")
 gsync.AUTH_URL = "http://mock/auth"
 ok(gsync.Google(store, box, "UTC").AUTH_URL == "http://mock/auth", "the endpoint a suite sets on gsync is the one used")

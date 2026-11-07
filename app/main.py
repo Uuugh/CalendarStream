@@ -1115,6 +1115,7 @@ async def _sync_account(g: Google, dests: list[dict], total: int, color_for, ful
         google_health.check_and_recover(g.account, e)
     except Exception as e:      # keep the loop alive whatever happens
         message = f"Google sync failed: {type(e).__name__}: {e}"
+        google_health.check_and_recover(g.account, e)   # (REVIEW 2, #11 #1) an unexpected failure is classified too (UNKNOWN)
     if message != g.info().get("last_error"):   # log each new problem once
         state.record("error", f"Google: {message}")
     g.record_error(message)

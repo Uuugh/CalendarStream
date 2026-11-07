@@ -9,7 +9,16 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.36**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.37**
+
+## 0.2.8-beta.37 — 2026-11-07
+
+REVIEW 2 fixes for review issue #11 (google, beta.36).
+
+### Fixed
+- **Google sync**: a sync that fails with an unexpected error (not a Google one, say a malformed event) is now classified and remembered in the account's health too, as an unknown failure (#11 #1).
+- **Google sign-in**: the account's e-mail is taken from Google's ID token only when its audience is this OAuth client; a missing audience is no longer trusted (#11 #4).
+- **Code**: `GoogleHealth.check_and_recover`'s comment says what its decision does (state and back-off, honored by the next scheduled syncs; the 401 refresh-and-retry is in `GoogleApi.api()`) (#11 #2, Partly). #3 was kept as designed.
 
 ## 0.2.8-beta.36 — 2026-11-07
 

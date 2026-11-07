@@ -41,8 +41,10 @@ class GoogleHealth:
         self.store.set(HEALTH_KEY, everything)
 
     def check_and_recover(self, account: str, error: BaseException) -> RecoveryDecision:
-        """A sync of this account failed: classify it, decide, remember. The caller retries once at most (the
-        decision's `retry`), and later attempts wait for `next_retry`."""
+        """A sync of this account failed: classify it, decide, remember. The decision's effect is its `state` and
+        `next_retry`, which `may_sync` honors on the later scheduled syncs. No second try is made inside the failed
+        sync: `GoogleApi.api()` already retried a 401 once with a fresh token and backed off on 429 and 5xx before
+        the error got here. Once the tries are used up (`retry` False) the next scheduled sync is the wait."""
         kind = self.classifier.classify(error)
         before = self.get(account)
         attempt = before.get("attempts", 0) if before.get("kind") == kind.value else 0
