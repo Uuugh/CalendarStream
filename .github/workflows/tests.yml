@@ -20,14 +20,16 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+      - name: Install the app's packages (over Debian's own copies)
+        run: sudo pip install -q --break-system-packages --ignore-installed -r requirements.txt
       - name: Set up the test machine (Postgres on 55432, packages, Chromium, faketime)
-        run: sudo -E bash tests/tools/setup.sh
+        run: sudo bash tests/tools/setup.sh
       - name: Run every suite (tests/run.sh)
         working-directory: tests
         env:
           TEST_DB_PORT: "55432"
         shell: bash   # (with pipefail, so a failing run fails the step)
-        run: sudo -E bash run.sh | tee "$GITHUB_STEP_SUMMARY"
+        run: sudo TEST_DB_PORT=55432 bash run.sh | tee "$GITHUB_STEP_SUMMARY"
       - name: Scans (pip-audit, bandit)
         run: |
           pip install --break-system-packages pip-audit bandit
