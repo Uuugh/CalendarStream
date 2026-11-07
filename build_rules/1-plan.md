@@ -15,7 +15,8 @@ Command: **PLAN**. Read when the Developer says PLAN, and before every BUILD.
 
 Claude first reads the Dashboard, including each item's Good | Bad verdict and remark saved in its database (the `tests`
 collection, read with ArtifactData). A Bad reopens its item. A remark that asks for something new becomes a new F or I.
-Each is shown in the list with the Developer's words.
+Each is shown in the list with the Developer's words. A Good comes off the Dashboard and a "move to roadmap" remark goes
+to roadmap.md **before** PLAN shows, so the list shown has neither (dashboard.md).
 
 ## PLAN shows
 

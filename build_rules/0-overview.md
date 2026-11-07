@@ -35,6 +35,8 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   opens it from the link in the handoff (or the artifact list) and updates that one, never a copy.
 - Claude republishes it after every PLAN, and both before and after every BUILD — not only at the end of a
   BUILD's report — so it stays current even if a BUILD is interrupted, split, or stopped partway through.
+- Before any Inputs Status change, read the Developer's Good | Bad verdicts (`tests` collection) and follow
+  dashboard.md: Good comes off, Bad stays, "move to roadmap" goes to roadmap.md; re-sort I, F, R after every edit.
 - Inputs Status lists only what is still waiting on someone. Once the Developer confirms an item is fixed, or
   moves it to the roadmap, it comes off the list entirely — not kept as a compacted line. Its build still names
   it in that beta's "Where things stand" entry, which is the permanent record.
@@ -94,6 +96,7 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 
 - `theme.md`: how the page looks, with the Theme Rules pictures.
 - `ui_ux.md`: usability and accessibility of the page; theme.md wins where they differ.
+- `dashboard.md`: the Dashboard's rules in full (verdicts first, order, cost graph, editing).
 - `roadmap.md`: what's planned.
 - `low-findings.md`: Low review findings waiting for their code to change.
 - `build-costs.md`: what each BUILD cost (estimate and the Developer's readings, by model), used to predict the next.

@@ -59,6 +59,11 @@ Documentation-only changes (README, CLAUDE.md, AGENTS.md, build_rules/) don't ch
   beta before anything is published); the rest of its report is read and passed on in Claude's report.
 - CHANGELOG.md has the beta's entry (its F, I and R, tidied); README.md matches what changed.
 - The Developer's real data appears nowhere (0-overview.md, Ground rules).
+- **One commit ships it** (0.2.8-beta.33): the image is built only when `VERSION` changes, so the commit that bumps
+  `VERSION` must be the commit with all the code. A code commit pushed after it is never built (beta.33 shipped
+  without most of its items that way). Run every test and fix first, bump `VERSION` last, and push once. If code
+  must change after the bump, bump to the next beta. After pushing, check the workflow's run was for the HEAD commit
+  (`gh run list --workflow=release.yml`) and say so in the report.
 
 ## After
 
