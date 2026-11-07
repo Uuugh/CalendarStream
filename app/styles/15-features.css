@@ -201,3 +201,27 @@ details.gsteps ol > li.done { color:var(--muted) }
 .box.module.off > :not(.cfgbody) { opacity:.55; filter:grayscale(1) }
 .box.module.off .cfgbody > :not(.powerform) { opacity:.55; filter:grayscale(1) }
 .srcpick.off { opacity:.5; filter:grayscale(1); text-decoration:line-through }
+
+/* (F59) Beta: Google Traffic — one row per Google module (name, health chip, Sync Now), then the traffic list */
+.betarow { align-items:center; justify-content:space-between; gap:10px }
+.betarow .statusbox { margin-left:auto; display:flex; align-items:center; gap:8px }
+.betatraffic { margin-top:14px; border-top:1px solid var(--line); padding-top:10px }
+.betatrafficbar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px }
+.betalist { list-style:none; margin:0; padding:0; max-height:420px; overflow:auto; border:1px solid var(--line); border-radius:var(--r) }
+.betalist:empty { display:none }
+.betaentry { border-bottom:1px solid var(--line); font-size:12.5px }
+.betaentry:last-child { border-bottom:none }
+.betaentry > button { width:100%; display:flex; align-items:center; gap:8px; padding:6px 10px; background:none; border:0; text-align:left;
+  font:inherit; color:inherit; cursor:pointer; font-family:var(--mono) }
+.betaentry > button:hover, .betaentry > button:focus-visible { background:var(--soft) }
+.betaentry .betatime { color:var(--muted); flex:0 0 auto }
+.betaentry .betamethod { font-weight:700; flex:0 0 auto }
+.betaentry .betaurl { flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.betaentry .betastatus { flex:0 0 auto; font-weight:700 }
+.betaentry .betastatus.bad { color:var(--bad) }
+.betaentry .betastatus.good { color:var(--ok) }
+.betadetail { margin:0; padding:0 10px 10px; display:grid; gap:6px }
+.betadetail pre { margin:0; padding:8px; background:var(--soft); border:1px solid var(--line); border-radius:6px;
+  font-family:var(--mono); font-size:12px; white-space:pre-wrap; word-break:break-word;
+  max-height:260px; overflow:auto }
+.betaempty { margin:10px 0 0 }

@@ -160,7 +160,7 @@
   {# Small icons left of the section titles (F1.3). #}
   {% set icons = {"calendars": icon("calendar_month", 24, "secicon"), "feeds": icon("sensors", 24, "secicon"),
                   "rules": icon("rule", 24, "secicon"), "templates": icon("event_note", 24, "secicon"),
-                  "activity": icon("history", 24, "secicon")} %}
+                  "activity": icon("history", 24, "secicon"), "beta": icon("terminal", 24, "secicon")} %}
   {% set status_labels = {"ok":_("Healthy"),"running":_("Syncing…"),"starting":_("Starting"),"paused":_("Paused"),"setup":_("Setup needed"),"auth_failed":_("Sign-in rejected"),"blocked":_("Blocked"),"error":_("Error"),"internal":_("Internal error")} %}
 
   <div class="sections">
@@ -184,6 +184,8 @@
 {% include "index/templates.html" %}
 
 {% include "index/history.html" %}
+
+{% include "index/beta.html" %}
   </div>
   <footer class="foot">
     © CalendarStream <a class="curver" href="{{ update.releases }}/tag/v{{ version }}" target="_blank" rel="noopener"

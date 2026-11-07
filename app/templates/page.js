@@ -13,3 +13,4 @@
 {% include "js/13-feeds.js" %}
 {% include "js/14-status-fold.js" %}
 {% include "js/15-field-notes.js" %}
+{% include "js/16-beta-traffic.js" %}

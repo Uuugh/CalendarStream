@@ -545,7 +545,8 @@ def event_templates() -> list[dict]:
 
 # Collapsible sections on the status page, and whether each starts open. The open/closed state
 # is saved in the database so it's the same in every browser.
-SECTIONS = {"status": True, "activity": False, "rules": False, "templates": False, "googlesync": False}
+SECTIONS = {"status": True, "activity": False, "rules": False, "templates": False, "googlesync": False,
+            "beta": False}   # (F59) the Beta: Google Traffic section, below Activity
 
 
 FOLD_AFTER = 24 * 3600      # (0.2.8-beta.26, F20) a section or module left open folds again after this many seconds
@@ -561,7 +562,7 @@ def section_state() -> dict:
     opened = store.get("ui_opened") or {}
     now, changed, folds = datetime.now(timezone.utc).timestamp(), False, False
     for k in list(found):
-        if k not in ("rules", "templates", "activity") and not k.startswith(("src:", "dest:")):
+        if k not in ("rules", "templates", "activity", "beta") and not k.startswith(("src:", "dest:")):
             continue                                     # (Calendar, Calendars and Feeds have no Expand line)
         if found[k]:
             if k not in opened:

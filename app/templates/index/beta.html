@@ -1,0 +1,37 @@
+{# F59 (Beta): a section to start the Google sync by hand and watch every call it makes to Google, for
+   developing a real fix to I5. It duplicates each Google module's health chip and Sync Now button (the same
+   forms, same routes, same JS, just also shown here); nothing in the traffic view is hidden, not even tokens
+   or the client secret, since this is shown only to the signed-in Developer and never saved or logged. #}
+<section class="card section modsection{% if sections.beta %} open{% endif %}" id="beta" data-section="beta">
+  <div class="shead">
+    <span class="bigtitle">{{ icons.beta|safe }}{{ _('Beta: Google Traffic') }}{{ help(_('Shows every request this app sends Google and every answer it gets back, unredacted (your account’s own tokens included). For developing a fix to the Google sync; nothing here is saved.')) }}</span>
+  </div>
+  {{ sectionline("beta", sections.beta) }}
+  <div class="sbody" id="beta-body"{% if not sections.beta %} hidden{% endif %}>
+    {% set gdests = dests|selectattr("type", "equalto", "google")|list %}
+    {% if not gdests %}<p class="empty">{{ _('No Google modules yet. Add one in Feeds to try this.') }}</p>{% endif %}
+    {% set g = google %}
+    {% for d in gdests %}
+    {% if d.error %}{% set dcls, dlabel = ("bad" if d.error.startswith("Google sync failed") else "warn"), _('Sync problem') %}
+    {% elif not d.connected %}{% set dcls, dlabel = "run", (_('Invited') if d.invite else _('Not connected')) %}
+    {% elif d.cal.calendar_id %}{% set dcls, dlabel = "good", _('Connected') %}
+    {% else %}{% set dcls, dlabel = "run", _('Starting') %}{% endif %}
+    {% set signin_broken = d.connected and d.error and ("sign-in" in d.error) %}
+    <div class="statline betarow">
+      <b>{{ d.name }}</b>
+      <div class="statusbox {{ dcls }}">{{ chip(dcls, _('Sign-in failed') if signin_broken else dlabel) }}
+        {% if signin_broken %}<span class="syncform"><button class="syncnow gfixbtn" form="gacct-{{ d.id }}" name="action" value="connect" data-state="idle" title="{{ msg(d.error) }}"><span class="sn idle">{{ _('Fix') }}</span></button></span>
+        {% elif d.connected %}{{ syncbtn("/google/sync", "google", g.running) }}{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    <div class="betatraffic">
+      <div class="betatrafficbar">
+        <span class="k">{{ _('Traffic') }}</span>
+        <button type="button" class="ghost" id="betaclear">{{ _('Clear') }}</button>
+      </div>
+      <ol class="betalist" id="betalist" aria-live="polite"></ol>
+      <p class="muted betaempty" id="betaempty">{{ _('Nothing yet. Sync Now above to see it here.') }}</p>
+    </div>
+  </div>
+</section>
