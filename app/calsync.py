@@ -8,9 +8,8 @@ password, so this app downloads it on a timer and republishes it as a feed Googl
 """
 from __future__ import annotations
 
-import hashlib
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -66,48 +65,8 @@ def event_meeting(ev) -> str:
     return meeting_link(f"{ev.get('DESCRIPTION', '')}\n{ev.get('LOCATION', '')}\n{ev.get('URL', '')}")[:500]
 
 
-@dataclass
-class Event:
-    title: str
-    start: str            # ISO datetime in the display time zone, or ISO date for all-day (end exclusive)
-    end: str
-    all_day: bool = False
-    location: str = ""
-    description: str = ""
-    uid: str = ""
-    origin: str = "united"   # "united" (from the source: CCS+ or a feed), "custom" (added on the status
-                             # page) or "rule" (made by a rule from a template)
-    edited: bool = False     # a United event changed on the status page
-    stale: bool = False      # United changed this event after it was edited here
-    hidden: bool = False     # left out of the Google feed
-    free: bool = False       # shown as "free" rather than "busy" (CCS+ sends most items as TRANSP:TRANSPARENT)
-    color: str = ""          # a color chosen for this event on the status page (#rrggbb); overrides rules
-    source: str = "ccs"      # the calendar source it belongs to ("ccs" or a feed source's ID)
-    alarms: str = ""         # reminders, minutes before the start ("15,60"), set on the status page (0.2.8)
-    rule_color: str = ""     # the color its rules give it (#rrggbb), or ""; its own color still wins (0.2.8)
-    deleted: str = ""        # 0.2.8-beta.15: deleted, but kept (struck through, greyed) until its Undo pops off:
-                             # "<where>|<when>" (where: calendarstream, google, united, feed); "gone" after that
-    meeting: str = ""        # 0.2.8-beta.28, F6: its online meeting (a Zoom, Google Meet, Teams or Webex link), or ""
-    # Not stored: set while a download is read, for the rules (app/rules.py)
-    no_end: bool = field(default=False, compare=False)    # it had no end time (its end is its start)
-    ruled: bool = field(default=False, compare=False)     # a rule changed its time
-
-    def alarm_minutes(self) -> list[int]:
-        """The reminders, as minutes before the start, earliest first."""
-        return sorted({int(x) for x in self.alarms.split(",") if x.strip().isdigit()}, reverse=True)
-
-    def fingerprint(self) -> str:
-        """Identifies United's version of an event, to notice when it changes after an edit."""
-        key = "|".join([self.title, self.start, self.end, str(self.all_day), self.location, self.description])
-        return hashlib.sha1(key.encode()).hexdigest()
-
-
-@dataclass
-class Defaults:
-    """How to treat events that have a start but no end (DTEND/DURATION)."""
-    mode: str = "hours"     # "hours" or "allday"; "rules": leave it to the rules (the end is the start, no_end set)
-    hours: float = 1.0
-    allday_24h: bool = True  # timed events lasting a whole number of days (24 h, 48 h…) become all-day
+from .calendars.event import Event
+from .calendars.defaults import Defaults
 
 
 # --- Download --------------------------------------------------------------
