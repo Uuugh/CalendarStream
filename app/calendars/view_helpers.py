@@ -1,7 +1,7 @@
 """Calendar grid lane placement and optional date parsing.
 
 Holds: _lanes and _opt_day.
-Depends on: datetime.date.
+Depends on: no other app files.
 Used by: app/main.py.
 Reads/writes: _lanes mutates caller-supplied layout dictionaries; _opt_day reads input only.
 Dart note: Presentation layout helpers in calendars/ui; no app globals.

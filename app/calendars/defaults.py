@@ -1,8 +1,8 @@
 """Calendar event parsing defaults.
 
 Holds: Defaults.
-Depends on: nothing.
-Used by: app/calsync.py and calendar consumers.
+Depends on: no other app files.
+Used by: app/calendars/parsing.py, app/calsync.py.
 Reads/writes: nothing.
 Dart note: Defaults data model in the calendars/domain layer.
 """

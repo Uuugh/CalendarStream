@@ -1,781 +1,92 @@
-"""Rules (0.2.8): "If <conditions> Then <actions>", applied to a calendar's events.
-
-A rule is one dict, kept in an ordered list (kv "rules"); the order is the priority: for a color, an
-emoji or a time change, the highest rule that matches wins. Each rule says which calendars it applies
-to ("all", or a list of source IDs). Nothing here touches the database or the web page.
-
-    {"id": "t1a2b3c", "title": "Days off in red",
-     "conds": [{"type": "text", "op": "contains", "value": "RDO", "case": False, "open": 1, "close": 0, "join": "and"},
-               {"type": "text", "op": "contains", "value": "VAC", "case": False, "open": 0, "close": 1, "join": "or"}, …],
-     "actions": [{"type": "color", "color": "#d50000"}, {"type": "emoji", "emoji": "🏝️"}, …],
-     "apply": "all" | ["ccs", "f1a2b3c"]}
-
-Conditions are joined to the line before them by "and" or "or" ("and" binds tighter, as usual), and
-grouped with brackets: "open" brackets before a line, "close" brackets after it. No conditions: every
-event matches.
-
-Condition types (the event's start, in the calendar's time zone):
-  text   the title  is / contains / word (whole word) / begins / ends / pattern / regex; "case": match capitals
-  any    any text   the same, on the title, location and notes together (0.2.8-beta.15)
-         "pattern": the whole text matches simple wildcards (* any text, # a digit, ? one character);
-         "regex": contains a match of the regular expression
-  date            is / after / before / between ("value", "value2": YYYY-MM-DD)
-  time            the same, with HH:MM (never matches an all-day event)
-  days            is (any of "days", 0 = Monday … 6 = Sunday) / after / before / between (wrapping round)
-  length          is ("minutes"; 0 = no end time) / days (a whole number of days, 24 h, 48 h…)
-
-Action types:
-  color    "color" (#rrggbb): the event's color (its own color, chosen on the event page, still wins)
-  emoji    "emoji": put in front of the title
-  event    add an event: "template" (an event template's ID), or a new one ("title", "minutes",
-           "all_day", "location"); "offset" minutes "when" (before_start / after_start / after_end)
-  change   "to" "allday" (all-day, on the days it covers) or "length" ("minutes"): the event's time; or "title",
-           "notes", "location" ("text"): that field becomes the text (0.2.8-beta.27, F30)
-  add      "to" "title" | "notes" | "location", "text": the text goes at the end of the field (notes: on a new line);
-           what is there is never written over (0.2.8-beta.27, F30)
-  move     "minutes" (signed): the event moves by that much; "with_link" (only in a link rule): by as much as the
-           event it is linked to moves (0.2.8-beta.27, F4)
-  delete   the event is deleted: left out of the feeds, struck through on the page (0.2.8-beta.27, F4)
-  changes  record the changes the source makes to it (a note on the event, a line in the log)
-
-A link rule (0.2.8-beta.27, F3) is made by the event pop-up's Link to: it has a "link" and no conditions, and
-only the two Thens delete / move. It follows one event, so it is never matched against events here:
-    "link": {"uid": this event's ID, "own": its calendar, "to": the linked event's ID, "src": the linked event's
-             calendar, "at": the linked event's start when last seen, "name": its title}
-"Delete" makes this event go when the linked one is gone; "move" (with_link) makes it move when the linked
-event's start moves (app/links.py works out what to do; app/main.py follow_links does it).
+"""Holds: Compatibility interface for the rule domain.
+Depends on: app/calendars/event.py, app/links.py, app/rule_engine/conflicts.py, app/rule_engine/matching.py, app/rule_engine/migration.py, app/rule_engine/rule_error.py, app/rule_engine/ruleset.py, app/rule_engine/schema.py, app/rule_engine/text_matching.py, app/rule_engine/validation.py, app/rules_words.py.
+Used by: app/item_order.py, app/main.py, app/routes/events.py, app/routes/page.py, app/routes/rules.py, app/routes/sources.py, app/services/publishing.py, app/services/rule_settings.py.
+Reads/writes: no database, network or files; operates on supplied values.
+Dart note: rule domain functions and models; preserve ordered matching and regex time limits.
 """
 
-from __future__ import annotations
-
-import json
-import re
-import secrets
-from dataclasses import replace
-from datetime import date, datetime, timedelta
-from datetime import time as dtime
+from .rule_engine.schema import (
+    ACTION_TYPES,
+    ALLDAY_TOLERANCE,
+    COLOR_RE,
+    ID_RE,
+    LINK_ACTIONS,
+    MAX_ACTIONS,
+    MAX_BRACKETS,
+    MAX_CONDS,
+    MAX_EMOJI,
+    MAX_LENGTH,
+    MAX_MOVE,
+    MAX_NOTES,
+    MAX_OFFSET,
+    MAX_REGEX,
+    MAX_RULES,
+    MAX_TEXT,
+    MAX_TITLE,
+    MODE_TO_OP,
+    REGEX_TIMEOUT,
+    SHADOWED,
+    SID_RE,
+)
+from .rules_words import COND_TYPES
+from .rules_words import DAY_NAMES
+from .calendars.event import Event
+from .rules_words import OPS
+from .rules_words import TEXT_FIELDS
+from .rules_words import TEXT_KINDS
+from .rules_words import TEXT_OPS
+from .rules_words import WHEN
 from zoneinfo import ZoneInfo
-
-import regex as rxe     # (0.2.8-beta.18, review #2.1) a regex engine with a time limit
-
-from .calsync import Event
+from .rules_words import _hm
+from .rules_words import action_text
+from .rules_words import actions_text
+from .rules_words import cond_text
+from datetime import date
+from datetime import datetime
+from datetime import time as dtime
+import json
+from .rules_words import label
+from .rules_words import length_text
+import re
+from dataclasses import replace
+import regex as rxe
+import secrets
 from .links import shifted
-
-COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
-ID_RE = re.compile(r"^[a-z0-9]{1,16}$")
-SID_RE = re.compile(r"^(ccs|[fl][0-9a-f]{6})$")
-MAX_RULES, MAX_CONDS, MAX_ACTIONS, MAX_BRACKETS = 60, 12, 6, 3
-MAX_TEXT, MAX_REGEX, MAX_TITLE, MAX_EMOJI = 200, 100, 80, 16
-MAX_OFFSET, MAX_LENGTH = 7 * 24 * 60, 52 * 7 * 24 * 60      # minutes
-# A typed regex or pattern gets this long per event (seconds); one that takes longer counts as no match, and is
-# skipped for the rest of that run, so a pathological pattern like (a|aa)+$ can't stall a sync.
-REGEX_TIMEOUT = 0.05
-ALLDAY_TOLERANCE = timedelta(minutes=5)     # CCS+ writes whole days as 00:01–23:59:59
-
-from .rules_words import (COND_TYPES, TEXT_OPS, TEXT_KINDS, OPS, TEXT_FIELDS, WHEN, DAY_NAMES,
-                          _hm, length_text, cond_text, action_text, actions_text, label)
-
-ACTION_TYPES = {"color": "Color", "emoji": "Add emoji to title", "event": "Create event", "change": "Change",
-                "add": "Add", "move": "Move this event", "delete": "Delete this event",
-                "changes": "Record changes in the event notes section"}
-LINK_ACTIONS = ("delete", "move")          # the only Thens of a link rule
-MAX_NOTES = 1000                           # a Change / Add to Notes
-MAX_MOVE = 7 * 24 * 60                     # Move this event: up to a week either way
-
-
-class RuleError(ValueError):
-    """A rule that can't be saved; the message says why."""
-
-
-# --- Checking -----------------------------------------------------------------------------
-
-def _int(value, lo: int, hi: int, default: int = 0) -> int:
-    try:
-        return max(lo, min(hi, int(value)))
-    except (TypeError, ValueError):
-        return default
-
-
-def _day(value) -> str:
-    try:
-        return date.fromisoformat(str(value or "")).isoformat()
-    except ValueError:
-        return ""
-
-
-def _clock(value) -> str:
-    m = re.fullmatch(r"(\d{1,2}):(\d{2})", str(value or "").strip())
-    return f"{int(m[1]):02d}:{m[2]}" if m and int(m[1]) < 24 and int(m[2]) < 60 else ""
-
-
-def _cond(c) -> dict | None:
-    """One condition as saved, checked; None when it's incomplete."""
-    if not isinstance(c, dict) or c.get("type") not in COND_TYPES:
-        return None
-    kind = c["type"]
-    op = c.get("op") if c.get("op") in OPS[kind] else next(iter(OPS[kind]))
-    out = {"type": kind, "op": op, "open": _int(c.get("open"), 0, MAX_BRACKETS), "close": _int(c.get("close"), 0, MAX_BRACKETS),
-           "join": "or" if c.get("join") == "or" else "and"}
-    if kind in TEXT_KINDS:
-        value = str(c.get("value") or "").strip()[:MAX_REGEX if op in ("regex", "pattern") else MAX_TEXT]
-        if not value or pattern_error(value, op):
-            return None
-        out.update(value=value, case=bool(c.get("case")))
-    elif kind in ("date", "time"):
-        norm = _day if kind == "date" else _clock
-        value, value2 = norm(c.get("value")), norm(c.get("value2"))
-        if not value or (op == "between" and not value2):
-            return None
-        out.update(value=value, value2=value2 if op == "between" else "")
-    elif kind == "days":
-        days = list(dict.fromkeys(_int(d, 0, 6) for d in (c.get("days") or []) if str(d).strip().lstrip("-").isdigit()))
-        if op != "between":
-            days.sort()          # "between" keeps its order: Fri – Mon wraps round the weekend
-        if not days or (op == "between" and len(days) != 2) or (op in ("after", "before") and len(days) != 1):
-            return None
-        out.update(days=days)
-    else:   # length
-        out.update(minutes=_int(c.get("minutes"), 0, MAX_LENGTH))
-        if op == "days" and out["minutes"] < 24 * 60:
-            out["minutes"] = 24 * 60
-    return out
-
-
-def wildcard(value: str) -> str:
-    """A simple pattern as a regular expression: * any text, # a digit, ? one character, the rest as typed;
-    it must match the whole text ("*E####": anything ending in E and four digits)."""
-    out = "".join({"*": ".*", "#": r"\d", "?": "."}.get(ch) or re.escape(ch) for ch in value)
-    return rf"^\s*{out}\s*$"
-
-
-def pattern_error(value: str, op: str) -> str:
-    """Why a regex can't be used ("" when it can), in words for the page."""
-    if op != "regex":
-        return ""
-    try:
-        rxe.compile(value)
-    except rxe.error as e:
-        where = f" (at character {e.pos + 1})" if e.pos is not None else ""
-        return f"Not a valid regex: {e.msg}{where}."
-    return ""
-
-
-def test_text(value: str, op: str, case: bool, samples: list[str]) -> dict:
-    """The regex test box (0.2.8-beta.15): which sample texts a Title / Any text condition matches, with the
-    matched part of each: {"error": "", "results": [{"text", "match", "span": [start, end]}]}."""
-    error = pattern_error(value, op)
-    if error or not value:
-        return {"error": error, "results": []}
-    rx = _text_regex({"value": value, "op": op, "case": case})
-    results = []
-    for text in samples[:30]:
-        try:
-            m = rx.search(text, timeout=REGEX_TIMEOUT)
-        except TimeoutError:
-            return {"error": "Too slow: this pattern takes too long to check (simplify the repeats, e.g. (a|aa)+).", "results": []}
-        results.append({"text": text, "match": m is not None, "span": [m.start(), m.end()] if m else []})
-    return {"error": "", "results": results}
-
-
-def _text(value, field: str, multiline: bool = False) -> str:
-    """The text of a Change / Add: Notes keep their lines, the others are one line."""
-    if multiline:
-        return "\n".join(x.rstrip() for x in str(value or "").replace("\r", "").split("\n")).strip()[:MAX_NOTES]
-    return " ".join(str(value or "").split())[:MAX_TEXT if field != "title" else 200]
-
-
-def _action(a, templates: set[str] | None = None, linked: bool = False) -> dict | None:
-    if not isinstance(a, dict) or a.get("type") not in ACTION_TYPES:
-        return None
-    kind = a["type"]
-    if linked and kind not in LINK_ACTIONS:
-        return None
-    if kind == "delete":
-        return {"type": kind}
-    if kind == "move":
-        if a.get("with_link") and linked:
-            return {"type": kind, "minutes": 0, "with_link": True}
-        minutes = _int(a.get("minutes"), -MAX_MOVE, MAX_MOVE)
-        return {"type": kind, "minutes": minutes, "with_link": False} if minutes and not linked else None
-    if kind == "add":
-        field = a.get("to") if a.get("to") in TEXT_FIELDS else "title"
-        text = _text(a.get("text"), field, field == "notes")
-        return {"type": kind, "to": field, "text": text} if text else None
-    if kind == "color":
-        color = str(a.get("color") or "")
-        return {"type": kind, "color": color.lower()} if COLOR_RE.match(color) else None
-    if kind == "emoji":
-        emoji = " ".join(str(a.get("emoji") or "").split())[:MAX_EMOJI]
-        return {"type": kind, "emoji": emoji} if emoji and not re.search(r"[<>&\"]", emoji) else None
-    if kind == "event":
-        tid = str(a.get("template") or "")
-        out = {"type": kind, "when": a.get("when") if a.get("when") in WHEN else "before_start",
-               "offset": _int(a.get("offset"), 0, MAX_OFFSET)}
-        if tid and ID_RE.match(tid) and (templates is None or tid in templates):
-            return {**out, "template": tid}
-        title = " ".join(str(a.get("title") or "").split())[:200]
-        if not title:
-            return None
-        return {**out, "template": "", "title": title, "all_day": bool(a.get("all_day")),
-                "minutes": _int(a.get("minutes"), 5, 24 * 60, 60), "location": str(a.get("location") or "").strip()[:200]}
-    if kind == "change":
-        if a.get("to") == "allday":
-            return {"type": kind, "to": "allday"}
-        if a.get("to") in TEXT_FIELDS:
-            field = a["to"]
-            text = _text(a.get("text"), field, field == "notes")
-            if not text and field == "title":      # a title can't be empty (Notes and Location can be emptied)
-                return None
-            return {"type": kind, "to": field, "text": text}
-        return {"type": kind, "to": "length", "minutes": _int(a.get("minutes"), 5, 7 * 24 * 60, 60)}
-    return {"type": "changes"}
-
-
-def _link(raw) -> dict | None:
-    """A link rule's "link", checked (None: not a link rule)."""
-    if not isinstance(raw, dict):
-        return None
-    uid, to = str(raw.get("uid") or "")[:300], str(raw.get("to") or "")[:300]
-    if not uid or not to or uid == to:
-        return None
-    own, src = str(raw.get("own") or ""), str(raw.get("src") or "")
-    return {"uid": uid, "own": own if SID_RE.match(own) else "", "to": to, "src": src if SID_RE.match(src) else "",
-            "at": str(raw.get("at") or "")[:40], "name": " ".join(str(raw.get("name") or "").split())[:200]}
-
-
-def balanced(conds: list[dict]) -> bool:
-    """Whether the brackets pair up."""
-    depth = 0
-    for c in conds:
-        depth += c["open"]
-        depth -= c["close"]
-        if depth < 0:
-            return False
-    return depth == 0
-
-
-def normalize(raw, sids: list[str] | None = None, templates: set[str] | None = None, strict: bool = False) -> dict | None:
-    """A rule as saved, checked again on the way out (colors are written into the page's CSS).
-    With `strict`, problems raise RuleError (saving); otherwise a broken rule is left out (None)."""
-    def bad(msg):
-        if strict:
-            raise RuleError(msg)
-    if not isinstance(raw, dict):
-        return bad("Not a rule.")
-    rid = str(raw.get("id") or "")
-    for c in (raw.get("conds") or [])[:MAX_CONDS]:
-        if isinstance(c, dict) and c.get("type") in TEXT_KINDS:
-            err = pattern_error(str(c.get("value") or "").strip(), c.get("op"))
-            if err:
-                return bad(err)
-    # (review #2.2) more than the page offers is refused when saving, never cut off without a word
-    if strict and len([c for c in raw.get("conds") or [] if c]) > MAX_CONDS:
-        return bad(f"Up to {MAX_CONDS} conditions in a rule.")
-    if strict and len([a for a in raw.get("actions") or [] if a]) > MAX_ACTIONS:
-        return bad(f"Up to {MAX_ACTIONS} actions in a rule.")
-    link = _link(raw.get("link"))
-    # a link rule follows one event: no conditions (the page's Link to makes it; the rule dialog only lets its two Thens go)
-    conds = [] if link else [c for c in (_cond(c) for c in (raw.get("conds") or [])[:MAX_CONDS]) if c]
-    if strict and not link and len(conds) != len([c for c in raw.get("conds") or [] if c]):
-        return bad("Fill in every condition (or take the empty ones out).")
-    if conds and not balanced(conds):
-        if strict:
-            return bad("The brackets don't pair up: every ( needs a ) after it.")
-        for c in conds:
-            c["open"] = c["close"] = 0
-    actions = [a for a in (_action(a, templates, bool(link)) for a in (raw.get("actions") or [])[:MAX_ACTIONS]) if a]
-    if not actions:
-        return bad("Add at least one Then.")
-    apply = raw.get("apply")
-    if apply != "all":
-        apply = [s for s in dict.fromkeys(apply if isinstance(apply, list) else []) if SID_RE.match(str(s))
-                 and (sids is None or s in sids)]
-    out = {"id": rid if ID_RE.match(rid) else "t" + secrets.token_hex(3),
-           "title": " ".join(str(raw.get("title") or "").split())[:MAX_TITLE], "conds": conds, "actions": actions,
-           "apply": apply}
-    if link:
-        out["link"] = link
-    return out
-
-
-def normalize_all(raw, sids: list[str] | None = None) -> list[dict]:
-    found, seen = [], set()
-    for r in raw if isinstance(raw, list) else []:
-        rule = normalize(r, sids)
-        if rule and rule["id"] not in seen:
-            seen.add(rule["id"])
-            found.append(rule)
-    return found[:MAX_RULES]
-
-
-def applies(rule: dict, sid: str) -> bool:
-    return rule["apply"] == "all" or sid in rule["apply"]
-
-
-def is_local(rule: dict, sid: str) -> bool:
-    """A rule for this one calendar only."""
-    return rule["apply"] != "all" and rule["apply"] == [sid]
-
-
-def for_source(rules: list[dict], sid: str) -> list[dict]:
-    """The rules a calendar uses, highest priority first."""
-    return [r for r in rules if applies(r, sid)]
-
-
-def insert_position(rules: list[dict], rule: dict) -> int:
-    """Where a new rule goes: one for a single calendar above the first shared rule that calendar
-    uses (so a calendar's own rules come first), anything else at the end."""
-    if rule["apply"] != "all" and len(rule["apply"]) == 1:
-        sid = rule["apply"][0]
-        for i, r in enumerate(rules):
-            if applies(r, sid) and not is_local(r, sid):
-                return i
-    return len(rules)
-
-
-def move(rules: list[dict], rid: str, before: str = "", after: str = "") -> list[dict]:
-    """The list with rule `rid` moved just above `before` (or just below `after`)."""
-    moving = next((r for r in rules if r["id"] == rid), None)
-    if not moving or rid in (before, after):
-        return rules
-    rest = [r for r in rules if r["id"] != rid]
-    ids = [r["id"] for r in rest]
-    if before in ids:
-        at = ids.index(before)
-    elif after in ids:
-        at = ids.index(after) + 1
-    else:
-        return rules
-    return rest[:at] + [moving] + rest[at:]
-
-
-# --- Conflicts (F4.2, 0.2.8-beta.3) ------------------------------------------------------------
-# Only the highest matching rule sets an event's color, emoji or time change. A lower rule that matches
-# the same events (the same conditions, or a higher rule with none) for some of the same calendars
-# never gets to: that's a conflict. Two rules with the same conditions and the same actions are
-# duplicates.
-
-SHADOWED = ("color", "emoji", "change", "change:title", "change:notes", "change:location",
-            "add:title", "add:notes", "add:location", "move")
-# the actions only the highest matching rule applies ("change" is the time; a text change or an add is one per field)
-
-
-def shadow_kind(a: dict) -> str:
-    """Which of the SHADOWED actions `a` is (its type, or "change:<field>" / "add:<field>" for a text field)."""
-    if a["type"] in ("change", "add") and a.get("to") in TEXT_FIELDS:
-        return f"{a['type']}:{a['to']}"
-    return a["type"]
-
-
-def _cond_key(c: dict) -> tuple:
-    value = c.get("value", "")
-    if c["type"] in TEXT_KINDS and not c["case"] and c["op"] != "regex":
-        value = value.casefold()
-    return (c["type"], c["op"], value, c.get("value2", ""), tuple(c.get("days", ())), c.get("minutes", 0),
-            c.get("case", False), c["open"], c["close"], c["join"])
-
-
-def same_events(a: dict, b: dict) -> bool:
-    """Whether rule `a` matches every event `b` does: the same conditions, or none at all."""
-    return not a["conds"] or [_cond_key(c) for c in a["conds"]] == [_cond_key(c) for c in b["conds"]]
-
-
-def shared_calendars(a: dict, b: dict, sids: list[str]) -> list[str]:
-    """The calendars both rules apply to."""
-    def cals(r):
-        return set(sids) if r["apply"] == "all" else set(r["apply"])
-    both = cals(a) & cals(b)
-    return [s for s in sids if s in both]
-
-
-def conflict_key(found: dict) -> str:
-    return "|".join((found["kind"], found["a"], found["b"], found.get("action", "")))
-
-
-def conflicts(rules: list[dict], sids: list[str], ignored=()) -> list[dict]:
-    """The conflicts between rules, highest first: {"kind": "duplicate" | "shadowed", "a": the higher
-    rule's id, "b": the lower one's, "action": the action b loses (shadowed), "calendars": where}.
-    Those in `ignored` (conflict_key) are left out."""
-    found = []
-    rules = [r for r in rules if not r.get("link")]       # a link rule follows one event: it conflicts with nothing
-    for i, a in enumerate(rules):
-        for b in rules[i + 1:]:
-            cals = shared_calendars(a, b, sids)
-            if not cals or not same_events(a, b):
-                continue
-            def acts(r):
-                return sorted(json.dumps(x, sort_keys=True) for x in r["actions"])
-            if a["conds"] and acts(a) == acts(b):
-                hit = [{"kind": "duplicate", "a": a["id"], "b": b["id"], "calendars": cals}]
-            else:
-                kinds = [k for k in SHADOWED if any(shadow_kind(x) == k for x in a["actions"]) and any(shadow_kind(x) == k for x in b["actions"])]
-                hit = [{"kind": "shadowed", "a": a["id"], "b": b["id"], "action": k, "calendars": cals} for k in kinds]
-            found += [h for h in hit if conflict_key(h) not in ignored]
-    return found
-
-
-def merge(a: dict, b: dict) -> dict:
-    """Duplicate rules as one: `a`, applying to the calendars of both."""
-    if a["apply"] == "all" or b["apply"] == "all":
-        return {**a, "apply": "all"}
-    return {**a, "apply": list(dict.fromkeys(a["apply"] + b["apply"]))}
-
-
-# --- From the rules of 0.2.6–0.2.8-beta.1 -------------------------------------------------------
-
-MODE_TO_OP = {"word": "word", "contains": "contains", "starts": "begins", "exact": "is"}
-
-
-def from_v3(lib: list[dict], subs: dict[str, list[str]], sids: list[str]) -> list[dict]:
-    """The rules of 0.2.6–0.2.8-beta.1 (a library of one-condition rules, and each calendar's list of the
-    ones it used, in its order) as rules of this kind, in one priority order: the calendars' orders
-    merged (the first calendar's first), then rules no calendar used."""
-    order: list[str] = []
-    for sid in sids:
-        for rid in subs.get(sid, []):
-            if rid not in order:
-                order.append(rid)
-    order += [r["id"] for r in lib if r["id"] not in order]
-    by_id = {r["id"]: r for r in lib}
-    found = []
-    for rid in order:
-        r = by_id.get(rid)
-        if not r:
-            continue
-        users = [s for s in sids if rid in subs.get(s, [])]
-        if r.get("owner"):
-            users = [r["owner"]] if r["owner"] in sids else []
-        apply = "all" if users and len(users) == len(sids) else users     # every calendar used it: a shared rule
-        text = [{"type": "text", "op": MODE_TO_OP.get(r.get("mode"), "word"), "value": r.get("tag", ""),
-                 "case": bool(r.get("case"))}] if r.get("tag") else []
-        kind = r.get("type")
-        if kind == "color":
-            new = {"conds": text, "actions": [{"type": "color", "color": r.get("color")}]}
-        elif kind == "event":
-            new = {"conds": text, "actions": [{"type": "event", "template": r.get("template"), "when": r.get("when"),
-                                               "offset": r.get("offset")}]}
-        elif kind == "changes":
-            new = {"conds": text, "actions": [{"type": "changes"}]}
-        elif kind == "no_end":
-            new = {"title": "Items without an end time", "conds": [{"type": "length", "op": "is", "minutes": 0}],
-                   "actions": [{"type": "change", "to": "allday"} if r.get("no_end_mode") == "allday"
-                               else {"type": "change", "to": "length", "minutes": r.get("minutes", 60)}]}
-        elif kind == "allday24":
-            if not r.get("allday", True):
-                continue            # "keep their times": nothing to do any more
-            new = {"title": "24-hour events", "conds": [{"type": "length", "op": "days", "minutes": 1440}],
-                   "actions": [{"type": "change", "to": "allday"}]}
-        else:
-            continue
-        rule = normalize({"id": rid, "apply": apply, **new}, sids)
-        if rule:
-            found.append(rule)
-    return found[:MAX_RULES]
-
-
-def starters(no_end_type: str, no_end_hours: float, allday_24h: bool) -> list[dict]:
-    """The rules a new install starts with (from DEFAULT_EVENT_TYPE / DEFAULT_EVENT_HOURS / ALLDAY_24H)."""
-    found = [{"id": "t" + secrets.token_hex(3), "title": "Items without an end time", "apply": "all",
-              "conds": [{"type": "length", "op": "is", "minutes": 0}],
-              "actions": [{"type": "change", "to": "allday"} if no_end_type == "allday"
-                          else {"type": "change", "to": "length", "minutes": round(no_end_hours * 60)}]}]
-    if allday_24h:
-        found.append({"id": "t" + secrets.token_hex(3), "title": "24-hour events", "apply": "all",
-                      "conds": [{"type": "length", "op": "days", "minutes": 1440}], "actions": [{"type": "change", "to": "allday"}]})
-    return [normalize(r) for r in found]
-
-
-def ccs_starters(which, sid: str = "ccs") -> list[dict]:
-    """The rules a CCS+ calendar added through + comes with (0.2.8-beta.28, F16.1), for that calendar only: "noend" = items
-    without an end time last 1:00; "allday24" = 24-hour events become all-day. The Developer can remove either while adding."""
-    found = []
-    if "noend" in which:
-        found.append({"id": "t" + secrets.token_hex(3), "title": "Items without an end time", "apply": [sid],
-                      "conds": [{"type": "length", "op": "is", "minutes": 0}], "actions": [{"type": "change", "to": "length", "minutes": 60}]})
-    if "allday24" in which:
-        found.append({"id": "t" + secrets.token_hex(3), "title": "24-hour events", "apply": [sid],
-                      "conds": [{"type": "length", "op": "days", "minutes": 1440}], "actions": [{"type": "change", "to": "allday"}]})
-    return [normalize(r) for r in found]
-
-
-# --- Matching ---------------------------------------------------------------------------------
-
-def _text_regex(c: dict):
-    """The condition as a compiled pattern. A typed regex or wildcard pattern uses the `regex` engine, so its
-    searches can be given a time limit (REGEX_TIMEOUT); the fixed kinds are escaped text, safe with `re`."""
-    value = c["value"]
-    flags = 0 if c["case"] else re.IGNORECASE
-    if c["op"] == "regex":
-        return rxe.compile(value, rxe.IGNORECASE if not c["case"] else 0)
-    if c["op"] == "pattern":
-        return rxe.compile(wildcard(value), (0 if c["case"] else rxe.IGNORECASE) | rxe.DOTALL)
-    v = re.escape(value)
-    return re.compile({"is": r"^\s*" + v + r"\s*$", "contains": v, "word": r"(?<!\w)" + v + r"(?!\w)",
-                       "begins": r"^\s*" + v, "ends": v + r"\s*$"}[c["op"]], flags)
-
-
-def _text_test(c: dict):
-    rx, field = _text_regex(c), "title" if c["type"] == "text" else "text"
-    if c["op"] not in ("regex", "pattern"):
-        return lambda e, info: rx.search(info[field]) is not None
-    slow = []          # set once a search ran out of time: the condition then matches nothing for this run
-
-    def test(e, info):
-        if slow:
-            return False
-        try:
-            return rx.search(info[field], timeout=REGEX_TIMEOUT) is not None
-        except TimeoutError:
-            slow.append(True)
-            return False
-    return test
-
-
-def _range_test(op: str, a, b, wrap: bool = False):
-    """`wrap`: a "between" that ends before it starts goes round (times: 22:00 – 06:00 is overnight);
-    otherwise its ends are just swapped (dates)."""
-    if op == "is":
-        return lambda x: x == a
-    if op == "after":
-        return lambda x: x > a
-    if op == "before":
-        return lambda x: x < a
-    if wrap and a > b:
-        return lambda x: x >= a or x <= b
-    lo, hi = (a, b) if a <= b else (b, a)
-    return lambda x: lo <= x <= hi
-
-
-def _days_test(c: dict):
-    days = c["days"]
-    if c["op"] == "is":
-        return lambda e, info: info["weekday"] in days
-    if c["op"] == "after":
-        return lambda e, info: info["weekday"] > days[0]
-    if c["op"] == "before":
-        return lambda e, info: info["weekday"] < days[0]
-    a, b = days[0], days[-1]
-    if a <= b:
-        return lambda e, info: a <= info["weekday"] <= b
-    return lambda e, info: info["weekday"] >= a or info["weekday"] <= b
-
-
-def _test(c: dict):
-    """A function (event, info) -> bool for one condition."""
-    kind = c["type"]
-    if kind in TEXT_KINDS:
-        return _text_test(c)
-    if kind == "date":
-        t = _range_test(c["op"], c["value"], c["value2"])
-        return lambda e, info: t(info["day"])
-    if kind == "time":
-        t = _range_test(c["op"], c["value"], c["value2"], wrap=True)
-        return lambda e, info: info["clock"] is not None and t(info["clock"])
-    if kind == "days":
-        return _days_test(c)
-    want = timedelta(minutes=c["minutes"])
-    if c["op"] == "days":       # a whole number of days (24 h, 48 h…), within a few minutes
-        def whole(e, info):
-            if info["length"] is None or e.all_day:
-                return False
-            days = round(info["length"] / timedelta(days=1))
-            return days >= 1 and abs(info["length"] - timedelta(days=days)) <= ALLDAY_TOLERANCE
-        return whole
-    if c["minutes"] == 0:
-        return lambda e, info: not e.all_day and info["length"] == timedelta(0)
-    return lambda e, info: info["length"] is not None and abs(info["length"] - want) <= (
-        ALLDAY_TOLERANCE if want >= timedelta(hours=1) else timedelta(0))
-
-
-def _compile(conds: list[dict]):
-    """A function (event, info) -> bool for a rule's conditions: brackets first, then "and" before "or"."""
-    if not conds:
-        return lambda e, info: True
-    tokens: list = []
-    for i, c in enumerate(conds):
-        if i:
-            tokens.append(c["join"])
-        tokens += ["("] * c["open"] + [_test(c)] + [")"] * c["close"]
-
-    def parse(pos: int):        # or-expression
-        terms, pos = parse_and(pos)
-        alts = [terms]
-        while pos < len(tokens) and tokens[pos] == "or":
-            terms, pos = parse_and(pos + 1)
-            alts.append(terms)
-        return alts, pos
-
-    def parse_and(pos: int):
-        factors = []
-        node, pos = parse_one(pos)
-        factors.append(node)
-        while pos < len(tokens) and tokens[pos] == "and":
-            node, pos = parse_one(pos + 1)
-            factors.append(node)
-        return factors, pos
-
-    def parse_one(pos: int):
-        if tokens[pos] == "(":
-            node, pos = parse(pos + 1)
-            return ("group", node), pos + 1      # skip ")"
-        return ("test", tokens[pos]), pos + 1
-
-    tree, _ = parse(0)
-
-    def run(alts, e, info) -> bool:
-        return any(all(run(n[1], e, info) if n[0] == "group" else n[1](e, info) for n in factors) for factors in alts)
-    return lambda e, info: run(tree, e, info)
-
-
-def event_info(e: Event, tz: ZoneInfo) -> dict:
-    """What conditions look at: the title (and all its text: title, location, notes), the start's day,
-    weekday and time, and the length."""
-    text = "\n".join(x for x in (e.title, e.location, e.description) if x)
-    if e.all_day:
-        day = date.fromisoformat(e.start[:10])
-        length = date.fromisoformat(e.end[:10]) - day
-        return {"title": e.title, "text": text, "day": day.isoformat(), "weekday": day.weekday(), "clock": None, "length": length}
-    s, t = datetime.fromisoformat(e.start).astimezone(tz), datetime.fromisoformat(e.end).astimezone(tz)
-    return {"title": e.title, "text": text, "day": s.date().isoformat(), "weekday": s.weekday(), "clock": f"{s:%H:%M}", "length": t - s}
-
-
-class Ruleset:
-    """A calendar's rules, ready to apply to its events (highest priority first)."""
-
-    def __init__(self, rules: list[dict], tz: ZoneInfo, templates: dict[str, dict] | None = None,
-                 no_end: tuple[str, float] = ("hours", 1.0)):
-        self.tz = tz
-        self.templates = templates or {}
-        self.no_end = no_end            # what an event with no end time gets when no rule changes it
-        # (0.2.8-beta.27, F3) a link rule follows one event and is never matched here: app/links.py works it out
-        self.rules = [(r, _compile(r["conds"])) for r in rules if not r.get("link")]
-
-    def _first_where(self, wanted, e: Event, info: dict):
-        for r, test in self.rules:
-            for a in r["actions"]:
-                if wanted(a) and test(e, info):
-                    return a
-        return None
-
-    def _first(self, kind: str, e: Event, info: dict):
-        return self._first_where(lambda a: a["type"] == kind, e, info)
-
-    def _all_where(self, wanted, e: Event, info: dict) -> list[dict]:
-        """Every action `wanted` accepts, of the highest matching rule that has one."""
-        for r, test in self.rules:
-            found = [a for a in r["actions"] if wanted(a)]
-            if found and test(e, info):
-                return found
-        return []
-
-    def _all_of_first(self, kind: str, e: Event, info: dict) -> list[dict]:
-        """Every `kind` action of the highest matching rule that has one (a rule can add two emojis)."""
-        return self._all_where(lambda a: a["type"] == kind, e, info)
-
-    def change_times(self, events: list[Event]) -> list[Event]:
-        """The time changes (before any edit): the first matching "Change" rule for each event, then the first
-        matching "Move this event" (F4); an event with no end time that no rule changes gets the default
-        (DEFAULT_EVENT_TYPE / _HOURS)."""
-        out = []
-        for e in events:
-            info = event_info(e, self.tz)
-            a = self._first_where(lambda x: x["type"] == "change" and x["to"] in ("allday", "length"), e, info)
-            if a is None and e.no_end:
-                a = {"to": "allday"} if self.no_end[0] == "allday" else {"to": "length", "minutes": round(self.no_end[1] * 60)}
-            ev = self._changed(e, a) if a else e
-            m = self._first("move", e, info)
-            if m and m["minutes"]:
-                start, end = shifted(ev.start, ev.end, timedelta(minutes=m["minutes"]))
-                ev = replace(ev, start=start, end=end, ruled=True)
-            out.append(ev)
-        return out
-
-    def _changed(self, e: Event, a: dict) -> Event:
-        if e.all_day:
-            return e
-        s, t = datetime.fromisoformat(e.start).astimezone(self.tz), datetime.fromisoformat(e.end).astimezone(self.tz)
-        if a["to"] == "length":
-            return replace(e, end=(s + timedelta(minutes=a["minutes"])).isoformat(), no_end=False, ruled=True)
-        # all-day, on the day(s) it covers (a whole number of days when it's about that long)
-        days = max(1, round((t - s) / timedelta(days=1)))
-        note = f"Start: {s:%H:%M}" if e.no_end else f"Original time: {s:%a %b %d %H:%M} – {t:%a %b %d %H:%M}"
-        return replace(e, start=s.date().isoformat(), end=(s.date() + timedelta(days=days)).isoformat(), all_day=True,
-                       description=f"{note}\n{e.description}".strip()[:2000], no_end=False, ruled=True)
-
-    def finish(self, events: list[Event]) -> list[Event]:
-        """After edits: each event's rule color, its text changes and adds (F30), its emoji in front of the title,
-        and its deletion (F4). An event edited here keeps its own title, notes and location (a Change leaves
-        them); an Add never writes over anything."""
-        out = []
-        for e in events:
-            if e.origin == "rule":
-                out.append(e)
-                continue
-            info = event_info(e, self.tz)
-            color = self._first("color", e, info)
-            text = {"title": e.title, "notes": e.description, "location": e.location}
-            for field in TEXT_FIELDS:
-                a = None if e.edited else self._first_where(
-                    lambda x, f=field: x["type"] == "change" and x.get("to") == f, e, info)
-                if a:
-                    text[field] = a["text"]
-                for a in self._all_where(lambda x, f=field: x["type"] == "add" and x.get("to") == f, e, info):
-                    text[field] = (f"{text[field]}\n{a['text']}" if text[field] else a["text"]) if field == "notes" \
-                        else f"{text[field]} {a['text']}".strip()
-            emoji = " ".join(a["emoji"] for a in self._all_of_first("emoji", e, info))
-            title = text["title"]
-            if emoji and not title.startswith(emoji):
-                title = f"{emoji} {title}"
-            ev = replace(e, title=title, description=text["notes"][:4000], location=text["location"][:200],
-                         rule_color=color["color"] if color else "")
-            if not e.hidden and not e.deleted and self._first("delete", e, info):
-                ev = replace(ev, hidden=True, deleted="rule|")     # left out of the feeds, struck through; the rule says so
-            out.append(ev)
-        return out
-
-    def made(self, events: list[Event], tz: ZoneInfo) -> list[Event]:
-        """The events "Create event" rules add next to matching events."""
-        found = {}
-        for e in events:
-            if e.origin == "rule" or e.hidden:
-                continue
-            info = event_info(e, self.tz)
-            if self._first("delete", e, info):      # an event a rule deletes makes no companions
-                continue
-            for r, test in self.rules:
-                for i, a in enumerate(r["actions"]):
-                    if a["type"] != "event" or not test(e, info):
-                        continue
-                    t = self.templates.get(a["template"]) if a["template"] else a
-                    if t:
-                        ev = _from_template(e, r["id"] if i == 0 else f"{r['id']}-{i}", a, t, tz)
-                        found[ev.uid] = ev
-        return list(found.values())
-
-    def watched(self, e: Event) -> bool:
-        """Whether a "Record changes" rule follows this event."""
-        return self._first("changes", e, event_info(e, self.tz)) is not None
-
-    @property
-    def records_changes(self) -> bool:
-        return any(a["type"] == "changes" for r, _ in self.rules for a in r["actions"])
-
-
-def _from_template(e: Event, key: str, a: dict, t: dict, tz: ZoneInfo) -> Event:
-    """The event a "Create event" rule makes next to a matching event `e` (all-day events count from midnight)."""
-    if e.all_day:
-        s0 = datetime.combine(date.fromisoformat(e.start[:10]), dtime(), tz)
-        s1 = datetime.combine(date.fromisoformat(e.end[:10]), dtime(), tz)
-    else:
-        s0, s1 = datetime.fromisoformat(e.start), datetime.fromisoformat(e.end)
-    off = timedelta(minutes=a["offset"])
-    at = {"before_start": s0 - off, "after_start": s0 + off, "after_end": s1 + off}[a["when"]].astimezone(tz)
-    if t["all_day"]:
-        start, end = at.date().isoformat(), (at.date() + timedelta(days=1)).isoformat()
-    else:
-        start, end = at.isoformat(), (at + timedelta(minutes=t["minutes"])).isoformat()
-    return Event(title=t["title"], start=start, end=end, all_day=t["all_day"], location=t.get("location", ""),
-                 description=t.get("description", ""), uid=f"{e.uid}#rule-{key}", origin="rule",
-                 color=t.get("color", ""), source=e.source)
-
-
+from datetime import timedelta
+from .rule_engine.rule_error import RuleError
+from .rule_engine.validation import (
+    _int,
+    _day,
+    _clock,
+    _cond,
+    _text,
+    _action,
+    _link,
+    balanced,
+    normalize,
+    normalize_all,
+    applies,
+    is_local,
+    for_source,
+    insert_position,
+    move,
+)
+from .rule_engine.text_matching import (
+    wildcard,
+    pattern_error,
+    test_text,
+    _text_regex,
+    _text_test,
+)
+from .rule_engine.conflicts import (
+    shadow_kind,
+    _cond_key,
+    same_events,
+    shared_calendars,
+    conflict_key,
+    conflicts,
+    merge,
+)
+from .rule_engine.migration import from_v3, starters, ccs_starters
+from .rule_engine.matching import _range_test, _days_test, _test, _compile, event_info
+from .rule_engine.ruleset import Ruleset, _from_template

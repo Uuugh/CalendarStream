@@ -9,8 +9,8 @@ manage it all. See README.md for what it does.
 
 ## Where things are
 
-- `app/`: the app. `main.py` (shared state and orchestration), `routes/` (the status page's routes, by
-  area), `calsync.py` (reading calendars, feeds; the downloads: `curl`, and CCS+'s browser-like client, `CCS_CLIENT`), `rules.py` (the If/Then rules), `gsync.py` (Google),
+- `app/`: the app. `main.py` (composition and compatibility), `services/` (feature application services), `routes/` (the status page's routes, by
+  area), `calsync.py` (calendar compatibility facade; implementations in `calendars/`), `rules.py` (rule compatibility facade; domain in `rule_engine/`), `gsync.py` (Google),
   `store.py` (Postgres), `templates/` (pages, their partials, the page's script), `styles/` (the page's
   stylesheet, by area), `static/` (fonts, emoji). The code map below says which file holds what.
 - `tests/`: the test suites and `run.sh`; `tests/tools/`: setup for a new machine or conversation, a demo
@@ -39,16 +39,52 @@ Read only the part you need. Each file's first lines say what it holds.
 **`app/rules_words.py`**: human-readable rule labels and text formatting, re-exported by `app/rules.py` for existing callers.
 **`app/log_tail.py`**: bounded in-memory logging handler, imported and re-exported by `app/main.py`.
 
-**`app/main.py`**: everything shared, in sections headed `# --- …` (grep for them): logging, the store, the
-Google accounts; calendar sources and destinations; rules and their migration; event templates; History, Undo
-and Logs; Google Calendar sync and two-way sync; publishing calendars, linked and deleted events; the
-background loops and start-up; the app, its middleware and error page; the status-page login (lock-outs,
-known browsers, sessions, the form token); links and addresses; the month view; helpers the routes of more
-than one area use; the admin e-mail; Google invites. It imports `app/routes/` last.
+**`app/main.py`**: composition root and compatibility API. Creates the store, accounts, status instances,
+background-job state, app, templates and tokens. Public function signatures and late monkeypatch lookup are
+preserved by forwarding to feature services with explicit keyword dependencies. Mutable compatibility names
+(`CSRF_TOKEN`, `_following`) are assigned here; their operations live in services. No route imports main.
 
-**`app/routes/<area>.py`**: the routes, one file per area, each with the helpers only it uses. They take
-shared things from `main` by name; anything the tests replace on `main` (`download`, `run_once`, `api_on`,
-`_client_ip`, `__version__`, `CSRF_TOKEN`…) they read as `core.<name>` so the replacement is seen.
+**`app/services/`**: application functions with explicit collaborators; no app instance or database is needed to
+exercise a service with in-memory collaborators:
+
+| Files | Responsibility |
+|---|---|
+| `calendar_sources.py`, `calendar_destinations.py` | Source/default-calendar settings, destination settings and migrations |
+| `rule_settings.py`, `rule_migration.py`, `event_templates.py` | Stored rules, legacy conversion, labels and event templates |
+| `publishing.py`, `event_history.py` | Building stored calendars/feeds and recording source changes |
+| `event_links.py`, `deletions.py` | Linked-event updates and deletion retention |
+| `history.py`, `change.py`, `state.py` | Undo orchestration, Change snapshots and State persistence |
+| `accounts.py`, `google_sync.py`, `google_changes.py`, `google_job.py`, `google_view.py` | Account selection, sync, incoming edits, wake-up state and presentation |
+| `source_jobs.py`, `update_jobs.py`, `lifecycle.py` | Source scheduling, updates, start-up and shutdown |
+| `authentication.py`, `http.py`, `route_helpers.py` | Login/security helpers, middleware/errors and shared form helpers |
+| `page_settings.py`, `calendar_view.py`, `addresses.py` | Page preferences/rendering, calendar views and public links |
+| `administrator.py`, `invites.py`, `clock.py`, `logging_setup.py`, `field_error.py` | Administrator address, invites, clock, log wiring and FieldError |
+
+**`app/runtime/`**: binds the `State` and `Change` compatibility constructors to explicit late-bound providers.
+The class implementations each live in their own service file. Existing callers still use `main.State` and
+`main.Change` with their original constructor signatures.
+
+**`app/calendars/`**: `event.py` / `defaults.py` models; `parsing.py` calendar and recurrence parsing;
+`edits.py` event edits; `feed.py` serialization; `validation.py` payload validation; `errors.py` the closed
+source-error family; `download.py` Download result; `downloads.py` curl/browser transports and retries;
+`meeting.py` meeting links; `view_helpers.py` lane placement and optional dates. `app/calsync.py` is the
+compatibility facade and forwards mutable transport overrides and feed limits explicitly.
+
+**`app/rule_engine/`**: rule domain modules: `schema.py` constants; `rule_error.py` RuleError;
+`validation.py` normalization/order; `text_matching.py` bounded text patterns; `matching.py` condition
+compilation/event facts; `conflicts.py` conflict detection; `migration.py` legacy/starter rules;
+`ruleset.py` Ruleset application and companion events. `app/rules.py` re-exports the existing interface;
+`app/rules_words.py` retains wording. Rule domain modules import the Event model directly.
+
+**`app/routes/__init__.py`**: registers the areas in the original matching order. Each area's `register()`
+receives shared services explicitly. Names historically patched on main are zero-argument providers so each
+request sees the current value. Registration publishes legacy route-helper exports for existing callers.
+The page's `source_note` helper is passed to destination registration explicitly.
+
+**`tests/suite_77.py`**: database-free refactor contracts: import/header boundaries and isolated domain/service
+behavior, including late-bound state collaborators, linked-event recursion and snapshots.
+
+**`app/routes/<area>.py`**: the routes, one file per area, with the helpers only that area uses:
 
 | File | Routes |
 |---|---|

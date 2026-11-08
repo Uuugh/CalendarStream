@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 
-from .calsync import Event
+from .calendars.event import Event
 
 
 def _when(value: str) -> date | datetime | None:

@@ -1,8 +1,8 @@
 """Extract online meeting links from calendar events.
 
 Holds: meeting_link, event_meeting, MEETING_RE.
-Depends on: nothing.
-Used by: app/calsync.py.
+Depends on: no other app files.
+Used by: app/calendars/parsing.py, app/calsync.py.
 Reads/writes: nothing.
 Dart note: Meeting link extractor in calendars/domain; accepts event-like values.
 """

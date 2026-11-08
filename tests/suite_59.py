@@ -44,7 +44,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     main.updates.store.set("update_check", {"checked": (datetime.now(timezone.utc) - timedelta(minutes=50)).isoformat(), "channel": channel()})
     nxt = main.updates.next_check(datetime.now(timezone.utc))
     ok(nxt and timedelta(minutes=9) < nxt - datetime.now(timezone.utc) < timedelta(minutes=11), "F1: the next automatic check is due at the frequency chosen (hourly: 10 min after 50)")
-    src = open(os.path.join(os.path.dirname(HERE), "app", "main.py")).read()
+    src = open(os.path.join(os.path.dirname(HERE), "app", "services", "update_jobs.py")).read()
     ok("await asyncio.sleep(min(3600, max(60, wait)))" in src, "F1: the update loop wakes when the next check is due")
 
     # --- F2: Remove a feed: the note on the line under the question -------------------------------------------------
