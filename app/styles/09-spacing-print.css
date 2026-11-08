@@ -13,7 +13,6 @@
   .sections .cfgbody { margin-top:2px; padding-bottom:2px }
   .sections .cfggrid { gap:2px 16px }
   .sections form .pair { row-gap:2px; margin-top:2px }
-  .sections form .pair label.fld, .sections .cfggrid .siteaddr { gap:2px }
   .sections .rulebox, .sections .rulelist { margin-top:2px }
   .sections p.mnote, .sections .check, .sections .k, .sections .statusline, .sections .btnrow { margin-top:2px; margin-bottom:0 }
   .sections .subbox { margin-top:5px; padding-top:5px }
@@ -58,7 +57,6 @@
     .topbar, .sections, .foot, dialog, .navbtn, .calright, .monthpick, .caret, .day .add, .aday .add, .legend .helpdot { display:none !important }
     main { max-width:none; padding:0 }
     #cal { border:0; padding:0; margin:0 }
-    .calhead .title { font-size:20px; padding:0 }
     .ev summary { white-space:normal; overflow:visible }
     .ev, .legitem::before { -webkit-print-color-adjust:exact; print-color-adjust:exact }
     .ev[open] .body { display:none }

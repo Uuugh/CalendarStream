@@ -73,7 +73,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok('id="hourgrip"' in w and "--hhu:64px" in w and 'role="slider"' in w, "I20: Week has the handle left of the times, at the saved height")
     post("/ui/view", view="month")
     css = read("app", "styles", "19-calendar.css")
-    ok("gap:5px; flex:0 0 auto" in css.replace("\n", " ") and ".calhead { display:flex; align-items:center; gap:8px" in css, "I16: the top line's gaps are tighter")
+    header_css = read("app", "styles", "19-calendar-header.css")
+    ok("gap:5px; flex:0 0 auto" in header_css.replace("\n", " ") and ".calhead { display:flex; align-items:center; gap:8px" in header_css, "I16: the top line's gaps are tighter")
 
     # --- I11: Print's orientation ---
     for orient, want in (("", "land"), ("auto", "land"), ("port", "port"), ("land", "land")):

@@ -72,17 +72,29 @@ Sync Now), `05-report` (Report a problem; + Add a calendar's presets), `06-rules
 `10-fields` (History's filter, file and date fields, pop-ups), `11-reminders-print`, `12-handles-checks`
 (dragging, refused fields, copy), `13-feeds`, `14-status-fold` (the ✓ shrink of good status words, the 24-hour fold), `15-field-notes` (0.2.8-beta.28: the note under a field while typing), `16-beta-traffic` (F59: the Beta: Google Traffic section's poll and expandable rows).
 
-**`app/styles/NN-<what>.css`**: the page's stylesheet, sent as one file (`/assets/app.css`) in number order.
-The order is the cascade's (a later rule wins a tie), so the parts are named for what they mostly hold and
-never reordered: `01-base`, `02-topbar-settings`, `03-sections-editors`, `04-calendar`, `05-log-logins-forms`,
-`06-sections-boxes`, `07-calendars-feeds`, `08-layout` (narrow boxes, rule lines, wide and narrow screens),
-`09-spacing-print`, `10-calendar-module`, `11-modules` (the theme's modules, color box, status, Sync Now),
-`12-handles`, `13-popups`, `14-rule-dialog`, `15-features` (Remove a calendar, Updates, Google API Sync,
-search, import, date ranges, History…), `16-feeds`, `17-spacing` (0.2.8-beta.21, R11: the theme's spacing rule,
-last so it wins; a spacing change goes here), `18-two-three-line` (0.2.8-beta.28, F31: the 2/3-line box of the status lines in
-module and section headers), `19-calendar` (0.2.8-beta.29: the calendar's header, switches, hourly grid, key, Full page, Administrator, Look; last so it wins). A style for one area can live in more than one part:
-grep `app/styles/` for its class. New styles go at the end of the part for their area, unless they must win
-over a later part.
+**`app/styles/NN-<what>.css`**: source modules are concatenated in filename order into one gzip-capable
+`/assets/app.css` response; a source file is not a browser request. Preserve order while migrating components,
+but do not append historical overrides to win the cascade. Each component owns its base, states, responsive
+rules and print behavior. Shared values are tokens in `app/templates/_theme.html`.
+
+The first consolidation establishes these owners:
+
+| File | Owns |
+|---|---|
+| `19-calendar-header.css` | Calendar header, title/caret, navigation, compact/wrapped layout, responsive and print rules |
+| `13-dropdowns.css` | Month, view and language menu panels and their contents |
+| `19-calendar.css` | Hourly grid, key/legend (including its 5 px top margin), stretch/full-page behavior, existing settings styles |
+| `07-calendars-feeds.css` | Base source-picker row, including its 1 px label spacing; `16-feeds.css` owns the feed-specific grid variant |
+| `09-spacing-print.css` | Shared print visibility only; component print geometry remains with its owner |
+| `13-popups.css` | Modal dialog geometry, backdrop, motion and phone full-screen behavior |
+| `17-spacing.css` | Cross-component flow spacing using shared tokens; not a final override layer |
+
+Other source modules retain their current ordering and responsibilities while future components are migrated.
+For a component above, update its owner instead of adding a later override. Add exceptions in its owner's
+state/media block, document any design exception in `build_rules/theme.md`, and check the rendered result.
+`python3 tests/tools/csscheck.py` checks ownership and duplicate declarations in the consolidated components;
+`tests/suite_44.py` checks the rendered theme in both palettes and widths. `tests/tools/theme_shots.py DIR`
+captures the page, open modules, menus/dialogs, all calendar views, full-page and print mockups from the demo.
 
 ## How code is structured (R18, R19)
 

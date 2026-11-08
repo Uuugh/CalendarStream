@@ -2,28 +2,6 @@
      The top line, the 12h | 24h and On | Off switches, the view drop-down, the hourly Week and Day grid, the key, Full page, the
      stretch handle and the search line's date hints. */
   #cal { position:relative }
-  /* F15.1: the date on the left, the tools on the right with a space between; + stays in the top right corner; too narrow: the tools go under */
-  .calhead { display:flex; align-items:center; gap:8px; flex-wrap:nowrap }   /* (beta.31, I16) tighter: 12 → 8 */
-  .calhead .calleft { display:flex; align-items:center; gap:8px; flex:0 0 auto }
-  .calhead .calright { margin-left:auto; display:flex; align-items:center; gap:5px; flex:0 0 auto; flex-wrap:nowrap; justify-content:flex-end }
-  .calhead .calplus { flex:0 0 auto }
-  .calhead.two { display:grid; grid-template-columns:minmax(0, 1fr) auto; row-gap:6px }
-  .calhead.two .calleft { grid-column:1; grid-row:1; flex-wrap:wrap }
-  .calhead.two .calplus { grid-column:2; grid-row:1 }
-  .calhead.two .calright { grid-column:1 / -1; grid-row:2; margin-left:0; justify-content:flex-end; flex-wrap:wrap }
-  .calright .iconbtn { height:28px; width:28px }
-  /* F15.6: the view; 0.2.8-beta.33, F52: icons, not words - the closed button shows only the current view's icon,
-     the open menu shows each choice's icon left of its word (same pattern as the language menu). */
-  .viewwrap { position:relative }
-  .viewmenu { position:absolute; right:0; top:calc(100% + 6px); min-width:160px; z-index:11; background:var(--card);
-              border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18); padding:6px }
-  .viewmenu[hidden] { display:none }
-  .viewmenu button { display:flex; width:100%; align-items:center; gap:10px; background:transparent; color:var(--text);
-                     border:0; border-radius:6px; padding:7px 10px; font-weight:500; text-align:left }
-  .viewmenu button:hover, .viewmenu button:focus { background:var(--soft) }
-  .viewmenu button .mi { flex:0 0 auto; color:var(--muted) }
-  .viewmenu button[aria-checked="true"] { color:var(--accent) }
-  .viewmenu button[aria-checked="true"] .mi { color:var(--accent) }
   /* F15.2, F25: a rounded switch with its two words inside and a highlight that slides to the one in use (12h | 24h; On | Off) */
   .segsw { position:relative; display:inline-grid; grid-template-columns:1fr 1fr; align-items:center; height:28px; min-height:0; padding:2px; margin:0;
            border:1px solid var(--line); border-radius:var(--r); background:var(--soft); color:var(--muted); font:inherit; font-size:12.5px; font-weight:600;
@@ -77,7 +55,7 @@
   .hcol .ev.timed[open] { z-index:4; height:auto; min-height:calc((var(--m1) - var(--m0)) * var(--hh) / 60 - 1px); left:1px; width:calc(100% - 3px); overflow:visible;
                           box-shadow:0 4px 14px rgba(0,0,0,.25) }
   /* the key (F15.8, F26): Calendars | Key, columns of three from the left and from the right; a row taller when they don't fit */
-  .legend { display:flex; align-items:stretch; gap:12px; flex-wrap:nowrap; font-size:12px; color:var(--muted); margin:8px 0 0 }
+  .legend { display:flex; align-items:stretch; gap:12px; flex-wrap:nowrap; font-size:12px; color:var(--muted); margin:var(--space-part) 0 0 }
   .legpart { min-width:0 }
   /* (0.2.8-beta.33, F49) Calendars takes only the width its own list needs, so the vertical rule sits right after
      it; Key (already right-aligned, stacks of three from the right) grows to fill what's left. */
@@ -113,7 +91,7 @@
   #cal.full .month { min-width:0 }
   #cal.full .month .day { min-height:0; overflow:auto }
   #cal.full .month { grid-auto-rows:minmax(0, 1fr) }
-  @media (max-width:700px) { .calhead .calleft { flex-wrap:wrap } }
+
 
 /* (0.2.8-beta.29, F32, F33) Settings > Administrator: a Status/Action box; its action half becomes Cancel | Save */
 /* (0.2.8-beta.31, I22) the Status/Action box sits on the "Administrator" heading's own line (a row less), and its Cancel | Save are the standard ✕ and ✓ while idle */

@@ -73,8 +73,6 @@ details.gsteps ol > li.done { color:var(--muted) }
                                                                                border-radius:var(--r); background:var(--bg); color:var(--text); box-sizing:border-box }
 .calsearch input[type=search] { width:100% }
 .calsearch .qdate { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; color:var(--muted) }
-.calhead { position:relative; padding-right:46px }
-.calhead .calplus { position:absolute; top:0; right:0 }     /* always the top right corner, even when the controls wrap */
 /* Google Calendar API Sync's Remove (0.2.8-beta.12): lower left, like a module's, the tick beside it */
 .menu .gremoverow { display:flex; align-items:center; justify-content:flex-start; gap:10px; margin-top:6px }
 .menu .gremoverow button.danger { display:inline-flex; align-items:center; gap:4px; height:34px; padding:0 12px }

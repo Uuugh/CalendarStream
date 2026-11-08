@@ -2,9 +2,8 @@
      Fonts, colors, corners and icons come from _theme.html. Every calendar and feed is a module: a
      50 px header (all a folded module shows), then its details. Folded, there's no line under the
      header: "▸ Expand … ◂" sits in the module's bottom border. */
-  /* (beta.15) a 2 px border, with 1 px less padding all round, so a module is the same size as before */
-  .box.module { position:relative; container-type:inline-size; border-width:1px; padding:5px 9px 5px; margin-top:5px }
-  .box.module:not(.cfgopen) { padding-bottom:11px }
+  /* Current module geometry: 1px border, 9px sides and 5px top/bottom in both states. */
+  .box.module { position:relative; container-type:inline-size; border-width:1px; padding:var(--space-module-y) var(--space-module-x); margin-top:5px }
   .box.module:not(.cfgopen) + .box.module { margin-top:14px }            /* room for the Expand text between them */
   .module .srchead { display:flex; align-items:center; gap:10px; height:50px }
   .module .srchead .swatch, .module .colorbox { flex:0 0 22px; width:22px; height:46px; border-radius:6px }
@@ -115,15 +114,13 @@
   /* Icons drawn by stylesheets */
   .section > .shead .toggle::before { content:""; width:18px; height:18px; background:currentColor; font-size:0;
                                       -webkit-mask:var(--i-arrow) center / contain no-repeat; mask:var(--i-arrow) center / contain no-repeat }
-  .langmenu button[aria-checked="true"]::after { content:""; width:18px; height:18px; background:var(--accent);
-                                                 -webkit-mask:var(--i-check) center / contain no-repeat; mask:var(--i-check) center / contain no-repeat }
+
   .ev .mark svg, .legendkey svg, .statline svg, .check svg, .mnote > svg { vertical-align:-3px }
   .ev .body > svg { vertical-align:-2px }
   button.addrule { gap:4px; padding-left:8px }
-  .menu, .langmenu { border-radius:var(--rbox) }
+  .menu { border-radius:var(--rbox) }
   .num { border-radius:5px }
   .clockswitch button { border-radius:6px } .clockswitch button span { border-radius:4px }
-  .calhead .caret { display:inline-flex; vertical-align:middle; margin-left:-2px }
 
   /* (0.2.8-beta.24, F7; 0.2.8-beta.26, F10, F12.3, F21) Sections and modules told apart, the look otherwise kept. Each section: its
      own muted border color (35% of it, mixed with --line), 1 px, on the existing --card. Each module: its calendar's or feed's

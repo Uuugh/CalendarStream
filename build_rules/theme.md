@@ -21,11 +21,24 @@ The sections below follow the picture's Part 2, card by card (0.2.8-beta.24, R1)
 buttons** = a status box: the state, with its action under it (section 7). Other words (Cancel | Yes, No | Yes)
 are still used where they fit.
 
+
+## Reading these rules
+
+The numbered sections describe the current design. Clarifications record the Developer's decisions and their
+origin; when an older decision was superseded, the current value is stated here rather than retaining both as
+competing requirements. The pictures are historical snapshots, not a second specification.
+
+The shared values live in `app/templates/_theme.html`: 5 px between content parts, 1 px between a label and its
+field, 12 px dialog/menu padding, 9 px module side padding, 5 px module vertical padding, and 13 px notes.
+Component files own their base, states, responsive and print rules. `17-spacing.css` contains shared flow rules;
+it is not a final override layer. See AGENTS.md for the CSS ownership map.
+
 ## 1. Fonts
 
 Picture 2·1. IBM Plex Sans (`--font`) for everything; IBM Plex Mono (`--mono`) only for what's typed or copied
 exactly (links, IDs, the Username, the client ID, the stream name). Served by CalendarStream, never Google Fonts.
-Module kind 17 px/700, text 14, labels 600, notes 13 muted.
+Module kind 17 px/700 (15 px on a phone), default text 14 px, labels 600, notes 13 px muted.
+General top-bar icon buttons are 34 × 34 px; the compact calendar toolbar uses 28 × 28 px icons.
 
 ## 2. Website color palette
 
@@ -38,12 +51,16 @@ palette, Google Calendar's 11 colors, is the color box's: section 14.)
 | `--card` | #fdfcfa | #171b23 | sections, modules, pop-ups; words on a filled button |
 | `--soft` | #f1efeb | #1d222c | quiet fills (instruction tiles, hover) |
 | `--line` | #e8e4de | #2a303b | every border and divider |
-| `--text` / `--muted` | #2b2f36 / #7a8291 | #e6e8ec / #98a2b3 | text / labels, notes, status lines |
+| `--text` / `--muted` | #2b2f36 / #626c7c | #e6e8ec / #98a2b3 | text / labels, notes, status lines |
 | `--accent` (`--onaccent`) | #40609c (#fff) | #93b4ff (#0f1218) | pressable buttons only |
 | `--ok` / `--okbg` | #2f7d62 / #eef5f0 | #4ade80 / #0f2a20 | green: done, OK |
 | `--run` / `--runbg` | #40609c / #eef1f7 | #93b4ff / #14203d | pressed: in action, or waiting on you |
 | `--warn` / `--warnbg` | #946a24 / #faf3e6 | #fbbf24 / #2b2110 | amber: a problem outside CalendarStream |
 | `--bad` / `--badbg` | #b4483c / #faeeeb | #f87171 / #2d1414 | red: CalendarStream itself failed |
+
+Muted text must reach 4.5:1 against `--card`, `--bg` and `--soft` in both palettes. The light muted
+value is #626c7c (replacing #7a8291, which reached only 3.77:1 on cards). This is a readability correction;
+the accent and status colors are unchanged.
 
 Section colors (0.2.8-beta.24, F7; 0.2.8-beta.26, F10), each a muted border (35% of the color, mixed with `--line`) on `--card`:
 Calendar slate blue #5b6f9a, Calendars teal #2a9d8f, Feeds a clear blue #2f86c8 (not the buttons' #40609c, not Calendar's slate),
@@ -68,7 +85,7 @@ day in the calendar (Clarifications), and the focus outline.
 
 ## 5. Static & Icon buttons
 
-Picture 2·5. Buttons that do one thing and don't show a state: icon buttons (34 × 34 px, the icon `--muted`, `--soft`
+Picture 2·5. Buttons that do one thing and don't show a state: icon buttons (34 × 34 px in the general toolbar; 28 × 28 px in the compact calendar toolbar, the icon `--muted`, `--soft`
 behind it on hover), every +, Copy (the icon becomes "Copied" for 1.8 s), Open, Expand / Close. A field saved in
 place shows ✓ once saved, then ✕ | ✓ while typing (✕ puts it back, ✓ saves it).
 
@@ -153,7 +170,7 @@ fades, spins or pulses: each state simply replaces the last, with the same words
 
 ## 9. Modules
 
-Picture 2·9. Every calendar and feed: a 50 px header is all a folded one shows; a 2 px border. Line 1: the color
+Picture 2·9. Every calendar and feed: a 50 px header is all a folded one shows; a 1 px border. Line 1: the color
 box, the kind (fixed text), "Last synced 00:31" and the Status/Action buttons on the right. Line 2: the label
 (plain text; a field of the same size while expanded) with a raised (i), "Next check @ 00:44" on the right. Expand
 sits in the bottom border; open, a Close line sits under the header.
@@ -162,7 +179,12 @@ Colors (0.2.8-beta.24, F7; 0.2.8-beta.26, F10, F12.3): a module's border is its 
 tint and the rest a 3% tint of it, in light and dark; each section has its own muted border (section 2) on `--card`, so
 sections and modules are told apart while everything else stays as it was.
 
-**The 2/3-line** (0.2.8-beta.28, F31): every module's two status lines, and the up to three lines of All Rules, Event Templates and History's latest, sit in one rounded box (1 px `--line` border, the `--soft` fill, text left-aligned), one standard width (`--tl-w`), centered across the header when there is room, and shown only while the module or section is collapsed. **Default** (I2) sits right of a CalendarStream calendar's title; the other CalendarStream calendars show it greyed, as a button, while expanded. **The On | Off switch** (F25) is a switch like 12h | 24h, at the upper right of an expanded module; Off dims the module.
+**The 2/3-line**: status lines are unboxed: no border or fill, right-aligned next to their Status/Action
+button, visible only while collapsed (0.2.8-beta.32, I27 supersedes the earlier boxed, centred layout).
+**Default** sits right of a CalendarStream calendar's title; while expanded, the other local calendars offer
+it as a button and read-only calendars show it disabled. **On | Off** sits inline before an expanded module's
+note; Off dims the module and keeps its settings. The control is a 28 px-high, 8 px-cornered segmented switch.
+
 
 (i) is info, about this module: what it is, then its note when it has one; (?) is help (section 12).
 
@@ -174,23 +196,31 @@ R11, 0.2.8-beta.21; tried for now and adapted as needed:
 - 9 px inside a module's border at the sides, 5 px top and bottom; the 50 px header unchanged. A box
   inside a module (Include, an instruction tile) is 5 px 9 px too.
 - 12 px inside every pop-up, so all pop-ups and all modules are formatted alike.
-- No other padding or margin (F9). The one exception: a folded module or module-like section keeps 14 px
-  below it, for the Expand line in its border.
+- These values govern spacing between content parts. Internal control geometry, calendar cells and anchored
+  header layouts use the component sizes below; they are not extra flow spacing. A folded section keeps 14 px
+  below it for the Expand line in its border.
 - A module's Close line has 2 px less above and below it (0.2.8-beta.26, F12.2). The bottom padding is the same folded and open:
   5 px in a module, 18 px (as at its top) in a module-like section (0.2.8-beta.26, I6).
-- The rule lives in `app/styles/17-spacing.css`, last, so it wins; the theme suite measures it.
+- Values are shared tokens in `_theme.html`; shared flow selectors live in `17-spacing.css`. A component's
+  spacing belongs in its component file, not in a later file that overrides it. The theme suite measures values.
+- The calendar key starts 5 px below the calendar. Header date/navigation gaps remain 8 px; tool gaps are 5 px;
+  the wrapped second row has a 6 px gap. These compact header dimensions are deliberate component geometry.
 
 ## 10. Handles
 
-Picture 2·10. (0.2.8-beta.28, I12) One handle in the margin on the left of the module or rule line: ▲ above, the grip (two columns of three faint dots, like Gmail's), ▼ below; always visible; none with nothing to reorder; nothing in the right margin. Drag the grip to reorder, or use ▲ ▼ with the keyboard. Every request about the "hamburger slider" means this grip.
+Picture 2·10. (0.2.8-beta.28, I12) One handle in the margin on the left of the module or rule line: ▲ above, the grip (two columns of three faint dots, like Gmail's), ▼ below; always visible; none with nothing to reorder. Left is the default; Theme can place grips in the right margin. Drag the grip to reorder, or use ▲ ▼ with the keyboard. Every request about the "hamburger slider" means this grip.
 
 ## 11. Pop-ups
 
-Picture 2·11. Pop-ups and drop-downs: 12 px corners, 12 px padding, ← and the title; the whole screen on a phone
-(≤ 700 px); the page behind dimmed (rgba(0,0,0,.55)) and blurred (2 px). Every + opens one, centred. A question
+Picture 2·11. Modal pop-ups: 12 px corners and 12 px padding, ← and the title; the whole screen on a phone
+(≤ 700 px), with square edge-to-edge corners. The page behind is dimmed (rgba(0,0,0,.55)) and blurred (2 px). Every + opens one, centred. A question
 is one too, never the browser's alert / confirm box: its answers on one line, or one under the other when they're
 sentences; a second line under the question is a note, muted and not bold. A choice of calendars is a drop-down
 of ticks.
+
+Anchored month, view and language menus keep their compact panel positioning on a phone. Their panel padding
+and corners are also 12 px. The month menu's grid cells and arrow buttons retain their own compact geometry;
+these anchored menus do not dim the page or fill the phone. Full-screen behavior applies to modal dialogs.
 
 ### Color box and emoji (was card 14)
 
@@ -258,7 +288,7 @@ one here, with its card.
 
 - Module handles (▲ grip ▼; 0.2.8-beta.28, I12) sit in the margin on the left of the module or rule line: they take up no extra space,
   they are always visible (faint), never over a box, and modules (and All Rules' lines) are as wide as the section header (their right
-  edge lines up with its +). The grip is two columns of three dots; it is centered on the module's 50 px header or on the rule line. No
+  edge lines up with its +). The grip is two columns of three dots; it is centered on the module's 50 px header or on the rule line. Theme may put grips on the right; left is the default. No
   handle where there's nothing to reorder (a list of one). (Picture 2·10)
 - Calendar and feed module headers share one layout. Line 1: the color (calendars only), the module's
   kind (fixed text, 17 px, 15 on a phone where it may take two lines: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar,
@@ -307,7 +337,7 @@ one here, with its card.
   one line, the icons go on a line above Close. (Part 1)
 - Events show the color Google shows: their own, their rule's, else their calendar's. (Part 1)
 - Rule lines say what the rule does, titled or not ("Items without an end time → Change length to 1:00"). (Picture 2·10)
-- Fields everywhere, pop-ups included: a 12 px muted label over a 34 px field, 2 px apart; a value that
+- Fields everywhere, pop-ups included: a 12 px muted label over a 34 px field, 1 px apart; a value that
   can't be changed (an event's calendar) is plain text. Related fields share a line (Calendar | Title,
   Location beside the event's color, link and duplicate; Starts | Ends, each with its Time under it). (Picture 2·1)
 - Every section's + is in its top right corner (Calendars, Feeds, All Rules, Event Templates, the calendar). The calendar's search
@@ -365,19 +395,18 @@ one here, with its card.
 - Sections and modules are told apart by color, nothing else changing: each section's 1 px border its own muted
   color (35%) on `--card`; each calendar's or feed's module bordered in its color at 45%, its header tinted 6% and the rest
   3%; light and dark. (0.2.8-beta.24, F7; 0.2.8-beta.26, F10, F12.3; Pictures 2·2, 2·9)
-- The 2/3-line (0.2.8-beta.28, F31): the status lines of every module and section sit in a rounded box (1 px border, soft fill, text left-aligned), one standard width, centered across the header, shown only while collapsed. (Picture 2·9)
+- The 2/3-line (0.2.8-beta.28, F31): the status lines of every module and section share a standard width, shown only while collapsed. The current presentation is unboxed and right-aligned next to its Status/Action box (I27 below supersedes the original border/fill and centring). (Picture 2·9)
 - The On | Off switch (0.2.8-beta.28, F25): at the upper right of an expanded module, like the 12h | 24h switch; Off dims the module grey and the setting is never lost. (Picture 2·9)
-- The calendar's header (0.2.8-beta.29, F15, F26): the view is a drop-down (Month, Week, 5 days, Day, List), the 12h | 24h choice is a segmented
-  switch (the highlight slides to the one in use; 28 px high, rounded 8 px), and the On | Off switch of a module looks the same. Time Zone,
+- The calendar's header (0.2.8-beta.29, F15, F26): the view is a drop-down (Month, Week, 5 days, Day, List), 12h | 24h is a clock icon with the current format in its tooltip. Calendar toolbar icons are 28 px square; the On | Off switch of a module is a 28 px-high segmented control with 8 px corners. Time Zone,
   view, 12h | 24h, search, Print and Full page sit in the right group; the + is the upper right corner. When they do not fit one line the right
   group drops to a second line. (Suites 21, 64)
 - The calendar's key (0.2.8-beta.29, F15): two parts under the calendar, Calendars (each with its (i)) and Key (rule colors, Edited, United
   changed it since, Hidden from Google, Deleted), side by side, a thin vertical line between, in as many columns of at most three rows as the
-  width needs. Only in Full page do clicks hide or show an item's events (on the calendar and in Print only). (Suites 21, 64)
+  width needs. In every calendar mode, clicks dim/hide an item's events on the calendar and in Print (F48 supersedes the old Full-page-only restriction). (Suites 21, 64)
 - Week and Day show an hourly grid (0.2.8-beta.29, F28): all 24 hours in a scrolling area (it starts at the first event or 7 am), events
   placed by their time, side by side when they overlap, all-day events above. The stretch handle adds height to a day or hour and is kept.
   (Suite 64)
-- Full page (0.2.8-beta.29, F27): the Calendar fills the window and every other section is hidden; the button's icon becomes Back. A day is at
+- Full page (0.2.8-beta.29, F27): the Calendar fills the window and every other section is hidden; the button's icon becomes the two-window restore icon. A day is at
   most 2:3 (width:length); extra weeks of the next and the previous month are added until the page is full. (Suite 64)
 - Print (0.2.8-beta.29, I11) lays each sheet out for the paper: landscape for the month, week and 5 days, portrait for the day and the
   itinerary; Letter for English, A4 otherwise; one sheet per page, whole titles wrap, a day that would not fit gets smaller type, and

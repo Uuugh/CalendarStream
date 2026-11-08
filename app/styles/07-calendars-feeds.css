@@ -44,7 +44,7 @@
   button.danger { color:var(--bad) }
   .removeform { margin-top:12px }
   .removeform p, .removeform label { flex:1 1 240px }
-  .srcpicks { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:4px; font-size:14px }
+  .srcpicks { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:var(--space-label); font-size:14px }
   .srcpick { display:inline-flex; align-items:center; gap:6px; cursor:pointer }
   .destform .pair label.fld { flex:0 1 320px }
   .addmenu input.solo, .addbody input.solo { width:100%; font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg); color:var(--text) }

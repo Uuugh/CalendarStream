@@ -1,0 +1,37 @@
+/* Holds: Calendar header, navigation, wrapped state and print layout.
+   Depends on: app/templates/_theme.html.
+   Used by: app/routes/page.py stylesheet assembly and page templates.
+   Reads/writes: no external data; renders DOM states and media queries.
+   Dart note: calendar header UI layout and responsive constraints. */
+/* Calendar header and navigation: base layout, compact state, responsive layout and print.
+   This file owns these selectors; do not append header overrides in spacing/history files.
+   Compact calendar controls remain 28px; general icon buttons are 34px (theme.md §§4–5). */
+  .calhead { display:flex; align-items:center; gap:8px; flex-wrap:nowrap; position:relative;
+             padding-right:46px; margin-bottom:var(--space-part) }
+  .calhead .title { font-size:18px; font-weight:700; min-width:150px }
+  .calhead button.title { background:transparent; color:var(--text); border:0; padding:4px 6px;
+                         border-radius:var(--r); cursor:pointer; text-align:left; font-family:inherit; height:auto }
+  .calhead button.title:hover, .calhead button.title[aria-expanded=true] { background:var(--soft) }
+  .calhead .caret { font-size:12px; color:var(--muted); display:inline-flex; vertical-align:middle; margin-left:-2px }
+  .monthwrap, .viewwrap { position:relative }
+  .calright { margin-left:auto; display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end }
+  .calhead .calleft { display:flex; align-items:center; gap:8px; flex:0 0 auto }
+  .calhead .calright { margin-left:auto; display:flex; align-items:center; gap:5px; flex:0 0 auto; flex-wrap:nowrap; justify-content:flex-end }
+  .calhead .calplus { flex:0 0 auto; position:absolute; top:0; right:0 }
+  .calhead.two { display:grid; grid-template-columns:minmax(0, 1fr) auto; row-gap:6px }
+  .calhead.two .calleft { grid-column:1; grid-row:1; flex-wrap:wrap }
+  .calhead.two .calplus { grid-column:2; grid-row:1 }
+  .calhead.two .calright { grid-column:1 / -1; grid-row:2; margin-left:0; justify-content:flex-end; flex-wrap:wrap }
+  .calright .iconbtn { height:28px; width:28px }
+
+  .navbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border:1px solid var(--line);
+            border-radius:var(--r); text-decoration:none; color:var(--accent); font-size:18px; font-weight:700 }
+  .navbtn.wide { width:auto; padding:0 12px; font-size:14px }
+  @media (max-width:700px) { .calhead .calleft { flex-wrap:wrap } }
+  @media (max-width:600px) {
+    .monthwrap { position:static }
+    .calright { margin-left:0; justify-content:flex-start }
+  }
+  @media print {
+    .calhead .title { font-size:20px; padding:0 }
+  }

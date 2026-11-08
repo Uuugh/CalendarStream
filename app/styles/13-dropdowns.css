@@ -1,0 +1,37 @@
+/* Holds: Month, view and language menu panels and states.
+   Depends on: app/templates/_theme.html.
+   Used by: app/routes/page.py stylesheet assembly and page templates.
+   Reads/writes: no external data; renders DOM states and media queries.
+   Dart note: shared menu UI theme and panel components. */
+/* Anchored calendar/view/language menus. Shared panel geometry follows theme.md §11.
+   Full-screen modal dialogs are owned by 13-popups.css. */
+  .monthpick, .viewmenu, .langmenu { position:absolute; top:calc(100% + 6px); background:var(--card);
+    border:1px solid var(--line); border-radius:var(--rbox); padding:var(--space-dialog) }
+  .viewmenu, .langmenu { right:0; z-index:11; box-shadow:0 8px 24px rgba(0,0,0,.18) }
+  .monthpick button, .langmenu button { height:auto }
+  .monthpick { left:0; z-index:8; width:250px; box-shadow:0 10px 30px rgba(0,0,0,.18) }
+  .monthpick .yearrow { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:15px }
+  .monthpick .yearrow button { width:30px; height:30px; padding:0; background:transparent; color:var(--accent); border:1px solid var(--line); border-radius:var(--r); font-size:18px; line-height:1; cursor:pointer }
+  .monthpick .months { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px }
+  .monthpick .months button { background:transparent; color:var(--text); border:1px solid var(--line); border-radius:var(--r); padding:7px 0; font-size:13px; font-weight:500; cursor:pointer }
+  .monthpick .months button:hover { background:var(--soft) }
+  .monthpick .months button.on { background:var(--accent); color:var(--onaccent); border-color:var(--accent); font-weight:700 }
+  .viewmenu { min-width:160px }
+  .viewmenu[hidden] { display:none }
+  .viewmenu button { display:flex; width:100%; align-items:center; gap:10px; background:transparent; color:var(--text);
+                     border:0; border-radius:6px; padding:7px 10px; font-weight:500; text-align:left }
+  .viewmenu button:hover, .viewmenu button:focus { background:var(--soft) }
+  .viewmenu button .mi { flex:0 0 auto; color:var(--muted) }
+  .viewmenu button[aria-checked="true"] { color:var(--accent) }
+  .viewmenu button[aria-checked="true"] .mi { color:var(--accent) }
+
+  .langmenu { min-width:210px }
+  .langmenu[hidden] { display:none }
+  .langmenu button { display:flex; width:100%; justify-content:space-between; gap:12px; background:transparent; color:var(--text);
+                     border:0; border-radius:6px; padding:7px 10px; font-weight:500; text-align:left }
+  .langmenu button:hover, .langmenu button:focus { background:var(--soft) }
+  .langmenu hr { border:0; border-top:1px solid var(--line); margin:4px 2px }
+  @media (max-width:600px) { .monthpick { left:0 } }
+
+  .langmenu button[aria-checked="true"]::after { content:""; width:18px; height:18px; background:var(--accent);
+                                                 -webkit-mask:var(--i-check) center / contain no-repeat; mask:var(--i-check) center / contain no-repeat }

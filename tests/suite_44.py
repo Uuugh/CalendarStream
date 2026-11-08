@@ -91,6 +91,34 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                 pg.wait_for_timeout(300)
                 m = pg.evaluate(MEASURE); tag = f"{scheme} {w}px"
                 ok(m["scroll"] <= w, f"[{tag}] no sideways scroll")
+                theme_values = pg.evaluate("""() => {
+                    const css = s => getComputedStyle(document.querySelector(s));
+                    const icon = document.querySelector('.topbar .iconbtn').getBoundingClientRect();
+                    const panels = ['.monthpick', '.viewmenu', '.langmenu'].map(s => [css(s).padding, css(s).borderTopLeftRadius]);
+                    return {body:css('body').fontSize, note:css('.mnote').fontSize, icon:[icon.width,icon.height],
+                            legend:css('.legend').marginTop, panels};
+                }""")
+                ok(theme_values['body'] == '14px' and theme_values['note'] == '13px',
+                   f"[{tag}] theme typography: 14 px body, 13 px notes {theme_values}")
+                ok(theme_values['icon'] == [34, 34] and theme_values['legend'] == '5px',
+                   f"[{tag}] general icon buttons 34 square; calendar key 5 px below content {theme_values}")
+                ok(all(p == ['12px', '12px'] for p in theme_values['panels']),
+                   f"[{tag}] anchored menus have 12 px padding and corners {theme_values['panels']}")
+                contrast = pg.evaluate("""() => {
+                    const root=getComputedStyle(document.documentElement);
+                    const lum = hex => {
+                      const v=hex.trim().replace('#','').match(/../g).map(x=>parseInt(x,16)/255)
+                        .map(x=>x<=0.04045?x/12.92:((x+0.055)/1.055)**2.4);
+                      return v[0]*0.2126+v[1]*0.7152+v[2]*0.0722;
+                    };
+                    const fg=lum(root.getPropertyValue('--muted'));
+                    return ['--card','--bg','--soft'].map(name=>{
+                      const bg=lum(root.getPropertyValue(name));return (Math.max(fg,bg)+0.05)/(Math.min(fg,bg)+0.05);
+                    });
+                }""")
+                ok(all(ratio >= 4.5 for ratio in contrast), f"[{tag}] muted text reaches 4.5:1 on card/page/soft surfaces {contrast}")
+
+
                 ok(m["heads"] and all(h == 50 if w > 600 else h >= 50 for _, h in m["heads"]), f"[{tag}] module headers are 50 px (on a phone at least 50, the status lines under) {m['heads']}")
                 # Clarification: module headers share one layout (kind over name)
                 ok(all(k and n for _, k, *_x in m["kinds"] for n in [True]) and all(fs >= (17 if w > 600 else 15) and bs == "none" and not inp for _, _k, fs, bs, inp in m["kinds"]),
