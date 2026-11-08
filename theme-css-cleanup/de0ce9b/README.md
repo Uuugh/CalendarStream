@@ -3,7 +3,9 @@
 Real rendered mockups from synthetic demo data. Source: `de0ce9ba6054d6912366ec691721968cb63dee83`; baseline: main at `b60b4fc`.
 These assets are on `review-files`, outside the application PR, and do not ship in the app image.
 
-**[Download the self-contained interactive before/after viewer](CalendarStream-theme-preview.html?raw=1)** and open it in a browser.
+**[Download the interactive before/after mockup ZIP](CalendarStream-theme-preview.zip?raw=1)**, extract it, and open `CalendarStream-theme-preview.html` in a browser.
+
+[HTML file only](CalendarStream-theme-preview.html?raw=1) is also available.
 It includes desktop/phone, Light/Dark, a before/after toggle, and PNG downloads. No server or account is needed.
 
 The intentional changes are 14px default text, 13px notes, darker Light secondary text meeting 4.5:1 on the three base surfaces,
