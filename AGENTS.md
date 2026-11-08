@@ -119,3 +119,5 @@ and a file must stand alone and say what it needs.
 
 `tests/run.sh` passes, `pip-audit -r requirements.txt` finds nothing, and the Developer's real data
 appears nowhere (build_rules/0-overview.md, Ground rules).
+
+- `app/item_order.py`: extracted list reordering helper `_moved` (re-exported by `app/main.py`).
