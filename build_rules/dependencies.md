@@ -36,16 +36,17 @@ checks this file is current; rebuild it with `python3 tests/tools/deps.py`.
 | 28 | `app/store.py` | `app.calsync` | `app.main`, `app.routes.destinations` |
 | 29 | `app/google/health.py` | `app.google.failure_classifier`, `app.google.health_state`, `app.google.recovery_decision`, `app.google.recovery_policy` | `app.main` |
 | 30 | `app/google/sync.py` | `app.calsync`, `app.google.api`, `app.google.errors` | `app.gsync` |
-| 31 | `app/rules.py` | `app.calsync`, `app.links`, `app.rules_words` | `app.main`, `app.routes.events`, `app.routes.page`, `app.routes.rules`, `app.routes.sources` |
+| 31 | `app/rules.py` | `app.calsync`, `app.links`, `app.rules_words` | `app.item_order`, `app.main`, `app.routes.events`, `app.routes.page`, `app.routes.rules`, `app.routes.sources` |
 | 32 | `app/gsync.py` | `app.google.api`, `app.google.errors`, `app.google.sync` | `app.main`, `app.routes.events`, `app.routes.google`, `app.routes.page` |
-| 33 | `app/main.py` ⟲ | `app.calendars.view_helpers`, `app.calsync`, `app.config`, `app.google.health`, `app.google.traffic_log`, `app.gsync`, `app.i18n`, `app.icons`, `app.links`, `app.log_tail`, `app.logins`, `app.routes.account`, `app.routes.events`, `app.routes.page`, `app.routes.rules`, `app.rules`, `app.secretbox`, `app.store`, `app.updates` | `app.routes.account`, `app.routes.destinations`, `app.routes.events`, `app.routes.google`, `app.routes.history`, `app.routes.page`, `app.routes.rules`, `app.routes.settings`, `app.routes.sources`, `app.routes.status` |
-| 34 | `app/routes/account.py` ⟲ | `app.logins`, `app.main` | `app.main` |
-| 35 | `app/routes/destinations.py` ⟲ | `app.calsync`, `app.config`, `app.i18n`, `app.main`, `app.routes.page`, `app.store` | nothing |
-| 36 | `app/routes/events.py` ⟲ | `app.calsync`, `app.gsync`, `app.main`, `app.rules` | `app.main` |
-| 37 | `app/routes/google.py` ⟲ | `app.google.readiness`, `app.gsync`, `app.main` | nothing |
-| 38 | `app/routes/history.py` ⟲ | `app.main` | nothing |
-| 39 | `app/routes/page.py` ⟲ | `app.calsync`, `app.config`, `app.gsync`, `app.i18n`, `app.icons`, `app.main`, `app.rules` | `app.main`, `app.routes.destinations` |
-| 40 | `app/routes/rules.py` ⟲ | `app.main`, `app.rules` | `app.main` |
-| 41 | `app/routes/settings.py` ⟲ | `app.config`, `app.logins`, `app.main`, `app.updates` | nothing |
-| 42 | `app/routes/sources.py` ⟲ | `app.calsync`, `app.config`, `app.i18n`, `app.logins`, `app.main`, `app.rules` | nothing |
-| 43 | `app/routes/status.py` ⟲ | `app.config`, `app.main`, `app.updates` | nothing |
+| 33 | `app/item_order.py` | `app.rules` | `app.main` |
+| 34 | `app/main.py` ⟲ | `app.calendars.view_helpers`, `app.calsync`, `app.config`, `app.google.health`, `app.google.traffic_log`, `app.gsync`, `app.i18n`, `app.icons`, `app.item_order`, `app.links`, `app.log_tail`, `app.logins`, `app.routes.account`, `app.routes.events`, `app.routes.page`, `app.routes.rules`, `app.rules`, `app.secretbox`, `app.store`, `app.updates` | `app.routes.account`, `app.routes.destinations`, `app.routes.events`, `app.routes.google`, `app.routes.history`, `app.routes.page`, `app.routes.rules`, `app.routes.settings`, `app.routes.sources`, `app.routes.status` |
+| 35 | `app/routes/account.py` ⟲ | `app.logins`, `app.main` | `app.main` |
+| 36 | `app/routes/destinations.py` ⟲ | `app.calsync`, `app.config`, `app.i18n`, `app.main`, `app.routes.page`, `app.store` | nothing |
+| 37 | `app/routes/events.py` ⟲ | `app.calsync`, `app.gsync`, `app.main`, `app.rules` | `app.main` |
+| 38 | `app/routes/google.py` ⟲ | `app.google.readiness`, `app.gsync`, `app.main` | nothing |
+| 39 | `app/routes/history.py` ⟲ | `app.main` | nothing |
+| 40 | `app/routes/page.py` ⟲ | `app.calsync`, `app.config`, `app.gsync`, `app.i18n`, `app.icons`, `app.main`, `app.rules` | `app.main`, `app.routes.destinations` |
+| 41 | `app/routes/rules.py` ⟲ | `app.main`, `app.rules` | `app.main` |
+| 42 | `app/routes/settings.py` ⟲ | `app.config`, `app.logins`, `app.main`, `app.updates` | nothing |
+| 43 | `app/routes/sources.py` ⟲ | `app.calsync`, `app.config`, `app.i18n`, `app.logins`, `app.main`, `app.rules` | nothing |
+| 44 | `app/routes/status.py` ⟲ | `app.config`, `app.main`, `app.updates` | nothing |
