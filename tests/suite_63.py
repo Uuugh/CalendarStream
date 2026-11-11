@@ -29,7 +29,7 @@ desc = body.get("description", "")
 ok(desc.startswith("https://meet.google.com/abc-defg-hij\n\nAgenda"), "F6: Google gets the link as the first line of the notes")
 back = gsync.google_fields({"summary": "Sync", "description": desc, "start": {"dateTime": e.start}, "end": {"dateTime": e.end}}) if hasattr(gsync, "google_fields") else {}
 ok(back.get("description", None) in ("Agenda", None) or "meet.google.com" not in str(back.get("description", "")), "F6: reading it back strips that first line (no echo loop)")
-ok("URL" in read("app", "calsync.py") and "notes_with_meeting" in read("app", "calsync.py"), "F6: the feeds carry the link as URL and in the notes")
+ok("URL" in read("app", "calendars", "feed.py") and "notes_with_meeting" in read("app", "calendars", "feed.py"), "F6: the feeds carry the link as URL and in the notes")
 
 unmet = lambda pw: [r for r, met in logins.password_rules(pw) if not met]
 # --- F8: the login password rules ------------------------------------------------------------------------------------------
