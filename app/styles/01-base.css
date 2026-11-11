@@ -1,10 +1,10 @@
 /* CalendarStream status page (0.2.8-beta.4: served as a cached file, no longer inside the page) */
   * { box-sizing:border-box }
-  body { margin:0; font:15px/1.5 var(--font); background:var(--bg); color:var(--text) }
+  body { margin:0; font:14px/1.5 var(--font); background:var(--bg); color:var(--text) }
   main { max-width:1040px; margin:0 auto; padding:16px 16px 48px }
   .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }
-  /* Spacing: 10px between sections, 5px between the boxes inside one, 2px between rows of fields. */
-  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--rbox); padding:12px; margin-bottom:10px }   /* (0.2.8-beta.32, F38) 12px, not 18px; the margin is unchanged (17-spacing.css wins, 5px) */
+  /* Shared flow spacing: 5px between parts; 1px between a label and its field. */
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--rbox); padding:12px; margin-bottom:var(--space-part) }   /* 12px card padding; 5px content flow spacing. */
   .ok{background:var(--okbg);color:var(--ok)} .bad{background:var(--badbg);color:var(--bad)}
   .warn{background:var(--warnbg);color:var(--warn)} .run{background:var(--runbg);color:var(--run)}
   button { font:inherit; font-weight:600; background:var(--accent); color:var(--onaccent); border:0; border-radius:var(--r); padding:8px 16px; cursor:pointer }

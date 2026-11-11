@@ -27,7 +27,7 @@
   button, .btn, .btn2, .ghostbtn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:34px; padding:0 14px;
           font:inherit; font-size:14px; font-weight:600; border-radius:var(--r); text-decoration:none; cursor:pointer; white-space:nowrap }
   .btn2, .ghostbtn, button.ghost { background:transparent; color:var(--accent); border:1px solid var(--line) }
-  .calhead button.title, .langmenu button, .seg button, .monthpick button, .linkbtn, .copybtn,
+  .seg button, .linkbtn, .copybtn,
   .inbox .inboxbtn { height:auto }
   .copybtn { height:34px }
   .clockswitch button { height:22px; width:38px; padding:0 }

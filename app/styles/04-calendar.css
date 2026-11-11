@@ -1,21 +1,4 @@
-  /* Month view */
-  .calhead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px }
-  .calhead .title { font-size:18px; font-weight:700; min-width:150px }
-  .monthwrap { position:relative }
-  .calhead button.title { background:transparent; color:var(--text); border:0; padding:4px 6px; border-radius:var(--r); cursor:pointer; text-align:left; font-family:inherit }
-  .calhead button.title:hover, .calhead button.title[aria-expanded=true] { background:var(--soft) }
-  .calhead .caret { font-size:12px; color:var(--muted) }
-  .monthpick { position:absolute; top:calc(100% + 6px); left:0; z-index:8; width:250px; padding:10px; background:var(--card);
-               border:1px solid var(--line); border-radius:var(--rbox); box-shadow:0 10px 30px rgba(0,0,0,.18) }
-  .monthpick .yearrow { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:15px }
-  .monthpick .yearrow button { width:30px; height:30px; padding:0; background:transparent; color:var(--accent); border:1px solid var(--line); border-radius:var(--r); font-size:18px; line-height:1; cursor:pointer }
-  .calhead { position:relative }
-  @media (max-width:600px) { .monthwrap { position:static } .monthpick { left:0 } }
-  .monthpick .months { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px }
-  .monthpick .months button { background:transparent; color:var(--text); border:1px solid var(--line); border-radius:var(--r); padding:7px 0; font-size:13px; font-weight:500; cursor:pointer }
-  .monthpick .months button:hover { background:var(--soft) }
-  .monthpick .months button.on { background:var(--accent); color:var(--onaccent); border-color:var(--accent); font-weight:700 }
-  .calright { margin-left:auto; display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end }
+  /* Calendar event grid and agenda; header/navigation: 19-calendar-header.css. */
   .agenda { border-top:1px solid var(--line) }
   .aday { display:grid; grid-template-columns:150px 1fr; gap:12px; padding:8px 4px; border-bottom:1px solid var(--line); font-size:13px }
   .aday .adate { font-weight:600; display:flex; align-items:baseline; gap:6px }
@@ -24,10 +7,8 @@
   .aday:hover .add { visibility:visible }
   .aitems .ev summary { white-space:normal; padding:3px 8px }
   .aitems p { margin:3px 0 }
-  @media (max-width:600px) { .aday { grid-template-columns:1fr; gap:4px } .calright { margin-left:0; justify-content:flex-start } }
-  .navbtn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border:1px solid var(--line);
-            border-radius:var(--r); text-decoration:none; color:var(--accent); font-size:18px; font-weight:700 }
-  .navbtn.wide { width:auto; padding:0 12px; font-size:14px }
+  @media (max-width:600px) { .aday { grid-template-columns:1fr; gap:4px } }
+
   .month { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); border-top:1px solid var(--line); border-left:1px solid var(--line); min-width:640px }
   .dow { font-size:12px; font-weight:600; color:var(--muted); text-align:center; padding:6px 0; border-right:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--soft) }
   .day { min-height:96px; padding:4px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); font-size:12px; overflow:hidden }
