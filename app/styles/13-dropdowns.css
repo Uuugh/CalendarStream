@@ -18,7 +18,11 @@
   .monthpick .months button.on { background:var(--accent); color:var(--onaccent); border-color:var(--accent); font-weight:700 }
   .viewmenu { min-width:160px }
   .viewmenu[hidden] { display:none }
-  .viewmenu button { display:flex; width:100%; align-items:center; gap:10px; background:transparent; color:var(--text);
+  /* (0.2.8-beta.40, F52/F57/I35) justify-content:flex-start overrides the base button rule's center (06-sections-
+     boxes.css): without it, each row's icon+text group was centered as a block, so a row's icon sat further
+     right the shorter its own label was - never aligned with the row above or below it, nor with the trigger
+     button's icon. */
+  .viewmenu button { display:flex; width:100%; justify-content:flex-start; align-items:center; gap:10px; background:transparent; color:var(--text);
                      border:0; border-radius:6px; padding:7px 10px; font-weight:500; text-align:left }
   .viewmenu button:hover, .viewmenu button:focus { background:var(--soft) }
   .viewmenu button .mi { flex:0 0 auto; color:var(--muted) }

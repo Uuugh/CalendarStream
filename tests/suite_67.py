@@ -189,6 +189,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(pg4.eval_on_selector("#viewmenu", "el => el.hidden"), "F52: the view menu starts closed")
         pg4.click("#viewbtn")
         ok(not pg4.eval_on_selector("#viewmenu", "el => el.hidden"), "F52: clicking the button opens the menu")
+        # (0.2.8-beta.40, F52/F57/I35) every row's icon sits at the same x: the base button rule's
+        # justify-content:center (06-sections-boxes.css) used to leave a shorter label's icon further right.
+        icon_xs = pg4.eval_on_selector_all("#viewmenu button .mi", "els => els.map(e => e.getBoundingClientRect().x)")
+        ok(len(set(icon_xs)) == 1, f"F52: the view menu's icons all sit at the same x ({icon_xs})")
         pg4.click("#viewmenu [data-view='week']")
         pg4.wait_for_timeout(800)
         ok(pg4.eval_on_selector("#viewmenu", "el => el.hidden"), "F52: picking a view closes the menu again")
@@ -208,6 +212,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         before = pg4.eval_on_selector("#themebtn", "el => el.innerHTML")
         pg4.click("#themebtn")
         ok(not pg4.eval_on_selector("#thememenu", "el => el.hidden"), "F57: clicking the theme button opens its menu")
+        ticon_xs = pg4.eval_on_selector_all("#thememenu button .mi", "els => els.map(e => e.getBoundingClientRect().x)")
+        ok(len(set(ticon_xs)) == 1, f"F57: the theme menu's icons all sit at the same x ({ticon_xs})")
         pg4.click("#thememenu [data-theme-choice='dark']")
         pg4.wait_for_timeout(200)
         ok(pg4.eval_on_selector("#thememenu", "el => el.hidden"), "F57: picking a theme closes the menu again")
