@@ -67,7 +67,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(not j["ok"] and j["step"] == "address" and URI in j["message"] and j["fix"].get("copy") == URI and j["fix"].get("open"),
        "the address not on the client: stops at Checking address…, with Copy and Open")
     p = c.get("/?menu=settings").text
-    gs = p[p.index('id="googlesync"'):p.index('id="look"')]
+    gs = p[p.index('id="googlesync"'):p.index('id="cal"')]
     ok("Address missing" in gs and 'class="statusbox gbox warn"' in gs and 'data-address="0"' in gs and "<b>Google</b>" not in gs,
        "…Settings says Address missing (amber: Google's side), guided step 6 not ticked")
     S["redirects"] = {A_ID: [URI]}

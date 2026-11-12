@@ -128,7 +128,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         main.google.save_client("f56-test-client.apps.googleusercontent.com", "GOCSPX-f56testsecretvalue00")
         main.google._save_check(True, "Google accepted the client ID and secret", redirect0, True)
         before_gs = c.get("/?menu=settings", headers={"accept": "text/html"}).text
-        before_gs = before_gs[before_gs.index('id="googlesync"'):before_gs.index('id="look"')]
+        before_gs = before_gs[before_gs.index('id="googlesync"'):before_gs.index('id="cal"')]
         ok('class="gassist"' not in before_gs, "F56 setup: Google Calendar API Sync reads as healthy before the address changes")
         pg3.fill("#publicurl", "https://cal.example.org")
         pg3.dispatch_event("#publicurl", "input")

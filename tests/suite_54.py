@@ -91,7 +91,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                                                       "redirect_uri": "https://cal.example.com/google/callback"}})
     main.google._client = None
     p = page("?menu=settings")
-    gs = p[p.index('id="googlesync"'):p.index('id="look"')]
+    gs = p[p.index('id="googlesync"'):p.index('id="cal"')]
     ok(">Healthy<" in gs and ">Reconnect<" in gs and "Sync Now" not in gs and "Last synced" not in gs and "Instant updates" not in gs,
        "F3: healthy: Healthy over Reconnect; no Sync Now, Last synced or Instant updates")
     ok('id="fcid"' in gs and 'name="client_id"' in gs and "readonly" not in gs[gs.index('id="fcid"') - 200:gs.index('id="fcid"') + 200],
@@ -99,10 +99,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(gs.count(" Remove</button>") == 1 and "credtrash" not in gs and "each module connects again" in gs, "F3: one Remove, saying what stops")
     main.google.store.set("google_client", {**main.store.get("google_client"), "check": {"ok": False, "message": "Google rejected the client secret"}})
     main.google._client = None
-    gs = page("?menu=settings"); gs = gs[gs.index('id="googlesync"'):gs.index('id="look"')]
+    gs = page("?menu=settings"); gs = gs[gs.index('id="googlesync"'):gs.index('id="cal"')]
     ok("Client rejected" in gs and ">Fix<" in gs, "F3: a fault: the fault over Fix")
     main.google.store.delete("google_client"); main.google._client = None
-    gs = page("?menu=settings"); gs = gs[gs.index('id="googlesync"'):gs.index('id="look"')]
+    gs = page("?menu=settings"); gs = gs[gs.index('id="googlesync"'):gs.index('id="cal"')]
     ok("Not set up" in gs and ">Connect<" in gs and "Turn on" not in gs, "F2: not set up: Not set up over Connect")
 srv.should_exit = True
 print("FAILED:", fails) if fails else print("ALL PASSED")
