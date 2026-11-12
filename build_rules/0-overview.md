@@ -71,13 +71,24 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   To bring them into a step that's running, STOP it and start it again with its command. What happens inside
   a step is part of it: a review's findings, Claude's fixes for them, the Developer's decisions on them.
 - GO and EOF are aliases of BUILD and work the same (GO R = BUILD R). MENU was DASH's name until 0.2.8-beta.18.
+- A name in parentheses right after a command designates who does that step, overriding the default
+  ("BUILD (GPT)", "REVIEW (Claude)"); see Who does what. No name means the default.
 
 ## Who does what
 
 - **Developer**: the human. Owns the intent (F, I, R) and the decisions.
-- **Claude**: the AI working on the project in the current session. Plans, builds, tests, releases: the
-  author of the code.
-- **Reviewer**: a separate AI from another vendor (ChatGPT for now). Checks Claude's work; never changes it.
+- **Default**: Claude BUILDs, the Developer TESTs, ChatGPT REVIEWs. The Developer may designate
+  otherwise for a given step by naming who in parentheses after the command, e.g. **BUILD (GPT)**,
+  **REVIEW (Claude)** — either AI may act as Builder or Reviewer when so designated, under the same
+  checkpoints, local suite runs and Tests-must-pass release gate as any other build, or the same
+  read-only review rules as any other review. A step taken with no name uses the default.
+- **Claude**: the AI working on the project in the current session. Builds, tests, releases, and reviews,
+  per the default or the Developer's designation.
+- **ChatGPT**: a separate AI from another vendor. Reviews by default; builds when the Developer
+  designates it, e.g. BUILD (GPT). (R24, Nov 12: before this, Claude always built and ChatGPT only
+  reviewed. The mechanics of handing a BUILD to ChatGPT — equivalent to 3-test.md's "Handing TEST to
+  another AI" — aren't written yet; until they are, Claude asks the Developer how that handoff should
+  work before using it.)
 
 ## Inputs
 
