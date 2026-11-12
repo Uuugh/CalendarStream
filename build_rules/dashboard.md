@@ -17,8 +17,13 @@ form is in 0-overview.md; this is the detail, kept here so it survives conversat
 
 ## Order and form
 
-- After every edit, re-sort Inputs Status: **I, then F, then R, each in number order**, and check it (list the
-  IDs). New items go to their sorted place, never to the top.
+- After every edit, re-sort Inputs Status: grouped first by **Section** (All, Settings, Calendar, Sources, Feeds,
+  Rules, Events, Misc — "All" for anything that reads as cross-cutting page chrome, not one feature area; "Misc"
+  for branding/favicon and for R items, since build/process rules aren't a page feature), then within each section
+  **I, then F, then R, each in number order**, and check it (list the IDs). New items go to their section's sorted
+  place, never to the top. Each section is preceded by a divider: an `<hr>`-style rule with the section's name
+  overlapping it, fieldset-legend style (`.sectionrule`/`.sectionrule span` in the Dashboard's own CSS). A section
+  with no items is skipped, not shown empty.
 - Each item: its headline, a tag (recorded · built · beta.N · reopened · open), the Developer's words ("As given"),
   then Claude's notes. A request from Claude to the Developer is an amber note.
 - New inputs are only recorded (no plan, no build) until PLAN or BUILD.
