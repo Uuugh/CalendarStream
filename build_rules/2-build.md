@@ -22,6 +22,12 @@ Claude can't see the usage meters, so the Developer's readings are the only actu
   for again if it was given then.
 - Claude records each build in build-costs.md (estimate session and weekly, model, size, readings) and on the
   Dashboard's cost graph, with its projection for each planned build (1-plan.md, point 5); the estimate comes from build-costs.md, How to predict.
+- **Two usage systems, told apart by format (R27), not by the Developer saying whose it is.** The Developer's
+  own reading reads "N% / M%" — session % used / week % used, resetting at a clock time ("67% used, resets at
+  11:00 AM"). ChatGPT's own self-reported reading, when it gives one while building (2-build.md, "Handing BUILD
+  to another AI"), reads "N% left" on a "5-hour limit" and a "Weekly limit," each resetting after a duration
+  ("81% left, resets in 4h 34m"). They don't share a scale or a reset clock, so ChatGPT's usage is tracked
+  separately on the Dashboard (its own gauges, in green) and never blended into the Developer's own cost graph.
 
 ## What BUILD builds
 
