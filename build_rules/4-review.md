@@ -5,12 +5,12 @@ Claude answers; the Developer decides anything still disputed. Each REVIEW after
 
 ## Scope (Claude picks, and the first post says which)
 
-- **The changes** since the last review (the `reviewed` branch): two issues, a (Programming) and b (Security).
+- **The changes** since the last review (the `reviewed` branch): two issues, a (Code) and b (Security).
 - **The whole app**, one issue per area with both checklists: at every DEPLOY, when there's no `reviewed`
   branch yet, or when more than about 3,000 lines changed since the last review.
 - **Chunks:** one issue never covers more than about 1,000 changed lines (the studies find a reviewer's yield falls
   past about 500 lines or 90 minutes). A changes-only review over that is split by commit range or by area into
-  issues `Review a (Programming) 1/3: v<version>`… and `Review b (Security) 1/3…`, each its own two rounds. Claude
+  issues `Review a (Code) 1/3: v<version>`… and `Review b (Security) 1/3…`, each its own two rounds. Claude
   says in each BUILD's report how many lines have changed since `reviewed`; it only tells the Developer, never
   starts a review.
 
@@ -43,7 +43,7 @@ Claude answers; the Developer decides anything still disputed. Each REVIEW after
    scope: fresh screenshots (light, dark, a phone, any pop-up that changed), committed to the `review-files`
    branch (never main), with the theme suite's result (suite 44).
 2. Claude opens the issues:
-   - title `Review a (Programming): v<version>`, `Review b (Security): v<version>` or `Review <area>: v<version>`;
+   - title `Review a (Code): v<version>`, `Review b (Security): v<version>` or `Review <area>: v<version>`;
    - the label `review:awaiting-reviewer`;
    - a neutral first post: the version; the code (the range BASE..HEAD as commit IDs, BASE = `reviewed`; or,
      for an area, HEAD and the area's files); the rules (this file and its commit); the checklist; the test and
@@ -122,9 +122,10 @@ final say on anything you and Claude don't agree on.
   by file and line, without quoting it.
 - Be specific and brief: the Developer often reads these on a phone.
 
-## a. Programming Review
+## a. Code Review
 
 - Design: Is the code well-designed and appropriate for CalendarStream, a self-hosted Docker web app that may later become a standalone app? The app runs in a Linux container; the installer and Docker setup must work on Linux, macOS (Docker Desktop) and Windows (WSL). New code shouldn't add needless ties to Docker, Postgres or the web page: keep the calendar logic separate from where it runs and how it's shown.
+- Structure (R18, R19; AGENTS.md, "How code is structured"): is new code a module — one responsibility, a small interface, dependencies passed in rather than reached for in `main.py`, its own fast test that needs no app, Postgres or browser unless that's what it tests? One class per file, named for it, in `snake_case`; loose functions grouped into a class or small module first; a closed family (an exception hierarchy, a set of states) may share one file. Does it respect the `data`/`domain`/`ui` layers (calendar and rule logic never imports storage, network or the page)? Does every new file start with its five-part header (what it holds, Depends on, Used by, what it reads/writes, a Dart note)? No hidden dependencies: no imports inside functions, no reading another module's globals, no `core.<name>` lookups in a new file.
 - Functionality: Does the code behave as the author likely intended? Is the way the code behaves good for its users?
 - Complexity: Could the code be made simpler? Would another programmer be able to easily understand and use this code when they come across it in the future?
 - Tests: Does the code have correct and well-designed automated tests? (`tests/`: one suite per version; `tests/run.sh` runs them.) Does the new behavior have a suite that checks it?
