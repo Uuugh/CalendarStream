@@ -39,3 +39,12 @@ and I40 already built as BUILD R — not listed here):
   `dashboard.md`/`4-review.md` already own; reduce to short links so one edit updates one place. Line-count
   review thresholds (4-review.md) are a planning heuristic, not a cited-research cutoff — word them that way or
   find the citation.
+
+Review security #16 (whole-app review, Nov 12):
+
+- **#16 #1** `app/store.py:163,172,174,179` — add `# nosec` (B608) with the same "fixed column-list constant,
+  bound values" justification as the file's other six annotated sites, or extract the `_COLS` interpolation
+  into one helper so bandit needs explaining once.
+- **#16 #2** `app/calendars/event.py:49`, `app/calendars/parsing.py:107,161`, `app/services/page_settings.py:147`
+  — SHA1/MD5 (B324) used for non-cryptographic ids/cache-busting; add `usedforsecurity=False` to silence the
+  scanner cleanly instead of leaving it to re-explain each review.
