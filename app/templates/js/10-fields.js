@@ -9,6 +9,16 @@ function histFilter(e) {
     tr.hidden = (kind && tr.dataset.kind !== kind) || (words && tr.textContent.toLowerCase().indexOf(words) < 0) || (since && +tr.dataset.at < since);
   });
 }
+// Copy the container log (0.2.8-beta.42, troubleshooting): fetches the same text the Container log link
+// opens, and puts it straight on the clipboard, so copying it all for a bug report needs no new tab and no
+// manual select-all.
+document.addEventListener('click', function (e) {
+  var btn = e.target.closest && e.target.closest('#copycontainerlog');
+  if (!btn) return;
+  fetch('/history/container', { credentials: 'same-origin' }).then(function (r) { return r.text(); })
+    .then(function (text) { copyText(text, btn); })
+    .catch(function () { tell(T.prefFailed); });
+});
 // A file field shows the chosen file's name in its box
 document.addEventListener('change', function (e) {
   if (!e.target.matches || !e.target.matches('.filefield input[type=file]')) return;

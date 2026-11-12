@@ -239,6 +239,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(c.get("/api/status").status_code == 200, "HTTP Basic still works (scripts)")
     log = c.get("/history/container")
     ok(log.status_code == 200 and log.headers["content-type"].startswith("text/plain"), "History › Container log")
+    ok('id="copycontainerlog"' in page(), "F64.1: a Copy log button sits beside the Container log link")
 
     # --- In a browser: the test box marks the matched part, by characters (an emoji in the title) --------
     #     (the browser's requests are answered by the test client: no second server on the app's loop)

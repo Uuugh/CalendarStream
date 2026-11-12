@@ -5,8 +5,9 @@
   var sec = document.getElementById('beta');
   if (!sec) return;
   var list = document.getElementById('betalist'), empty = document.getElementById('betaempty'),
-      clearBtn = document.getElementById('betaclear');
+      clearBtn = document.getElementById('betaclear'), copyBtn = document.getElementById('betacopy');
   var openIds = {};   // which rows are expanded, kept across a refresh (by their position: see renderRow)
+  var lastEntries = [];   // the entries currently shown, for Copy all (0.2.8-beta.42, troubleshooting)
 
   function row(e, i) {
     var id = 'betadetail-' + i;
@@ -35,10 +36,17 @@
     (e.response_body ? '\n\n' + e.response_body : ''); }
 
   function render(entries) {
+    lastEntries = entries;
     list.innerHTML = '';
     entries.forEach(function (e, i) { list.appendChild(row(e, i)); });
     empty.hidden = entries.length > 0;
   }
+  // Copy all: every entry currently shown (not just the expanded ones), full request and response, newest
+  // first (the order shown), one click to the clipboard for pasting into a bug report.
+  copyBtn.addEventListener('click', function () {
+    var text = lastEntries.map(function (e) { return reqText(e) + '\n' + respText(e); }).join('\n\n----------\n\n');
+    copyText(text || empty.textContent, copyBtn);
+  });
   function refresh() {
     if (!sec.classList.contains('open')) return;
     fetch('/google/traffic', { cache: 'no-store', credentials: 'same-origin' })

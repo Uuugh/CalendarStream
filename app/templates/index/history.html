@@ -60,6 +60,7 @@
         {{ m.okbutton(true, _('Saved'), _('Save'), keep=False) }}
       </form>
       <a class="btn2 ghostbtn" href="/history/container" target="_blank" rel="noopener">{{ icon("terminal", 16) }} {{ _('Container log') }}</a>
+      <button type="button" class="btn2 ghostbtn" id="copycontainerlog">{{ icon("content_copy", 16) }} {{ _('Copy log') }}</button>
     </div>
     {# Debugging, at the bottom: each source's last download #}
     {% if srcs|selectattr("has_debug")|list %}<div class="debuglinks"><span class="k">{{ _('Debug (last download):') }}</span>

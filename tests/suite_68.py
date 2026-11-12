@@ -81,6 +81,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     r = c.post("/google/traffic/clear", data={"csrf": csrf})
     ok(r.status_code == 200 and r.json()["ok"] is True and main.google_traffic.recent() == [],
        "/google/traffic/clear empties it")
+    ok('id="betacopy"' in c.get("/", headers={"accept": "text/html"}).text,
+       "F64.2: a Copy all button sits beside Clear in Beta: Google Traffic")
     with TestClient(main.app, base_url="https://cal.example.com") as anon:
         r = anon.get("/google/traffic")
         ok(r.status_code in (401, 403), "the traffic view needs the status-page login too")

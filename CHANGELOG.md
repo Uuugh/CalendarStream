@@ -9,7 +9,17 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.41**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.42**
+
+## 0.2.8-beta.42 — 2026-11-12
+
+Bulk-copy for troubleshooting: the container log and the Google traffic log can each be copied in one click.
+
+### Added
+- **F64.1**: History, Undo & Logs has a Copy log button beside Container log - copies the whole
+  container log straight to the clipboard, no new tab and no manual select-all.
+- **F64.2**: Beta: Google Traffic has a Copy all button beside Clear - copies every call shown
+  (not just the expanded ones), full request and response, in one click.
 
 ## 0.2.8-beta.41 — 2026-11-12
 
