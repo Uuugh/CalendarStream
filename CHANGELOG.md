@@ -9,7 +9,30 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.39**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.40**
+
+## 0.2.8-beta.40 — 2026-11-12
+
+Build A: the Developer's beta.39 Bad verdicts and the rest of F58's refactor.
+
+### Fixed
+- **F63**: the favicon is circle-cropped from the light mark, instead of the square logo tile.
+- **I3**: the All Rules handle no longer ignores the Reorder grips side setting.
+- **F47**: Settings modules are reordered Administrator, Updates, Theme, then any others (API Sync etc.), in that fixed order.
+- **F49**: the footer's vertical rule is centered, moving only to make room for extra calendars or key entries.
+- **I22**: the + on the Public address rows now follows whichever row is last, instead of a fixed position.
+- **F52/F57/I35**: the view (Month/Week/Day/List) and theme dropdown icons weren't aligned with each other or with the closed control's icon; now they are.
+- **I38**: saving a rule that duplicates one already saved now offers Merge or Save as new, instead of silently saving a duplicate.
+- **F15.2**: the 12h | 24h control becomes a segmented switch (like the existing On | Off switches), with the numbers on the switch itself and a sliding highlight on the one in use, so the control shows its own current setting.
+- **F58 checkpoint 10 (the refactor's last step)**: `GoogleSync` is now handed its `Google` connection (`api_client`) instead of being mixed into it by inheritance; `Google` forwards its calendar/event methods to the `GoogleSync` it holds, with no change for any existing caller. This closes out F58's ten-checkpoint split of the Google code into `app/google/`.
+
+### Not reproducible from the code
+- **F46** (Settings: rename "Look" to Theme): the beta.33 commit already renames the module to Theme throughout (`app/templates`, `app/routes/settings.py`, the ☰ menu); nothing in the current code still says "Appearance" or "Look". Needs a screenshot or the exact label the Developer is seeing.
+- **F48** (fullscreen hide available in month/full/config modes): the beta.33 behavior (a key item's dim-hide works outside Full page, and stays applied on leaving Full page) is present and exercised by its tests. Needs the exact view and key item used, and what was clicked.
+- **F50** (eye / View All button in the footer's title line): the button is in the code, right-aligned in the Key's title line, appearing whenever anything is dimmed, and clearing every dimmed item on click. Needs a screenshot of what "not accomplished" looks like.
+
+### Still open
+- **F15** (Calendar): only F15.2 (the 12h | 24h switch, the Developer's specific Bad comment) was built this time. F15.1, F15.3–F15.9 — the date-picker/Time Zone spacing, Search and date hints, the Full page icon, the lower-left (?) removal, the view selector becoming a dropdown, the stretch handle, and the key's column/stack layout and full-page dim behavior — are a larger calendar redesign, not yet attempted, and wait for their own PLAN.
 
 ## 0.2.8-beta.39 — 2026-11-07
 
