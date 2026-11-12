@@ -22,6 +22,9 @@ form is in 0-overview.md; this is the detail, kept here so it survives conversat
 - Each item: its headline, a tag (recorded · built · beta.N · reopened · open), the Developer's words ("As given"),
   then Claude's notes. A request from Claude to the Developer is an amber note.
 - New inputs are only recorded (no plan, no build) until PLAN or BUILD.
+- A file, class or function named in an item's notes is colored by the checkpoint that touched it: green for new,
+  blue for touched (0-overview.md). Use the Dashboard's own CSS classes for this, not inline color, so both themes
+  stay correct.
 
 ## Cost graph
 

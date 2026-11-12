@@ -42,7 +42,8 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   it in that beta's "Where things stand" entry, which is the permanent record.
 - A built F, I or R's line — in Inputs Status while it still waits on a verdict, and in its build's "Where things
   stand" entry once it's off that list — names the files it touched, and any new function or class, gathered from
-  its checkpoint commit(s) (2-build.md, Checkpoints). The Dashboard shows what the code did, not only what was
+  its checkpoint commit(s) (2-build.md, Checkpoints). A path or name new in that checkpoint is shown in green; one
+  that already existed and was edited is shown in blue. The Dashboard shows what the code did, not only what was
   asked.
 
 ## Conversations
