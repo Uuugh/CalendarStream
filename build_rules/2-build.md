@@ -76,6 +76,10 @@ A build is a series of **checkpoint commits**, so progress is easy to resume.
   header (R19); no real data is in it.
 - Its message names the build and step ("F58 2/10: models.py + test"). It is pushed at once, and the build's
   progress line on the Dashboard (done, next, left) is updated and republished.
+- Its message's body (or, for a one-line checkpoint, a trailer) lists the files it touched, and names any new
+  function or class — not every helper, just what another reader would look for to find the change. When one F,
+  I or R is finished by more than one checkpoint, its Dashboard line (0-overview.md, The Dashboard) gathers this
+  list across all of them, so the Dashboard shows what the code actually did, not only what was asked.
 - Checkpoints don't change `VERSION`, so no image is built. The last one waits for a green Tests run on GitHub for
   its commit (the full suites, pip-audit), adds the CHANGELOG entry, bumps `VERSION` last ("One commit ships it",
   above) and records the cost.
