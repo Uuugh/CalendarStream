@@ -9,7 +9,31 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.42**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.43**
+
+## 0.2.8-beta.43 — 2026-11-12
+
+Build D: saved Settings order, one normal-mode User Save, and Full-mode Settings navigation.
+
+### Added
+- **F47 / I45**: Settings modules have drag grips and up/down controls with persisted order. Normal mode
+  can reorder Administrator, Domains and Google API, as well as Login, Updates and Theme inside
+  Administrator; Full mode retains order within User and Site Admin. New modules append to saved orders.
+- **F65**: Full mode opens a left-hand Settings slide-out. Configure lists Calendar, Sources, Feeds, All
+  Rules, Event Templates and History; User lists Login, Updates and Theme; Site Admin lists Domains and
+  Google API. Each opens its own centered popup, preserving the existing backdrop, contents and standard
+  Cancel | Save dimensions. Escape/Close restore focus; reduced motion disables the slide.
+
+### Fixed
+- **I22**: normal-mode Login & password, Updates and Theme share one Cancel | Save pair with dividers.
+  Signed in / Sign out sits beside the login fields and no longer saves domain changes. Domains has its
+  own Save. Check now preserves staged preferences, and refused edits are validated before preferences
+  are written.
+- Failed Settings reorders restore the previous order without losing typed fields. Keyboard navigation
+  skips hidden reorder arrows; leaving Full mode restores the original page modules.
+
+F24.1 (selecting another release/build) is excluded.
+
 
 ## 0.2.8-beta.42 — 2026-11-12
 
