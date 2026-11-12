@@ -484,6 +484,8 @@ function openRule(rule, sid, fromEvent) {
   setApply(rule ? rule.apply : (sid ? [sid] : 'all'));
   ruleForm.querySelector('.rdremove').hidden = !rule;
   ruleForm.querySelector('.rdmsg').hidden = true;
+  ruleForm.querySelector('.rdmsg').classList.remove('dupe');
+  ruleForm.elements.merge_into.value = ''; delete ruleForm.dataset.dupeSkip;
   pairState(ruleForm.querySelector('.pairbtns'), 'idle');
   drawConds(); drawActs();
   pairReset(ruleForm.querySelector('.pairbtns'));
@@ -501,15 +503,47 @@ ruleForm.addEventListener('submit', function (e) {
   var msg = ruleForm.querySelector('.rdmsg');
   var conds = Array.prototype.map.call(condBox.querySelectorAll('.cond'), readCond).filter(function (c, i, all) {
     return all.length > 1 || (c.type === 'text' || c.type === 'any' ? c.value.trim() : true); });
-  if (ruleForm.classList.contains('unbalanced')) { e.preventDefault(); msg.hidden = false; msg.textContent = {{ _('The brackets don’t pair up: every ( needs a ) after it.')|string|tojson }}; return; }
+  if (ruleForm.classList.contains('unbalanced')) { e.preventDefault(); e.stopImmediatePropagation(); msg.hidden = false; msg.textContent = {{ _('The brackets don’t pair up: every ( needs a ) after it.')|string|tojson }}; return; }
   var sel = applyChosen();
   var rule = { id: editing ? editing.id : '', title: ruleForm.querySelector('.rdname').value, conds: conds,
                actions: Array.prototype.map.call(actBox.querySelectorAll('.act'), readAct),
                apply: sel.indexOf('all') >= 0 ? 'all' : sel };
   if (editing && editing.link) { rule.link = editing.link; rule.conds = []; }
   ruleForm.elements.rule.value = JSON.stringify(rule);
-  msg.hidden = true;
+  msg.hidden = true; msg.classList.remove('dupe');
+  // (0.2.8-beta.40, I38) a brand-new rule (no id, not a link rule, at least one condition): ask the server
+  // whether it duplicates one already there before actually saving it, and offer Merge if so - skipped on
+  // the resubmit that follows the person's own choice (showDupeOffer sets dupeSkip first).
+  if (!rule.id && rule.conds.length && !rule.link && !ruleForm.dataset.dupeSkip) {
+    e.preventDefault(); e.stopImmediatePropagation();
+    fetch('/rules/check-duplicate', { method: 'POST', credentials: 'same-origin',
+      body: new URLSearchParams({ csrf: ruleForm.elements.csrf.value, rule: ruleForm.elements.rule.value }) })
+      .then(function (r) { return r.json(); }).catch(function () { return { duplicate: null }; })
+      .then(function (j) {
+        if (j && j.duplicate) showDupeOffer(j.message, j.duplicate);
+        else { ruleForm.dataset.dupeSkip = '1'; ruleForm.requestSubmit(); }
+      });
+    return;
+  }
+  delete ruleForm.dataset.dupeSkip;
 });
+// (0.2.8-beta.40, I38) offers Merge (folds this draft's calendars into the existing rule, routes/rules.py's
+// merge_into) or Save as new anyway (dupeSkip bypasses the check above on the resubmit it triggers).
+function showDupeOffer(text, dupId) {
+  var msg = ruleForm.querySelector('.rdmsg');
+  msg.hidden = false; msg.classList.add('dupe'); msg.innerHTML = '';
+  var p = document.createElement('span'); p.innerHTML = ICON.warn + esc(text); msg.appendChild(p);
+  var row = document.createElement('div'); row.className = 'dupebtns';
+  var merge = document.createElement('button'); merge.type = 'button'; merge.className = 'ghost';
+  merge.textContent = RD.t.mergeRule; merge.addEventListener('click', function () {
+    ruleForm.elements.merge_into.value = dupId; ruleForm.dataset.dupeSkip = '1'; ruleForm.requestSubmit();
+  });
+  var anyway = document.createElement('button'); anyway.type = 'button'; anyway.className = 'ghost';
+  anyway.textContent = RD.t.saveNewAnyway; anyway.addEventListener('click', function () {
+    ruleForm.dataset.dupeSkip = '1'; ruleForm.requestSubmit();
+  });
+  row.appendChild(merge); row.appendChild(anyway); msg.appendChild(row);
+}
 ruleForm.querySelector('.rdremove').addEventListener('click', function () {
   if (!editing) return;
   confirmed({{ _('Delete this rule? It’s removed from every calendar that uses it.')|string|tojson }}).then(function (y) {

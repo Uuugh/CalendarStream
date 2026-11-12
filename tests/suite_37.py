@@ -175,6 +175,26 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.click("#rules > .shead .newrule"); pg.wait_for_timeout(150)
         ok(pg.eval_on_selector_all("#ruledialog .rdapply input:checked", "i => i.map(x => x.value)") == ["all"], "a rule made in All Rules starts with All calendars")
         pg.keyboard.press("Escape")
+        # I38: a brand-new rule duplicating one already there offers Merge or Save as new anyway
+        before_n = len(main.all_rules())
+        pg.click("#rules-ccs .newrule"); pg.wait_for_timeout(150)
+        pg.fill("#ruledialog .cond .cval", "ZZZDUPE")
+        pg.click("#ruledialog .psave"); pg.wait_for_timeout(900)
+        ok(len(main.all_rules()) == before_n + 1, "I38 setup: the first ZZZDUPE rule saves plainly (nothing to duplicate yet)")
+        pg.click("#rules-ccs .newrule"); pg.wait_for_timeout(150)
+        pg.fill("#ruledialog .cond .cval", "ZZZDUPE")
+        pg.click("#ruledialog .psave"); pg.wait_for_timeout(600)
+        ok(pg.locator("#ruledialog .rdmsg.dupe").count() == 1 and pg.eval_on_selector("#ruledialog", "d => d.open"),
+           "I38: saving the same thing again offers Merge/Save as new, instead of quietly adding a second copy")
+        ok(len(main.all_rules()) == before_n + 1, "…and nothing is saved yet while the offer is up")
+        pg.click("#ruledialog .dupebtns button:last-child"); pg.wait_for_timeout(900)  # Save as new anyway
+        ok(len(main.all_rules()) == before_n + 2, "I38: Save as new anyway saves the second copy after all")
+        pg.click("#rules-ccs .newrule"); pg.wait_for_timeout(150)
+        pg.fill("#ruledialog .cond .cval", "ZZZDUPE")
+        pg.click("#ruledialog .psave"); pg.wait_for_timeout(600)
+        ok(pg.locator("#ruledialog .rdmsg.dupe").count() == 1, "I38: a third identical rule is offered the same choice")
+        pg.click("#ruledialog .dupebtns button:first-child"); pg.wait_for_timeout(900)  # Merge
+        ok(len(main.all_rules()) == before_n + 2, "I38: Merge folds it into an existing rule instead of adding a third")
         # F3.1: the remove dialog
         pg.click("#src-ccs .removecal"); pg.wait_for_timeout(150)
         ok(pg.locator("#removedialog[open]").count() == 1 and pg.is_checked('#removedialog input[value="merge"]') and

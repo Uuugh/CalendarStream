@@ -75,11 +75,62 @@ def register(
             }
         return RedirectResponse(anchor, status_code=303)
 
+    def _find_duplicate(checked: dict, found: list[dict], sids: list[str]) -> dict | None:
+        """The existing rule (if any) `checked` would duplicate: the same conditions and actions, sharing
+        a calendar - the same test as a saved "duplicate" conflict (rule_engine/conflicts.py), run against
+        one not-yet-saved rule instead of between two saved ones."""
+        if checked.get("link") or not checked["conds"]:
+            return None
+
+        def acts(r):
+            return sorted(json.dumps(x, sort_keys=True) for x in r["actions"])
+
+        for d in found:
+            if d.get("link"):
+                continue
+            if (
+                rules_mod.shared_calendars(checked, d, sids)
+                and rules_mod.same_events(checked, d)
+                and acts(checked) == acts(d)
+            ):
+                return d
+        return None
+
+    @app.post("/rules/check-duplicate", dependencies=[Depends(gui_auth)])
+    async def check_duplicate_rule(
+        request: Request, csrf: str = Form(""), rule: str = Form("")
+    ):
+        """I38: whether the rule dialog's current draft would duplicate a rule already there - asked by the
+        dialog itself before it submits, so it can offer to merge instead; never asked by, and with no
+        effect on, /rules/save itself (so any other caller of it, direct or scripted, is unaffected)."""
+        check_csrf(csrf)
+        try:
+            raw = json.loads(rule)
+            checked = rules_mod.normalize(
+                raw, source_ids(), {t["id"] for t in event_templates()}, strict=True
+            )
+        except (ValueError, TypeError):
+            return {"duplicate": None}
+        found = [r for r in all_rules() if r["id"] != raw.get("id")]
+        dup = _find_duplicate(checked, found, source_ids())
+        if dup is None:
+            return {"duplicate": None}
+        return {
+            "duplicate": dup["id"],
+            "message": f"This looks the same as “{rule_label(dup, lang_for(request))}” for the same calendars.",
+        }
+
     @app.post("/rules/save", dependencies=[Depends(gui_auth)])
-    async def save_rule(request: Request, csrf: str = Form(""), rule: str = Form("")):
+    async def save_rule(
+        request: Request,
+        csrf: str = Form(""),
+        rule: str = Form(""),
+        merge_into: str = Form(""),
+    ):
         """Save a rule from the rule dialog (`rule`: the rule as JSON, see app/rules.py). A new one goes in
         at its place (one for a single calendar above that calendar's shared rules, others last); a
-        changed one keeps its place."""
+        changed one keeps its place. `merge_into` (I38, set after check-duplicate above and the person
+        chose Merge) folds it into that rule's calendars instead of adding a second copy."""
         check_csrf(csrf)
         ch = Change()
         try:
@@ -106,6 +157,12 @@ def register(
             checked["id"] = raw["id"]
             found[ids.index(raw["id"])] = checked
             what = "changed"
+        elif merge_into:
+            if merge_into not in ids:
+                raise HTTPException(400, "That rule isn't there any more.")
+            target = found[ids.index(merge_into)]
+            found[ids.index(merge_into)] = checked = rules_mod.merge(target, checked)
+            what = "merged into"
         else:
             if len(found) >= rules_mod.MAX_RULES:
                 raise HTTPException(

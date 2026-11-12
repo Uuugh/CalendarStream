@@ -102,6 +102,10 @@
   .ddsw { flex:0 0 auto; width:14px; height:14px; border-radius:4px }
   .ddsw.all { background:conic-gradient(#d50000, #f6bf26, #0b8043, #039be5, #8e24aa, #d50000) }
   .rdmsg { text-align:left }
+  /* (0.2.8-beta.40, I38) the duplicate-rule offer: the message, then Merge and Save anyway on their own line */
+  .rdmsg.dupe { display:flex; flex-direction:column; gap:6px; align-items:flex-start }
+  .rdmsg.dupe .dupebtns { display:flex; gap:8px }
+  .rdmsg.dupe button { color:var(--warn); border-color:color-mix(in srgb, var(--warn) 45%, var(--line)) }
   /* Events: Close on the left; the bell, ✎, copy and the bin on the right (F2.2) */
   .ev .evtools .evclose { margin-right:auto; font-weight:600 }
   /* (0.2.8-beta.10) the icons on the right, on a line of their own when the event is narrow */

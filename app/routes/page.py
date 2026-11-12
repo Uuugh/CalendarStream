@@ -469,6 +469,9 @@ def register(
                 "olderWindows": tr("May not show on older Windows"),
                 "lasting": tr("lasting"),
                 "at": tr("at"),
+                # (0.2.8-beta.40, I38) a brand-new rule duplicating an existing one: the choice offered
+                "mergeRule": tr("Merge"),
+                "saveNewAnyway": tr("Save as new anyway"),
             },
             "info_icon": str(
                 icons.svg("info", 15)

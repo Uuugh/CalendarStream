@@ -4,6 +4,10 @@
 <dialog id="ruledialog" class="popup" aria-labelledby="rdtitle">
   <form method="post" action="/rules/save" class="ruleform" id="ruleform" data-swap="#sources|#rules|#cal|#activity|#ruledata">
     <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="rule" value="">
+    {# I38: before a brand-new rule is actually saved, the dialog itself asks /rules/check-duplicate; if it
+       duplicates one already there, .rdmsg offers Merge (sets merge_into, read by /rules/save) or Save as
+       new anyway (just resubmits), instead of silently making a second copy. #}
+    <input type="hidden" name="merge_into" value="">
     <div class="dlghead"><button type="button" class="ghost iconbtn dlgback" aria-label="{{ _('Back') }}" title="{{ _('Back') }}">{{ icon("arrow_back", 20) }}</button>
       <div class="title" id="rdtitle" data-new="{{ _('New rule') }}" data-edit="{{ _('Change rule') }}">{{ _('New rule') }}</div></div>
     <label class="lbl" for="rdname">{{ _('Title') }}</label>
