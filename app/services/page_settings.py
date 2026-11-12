@@ -13,6 +13,16 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 
+SETTINGS_MODULES = ("pagelogin", "updates", "look", "googlesync")
+
+
+def settings_order(*, store, modules=SETTINGS_MODULES) -> list[str]:
+    """Saved Settings order, retaining known items once and appending new modules."""
+    saved = store.get("ui_settings_order")
+    saved = saved if isinstance(saved, list) else []
+    return list(dict.fromkeys([x for x in saved if isinstance(x, str) and x in modules] + list(modules)))
+
+
 def section_state(*, FOLD_AFTER, SECTIONS, store) -> dict:
     """Open/closed: the page's sections, and the Configure part of each source's box ("src:<id>")
     and destination's box ("dest:<id>", "dest:google" for the Google account). One left open for 24 hours folds

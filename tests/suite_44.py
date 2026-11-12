@@ -166,6 +166,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                         ok(pg.get_attribute("#updates .checknow", "data-state") == "syncing" and float(fade) < 0.1,
                            f"[{tag}] Check now press {n}: Checking… at once, the status word faded under it (multi-button, {fade})")
                         pg.wait_for_timeout(3800)
+                    order = pg.locator('#menu .settings-list > .settingrow').evaluate_all('(rows) => rows.map(r => r.dataset.id)')
+                    ok(order == ['pagelogin', 'updates', 'look', 'googlesync'] and
+                       pg.locator('#menu .settingrow > .handle .hmove').count() == 8,
+                       f"[{tag}] Clarification 'Settings order': default order and keyboard reorder controls {order}")
                     # Clarification: a box means you can change it (Updates' title and channel are plain text)
                     bx = pg.evaluate("""() => [...document.querySelectorAll('#updates .srcleft > *')].map(e => getComputedStyle(e).borderTopColor + '|' + getComputedStyle(e).backgroundColor)""")
                     ok(all(x.endswith("rgba(0, 0, 0, 0)") for x in bx), f"[{tag}] Clarification 'a box means you can change it': Updates' fixed text has no box {bx}")
@@ -422,7 +426,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "2/3-line invisible (suite 66)": "The 2/3-line box (0.2.8-beta.32, I27)",
             "status word vanish (suite 67)": "A collapsed status word (0.2.8-beta.33, I21/F45) then vanish",
             "rule dialog Escape (suite 67)": "Escape in the rule dialog (0.2.8-beta.33, I37) cancels exact",
-            "Updates first (suite 67)": "Settings (0.2.8-beta.33, F47): Updates is the first section",
+            "Settings order (suites 67, 80)": "Settings (Build D, F47/I45): modules can be reordered",
             "Updates version status (suite 67)": "Updates' \"up to date\" status (0.2.8-beta.33, F53)",
             "view picker icons (suite 67)": "The calendar's view picker (0.2.8-beta.33, F52)",
             "dim-hide every mode (suite 67)": "The Calendars and Key footer's dim-and-hide click (0.2.8-beta.33, F48)",

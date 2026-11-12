@@ -1,5 +1,5 @@
 """Holds: settings HTTP routes and their private helpers.
-Depends on: app/config.py, app/logins.py, app/updates.py. Other collaborators are explicit arguments/providers.
+Depends on: app/config.py, app/logins.py, app/updates.py. app/services/page_settings.py, app/item_order.py. Other collaborators are explicit arguments/providers.
   arguments/providers.
 Used by: app/routes/__init__.py.
 Reads/writes: HTTP requests and responses; supplied services perform persistence and network operations.
@@ -14,6 +14,8 @@ from ..config import normalise_public_url
 from ..updates import UpdaterError
 from fastapi.responses import JSONResponse
 from ..logins import LoginError
+from ..item_order import _moved
+from ..services.page_settings import settings_order
 
 
 def register(
@@ -40,6 +42,21 @@ def register(
     get__client_ip,
 ):
     """Register this area; return legacy helper exports for the composition layer."""
+
+    @app.post("/settings/move", dependencies=[Depends(gui_auth)])
+    async def move_setting(
+        csrf: str = Form(""),
+        id: str = Form(""),
+        before: str = Form(""),
+        after: str = Form(""),
+    ):
+        """Persist a Settings module's drag or arrow move using the shared ordering rules."""
+        check_csrf(csrf)
+        found = [{"id": key} for key in settings_order(store=store)]
+        moved = _moved(found, id, before, after)
+        if moved != found:
+            store.set("ui_settings_order", [item["id"] for item in moved])
+        return {"ok": True}
 
     @app.post("/update/now", dependencies=[Depends(gui_auth)])
     async def update_now(csrf: str = Form("")):
@@ -352,6 +369,7 @@ def register(
         "set_admin_email": set_admin_email,
         "set_administrator": set_administrator,
         "set_look": set_look,
+        "move_setting": move_setting,
         "set_public_extra": set_public_extra,
         "set_public_url": set_public_url,
         "update_now": update_now,
