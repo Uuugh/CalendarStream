@@ -21,7 +21,7 @@ ok(c(GoogleError("Google rejected the OAuth client: check")) is K.PERMISSION, "a
 ok(c(ValueError("x")) is K.UNKNOWN and c(GoogleError("plain")) is K.UNKNOWN, "anything else is unknown")
 p = RecoveryPolicy(jitter=lambda: 0.0)
 d = p.decide(K.TOKEN_EXPIRED, 0)
-ok(d.retry and d.state is H.RECOVERING, "an expired token is refreshed once")
+ok(d.retry and d.state is H.RECOVERING, "an expired token: the next scheduled sync retries with a fresh one")
 d = p.decide(K.TOKEN_EXPIRED, 1)
 ok(not d.retry and d.state is H.REAUTH_REQUIRED, "…and if the fresh one is refused too, sign in again")
 ok(not p.decide(K.CONSENT_REVOKED).retry and p.decide(K.CONSENT_REVOKED).state is H.REAUTH_REQUIRED, "a revoked grant needs a new sign-in, no retry")

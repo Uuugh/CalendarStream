@@ -36,7 +36,7 @@ class RecoveryPolicy:
         K, H = FailureKind, HealthState
         if kind is K.TOKEN_EXPIRED:
             if attempt == 0:
-                return RecoveryDecision(True, H.RECOVERING, "the access token was refused: refresh it once and retry")
+                return RecoveryDecision(True, H.RECOVERING, "the access token was refused: the next scheduled sync will try again with a fresh token")
             return RecoveryDecision(False, H.REAUTH_REQUIRED, "a fresh access token was refused too: sign in again")
         if kind is K.CONSENT_REVOKED:
             return RecoveryDecision(False, H.REAUTH_REQUIRED, "Google no longer accepts this sign-in: sign in again")
