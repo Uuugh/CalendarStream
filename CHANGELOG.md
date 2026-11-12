@@ -9,7 +9,20 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.40**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.41**
+
+## 0.2.8-beta.41 — 2026-11-12
+
+Build B: F51's new stretch-bar spec, and F15.2's rework.
+
+### Changed
+- **F51**: the stretch handle is now a bar centered under the calendar, no longer tied to the Reorder
+  grips left/right setting - twelve dots (the same grip look as a module's own handle) are the drag
+  grip, flanked by a fixed collapse arrow (to a new, lower floor of -300) and a fixed expand arrow (to
+  the bottom of the visible browser window).
+- **F15.2**: back to one icon (Bad Nov 7/12: "needs to actually have 12/24 on it") - a hollow
+  (outlined) Material Symbols clock face with the current format as a small badge on its corner,
+  replacing the segmented 12 | 24 switch.
 
 ## 0.2.8-beta.40 — 2026-11-12
 
