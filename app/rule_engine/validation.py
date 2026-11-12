@@ -1,6 +1,5 @@
 """Holds: Rule normalization, validation and ordering.
 Depends on: app/rule_engine/rule_error.py, app/rule_engine/schema.py, app/rule_engine/text_matching.py, app/rules_words.py.
-  app/rules_words.py.
 Used by: app/rule_engine/migration.py, app/rules.py.
 Reads/writes: no database, network or files; operates on supplied values.
 Dart note: rule domain functions and models; preserve ordered matching and regex time limits.
