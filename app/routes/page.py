@@ -200,7 +200,9 @@ def register(
     def calview_prefs() -> dict:
         """The calendar's own view choices (0.2.8-beta.29, F15, F28), kept with the page's other ones: `full` (the Full page
         view: every other section hidden), `hide` (what the key has switched off, 0.2.8-beta.33, F48: in every mode, not
-        just while full) and `stretch` (how many px the stretch handle added to a day's height) and `hour` (the height of one hour in Week and Day, I20).
+        just while full) and `stretch` (how many px the stretch bar added to a day's height, F51: -300 to 1200,
+        not just 0 to 1200 - the floor moved down to leave room to compress enough to shed a page scrollbar) and
+        `hour` (the height of one hour in Week and Day, I20).
         """
         saved = store.get("ui_calview")
         saved = saved if isinstance(saved, dict) else {}
@@ -215,7 +217,7 @@ def register(
             int(stretch)
             if isinstance(stretch, (int, float))
             and not isinstance(stretch, bool)
-            and 0 <= stretch <= 1200
+            and -300 <= stretch <= 1200
             else 0
         )
         hour = saved.get(
@@ -256,9 +258,12 @@ def register(
                 raise HTTPException(400, "Unknown key item.")
             saved["hide"] = keys
         if stretch is not None:
-            if not stretch.isdigit() or int(stretch) > 1200:
+            if not re.fullmatch(r"-?\d+", stretch):
                 raise HTTPException(400, "Unknown stretch.")
-            saved["stretch"] = int(stretch)
+            stretch_val = int(stretch)
+            if not -300 <= stretch_val <= 1200:
+                raise HTTPException(400, "Unknown stretch.")
+            saved["stretch"] = stretch_val
         if hour is not None:
             if not hour.isdigit() or not 20 <= int(hour) <= 120:
                 raise HTTPException(400, "Unknown hour height.")

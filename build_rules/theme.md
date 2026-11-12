@@ -397,7 +397,7 @@ one here, with its card.
   3%; light and dark. (0.2.8-beta.24, F7; 0.2.8-beta.26, F10, F12.3; Pictures 2·2, 2·9)
 - The 2/3-line (0.2.8-beta.28, F31): the status lines of every module and section share a standard width, shown only while collapsed. The current presentation is unboxed and right-aligned next to its Status/Action box (I27 below supersedes the original border/fill and centring). (Picture 2·9)
 - The On | Off switch (0.2.8-beta.28, F25): at the upper right of an expanded module, like the 12h | 24h switch; Off dims the module grey and the setting is never lost. (Picture 2·9)
-- The calendar's header (0.2.8-beta.29, F15, F26): the view is a drop-down (Month, Week, 5 days, Day, List), 12h | 24h is a clock icon with the current format in its tooltip. Calendar toolbar icons are 28 px square; the On | Off switch of a module is a 28 px-high segmented control with 8 px corners. Time Zone,
+- The calendar's header (0.2.8-beta.29, F15, F26): the view is a drop-down (Month, Week, 5 days, Day, List), 12h | 24h is a hollow clock icon with the current format as a badge on it (0.2.8-beta.41, F15.2). Calendar toolbar icons are 28 px square; the On | Off switch of a module is a 28 px-high segmented control with 8 px corners. Time Zone,
   view, 12h | 24h, search, Print and Full page sit in the right group; the + is the upper right corner. When they do not fit one line the right
   group drops to a second line. (Suites 21, 64)
 - The calendar's key (0.2.8-beta.29, F15): two parts under the calendar, Calendars (each with its (i)) and Key (rule colors, Edited, United
@@ -448,9 +448,14 @@ one here, with its card.
   the current choice's icon; open, each choice shows its icon left of its word, in a menu next to the language one.
   (Suite 67)
 - The stretch handle (0.2.8-beta.33, F51) sits at the bottom of the calendar itself (inside its scrolling body), not
-  the bottom of the whole section below the Calendars/Key footer; left by default, right when Reorder grips is Right.
+  the bottom of the whole section below the Calendars/Key footer.
   (Still open: in Week, Day and Itinerary the hours themselves don't yet grow the way Month's day cells do - left for
   a later build.) (Suite 67)
+- The stretch control (0.2.8-beta.41, F51 new spec): a bar centered under the calendar, no longer left/right by the
+  Reorder grips setting. Twelve dots (two rows of six, the same look as a module's own handle, turned sideways) are
+  the drag handle; a fixed ⏶ always collapses to the new -300 floor (down from 0, enough to shed a page scrollbar
+  on a shorter window) and a fixed ⏷ always expands so the calendar's own bottom edge reaches the window's bottom
+  edge. (Suite 79)
 - Changing or setting the public address (0.2.8-beta.33, F56), with Google Calendar API Sync already set up, pops
   up a notice that its redirect URI needs fixing, since the old one no longer matches: the Settings menu opens to
   Google Calendar API Sync (already true of any Administrator save), which redraws at once with its own existing
@@ -463,7 +468,10 @@ one here, with its card.
 - 12h | 24h (0.2.8-beta.32, F43) is one clock icon; its tooltip names the current mode, and it toggles on a click. (Suite 66)
 - 12h | 24h (0.2.8-beta.40, F15.2, superseding F43 above): the numbers themselves sit inside a rounded switch, its
   highlight sliding to the one in use, like the On | Off switch - so the current mode shows on the control itself,
-  not only in its tooltip. (Suite 21)
+  not only in its tooltip.
+- 12h | 24h (0.2.8-beta.41, F15.2 reworked again, Bad Nov 7/12): back to one icon - the hollow (outlined) Material
+  Symbols clock face, with the current mode as a small badge over its lower-right corner, so the number is still
+  on the control itself without the segmented switch's two-word pill. (Suite 21, 66)
 - The calendar grid (0.2.8-beta.32, F40) turns the page on a horizontal swipe (left: next, right: previous) on a touch screen; a vertical swipe
   still scrolls. (Suite 66)
 - History's headers (0.2.8-beta.32, F44) slide (drag) to reorder, or, focused, move with ← →; Undo starts at the end, not between Type and Event.

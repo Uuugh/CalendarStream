@@ -37,18 +37,18 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
         pg.click("#monthbtn"); pg.click(".calhead .navbtn.wide", position={"x": 2, "y": 2}, trial=True); pg.mouse.click(5, 5); pg.wait_for_timeout(100)
         ok(not pg.is_visible("#monthpick"), "clicking elsewhere closes the picker")
         pg.goto("http://127.0.0.1:8090/?month=2026-10"); pg.wait_for_timeout(200)
-        sw = pg.locator("#clockswitch"); box = sw.bounding_box(); cal = pg.locator("#cal").bounding_box()
-        # (0.2.8-beta.40, F15.2 supersedes beta.32's F43 single icon) a rounded switch, "12"/"24" in it
-        labels = sw.locator(".lb").all_inner_texts()
-        ok(sw.get_attribute("role") == "switch" and "Time format" in (sw.get_attribute("title") or "") and labels == ["12", "24"],
-           f"12h/24h is a segmented switch with the numbers on it (0.2.8-beta.40, F15.2), its tooltip names the mode ({box['width']:.0f}x{box['height']:.0f}, {labels})")
+        sw = pg.locator("#clockicon"); box = sw.bounding_box(); cal = pg.locator("#cal").bounding_box()
+        # (0.2.8-beta.41, F15.2 reworked again) one hollow clock icon, the current number as a badge on it
+        ok(sw.get_attribute("role") == "switch" and "Time format" in (sw.get_attribute("title") or "") and sw.locator(".clocknum").inner_text() == "12",
+           f"12h/24h is one hollow clock icon with the number on it (0.2.8-beta.41, F15.2), its tooltip names the mode ({box['width']:.0f}x{box['height']:.0f})")
         dot = pg.locator(".legend .helpdot").first.bounding_box()
         ok(round(dot["height"]) == 15, "legend help dot: one 15 px help icon (F1.2, 0.2.8)")
-        ok(sw.get_attribute("aria-checked") == "false" and "9:45am" in pg.content() and cal["x"] + cal["width"] - (box["x"] + box["width"]) < 330, "12h/24h switch in the header's right group (beta.29: view, switch, search, Print, Full page, +), 12-hour by default (English)")
+        ok(sw.get_attribute("aria-checked") == "false" and "9:45am" in pg.content() and cal["x"] + cal["width"] - (box["x"] + box["width"]) < 330, "12h/24h icon in the header's right group (beta.29: view, switch, search, Print, Full page, +), 12-hour by default (English)")
         sw.click(); pg.wait_for_load_state(); pg.wait_for_timeout(600)
-        ok(main.ui_clock() == "24" and pg.locator("#clockswitch").get_attribute("aria-checked") == "true" and "09:45–16:15" in pg.content(), "switch → 24-hour, saved, calendar redrawn")
-        pg.locator("#clockswitch").click(); pg.wait_for_timeout(600)
-        ok(main.ui_clock() == "12", "switch back → 12-hour")
+        ok(main.ui_clock() == "24" and pg.locator("#clockicon").get_attribute("aria-checked") == "true" and pg.locator("#clockicon .clocknum").inner_text() == "24"
+           and "09:45–16:15" in pg.content(), "icon → 24-hour, saved, calendar redrawn, badge now reads 24")
+        pg.locator("#clockicon").click(); pg.wait_for_timeout(600)
+        ok(main.ui_clock() == "12", "icon again → 12-hour")
         pg.goto("http://127.0.0.1:8090/?menu=settings"); pg.wait_for_timeout(300)
         groups = pg.locator("#menu .mgroup")
         ok(groups.count() == 4 and all(groups.nth(i).evaluate("e => getComputedStyle(e).borderLeftStyle") == "solid" for i in range(groups.count())), "every Settings section is outlined")

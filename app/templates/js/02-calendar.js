@@ -137,9 +137,17 @@ function fitFull() {
       savePref('/ui/calview', { hide: '-' }, function () { loadCal(location.href); });
     }
   });
-  // F15.7: the stretch handle in the calendar's lower left corner: drag (or ↑ ↓) to make the calendar taller or shorter
+  // F15.7; 0.2.8-beta.41, F51 (new spec): the stretch bar centered under the calendar: the dots are the drag handle
+  // (↕ drag, or ↑ ↓ keys); the floor is -300 (was 0) so there's room to compress enough to shed a page scrollbar
+  // on a shorter window, not just sit at the grid's own natural height.
+  var STRETCH_MIN = -300, STRETCH_MAX = 1200;
   var drag = null, saver = null;
-  function stretch(cal, px) { px = Math.max(0, Math.min(1200, Math.round(px))); cal.style.setProperty('--st', px + 'px'); return px; }
+  function stretch(cal, px) {
+    px = Math.max(STRETCH_MIN, Math.min(STRETCH_MAX, Math.round(px)));
+    cal.style.setProperty('--st', px + 'px');
+    var s = cal.querySelector('#calstretch'); if (s) s.setAttribute('aria-valuenow', String(px));
+    return px;
+  }
   function remember(px) { clearTimeout(saver); saver = setTimeout(function () { savePref('/ui/calview', { stretch: String(px) }); }, 400); }
   document.addEventListener('pointerdown', function (e) {
     var h = e.target.closest('#calstretch');
@@ -151,6 +159,23 @@ function fitFull() {
   });
   document.addEventListener('pointermove', function (e) { if (drag) drag.now = stretch(drag.cal, drag.st + (e.clientY - drag.y)); });
   document.addEventListener('pointerup', function () { if (drag && drag.now !== null) remember(drag.now); drag = null; });
+  // F51: the two fixed side arrows. ⏶ always collapses to STRETCH_MIN; ⏷ always expands so the calendar's own
+  // bottom edge reaches the bottom of the visible window (minus a small margin), figured from the card's current
+  // position each time it's clicked, not a remembered size.
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('#calcollapse, #calexpand');
+    if (!btn) return;
+    var cal = btn.closest('#cal');
+    if (!cal) return;
+    var now = parseFloat(getComputedStyle(cal).getPropertyValue('--st')) || 0, next;
+    if (btn.id === 'calcollapse') {
+      next = STRETCH_MIN;
+    } else {
+      var margin = 24, bottom = cal.getBoundingClientRect().bottom;
+      next = now + (window.innerHeight - margin - bottom);
+    }
+    remember(stretch(cal, next));
+  });
   // (0.2.8-beta.31, I20) the hour-height handle left of the times: drag (or ↑ ↓) to make each hour shorter or taller
   var hdrag = null, hsaver = null;
   function hourSet(view, px) { px = Math.max(20, Math.min(120, Math.round(px))); view.style.setProperty('--hhu', px + 'px');
@@ -180,12 +205,12 @@ function fitFull() {
 })();
 
 function initCal() {
-  // The 12h / 24h switch: the only place the time format is set (times elsewhere change too, so the
-  // page is drawn again).
-  var sw = document.getElementById('clockswitch');
+  // The 12h / 24h control (0.2.8-beta.41, F15.2 rework: one hollow-clock icon with the number on it, not a
+  // segmented switch): the only place the time format is set (times elsewhere change too, so the page is
+  // drawn again - the reload is what puts the new number on the icon, there's nothing to flip client-side).
+  var sw = document.getElementById('clockicon');
   if (sw) sw.addEventListener('click', function () {
     var to24 = sw.getAttribute('aria-checked') !== 'true';
-    sw.setAttribute('aria-checked', String(to24));
     savePref('/ui/clock', { clock: to24 ? '24' : '12' }, function () { location.reload(); });
   });
   // The view (0.2.8-beta.29, F15.6; 0.2.8-beta.33, F52: icons, not words - a button + menu, like ☰ Settings).

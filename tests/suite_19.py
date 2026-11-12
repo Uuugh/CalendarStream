@@ -24,12 +24,12 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
     # an event at 9:45–4:15 (the made-up schedule has none; the real one did)
     c.post("/event/save", data={"csrf": csrf, "month": "2026-10", "title": "Ground school", "start_date": "2026-10-14", "start_time": "09:45",
                                 "end_date": "2026-10-14", "end_time": "16:15"})
-    ok('data-clock=' not in p and 'id="clockswitch"' in p, "F1.5: no Time format in Settings; the switch above the calendar")
+    ok('data-clock=' not in p and 'id="clockicon"' in p, "F1.5: no Time format in Settings; the icon above the calendar")
     p = c.get("/?month=2026-10").text
     ok("9:45am–4:15pm" in p and "09:45–16:15" not in p, "Automatic in English: 12-hour in the calendar")
     ok(c.post("/ui/clock", data={"csrf": csrf, "clock": "24"}).status_code == 204, "choose 24-hour")
     p = c.get("/?month=2026-10").text
-    ok("09:45–16:15" in p and 'id="clockswitch" aria-checked="true"' in p, "24-hour in the calendar")
+    ok("09:45–16:15" in p and 'id="clockicon" aria-checked="true"' in p, "24-hour in the calendar")
     e = c.get("/event?date=2026-10-08&month=2026-10").text
     ok('id="start_time" name="start_time" value="09:00"' in e and 'start_hour' not in e, "24-hour: one time box, 09:00")
     c.post("/ui/clock", data={"csrf": csrf, "clock": "12"})

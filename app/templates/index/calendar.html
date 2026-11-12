@@ -81,10 +81,14 @@
             {% for v, label in view_names.items() %}<button type="button" role="menuitemradio" data-view="{{ v }}" aria-checked="{{ 'true' if cal.view == v else 'false' }}">{{ icon(view_icons[v], 18) }}{{ label }}</button>{% endfor %}
           </div>
         </div>
-        {# (0.2.8-beta.32, F43: one clock icon; 0.2.8-beta.40, F15.2 supersedes it) the numbers themselves sit
-           inside a rounded switch, like the On | Off one (powerswitch() macro), its highlight sliding to
-           whichever is in use - so the current format shows on the control itself, not only in its tooltip. #}
-        <button type="button" role="switch" class="segsw clockbtn" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') if dates.h24 else _('12-hour times') }}" title="{{ _('Time format: 24h (click for 12h)') if dates.h24 else _('Time format: 12h (click for 24h)') }}"><span class="hl"></span><span class="lb">{{ _('12') }}</span><span class="lb">{{ _('24') }}</span></button>
+        {# (0.2.8-beta.32, F43; 0.2.8-beta.40, F15.2: superseded by the segmented switch; 0.2.8-beta.41, F15.2
+           reworked again, Bad Nov 7/12: back to one icon, but the Developer's point stands - the number has to
+           be ON the icon, not only in its tooltip - so it's the hollow Material Symbols clock face with the
+           current format as a small badge over its corner. Reloads on click (initCal(), below) like the switch
+           it replaces, so only the current value is ever drawn - there's no client-side state to keep in sync. #}
+        <button type="button" role="switch" class="iconbtn clockicon" id="clockicon" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') if dates.h24 else _('12-hour times') }}" title="{{ _('Time format: 24h (click for 12h)') if dates.h24 else _('Time format: 12h (click for 24h)') }}">
+          {{ icon("schedule_hollow", 18) }}<span class="clocknum" aria-hidden="true">{{ _('24') if dates.h24 else _('12') }}</span>
+        </button>
         {# Search (0.2.8-beta.11), left of Print (F15.3): opens the search line under this row #}
         <button type="button" class="iconbtn searchbtn" id="searchbtn" aria-controls="calsearch" aria-expanded="{{ 'true' if cal.search else 'false' }}"
                 title="{{ _('Search the calendar') }}" aria-label="{{ _('Search the calendar') }}">{{ icon("search", 18) }}</button>
@@ -145,9 +149,24 @@
       {% else %}<p class="muted">{{ _('Nothing found.') if cal.search else _('No events this month.') }}</p>{% endfor %}
     </div>
     {% endif %}
-    {# F15.7; 0.2.8-beta.33, F51: the stretch handle sits at the bottom of the calendar itself (inside #calbody), not
-       the bottom of the whole section (below the key/footer); left or right follows the reorder grips setting. #}
-    {% if cal.view != "list" and not full %}<button type="button" class="calstretch" id="calstretch" aria-label="{{ _('Stretch the calendar (drag, or ↑ ↓)') }}" title="{{ _('Stretch the calendar (drag, or ↑ ↓)') }}">{{ icon("unfold_more", 16) }}</button>{% endif %}
+    {# F15.7; 0.2.8-beta.33: the stretch control sits at the bottom of the calendar itself (inside #calbody), not
+       the bottom of the whole section (below the key/footer). 0.2.8-beta.41, F51 (new spec): a centered bar, no
+       longer tied to the reorder-grips left/right setting; ⏶ always collapses to the minimum height, ⏷ always
+       expands to the bottom of the visible browser window; the twelve dots between them are the drag handle
+       (same gripdots look as a module's own handle, index.html's handle macro, just two rows of six instead of
+       three rows of two). #}
+    {% if cal.view != "list" and not full %}
+    <div class="calstretchbar" id="calstretchbar">
+      <button type="button" class="calstretcharrow" id="calcollapse" data-dir="collapse" title="{{ _('Collapse the calendar to its minimum height') }}" aria-label="{{ _('Collapse the calendar to its minimum height') }}">{{ icon("arrow_drop_up", 18) }}</button>
+      <span class="calstretch" id="calstretch" tabindex="0" role="slider" aria-orientation="vertical" aria-valuemin="-300" aria-valuemax="1200" aria-valuenow="{{ calview.stretch }}" aria-label="{{ _('Stretch the calendar (drag, or ↑ ↓)') }}" title="{{ _('Stretch the calendar (drag, or ↑ ↓)') }}">
+        <svg class="stretchdots" width="40" height="10" viewBox="0 0 40 10" fill="currentColor" focusable="false" aria-hidden="true">
+          <circle cx="2.5" cy="3" r="1.4"/><circle cx="9.5" cy="3" r="1.4"/><circle cx="16.5" cy="3" r="1.4"/><circle cx="23.5" cy="3" r="1.4"/><circle cx="30.5" cy="3" r="1.4"/><circle cx="37.5" cy="3" r="1.4"/>
+          <circle cx="2.5" cy="7" r="1.4"/><circle cx="9.5" cy="7" r="1.4"/><circle cx="16.5" cy="7" r="1.4"/><circle cx="23.5" cy="7" r="1.4"/><circle cx="30.5" cy="7" r="1.4"/><circle cx="37.5" cy="7" r="1.4"/>
+        </svg>
+      </span>
+      <button type="button" class="calstretcharrow" id="calexpand" data-dir="expand" title="{{ _('Expand the calendar to the bottom of the window') }}" aria-label="{{ _('Expand the calendar to the bottom of the window') }}">{{ icon("arrow_drop_down", 18) }}</button>
+    </div>
+    {% endif %}
     </div>
     {# The key (F15.8, F26): Calendars on the left (columns of three from the left, with an (i)), a vertical rule, Key on the
        right (stacks of three from the right); when they don't fit, the columns grow a row taller. A click on an
