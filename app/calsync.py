@@ -33,8 +33,6 @@ from .calendars.feed import (
 
 log = logging.getLogger("calsync")
 
-log = logging.getLogger("calsync")
-
 CURL = shutil.which("curl") or "curl"
 
 _curl_version = ""

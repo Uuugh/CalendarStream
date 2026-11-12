@@ -3,10 +3,6 @@
 Holds: Event.
 Depends on: no other app files.
 Used by: app/calendars/edits.py, app/calendars/feed.py, app/calendars/parsing.py, app/calsync.py, app/links.py, app/rule_engine/matching.py, app/rule_engine/ruleset.py, app/rules.py, app/services/calendar_view.py, app/services/deletions.py, app/services/event_history.py, app/services/event_links.py, app/services/google_sync.py, app/services/publishing.py, app/services/route_helpers.py.
-  app/links.py, app/rule_engine/matching.py, app/rule_engine/ruleset.py, app/rules.py,
-  app/services/calendar_view.py, app/services/deletions.py, app/services/event_history.py,
-  app/services/event_links.py, app/services/google_sync.py, app/services/publishing.py,
-  app/services/route_helpers.py.
 Reads/writes: nothing.
 Dart note: Event data model in the calendars/domain layer.
 """

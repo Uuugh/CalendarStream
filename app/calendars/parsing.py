@@ -1,6 +1,5 @@
 """Holds: Calendar parsing and recurrence expansion.
 Depends on: app/calendars/defaults.py, app/calendars/errors.py, app/calendars/event.py, app/calendars/meeting.py.
-  app/calendars/meeting.py.
 Used by: app/calsync.py.
 Reads/writes: supplied calendar bytes and event values only.
 Dart note: calendar domain functions; use an iCalendar adapter for parsing and writing.
