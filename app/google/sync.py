@@ -2,18 +2,19 @@
 Google's changes, and the 1-way / 2-way reconciliation of events (checkpoints, conflicts), plus the pure event
 helpers they use.
 
-Holds: GoogleSync (the calendar/event/watch methods a Google account's connection has; it is a mixin, so it uses
-  `self.api(...)`, `self.store`, `self.info()` and `self._update_info()` of GoogleApi, and `self.REVOKE_URL`),
+Holds: GoogleSync (the calendar/event/watch methods a Google account's connection has; 0.2.8-beta.40, F58
+  checkpoint 10: it is handed a GoogleApi connection as `api_client` instead of being mixed into it, and calls
+  `self.api_client.api(...)`, `.store`, `.info()` and `._update_info()`, and reads `self.api_client.REVOKE_URL`),
   SyncResult, event_body, event_id, in_window, google_fields, nearest_color_id and the colour tables.
 Depends on: app/calsync.py (meeting links), app/google/errors.py, app/google/api.py (what a host provides);
   httpx, the standard library.
-Used by: app/gsync.py (`Google(GoogleApi, GoogleSync)`, and re-exports these names for the rest of the app and
-  the suites); app/main.py and the routes through gsync.
-Reads/writes: the database through `self.store` (per-account details: calendars, checkpoints, watch channels); the
-  network through `self.api`; the clock.
-Dart note: this becomes a `SyncEngine` (domain) that is handed a `GoogleApi` client (data) instead of being mixed in:
-  the pure helpers (`eventBody`, `inWindow`, `SyncResult`...) are separate classes/files there. The mixin is the
-  interim step here; the calls through `self.api` are the seam to cut.
+Used by: app/gsync.py (`Google(GoogleApi)` holds a `GoogleSync(self)` and forwards its public methods, so
+  existing callers keep calling them straight on the `Google` instance); re-exports these names for the rest of
+  the app and the suites; app/main.py and the routes through gsync.
+Reads/writes: the database through `self.api_client.store` (per-account details: calendars, checkpoints, watch
+  channels); the network through `self.api_client.api`; the clock.
+Dart note: this is the target shape already: `SyncEngine` (domain), handed a `GoogleApi` client (data) rather
+  than mixed into it. The pure helpers (`eventBody`, `inWindow`, `SyncResult`...) are separate classes/files there.
 """
 from __future__ import annotations
 
@@ -155,9 +156,14 @@ class SyncResult:
 
 
 class GoogleSync:
-    """The calendar and event side of a Google account (see this file's header)."""
+    """The calendar and event side of a Google account: handed a GoogleApi connection (`api_client`) instead of
+    being mixed into it (0.2.8-beta.40, F58 checkpoint 10). `self.api_client.MAX_WRITES` is read live each time
+    (not copied here), so a host or a suite can still change it through `gsync.MAX_WRITES`."""
 
-    MAX_WRITES = MAX_WRITES    # (an attribute so a host or a suite can change it: gsync.Google reads gsync.MAX_WRITES)
+    MAX_WRITES = MAX_WRITES    # the default (a suite or a host changes the live limit through `api_client.MAX_WRITES` instead)
+
+    def __init__(self, api_client):
+        self.api_client = api_client
 
     # Each Google destination has a calendar of its own in Google: {calendar_id, calendar_name,
     # synced_calendar, created, last_sync, events}, under "calendars" by the destination's ID. (Before
@@ -165,21 +171,21 @@ class GoogleSync:
     # rekey() moves them.)
 
     def cal_info(self, sid: str) -> dict:
-        info = self.info()
+        info = self.api_client.info()
         if sid == "ccs":
             return {k: info[k] for k in CAL_KEYS if k in info}
         return dict((info.get("calendars") or {}).get(sid) or {})
 
     def _update_cal(self, sid: str, **changes):
         if sid == "ccs":
-            self._update_info(**changes)
+            self.api_client._update_info(**changes)
             return
-        info = self.info()
+        info = self.api_client.info()
         cals = dict(info.get("calendars") or {})
         cal = {**(cals.get(sid) or {}), **changes}
         cals[sid] = {k: v for k, v in cal.items() if v not in (None, "")}
         info["calendars"] = cals
-        self.store.set(self._info_key, info)
+        self.api_client.store.set(self.api_client._info_key, info)
 
     def rekey(self, old: str, new: str):
         """Give a calendar (its details, tracked events and notifications) a new key: used when the
@@ -189,24 +195,24 @@ class GoogleSync:
             return
         self._update_cal(new, **info)
         if old == "ccs":
-            whole = self.info()
+            whole = self.api_client.info()
             for k in CAL_KEYS:
                 if k not in ("last_sync",):
                     whole.pop(k, None)
-            self.store.set(self._info_key, whole)
+            self.api_client.store.set(self.api_client._info_key, whole)
         else:
-            whole = self.info()
+            whole = self.api_client.info()
             (whole.get("calendars") or {}).pop(old, None)
-            self.store.set(self._info_key, whole)
-        self.store.google_rekey(old, new)
-        watch = self.store.get(self._watch_key(old))
+            self.api_client.store.set(self.api_client._info_key, whole)
+        self.api_client.store.google_rekey(old, new)
+        watch = self.api_client.store.get(self._watch_key(old))
         if watch:
-            self.store.set(self._watch_key(new), watch)
-            self.store.delete(self._watch_key(old))
+            self.api_client.store.set(self._watch_key(new), watch)
+            self.api_client.store.delete(self._watch_key(old))
 
     def calendar_sids(self) -> list[str]:
         """Calendars CalendarStream has (or had) in Google, by key."""
-        info = self.info()
+        info = self.api_client.info()
         return (["ccs"] if info.get("calendar_id") else []) + list((info.get("calendars") or {}).keys())
 
     def forget_calendar(self, sid: str):
@@ -215,15 +221,15 @@ class GoogleSync:
 
     def _forget_cal(self, sid: str):
         if sid == "ccs":
-            info = self.info()
+            info = self.api_client.info()
             for k in CAL_KEYS:
                 info.pop(k, None)
-            self.store.set(self._info_key, info)
+            self.api_client.store.set(self.api_client._info_key, info)
         else:
-            info = self.info()
+            info = self.api_client.info()
             (info.get("calendars") or {}).pop(sid, None)
-            self.store.set(self._info_key, info)
-        self.store.google_forget(source=sid)
+            self.api_client.store.set(self.api_client._info_key, info)
+        self.api_client.store.google_forget(source=sid)
 
 
     async def ensure_calendar(self, sid: str, name: str, calendar_id: str | None = None) -> str:
@@ -235,23 +241,23 @@ class GoogleSync:
         unreachable = False
         if calendar_id:
             try:
-                found = await self.api("GET", f"/calendars/{_quote(calendar_id)}", ok_missing=True)
+                found = await self.api_client.api("GET", f"/calendars/{_quote(calendar_id)}", ok_missing=True)
             except GoogleError as e:
                 if "403" not in str(e):
                     raise
                 found, unreachable = None, True    # made with another client: Google won't show it to this one
             if found is not None:
                 self._update_cal(sid, calendar_id=calendar_id, calendar_name=found.get("summary", name), created=False,
-                                 client=info.get("client") or self.client_id)
+                                 client=info.get("client") or self.api_client.client_id)
                 return calendar_id
             # (0.2.8-beta.14) a calendar made with an earlier client can't be reached with this one: Google
             # only shows an app the calendars it made. A new one is made; the old one is named in the log.
-            if not remembered and (unreachable or (info.get("client") and info.get("client") != self.client_id)):
+            if not remembered and (unreachable or (info.get("client") and info.get("client") != self.api_client.client_id)):
                 self._update_cal(sid, replaced=info.get("calendar_name") or name)
-        made = await self.api("POST", "/calendars", body={
-            "summary": name, "timeZone": self.tz_name,
+        made = await self.api_client.api("POST", "/calendars", body={
+            "summary": name, "timeZone": self.api_client.tz_name,
             "description": CALENDAR_DESCRIPTION})
-        self._update_cal(sid, calendar_id=made["id"], calendar_name=made.get("summary", name), created=True, client=self.client_id,
+        self._update_cal(sid, calendar_id=made["id"], calendar_name=made.get("summary", name), created=True, client=self.api_client.client_id,
                          shown=False)   # (0.2.8-beta.19, F7) not shown yet: the next Sync Now shows it in Google Calendar
         return made["id"]
 
@@ -285,14 +291,14 @@ class GoogleSync:
     async def _send_color(self, calendar_id: str, way: str, color: str):
         path = f"/users/me/calendarList/{_quote(calendar_id)}"
         if way == "rgb":
-            await self.api("PATCH", path, params={"colorRgbFormat": "true"},
+            await self.api_client.api("PATCH", path, params={"colorRgbFormat": "true"},
                            body={"backgroundColor": color, "foregroundColor": "#ffffff"})
         elif way == "colorId":
-            await self.api("PATCH", path, body={"colorId": nearest_calendar_color(color)})
+            await self.api_client.api("PATCH", path, body={"colorId": nearest_calendar_color(color)})
         else:
             # a PUT replaces the whole entry: start from Google's own copy so nothing else in it changes
             try:
-                entry = await self.api("GET", path, ok_missing=True) or {}
+                entry = await self.api_client.api("GET", path, ok_missing=True) or {}
             except GoogleError as e:
                 if not str(e).startswith("Google Calendar refused"):
                     raise
@@ -301,17 +307,17 @@ class GoogleSync:
             body.setdefault("selected", True)
             body.setdefault("hidden", False)
             body.update(id=calendar_id, backgroundColor=color, foregroundColor="#ffffff")
-            await self.api("PUT", path, params={"colorRgbFormat": "true"}, body=body)
+            await self.api_client.api("PUT", path, params={"colorRgbFormat": "true"}, body=body)
 
     async def delete_calendar(self, sid: str) -> str:
         """Delete a destination's calendar in Google (if connected) and forget it. Returns a note
         when Google couldn't be reached ("" otherwise)."""
         note = ""
         calendar_id = self.cal_info(sid).get("calendar_id")
-        if calendar_id and self.connected:
+        if calendar_id and self.api_client.connected:
             try:
                 await self.stop_watch([sid])
-                await self.api("DELETE", f"/calendars/{_quote(calendar_id)}", ok_missing=True)
+                await self.api_client.api("DELETE", f"/calendars/{_quote(calendar_id)}", ok_missing=True)
             except GoogleError as e:
                 note = f"its calendar in Google wasn't deleted ({e}); delete it there by hand"
         self._forget_cal(sid)
@@ -330,17 +336,17 @@ class GoogleSync:
                 calendar_id = self.cal_info(sid).get("calendar_id")
                 try:
                     if calendar_id:
-                        await self.api("DELETE", f"/calendars/{_quote(calendar_id)}", ok_missing=True)
+                        await self.api_client.api("DELETE", f"/calendars/{_quote(calendar_id)}", ok_missing=True)
                     self._forget_cal(sid)
                 except GoogleError as e:
                     notes.append(f"a calendar wasn't deleted ({e})")
-        info = self.info()
+        info = self.api_client.info()
         try:
             if not revoke:
                 raise _SkipRevoke
-            token = self._refresh_token()
+            token = self.api_client._refresh_token()
             async with httpx.AsyncClient(timeout=TIMEOUT) as client:
-                r = await client.post(self.REVOKE_URL, data={"token": token})
+                r = await client.post(self.api_client.REVOKE_URL, data={"token": token})
             if r.status_code not in (200, 400):   # 400: Google had already dropped it
                 notes.append(f"Google didn't confirm removing access (HTTP {r.status_code}); "
                              "remove CalendarStream at myaccount.google.com/permissions")
@@ -349,17 +355,17 @@ class GoogleSync:
                          "myaccount.google.com/permissions")
         except _SkipRevoke:
             pass
-        self.store.delete(self._token_key)
-        self._access = None
+        self.api_client.store.delete(self.api_client._token_key)
+        self.api_client._access = None
         # Keep the calendar IDs (unless deleted) so reconnecting the same account reuses those calendars.
         info.pop("connected_at", None)
         info.pop("last_error", None)
         info.pop("created", None)
-        self.store.set(self._info_key, info)
+        self.api_client.store.set(self.api_client._info_key, info)
         return notes
 
     def record_error(self, message: str):
-        self._update_info(last_error=message)
+        self.api_client._update_info(last_error=message)
 
     # --- Instant updates from Google (push notifications, "webhooks") -------------------------
     #
@@ -374,12 +380,12 @@ class GoogleSync:
         return "google_watch" if sid == "ccs" else f"google_watch:{sid}"
 
     def watch_info(self, sid: str = "ccs") -> dict:
-        return self.store.get(self._watch_key(sid)) or {}
+        return self.api_client.store.get(self._watch_key(sid)) or {}
 
     def _update_watch(self, sid: str, **changes):
         info = self.watch_info(sid)
         info.update(changes)
-        self.store.set(self._watch_key(sid), info)
+        self.api_client.store.set(self._watch_key(sid), info)
 
     def watch_due(self, sid: str, address: str, now_: datetime, renew_before: timedelta, retry_after: timedelta) -> bool:
         """Whether a channel should be started now: none yet, a new address or calendar, close to
@@ -403,7 +409,7 @@ class GoogleSync:
             return
         channel, token = secrets.token_hex(16), secrets.token_urlsafe(32)
         try:
-            made = await self.api("POST", f"/calendars/{_quote(calendar_id)}/events/watch", body={
+            made = await self.api_client.api("POST", f"/calendars/{_quote(calendar_id)}/events/watch", body={
                 "id": channel, "type": "web_hook", "address": address, "token": token,
                 "params": {"ttl": str(WATCH_TTL)}})
         except GoogleError as e:
@@ -411,8 +417,8 @@ class GoogleSync:
             raise
         expires = datetime.fromtimestamp(int(made.get("expiration") or 0) / 1000, timezone.utc) \
             if made.get("expiration") else datetime.now(timezone.utc) + timedelta(seconds=WATCH_TTL)
-        self.store.set(self._watch_key(sid), {
-            "id": channel, "resource": made.get("resourceId", ""), "token": self._seal(token),
+        self.api_client.store.set(self._watch_key(sid), {
+            "id": channel, "resource": made.get("resourceId", ""), "token": self.api_client._seal(token),
             "address": address, "calendar_id": calendar_id, "expires": expires.isoformat(),
             "tried": datetime.now(timezone.utc).isoformat(), "last_notice": old.get("last_notice")})
         if old.get("id") and old.get("resource"):
@@ -420,7 +426,7 @@ class GoogleSync:
 
     async def _stop_channel(self, channel: str, resource: str):
         try:
-            await self.api("POST", "/channels/stop", body={"id": channel, "resourceId": resource}, ok_missing=True)
+            await self.api_client.api("POST", "/channels/stop", body={"id": channel, "resourceId": resource}, ok_missing=True)
         except GoogleError:
             pass    # it runs out by itself within a week
 
@@ -430,7 +436,7 @@ class GoogleSync:
             w = self.watch_info(sid)
             if w.get("id") and w.get("resource"):
                 await self._stop_channel(w["id"], w["resource"])
-            self.store.delete(self._watch_key(sid))
+            self.api_client.store.delete(self._watch_key(sid))
 
     def notice_from(self, channel: str, token: str, sids: list[str]) -> str | None:
         """The source whose current channel sent a notification (its ID and secret token match), or None."""
@@ -439,7 +445,7 @@ class GoogleSync:
             if not w.get("id") or not w.get("token"):
                 continue
             if secrets.compare_digest((channel or "").encode(), w["id"].encode()) and \
-                    secrets.compare_digest((token or "").encode(), self._unseal(w["token"], "").encode()):
+                    secrets.compare_digest((token or "").encode(), self.api_client._unseal(w["token"], "").encode()):
                 return sid
         return None
 
@@ -458,9 +464,9 @@ class GoogleSync:
         calendar_id = info.get("calendar_id")
         if not calendar_id or info.get("synced_calendar") != calendar_id:
             return []
-        tz = ZoneInfo(self.tz_name)
+        tz = ZoneInfo(self.api_client.tz_name)
         cal = f"/calendars/{_quote(calendar_id)}"
-        rows = self.store.google_rows(sid)
+        rows = self.api_client.store.google_rows(sid)
         by_gid = {row["google_id"]: (uid, row) for uid, row in rows.items()}
         found, page = {}, None
         start = datetime.combine(first_day, datetime.min.time(), tz).isoformat()
@@ -469,7 +475,7 @@ class GoogleSync:
             if page:
                 params["pageToken"] = page
             try:
-                data = await self.api("GET", f"{cal}/events", params=params, ok_missing=True)
+                data = await self.api_client.api("GET", f"{cal}/events", params=params, ok_missing=True)
             except GoogleError as e:
                 if "403" in str(e):      # made with another client: nothing to bring from it
                     return []
@@ -500,7 +506,7 @@ class GoogleSync:
         """Delete one event from a destination's Google calendar (one added there, once it's copied in)."""
         calendar_id = self.cal_info(sid).get("calendar_id")
         if calendar_id:
-            await self.api("DELETE", f"/calendars/{_quote(calendar_id)}/events/{gid}", ok_missing=True)
+            await self.api_client.api("DELETE", f"/calendars/{_quote(calendar_id)}/events/{gid}", ok_missing=True)
 
     async def sync(self, sid: str, events: list, name: str, color_for, first_day: date, full: bool = False,
                    hold: set | frozenset = frozenset()) -> SyncResult:
@@ -510,7 +516,7 @@ class GoogleSync:
         gives its #rrggbb color (its own, a rule's or its source's) or "". Only events ending after `first_day` are written; older
         ones are left as they are. Normally only events that changed since the last sync are sent;
         with `full`, Google's copy is also checked and anything changed or deleted there is repaired."""
-        tz = ZoneInfo(self.tz_name)
+        tz = ZoneInfo(self.api_client.tz_name)
         result = SyncResult()
         info = self.cal_info(sid)
         calendar_id = info.get("calendar_id")
@@ -519,7 +525,7 @@ class GoogleSync:
         if full:
             calendar_id = await self.ensure_calendar(sid, name, calendar_id)
             if self.cal_info(sid).get("synced_calendar") != calendar_id:
-                self.store.google_forget(source=sid)
+                self.api_client.store.google_forget(source=sid)
                 self._update_cal(sid, synced_calendar=calendar_id)
             old = self.cal_info(sid).get("replaced")
             if old:
@@ -533,7 +539,7 @@ class GoogleSync:
             # Deleted in Google since the last check: make a new one and write everything again.
             self._update_cal(sid, calendar_id=None, synced_calendar=None)
             calendar_id = await self.ensure_calendar(sid, name)
-            self.store.google_forget(source=sid)
+            self.api_client.store.google_forget(source=sid)
             self._update_cal(sid, synced_calendar=calendar_id)
             result = SyncResult(notes=[f"the calendar {name} was missing in Google, so a new one was made"])
             return await self._sync(sid, calendar_id, events, name, color_for, first_day, tz, True, result, hold)
@@ -541,13 +547,13 @@ class GoogleSync:
     async def _sync(self, sid, calendar_id, events, name, color_for, first_day, tz, full, result, hold=frozenset()) -> SyncResult:
         cal = f"/calendars/{_quote(calendar_id)}"
         if self.cal_info(sid).get("calendar_name") != name:          # keep the name in step
-            if await self.api("PATCH", cal, body={"summary": name}, ok_missing=True) is None:
+            if await self.api_client.api("PATCH", cal, body={"summary": name}, ok_missing=True) is None:
                 raise CalendarMissing()
             self._update_cal(sid, calendar_name=name)
             result.renamed = True
 
         wanted = {e.uid: e for e in events if not e.hidden and in_window(e, first_day, tz)}
-        rows = self.store.google_rows(sid)
+        rows = self.api_client.store.google_rows(sid)
         remote = await self._list_events(cal, first_day, tz) if full else None
         writes = 0
 
@@ -556,13 +562,13 @@ class GoogleSync:
                 result.unchanged += 1
                 continue
             color = color_for(e)
-            body = event_body(e, self.tz_name, nearest_color_id(color) if color else "")
+            body = event_body(e, self.api_client.tz_name, nearest_color_id(color) if color else "")
             digest, gid, row = _hash(body), body["id"], rows.get(uid)
             same = row and row["hash"] == digest
             if same and (remote is None or not _needs_repair(remote.get(gid), row)):
                 result.unchanged += 1
                 continue
-            if writes >= self.MAX_WRITES:
+            if writes >= self.api_client.MAX_WRITES:
                 result.more = True
                 continue
             stamp = await self._put_event(cal, gid, body, known=bool(row) or bool(remote and gid in remote))
@@ -572,36 +578,36 @@ class GoogleSync:
                 result.updated += 1
             else:
                 result.added += 1
-            self.store.google_saved(uid, gid, digest, e.end, sid, stamp)
+            self.api_client.store.google_saved(uid, gid, digest, e.end, sid, stamp)
             writes += 1
 
         wanted_ids = {event_id(uid) for uid in wanted}
         for uid, row in rows.items():
             if uid in wanted:
                 continue
-            if _ends_in_window(row["ends"], first_day, tz) and writes < self.MAX_WRITES:
-                await self.api("DELETE", f"{cal}/events/{row['google_id']}", ok_missing=True)
+            if _ends_in_window(row["ends"], first_day, tz) and writes < self.api_client.MAX_WRITES:
+                await self.api_client.api("DELETE", f"{cal}/events/{row['google_id']}", ok_missing=True)
                 result.removed += 1
                 writes += 1
-            elif writes >= self.MAX_WRITES:
+            elif writes >= self.api_client.MAX_WRITES:
                 result.more = True
                 continue
-            self.store.google_forget(uid, sid)  # past events: left in Google, no longer tracked
+            self.api_client.store.google_forget(uid, sid)  # past events: left in Google, no longer tracked
 
         if remote:   # events CalendarStream wrote that it no longer knows about (e.g. a lost database)
             for gid, ev in remote.items():
                 if gid in wanted_ids or ev.get("status") == "cancelled":
                     continue
-                if writes >= self.MAX_WRITES:      # (review #3.2) the rest waits for the next sync, and says so
+                if writes >= self.api_client.MAX_WRITES:      # (review #3.2) the rest waits for the next sync, and says so
                     result.more = True
                     break
-                await self.api("DELETE", f"{cal}/events/{gid}", ok_missing=True)
+                await self.api_client.api("DELETE", f"{cal}/events/{gid}", ok_missing=True)
                 result.removed += 1
                 writes += 1
 
         when = datetime.now(timezone.utc).isoformat()
         self._update_cal(sid, last_sync=when, events=len(wanted))
-        self._update_info(last_sync=when, last_result=result.summary(), last_error=None)
+        self.api_client._update_info(last_sync=when, last_result=result.summary(), last_error=None)
         return result
 
     async def _list_events(self, cal: str, first_day: date, tz: ZoneInfo) -> dict[str, dict]:
@@ -613,7 +619,7 @@ class GoogleSync:
                       "privateExtendedProperty": f"{MARKER}=1"}
             if page:
                 params["pageToken"] = page
-            data = await self.api("GET", f"{cal}/events", params=params, ok_missing=True)
+            data = await self.api_client.api("GET", f"{cal}/events", params=params, ok_missing=True)
             if data is None:
                 raise CalendarMissing()
             for ev in data.get("items", []):
@@ -627,15 +633,15 @@ class GoogleSync:
         this never makes duplicates: Google answers 409 to a second insert (including for a deleted event,
         which a replace brings back)."""
         if known:
-            done = await self.api("PUT", f"{cal}/events/{gid}", body=body, ok_missing=True)
+            done = await self.api_client.api("PUT", f"{cal}/events/{gid}", body=body, ok_missing=True)
             if done is not None:
                 return str(done.get("updated") or "")
         try:
-            done = await self.api("POST", f"{cal}/events", body=body, ok_missing=True)
+            done = await self.api_client.api("POST", f"{cal}/events", body=body, ok_missing=True)
             if done is None:
                 raise CalendarMissing()
         except Conflict:
-            done = await self.api("PUT", f"{cal}/events/{gid}", body=body)
+            done = await self.api_client.api("PUT", f"{cal}/events/{gid}", body=body)
         return str((done or {}).get("updated") or "")
 
 
