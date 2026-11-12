@@ -34,10 +34,13 @@
                 <input type="password" id="lconf" name="confirm" autocomplete="new-password"></label>
             </div>
             <p class="mnote more" style="margin:6px 0 0" hidden>{{ _('Then sign in again with the new login.') }}</p>
-            {# (0.2.8-beta.32, I22) one unified list of address rows: the domain row (the page's own address, with
-               This page and + at its end) first, then any extra addresses below, each with its own trash can.
-               Trashing an extra row takes it out; trashing the domain row always just clears it (0.2.8-beta.33:
-               it holds the only + button, so it's never removed outright). #}
+            {# (0.2.8-beta.32, I22) one unified list of address rows: the domain row (the page's own address) first,
+               then any extra addresses below, every row with its own trash can. Trashing an extra row takes it
+               out; trashing the domain row always just clears it, since it's the only row that can never be
+               removed outright (0.2.8-beta.33). The + itself isn't fixed to one row: every row carries the
+               button in its markup, and 19-calendar.css shows it only on whichever row is currently last
+               (0.2.8-beta.40, F11 I22: it used to sit only on the domain row, so it vanished once an extra row
+               existed below it). #}
             <div class="k" id="public">{{ _('Public address') }}{{ help(_('This page’s https:// address, e.g. <code>https://cal.example.com</code>: for feed links and Google sign-in. + adds another address (another domain) that also reaches this page; a Calendar Feed’s link can use any of them, Google’s sign-in uses the one above.'), 'left') }}</div>
             <div class="extrarows" id="publicrows">
               <div class="extrarow domainrow">
@@ -49,11 +52,13 @@
                 <button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button>
               </div>
               {% for u in public.extra %}<div class="extrarow"><input type="text" class="code" name="url" value="{{ u }}" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
-                <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div>{% endfor %}
+                <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button>
+                <button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button></div>{% endfor %}
             </div>
             {% if not public.url %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
             <template class="extratpl"><div class="extrarow"><input type="text" class="code" name="url" value="" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
-              <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button></div></template>
+              <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button>
+              <button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button></div></template>
           </form>
         </div>
 

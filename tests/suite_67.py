@@ -116,10 +116,23 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg3.wait_for_timeout(150)
         ok(pg3.eval_on_selector_all("#publicrows input[name=main]", "els => els.length") == 1,
            "I22: the domain row (and its only main field) is still there after trashing it with another row present")
-        ok(pg3.eval_on_selector_all("#publicrows .extraadd", "els => els.length") == 1,
-           "I22: its + button is still there too, so another address can still be added")
+        ok(pg3.eval_on_selector_all("#publicrows .extraadd", "els => els.filter(e => getComputedStyle(e).display !== 'none').length") == 1,
+           "I22: its + button is still there too (now on the row that's last), so another address can still be added")
         ok(pg3.eval_on_selector("#publicurl", "el => el.value") == "",
            "I22: trashing the domain row clears it, same as when it was the only row")
+
+        # --- I22: the + follows whichever row is last, not fixed to the domain row ---
+        visible_add_parent = pg3.eval_on_selector_all(
+            "#publicrows .extraadd",
+            "els => { var v = els.find(e => getComputedStyle(e).display !== 'none'); return v && v.closest('.extrarow').className; }")
+        ok(visible_add_parent is not None and "domainrow" not in visible_add_parent,
+           f"I22: with an extra row present, the + sits on that last row, not the domain row ({visible_add_parent})")
+        pg3.click("#publicrows .extrarow:last-child .extradel")
+        pg3.wait_for_timeout(150)
+        ok(pg3.eval_on_selector_all("#publicrows .extrarow", "els => els.length") == 1,
+           "I22: removing the extra row takes it out entirely (unlike the domain row)")
+        ok(pg3.eval_on_selector("#publicrows .domainrow .extraadd", "el => getComputedStyle(el).display") != "none",
+           "I22: …and the + moves back onto the domain row, now that it's last again")
 
         # --- F56: changing the public address with Google already set up pops up a fix-it notice ---
         # (an https address, not this test server's own http://127.0.0.1 one, so redirect_ok reads true)

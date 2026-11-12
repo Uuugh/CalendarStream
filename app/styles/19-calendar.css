@@ -114,6 +114,9 @@
 .adminbox:has(.pairbtns[data-dirty], .pairbtns:not([data-state="idle"])) .adminact { visibility:hidden }
 .adminform .extrarows { margin-top:4px }
 .adminform .domainrow .inbox { flex:1 1 180px }
+/* (0.2.8-beta.40, F11 I22) every address row carries its own + in markup; only the row that's currently last
+   shows it, so adding a row moves the + down with it and removing one brings it back up automatically. */
+.adminform .extrarow:not(:last-child) .extraadd { display:none }
 
 /* (0.2.8-beta.29, F14) Settings > Look */
 .lookform input[type=range] { width:100%; accent-color:var(--run) }
