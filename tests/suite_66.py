@@ -73,10 +73,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(order == ["time", "type", "event", "undo"], f"F44: the default header order is time, type, event, undo (got {order})")
         ok('draggable="true"' in h[i:h.find("</thead>", i)], "F44: the headers are draggable")
 
-    # --- F41, F43: Time Zone is a globe icon; 12h | 24h is one clock icon ---
+    # --- F41: Time Zone is a globe icon; F15.2 (0.2.8-beta.40, supersedes F43): 12h | 24h is a segmented switch ---
     cal = page()
     ok('class="tzwrap iconbtn"' in cal and 'id="tzpick"' in cal, "F41: Time Zone is an icon button (a globe), opening the same picker")
-    ok('id="clockswitch"' in cal and 'role="switch"' in cal, "F43: 12h | 24h is one clock icon toggle")
+    ok('id="clockswitch"' in cal and 'role="switch"' in cal and 'class="segsw clockbtn"' in cal, "F15.2: 12h | 24h is a segmented switch with the numbers on it")
 
     # --- F42: a rule's key name is cut to 25 characters ---
     rid = seed.rule(c, csrf, "A very very very long rule name that should be cut", [seed.text("XYZ")], [{"type": "color", "color": "#d50000"}], ["ccs"])

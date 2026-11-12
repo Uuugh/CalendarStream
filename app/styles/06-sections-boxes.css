@@ -30,7 +30,6 @@
   .seg button, .linkbtn, .copybtn,
   .inbox .inboxbtn { height:auto }
   .copybtn { height:34px }
-  .clockswitch button { height:22px; width:38px; padding:0 }
   .editor .tagrow .addtag, .editor .tagrow .deltag, .editor .casebtn { height:36px }
   .filebtn { position:relative; overflow:hidden; max-width:260px }
   .filebtn input { position:absolute; inset:0; opacity:0; cursor:pointer }

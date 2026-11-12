@@ -15,8 +15,6 @@
   .segsw.rev[aria-checked="true"] .lb:nth-child(3), .segsw.rev[aria-checked="false"] .lb:nth-child(2) { color:var(--muted) }
   .segsw[aria-checked="true"]:not(.rev) .lb:nth-child(2), .segsw[aria-checked="false"]:not(.rev) .lb:nth-child(3) { color:var(--muted) }
   @media (prefers-reduced-motion:reduce) { .segsw .hl, .segsw .lb { transition:none } }
-  /* (0.2.8-beta.32, F43) the clock icon shows which format is active, like a pressed segment */
-  .clockbtn[aria-checked="true"] { color:var(--accent); border-color:var(--accent) }
   /* F15.3: From and To are hints inside the search line's date fields, written in the date's format */
   #calsearch .hinted .fld { position:relative }
   #calsearch .hinted .fld > span:first-child { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap }

@@ -429,7 +429,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "theme one icon (suite 67)": "Light/Dark/System (0.2.8-beta.33, F57)",
             "stretch handle bottom (suite 67)": "The stretch handle (0.2.8-beta.33, F51)",
             "View All + vr (suite 67)": "View All (0.2.8-beta.33, F50)",
-            "fix API pop-up (suite 67)": "Changing or setting the public address (0.2.8-beta.33, F56)"}
+            "fix API pop-up (suite 67)": "Changing or setting the public address (0.2.8-beta.33, F56)",
+            "12h24h segmented switch (suite 21/64/66)": "12h | 24h (0.2.8-beta.40, F15.2"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

@@ -32,7 +32,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     import seed; seed.demo(c, csrf, main)
     # --- header, view drop-down, switch, key (F15, F26) ---
     p = page("?date=2026-10-14")
-    ok('id="viewbtn"' in p and 'id="clockswitch"' in p and "viewseg" not in p, "F15/F26: the view is a drop-down (0.2.8-beta.33, F52: icons, a button + menu); 12h | 24h is a switch (0.2.8-beta.32, F43: one clock icon, not a segmented switch)")
+    ok('id="viewbtn"' in p and 'id="clockswitch"' in p and "viewseg" not in p, "F15/F26: the view is a drop-down (0.2.8-beta.33, F52: icons, a button + menu); 12h | 24h is a segmented switch (0.2.8-beta.40, F15.2)")
     ok('legpart legcals' in p and 'legpart legkeys' in p, "F15: the legend is two parts, Calendars and Key")
     for v in ("week", "day"):
         post("/ui/view", view=v)

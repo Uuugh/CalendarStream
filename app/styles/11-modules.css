@@ -120,7 +120,6 @@
   button.addrule { gap:4px; padding-left:8px }
   .menu { border-radius:var(--rbox) }
   .num { border-radius:5px }
-  .clockswitch button { border-radius:6px } .clockswitch button span { border-radius:4px }
 
   /* (0.2.8-beta.24, F7; 0.2.8-beta.26, F10, F12.3, F21) Sections and modules told apart, the look otherwise kept. Each section: its
      own muted border color (35% of it, mixed with --line), 1 px, on the existing --card. Each module: its calendar's or feed's

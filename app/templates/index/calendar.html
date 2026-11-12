@@ -81,8 +81,10 @@
             {% for v, label in view_names.items() %}<button type="button" role="menuitemradio" data-view="{{ v }}" aria-checked="{{ 'true' if cal.view == v else 'false' }}">{{ icon(view_icons[v], 18) }}{{ label }}</button>{% endfor %}
           </div>
         </div>
-        {# (0.2.8-beta.32, F43) 12h | 24h is one clock icon that toggles, the current mode in its tooltip; the only place the time format is set. #}
-        <button type="button" role="switch" class="iconbtn clockbtn" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') if dates.h24 else _('12-hour times') }}" title="{{ _('Time format: 24h (click for 12h)') if dates.h24 else _('Time format: 12h (click for 24h)') }}">{{ icon("schedule", 18) }}</button>
+        {# (0.2.8-beta.32, F43: one clock icon; 0.2.8-beta.40, F15.2 supersedes it) the numbers themselves sit
+           inside a rounded switch, like the On | Off one (powerswitch() macro), its highlight sliding to
+           whichever is in use - so the current format shows on the control itself, not only in its tooltip. #}
+        <button type="button" role="switch" class="segsw clockbtn" id="clockswitch" aria-checked="{{ 'true' if dates.h24 else 'false' }}" aria-label="{{ _('24-hour times') if dates.h24 else _('12-hour times') }}" title="{{ _('Time format: 24h (click for 12h)') if dates.h24 else _('Time format: 12h (click for 24h)') }}"><span class="hl"></span><span class="lb">{{ _('12') }}</span><span class="lb">{{ _('24') }}</span></button>
         {# Search (0.2.8-beta.11), left of Print (F15.3): opens the search line under this row #}
         <button type="button" class="iconbtn searchbtn" id="searchbtn" aria-controls="calsearch" aria-expanded="{{ 'true' if cal.search else 'false' }}"
                 title="{{ _('Search the calendar') }}" aria-label="{{ _('Search the calendar') }}">{{ icon("search", 18) }}</button>

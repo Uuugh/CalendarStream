@@ -89,7 +89,7 @@ details.gsteps ol > li.done { color:var(--muted) }
 
 /* Reduced motion (beta.14): nothing slides, grows, fades or pulses; every state change is instant */
 @media (prefers-reduced-motion:reduce) {
-  .statusbox .syncform, .statusbox .chip, .cfgtoggle .arr, .section > .shead .toggle::before, .okslot *, .pairbtns *, button.syncnow, .clockswitch button span { transition:none !important }
+  .statusbox .syncform, .statusbox .chip, .cfgtoggle .arr, .section > .shead .toggle::before, .okslot *, .pairbtns *, button.syncnow { transition:none !important }
   .syncnow .sn, .updslot .updtext, .okslot *, .brk.flash { animation:none !important }
 }
 

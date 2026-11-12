@@ -461,6 +461,9 @@ one here, with its card.
 - A rule's key name (0.2.8-beta.32, F42) is cut to 25 characters, with its full name as the tooltip. (Suite 66)
 - Time Zone (0.2.8-beta.32, F41) is a globe icon; its tooltip names the zone, and it opens the same picker. (Suite 66)
 - 12h | 24h (0.2.8-beta.32, F43) is one clock icon; its tooltip names the current mode, and it toggles on a click. (Suite 66)
+- 12h | 24h (0.2.8-beta.40, F15.2, superseding F43 above): the numbers themselves sit inside a rounded switch, its
+  highlight sliding to the one in use, like the On | Off switch - so the current mode shows on the control itself,
+  not only in its tooltip. (Suite 21)
 - The calendar grid (0.2.8-beta.32, F40) turns the page on a horizontal swipe (left: next, right: previous) on a touch screen; a vertical swipe
   still scrolls. (Suite 66)
 - History's headers (0.2.8-beta.32, F44) slide (drag) to reorder, or, focused, move with ← →; Undo starts at the end, not between Type and Event.
