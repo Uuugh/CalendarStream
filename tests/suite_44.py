@@ -276,7 +276,11 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         # --- 0.2.8-beta.21: spacing (R11, F9), where (i) and (?) open (F4), the folded label's (i) (F5), From / To and
         # the Add to… buttons (F5.1, F5.2), today's border (F10) ----------------------------------------------------
         pg = b.new_page(viewport={"width": 1230, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
-        pg.goto("http://127.0.0.1:8106/?month=2026-10"); pg.wait_for_timeout(500)
+        # the month view must contain the real "today" for .day.today to exist below (review #19 #1 -
+        # a hardcoded month only worked while today happened to fall in it); same TZ as the server above
+        from zoneinfo import ZoneInfo
+        today_month = datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m")
+        pg.goto(f"http://127.0.0.1:8106/?month={today_month}"); pg.wait_for_timeout(500)
         pg.add_style_tag(content="*, *::before, *::after, dialog { animation:none !important; transition:none !important }")
         r = pg.evaluate("""() => { const n = document.querySelector('.box.module:not(.cfgopen) .nameline > .namebox'), i = n.parentElement.querySelector('.notedot');
             const a = n.getBoundingClientRect(), d = i.getBoundingClientRect(), t = document.querySelector('#cal .day.today');
