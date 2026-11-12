@@ -80,3 +80,39 @@
 .settingrow > .handle { position:absolute; left:-12px; top:5px; width:10px; margin:0 }
 .settingrow > .handle .hmove { width:10px }
 body.gripsright .settingrow > .handle { left:auto; right:-12px }
+
+/* Build D: one User form in normal mode; compact navigation in Full mode. */
+.settings-foot { display:flex; justify-content:flex-end; margin-top:var(--space-part) }
+.menu hr { border:0; border-top:1px solid var(--line); margin:var(--space-part) 0 }
+.user-settings { padding-inline:0 }
+.user-settings > .settingrow > .handle { left:-12px }
+.settings-slideout { position:fixed; top:60px; bottom:0; right:auto; left:0; width:min(320px, calc(100vw - 32px));
+  max-height:none; border-radius:0; background:var(--card); padding:var(--space-dialog);
+  animation:settings-slide .2s ease-out }
+.setting-link { display:flex; align-items:center; justify-content:flex-start; width:100%; text-align:left; gap:9px;
+  background:transparent; color:var(--text); border:0; min-height:34px; padding:5px 9px; white-space:normal }
+.setting-link:hover, .setting-link:focus-visible { background:var(--soft); color:var(--accent) }
+.settings-slideout .mhead { margin-top:var(--space-part) }
+.settings-slideout .settingrow > .handle { top:0 }
+.settings-popup.menu { position:fixed; inset:0; width:min(720px, calc(100vw - 32px)); max-height:calc(100vh - 32px);
+  height:fit-content; background:var(--card); padding:var(--space-dialog); margin:auto }
+.settings-popup.menu .mgroup { border:0; padding:0; margin:0 }
+.settings-popup .dlghead .title { margin:0 }
+.settings-popup.menu .login-status { margin-bottom:0 }
+.settings-configure .configure-content > .card { margin:0 }
+.settings-configure .configure-content #cal { height:auto; max-height:65vh; overflow:auto }
+@keyframes settings-slide { from { transform:translateX(-100%) } to { transform:none } }
+@media (prefers-reduced-motion:reduce) { .settings-slideout { animation:none } }
+@media (max-width:700px) {
+  .menu form .pair:has(> .login-status) { flex-wrap:wrap }
+  .menu .login-status { margin-left:auto }
+}
+.settingrow > .handle .hgrip { position:static; transform:none; width:10px; height:16px; flex:0 0 16px; opacity:.55 }
+@media (max-width:700px) {
+  #adminform .pair:has(> .login-status) > .fld { flex:1 1 120px }
+}
+
+.full-settings-head { position:fixed; top:0; left:0; width:100vw; height:60px; display:flex; align-items:center; gap:var(--space-dialog); padding:var(--space-dialog); background:var(--card); border-bottom:1px solid var(--line); box-sizing:border-box }
+.setting-link > .mi:last-child { margin-left:auto; flex:0 0 auto; color:var(--muted) }
+.settings-list > .settingrow:first-child > .handle [data-dir="up"],
+.settings-list > .settingrow:last-child > .handle [data-dir="down"] { visibility:hidden }

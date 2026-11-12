@@ -411,10 +411,10 @@ one here, with its card.
 - Print (0.2.8-beta.29, I11) lays each sheet out for the paper: landscape for the month, week and 5 days, portrait for the day and the
   itinerary; Letter for English, A4 otherwise; one sheet per page, whole titles wrap, a day that would not fit gets smaller type, and
   the paper is white unless Dark is chosen. (Suite 64)
-- Administrator (0.2.8-beta.29, F32, F33) is one Settings section: the login and the public addresses in one form. Its Status/Action box says
-  Signed in (green; Not signed in in yellow) over Sign out; when something changes, the action half becomes Cancel | Save at the action's text
-  size. The current password is asked only when the user name or password changes. (Suite 64)
-- Look (0.2.8-beta.29, F14) is the last Settings section: your own logo and favicon (PNG, SVG, WebP, JPEG or ICO up to 256 KB), and
+- Administrator (Build D, I22) combines Login & password, Updates and Theme in normal mode, with an `<hr>` between subsections
+  and one standard Cancel | Save pair at the bottom right. Signed in / Sign out sits inline beside the login fields and never saves edits.
+  Domains has its own form and Save. The current password is asked only when the user name or password changes. (Suites 64, 81)
+- Look (0.2.8-beta.29, F14), now the reorderable Theme subsection, provides: your own logo and favicon (PNG, SVG, WebP, JPEG or ICO up to 256 KB), and
   the buttons' Animation intensity and duration (percent), with Reset to defaults and one Cancel | Save. (Suite 64; 0.2.8-beta.32, F39:
   renamed Appearance; 0.2.8-beta.33, F46: renamed again to Theme, details to follow in 0.3 Theming — same section, same place.)
 - Full page's button (0.2.8-beta.31, F34, F35) is in the title bar, left of ☰; its icon becomes Windows' restore down (two squares). In every
@@ -425,8 +425,7 @@ one here, with its card.
   margins are 5 mm, so the sheet uses the page. (Suite 65)
 - The reorder grips' side (0.2.8-beta.31, F36.1): ☰ Settings › Look › Reorder grips, Left (the default) or Right; the handle stays in the margin,
   never over a box. (Suite 65)
-- The Administrator's status box (0.2.8-beta.31, I22) sits on the section's heading line; while nothing is changed its Cancel | Save are the
-  standard ✕ and ✓. (Suite 65)
+- The Administrator's status box (Build D, I22) sits beside the login fields; the form's 130 × 34 px Cancel | Save pair remains at its bottom right. (Suites 65, 81)
 - The event pop-up's rows (0.2.8-beta.31, I19, I17): All-day Event is on the Ends line and Different end time zone on the end Time's line (a line
   higher each); its icons stay together on one line, shrinking before they wrap. (Suite 65)
 - A calendar's On | Off switch and its note (0.2.8-beta.32, I26) sit on one line: the switch, then the note's text, inline. (Suite 66)
@@ -436,7 +435,9 @@ one here, with its card.
 - History's Accepted sign-in (0.2.8-beta.32, I29) is a ✓ with no words (the word stays as its tooltip and accessible name). (Suite 66)
 - Appearance (0.2.8-beta.32, F39) is Look's new name (translated at Deploy); renamed again to Theme at 0.2.8-beta.33 (F46). (Suite 66)
 - Settings (Build D, F47/I45): modules can be reordered with the existing drag grips or up/down buttons; the order is saved.
-  The default is Administrator, Updates, Appearance, then other modules such as Google Calendar API Sync. (Suites 67, 80)
+  The default is Administrator (Login & password), Updates, Appearance (Theme), then other modules such as Domains and Google API.
+  Normal mode can reorder the combined Administrator group and the other modules, and the three user subsections within it.
+  In Full mode, order is retained within the User and Site Admin categories. (Suites 67, 80)
 - Updates' "up to date" status (0.2.8-beta.33, F53) reads the running version itself ("v1.2.3"), not a plain "Up to date" — so
   the version is visible without opening the title bar's own version link. (Suite 67)
 - The calendar's view picker (0.2.8-beta.33, F52) is icons, not words: closed, the button shows only the current view's
@@ -494,3 +495,8 @@ one here, with its card.
 - Cancel in the rule dialog (0.2.8-beta.32, I18), opened from the event pop-up, reopens it exactly as it was, unsaved edits included. (Suite 66)
 - Escape in the rule dialog (0.2.8-beta.33, I37) cancels exactly like the Cancel button, not like a plain dialog close: opened from the event
   pop-up, it brings that back too, the same as I18. (Suite 67)
+
+- Full-mode Settings (Build D, F65): ☰ opens a left-hand slide-out with Configure (Calendar, Sources, Feeds, All Rules, Event Templates, History)
+  above Settings. User lists Login & password, Updates and Theme; Site Admin lists Domains and Google API. Each item opens its own
+  centered popup with the navigation visible behind the existing dimmed backdrop and content layout; each editable settings popup has its own 130 × 34 px
+  Cancel | Save pair. Escape and Close cancel edits and restore focus to the invoking item. Reduced motion disables the slide. (Suite 81)

@@ -107,6 +107,7 @@ function bindAll() {
   each('[data-fill]', 'fill', function (b) { b.addEventListener('click', function () { document.getElementById(b.dataset.fill).value = location.origin; }); });
   each('.disconnectform', 'disconnect', function (f) { guard(f, T.disconnect); });
   initSections();
+  bindSettingsMenu(); bindSettingsForms();
   if (window.fitHeads) fitHeads();
   followRunning();
 }
@@ -151,7 +152,7 @@ function checkNow(f, btn, body) {
       btn.dataset.state = state;
       setTimeout(function () {
         btn.dataset.state = 'idle';
-        setTimeout(function () { if (html) swapFrom(html, ['#updates', '.topbar .ver']); else btn.disabled = false; }, 300);
+        setTimeout(function () { if (html) swapFrom(html, ['#updates .module.bare', '#updates .update-error', '.topbar .ver']); else btn.disabled = false; }, 300);
       }, 2400);
     }, Math.max(0, 700 - (Date.now() - started)));
   }
@@ -203,7 +204,7 @@ document.addEventListener('submit', function (e) {
     if (p2) flashPair(p2, 'saved');
     if (formId(f) === 'ruleform') setTimeout(function () { ruleDialog.close(); }, 900);
     if (f.dataset.reload) setTimeout(function () { location.href = '/?menu=settings'; }, 900);
-    var dl = f.closest('dialog.addpop'); if (dl) setTimeout(function () { dl.close(); f.reset(); }, 900);    // a + pop-up closes once saved
+    var dl = f.closest('dialog.addpop, dialog.settings-popup'); if (dl) setTimeout(function () { dl.close(); f.reset(); }, 900);    // a + pop-up closes once saved
     var copy = new URL(res.url, location.href).searchParams.get('rule');     // after Copy in All Rules
     if (copy && RD.rules[copy]) openRule(RD.rules[copy]);
     // (0.2.8-beta.33, F56) ☰ Settings › Administrator: a changed public address breaks Google Calendar API
@@ -238,7 +239,7 @@ document.addEventListener('click', function (e) {
     setTimeout(function () { ruleDialog.close(); if (backToEvent) eventDialog.showModal(); }, 700);
     return;
   }
-  var dl = c.closest('dialog.addpop'); if (dl && !dl.querySelector('.addbody, .addmenu')) { pairState(p, 'cancelled'); setTimeout(function () { dl.close(); }, 700); return; }
+  var dl = c.closest('dialog.addpop, dialog.settings-popup'); if (dl && !dl.querySelector('.addbody, .addmenu')) { pairState(p, 'cancelled'); setTimeout(function () { dl.close(); }, 700); return; }
   flashPair(p, 'cancelled');
   // In + Add a calendar (0.2.8-beta.9), Cancel closes the menu once it has shown "Cancelled"
   var pop = c.closest('dialog.addpop');
@@ -286,10 +287,7 @@ pairRefresh();
 
 // (0.2.8-beta.29, F32) Settings > Administrator: the current password and the repeat are asked for only while the
 // user name or the password is changed; Cancel puts them away again.
-(function () {
-  var f = document.getElementById('adminform');
-  if (!f || f._admin) return;
-  f._admin = true;
+function bindSettingsForms() { each('#adminform', 'admin', function (f) {
   function more() {
     var u = f.elements.user, pw = f.elements.password;
     var on = !!pw.value || u.value.trim() !== u.defaultValue;
@@ -298,15 +296,11 @@ pairRefresh();
   }
   f.addEventListener('input', more);
   f.addEventListener('paircancel', function () { setTimeout(more, 0); });
-})();
-
+});
 
 // (0.2.8-beta.29, F14) Settings > Look: the animation sliders act at once (the page shows them); Reset puts both back to 100 %.
 // A saved Look redraws the whole page (the logo and favicon are in its head).
-(function () {
-  var f = document.getElementById('lookform');
-  if (!f || f._look) return;
-  f._look = true;
+each('form.lookform', 'look', function (f) {
   var I = document.getElementById('animI'), D = document.getElementById('animD');
   function apply() {
     var r = document.documentElement.style;
@@ -318,6 +312,6 @@ pairRefresh();
   document.getElementById('animReset').addEventListener('click', function () {
     I.value = 100; D.value = 100; apply();
     I.dispatchEvent(new Event('input', { bubbles: true }));
-    I.defaultValue = '100'; D.defaultValue = '100';
   });
-})();
+}); }
+bindSettingsForms();

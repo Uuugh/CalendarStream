@@ -273,24 +273,83 @@ function dropdown(btnId, menuId) {
 })();
 
 // "This page" fills the public address with the address this page is open at.
-document.getElementById('usethis').addEventListener('click', function () {
+document.addEventListener('click', function (e) {
+  if (!e.target.closest('#usethis')) return;
   var input = document.getElementById('publicurl');
   input.value = location.origin;
-  input.dispatchEvent(new Event('input', { bubbles: true }));      // shows ✕ | ✓
+  input.dispatchEvent(new Event('input', { bubbles: true }));
 });
 
-// Settings menu: opens by itself after Check for updates (?menu=settings). The Disconnect
-// confirmation belongs to the Google Calendar Autosync box.
-(function () {
-  var set = dropdown('menubtn', 'menu');
-  if (PAGE.openMenu) {
-    set(true);
-    history.replaceState(null, '', location.pathname);   // a reload shouldn't open it again
-    // (0.2.8-beta.33, F56) a changed public address breaks Google Calendar API Sync's redirect URI match:
-    // say so, since the menu opening by itself isn't enough to notice it (the settings.py route's full-page
-    // fallback, for when its form is submitted without JS; the AJAX path's own prompt is in 07-saving.js).
-    if (PAGE.fixApi) tell(T.fixApi);
+// Settings is rebound after in-place redraws and entering/leaving Full mode.
+function bindSettingsMenu() { each('#settingswrap', 'settingsmenu', function (w) {
+  var btn = w.querySelector('#menubtn'), menu = w.querySelector('#menu');
+  function set(open) {
+    menu.hidden = !open; btn.setAttribute('aria-expanded', String(open));
+    if (open && w.dataset.full === '1') {
+      var first = menu.querySelector('button'); if (first) first.focus();
+    }
   }
-  each('.disconnectform', 'disconnect', function (f) { guard(f, T.disconnect); });
-})();
-
+  btn.addEventListener('click', function (e) { e.stopPropagation(); set(menu.hidden); });
+  document.addEventListener('click', function (e) {
+    if (w.isConnected && !menu.hidden && !menu.contains(e.target) && !e.target.closest('dialog') && !w.querySelector('dialog[open]')) set(false);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!w.isConnected || w.querySelector('dialog[open]')) return;
+    if (e.key === 'Escape' && !menu.hidden) { set(false); btn.focus(); }
+    if (e.key === 'Tab' && !menu.hidden && w.dataset.full === '1') {
+      var focusable = Array.from(menu.querySelectorAll('button:not(:disabled)')).filter(function (item) {
+        return item.getClientRects().length && getComputedStyle(item).visibility !== 'hidden';
+      });
+      var i = focusable.indexOf(document.activeElement), next = (i + (e.shiftKey ? -1 : 1) + focusable.length) % focusable.length;
+      e.preventDefault(); focusable[next].focus();
+    }
+  });
+  w.addEventListener('click', function (e) {
+    if (e.target.closest('[data-settings-back]')) { set(false); btn.focus(); return; }
+    var link = e.target.closest('[data-setting], [data-configure]');
+    if (!link) return;
+    var d, marker = null, key = link.dataset.setting;
+    if (key) d = w.querySelector('#setting-' + key);
+    else {
+      d = w.querySelector('#configure-popup');
+      key = link.dataset.configure === 'calendar' ? 'cal' : link.dataset.configure;
+      var module = document.getElementById(key);
+      if (!module) return;
+      marker = document.createComment('configure-home'); module.before(marker);
+      d.querySelector('.configure-content').appendChild(module);
+      d.querySelector('.title').textContent = link.textContent;
+      d.setAttribute('aria-label', link.textContent);
+    }
+    d.showModal();
+    d.addEventListener('close', function restore() {
+      d.removeEventListener('close', restore);
+      if (marker) {
+        // An in-place save may replace the section; restore its current node, not a stale reference.
+        var current = d.querySelector('.configure-content').firstElementChild;
+        if (current) marker.replaceWith(current); else marker.remove();
+      }
+      if (!menu.hidden) link.focus(); else btn.focus();
+      if (typeof fitFull === 'function') fitFull();
+    });
+  });
+  w.querySelectorAll('.settings-popup, .settings-configure').forEach(function (d) {
+    function cancel() {
+      if (d.classList.contains('settings-configure')) { d.close(); return; }
+      var pair = d.querySelector('.pairbtns'), cancel = pair && pair.querySelector('.pcancel');
+      if (cancel && !cancel.disabled) cancel.click(); else d.close();
+    }
+    d.addEventListener('cancel', function (e) { e.preventDefault(); cancel(); });
+    d.querySelector('[data-settings-close]').addEventListener('click', cancel);
+  });
+  if (PAGE.openMenu) {
+    var target = location.hash.slice(1);
+    set(true); history.replaceState(null, '', location.pathname);
+    if (PAGE.fixApi) tell(T.fixApi);
+    // Redirects to a settings subsection still reach its popup in Full mode.
+    var key = target === 'public' ? 'domains' : target;
+    var link = Array.from(menu.querySelectorAll('[data-setting]')).find(function (item) { return item.dataset.setting === key; });
+    if (link) link.click();
+    PAGE.openMenu = false;
+  }
+}); }
+bindSettingsMenu();

@@ -389,25 +389,19 @@ logins or setup codes lock an address out for 15 minutes.
   address's limit still applies); History says so. Locked out yourself on a new browser? The container log
   (`docker compose logs`) has a one-time link, good for an hour, that lets that browser in; or restart
   CalendarStream (`docker compose restart`).
-- **☰ Settings** (a light blue panel): site settings only: **Administrator** (the login, with a
-  show-password eye and a strength bar, like every password box, **Signed in** over **Sign out**, and the public
-  address as one list of rows, each editable with its own trash can, **+** at the end of the first row for
-  another domain this page is reached at; a feed's link can use any of them), **Appearance** (your own logo and
-  favicon, and the buttons' Animation intensity and duration), **Google Calendar API Sync** (for the admin, laid out like a login: Client ID
-  with Copy and Client secret, editable at any time, and a Status/Action box: **Healthy**, Not set up or the
-  fault, over **Connect**, **Reconnect** or **Fix**, which saves and checks the client and the redirect
-  address with Google, stopping with the fix as a click path; one **Remove**; no Gmail is signed in here:
-  each Google module in Feeds connects its own) and **Updates**, laid out
-  like a module header: your release (stable or beta versions; only those are offered), when it last
-  checked and the next check, and a status box with **Check now** or **Update now** (like Sync Now: **Checking…**, or for an
-  update **Downloading…** and **Restarting…**, the same words as the top bar's Update now, then
-  **Up to date** in green, **Update found** in the pressed look (waiting on you) or **Couldn't check** in amber; a newer version also
-  shows next to the version at the top; then **Update** replaces Check now; once it has updated,
-  Settings shows Up to date and Check now again). Under it, on one line, **Check for updates** (hourly,
-  weekly, monthly or never) and **Auto-update** (with the updater: newer versions are installed by
-  themselves, when the check at that frequency finds one; every open page shows Downloading… and Restarting… in
-  the top bar and refreshes itself 15 seconds after Restarting…). The Google credentials row ends with a trash, which asks before deleting them. Each field shows ✓ until you type, then ✕ | ✓, and saves in
-  place, without reloading the page.
+- **☰ Settings**: in normal mode, **Administrator** combines Login & password, Updates and Theme,
+  with dividers and one **Cancel | Save** pair. **Signed in / Sign out** sits beside the login fields;
+  **Domains** has its own Save for the public address and additional domains. The current password is
+  needed only when changing the login. Theme includes your logo/favicon, animation and reorder-grip side.
+  Drag the grips or use their up/down arrows to save a preferred module order.
+  In **Full mode**, a left-hand slide-out lists **Configure** (Calendar, Sources, Feeds, All Rules,
+  Event Templates and History), then **User** (Login & password, Updates, Theme) and **Site Admin**
+  (Domains, Google API). Each item opens its own centered popup; editable user settings have independent
+  **Cancel | Save** buttons. Close or Escape returns focus to its navigation item.
+  **Updates** shows the running version, last/next check, **Check now** or **Update now**, and the
+  hourly/weekly/monthly/never frequency plus **Auto-update**. Auto-update needs the updater; progress
+  appears in the title bar and Settings together. **Google API** keeps the existing client ID/secret,
+  guided setup, connection checks and Remove controls; each Google module in Feeds connects its own account.
 - **Report a problem / Suggest a feature** at the bottom of the page open a form: what happened (or
   your idea), and tick what to include: the History lines, each source's last download
   details, your device and setup, your contact details, and whether you'd like replies. Private

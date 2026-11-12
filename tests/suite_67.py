@@ -145,7 +145,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok('class="gassist"' not in before_gs, "F56 setup: Google Calendar API Sync reads as healthy before the address changes")
         pg3.fill("#publicurl", "https://cal.example.org")
         pg3.dispatch_event("#publicurl", "input")
-        pg3.click('#pagelogin .psave')
+        pg3.click('#domains .psave')
         pg3.wait_for_timeout(1200)
         ok(pg3.eval_on_selector("#askdialog", "el => el.open") is True, "F56: saving a changed public address pops up a notice")
         text = pg3.eval_on_selector("#askdialog .asktext", "el => el.textContent")

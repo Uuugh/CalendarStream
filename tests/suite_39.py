@@ -7,7 +7,7 @@ os.environ.update(DB_HOST=os.environ.get("TEST_DB_HOST", "127.0.0.1"), DB_PORT=o
 for k in ("CCS_USERNAME", "CCS_PASSWORD", "http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY"): os.environ.pop(k, None)
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__)))); sys.path.insert(0, HERE)
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
 import uvicorn, httpx, seed
 from app import main, calsync
 fails = 0
@@ -59,7 +59,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     ok(p.count('id="evtoolstpl"') == 1 and p.count('class="linkbtn evclose"') == 1 and re.search(r'<span class="evtools" data-origin="united" data-alarms=""></span>', p) is not None,
        "event tools: once, in a template; each event only says what it is")
     # Google Calendar sync in Settings
-    ok('id="dest-google"' not in p and 'id="googlesync"' in p and p.index('id="googlesync"') < p.index("</header>") and 'action="/google/client"' in p.split('id="googlesync"')[1][:20000],
+    ok('id="dest-google"' not in p and 'id="googlesync"' in p and p.index('id="googlesync"') < p.index("</header>") and 'action="/google/client"' in p.split(' id="googlesync"', 1)[1].split('</header>', 1)[0],
        "Google Calendar sync is in Settings, not in Feeds")
     ok("Add to Google Calendar" in p and "Add to Apple Calendar" in p and "Add to Outlook" in p, "a Calendar Feed's module: Add to Google, Apple, Outlook (beta.17)")
     d = main.destinations("feed")[-1]
@@ -71,7 +71,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     main.google._client = None
     post("/destinations/add", type="google", name="Synced")
     ok(main.destinations()[-1]["type"] == "google", "with Google Calendar sync set up, + Google Calendar is a Google calendar")
-    r = c.post("/google/client", data={"csrf": csrf, "client_id": "123-abc.apps.googleusercontent.com", "client_secret": "", "action": "check"}, follow_redirects=False)
+    # This checks routing, so the fake OAuth client must not contact real Google.
+    with patch.object(main.google, "check_client", AsyncMock(return_value={})):
+        r = c.post("/google/client", data={"csrf": csrf, "client_id": "123-abc.apps.googleusercontent.com", "client_secret": "", "action": "check"}, follow_redirects=False)
     ok(r.headers.get("location") == "/?menu=settings#googlesync", "Google's forms return to Settings")
     # empty fields after the FastAPI upgrade
     post("/feed/tags", sid=wid, name="Work", note="Office")

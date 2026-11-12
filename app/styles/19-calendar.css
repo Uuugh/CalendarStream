@@ -110,20 +110,9 @@
   #cal.full .month { grid-auto-rows:minmax(0, 1fr) }
 
 
-/* (0.2.8-beta.29, F32, F33) Settings > Administrator: a Status/Action box; its action half becomes Cancel | Save */
-/* (0.2.8-beta.31, I22) the Status/Action box sits on the "Administrator" heading's own line (a row less), and its Cancel | Save are the standard ✕ and ✓ while idle */
-#pagelogin { position:relative }
-#pagelogin > .mhead { padding-right:150px; min-height:28px; display:flex; align-items:center }
-.adminhead { position:absolute; top:6px; right:6px; margin:0; padding:0; display:flex; justify-content:flex-end }
-.adminbox .pairbtns[data-state="idle"] button { font-size:0; display:inline-flex; align-items:center; justify-content:center }
-.adminbox .pairbtns[data-state="idle"] button::before { content:""; width:16px; height:16px; background:currentColor; -webkit-mask:var(--ic) center/contain no-repeat; mask:var(--ic) center/contain no-repeat }
-.adminbox .pairbtns[data-state="idle"] .pcancel { --ic:var(--ic-x) }
-.adminbox .pairbtns[data-state="idle"] .psave { --ic:var(--ic-ok) }
-.adminbox { position:relative }
-.adminbox .pairbtns { display:none; position:absolute; inset:auto 0 0 0; height:24px; width:100%; margin:0; gap:0 }
-.adminbox .pairbtns button { flex:1 1 0; height:24px; min-height:0; padding:0 4px; font-size:12.5px; border-radius:6px }
-.adminbox:has(.pairbtns[data-dirty], .pairbtns:not([data-state="idle"])) .pairbtns { display:flex }
-.adminbox:has(.pairbtns[data-dirty], .pairbtns:not([data-state="idle"])) .adminact { visibility:hidden }
+/* Login status sits beside credentials; the standard Save pair belongs to the form footer. */
+.login-status { flex:0 0 132px; align-self:flex-end }
+.login-status .adminbox { width:132px; height:50px }
 .adminform .extrarows { margin-top:4px }
 .adminform .domainrow .inbox { flex:1 1 180px }
 /* (0.2.8-beta.40, F11 I22) every address row carries its own + in markup; only the row that's currently last
