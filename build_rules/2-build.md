@@ -94,6 +94,34 @@ A build is a series of **checkpoint commits**, so progress is easy to resume.
   Claude checks everything it posts.
 - BUILD said again continues from the progress line, in a new conversation if needed (the HANDOFF names it).
 
+## Handing BUILD to another AI (R24)
+
+Sometimes the Developer wants a different AI (ChatGPT, say) to build instead of Claude — asked for as
+**BUILD (ChatGPT)** (or naming whichever AI; 0-overview.md, Commands). Unlike handing TEST to another AI
+(3-test.md), this is real building: code is written, committed and pushed to the repo, under exactly the same
+discipline as any build in this file — nothing is relaxed because another AI is doing it.
+
+- **Never point it at the Dashboard link.** The Dashboard artifact is private to the Developer; another AI has
+  no way to sign in as them, so a fetch of it returns a page shell with no real content (confirmed Nov 12, same
+  failure mode seen handing TEST to ChatGPT: a 404 on what it called the Dashboard's "content API", falling back
+  to inferring from the repo and old issue text).
+- **Paste the content instead.** The handoff carries, as plain text, the actual Inputs Status items it's meant to
+  build (or the relevant slice) — generated fresh from the live Dashboard, not a link to it.
+- **Scope it.** Name the specific F/I/R items to build (e.g. "Build D: F65, I22, F47/I45 — not F24.1"), the same
+  way a BUILD option (F, I or R) narrows Claude's own build.
+- **Access.** The Developer gives the assigned AI whatever its role needs (push access to the repo to build;
+  read/comment access to review) — there's no existing mechanism for granting this, so Claude asks the Developer
+  how before using this handoff the first time.
+- **Checkpoints, the before-publish checklist, the release gate and the Ground rules all apply exactly as they
+  do to Claude's own build** (Checkpoints, above; R18–R23; the Developer's real data appears nowhere).
+- **For a risky build** (the Google modules, anything touching stored data or sign-in), the Reviewer for that
+  build's checkpoints is whichever AI isn't building it — if ChatGPT builds, Claude reads each checkpoint's diff
+  and Tests run when the Developer sends it REVIEW, read-only, same as Checkpoints above.
+- **The Dashboard stays Claude's to keep** (0-overview.md, The Dashboard): another AI can't publish to it, so
+  Claude updates it from the repo's own history (checkpoint commits, CHANGELOG, VERSION) the next time it's asked
+  for DASH, PLAN or REVIEW — not assumed finished until checked against the actual commits.
+- The other AI reports back in plain text what it did, same shape as After, below.
+
 ## After
 
 Commit and push; the release workflow tags `v<version>` and publishes the `beta` image. Claude reports what came

@@ -85,10 +85,8 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 - **Claude**: the AI working on the project in the current session. Builds, tests, releases, and reviews,
   per the default or the Developer's designation.
 - **ChatGPT**: a separate AI from another vendor. Reviews by default; builds when the Developer
-  designates it, e.g. BUILD (GPT). (R24, Nov 12: before this, Claude always built and ChatGPT only
-  reviewed. The mechanics of handing a BUILD to ChatGPT — equivalent to 3-test.md's "Handing TEST to
-  another AI" — aren't written yet; until they are, Claude asks the Developer how that handoff should
-  work before using it.)
+  designates it, e.g. BUILD (GPT) — see 2-build.md, "Handing BUILD to another AI". (R24, Nov 12: before
+  this, Claude always built and ChatGPT only reviewed.)
 
 ## Inputs
 
