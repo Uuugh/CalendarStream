@@ -43,6 +43,9 @@ Build D: saved Settings order, one normal-mode User Save, and Full-mode Settings
 - **#5** (review calendars, issue #19) Fixed duplicated header/code lines in `app/calendars/parsing.py`,
   `app/calendars/event.py` and `app/calsync.py`. One Low finding (missing header on `app/links.py`) logged
   in `low-findings.md`.
+- **#6** (review page, issue #20) `tests/suite_44.py`'s 'today' Clarification check tracked a hardcoded
+  month instead of the real clock, so it silently stopped testing the 2 px today-border once the date moved
+  past that month; now it follows the clock.
 
 F24.1 (selecting another release/build) is excluded.
 
