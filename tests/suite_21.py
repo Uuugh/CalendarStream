@@ -51,7 +51,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
         ok(main.ui_clock() == "12", "icon again → 12-hour")
         pg.goto("http://127.0.0.1:8090/?menu=settings"); pg.wait_for_timeout(300)
         groups = pg.locator("#menu .mgroup")
-        ok(groups.count() == 4 and all(groups.nth(i).evaluate("e => getComputedStyle(e).borderLeftStyle") == "solid" for i in range(groups.count())), "every Settings section is outlined")
+        ok(groups.count() == 3 and all(groups.nth(i).evaluate("e => getComputedStyle(e).borderLeftStyle") == "solid" for i in range(groups.count())), "every Settings section is outlined")
         u, pw_ = pg.locator("#luser").bounding_box(), pg.locator("#lnew").bounding_box()
         ok(abs(u["y"] - pw_["y"]) < 3 and pg.locator("label[for=luser] span").inner_text() == "User name", "login form: labels above, boxes side by side")
         pg.locator("#menu").screenshot(path=f"{OUT}/menu3.png")

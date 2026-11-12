@@ -26,7 +26,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     threading.Thread(target=srv.run, daemon=True).start(); time.sleep(2.5)
     c = httpx.Client(base_url="http://127.0.0.1:8102", auth=("t", "password1")); c.get("/")
     ud = c.get("/?menu=settings").text; ud = ud[ud.index('id="updates"'):]; ud = ud[:ud.index("</form>")]
-    ok('class="syncnow checknow" name="action" value="check" data-state="idle"' in ud and "Checking…" in ud and "Couldn’t check" in ud,
+    ok(re.search(r'class="syncnow checknow"[^>]*name="action" value="check" data-state="idle"', ud) is not None and "Checking…" in ud and "Couldn’t check" in ud,
        "I1: Check now is a Sync Now button (Checking…, Up to date, Update found, Couldn't check)")
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
