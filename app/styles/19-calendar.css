@@ -57,9 +57,14 @@
   /* the key (F15.8, F26): Calendars | Key, columns of three from the left and from the right; a row taller when they don't fit */
   .legend { display:flex; align-items:stretch; gap:12px; flex-wrap:nowrap; font-size:12px; color:var(--muted); margin:var(--space-part) 0 0 }
   .legpart { min-width:0 }
-  /* (0.2.8-beta.33, F49) Calendars takes only the width its own list needs, so the vertical rule sits right after
-     it; Key (already right-aligned, stacks of three from the right) grows to fill what's left. */
-  .legcals { flex:0 1 auto } .legkeys { flex:1 1 auto }
+  /* (0.2.8-beta.40, F49, superseding beta.33: the vertical rule belongs centered, not right after Calendars)
+     Calendars and Key grow equally from the same zero basis, so the rule sits in the middle by default. Above
+     phone width there's room to let each side keep its own list's min-content as a floor too, so the rule
+     shifts off-center only once one side's columns genuinely need more than half the width; on a phone
+     (narrower than the rule-dialog's own 700px turn, 14-rule-dialog.css) .legpart's min-width:0 above still
+     wins, so a long Key list shrinks instead of pushing the page wider. */
+  .legcals, .legkeys { flex:1 1 0 }
+  @media (min-width:701px) { .legcals, .legkeys { min-width:min-content } }
   .legtitle { display:flex; align-items:center; gap:2px; margin:0 0 3px; font-size:12px; font-weight:700; color:var(--text) }
   .legviewall { margin-left:auto; width:22px; height:22px; color:var(--muted) }   /* (0.2.8-beta.33, F50) */
   .legviewall:hover, .legviewall:focus-visible { color:var(--accent) }
