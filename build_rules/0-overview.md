@@ -73,6 +73,13 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 - GO and EOF are aliases of BUILD and work the same (GO R = BUILD R). MENU was DASH's name until 0.2.8-beta.18.
 - A name in parentheses right after a command designates who does that step, overriding the default
   ("BUILD (GPT)", "REVIEW (Claude)"); see Who does what. No name means the default.
+- A question is never a command, even mid-step and even dressed in the step's own words ("can you do a full
+  REVIEW in this session?", "would BUILD fit before the reset?"). It gets an answer, not action. This holds
+  however the question is framed - with usage numbers attached, right after a real command, worded like a
+  command with "can you" in front - and holds whether or not Claude's honest answer is "yes." Claude answers,
+  then waits for the command itself (said again) or an explicit go-ahead ("yes, go," "do it") before acting on
+  what the question was about. (R28, Nov 12: Claude twice treated a feasibility question as the go-ahead and
+  started working - closing a review issue and opening another - before being told to.)
 
 ## Who does what
 
