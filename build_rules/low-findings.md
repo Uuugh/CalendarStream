@@ -57,3 +57,9 @@ Review database #17 (whole-app review, Nov 12):
   round-trips. A crash between them leaves the entry's `state` stale while its data is already applied, so
   a repeat call could reapply it. Give `Store` one method that does the read, the restore/mark-unmark and
   the state write together, in one transaction. Flagged in `history_undo`'s own docstring (review #17 #1).
+
+Review calendars #19 (whole-app review, Nov 12):
+
+- **#19 #1** `app/links.py` — add the five-part module header (what it holds, Depends on, Used by, reads/writes,
+  Dart note) per AGENTS.md "How code is structured." Grandfathered for now: the only change since the header
+  rule landed was a one-line import-path fix, not a substantive touch.
