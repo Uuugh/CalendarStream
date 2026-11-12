@@ -140,7 +140,7 @@ state/media block, document any design exception in `build_rules/theme.md`, and 
 `tests/suite_44.py` checks the rendered theme in both palettes and widths. `tests/tools/theme_shots.py DIR`
 captures the page, open modules, menus/dialogs, all calendar views, full-page and print mockups from the demo.
 
-## How code is structured (R18, R19)
+## How code is structured (R18, R19, R26)
 
 The Developer ports this app to Dart, as a Flutter app, one file at a time, so Flutter's structure is the model
 and a file must stand alone and say what it needs.
@@ -153,6 +153,16 @@ and a file must stand alone and say what it needs.
   functions are grouped into a class or a small module first. Small private helpers stay in the file that uses them. One exception, as in Dart: a closed family that a Dart `sealed class` or an enum would hold (an exception hierarchy, a set of states) shares one file.
 - **Layers, as in a Flutter feature** (`data`, `domain`, `ui`): calendar and rule logic (`domain`) never imports
   storage, network or the page (`data`, `ui`). Each feature (rules, calendars, Google, store) is one folder.
+- **Within `data`, split by role, as Flutter does** (R26): a **Repository** is the source of truth for one kind of
+  stored data — it owns caching, retry and persistence for that data, and never reaches into another repository
+  directly (combine two repositories' data one layer up, in a service or the domain layer, not inside a
+  repository). A **Service** wraps one external API or data source and holds no state of its own — one service
+  class per data source. A class already split this way keeps the split when it's touched; existing code that
+  mixes the two (a repository method making its own API call, a service holding stored state) is split apart the
+  next time a build touches it, the same as any other existing-code split (above).
+- **Name a class for the role it plays** (R26), not just its subject: `GoogleSyncService`, `CalendarSourceRepository`,
+  not `GoogleSync` or `CalendarSources` — so a Dart port's class names need no renaming. Applies to new code now;
+  an existing name changes when a build already touches that file for another reason, not as a rename-only pass.
 - **Every file starts with a header** (a module docstring): what it holds; **Depends on** (other files of the app, by
   path); **Used by**; what it reads or writes (database, network, files, the clock); **Dart note** (the class or
   interface it becomes, its layer, and anything Dart does differently).
