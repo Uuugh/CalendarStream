@@ -48,3 +48,12 @@ Review security #16 (whole-app review, Nov 12):
 - **#16 #2** `app/calendars/event.py:49`, `app/calendars/parsing.py:107,161`, `app/services/page_settings.py:147`
   — SHA1/MD5 (B324) used for non-cryptographic ids/cache-busting; add `usedforsecurity=False` to silence the
   scanner cleanly instead of leaving it to re-explain each review.
+
+Review database #17 (whole-app review, Nov 12):
+
+- **#17 #1** `app/routes/history.py` (`history_undo`), `app/store.py` (`restore`, `set_undo_state`),
+  `app/services/deletions.py` (`mark_deleted`/`unmark_deleted`) — undoing/redoing a change is not one
+  database transaction: the restore (or mark/unmark loop) and the final `set_undo_state` are separate
+  round-trips. A crash between them leaves the entry's `state` stale while its data is already applied, so
+  a repeat call could reapply it. Give `Store` one method that does the read, the restore/mark-unmark and
+  the state write together, in one transaction. Flagged in `history_undo`'s own docstring (review #17 #1).

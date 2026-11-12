@@ -36,7 +36,16 @@ def register(
         redo: str = Form(""),
     ):
         """Undo (or redo) a change from History (0.2.8-beta.15): a stack, so it's always the newest change
-        that's undone first, and the oldest undone one that's redone first."""
+        that's undone first, and the oldest undone one that's redone first.
+
+        Review #17 #1: the restore/mark-unmark step below and the `set_undo_state` call after it are
+        separate database round-trips, not one transaction. A crash between them would leave this entry's
+        state stale (still "done"/"undone") while its data is already restored, so a repeated call could
+        reapply it. Low-probability (a crash mid-request, in a single-process app) but real; the proper
+        fix is one Store method that does the read, the restore and the state write together. Tracked in
+        low-findings.md (#17 #1) rather than attempted here, to avoid threading a shared connection through
+        `mark_deleted`/`unmark_deleted`/`store.restore` under review time pressure.
+        """
         check_csrf(csrf)
         top, nxt = store.undo_stack()
         if entry != (nxt if redo else top):
