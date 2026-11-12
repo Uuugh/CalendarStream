@@ -94,6 +94,6 @@
      margin instead (the module's own right margin is the section's 12 px side padding, as on the left; a rule list gets its gutter
      on the right) */
   body.gripsright .modrow > .handle, body.gripsright .ruleline > .handle { left:auto; right:-12px }
-  body.gripsright .srcrules > .ruleline > .handle { right:-14px }
-  body.gripsright #rules .rulelist > .ruleline > .handle { right:-12px }
+  body.gripsright .srcrules > .ruleline > .handle { left:auto; right:-14px }
+  body.gripsright #rules .rulelist > .ruleline > .handle { left:auto; right:-12px }
   body.gripsright .srcrules:has(> .ruleline) { padding-left:0; padding-right:14px }
