@@ -91,6 +91,7 @@ jobs:
     permissions:
       contents: write   # tags and the GitHub Release
       packages: write   # the image
+      actions: read     # BR01: reading the Tests (suites) check-run for this exact commit
     env:
       VERSION: ${{ needs.detect.outputs.version }}
       IMAGE: ${{ needs.detect.outputs.image }}
@@ -99,45 +100,98 @@ jobs:
         with:
           fetch-depth: 0
 
-      # trivy (build_rules/2-build.md): the image is scanned before anything is tagged or published. A fixable
-      # High or Critical vulnerability stops the beta here; everything else is reported in the run's summary.
+      # BR01 (PR #15): a beta used to be able to publish from a commit whose own Tests run hadn't passed, or
+      # hadn't finished, because Release only ever depended on `detect` — never on Tests. This polls the Tests
+      # workflow's "suites" check-run for this exact commit SHA and stops here if it isn't a recorded success.
+      # A passing run for an earlier commit on this branch never satisfies this: every release commit gets its
+      # own check.
+      - name: Require a green Tests run for this exact commit (BR01)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SHA="${{ github.sha }}"
+          CONCLUSION=""
+          for i in $(seq 1 60); do
+            CONCLUSION="$(gh api "repos/${{ github.repository }}/commits/$SHA/check-runs" --jq '[.check_runs[] | select(.name=="suites")] | sort_by(.started_at) | last | .conclusion // empty' 2>/dev/null || true)"
+            STATUS="$(gh api "repos/${{ github.repository }}/commits/$SHA/check-runs" --jq '[.check_runs[] | select(.name=="suites")] | sort_by(.started_at) | last | .status // empty' 2>/dev/null || true)"
+            if [ "$STATUS" = "completed" ] && [ -n "$CONCLUSION" ]; then break; fi
+            echo "Tests (suites) for $SHA: ${STATUS:-not started yet} — waiting (${i}/60)…"
+            sleep 30
+          done
+          if [ "$CONCLUSION" != "success" ]; then
+            echo "::error title=Release blocked (BR01)::No successful Tests run (suites check) found for commit $SHA (status: '${STATUS:-none}', conclusion: '${CONCLUSION:-none}'). A beta is never built from a commit whose own Tests run didn't pass — see build_rules/2-build.md, Checkpoints."
+            exit 1
+          fi
+          echo "Tests (suites) passed for $SHA — continuing."
+
+      # trivy (build_rules/2-build.md): every platform actually published is scanned before anything is tagged or
+      # published — not just a stand-in amd64 build (BR02, PR #15: the scanned image and the published image used
+      # to be separate builds with nothing proving they matched). A fixable High or Critical vulnerability on any
+      # platform stops the beta here; everything else is reported in the run's summary.
       - uses: docker/setup-buildx-action@v4
-      - name: Build the image to scan (amd64)
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          platforms: linux/amd64
-          load: true
-          tags: calendarstream-scan:${{ env.VERSION }}
-          cache-from: type=gha
-      - name: trivy report (every severity, not blocking)
+      - uses: docker/setup-qemu-action@v4   # needed here too: scanning arm64 runs it under emulation
+      - name: Build the images to scan (amd64, arm64)
+        run: |
+          set -euo pipefail
+          for plat in amd64 arm64; do
+            docker buildx build --platform "linux/$plat" --load \
+              -t "calendarstream-scan-$plat:${VERSION}" --cache-from type=gha .
+          done
+      - name: trivy report, amd64 (every severity, not blocking)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25   # v0.36.0
         with:
-          image-ref: calendarstream-scan:${{ env.VERSION }}
+          image-ref: calendarstream-scan-amd64:${{ env.VERSION }}
           format: table
-          output: trivy.txt
+          output: trivy-amd64.txt
           exit-code: "0"
+      - name: trivy report, arm64 (every severity, not blocking)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25   # v0.36.0
+        with:
+          image-ref: calendarstream-scan-arm64:${{ env.VERSION }}
+          format: table
+          output: trivy-arm64.txt
+          exit-code: "0"
+          skip-setup-trivy: true
       - name: trivy summary
         run: |
-          { echo "## trivy: calendarstream $VERSION"; echo '```'; head -c 600000 trivy.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"     # (a summary over 1 MB isn't shown at all)
-      - name: trivy gate scan (fixable High or Critical)
+          { echo "## trivy: calendarstream $VERSION (amd64 + arm64)"
+            echo '```'; echo "-- amd64 --"; head -c 300000 trivy-amd64.txt
+            echo "-- arm64 --"; head -c 300000 trivy-arm64.txt; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"     # (a summary over 1 MB isn't shown at all)
+      - name: trivy gate scan, amd64 (fixable High or Critical)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25   # v0.36.0
         with:
-          image-ref: calendarstream-scan:${{ env.VERSION }}
+          image-ref: calendarstream-scan-amd64:${{ env.VERSION }}
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           format: json
-          output: trivy-gate.json
+          output: trivy-gate-amd64.json
           exit-code: "0"
           skip-setup-trivy: true
-      # The gate itself (0.2.8-beta.17): each blocking finding is listed in the run's summary and as an annotation,
-      # so it can be read on the run's page (and through the API) without opening the logs; any one stops the beta.
+      - name: trivy gate scan, arm64 (fixable High or Critical)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25   # v0.36.0
+        with:
+          image-ref: calendarstream-scan-arm64:${{ env.VERSION }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          format: json
+          output: trivy-gate-arm64.json
+          exit-code: "0"
+          skip-setup-trivy: true
+      # The gate itself (0.2.8-beta.17; both platforms since BR02): each blocking finding is listed in the run's
+      # summary and as an annotation, so it can be read on the run's page (and through the API) without opening
+      # the logs; any one, on either platform, stops the beta.
       - name: trivy gate (fixable High or Critical stops the beta)
         run: |
           set -euo pipefail
-          jq -r '.Results[]? | .Target as $t | .Vulnerabilities[]? | "\(.Severity) \(.VulnerabilityID) \(.PkgName) \(.InstalledVersion) → fixed in \(.FixedVersion) (\($t))"' trivy-gate.json | sort -u > gate.txt
+          : > gate.txt
+          for plat in amd64 arm64; do
+            jq -r --arg plat "$plat" '.Results[]? | .Target as $t | .Vulnerabilities[]? | "\(.Severity) \(.VulnerabilityID) \(.PkgName) \(.InstalledVersion) → fixed in \(.FixedVersion) (\($plat)/\($t))"' "trivy-gate-$plat.json" >> gate.txt
+          done
+          sort -u -o gate.txt gate.txt
           n=$(wc -l < gate.txt)
-          { echo "## trivy gate: $n fixable High or Critical"; echo '```'; cat gate.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          { echo "## trivy gate: $n fixable High or Critical (amd64 + arm64)"; echo '```'; cat gate.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           if [ "$n" -gt 0 ]; then
             echo "::error title=trivy gate: $n fixable High or Critical::$(head -60 gate.txt | sed ':a;N;$!ba;s/\n/%0A/g')"
             exit 1
@@ -158,7 +212,6 @@ jobs:
           git tag -f beta "v$VERSION^{commit}"
           git push -f origin refs/tags/beta
 
-      - uses: docker/setup-qemu-action@v4
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io

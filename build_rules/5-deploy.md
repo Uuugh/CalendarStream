@@ -34,7 +34,12 @@ change), then 4.
 
 ## The second DEPLOY: release
 
-The release is exactly the beta the Developer tested:
+The release is exactly the beta the Developer tested — meaning the same source, not the same image bytes.
+(Decided, PR #15 BR02: dropping the suffix is itself a VERSION change, so `release.yml`'s `beta` job builds and
+scans a fresh image for it, from a commit that differs from the tested beta only in that one-line VERSION edit
+— it does not reuse or re-tag the exact image the Developer ran. "Exactly" is a same-source, same-behavior
+promise, never a same-digest one. Every platform actually published is scanned before this image is pushed,
+the same as any other beta — see `release.yml`, `beta`, BR01/BR02.)
 - Drop its suffix (x.y.z-beta.N → x.y.z); tag `vx.y.z`; publish the image as `:x.y.z` and `:latest`; set STABLE
   to x.y.z.
 - CHANGELOG.md: the version's beta entries under one x.y.z heading, a sub-heading per beta (F, I and R numbers

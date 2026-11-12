@@ -95,7 +95,10 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 ## References (not steps)
 
 - `theme.md`: how the page looks, with the Theme Rules pictures.
-- `ui_ux.md`: usability and accessibility of the page; theme.md wins where they differ.
+- `ui_ux.md`: usability and accessibility of the page; theme.md is authoritative for exact visual values (tokens,
+  spacing, dimensions). Where a requirement in either file appears to conflict with the other, that's unresolved
+  until it's flagged to the Developer with evidence and an accessible proposal (ui_ux.md, Purpose and authority) —
+  neither file silently overrides the other. (R21, PR #15 BR11)
 - `dashboard.md`: the Dashboard's rules in full (verdicts first, order, cost graph, editing).
 - `roadmap.md`: what's planned.
 - `low-findings.md`: Low review findings waiting for their code to change.

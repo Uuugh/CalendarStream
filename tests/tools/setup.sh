@@ -1,7 +1,7 @@
 #!/bin/bash
 # Gets a machine ready to run the tests (a new cloud session, or any Debian/Ubuntu box): a Postgres just for the
-# suites, the app's packages, and Playwright's Chromium. Safe to run again: it starts what's stopped and skips
-# what's done. Run it as root (it installs Postgres with apt when it's missing).
+# suites, the app's packages, and Playwright's Chromium (version-pinned, I40). Safe to run again: it starts
+# what's stopped and skips what's done. Run it as root (it installs Postgres with apt when it's missing).
 #
 #   tests/tools/setup.sh          then: export TEST_DB_PORT=55432 (it prints this)
 #
@@ -31,7 +31,17 @@ fi
 command -v faketime >/dev/null || { apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq faketime >/dev/null; }
 python3 -c "import fastapi, psycopg, icalendar, recurring_ical_events" 2>/dev/null ||
   pip install -q -r "$ROOT/requirements.txt" --break-system-packages
-# Playwright: cloud sessions come with it (never install a second copy there); elsewhere, install it.
+# Playwright: pinned (I40, PR #15 BR03/CI) — an unpinned `pip install playwright` let GitHub's runner silently
+# pick up whatever Chromium build was newest at install time, which is how a plain `main` push started failing
+# suite 67 (Escape in the rule dialog) with no app or test code changing: pip just resolved a newer Playwright,
+# carrying a newer bundled Chromium, between one run and the next. Pinned here to the version suite 67 last
+# passed clean against, matching what this repo's own cloud sessions already carry. Bump it only deliberately,
+# with a suite 67 recheck — never by letting pip resolve "latest" again.
+PLAYWRIGHT_PIN="1.63.0"
 python3 -c "import PIL" 2>/dev/null || pip install -q pillow --break-system-packages    # pixdiff.py (R15)
-python3 -c "import playwright" 2>/dev/null || { pip install -q playwright --break-system-packages && python3 -m playwright install chromium; }
+installed_pw="$(python3 -m playwright --version 2>/dev/null | awk '{print $2}')"
+if [ "$installed_pw" != "$PLAYWRIGHT_PIN" ]; then
+  pip install -q "playwright==$PLAYWRIGHT_PIN" --break-system-packages
+  python3 -m playwright install chromium
+fi
 echo "Ready. Postgres on 127.0.0.1:$PORT (ccs / testpw). Now: export TEST_DB_PORT=$PORT"
