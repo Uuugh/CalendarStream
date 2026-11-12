@@ -29,7 +29,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     p = page("?date=2026-10-14")
     ok('id="calstretchbar"' in p and 'id="calcollapse"' in p and 'id="calexpand"' in p, "F51: the stretch bar has its collapse and expand side arrows")
     ok('class="calstretch" id="calstretch"' in p and 'role="slider"' in p, "F51: the dots (the drag handle) are a slider, not a button")
-    ok('class="stretchdots"' in p and p.count('<circle', p.index('stretchdots')) >= 12, "F51: twelve dots (two rows of six), the same look as a module's own handle")
+    dotsvg = p[p.index('id="calstretchbar"'):p.index('</span>', p.index('id="calstretchbar"'))]
+    ok('class="gripdots"' in dotsvg and dotsvg.count('<circle') >= 12, "F51: twelve dots (two rows of six), the same gripdots look as a module's own handle")
     ok('class="calstretch" id="calstretch"' in p and '<button type="button" class="calstretch"' not in p, "F51: the old single stretch button is gone")
     ok('body.gripsright .calstretch' not in open(os.path.join(REPO, "app", "styles", "19-calendar.css")).read(), "F51: the stretch bar no longer follows the Reorder grips left/right setting")
 
