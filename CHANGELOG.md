@@ -31,6 +31,18 @@ Build D: saved Settings order, one normal-mode User Save, and Full-mode Settings
   are written.
 - Failed Settings reorders restore the previous order without losing typed fields. Keyboard navigation
   skips hidden reorder arrows; leaving Full mode restores the original page modules.
+- **#1** (review google, issue #11) `RecoveryPolicy`'s reason string for an expired-token retry no longer
+  implies an immediate retry; it says the next scheduled sync will try again with a fresh token.
+- **#2** (review security, issue #16) Two Low findings logged in `low-findings.md` for later: a missing
+  `# nosec` annotation on four `store.py` SQL sites, and SHA1/MD5 used for non-cryptographic ids without
+  `usedforsecurity=False`.
+- **#3** (review database, issue #17) `history_undo`'s restore-then-record-state steps are not one
+  transaction; documented in its own docstring and logged in `low-findings.md` for a future atomic fix.
+- **#4** (review rules, issue #18) Fixed a duplicated line in `app/rule_engine/validation.py`'s module
+  header.
+- **#5** (review calendars, issue #19) Fixed duplicated header/code lines in `app/calendars/parsing.py`,
+  `app/calendars/event.py` and `app/calsync.py`. One Low finding (missing header on `app/links.py`) logged
+  in `low-findings.md`.
 
 F24.1 (selecting another release/build) is excluded.
 
