@@ -9,28 +9,20 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.43**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.44**
 
-## 0.2.8-beta.43 — 2026-11-12
+## 0.2.8-beta.44 — 2026-11-13
 
-Build D: saved Settings order, one normal-mode User Save, and Full-mode Settings navigation.
+Reverted Build D (beta.43): the Developer reported the site looked worse afterward. F47/I45, I22 and F65
+go back to waiting, unbuilt. The whole-app REVIEW's own fixes, done independently of Build D, are kept.
 
-### Added
-- **F47 / I45**: Settings modules have drag grips and up/down controls with persisted order. Normal mode
-  can reorder Administrator, Domains and Google API, as well as Login, Updates and Theme inside
-  Administrator; Full mode retains order within User and Site Admin. New modules append to saved orders.
-- **F65**: Full mode opens a left-hand Settings slide-out. Configure lists Calendar, Sources, Feeds, All
-  Rules, Event Templates and History; User lists Login, Updates and Theme; Site Admin lists Domains and
-  Google API. Each opens its own centered popup, preserving the existing backdrop, contents and standard
-  Cancel | Save dimensions. Escape/Close restore focus; reduced motion disables the slide.
+### Removed
+- **F47 / I45**, **I22**, **F65**: Build D's Settings reorder/drag grips, the combined Login/Updates/Theme
+  section, and the Full-mode Settings slide-out are reverted in full — code, tests (suites 80, 81,
+  appearance_settings_test.py removed), and the `theme.md`/`dependencies.md`/README notes describing them.
+  Settings are back to beta.42 behavior. Available to redo in a future build.
 
 ### Fixed
-- **I22**: normal-mode Login & password, Updates and Theme share one Cancel | Save pair with dividers.
-  Signed in / Sign out sits beside the login fields and no longer saves domain changes. Domains has its
-  own Save. Check now preserves staged preferences, and refused edits are validated before preferences
-  are written.
-- Failed Settings reorders restore the previous order without losing typed fields. Keyboard navigation
-  skips hidden reorder arrows; leaving Full mode restores the original page modules.
 - **#1** (review google, issue #11) `RecoveryPolicy`'s reason string for an expired-token retry no longer
   implies an immediate retry; it says the next scheduled sync will try again with a fresh token.
 - **#2** (review security, issue #16) Two Low findings logged in `low-findings.md` for later: a missing
@@ -46,9 +38,6 @@ Build D: saved Settings order, one normal-mode User Save, and Full-mode Settings
 - **#6** (review page, issue #20) `tests/suite_44.py`'s 'today' Clarification check tracked a hardcoded
   month instead of the real clock, so it silently stopped testing the 2 px today-border once the date moved
   past that month; now it follows the clock.
-
-F24.1 (selecting another release/build) is excluded.
-
 
 ## 0.2.8-beta.42 — 2026-11-12
 
