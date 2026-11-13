@@ -1,5 +1,9 @@
-{% macro settings_module(key) %}
-{% if key == "pagelogin" %}
+    <div class="menuwrap">
+      <button type="button" class="iconbtn" id="menubtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="menu" title="{{ _('Settings') }}">
+        {{ icon("menu", 20) }}
+      </button>
+      <div class="menu" id="menu" role="dialog" aria-label="{{ _('Settings') }}" hidden>
+        <div class="title">{{ _('Settings') }}</div>
         {# (0.2.8-beta.29, F32, F33) One Administrator section: the status page's login and its public addresses, one form,
            one Cancel | Save. Its Status/Action box says "Signed in" over "Sign out"; the action half becomes the pair
            (Cancel | Save, at the action's text size) as soon as something is changed. The current password is asked
@@ -58,7 +62,6 @@
           </form>
         </div>
 
-{% elif key == "updates" %}
         {# Check for updates: how often, for this install's channel (beta or stable) only. #}
         {# Updates (0.2.8-beta.5) laid out like a module header, with nothing to expand: its title over the
            channel, the state over the next check (on the right), and the status box: the state over
@@ -104,7 +107,6 @@
           </form>
         </div>
 
-{% elif key == "look" %}
         {# (0.2.8-beta.29, F14) Look: your own logo and favicon, and the buttons' animation. One form, one Cancel | Save. #}
         <div class="mgroup" id="look">
           <div class="mhead">{{ _('Theme') }}{{ help(_('Your own logo (shown by the title) and favicon: a PNG, SVG, WebP, JPEG or ICO picture up to 256 KB. Animation sets how strong and how long the buttons’ pulses and slides are.'), 'left') }}</div>
@@ -133,7 +135,6 @@
           </form>
         </div>
 
-{% elif key == "googlesync" %}
         {# Google Calendar sync (0.2.8-beta.4, moved here from Feeds): the one Google sign-in every Google
            calendar in Feeds uses: the client ID and secret (with the step-by-step guide), Connect /
            Disconnect, the account and its last sync. Without it, + Google Calendar in Feeds makes a feed
@@ -163,23 +164,6 @@
             </div>
           {% endif %}
           {{ m.google_client(g, "f") }}
-        </div>
-{% endif %}
-{% endmacro %}
-    <div class="menuwrap">
-      <button type="button" class="iconbtn" id="menubtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="menu" title="{{ _('Settings') }}">
-        {{ icon("menu", 20) }}
-      </button>
-      <div class="menu" id="menu" role="dialog" aria-label="{{ _('Settings') }}" hidden>
-        <div class="title">{{ _('Settings') }}</div>
-        <div class="sortable settings-list" data-kind="setting">
-        {% for key in settings_order %}
-          {% set label = {'pagelogin': _('Administrator'), 'updates': _('Updates'), 'look': _('Appearance'), 'googlesync': _('Google Calendar API Sync')}[key] %}
-          <div class="settingrow" data-id="{{ key }}">
-            {{ settings_module(key) }}
-            {{ handle('setting', key, label) }}
-          </div>
-        {% endfor %}
         </div>
       </div>
     </div>

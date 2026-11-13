@@ -73,10 +73,3 @@
   :root[data-theme="dark"] .topbar h1 .logomark.lt { display:none } :root[data-theme="dark"] .topbar h1 .logomark.dk { display:inline }
   .topbar h1 .tw1 { color:var(--logo-cal) } .topbar h1 .tw2 { color:var(--logo-stream) }
   .foot a.curver { color:inherit; text-decoration:none } .foot a.curver:hover { text-decoration:underline }
-
-/* Settings uses the same margin grips and keyboard arrows as sources, feeds and rules. */
-.settings-list { padding-inline:12px }
-.settingrow { position:relative }
-.settingrow > .handle { position:absolute; left:-12px; top:5px; width:10px; margin:0 }
-.settingrow > .handle .hmove { width:10px }
-body.gripsright .settingrow > .handle { left:auto; right:-12px }

@@ -1,9 +1,9 @@
 // Handles (F1.2): ▲ / ▼ move a calendar, feed or rule one place; the bars drag it. The new order is
 // saved at once: the page sends the neighbour it now sits above (or below).
 (function () {
-  var MOVE = { setting: ['/settings/move', 'id'], source: ['/sources/move', 'sid'], dest: ['/destinations/move', 'did'], rule: ['/rules/move', 'id'] };
-  function rowOf(el) { return el.closest('.modrow, .ruleline, .settingrow'); }
-  function rows(list) { return Array.prototype.filter.call(list.children, function (c) { return c.matches('.modrow:not(.fixed), .ruleline, .settingrow'); }); }
+  var MOVE = { source: ['/sources/move', 'sid'], dest: ['/destinations/move', 'did'], rule: ['/rules/move', 'id'] };
+  function rowOf(el) { return el.closest('.modrow, .ruleline'); }
+  function rows(list) { return Array.prototype.filter.call(list.children, function (c) { return c.matches('.modrow:not(.fixed), .ruleline'); }); }
   function save(row) {
     var list = row.parentNode, kind = list.dataset.kind, all = rows(list), i = all.indexOf(row),
         id = row.dataset.id || row.dataset.ruleId, nb = all[i + 1], pv = all[i - 1];
@@ -11,15 +11,10 @@
     body.set(m[1], id);
     if (nb) body.set('before', nb.dataset.id || nb.dataset.ruleId); else if (pv) body.set('after', pv.dataset.id || pv.dataset.ruleId);
     fetch(m[0], { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } }).then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      if (!r.ok) return;
       // the other lists that show the same rules (All Rules, the calendars) and the calendar follow
       var sel = kind === 'rule' ? ['#rules .rulelist', '#ruleconflicts', '#rulelines', '#rulecount', '.box.src .srcrules', '#cal'] : kind === 'source' ? ['#sources', '#cal'] : [];
       if (sel.length) swapIn(location.href, sel).then(function () { initCal(); bindAll(); reopenEvents(); });
-    }).catch(function () {
-      if (kind === 'setting') {
-        swapIn(location.href, ['#menu .settings-list']).then(bindAll);
-        tell(T.prefFailed);
-      }
     });
   }
   document.addEventListener('click', function (e) {

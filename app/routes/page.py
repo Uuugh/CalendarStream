@@ -1,5 +1,5 @@
 """Holds: page HTTP routes and their private helpers.
-Depends on: app/calsync.py, app/config.py, app/gsync.py, app/i18n.py, app/icons.py, app/rules.py. app/services/page_settings.py. Other collaborators are explicit arguments/providers.
+Depends on: app/calsync.py, app/config.py, app/gsync.py, app/i18n.py, app/icons.py, app/rules.py. Other collaborators are explicit arguments/providers.
   collaborators are explicit arguments/providers.
 Used by: app/main.py, app/routes/__init__.py.
 Reads/writes: HTTP requests and responses; supplied services perform persistence and network operations.
@@ -20,7 +20,6 @@ from .. import i18n, icons, rules as rules_mod
 from ..calsync import Event
 from ..config import DEFAULT_CALENDAR_URL, settings
 from ..gsync import GOOGLE_COLORS
-from ..services.page_settings import settings_order
 
 
 def register(
@@ -643,7 +642,6 @@ def register(
                 "palette": list(GOOGLE_COLORS.values()),
                 "about": {k: str(i18n.tr(lang, v)) for k, v in MODULE_ABOUT.items()},
                 "sections": sections,
-                "settings_order": settings_order(store=store),
                 "zone": display_zone(),
                 "zones": ALL_ZONES,
                 "common_zones": COMMON_ZONES,

@@ -435,8 +435,8 @@ one here, with its card.
 - The calendars module (0.2.8-beta.32, I28) is called Sources. (Suite 66)
 - History's Accepted sign-in (0.2.8-beta.32, I29) is a ✓ with no words (the word stays as its tooltip and accessible name). (Suite 66)
 - Appearance (0.2.8-beta.32, F39) is Look's new name (translated at Deploy); renamed again to Theme at 0.2.8-beta.33 (F46). (Suite 66)
-- Settings (Build D, F47/I45): modules can be reordered with the existing drag grips or up/down buttons; the order is saved.
-  The default is Administrator, Updates, Appearance, then other modules such as Google Calendar API Sync. (Suites 67, 80)
+- Settings (0.2.8-beta.33, F47): Updates is the first section (above Administrator), since it's the one most worth seeing at a
+  glance; Theme stays last. (Suite 67)
 - Updates' "up to date" status (0.2.8-beta.33, F53) reads the running version itself ("v1.2.3"), not a plain "Up to date" — so
   the version is visible without opening the title bar's own version link. (Suite 67)
 - The calendar's view picker (0.2.8-beta.33, F52) is icons, not words: closed, the button shows only the current view's
