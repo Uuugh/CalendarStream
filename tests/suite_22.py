@@ -28,11 +28,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     p = c.get("/", auth=A).text
     ok('id="updates"' in p and '<option value="weekly" selected>' in p and all(f'value="{f}"' in p for f in ("hourly", "monthly", "never")), "Settings: Check for updates, weekly by default")
     order = [m.group(1) for m in re.finditer(r'class="mgroup" id="([a-z]+)"', p)]
-    # Build D: one Administrator group; Domains is independent of user preferences.
-    user_part = p.split('class="sortable settings-list user-settings"', 1)[1].split('class="settings-foot"', 1)[0]
-    user_order = re.findall(r'<div class="settingrow" data-id="([^"]+)"', user_part)
-    ok(order == ["pagelogin", "domains", "googlesync"] and user_order == ["pagelogin", "updates", "look"],
-       f"order: Administrator (Login, Updates, Theme), Domains, Google API ({order}, {user_order})")
+    # (0.2.8-beta.40, F47) default order: Administrator, Updates, Theme, then any other modules
+    ok(order == ["pagelogin", "updates", "look", "googlesync"], f"order: Administrator (with the public address), updates, Theme, Google Calendar sync (with the admin e-mail) ({order})")
     # stable install: only STABLE is consulted, a newer beta is never offered
     os.environ["IMAGE_TAG"] = "latest"
     c.post("/settings/updates", auth=A, data={"csrf": csrf, "action": "check"})

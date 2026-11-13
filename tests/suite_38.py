@@ -50,7 +50,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     main.updater.ready = True
     p = c.get("/?menu=settings").text
     ud = p[p.index('id="updates"'):]; ud = ud[:ud.index("</form>")]
-    ok('name="auto" value="1"' in ud and not re.search(r'<input[^>]*name="auto"[^>]*onchange=', ud) and ud.index("Check now") < ud.index('class="autoupd"'), "…a tick box under the header (Check now in its status box, beta.5) with the updater")
+    ok('name="auto" value="1" onchange' in ud and ud.index("Check now") < ud.index('class="autoupd"'), "…a tick box under the header (Check now in its status box, beta.5) with the updater")
     post("/settings/updates", frequency="weekly", autoform="1", auto="1")
     ok(main.auto_update() and "Auto-update on" in c.get("/").text, "ticking it turns Auto-update on (logged)")
     post("/settings/updates", frequency="weekly", autoform="1")
@@ -92,17 +92,13 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
            "I3: the calendar key, the feeds' calendar colors and the rule badges follow, in place")
         # Settings saved in place
         pg.click("#menubtn"); pg.wait_for_timeout(150)
-        pg.fill("#publicurl", "https://cal2.example.com"); pg.click("#domainsform .psave"); pg.wait_for_timeout(1500)
+        pg.fill("#publicurl", "https://cal2.example.com"); pg.click("#adminform .psave"); pg.wait_for_timeout(1500)
         ok(main.public_url() == "https://cal2.example.com" and not loads and pg.is_visible("#menu") and "cal2.example.com" in pg.inner_html("#destinations"),
            "Settings: Public address saved in place (menu still open, no reload; the feeds' links follow)")
-        if pg.locator('#askdialog[open]').count(): pg.locator('#askdialog .askchoices button').click()
-        pg.select_option("#updfreq", "monthly"); pg.wait_for_timeout(200)
-        ok(main.updates.frequency() == "weekly" and not loads, "Updates stages the frequency until the shared Save")
-        pg.click('#adminform .psave'); pg.wait_for_timeout(1500)
-        ok(main.updates.frequency() == "monthly" and len(loads) == 1 and pg.is_visible("#menu"),
-           f"shared User Save persists Check for updates and redraws Theme ({main.updates.frequency()} {loads} {errs})")
+        pg.select_option("#updfreq", "monthly"); pg.wait_for_timeout(1200)
+        ok(main.updates.frequency() == "monthly" and not loads and pg.is_visible("#menu"), f"…and Check for updates ({main.updates.frequency()} {loads} {pg.is_visible('#menu')} {errs})")
         u, a = pg.locator("#updfreq").bounding_box(), pg.locator("#updates button.checknow").bounding_box()
-        m = pg.locator("#menu .mgroup#pagelogin").bounding_box()
+        m = pg.locator("#menu .mgroup#updates").bounding_box()
         sb = pg.locator("#updates .statusbox").bounding_box()
         ok(abs(u["height"] - 34) < 1 and abs(sb["height"] - 50) < 1 and abs(sb["width"] - 132) < 1 and a["x"] + a["width"] <= m["x"] + m["width"] - 10,
            "Settings → Updates: a module header (132 × 50 status box with Check now), a 34 px menu, all inside")
