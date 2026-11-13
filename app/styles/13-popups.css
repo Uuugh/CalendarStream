@@ -38,7 +38,3 @@
   /* (0.2.8-beta.23, F16) a question's second line, under it and not bold; No | Yes as the theme's Cancel | Save pair */
   dialog.ask .asktext .asksub { display:block; margin-top:2px; font-size:13.5px; font-weight:500; color:var(--muted) }
   dialog.ask .askchoices .pairbtns button { padding:0 }
-
-/* F65: Settings retains its centered popup and dimmed backdrop in Full mode, including phones. */
-dialog.settings-popup.popup { width:min(720px, calc(100vw - 32px)); height:fit-content;
-  max-height:calc(100vh - 32px); margin:auto; border:1px solid var(--line); border-radius:var(--rbox) }

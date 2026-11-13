@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 
-SETTINGS_MODULES = ("pagelogin", "updates", "look", "domains", "googlesync")
+SETTINGS_MODULES = ("pagelogin", "updates", "look", "googlesync")
 
 
 def settings_order(*, store, modules=SETTINGS_MODULES) -> list[str]:

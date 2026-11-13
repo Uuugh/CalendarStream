@@ -1,15 +1,27 @@
-{% macro setting_fields(key) %}
-{% if key == 'pagelogin' %}
-{% if not calview.full %}<div class="mhead">{{ _('Login & password') }}</div>{% endif %}
+{% macro settings_module(key) %}
+{% if key == "pagelogin" %}
+        {# (0.2.8-beta.29, F32, F33) One Administrator section: the status page's login and its public addresses, one form,
+           one Cancel | Save. Its Status/Action box says "Signed in" over "Sign out"; the action half becomes the pair
+           (Cancel | Save, at the action's text size) as soon as something is changed. The current password is asked
+           for only when the user name or the password changes. #}
+        <div class="mgroup" id="pagelogin">
+          <div class="mhead">{{ _('Administrator') }}</div>
+          <form method="post" action="/logout" id="signoutform" class="signout"><input type="hidden" name="csrf" value="{{ csrf }}"></form>
+          {# data-swap includes #googlesync too (0.2.8-beta.33, F56): a changed address can make Google Calendar
+             API Sync's own assist box appear (its redirect URI no longer matches), so it's redrawn at once,
+             not only after a reload - which is when the pop-up this triggers (07-saving.js) says to look at it. #}
+          <form method="post" action="/settings/administrator" id="adminform" class="clientform adminform" autocomplete="off" data-swap="#pagelogin|#destinations|#googlesync">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <div class="module bare adminhead"><div class="statusbox adminbox {{ 'good' if page_user else 'warn' }}" style='--ic-x:{{ icon_mask("close") }};--ic-ok:{{ icon_mask("check") }}'>
+              {{ chip('good' if page_user else 'warn', _('Signed in') if page_user else _('Not signed in')) }}
+              <span class="syncform adminact"><button type="submit" form="signoutform" class="syncnow" data-state="idle"><span class="sn idle">{{ icon("logout", 14) }}{{ _('Sign out') }}</span></button></span>
+              {{ pair("adminform") }}
+            </div></div>
             <div class="pair">
               <label class="fld" for="luser"><span>{{ _('User name') }}</span>
                 <input type="text" id="luser" name="user" value="{{ page_user }}" required maxlength="64" autocomplete="username" spellcheck="false"></label>
               <label class="fld" for="lnew"><span>{{ _('Password') }}</span>
                 <input type="password" id="lnew" name="password" data-strength data-rules autocomplete="new-password" placeholder="{{ _('Type a new one to change it') }}"></label>
-            <div class="module bare login-status"><div class="statusbox adminbox {{ 'good' if page_user else 'warn' }}" style='--ic-x:{{ icon_mask("close") }};--ic-ok:{{ icon_mask("check") }}'>
-              {{ chip('good' if page_user else 'warn', _('Signed in') if page_user else _('Not signed in')) }}
-              <span class="syncform adminact"><button type="submit" form="signoutform" class="syncnow" data-state="idle"><span class="sn idle">{{ icon("logout", 14) }}{{ _('Sign out') }}</span></button></span>
-            </div></div>
             </div>
             <div class="pair more" hidden>
               <label class="fld" for="lcur"><span>{{ _('Current password') }}</span>
@@ -18,8 +30,45 @@
                 <input type="password" id="lconf" name="confirm" autocomplete="new-password"></label>
             </div>
             <p class="mnote more" style="margin:6px 0 0" hidden>{{ _('Then sign in again with the new login.') }}</p>
-{% elif key == 'updates' %}
-{% set ucls, ulabel = ("run", _('Update available')) if update.available else (("good", _('v{v}', v=version)) if update.info.newest else ("run", _('Not checked'))) %}
+            {# (0.2.8-beta.32, I22) one unified list of address rows: the domain row (the page's own address) first,
+               then any extra addresses below, every row with its own trash can. Trashing an extra row takes it
+               out; trashing the domain row always just clears it, since it's the only row that can never be
+               removed outright (0.2.8-beta.33). The + itself isn't fixed to one row: every row carries the
+               button in its markup, and 19-calendar.css shows it only on whichever row is currently last
+               (0.2.8-beta.40, F11 I22: it used to sit only on the domain row, so it vanished once an extra row
+               existed below it). #}
+            <div class="k" id="public">{{ _('Public address') }}{{ help(_('This page’s https:// address, e.g. <code>https://cal.example.com</code>: for feed links and Google sign-in. + adds another address (another domain) that also reaches this page; a Calendar Feed’s link can use any of them, Google’s sign-in uses the one above.'), 'left') }}</div>
+            <div class="extrarows" id="publicrows">
+              <div class="extrarow domainrow">
+                <div class="inbox">
+                  <input type="text" class="code" id="publicurl" name="main" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
+                  <button type="button" class="inboxbtn" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
+                </div>
+                <button type="button" class="ghost iconbtn extradel" title="{{ _('Clear this address') }}" aria-label="{{ _('Clear this address') }}">{{ trash }}</button>
+                <button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button>
+              </div>
+              {% for u in public.extra %}<div class="extrarow"><input type="text" class="code" name="url" value="{{ u }}" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
+                <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button>
+                <button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button></div>{% endfor %}
+            </div>
+            {% if not public.url %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
+            <template class="extratpl"><div class="extrarow"><input type="text" class="code" name="url" value="" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
+              <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button>
+              <button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button></div></template>
+          </form>
+        </div>
+
+{% elif key == "updates" %}
+        {# Check for updates: how often, for this install's channel (beta or stable) only. #}
+        {# Updates (0.2.8-beta.5) laid out like a module header, with nothing to expand: its title over the
+           channel, the state over the next check (on the right), and the status box: the state over
+           Check now (or Update). Under it, how often to check and Auto-update, changed in place.
+           0.2.8-beta.33, F47: moved to the top of the menu, above Administrator; 0.2.8-beta.40, F47: default order is now Administrator, Updates, Theme, then any other modules. #}
+        {# (0.2.8-beta.33, F53) up to date shows the running version itself ("v1.2.3"), not a plain "Up to date" #}
+        {% set ucls, ulabel = ("run", _('Update available')) if update.available else (("good", _('v{v}', v=version)) if update.info.newest else ("run", _('Not checked'))) %}
+        <div class="mgroup" id="updates">
+          <form method="post" action="/settings/updates" class="clientform" data-swap="#updates|.topbar .ver">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="autoform" value="1">
             <div class="module bare"><div class="srchead">
               <div class="srcleft">
                 <div class="namebox srcname">{{ _('Updates') }}</div>
@@ -36,24 +85,31 @@
                 {% if update.available and update.can_update %}<span class="syncform"><button type="button" class="syncnow upgradebtn" data-state="idle"><span class="sn idle">{{ icon("upgrade", 14) }}{{ _('Update now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}<span class="snword">{{ _('Downloading…') }}</span></span><span class="sn done">{{ icon("check", 14) }}<span class="snword">{{ _('Updated') }}</span></span><span class="sn fail">{{ icon("warning", 14) }}<span class="snword">{{ _('Update failed') }}</span></span></button></span>
                 {% elif update.available %}<a class="btn upgradebtn" href="https://github.com/Uuugh/CalendarStream#updating" target="_blank" rel="noopener" title="{{ _('Run the installer again to update.') }}">{{ icon("upgrade", 15) }}{{ _('Update now') }}</a>
                 {% else %}{# Check now works like Sync Now: Checking… → Up to date (green pulse), Update found (yellow) or Couldn't check (yellow) #}
-                <span class="syncform"><button class="syncnow checknow" form="updatecheckform" name="action" value="check" data-state="idle"><span class="sn idle">{{ _('Check now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Checking…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Up to date') }}</span><span class="sn found">{{ icon("upgrade", 14) }}{{ _('Update found') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Couldn’t check') }}</span></button></span>{% endif %}
+                <span class="syncform"><button class="syncnow checknow" name="action" value="check" data-state="idle"><span class="sn idle">{{ _('Check now') }}</span><span class="sn syncing">{{ icon("progress_activity", 14, "spin") }}{{ _('Checking…') }}</span><span class="sn done">{{ icon("check", 14) }}{{ _('Up to date') }}</span><span class="sn found">{{ icon("upgrade", 14) }}{{ _('Update found') }}</span><span class="sn fail">{{ icon("warning", 14) }}{{ _('Couldn’t check') }}</span></button></span>{% endif %}
               </div>
             </div></div>
             {# one line (0.2.8-beta.11): Check for updates [Hourly ▾] ☐ Auto-update #}
             <div class="pair inline updrow">
               <label class="rowlabel" for="updfreq">{{ _('Check for updates') }}</label>
-              <select id="updfreq" name="frequency">
+              <select id="updfreq" name="frequency" onchange="this.form.requestSubmit()">
                 {% for f in update.frequencies %}<option value="{{ f }}"{% if f == update.frequency %} selected{% endif %}>{{ {"hourly": _('Hourly'), "weekly": _('Weekly'), "monthly": _('Monthly'), "never": _('Never')}[f] }}</option>{% endfor %}
               </select>
               {# Auto-update: installs newer versions by itself; needs the updater #}
               <label class="autoupd" title="{{ _('Install newer versions by themselves (with the updater)') if update.can_update else _('Needs the updater: run the installer again › Update from the status page: yes.') }}">
-                <input type="checkbox" name="auto" value="1"{% if update.auto %} checked{% endif %}{% if not update.can_update and not update.auto %} disabled{% endif %}> {{ _('Auto-update') }}</label>
+                <input type="checkbox" name="auto" value="1"{% if update.auto %} checked{% endif %}{% if not update.can_update and not update.auto %} disabled{% endif %} onchange="this.form.requestSubmit()"> {{ _('Auto-update') }}</label>
             </div>
-            <div class="update-error">{% if update.info.error %}<p class="check bad">{{ icon("cancel", 15) }} {{ msg(update.info.error) }}</p>{% endif %}</div>
+            {% if update.info.error %}<p class="check bad">{{ icon("cancel", 15) }} {{ msg(update.info.error) }}</p>{% endif %}
             {% if not update.updater %}<p class="mnote" style="margin:5px 0 0">{{ _('To update from here: run the installer again › Update from the status page: yes.') }}</p>
             {% elif update.can_update is false %}<p class="mnote" style="margin:5px 0 0">{{ _('This install runs an exact version (IMAGE_TAG): update it with the installer.') }}</p>{% endif %}
-{% elif key == 'look' %}
-{% if not calview.full %}<div class="mhead">{{ _('Theme') }}{{ help(_('Your own logo and favicon, reorder grips and button animation.'), 'left') }}</div>{% endif %}
+          </form>
+        </div>
+
+{% elif key == "look" %}
+        {# (0.2.8-beta.29, F14) Look: your own logo and favicon, and the buttons' animation. One form, one Cancel | Save. #}
+        <div class="mgroup" id="look">
+          <div class="mhead">{{ _('Theme') }}{{ help(_('Your own logo (shown by the title) and favicon: a PNG, SVG, WebP, JPEG or ICO picture up to 256 KB. Animation sets how strong and how long the buttons’ pulses and slides are.'), 'left') }}</div>
+          <form method="post" action="/settings/look" id="lookform" class="clientform lookform" enctype="multipart/form-data" data-reload="1" autocomplete="off">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
             <div class="pair">
               <label class="fld" for="lookLogo"><span>{{ _('Logo') }}</span><input type="file" id="lookLogo" name="logo" accept="image/png,image/svg+xml,image/webp,image/jpeg,image/x-icon"></label>
               <label class="fld" for="lookFav"><span>{{ _('Favicon') }}</span><input type="file" id="lookFav" name="favicon" accept="image/png,image/svg+xml,image/webp,image/jpeg,image/x-icon"></label>
@@ -73,30 +129,19 @@
               <label class="fld" for="animI"><span>{{ _('Intensity') }} <output id="animIo">{{ look.anim.i }}%</output></span><input type="range" id="animI" name="intensity" min="0" max="200" step="5" value="{{ look.anim.i }}"></label>
               <label class="fld" for="animD"><span>{{ _('Duration') }} <output id="animDo">{{ look.anim.d }}%</output></span><input type="range" id="animD" name="duration" min="25" max="300" step="5" value="{{ look.anim.d }}"></label>
             </div>
-            <div class="lookfoot"><button type="button" class="ghost" id="animReset">{{ _('Reset to defaults') }}</button></div>
-{% elif key == 'domains' %}
-{% if not calview.full %}<div class="mhead">{{ _('Domains') }}</div>{% endif %}
-            <div class="k" id="public">{{ _('Public address') }}{{ help(_('This page’s https:// address, e.g. <code>https://cal.example.com</code>: for feed links and Google sign-in. + adds another address (another domain) that also reaches this page; a Calendar Feed’s link can use any of them, Google’s sign-in uses the one above.'), 'left') }}</div>
-            <div class="extrarows" id="publicrows">
-              <div class="extrarow domainrow">
-                <div class="inbox">
-                  <input type="text" class="code" id="publicurl" name="main" value="{{ public.url }}" spellcheck="false" placeholder="https://cal.example.com" aria-label="{{ _('Public address') }}">
-                  <button type="button" class="inboxbtn" id="usethis" title="{{ _('Fill in the address this page is open at') }}">{{ _('This page') }}</button>
-                </div>
-                <button type="button" class="ghost iconbtn extradel" title="{{ _('Clear this address') }}" aria-label="{{ _('Clear this address') }}">{{ trash }}</button>
-                <button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button>
-              </div>
-              {% for u in public.extra %}<div class="extrarow"><input type="text" class="code" name="url" value="{{ u }}" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
-                <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button>
-                <button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button></div>{% endfor %}
-            </div>
-            {% if not public.url %}<p class="mnote" style="margin:2px 0 0">{{ _('Not set yet.') }}</p>{% endif %}
-            <template class="extratpl"><div class="extrarow"><input type="text" class="code" name="url" value="" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
-              <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button>
-              <button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button></div></template>
-{% elif key == 'googlesync' %}
-{% set g = google %}{% set gvalid = g.configured and g.check.ok %}
+            <div class="lookfoot"><button type="button" class="ghost" id="animReset">{{ _('Reset to defaults') }}</button>{{ pair("lookform") }}</div>
+          </form>
+        </div>
 
+{% elif key == "googlesync" %}
+        {# Google Calendar sync (0.2.8-beta.4, moved here from Feeds): the one Google sign-in every Google
+           calendar in Feeds uses: the client ID and secret (with the step-by-step guide), Connect /
+           Disconnect, the account and its last sync. Without it, + Google Calendar in Feeds makes a feed
+           to subscribe to instead. #}
+        {% set g = google %}
+        {% set gvalid = g.configured and g.check.ok %}
+        {# (0.2.8-beta.17, F13) no administrator's e-mail here any more: ☰ Settings sets up the API only #}
+        <div class="mgroup" id="googlesync">
           {# (0.2.8-beta.18, F3) the API only: no account and no sync here. Its title over what it's for; the
              Client ID and secret, editable at any time (I2); the Status/Action box: its health over Connect,
              Reconnect or Fix; Remove in the lower left; the ways to get a client while it isn't working. #}
@@ -118,89 +163,23 @@
             </div>
           {% endif %}
           {{ m.google_client(g, "f") }}
-        {% endif %}
+        </div>
+{% endif %}
 {% endmacro %}
-{% set setting_labels = {'pagelogin': _('Login & password'), 'updates': _('Updates'), 'look': _('Theme'), 'domains': _('Domains'), 'googlesync': _('Google API')} %}
-<div class="menuwrap" id="settingswrap" data-full="{{ '1' if calview.full else '0' }}">
-  <button type="button" class="iconbtn" id="menubtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="menu" title="{{ _('Settings') }}">{{ icon('menu', 20) }}</button>
-  <form method="post" action="/logout" id="signoutform" class="signout" hidden><input type="hidden" name="csrf" value="{{ csrf }}"></form>
-  <form method="post" action="/settings/updates" id="updatecheckform" hidden data-swap="#updates|.topbar .ver"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="action" value="check"></form>
-  <div class="menu{% if calview.full %} settings-slideout{% endif %}" id="menu" role="dialog" aria-label="{{ _('Settings') }}" hidden>
-    {% if calview.full %}
-      <div class="full-settings-head"><button type="button" class="ghost iconbtn" data-settings-back aria-label="{{ _('Close') }}">{{ icon('arrow_back', 20) }}</button><strong>{{ _('Settings') }}</strong><span class="mnote">{{ _('Full mode') }}</span></div>
-      <div class="title">{{ _('Configure') }}</div>
-      {% for key, label in [('calendar', _('Calendar')), ('sources', _('Sources')), ('destinations', _('Feeds')), ('rules', _('All Rules')), ('templates', _('Event Templates')), ('activity', _('History'))] %}
-        <button type="button" class="setting-link configure-link" data-configure="{{ key }}" aria-haspopup="dialog">{{ icon({'calendar': 'calendar_month', 'sources': 'calendar_month', 'destinations': 'sensors', 'rules': 'rule', 'templates': 'event_note', 'activity': 'history'}[key], 20) }}{{ label }}{{ icon("chevron_right", 18) }}</button>
-      {% endfor %}
-      <hr>
-      {% for category, keys in [('User', ['pagelogin', 'updates', 'look']), ('Site Admin', ['domains', 'googlesync'])] %}
-        {% if not loop.first %}<hr>{% endif %}<div class="mhead">{{ _(category) }}</div>
+    <div class="menuwrap">
+      <button type="button" class="iconbtn" id="menubtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="menu" title="{{ _('Settings') }}">
+        {{ icon("menu", 20) }}
+      </button>
+      <div class="menu" id="menu" role="dialog" aria-label="{{ _('Settings') }}" hidden>
+        <div class="title">{{ _('Settings') }}</div>
         <div class="sortable settings-list" data-kind="setting">
-        {% for key in settings_order if key in keys %}
+        {% for key in settings_order %}
+          {% set label = {'pagelogin': _('Administrator'), 'updates': _('Updates'), 'look': _('Appearance'), 'googlesync': _('Google Calendar API Sync')}[key] %}
           <div class="settingrow" data-id="{{ key }}">
-            <button type="button" class="setting-link" data-setting="{{ key }}" aria-haspopup="dialog">{{ icon({'pagelogin': 'logout', 'updates': 'upgrade', 'look': 'contrast', 'domains': 'public', 'googlesync': 'sync'}[key], 20) }}{{ setting_labels[key] }}{{ icon("chevron_right", 18) }}</button>
-            {{ handle('setting', key, setting_labels[key]) }}
+            {{ settings_module(key) }}
+            {{ handle('setting', key, label) }}
           </div>
         {% endfor %}
         </div>
-      {% endfor %}
-    {% else %}
-      <div class="title">{{ _('Settings') }}</div>
-      <div class="sortable settings-list settings-modules" data-kind="setting">
-      {% for key in settings_order if key in ['pagelogin', 'domains', 'googlesync'] %}
-        <div class="settingrow" data-id="{{ key }}">
-        {% if key == 'pagelogin' %}
-      <div class="mgroup" id="pagelogin">
-        <div class="mhead">{{ _('Administrator') }}</div>
-        <form method="post" action="/settings/user" id="adminform" class="clientform lookform" enctype="multipart/form-data" autocomplete="off" data-swap="#pagelogin" data-reload="1">
-          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="scope" value="user">
-          <div class="sortable settings-list user-settings" data-kind="setting">
-          {% for key in settings_order if key in ['pagelogin', 'updates', 'look'] %}
-            {% if not loop.first %}<hr>{% endif %}
-            <div class="settingrow" data-id="{{ key }}">
-              <div{% if key != 'pagelogin' %} id="{{ key }}"{% endif %}>{{ setting_fields(key) }}</div>
-              {{ handle('setting', key, setting_labels[key]) }}
-            </div>
-          {% endfor %}
-          </div>
-          <div class="settings-foot">{{ pair('adminform') }}</div>
-        </form>
       </div>
-        {% else %}
-          <div class="mgroup" id="{{ key }}">
-          {% if key == 'domains' %}
-            <form method="post" action="/settings/administrator" id="domainsform" class="clientform adminform" autocomplete="off" data-swap="#domains|#destinations|#googlesync">
-              <input type="hidden" name="csrf" value="{{ csrf }}">{{ setting_fields(key) }}
-              <div class="settings-foot">{{ pair('domainsform') }}</div>
-            </form>
-          {% else %}{{ setting_fields(key) }}{% endif %}
-          </div>
-        {% endif %}
-        {{ handle('setting', key, _('Administrator') if key == 'pagelogin' else setting_labels[key]) }}
-        </div>
-      {% endfor %}
-      </div>
-    {% endif %}
-  </div>
-  {% if calview.full %}
-    {% for key in settings_order %}
-    <dialog class="popup settings-popup menu" id="setting-{{ key }}" aria-label="{{ setting_labels[key] }}">
-      <div class="dlghead"><button type="button" class="ghost dlgback" data-settings-close aria-label="{{ _('Close') }}">{{ icon('arrow_back', 20) }}</button><span class="title">{{ setting_labels[key] }}</span></div>
-      <div class="mgroup" id="{{ key }}">
-      {% if key != 'googlesync' %}
-        {% set fid = {'pagelogin': 'adminform', 'updates': 'updatesform', 'look': 'lookform', 'domains': 'domainsform'}[key] %}
-        <form method="post" action="{{ '/settings/administrator' if key == 'domains' else '/settings/user' }}" id="{{ fid }}" class="clientform{% if key == 'domains' %} adminform{% elif key == 'look' %} lookform{% endif %}" enctype="multipart/form-data" autocomplete="off" data-swap="#{{ key }}{% if key == 'domains' %}|#destinations|#googlesync{% endif %}"{% if key == 'look' %} data-reload="1"{% endif %}>
-          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="scope" value="{{ 'login' if key == 'pagelogin' else key }}">
-          {{ setting_fields(key) }}
-          <div class="settings-foot">{{ pair(fid) }}</div>
-        </form>
-      {% else %}{{ setting_fields(key) }}{% endif %}
-      </div>
-    </dialog>
-    {% endfor %}
-    <dialog class="popup settings-configure" id="configure-popup" aria-label="{{ _('Configure') }}">
-      <div class="dlghead"><button type="button" class="ghost dlgback" data-settings-close aria-label="{{ _('Close') }}">{{ icon('arrow_back', 20) }}</button><span class="title">{{ _('Configure') }}</span></div>
-      <div class="configure-content"></div>
-    </dialog>
-  {% endif %}
-</div>
+    </div>

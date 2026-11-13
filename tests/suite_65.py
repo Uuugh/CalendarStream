@@ -97,7 +97,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     # --- I22: the Administrator row ---
     p = page()
     ok("--ic-x:" in p and "--ic-ok:" in p, "I22: the Administrator box carries the ✕ and ✓ icons")
-    ok(".login-status" in css and ".adminhead { position:absolute" not in css, "I22: status sits inline beside login fields; Save belongs to the footer")
+    ok("#pagelogin > .mhead" in css and ".adminhead { position:absolute" in css, "I22: its Status/Action box sits on the heading's line")
 
     # --- F36.1: the grips' side ---
     ok('gripsright' not in page(), "F36.1: the grips are on the left by default")

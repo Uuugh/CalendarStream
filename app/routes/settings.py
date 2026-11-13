@@ -1,5 +1,5 @@
 """Holds: settings HTTP routes and their private helpers.
-Depends on: app/config.py, app/logins.py, app/updates.py. app/services/page_settings.py, app/services/appearance_settings.py, app/item_order.py. Other collaborators are explicit arguments/providers.
+Depends on: app/config.py, app/logins.py, app/updates.py. app/services/page_settings.py, app/item_order.py. Other collaborators are explicit arguments/providers.
   arguments/providers.
 Used by: app/routes/__init__.py.
 Reads/writes: HTTP requests and responses; supplied services perform persistence and network operations.
@@ -16,8 +16,6 @@ from fastapi.responses import JSONResponse
 from ..logins import LoginError
 from ..item_order import _moved
 from ..services.page_settings import settings_order
-from ..services.appearance_settings import appearance_values
-from ..updates import FREQUENCIES
 
 
 def register(
@@ -306,73 +304,59 @@ def register(
             },
         )
 
-    def save_appearance(values):
-        brand, grips, animation = values
-        if brand:
-            store.set("brand", brand)
-        else:
-            store.delete("brand")
-        if grips == "right":
-            store.set("ui_grips", grips)
-        else:
-            store.delete("ui_grips")
-        store.set("ui_anim", animation)
-
-    @app.post("/settings/user", dependencies=[Depends(gui_auth)])
-    async def set_user_settings(request: Request, csrf: str = Form("")):
-        """One normal-mode Save, or an independent Full-mode Login, Updates or Theme Save.
-
-        Validate all preference fields before changing the login (which ends sessions) or preferences.
-        Domains are deliberately not part of this form.
-        """
-        check_csrf(csrf)
-        form = await request.form()
-        scope = form.get("scope", "user")
-        if scope not in ("user", "login", "updates", "look"):
-            raise HTTPException(400, "Unknown settings section.")
-        appearance = None
-        if scope in ("user", "look"):
-            appearance = await appearance_values(form, brand=store.get("brand"), image_kind=_image_kind,
-                                                  field_error=FieldError, max_bytes=BRAND_MAX)
-        frequency = form.get("frequency", "")
-        if scope in ("user", "updates") and frequency not in FREQUENCIES:
-            raise FieldError("Unknown update frequency.", "frequency")
-        login_changed = False
-        if scope in ("user", "login"):
-            user, password = str(form.get("user", "")).strip(), str(form.get("password", ""))
-            current, confirm = str(form.get("current", "")), str(form.get("confirm", ""))
-            login_changed = bool(password) or user not in ("", logins.page_user)
-            if login_changed:
-                if not logins.check_page_login(logins.page_user, current):
-                    _count_failure(get__client_ip()(request))
-                    raise FieldError("The current password isn't right.", "current")
-                try:
-                    logins.set_page_login(user or logins.page_user, password or current,
-                                          confirm if password else None, strict=bool(password))
-                except LoginError as error:
-                    raise FieldError(str(error), "user", "password", "confirm")
-        if appearance is not None:
-            save_appearance(appearance)
-        if scope in ("user", "updates"):
-            updates.set_frequency(str(frequency))
-            store.set("update_auto", form.get("auto") == "1")
-        state.record("info", "User settings saved", kind="Settings")
-        if login_changed:
-            renew_csrf()
-            back = JSONResponse({"redirect": "/login"})
-            back.delete_cookie(SESSION_COOKIE)
-            return back
-        return RedirectResponse("/?menu=settings", status_code=303)
-
     @app.post("/settings/look", dependencies=[Depends(gui_auth)])
     async def set_look(request: Request, csrf: str = Form("")):
         """☰ Settings › Look: upload a logo and/or a favicon (or go back to CalendarStream's own), and set the buttons'
         Animation intensity and duration (Reset puts both back to 100 %)."""
         check_csrf(csrf)
         form = await request.form()
-        values = await appearance_values(form, brand=store.get("brand"), image_kind=_image_kind,
-                                         field_error=FieldError, max_bytes=BRAND_MAX)
-        save_appearance(values)
+        saved = dict(store.get("brand") or {})
+        for kind in ("logo", "favicon"):
+            if form.get(f"remove_{kind}"):
+                saved.pop(kind, None)
+            up = form.get(kind)
+            if isinstance(up, UploadFile) or hasattr(up, "read"):
+                data = await up.read()
+                if not data:
+                    continue
+                if len(data) > BRAND_MAX:
+                    raise FieldError("That picture is over 256 KB.", kind)
+                mime = _image_kind(data)
+                if not mime:
+                    raise FieldError("Use a PNG, SVG, WebP, JPEG or ICO picture.", kind)
+                saved[kind] = {"mime": mime, "b64": base64.b64encode(data).decode()}
+        if saved:
+            store.set("brand", saved)
+        else:
+            store.delete("brand")
+        grips = form.get("grips")
+        if grips in (
+            "left",
+            "right",
+        ):  # (0.2.8-beta.31, F36.1) which side of a module or rule line the reorder grip is on
+            if grips == "right":
+                store.set("ui_grips", "right")
+            else:
+                store.delete("ui_grips")
+        if form.get("reset"):
+            store.delete("ui_anim")
+            store.delete("ui_grips")
+        else:
+            try:
+                i, d = int(form.get("intensity", 100)), int(form.get("duration", 100))
+            except ValueError:
+                raise FieldError(
+                    "Intensity and duration are whole percentages.",
+                    "intensity",
+                    "duration",
+                )
+            if not (0 <= i <= 200 and 25 <= d <= 300):
+                raise FieldError(
+                    "Intensity is 0–200 % and duration 25–300 %.",
+                    "intensity",
+                    "duration",
+                )
+            store.set("ui_anim", {"i": i, "d": d})
         state.record(
             "info", "Look changed (logo, favicon, grips, animation)", kind="Settings"
         )
@@ -385,7 +369,6 @@ def register(
         "set_admin_email": set_admin_email,
         "set_administrator": set_administrator,
         "set_look": set_look,
-        "set_user_settings": set_user_settings,
         "move_setting": move_setting,
         "set_public_extra": set_public_extra,
         "set_public_url": set_public_url,

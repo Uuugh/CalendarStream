@@ -166,9 +166,9 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
                         ok(pg.get_attribute("#updates .checknow", "data-state") == "syncing" and float(fade) < 0.1,
                            f"[{tag}] Check now press {n}: Checking… at once, the status word faded under it (multi-button, {fade})")
                         pg.wait_for_timeout(3800)
-                    order = pg.locator('#menu .user-settings > .settingrow').evaluate_all('(rows) => rows.map(r => r.dataset.id)')
-                    ok(order == ['pagelogin', 'updates', 'look'] and
-                       pg.locator('#menu .settingrow > .handle .hmove').count() == 12,
+                    order = pg.locator('#menu .settings-list > .settingrow').evaluate_all('(rows) => rows.map(r => r.dataset.id)')
+                    ok(order == ['pagelogin', 'updates', 'look', 'googlesync'] and
+                       pg.locator('#menu .settingrow > .handle .hmove').count() == 8,
                        f"[{tag}] Clarification 'Settings order': default order and keyboard reorder controls {order}")
                     # Clarification: a box means you can change it (Updates' title and channel are plain text)
                     bx = pg.evaluate("""() => [...document.querySelectorAll('#updates .srcleft > *')].map(e => getComputedStyle(e).borderTopColor + '|' + getComputedStyle(e).backgroundColor)""")
@@ -414,10 +414,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "+ top right (suite 61)": "Every section's + is in its top right", "1 px borders (suite 59, 61)": "Every border is 1 px wide",
             "calendar header (suite 64)": "The calendar's header (0.2.8-beta.29", "key (suite 64)": "The calendar's key (0.2.8-beta.29",
             "hourly grid (suite 64)": "Week and Day show an hourly grid", "Full page (suite 64)": "Full page (0.2.8-beta.29",
-            "Print (suite 64)": "Print (0.2.8-beta.29", "Administrator (suite 81)": "Administrator (Build D, I22)", "Look (suite 64)": "Look (0.2.8-beta.29, F14)",
+            "Print (suite 64)": "Print (0.2.8-beta.29", "Administrator (suite 64)": "Administrator (0.2.8-beta.29", "Look (suite 64)": "Look (0.2.8-beta.29, F14)",
             "Full page button (suite 65)": "Full page's button (0.2.8-beta.31", "hour height (suite 65)": "The hour height handle (0.2.8-beta.31",
             "print orientation (suite 65)": "Print's orientation (0.2.8-beta.31", "grips side (suite 65)": "The reorder grips' side (0.2.8-beta.31",
-            "Administrator box (suite 81)": "The Administrator's status box (Build D, I22)", "event rows (suite 65)": "The event pop-up's rows (0.2.8-beta.31",
+            "Administrator box (suite 65)": "The Administrator's status box (0.2.8-beta.31", "event rows (suite 65)": "The event pop-up's rows (0.2.8-beta.31",
             "On|Off note (suite 66)": "A calendar's On | Off switch and its note (0.2.8-beta.32", "Default disabled (suite 66)": "Default (0.2.8-beta.32, I2) greys out",
             "Sources name (suite 66)": "The calendars module (0.2.8-beta.32, I28)", "Accepted mark (suite 66)": "History's Accepted sign-in (0.2.8-beta.32",
             "Appearance name (suite 66)": "Appearance (0.2.8-beta.32, F39)", "key name cut (suite 66)": "A rule's key name (0.2.8-beta.32",
@@ -430,7 +430,6 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "2/3-line invisible (suite 66)": "The 2/3-line box (0.2.8-beta.32, I27)",
             "status word vanish (suite 67)": "A collapsed status word (0.2.8-beta.33, I21/F45) then vanish",
             "rule dialog Escape (suite 67)": "Escape in the rule dialog (0.2.8-beta.33, I37) cancels exact",
-            "Full-mode Settings (suite 81)": "Full-mode Settings (Build D, F65)",
             "Settings order (suites 67, 80)": "Settings (Build D, F47/I45): modules can be reordered",
             "Updates version status (suite 67)": "Updates' \"up to date\" status (0.2.8-beta.33, F53)",
             "view picker icons (suite 67)": "The calendar's view picker (0.2.8-beta.33, F52)",

@@ -34,17 +34,16 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     fake = lambda saved: SimpleNamespace(get=lambda key: saved)
     ok(settings_order(store=fake(None)) == list(SETTINGS_MODULES), "Settings: default order")
     ok(settings_order(store=fake(["look", "look", "retired", {}, "pagelogin"])) ==
-       ["look", "pagelogin", "updates", "domains", "googlesync"], "Settings: deduplicate saved order and append new modules")
+       ["look", "pagelogin", "updates", "googlesync"], "Settings: deduplicate saved order and append new modules")
     ok(settings_order(store=fake("look")) == list(SETTINGS_MODULES), "Settings: malformed saved state falls back")
     ok(settings_order(store=fake(["look"]), modules=(*SETTINGS_MODULES, "future"))[-1] == "future",
        "Settings: newly installed modules appear automatically")
     ok(post("/settings/move", id="look", before="pagelogin").status_code == 200,
        "Settings: move above Administrator")
-    ok(main.store.get("ui_settings_order") == ["look", "pagelogin", "updates", "domains", "googlesync"],
+    ok(main.store.get("ui_settings_order") == ["look", "pagelogin", "updates", "googlesync"],
        "Settings: chosen order persisted")
     p = page("?menu=settings")
-    user_part = p.split('class="sortable settings-list user-settings"', 1)[1].split('class="settings-foot"', 1)[0]
-    ok(re.findall(r'<div class="settingrow" data-id="([^"]+)"', user_part) == ["look", "pagelogin", "updates"],
+    ok(p.index('id="look"') < p.index('id="pagelogin"') < p.index('id="updates"'),
        "Settings: rendered order matches stored order")
     ok(p.count('data-kind="setting"') >= 5, "Settings: modules expose existing reorder controls")
     ok(post("/settings/move", id="gone", before="pagelogin").status_code == 400,
@@ -72,37 +71,17 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             with pg.expect_response(lambda r: "/settings/move" in r.url) as answer:
                 pg.keyboard.press("Enter")
             ok(answer.value.ok, f"Settings: keyboard reorder at {width}px")
-            ok(pg.locator('.user-settings > hr').count() == 2 and
-               pg.locator('.user-settings > .settingrow + .settingrow').count() == 0,
-               f"Settings: dividers remain between reordered user subsections at {width}px")
             pg.reload(); pg.wait_for_load_state("networkidle")
             if not pg.locator("#menu").is_visible(): pg.click("#menubtn")
-            ok(pg.locator('.user-settings > .settingrow').first.get_attribute('data-id') == 'updates',
+            ok(pg.locator('.settings-list > .settingrow').first.get_attribute('data-id') == 'updates',
                f"Settings: browser reload retains order at {width}px")
-            pg.locator('.user-settings > .settingrow[data-id="pagelogin"] > .handle .hgrip').drag_to(
+            pg.locator('.settingrow[data-id="pagelogin"] > .handle .hgrip').drag_to(
                 pg.locator('.settingrow[data-id="updates"] .mhead, .settingrow[data-id="updates"] .srcname').first)
             pg.wait_for_timeout(300)
             pg.reload(); pg.wait_for_load_state("networkidle")
             if not pg.locator("#menu").is_visible(): pg.click("#menubtn")
-            ok(pg.locator('.user-settings > .settingrow').first.get_attribute('data-id') == 'pagelogin',
+            ok(pg.locator('.settings-list > .settingrow').first.get_attribute('data-id') == 'pagelogin',
                f"Settings: drag reorder survives reload at {width}px")
-            original = pg.locator('.user-settings > .settingrow').evaluate_all('(rows) => rows.map(r => r.dataset.id)')
-            pg.fill('#luser', 'draft')
-            pg.route('**/settings/move', lambda route: route.fulfill(status=503, body='{}', content_type='application/json'))
-            pg.locator('.user-settings .settingrow[data-id="updates"] > .handle [data-dir="up"]').click()
-            pg.wait_for_timeout(200)
-            ok(pg.locator('.user-settings > .settingrow').evaluate_all('(rows) => rows.map(r => r.dataset.id)') == original
-               and pg.input_value('#luser') == 'draft', f"Settings: failed reorder preserves order and typed fields at {width}px")
-            pg.locator('#askdialog .askchoices button').click()
-            pg.unroute('**/settings/move')
-            pg.fill('#luser', 't')
-            for _ in range(2):
-                with pg.expect_response(lambda r: '/settings/move' in r.url):
-                    pg.locator('.settings-modules > .settingrow[data-id="googlesync"] > .handle [data-dir="up"]').click()
-            pg.reload(); pg.wait_for_load_state('networkidle')
-            if not pg.locator('#menu').is_visible(): pg.click('#menubtn')
-            ok(pg.locator('.settings-modules > .settingrow').first.get_attribute('data-id') == 'googlesync',
-               f"Settings: outer modules can move ahead of Administrator at {width}px")
             pg.close()
             main.store.delete("ui_settings_order")
         browser.close()

@@ -110,7 +110,6 @@ function fitFull() {
   document.addEventListener('click', function (e) {
     var fb = e.target.closest('#fullbtn');
     if (fb) {
-      if (document.querySelector('#settingswrap .pairbtns[data-dirty]')) { tell(T.settingsPending); return; }
       var to = fb.getAttribute('aria-pressed') !== 'true';
       savePref('/ui/calview', { full: to ? '1' : '0' }, function () {
         document.body.classList.toggle('calfull', to);
@@ -120,7 +119,6 @@ function fitFull() {
         fb.title = tt; fb.setAttribute('aria-label', tt);
         var use = fb.querySelector('use'); if (use) use.setAttribute('href', '#mi-' + (to ? 'filter_none' : 'fullscreen'));
         loadCal(location.href);
-        swapIn(location.href, ['#settingswrap']).then(bindAll);
       });
       return;
     }

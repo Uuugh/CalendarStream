@@ -4,13 +4,9 @@
   var MOVE = { setting: ['/settings/move', 'id'], source: ['/sources/move', 'sid'], dest: ['/destinations/move', 'did'], rule: ['/rules/move', 'id'] };
   function rowOf(el) { return el.closest('.modrow, .ruleline, .settingrow'); }
   function rows(list) { return Array.prototype.filter.call(list.children, function (c) { return c.matches('.modrow:not(.fixed), .ruleline, .settingrow'); }); }
-  function save(row, previous) {
+  function save(row) {
     var list = row.parentNode, kind = list.dataset.kind, all = rows(list), i = all.indexOf(row),
         id = row.dataset.id || row.dataset.ruleId, nb = all[i + 1], pv = all[i - 1];
-    if (kind === 'setting' && list.classList.contains('user-settings')) {
-      list.querySelectorAll(':scope > hr').forEach(function (hr) { hr.remove(); });
-      all.forEach(function (item, index) { if (index) item.before(document.createElement('hr')); });
-    }
     var body = new URLSearchParams({ csrf: CSRF }), m = MOVE[kind];
     body.set(m[1], id);
     if (nb) body.set('before', nb.dataset.id || nb.dataset.ruleId); else if (pv) body.set('after', pv.dataset.id || pv.dataset.ruleId);
@@ -21,7 +17,7 @@
       if (sel.length) swapIn(location.href, sel).then(function () { initCal(); bindAll(); reopenEvents(); });
     }).catch(function () {
       if (kind === 'setting') {
-        if (previous) list.replaceChildren.apply(list, previous);
+        swapIn(location.href, ['#menu .settings-list']).then(bindAll);
         tell(T.prefFailed);
       }
     });
@@ -29,17 +25,17 @@
   document.addEventListener('click', function (e) {
     var b = e.target.closest('.handle .hmove');
     if (!b || b.closest('.act')) return;          // (a Then's handle in the rule dialog: 06-rules.js)
-    var row = rowOf(b), all = rows(row.parentNode), i = all.indexOf(row), previous = Array.from(row.parentNode.childNodes);
+    var row = rowOf(b), all = rows(row.parentNode), i = all.indexOf(row);
     if (b.dataset.dir === 'up' && i > 0) row.parentNode.insertBefore(row, all[i - 1]);
     else if (b.dataset.dir === 'down' && i < all.length - 1) row.parentNode.insertBefore(row, all[i + 1].nextSibling);
     else return;
-    b.focus(); save(row, previous);
+    b.focus(); save(row);
   });
-  var dragging = null, dragOrder = null;
+  var dragging = null;
   document.addEventListener('dragstart', function (e) {
     var grip = e.target.closest && e.target.closest('.hgrip');
     if (!grip || grip.closest('.act')) return;
-    dragging = rowOf(grip); dragOrder = Array.from(dragging.parentNode.childNodes); dragging.classList.add('dragging');
+    dragging = rowOf(grip); dragging.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
     try { e.dataTransfer.setData('text/plain', ''); e.dataTransfer.setDragImage(dragging, 20, 20); } catch (err) {}
   });
@@ -54,7 +50,7 @@
   document.addEventListener('drop', function (e) { if (dragging) e.preventDefault(); });
   document.addEventListener('dragend', function () {
     if (!dragging) return;
-    var row = dragging; dragging = null; row.classList.remove('dragging'); save(row, dragOrder); dragOrder = null;
+    var row = dragging; dragging = null; row.classList.remove('dragging'); save(row);
   });
 })();
 
