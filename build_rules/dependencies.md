@@ -59,7 +59,7 @@ checks this file is current; rebuild it with `python3 tests/tools/deps.py`.
 | 51 | `app/google/recovery_decision.py` | `app.google.health_state` | `app.google.health`, `app.google.recovery_policy` |
 | 52 | `app/google/traffic_log.py` | `app.google.traffic_entry` | `app.google.api`, `app.main` |
 | 53 | `app/links.py` | `app.calendars.event` | `app.main`, `app.rule_engine.ruleset`, `app.rules` |
-| 54 | `app/logins.py` | `app.secretbox` | `app.main`, `app.routes.account`, `app.routes.settings`, `app.routes.sources` |
+| 54 | `app/logins.py` | `app.secretbox` | `app.main`, `app.routes.account`, `app.routes.sources` |
 | 55 | `app/rule_engine/conflicts.py` | `app.rule_engine.schema`, `app.rules_words` | `app.rules` |
 | 56 | `app/rule_engine/text_matching.py` | `app.rule_engine.schema` | `app.rule_engine.matching`, `app.rule_engine.validation`, `app.rules` |
 | 57 | `app/runtime/change.py` | `app.services.change` | `app.main` |
@@ -76,7 +76,7 @@ checks this file is current; rebuild it with `python3 tests/tools/deps.py`.
 | 68 | `app/google/api.py` | `app.google.errors`, `app.google.traffic_entry`, `app.google.traffic_log`, `app.secretbox` | `app.google.sync`, `app.gsync` |
 | 69 | `app/google/recovery_policy.py` | `app.google.failure_kind`, `app.google.health_state`, `app.google.recovery_decision` | `app.google.health` |
 | 70 | `app/routes/account.py` | `app.logins` | `app.main`, `app.routes` |
-| 71 | `app/routes/settings.py` | `app.config`, `app.logins`, `app.updates` | `app.routes` |
+| 71 | `app/routes/settings.py` | `app.config`, `app.updates` | `app.routes` |
 | 72 | `app/routes/status.py` | `app.config`, `app.updates` | `app.routes` |
 | 73 | `app/rule_engine/matching.py` | `app.calendars.event`, `app.rule_engine.schema`, `app.rule_engine.text_matching`, `app.rules_words` | `app.rule_engine.ruleset`, `app.rules` |
 | 74 | `app/rule_engine/validation.py` | `app.rule_engine.rule_error`, `app.rule_engine.schema`, `app.rule_engine.text_matching`, `app.rules_words` | `app.rule_engine.migration`, `app.rules` |

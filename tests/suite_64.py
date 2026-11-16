@@ -1,6 +1,6 @@
 """0.2.8-beta.29 tests (the 5 Calendar build): Print on real paper (I11), the view drop-down, the 12h | 24h switch, the hourly grid, the
-Calendars and Key parts, Full page and the stretch handle (F15, F26, F27, F28), one Administrator section (F32, F33) and Look: logo,
-favicon, Animation (F14)."""
+Calendars and Key parts, Full page and the stretch handle (F15, F26, F27, F28), Login & password and Domains as their own sections
+(F32, F33; split apart again by I22 in 0.2.8-beta.45) and Look: logo, favicon, Animation (F14)."""
 import os, re, sys, asyncio
 from unittest.mock import patch
 for k in list(os.environ):
@@ -61,16 +61,16 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         r, cut = pdf("day", fmt); w, h = (float(r.pages[0].mediabox.width), float(r.pages[0].mediabox.height))
         ok(h > w and cut == 0, f"I11: a day is portrait {fmt}")
     r, cut = pdf("week", "Letter"); ok(len(r.pages) >= 2 and cut == 0, f"I11: each week gets its own page ({len(r.pages)})")
-    # --- F32, F33: one Administrator section ---
+    # --- I22 (0.2.8-beta.45): Login & password and Domains are separate, each its own Cancel | Save ---
     p = page("?menu=settings")
-    ok('id="adminform"' in p and p.count('action="/settings/public-url"') == 0 and p.count('action="/settings/login"') == 0 and ">Sign out<" in p and ">Signed in<" in p,
-       "F32: Administrator and Public address are one form; Signed in over Sign out")
-    ok(post("/settings/administrator", user="t", password="", current="", confirm="", main="https://cal.example.com", url=["https://b.example.org"]).status_code == 303 and main.store.get("public_urls_extra") == ["https://b.example.org"],
-       "F32: the addresses save without the current password")
-    r = post("/settings/administrator", user="t", password="", current="", confirm="", main="not an address")
-    ok(r.status_code == 400 and "main" in r.headers.get("x-cs-fields", ""), "F32: a bad address is refused, naming its field")
-    r = post("/settings/administrator", user="boss", password="", current="wrong", confirm="", main="https://cal.example.com")
-    ok(r.status_code == 400 and "current" in r.headers.get("x-cs-fields", "") and main.logins.page_user == "t", "F32: a new user name needs the current password")
+    ok('id="loginform"' in p and 'id="domainsform"' in p and p.count('action="/settings/public-url"') == 0 and ">Sign out<" in p and ">Signed in<" in p,
+       "I22: Login & password and Domains are separate forms; Signed in over Sign out stays with Login & password")
+    ok(post("/settings/domains", main="https://cal.example.com", url=["https://b.example.org"]).status_code == 303 and main.store.get("public_urls_extra") == ["https://b.example.org"],
+       "I22: the addresses save on their own, no login fields involved")
+    r = post("/settings/domains", main="not an address")
+    ok(r.status_code == 400 and "main" in r.headers.get("x-cs-fields", ""), "I22: a bad address is refused, naming its field")
+    r = post("/settings/login", user="boss", password="", current="wrong", confirm="")
+    ok(r.status_code == 400 and "current" in r.headers.get("x-cs-fields", "") and main.logins.page_user == "t", "I22: a new user name needs the current password, on Login & password's own form")
     # --- F14: Look ---
     PNG = b"\x89PNG\r\n\x1a\n" + b"0" * 40
     ok(c.get("/brand/logo").status_code == 404, "F14: no logo uploaded: CalendarStream's own")

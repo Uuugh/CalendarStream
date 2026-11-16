@@ -446,6 +446,7 @@ def register_routes(
         setattr(_routes_history, _name, _value)
 
     for _name, _value in _routes_account.register(
+        FieldError=FieldError,
         KNOWN_COOKIE=KNOWN_COOKIE,
         KNOWN_DAYS=KNOWN_DAYS,
         SESSION_COOKIE=SESSION_COOKIE,
@@ -474,23 +475,18 @@ def register_routes(
         EMAIL_RE=EMAIL_RE,
         FieldError=FieldError,
         GOOGLE_SETTINGS=GOOGLE_SETTINGS,
-        SESSION_COOKIE=SESSION_COOKIE,
-        _count_failure=_count_failure,
         app=app,
         auto_update=auto_update,
         check_csrf=check_csrf,
         google=google,
         gui_auth=gui_auth,
-        logins=logins,
         mark_updating=mark_updating,
         public_url=public_url,
-        renew_csrf=renew_csrf,
         state=state,
         store=store,
         updater=updater,
         updates=updates,
         get___version__=get___version__,
-        get__client_ip=get__client_ip,
     ).items():
         setattr(_routes_settings, _name, _value)
 

@@ -12,8 +12,6 @@ from fastapi import Depends, Form, HTTPException, Request, UploadFile
 from fastapi.responses import RedirectResponse, Response
 from ..config import normalise_public_url
 from ..updates import UpdaterError
-from fastapi.responses import JSONResponse
-from ..logins import LoginError
 
 
 def register(
@@ -21,23 +19,18 @@ def register(
     EMAIL_RE,
     FieldError,
     GOOGLE_SETTINGS,
-    SESSION_COOKIE,
-    _count_failure,
     app,
     auto_update,
     check_csrf,
     google,
     gui_auth,
-    logins,
     mark_updating,
     public_url,
-    renew_csrf,
     state,
     store,
     updater,
     updates,
     get___version__,
-    get__client_ip,
 ):
     """Register this area; return legacy helper exports for the composition layer."""
 
@@ -168,22 +161,18 @@ def register(
             state.record("info", f"Admin e-mail set to {email}")
         return RedirectResponse("/?menu=settings#admin", status_code=303)
 
-    @app.post("/settings/administrator", dependencies=[Depends(gui_auth)])
-    async def set_administrator(request: Request, csrf: str = Form("")):
-        """☰ Settings › Administrator (0.2.8-beta.29, F32): the public address, the more addresses and the status-page
-        login in one Cancel | Save. The addresses are applied first; a changed user name or password needs the
-        current password, and ends every session (this browser is sent to the sign-in page).
+    # Login & password has its own route, app/routes/account.py's change_login ("/settings/login",
+    # 0.2.8-beta.45, I22) — it already existed (unwired) and is now what the template's login form posts to.
+
+    @app.post("/settings/domains", dependencies=[Depends(gui_auth)])
+    async def set_domains(request: Request, csrf: str = Form("")):
+        """☰ Settings › Domains (0.2.8-beta.45, I22): the public address and any extra addresses, on their
+        own Cancel | Save, separate from Login & password. (0.2.8-beta.33, F56) a changed (or newly set)
+        main address breaks Google's redirect URI match, which Google sign-in uses: prompt to fix it,
+        since it always becomes unhealthy otherwise.
         """
         check_csrf(csrf)
         form = await request.form()
-        user, password = str(form.get("user", "")).strip(), str(
-            form.get("password", "")
-        )
-        current, confirm = str(form.get("current", "")), str(form.get("confirm", ""))
-        login_changed = bool(password) or (user not in ("", logins.page_user))
-        if login_changed and not logins.check_page_login(logins.page_user, current):
-            _count_failure(get__client_ip()(request))
-            raise FieldError("The current password isn't right.", "current")
         main = str(form.get("main", "")).strip()
         found, bad = [], []
         for i, url in enumerate(form.getlist("url")):
@@ -204,18 +193,6 @@ def register(
                 *(["main"] if value is None else []),
                 *bad,
             )
-        if login_changed:
-            try:
-                logins.set_page_login(
-                    user or logins.page_user,
-                    password or current,
-                    confirm if password else None,
-                    strict=bool(password),
-                )
-            except LoginError as e:
-                raise HTTPException(400, str(e))
-        # (0.2.8-beta.33, F56) a changed (or newly set) main address breaks Google's redirect URI match, which Google
-        # sign-in uses: prompt to fix it, since it always becomes unhealthy otherwise.
         domain_changed = bool(value) and value != (public_url() or "")
         if value != (public_url() or ""):
             if value:
@@ -226,21 +203,13 @@ def register(
                 state.record("info", "Public address removed")
         found = [x for x in dict.fromkeys(found) if x != public_url()]
         store.set("public_urls_extra", found)
-        if login_changed:
-            renew_csrf()
-            state.record(
-                "info", f'Status-page login changed (user "{logins.page_user}")'
-            )
-            back = JSONResponse({"redirect": "/login"})
-            back.delete_cookie(SESSION_COOKIE)
-            return back
         if domain_changed and google.configured:
             return RedirectResponse(
                 GOOGLE_SETTINGS.replace("?menu=settings", "?menu=settings&fixapi=1"),
                 status_code=303,
             )
         return RedirectResponse(
-            GOOGLE_SETTINGS.replace("#googlesync", "#public"), status_code=303
+            GOOGLE_SETTINGS.replace("#googlesync", "#domains"), status_code=303
         )
 
     # --- Look: logo, favicon, animation (0.2.8-beta.29, F14) --------------------------------
@@ -350,7 +319,7 @@ def register(
         "_image_kind": _image_kind,
         "brand_image": brand_image,
         "set_admin_email": set_admin_email,
-        "set_administrator": set_administrator,
+        "set_domains": set_domains,
         "set_look": set_look,
         "set_public_extra": set_public_extra,
         "set_public_url": set_public_url,

@@ -168,10 +168,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop):
         pg.fill("#lnew", "newpassword1"); pg.wait_for_timeout(50)
         ok(pg.is_visible("#lcur") and pg.is_visible("#lconf") and pg.is_visible("#pagelogin .psave") and pg.eval_on_selector("#lcur", "e => e.required"), "typing a new password asks for the current one and shows Save")
         groups = [pg.locator("#menu .mgroup").nth(i).get_attribute("id") for i in range(pg.locator("#menu .mgroup").count())]
-        # (0.2.8-beta.40, F47) default order: Administrator, Updates, Theme, then any other modules
-        ok(groups == ["pagelogin", "updates", "look", "googlesync"], f"Settings: site settings only, Google Calendar sync among them, the admin e-mail inside it (0.2.8-beta.15) ({groups})")
+        # default order: Login & password, Domains, Updates, Theme, then any other modules
+        ok(groups == ["pagelogin", "domains", "updates", "look", "googlesync"], f"Settings: site settings only, Google Calendar sync among them, the admin e-mail inside it (0.2.8-beta.15) ({groups})")
         box = pg.locator("#publicurl").bounding_box(); btn = pg.locator("#usethis").bounding_box()
-        ok(btn["x"] > box["x"] and btn["x"] + btn["width"] <= box["x"] + box["width"], "This page inside the box (beta.29: one Administrator form, one Cancel | Save)")
+        ok(btn["x"] > box["x"] and btn["x"] + btn["width"] <= box["x"] + box["width"], "This page inside the box (Domains: its own form, its own Cancel | Save)")
         pg.locator("#menu").screenshot(path=os.path.join(tempfile.gettempdir(), "cs-menu4.png"))
         pg.goto("http://127.0.0.1:8094/event?date=2026-10-12&month=2026-10"); pg.wait_for_timeout(200)
         pg.check("#end_tz_differs"); pg.click("#end_time"); pg.wait_for_timeout(100)

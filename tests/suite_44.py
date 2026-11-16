@@ -436,7 +436,8 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
             "fix API pop-up (suite 67)": "Changing or setting the public address (0.2.8-beta.33, F56)",
             "12h24h segmented switch (suite 21/64/66)": "12h | 24h (0.2.8-beta.40, F15.2",
             "12h24h hollow clock icon (suite 79)": "12h | 24h (0.2.8-beta.41, F15.2 reworked again, Bad Nov 7/12",
-            "stretch bar centered (suite 79)": "The stretch control (0.2.8-beta.41, F51 new spec)"}
+            "stretch bar centered (suite 79)": "The stretch control (0.2.8-beta.41, F51 new spec)",
+            "Login & password / Domains split (suite 19, 22, 37, 38, 64, 67)": "Login & password and Domains (0.2.8-beta.45"}
     bullets = [x for x in re.split(r"\n- ", CLAR) if x.strip()][1:]
     unchecked = [x.split("\n")[0][:60] for x in bullets if not any(k in " ".join(x.split()) for k in keys.values())]
     ok(not unchecked, f"every Clarification in theme.md has a check in this suite (none unchecked: {unchecked})")

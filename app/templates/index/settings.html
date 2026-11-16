@@ -4,22 +4,20 @@
       </button>
       <div class="menu" id="menu" role="dialog" aria-label="{{ _('Settings') }}" hidden>
         <div class="title">{{ _('Settings') }}</div>
-        {# (0.2.8-beta.29, F32, F33) One Administrator section: the status page's login and its public addresses, one form,
-           one Cancel | Save. Its Status/Action box says "Signed in" over "Sign out"; the action half becomes the pair
+        {# (0.2.8-beta.45, I22) Login & password is its own section, its own Cancel | Save, separate from
+           Domains below (each keeps its own Save: the Developer asked that these not be combined). Its
+           Status/Action box says "Signed in" over "Sign out"; the action half becomes the pair
            (Cancel | Save, at the action's text size) as soon as something is changed. The current password is asked
            for only when the user name or the password changes. #}
         <div class="mgroup" id="pagelogin">
-          <div class="mhead">{{ _('Administrator') }}</div>
+          <div class="mhead">{{ _('Login & password') }}</div>
           <form method="post" action="/logout" id="signoutform" class="signout"><input type="hidden" name="csrf" value="{{ csrf }}"></form>
-          {# data-swap includes #googlesync too (0.2.8-beta.33, F56): a changed address can make Google Calendar
-             API Sync's own assist box appear (its redirect URI no longer matches), so it's redrawn at once,
-             not only after a reload - which is when the pop-up this triggers (07-saving.js) says to look at it. #}
-          <form method="post" action="/settings/administrator" id="adminform" class="clientform adminform" autocomplete="off" data-swap="#pagelogin|#destinations|#googlesync">
+          <form method="post" action="/settings/login" id="loginform" class="clientform loginform" autocomplete="off" data-swap="#pagelogin">
             <input type="hidden" name="csrf" value="{{ csrf }}">
             <div class="module bare adminhead"><div class="statusbox adminbox {{ 'good' if page_user else 'warn' }}" style='--ic-x:{{ icon_mask("close") }};--ic-ok:{{ icon_mask("check") }}'>
               {{ chip('good' if page_user else 'warn', _('Signed in') if page_user else _('Not signed in')) }}
               <span class="syncform adminact"><button type="submit" form="signoutform" class="syncnow" data-state="idle"><span class="sn idle">{{ icon("logout", 14) }}{{ _('Sign out') }}</span></button></span>
-              {{ pair("adminform") }}
+              {{ pair("loginform") }}
             </div></div>
             <div class="pair">
               <label class="fld" for="luser"><span>{{ _('User name') }}</span>
@@ -34,6 +32,18 @@
                 <input type="password" id="lconf" name="confirm" autocomplete="new-password"></label>
             </div>
             <p class="mnote more" style="margin:6px 0 0" hidden>{{ _('Then sign in again with the new login.') }}</p>
+          </form>
+        </div>
+
+        {# (0.2.8-beta.45, I22) Domains is its own section, its own Cancel | Save, separate from Login &
+           password above. data-swap includes #googlesync too (0.2.8-beta.33, F56): a changed address can
+           make Google Calendar API Sync's own assist box appear (its redirect URI no longer matches), so
+           it's redrawn at once, not only after a reload - which is when the pop-up this triggers
+           (07-saving.js) says to look at it. #}
+        <div class="mgroup" id="domains">
+          <div class="mhead">{{ _('Domains') }}</div>
+          <form method="post" action="/settings/domains" id="domainsform" class="clientform domainsform" autocomplete="off" data-swap="#domains|#destinations|#googlesync">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
             {# (0.2.8-beta.32, I22) one unified list of address rows: the domain row (the page's own address) first,
                then any extra addresses below, every row with its own trash can. Trashing an extra row takes it
                out; trashing the domain row always just clears it, since it's the only row that can never be
@@ -59,6 +69,7 @@
             <template class="extratpl"><div class="extrarow"><input type="text" class="code" name="url" value="" spellcheck="false" placeholder="https://calendar.example.org" aria-label="{{ _('Public address') }}">
               <button type="button" class="ghost iconbtn extradel" title="{{ _('Take this address out') }}" aria-label="{{ _('Take this address out') }}">{{ trash }}</button>
               <button type="button" class="ghost iconbtn extraadd" title="{{ _('Add an address') }}" aria-label="{{ _('Add an address') }}">{{ icon("add", 18) }}</button></div></template>
+            <div class="mfoot">{{ pair("domainsform") }}</div>
           </form>
         </div>
 
@@ -66,7 +77,8 @@
         {# Updates (0.2.8-beta.5) laid out like a module header, with nothing to expand: its title over the
            channel, the state over the next check (on the right), and the status box: the state over
            Check now (or Update). Under it, how often to check and Auto-update, changed in place.
-           0.2.8-beta.33, F47: moved to the top of the menu, above Administrator; 0.2.8-beta.40, F47: default order is now Administrator, Updates, Theme, then any other modules. #}
+           Default order: Login & password, Domains, Updates, Theme, then any other modules (0.2.8-beta.45:
+           Domains split out of what used to be one Administrator section). #}
         {# (0.2.8-beta.33, F53) up to date shows the running version itself ("v1.2.3"), not a plain "Up to date" #}
         {% set ucls, ulabel = ("run", _('Update available')) if update.available else (("good", _('v{v}', v=version)) if update.info.newest else ("run", _('Not checked'))) %}
         <div class="mgroup" id="updates">

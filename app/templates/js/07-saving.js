@@ -284,10 +284,10 @@ new MutationObserver(function () { clearTimeout(pairRefresh.t); pairRefresh.t = 
 pairRefresh();
 
 
-// (0.2.8-beta.29, F32) Settings > Administrator: the current password and the repeat are asked for only while the
-// user name or the password is changed; Cancel puts them away again.
+// (0.2.8-beta.29, F32; 0.2.8-beta.45, I22: Login & password's own form) the current password and the repeat
+// are asked for only while the user name or the password is changed; Cancel puts them away again.
 (function () {
-  var f = document.getElementById('adminform');
+  var f = document.getElementById('loginform');
   if (!f || f._admin) return;
   f._admin = true;
   function more() {

@@ -485,6 +485,10 @@ one here, with its card.
 - Administrator's public addresses (0.2.8-beta.32, I22) are one list of rows (the page's own address first, then any others), each with its own
   trash can; + sits at the end of the first row. Trashing an extra row takes it out; trashing the domain row always clears it instead, never
   removing the row itself (0.2.8-beta.33: it holds the only + button, so removing it would leave no way to ever add one back). (Suite 66, Suite 67)
+- Login & password and Domains (0.2.8-beta.45, I22, superseding the above: Administrator is split back into two sections, each its own Cancel
+  | Save — not combined, each keeps its own) — Login & password keeps the status box, Sign out and the login fields; Domains keeps the one
+  list of address rows just above, unchanged otherwise. Default order: Login & password, Domains, Updates, Theme, then any other modules.
+  (Suite 19, 22, 37, 38, 64, 67)
 - The event pop-up's Different end time zone (0.2.8-beta.32, I31) has the tooltip "End Time zone"; the pop-up never resizes as All-day Event or
   Different end time zone are ticked (its height is planned for both on at once). (Suite 66)
 - The first theme after install (0.2.8-beta.32, F38) is System. Every section's `.card` padding is 12 px, not 18 (the margin is unchanged); the

@@ -16,6 +16,7 @@ from ..logins import LoginError
 
 def register(
     *,
+    FieldError,
     KNOWN_COOKIE,
     KNOWN_DAYS,
     SESSION_COOKIE,
@@ -231,12 +232,14 @@ def register(
         password: str = Form(""),
         confirm: str = Form(""),
     ):
-        """Change the status-page user name and/or password (Settings menu). Needs the current password."""
+        """☰ Settings › Login & password (0.2.8-beta.45, I22): its own Cancel | Save, separate from Domains.
+        Needs the current password; the Save button itself (dirty-tracked, 07-saving.js) only appears once
+        the user name or password is actually changed, so this is only reached then."""
         check_csrf(csrf)
         ip = get__client_ip()(request)
         if not logins.check_page_login(logins.page_user, current):
             _count_failure(ip)
-            raise HTTPException(400, "The current password isn't right.")
+            raise FieldError("The current password isn't right.", "current")
         try:
             logins.set_page_login(
                 user or logins.page_user,

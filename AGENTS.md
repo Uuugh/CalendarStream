@@ -95,7 +95,7 @@ behavior, including late-bound state collaborators, linked-event recursion and s
 | `events.py` | `/event`, `/event/…` (save, hide, revert, restore, alarms, delete, done, pick: Link to › Event's small calendar, `event-pick.html`) |
 | `history.py` | `/history/…` (undo, keep, container log) |
 | `account.py` | `/welcome`, `/login`, `/unlock/{token}`, `/logout`, `/settings/login` |
-| `settings.py` | `/settings/administrator`, `/settings/look`, `/brand/{kind}`, `/settings/public-url`, `/settings/public-extra`, `/settings/admin-email`, `/settings/updates`, `/update/now` |
+| `settings.py` | `/settings/login`, `/settings/domains`, `/settings/look`, `/brand/{kind}`, `/settings/public-url`, `/settings/public-extra`, `/settings/admin-email`, `/settings/updates`, `/update/now` |
 | `google.py` | `/google/…`, `/invite/{token}` |
 | `status.py` | `/api/status`, `/report/data`, `/debug/{name}`, `/healthz` |
 

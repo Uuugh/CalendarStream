@@ -124,11 +124,14 @@
 .adminbox .pairbtns button { flex:1 1 0; height:24px; min-height:0; padding:0 4px; font-size:12.5px; border-radius:6px }
 .adminbox:has(.pairbtns[data-dirty], .pairbtns:not([data-state="idle"])) .pairbtns { display:flex }
 .adminbox:has(.pairbtns[data-dirty], .pairbtns:not([data-state="idle"])) .adminact { visibility:hidden }
-.adminform .extrarows { margin-top:4px }
-.adminform .domainrow .inbox { flex:1 1 180px }
+.domainsform .extrarows { margin-top:4px }
+.domainsform .domainrow .inbox { flex:1 1 180px }
 /* (0.2.8-beta.40, F11 I22) every address row carries its own + in markup; only the row that's currently last
    shows it, so adding a row moves the + down with it and removing one brings it back up automatically. */
-.adminform .extrarow:not(:last-child) .extraadd { display:none }
+.domainsform .extrarow:not(:last-child) .extraadd { display:none }
+/* (0.2.8-beta.45, I22) Domains got its own Cancel | Save when it split out of Administrator; same footer
+   layout as Theme's below. */
+.domainsform .mfoot { display:flex; justify-content:flex-end; gap:8px; margin-top:8px }
 
 /* (0.2.8-beta.29, F14) Settings > Look */
 .lookform input[type=range] { width:100%; accent-color:var(--run) }
