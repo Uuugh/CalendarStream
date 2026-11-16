@@ -32,6 +32,12 @@
              background:var(--card); color:var(--muted); border:1px solid var(--line); border-radius:var(--r) }
   .iconbtn:hover { background:var(--soft) }
   .menuwrap { position:relative }
+  /* (0.2.8-beta.45, F65) #menubtn and .settingsnav are both children of .menuwrap, so the drawer's own
+     10 (.menu's z-index) stacks directly against its sibling the ☰ button, not against .menuwrap's own
+     context - a plain, unpositioned button always paints under any positioned sibling regardless of
+     z-index, so without this the fixed, viewport-covering drawer would sit over the very button that
+     opened it, and a second click (to close it again) could never reach the button underneath. */
+  #menubtn { position:relative; z-index:11 }
   /* Settings: a light blue panel (the same blue as the Sync Now box), so it stands out from the page. */
   .menu { position:absolute; right:0; top:calc(100% + 6px); width:min(420px, calc(100vw - 32px)); z-index:10; background:var(--runbg);
           border:1px solid var(--line); border-radius:var(--r); box-shadow:0 8px 24px rgba(0,0,0,.18); padding:12px 14px }

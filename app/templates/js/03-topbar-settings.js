@@ -290,9 +290,18 @@ document.getElementById('usethis').addEventListener('click', function () {
     // say so, since the menu opening by itself isn't enough to notice it (the settings.py route's full-page
     // fallback, for when its form is submitted without JS; the AJAX path's own prompt is in 07-saving.js).
     if (PAGE.fixApi) tell(T.fixApi);
+    refreshUpdatesIfOpen();   // opened by itself (above), same as any other opening below
   }
   each('.disconnectform', 'disconnect', function (f) { guard(f, T.disconnect); });
 })();
+// (0.2.8-beta.45, I2) Auto-update's toggle only drew once, when the page itself loaded; opened again
+// later it still showed that, not what the server holds now (changed on another browser meanwhile, even
+// on the same PC - reported: off in Safari, still on in Brave after a fresh ☰ Settings open). Re-fetch
+// Updates each time ☰ Settings actually opens (dropdown()'s own listener runs first and has already
+// flipped #menu.hidden by the time this one does) - the normal-mode case; Full page's own Updates
+// pop-up is covered where it's opened, in the F65 slide-out handler below.
+function refreshUpdatesIfOpen() { if (!document.getElementById('menu').hidden) swapFresh(['#updates', '.topbar .ver']); }
+document.getElementById('menubtn').addEventListener('click', refreshUpdatesIfOpen);
 
 // (0.2.8-beta.45, F65) Full page's ☰ Settings is a slide-out of Configure / User / Site Admin
 // (.settingsnav; absent in normal mode, where the mgroups stay inline as before). Clicking an item

@@ -1,6 +1,8 @@
 """0.2.8-beta.45 tests (Build E, in a browser): F65's slide-out actually opens the right pop-up and moves a
-Configure section there and back; I2's auto-update toggle (and frequency) reverts to what the server actually
-holds when a self-submitting change is refused, instead of keeping the rejected click on screen."""
+Configure section there and back; I2's auto-update toggle shows the live server state every time ☰ Settings
+(or, in Full page, its own Updates pop-up) opens - not only what was true when the page itself last loaded -
+and also reverts to it when a self-submitting change is refused, instead of keeping the rejected click on
+screen."""
 import os, re, sys, threading, time
 os.environ.update(DB_HOST=os.environ.get("TEST_DB_HOST", "127.0.0.1"), DB_PORT=os.environ.get("TEST_DB_PORT", "5432"), DB_NAME=sys.argv[1], DB_USER=os.environ.get("TEST_DB_USER", "ccs"), DB_PASSWORD=os.environ.get("TEST_DB_PASSWORD", "testpw"),
                   GUI_USERNAME="t", GUI_PASSWORD="password1", TZ="America/New_York", PUBLIC_URL="https://cal.example.com")
@@ -51,7 +53,20 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         ok(pg.is_visible("#setting-pagelogin input[name=user]"), "…with the real login form inside it")
         pg.click("#setting-pagelogin .dlgback"); pg.wait_for_timeout(200)
 
-        # --- I2: a refused auto-submit change reverts to the live server state ---
+        # --- I2: ☰ Settings reflects the live server state every time it opens, not only what was true
+        # when the page itself last loaded (reported: changed in one browser, another on the same PC still
+        # showed the old value after a fresh ☰ Settings open) ---
+        pg.click('.settingsnav [data-setting="updates"]'); pg.wait_for_timeout(200)
+        before = pg.eval_on_selector('#setting-updates input[name=auto]', "i => i.checked")
+        pg.click("#setting-updates .dlgback"); pg.wait_for_timeout(200)
+        post("/settings/updates", frequency="hourly", auto=("" if before else "1"), autoform="1")   # another "browser" changes it
+        pg.click("#menubtn"); pg.wait_for_timeout(100); pg.click("#menubtn"); pg.wait_for_timeout(300)   # close, then re-open ☰ Settings
+        pg.click('.settingsnav [data-setting="updates"]'); pg.wait_for_timeout(200)
+        after = pg.eval_on_selector('#setting-updates input[name=auto]', "i => i.checked")
+        ok(after != before, f"I2: re-opening ☰ Settings shows what another browser just set, not the stale page-load value (was {before}, now {after})")
+        pg.click("#setting-updates .dlgback"); pg.wait_for_timeout(200)
+
+        # --- I2 (secondary): a refused auto-submit change reverts to the live server state too ---
         pg.click('.settingsnav [data-setting="updates"]'); pg.wait_for_timeout(200)
         was = pg.eval_on_selector('#setting-updates input[name=auto]', "i => i.checked")
         pg.route("**/settings/updates", lambda route: route.fulfill(status=400, content_type="application/json", body='{"detail":"refused"}'))

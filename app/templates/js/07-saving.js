@@ -120,16 +120,19 @@ function swapFrom(html, selectors) {
   bindAll();
   if (selectors.indexOf('#cal') >= 0 && typeof reopenEvents === 'function') reopenEvents();     // (0.2.8-beta.28, I9) events opened in the calendar stay open after a module's Save
 }
-// (0.2.8-beta.45, I2) Re-draws a form's own data-swap sections from what the server actually holds right
-// now, with nothing posted - used after a self-submitting control's change is refused, so it shows the
-// live server state instead of the rejected click.
-function resyncForm(f) {
-  var sels = (f.dataset.swap || '').split('|').filter(Boolean);
+// (0.2.8-beta.45, I2) Re-draws the given sections from what the server actually holds right now, with
+// nothing posted: Auto-update (and Check for updates) show whatever was true when the page itself last
+// loaded, with no Cancel | Save pair to fall back to - changed on another browser (even the same PC's),
+// that's stale the moment ☰ Settings (or, in Full page, the Updates pop-up) is opened again, not only
+// after a refused save. 03-topbar-settings.js calls this when either one opens; resyncForm, below, calls
+// it after a refused save puts the rejected click back to the live state the same way.
+function swapFresh(sels) {
   if (!sels.length) return;
   fetch(location.pathname + location.search, { cache: 'no-store', credentials: 'same-origin' })
     .then(function (r) { return r.text(); })
     .then(function (html) { swapFrom(html, sels); });
 }
+function resyncForm(f) { swapFresh((f.dataset.swap || '').split('|').filter(Boolean)); }
 function sendSwap(f, body) {
   var sels = (f.dataset.swap || '').split('|').filter(Boolean);
   return fetch(f.getAttribute('action'), { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })

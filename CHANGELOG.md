@@ -9,7 +9,25 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.45**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.46**
+
+## 0.2.8-beta.46 — 2026-11-15
+
+**I2**, completed: beta.45 only fixed Auto-update's toggle after a refused save; the Developer's own report
+(and reproduction) was about opening ☰ Settings itself, on a different browser from where the change was
+made, with no save involved at all.
+
+### Fixed
+- **I2** Auto-update's toggle (and Check for updates frequency) only ever drew once, when the page itself
+  loaded, and reading it again later — even by opening ☰ Settings fresh — still showed that, not what the
+  server actually holds now. Reported: switched off in Safari, still showed on in Brave on the same PC after
+  a fresh ☰ Settings open. It now re-fetches Updates live every time ☰ Settings (or, in Full page, its own
+  Updates pop-up) opens. (`app/templates/js/03-topbar-settings.js`'s `refreshUpdatesIfOpen()`,
+  `app/templates/js/07-saving.js`'s new `swapFresh()`, shared with beta.45's own refused-save fix; suite 81)
+- **F65** The slide-out (`position:fixed`, covering the full right edge of the screen) sat over the very ☰
+  button that opens it, since button and drawer are siblings and an unpositioned button always paints under
+  a positioned sibling regardless of z-index: a second click, to close it again, couldn't reach the button.
+  `#menubtn` now stays on top. (`app/styles/02-topbar-settings.css`)
 
 ## 0.2.8-beta.45 — 2026-11-15
 
