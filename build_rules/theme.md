@@ -489,6 +489,12 @@ one here, with its card.
   | Save — not combined, each keeps its own) — Login & password keeps the status box, Sign out and the login fields; Domains keeps the one
   list of address rows just above, unchanged otherwise. Default order: Login & password, Domains, Updates, Theme, then any other modules.
   (Suite 19, 22, 37, 38, 64, 67)
+- Full page's ☰ Settings (0.2.8-beta.45, F65: full page hides the Calendars/Feeds/All Rules/Event Templates/History sections, so Settings
+  becomes a slide-out from the right instead of the normal dropdown's inline list) — grouped Configure (those hidden sections, each moved
+  for real into one shared pop-up and put back when it's closed, so nothing in them is duplicated), User (Login & password) and Site Admin
+  (Domains, Updates, Theme, Google Calendar API Sync); every item opens its own pop-up, the exact layout of its non-fullscreen section, never
+  shown inline in the slide-out itself. Configure is full-page-only: the normal dropdown has no such group. No reordering (F47/I45 stay
+  dropped). (Suite 80)
 - The event pop-up's Different end time zone (0.2.8-beta.32, I31) has the tooltip "End Time zone"; the pop-up never resizes as All-day Event or
   Different end time zone are ticked (its height is planned for both on at once). (Suite 66)
 - The first theme after install (0.2.8-beta.32, F38) is System. Every section's `.card` padding is 12 px, not 18 (the margin is unchanged); the

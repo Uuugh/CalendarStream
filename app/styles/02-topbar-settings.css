@@ -53,8 +53,33 @@
   .menu .pair.updrow select { width:100%; height:34px }
   .menu .autoupd { flex:0 0 auto; height:34px; margin:0; font-size:13px; font-weight:600; white-space:nowrap }
   .menu .autoupd input:disabled + * , .menu .autoupd:has(input:disabled) { color:var(--muted) }
+  /* (0.2.8-beta.45, F65) A full-mode settingspop pop-up holds the exact same markup as a non-fullscreen
+     mgroup, wrapped in its own .menu so it reuses every ".menu X" content rule above for free; only the
+     positioning/chrome rules (this dropdown's own box, sizing, scrolling) are neutralized here, since the
+     pop-up (dialog.popup) already supplies its own. */
+  .settingspop .menu { position:static; width:auto; max-width:none; z-index:auto; background:none; border:0;
+                        border-radius:0; box-shadow:none; padding:0; max-height:none; overflow:visible }
   /* The menu scrolls when taller than the window. */
   .menu { max-height:calc(100vh - 80px); overflow-y:auto }
+  /* (0.2.8-beta.45, F65) Full page's ☰ Settings: a drawer sliding in from the right edge of the screen,
+     not the normal dropdown under the button - grouped into Configure / User / Site Admin, each item
+     opening its own pop-up (settingspop, above) rather than showing its fields in place. */
+  .settingsnav { position:fixed; top:0; right:0; bottom:0; left:auto; width:min(320px, 86vw); max-height:none;
+                 border-radius:0; border-width:0 0 0 1px; box-shadow:-8px 0 24px rgba(0,0,0,.18);
+                 padding:16px 14px; overflow-y:auto; transform:translateX(0); animation:navin .2s ease-out }
+  .settingsnav[hidden] { display:none }
+  @keyframes navin { from { transform:translateX(100%) } to { transform:translateX(0) } }
+  @media (prefers-reduced-motion:reduce) { .settingsnav { animation:none } }
+  .settingsnav .navgroup { margin-top:14px }
+  .settingsnav .navgroup:first-of-type { margin-top:10px }
+  .settingsnav .navhead { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;
+                           color:var(--muted); margin:0 2px 6px }
+  .settingsnav .navitem { display:flex; align-items:center; gap:10px; width:100%; height:40px; padding:0 10px;
+                           background:none; border:0; border-radius:var(--r); font-size:14px; color:var(--text);
+                           text-align:left }
+  .settingsnav .navitem:hover, .settingsnav .navitem:focus-visible { background:var(--soft) }
+  .settingsnav .navitem svg { flex:0 0 auto; color:var(--muted) }
+  @media (max-width:700px) { .settingsnav { width:100vw } }
   /* Settings holds Google Calendar sync too (0.2.8-beta.4): wider, so its Client ID | secret row fits */
   .menu { width:min(560px, calc(100vw - 32px)) }
   #googlesync .mhead .gstate { margin-left:auto; display:flex }

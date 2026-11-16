@@ -120,6 +120,16 @@ function swapFrom(html, selectors) {
   bindAll();
   if (selectors.indexOf('#cal') >= 0 && typeof reopenEvents === 'function') reopenEvents();     // (0.2.8-beta.28, I9) events opened in the calendar stay open after a module's Save
 }
+// (0.2.8-beta.45, I2) Re-draws a form's own data-swap sections from what the server actually holds right
+// now, with nothing posted - used after a self-submitting control's change is refused, so it shows the
+// live server state instead of the rejected click.
+function resyncForm(f) {
+  var sels = (f.dataset.swap || '').split('|').filter(Boolean);
+  if (!sels.length) return;
+  fetch(location.pathname + location.search, { cache: 'no-store', credentials: 'same-origin' })
+    .then(function (r) { return r.text(); })
+    .then(function (html) { swapFrom(html, sels); });
+}
 function sendSwap(f, body) {
   var sels = (f.dataset.swap || '').split('|').filter(Boolean);
   return fetch(f.getAttribute('action'), { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-CS-Async': '1' } })
@@ -221,7 +231,15 @@ document.addEventListener('submit', function (e) {
       var note = document.createElement('p'); note.className = 'pairfail' + (inside ? ' inside' : ''); note.innerHTML = (inside ? ICON.fail : ICON.warn) + esc(err.message);
       pair.parentNode.appendChild(note);
       setTimeout(function () { if (pair.dataset.state === 'failed') pairState(pair, 'idle'); }, 4000);
-    } else tell(err.message);
+    } else {
+      tell(err.message);
+      // (0.2.8-beta.45, I2) A control that submits itself on change (no Cancel | Save pair, no submit
+      // button to disable) already shows what was clicked, native to the input, before the server is
+      // asked - a refused change (another tab's auto-update toggle beat it, say) left that shown as if
+      // it had saved. Put back what the server actually holds, the same way a successful save's swap
+      // would have, instead of just reporting the failure over a wrong display.
+      if (!btn) resyncForm(f);
+    }
   });
 });
 document.addEventListener('click', function (e) {

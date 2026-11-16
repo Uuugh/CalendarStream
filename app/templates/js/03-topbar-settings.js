@@ -294,3 +294,41 @@ document.getElementById('usethis').addEventListener('click', function () {
   each('.disconnectform', 'disconnect', function (f) { guard(f, T.disconnect); });
 })();
 
+// (0.2.8-beta.45, F65) Full page's ☰ Settings is a slide-out of Configure / User / Site Admin
+// (.settingsnav; absent in normal mode, where the mgroups stay inline as before). Clicking an item
+// closes the slide-out and opens that setting's own pop-up (its id is "setting-" + data-setting, the
+// exact layout of its non-fullscreen mgroup); its Back re-opens the slide-out. A Configure item instead
+// moves the real section (hidden by body.calfull .sections, 19-calendar.css) for real into the shared
+// #configure-popup, and moves it straight back where it came from once that pop-up closes - so every id,
+// form and listener already in that section keeps working, nothing in it is copied.
+(function () {
+  var nav = document.querySelector('.settingsnav');
+  if (!nav) return;
+  var menu = document.getElementById('menu'), menubtn = document.getElementById('menubtn');
+  function closeNav() { menu.hidden = true; menubtn.setAttribute('aria-expanded', 'false'); }
+  nav.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-setting], [data-configure]');
+    if (!b) return;
+    closeNav();
+    if (b.dataset.setting) {
+      var dlg = document.getElementById('setting-' + b.dataset.setting);
+      if (dlg) dlg.showModal();
+      return;
+    }
+    var src = document.getElementById(b.dataset.configure), pop = document.getElementById('configure-popup');
+    if (!src || !pop) return;
+    src._cfgParent = src.parentNode; src._cfgNext = src.nextSibling;
+    document.getElementById('configureBody').appendChild(src);
+    document.getElementById('configureTitle').textContent = b.textContent.trim();
+    pop.showModal();
+  });
+  document.getElementById('configure-popup').addEventListener('close', function () {
+    var body = document.getElementById('configureBody'), src = body.firstElementChild;
+    if (src && src._cfgParent) src._cfgParent.insertBefore(src, src._cfgNext);
+  });
+  // Back re-opens the slide-out, same as Escape closing one pop-up should leave the next one reachable.
+  document.querySelectorAll('.settingspop').forEach(function (d) {
+    d.addEventListener('close', function () { menu.hidden = false; menubtn.setAttribute('aria-expanded', 'true'); });
+  });
+})();
+

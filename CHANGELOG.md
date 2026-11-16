@@ -9,7 +9,40 @@ entries are gathered under its heading. Each version lists what was **added**, *
 **fixed** and **removed**. Labels refer to that beta's request list: F = feature request,
 I = issue, # = review item, R = README; numbers start again with each beta.
 
-**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.44**
+**Stable (`latest`): 0.0.6 · Newest (`beta`): 0.2.8-beta.45**
+
+## 0.2.8-beta.45 — 2026-11-15
+
+Build E: F65 and I2, redone from scratch after Build D's revert (beta.44) — this time with the Developer's
+corrections already built in (the slide-out from the right, not the left; nothing combined into one form).
+I22 (splitting Domains back out of Login & password) is also part of this beta, as its prerequisite.
+
+### Added
+- **F65** Full page's ☰ Settings is now a slide-out from the right edge of the screen instead of the normal
+  dropdown's inline list, grouped into **Configure** (Calendars, Feeds, All Rules, Event Templates and
+  History — each hidden by Full page; clicking one moves that real section, for real, into one shared
+  pop-up, and puts it straight back where it was when the pop-up closes, so nothing in it is duplicated and
+  every id, form and listener there keeps working unchanged), **User** (Login & password) and **Site Admin**
+  (Domains, Updates, Theme, Google Calendar API Sync). Every item opens its own pop-up, laid out exactly as
+  its non-fullscreen section (the same macro renders both, so there is nothing to keep in sync); Configure is
+  Full-page only, the normal dropdown has no such group. No module reordering (F47/I45 stay dropped).
+  (`app/templates/index/settings.html`, `app/templates/js/03-topbar-settings.js`,
+  `app/styles/02-topbar-settings.css`; suite 80, 81)
+
+### Fixed
+- **I2** Auto-update's toggle (and Check for updates frequency) submits itself on change, with no Cancel |
+  Save pair to fall back to: a refused save (another tab's change landed first, say) left the control showing
+  the click that was just refused, not what the server actually holds. It now re-draws from the server the
+  same way a successful save would, so it always shows the live state. (`app/templates/js/07-saving.js`'s new
+  `resyncForm()`; suite 81)
+- **I22** Login & password and Domains are their own sections again, each its own Cancel | Save (not combined
+  into one Administrator form); a pre-existing, previously-unwired `/settings/login` route is now what Login
+  & password's form posts to. (`app/routes/settings.py`, `app/routes/account.py`,
+  `app/templates/index/settings.html`; suite 19, 22, 37, 38, 64, 67)
+
+### Removed
+- ChatGPT's own usage is no longer tracked on the Dashboard (its own gauges, R27): the Developer asked to
+  stop. (`build_rules/2-build.md`)
 
 ## 0.2.8-beta.44 — 2026-11-13
 

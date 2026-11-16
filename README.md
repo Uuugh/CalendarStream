@@ -389,11 +389,12 @@ logins or setup codes lock an address out for 15 minutes.
   address's limit still applies); History says so. Locked out yourself on a new browser? The container log
   (`docker compose logs`) has a one-time link, good for an hour, that lets that browser in; or restart
   CalendarStream (`docker compose restart`).
-- **☰ Settings** (a light blue panel): site settings only: **Administrator** (the login, with a
-  show-password eye and a strength bar, like every password box, **Signed in** over **Sign out**, and the public
-  address as one list of rows, each editable with its own trash can, **+** at the end of the first row for
-  another domain this page is reached at; a feed's link can use any of them), **Appearance** (your own logo and
-  favicon, and the buttons' Animation intensity and duration), **Google Calendar API Sync** (for the admin, laid out like a login: Client ID
+- **☰ Settings** (a light blue panel): site settings only, each its own **Cancel | Save**: **Login & password**
+  (the login, with a show-password eye and a strength bar, like every password box, and **Signed in** over
+  **Sign out**), **Domains** (the public address as one list of rows, each editable with its own trash can,
+  **+** at the end of the first row for another domain this page is reached at; a feed's link can use any of
+  them), **Theme** (your own logo and favicon, and the buttons' Animation intensity and duration), **Google
+  Calendar API Sync** (for the admin, laid out like a login: Client ID
   with Copy and Client secret, editable at any time, and a Status/Action box: **Healthy**, Not set up or the
   fault, over **Connect**, **Reconnect** or **Fix**, which saves and checks the client and the redirect
   address with Google, stopping with the fix as a click path; one **Remove**; no Gmail is signed in here:
@@ -407,7 +408,10 @@ logins or setup codes lock an address out for 15 minutes.
   weekly, monthly or never) and **Auto-update** (with the updater: newer versions are installed by
   themselves, when the check at that frequency finds one; every open page shows Downloading… and Restarting… in
   the top bar and refreshes itself 15 seconds after Restarting…). The Google credentials row ends with a trash, which asks before deleting them. Each field shows ✓ until you type, then ✕ | ✓, and saves in
-  place, without reloading the page.
+  place, without reloading the page. In Full page, ☰ Settings is a slide-out from the right instead, grouped into
+  **Configure** (Calendars, Feeds, All Rules, Event Templates and History, each opening the real section in a
+  shared pop-up), **User** (Login & password) and **Site Admin** (Domains, Updates, Theme, Google Calendar API
+  Sync) — each item opens its own pop-up, laid out exactly as it is outside Full page.
 - **Report a problem / Suggest a feature** at the bottom of the page open a form: what happened (or
   your idea), and tick what to include: the History lines, each source's last download
   details, your device and setup, your contact details, and whether you'd like replies. Private
