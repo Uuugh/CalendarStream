@@ -54,7 +54,7 @@ S59-15..17, S65-34..37, S44-26..28/45) are left to `theme.md` (Q-R1) except wher
 
 | ID | status | statement | evidence |
 |---|---|---|---|
-| EVT-25 | proposed | Merged into the planned EVT-01 (Duplicate). The Python app has a partial Duplicate (it opens an editor titled "Duplicate event" with the existing title and a new empty UID, S26-56), but the Developer says it was never implemented correctly nor closed out, so it is not a verified behavior; see issue I51. | S26-56 |
+| EVT-25 | proposed | Merged into the planned EVT-01 (Duplicate: copy in the same calendar, calendar dropdown to change it). The Python app has a partial Duplicate (it opens an editor titled "Duplicate event" with the existing title and a new empty UID, S26-56), but the Developer says it was never implemented correctly nor closed out, so it is not a verified behavior; see issue I51. | S26-56 |
 | EVT-26 | proposed | The new-event editor has a template picker; saved events do not. See TPL-05 and TPL-07. | S26-29, S57-01, S57-07 |
 
 ## Links between events
