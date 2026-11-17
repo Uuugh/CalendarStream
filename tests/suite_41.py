@@ -19,9 +19,9 @@ async def fake_download(url, *a, **k):
     return calsync.Download(200, body=FEED, debug={"url": url})
 
 with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), patch.object(main, "update_loop", noop), patch.object(main, "download", fake_download):
-    srv = uvicorn.Server(uvicorn.Config(main.app, port=8097, log_level="warning"))
+    srv = uvicorn.Server(uvicorn.Config(main.app, port=8241, log_level="warning"))
     threading.Thread(target=srv.run, daemon=True).start(); time.sleep(2.5)
-    c = httpx.Client(base_url="http://127.0.0.1:8097", auth=("t", "password1"))
+    c = httpx.Client(base_url="http://127.0.0.1:8241", auth=("t", "password1"))
     csrf = re.search(r'name="csrf" value="([^"]+)"', c.get("/").text)[1]
     seed.demo(c, csrf, main)
     from playwright.sync_api import sync_playwright
@@ -30,7 +30,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         for w in (1230, 390):
             pg = b.new_page(viewport={"width": w, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
             errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
-            pg.goto("http://127.0.0.1:8097/?month=2026-10"); pg.wait_for_timeout(500)
+            pg.goto("http://127.0.0.1:8241/?month=2026-10"); pg.wait_for_timeout(500)
             for sec, mod in (("#sources", "#src-ccs"), ("#destinations", ".box.dest")):
                 r = pg.evaluate("""([sec, mod]) => { const q = s => document.querySelector(s).getBoundingClientRect();
                   const m = document.querySelector(mod), h = m.closest('.modrow').querySelector(':scope > .handle').getBoundingClientRect();

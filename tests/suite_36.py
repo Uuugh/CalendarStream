@@ -82,9 +82,9 @@ ok([(r["id"], r["apply"]) for r in mig] == [("a1", ["ccs"]), ("a2", "all"), ("a3
 
 # --- The app ------------------------------------------------------------------------------------
 with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), patch.object(main, "update_loop", noop), patch.object(main, "download", fake_download):
-    srv = uvicorn.Server(uvicorn.Config(main.app, port=8098, log_level="warning"))
+    srv = uvicorn.Server(uvicorn.Config(main.app, port=8236, log_level="warning"))
     threading.Thread(target=srv.run, daemon=True).start(); time.sleep(2.5)
-    c = httpx.Client(base_url="http://127.0.0.1:8098", auth=("t", "password1"))
+    c = httpx.Client(base_url="http://127.0.0.1:8236", auth=("t", "password1"))
     csrf = re.search(r'name="csrf" value="([^"]+)"', c.get("/").text)[1]
     post = lambda path, **d: c.post(path, data={"csrf": csrf, **d})
     wid = seed.demo(c, csrf, main)
@@ -173,10 +173,10 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         b = pw.chromium.launch()
         pg = b.new_page(viewport={"width": 1400, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e) + " " + str(e.stack)[:400]))
-        pg.goto("http://127.0.0.1:8098/?month=2026-10"); pg.wait_for_timeout(400)
+        pg.goto("http://127.0.0.1:8236/?month=2026-10"); pg.wait_for_timeout(400)
         # event: open, alarm popover, edit in a pop-up
         post("/event/save", month="2026-10", title="Lunch", start_date="2026-10-15", start_time="12:00", end_date="2026-10-15", end_time="13:00", source="ccs")
-        pg.goto("http://127.0.0.1:8098/?month=2026-10"); pg.wait_for_timeout(400)
+        pg.goto("http://127.0.0.1:8236/?month=2026-10"); pg.wait_for_timeout(400)
         d = pg.locator("details.ev").filter(has_text="Lunch").first
         d.locator("summary").click(); pg.wait_for_timeout(100)
         d.locator(".evalarm").click(); pg.wait_for_timeout(150)

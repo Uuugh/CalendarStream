@@ -18,9 +18,9 @@ import uvicorn, mockgoogle, httpx, seed
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from app import gsync, main
-M = "http://127.0.0.1:8114"
+M = "http://127.0.0.1:8245"
 gsync.AUTH_URL, gsync.TOKEN_URL, gsync.REVOKE_URL, gsync.API_URL = M + "/auth", M + "/token", M + "/revoke", M + "/calendar/v3"
-srv = uvicorn.Server(uvicorn.Config(mockgoogle.app, port=8114, log_level="warning"))
+srv = uvicorn.Server(uvicorn.Config(mockgoogle.app, port=8245, log_level="warning"))
 threading.Thread(target=srv.run, daemon=True).start(); time.sleep(1)
 S, A = mockgoogle.S, ("t", "p"); G = httpx.Client(); fails = 0
 def ok(c, label):

@@ -39,9 +39,25 @@ python3 -c "import fastapi, psycopg, icalendar, recurring_ical_events" 2>/dev/nu
 # with a suite 67 recheck — never by letting pip resolve "latest" again.
 PLAYWRIGHT_PIN="1.63.0"
 python3 -c "import PIL" 2>/dev/null || pip install -q pillow --break-system-packages    # pixdiff.py (R15)
+# curl (suite 60 runs the real download path) and pypdf (suites 64 and 65 read the Print Preview PDF): a fresh Debian box
+# has neither (0.2.8-beta.47). The workflow installs pypdf in its own step; this makes setup.sh complete by itself.
+command -v curl >/dev/null || { apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq curl >/dev/null; }
+python3 -c "import pypdf" 2>/dev/null || pip install -q pypdf --break-system-packages
 installed_pw="$(python3 -m playwright --version 2>/dev/null | awk '{print $2}')"
 if [ "$installed_pw" != "$PLAYWRIGHT_PIN" ]; then
   pip install -q "playwright==$PLAYWRIGHT_PIN" --break-system-packages
   python3 -m playwright install chromium
+fi
+# Chromium's own system libraries (libnss3, libgbm, libasound…): GitHub's runner carries them already, a fresh Debian
+# or WSL box does not and the browser then dies at launch (0.2.8-beta.47). Skipped when they are all there.
+if [ -z "${CI:-}" ] && [ "$(id -u)" = 0 ]; then
+  python3 -m playwright install-deps chromium >/dev/null
+fi
+# Run as `sudo setup.sh`, Chromium lands in root's cache, but the suites run as whoever typed sudo: install it for
+# that user too (0.2.8-beta.47: a WSL Debian run of the suites found no browser). Not on CI, where run.sh is root's too.
+if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != root ] && [ -z "${CI:-}" ]; then
+  home="$(getent passwd "$SUDO_USER" | cut -d: -f6)"
+  ls -d "$home"/.cache/ms-playwright/chromium_headless_shell-* >/dev/null 2>&1 ||
+    su "$SUDO_USER" -c "python3 -m playwright install chromium"
 fi
 echo "Ready. Postgres on 127.0.0.1:$PORT (ccs / testpw). Now: export TEST_DB_PORT=$PORT"

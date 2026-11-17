@@ -39,9 +39,9 @@ ok("999px" not in tpl and "border-radius:50%" not in tpl, "no pills or circles: 
 ok('viewBox="0 0 16 16"' not in tpl and 'viewBox="0 0 24 24"' not in tpl and 'viewBox="0 0 18 18"' not in tpl, "no hand-drawn, Bootstrap or Feather icons left")
 
 with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), patch.object(main, "update_loop", noop), patch.object(main, "download", fake_download):
-    srv = uvicorn.Server(uvicorn.Config(main.app, port=8097, log_level="warning"))
+    srv = uvicorn.Server(uvicorn.Config(main.app, port=8235, log_level="warning"))
     threading.Thread(target=srv.run, daemon=True).start(); time.sleep(2.5)
-    c = httpx.Client(base_url="http://127.0.0.1:8097", auth=("t", "password1"))
+    c = httpx.Client(base_url="http://127.0.0.1:8235", auth=("t", "password1"))
     csrf = re.search(r'name="csrf" value="([^"]+)"', c.get("/").text)[1]
     main.logins.save_ccs("U123456", "pw12345"); main.state.last_auth_ok = True
     c.post("/setup/upload", data={"csrf": csrf}, files={"file": ("Calendar.ics", open(os.path.join(HERE, "data", "Demo.ics"), "rb").read())})
@@ -52,7 +52,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
     c.post("/destinations/add", data={"csrf": csrf, "type": "feed", "name": "Everything"})
     p = c.get("/").text
     # Fonts: served here, without a login, and used by every page
-    anon = httpx.Client(base_url="http://127.0.0.1:8097")
+    anon = httpx.Client(base_url="http://127.0.0.1:8235")
     f = anon.get("/static/fonts/ibm-plex-sans-latin-400-normal.woff2")
     ok(f.status_code == 200 and f.content[:4] == b"wOF2", "IBM Plex Sans is served from /static (no login needed)")
     ok(anon.get("/static/fonts/ibm-plex-mono-latin-400-normal.woff2").status_code == 200 and anon.get("/static/fonts/OFL.txt").status_code == 200, "IBM Plex Mono and its licence too")
@@ -77,7 +77,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         for scheme in ("light", "dark"):
             pg = b.new_page(viewport={"width": 1400, "height": 900}, color_scheme=scheme, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
             errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
-            pg.goto("http://127.0.0.1:8097/?view=month"); pg.wait_for_timeout(600)
+            pg.goto("http://127.0.0.1:8235/?view=month"); pg.wait_for_timeout(600)
             fam = pg.evaluate("getComputedStyle(document.body).fontFamily")
             # (fonts load when first used; Mono may not be on screen yet, so ask for it)
             loaded = pg.evaluate("Promise.all([document.fonts.load('14px \"IBM Plex Sans\"'), document.fonts.load('14px \"IBM Plex Mono\"')]).then(r => r.every(x => x.length > 0))")
@@ -109,7 +109,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg = b.new_page(viewport={"width": 1400, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         loads = []; pg.on("load", lambda: loads.append(1))
-        pg.goto("http://127.0.0.1:8097/?view=month"); pg.wait_for_timeout(500); loads.clear()
+        pg.goto("http://127.0.0.1:8235/?view=month"); pg.wait_for_timeout(500); loads.clear()
         box = f"#src-{wid}"
         # Sync Now: Syncing… → Synced (green pulse) → Sync Now
         MODE.update(fail=False, slow=1.5)

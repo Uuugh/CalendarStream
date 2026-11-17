@@ -11,6 +11,20 @@ tests/run.sh 26 39      # some suites
 tests/run.sh all        # all of them
 ```
 
+**Parallel (0.2.8-beta.47).** `run.sh` runs the suites `TEST_JOBS` at a time (default: the lower of 4 and your
+cores; `TEST_JOBS=1` is the old one-by-one run). Each suite has its own database and its own ports, so they never
+meet; `tools/ports.py` (checked by suite 82) fails if two suites ever share a port, so a new suite takes a port
+nobody uses (8200 + its number is the habit). A suite's output prints when the run ends, in suite order. Suites 12
+and 15 run twice and so run as one chain. Never two `run.sh` at once on the same Postgres: they share the databases.
+
+To split a run over machines, `TEST_SHARD=2/4 tests/run.sh` runs the second quarter, balanced by the times in
+`tests/timings.txt`. The GitHub Tests workflow does this with 4 shards. Refresh the times after the suites change a
+lot: `TEST_TIMINGS=timings.txt tests/run.sh` (run from `tests/`) rewrites the file.
+
+**Line endings.** Shell scripts must be LF, or bash stops with `$'\r': command not found`. `.gitattributes` says
+`*.sh text eol=lf`, so a checkout on Windows gives LF; a clone inside WSL's own filesystem (`~/CalendarStream`, not
+`/mnt/c/...`) is also much faster. Suite 82 fails if a `.sh` here has a CR.
+
 `run.sh` prints only the failures and a summary, and exits 1 if anything failed. It needs a
 Postgres it can create databases on (`TEST_DB_HOST`, `TEST_DB_PORT`, `TEST_DB_USER`,
 `TEST_DB_PASSWORD`; defaults 127.0.0.1, 5432, ccs, testpw), `psql`, the packages in

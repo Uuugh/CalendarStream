@@ -2,6 +2,10 @@
 # Actions -> Tests -> the run for a commit. It builds nothing and publishes nothing. Also runs on a pull
 # request (any branch, including one pushed by an author with no local Postgres or Docker, such as
 # ChatGPT working the issue #12 reorg) so its own PR carries a real pass/fail, not just pushes to main.
+#
+# (0.2.8-beta.47) The suites run in SHARDS: 4 machines, each taking a quarter of the suites, balanced by their
+# recorded time (tests/timings.txt, tests/tools/shard.py), and each running several suites at once (tests/run.sh).
+# The job named "suites" below is the one result: green only when every shard is, as the single job was.
 name: Tests
 
 on:
@@ -16,25 +20,45 @@ permissions:
 # (no concurrency group: every checkpoint commit gets its own run and result, R20)
 
 jobs:
-  suites:
+  shard:
+    name: shard ${{ matrix.shard }} of 4
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false        # one shard's failure never hides another's
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
       - name: Install the app's packages (over Debian's own copies)
         run: sudo pip install -q --break-system-packages --ignore-installed -r requirements.txt pypdf
       - name: Set up the test machine (Postgres on 55432, packages, Chromium, faketime)
         run: sudo bash tests/tools/setup.sh
-      - name: Test the test runner itself (injected failures)
+      - name: Test the test runner itself (injected failures; one shard is enough)
+        if: matrix.shard == 1
         run: bash tests/tools/harness_selftest.sh
-      - name: Run every suite (tests/run.sh)
+      - name: Run this shard's suites (tests/run.sh)
         working-directory: tests
         env:
           TEST_DB_PORT: "55432"
         shell: bash   # (with pipefail, so a failing run fails the step)
-        run: sudo TEST_DB_PORT=55432 bash run.sh | tee "$GITHUB_STEP_SUMMARY"
-      - name: Scans (pip-audit, bandit)
+        run: |
+          echo "cores: $(nproc)"
+          sudo TEST_DB_PORT=55432 TEST_SHARD=${{ matrix.shard }}/4 bash run.sh | tee "$GITHUB_STEP_SUMMARY"
+      - name: Scans (pip-audit, bandit; one shard is enough)
+        if: matrix.shard == 1
         run: |
           pip install --break-system-packages pip-audit bandit
           pip-audit -r requirements.txt
           bandit -r app -q || true   # findings are read in the log, as in a REVIEW (not a gate)
+
+  suites:
+    name: suites
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every shard passed
+        run: |
+          echo "shards: ${{ needs.shard.result }}"
+          [ "${{ needs.shard.result }}" = success ]

@@ -20,9 +20,9 @@ async def fake_download(url, username="", password="", etag="", last_modified=""
     return calsync.Download(200, body=FEED, debug={"url": url})
 
 with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), patch.object(main, "update_loop", noop), patch.object(main, "download", fake_download):
-    srv = uvicorn.Server(uvicorn.Config(main.app, port=8096, log_level="warning"))
+    srv = uvicorn.Server(uvicorn.Config(main.app, port=8240, log_level="warning"))
     threading.Thread(target=srv.run, daemon=True).start(); time.sleep(2.5)
-    c = httpx.Client(base_url="http://127.0.0.1:8096", auth=("t", "password1"))
+    c = httpx.Client(base_url="http://127.0.0.1:8240", auth=("t", "password1"))
     csrf = re.search(r'name="csrf" value="([^"]+)"', c.get("/").text)[1]
     wid = seed.demo(c, csrf, main)
     p = c.get("/?menu=settings").text
@@ -55,7 +55,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         b = pw.chromium.launch()
         pg = b.new_page(viewport={"width": 1400, "height": 1000}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
-        pg.goto("http://127.0.0.1:8096/?month=2026-10"); pg.wait_for_timeout(500)
+        pg.goto("http://127.0.0.1:8240/?month=2026-10"); pg.wait_for_timeout(500)
         # I1: the rule dialog's Color is one of Google's 11
         pg.click("#rules > .cfgline .cfgtoggle"); pg.click("#rules > .shead .newrule"); pg.wait_for_timeout(200)
         pal = pg.locator("#ruledialog .act .pal")

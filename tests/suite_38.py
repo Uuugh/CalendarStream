@@ -19,9 +19,9 @@ async def fake_download(url, username="", password="", etag="", last_modified=""
     return calsync.Download(200, body=FEED, debug={"url": url})
 
 with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), patch.object(main, "update_loop", noop), patch.object(main, "download", fake_download):
-    srv = uvicorn.Server(uvicorn.Config(main.app, port=8094, log_level="warning"))
+    srv = uvicorn.Server(uvicorn.Config(main.app, port=8238, log_level="warning"))
     threading.Thread(target=srv.run, daemon=True).start(); time.sleep(2.5)
-    c = httpx.Client(base_url="http://127.0.0.1:8094", auth=("t", "password1"))
+    c = httpx.Client(base_url="http://127.0.0.1:8238", auth=("t", "password1"))
     csrf = re.search(r'name="csrf" value="([^"]+)"', c.get("/").text)[1]
     post = lambda path, **d: c.post(path, data={"csrf": csrf, **d})
     wid = seed.demo(c, csrf, main)
@@ -70,7 +70,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg = b.new_page(viewport={"width": 1400, "height": 1000}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         loads = []; pg.on("load", lambda: loads.append(1))
-        pg.goto("http://127.0.0.1:8094/?month=2026-10"); pg.wait_for_timeout(500); loads.clear()
+        pg.goto("http://127.0.0.1:8238/?month=2026-10"); pg.wait_for_timeout(500); loads.clear()
         # header clicks don't open these sections; their Expand line does
         for sec in ("rules", "templates", "activity"):
             pg.locator(f"#{sec} > .shead .bigtitle").click(); pg.wait_for_timeout(150)

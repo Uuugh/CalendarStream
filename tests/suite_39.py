@@ -20,9 +20,9 @@ async def fake_download(url, username="", password="", etag="", last_modified=""
 V = main.__version__
 
 with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), patch.object(main, "update_loop", noop), patch.object(main, "download", fake_download):
-    srv = uvicorn.Server(uvicorn.Config(main.app, port=8095, log_level="warning"))
+    srv = uvicorn.Server(uvicorn.Config(main.app, port=8239, log_level="warning"))
     threading.Thread(target=srv.run, daemon=True).start(); time.sleep(2.5)
-    c = httpx.Client(base_url="http://127.0.0.1:8095", auth=("t", "password1"))
+    c = httpx.Client(base_url="http://127.0.0.1:8239", auth=("t", "password1"))
     csrf = re.search(r'name="csrf" value="([^"]+)"', c.get("/").text)[1]
     post = lambda path, **d: c.post(path, data={"csrf": csrf, **d})
     # + Google Calendar before Google Calendar sync is set up: a feed for Google
@@ -85,7 +85,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         b = pw.chromium.launch()
         pg = b.new_page(viewport={"width": 1400, "height": 1000}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
-        pg.goto("http://127.0.0.1:8095/?month=2026-10"); pg.wait_for_timeout(600)
+        pg.goto("http://127.0.0.1:8239/?month=2026-10"); pg.wait_for_timeout(600)
         ev = pg.locator("details.ev").filter(has_text="New one").first
         ev.locator("summary").click(); pg.wait_for_timeout(150)
         tools = ev.locator(".evtools")

@@ -18,9 +18,9 @@ def ok(c, label):
 async def noop(*a, **k): pass
 
 with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), patch.object(main, "update_loop", noop):
-    srv = uvicorn.Server(uvicorn.Config(main.app, port=8097, log_level="warning"))
+    srv = uvicorn.Server(uvicorn.Config(main.app, port=8281, log_level="warning"))
     threading.Thread(target=srv.run, daemon=True).start(); time.sleep(2.5)
-    c = httpx.Client(base_url="http://127.0.0.1:8097", auth=("t", "password1"))
+    c = httpx.Client(base_url="http://127.0.0.1:8281", auth=("t", "password1"))
     csrf = re.search(r'name="csrf" value="([^"]+)"', c.get("/").text)[1]
     post = lambda path, **d: c.post(path, data={"csrf": csrf, **d})
     seed.demo(c, csrf, main)
@@ -32,7 +32,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         b = pw.chromium.launch()
         pg = b.new_page(viewport={"width": 1400, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
-        pg.goto("http://127.0.0.1:8097/?menu=settings"); pg.wait_for_timeout(500)
+        pg.goto("http://127.0.0.1:8281/?menu=settings"); pg.wait_for_timeout(500)
 
         # --- F65: the slide-out, not the inline list ---
         ok(pg.is_visible(".settingsnav") and not pg.is_visible("#setting-pagelogin"), "F65: ☰ Settings opens the slide-out; the pop-ups start closed")
@@ -81,7 +81,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
            "ui_ux.md §5: every slide-out item and pop-up Back is a real <button> (native keyboard support)")
         pg2 = b.new_page(viewport={"width": 1400, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         pg2.emulate_media(reduced_motion="reduce")
-        pg2.goto("http://127.0.0.1:8097/?menu=settings"); pg2.wait_for_timeout(300)
+        pg2.goto("http://127.0.0.1:8281/?menu=settings"); pg2.wait_for_timeout(300)
         ok(pg2.evaluate("getComputedStyle(document.querySelector('.settingsnav')).animationName") == "none",
            "ui_ux.md §5: the slide-out's own slide-in is off under reduced motion")
         pg2.close()

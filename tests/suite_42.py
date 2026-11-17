@@ -8,7 +8,7 @@ tok = tempfile.NamedTemporaryFile("w", delete=False); tok.write("sekret-token\n"
 os.environ.update(DB_HOST=os.environ.get("TEST_DB_HOST", "127.0.0.1"), DB_PORT=os.environ.get("TEST_DB_PORT", "5432"), DB_NAME=sys.argv[1],
                   DB_USER=os.environ.get("TEST_DB_USER", "ccs"), DB_PASSWORD=os.environ.get("TEST_DB_PASSWORD", "testpw"),
                   GUI_USERNAME="t", GUI_PASSWORD="password1", TZ="America/New_York", PUBLIC_URL="",
-                  UPDATER_URL="http://127.0.0.1:8113", UPDATER_TOKEN_FILE=tok.name, IMAGE_TAG="beta")
+                  UPDATER_URL="http://127.0.0.1:8242", UPDATER_TOKEN_FILE=tok.name, IMAGE_TAG="beta")
 for k in ("CCS_USERNAME", "CCS_PASSWORD", "http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY"): os.environ.pop(k, None)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from unittest.mock import patch
@@ -25,7 +25,7 @@ class Fake(BaseHTTPRequestHandler):
         self.send_response(code); self.send_header("Content-Type", "application/json"); self.end_headers(); self.wfile.write(b"{}")
     def do_GET(self): self.answer(200 if self.path == "/livez" else 404)
     def do_POST(self): self.answer(202 if self.path.startswith("/v1/update") else 404)
-fake = ThreadingHTTPServer(("127.0.0.1", 8113), Fake); threading.Thread(target=fake.serve_forever, daemon=True).start()
+fake = ThreadingHTTPServer(("127.0.0.1", 8242), Fake); threading.Thread(target=fake.serve_forever, daemon=True).start()
 checks = []
 async def fake_check():
     checks.append(1)

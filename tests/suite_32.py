@@ -5,7 +5,7 @@ from urllib.parse import urlparse, parse_qs
 tok = tempfile.NamedTemporaryFile("w", delete=False); tok.write("sekret-token\n"); tok.close()
 os.environ.update(DB_HOST=os.environ.get("TEST_DB_HOST", "127.0.0.1"), DB_PORT=os.environ.get("TEST_DB_PORT", "5432"), DB_NAME=sys.argv[1], DB_USER=os.environ.get("TEST_DB_USER", "ccs"), DB_PASSWORD=os.environ.get("TEST_DB_PASSWORD", "testpw"),
                   GUI_USERNAME="t", GUI_PASSWORD="password1", TZ="America/New_York", PUBLIC_URL="",
-                  UPDATER_URL="http://127.0.0.1:8112", UPDATER_TOKEN_FILE=tok.name, IMAGE_TAG="beta")
+                  UPDATER_URL="http://127.0.0.1:8232", UPDATER_TOKEN_FILE=tok.name, IMAGE_TAG="beta")
 for k in ("CCS_USERNAME", "CCS_PASSWORD", "http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY"): os.environ.pop(k, None)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from unittest.mock import patch
@@ -26,7 +26,7 @@ class Fake(BaseHTTPRequestHandler):
         u = urlparse(self.path); asked.append((u.path, parse_qs(u.query), self.headers.get("Authorization")))
         if self.headers.get("Authorization") != "Bearer sekret-token": return self.answer(401)
         self.answer(202 if u.path == "/v1/update" else 404)
-fake = ThreadingHTTPServer(("127.0.0.1", 8112), Fake); threading.Thread(target=fake.serve_forever, daemon=True).start()
+fake = ThreadingHTTPServer(("127.0.0.1", 8232), Fake); threading.Thread(target=fake.serve_forever, daemon=True).start()
 with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), patch.object(main, "update_loop", noop), \
      patch.object(U, "__version__", "0.2.7-beta.2"), patch.object(main, "__version__", "0.2.7-beta.2"):
     srv = uvicorn.Server(uvicorn.Config(main.app, port=8098, log_level="warning"))

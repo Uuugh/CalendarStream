@@ -40,9 +40,9 @@ ok(links.moved_by("2026-10-14T09:00:00-04:00", "2026-10-14T10:30:00-04:00") == t
    and links.shifted("2026-10-14", "2026-10-15", timedelta(days=2)) == ("2026-10-16", "2026-10-17"), "links: how far an event moved; moving all-day by days")
 
 with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), patch.object(main, "update_loop", noop), patch.object(main, "download", fake_download):
-    srv = uvicorn.Server(uvicorn.Config(main.app, port=8093, log_level="warning"))
+    srv = uvicorn.Server(uvicorn.Config(main.app, port=8237, log_level="warning"))
     threading.Thread(target=srv.run, daemon=True).start(); time.sleep(2.5)
-    c = httpx.Client(base_url="http://127.0.0.1:8093", auth=("t", "password1"))
+    c = httpx.Client(base_url="http://127.0.0.1:8237", auth=("t", "password1"))
     csrf = re.search(r'name="csrf" value="([^"]+)"', c.get("/").text)[1]
     post = lambda path, **d: c.post(path, data={"csrf": csrf, **d})
     wid = seed.demo(c, csrf, main)
@@ -121,7 +121,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         b = pw.chromium.launch()
         pg = b.new_page(viewport={"width": 1400, "height": 900}, extra_http_headers={"Authorization": "Basic dDpwYXNzd29yZDE="})
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
-        pg.goto("http://127.0.0.1:8093/?month=2026-10"); pg.wait_for_timeout(500)
+        pg.goto("http://127.0.0.1:8237/?month=2026-10"); pg.wait_for_timeout(500)
         # (?) next to its word, everywhere
         pg.evaluate("document.querySelectorAll('.cfgtoggle[aria-expanded=false], .section .toggle[aria-expanded=false]').forEach(b => b.click())"); pg.wait_for_timeout(400)
         far = pg.evaluate("""() => [...document.querySelectorAll('.helpdot')].filter(d => d.offsetParent).map(d => {
@@ -202,7 +202,7 @@ with patch.object(main, "loop", noop), patch.object(main, "google_loop", noop), 
         pg.click("#removedialog [data-close]"); pg.wait_for_timeout(100)
         ok(pg.locator("#removedialog[open]").count() == 0 and "ccs" in main.source_ids(), "Cancel removes nothing")
         # F3.2: the link icon on the event page
-        pg.goto("http://127.0.0.1:8093/event?date=2026-10-14&month=2026-10"); pg.wait_for_timeout(300)
+        pg.goto("http://127.0.0.1:8237/event?date=2026-10-14&month=2026-10"); pg.wait_for_timeout(300)
         ok(not pg.is_visible("#linkevent"), "a new event: not linked")
         pg.click('.linkkind [data-kind="event"]'); pg.wait_for_timeout(700)
         ok(pg.is_visible("#pickdialog") and pg.locator("#pickdialog button.pkev").count() > 5, "Link to › Event: the events around it (0.2.8-beta.23, F1: a small calendar)")
