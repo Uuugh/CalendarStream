@@ -7,9 +7,9 @@ Always loaded (imported by CLAUDE.md). The whole picture on one page; each step'
 | Step | Command | Who | What happens | Details |
 |---|---|---|---|---|
 | 0. Overview | **DASH** (or **DASHBOARD**) | Claude | Opens the CalendarStream Dashboard beside the chat: the commands (each copies on a tap), every waiting F, I and R, who is being waited on, the likely next step and the roadmap. Claude keeps it up to date, so DASH only opens it. | this file |
-| 1. Plan | **PLAN** | Developer › Claude | The Developer gives F, I, R and ?; PLAN shows the waiting list and what Claude would do for each, so it's corrected before it's built. | 1-plan.md |
+| 1. Plan | **PLAN** | Developer › Claude | The Developer gives F, R, I, P and ?; PLAN shows the waiting list and what Claude would do for each, so it's corrected before it's built. | 1-plan.md |
 | 1.1 Handoff | **HANDOFF** | Claude | Gives the handoff message for the next conversation, in one block to paste there. Only when asked — BUILD does not end with one on its own. | 2-build.md |
-| 2. Build | **BUILD** `[F\|f I\|i R\|r] [b m M]` | Claude | Builds the waiting inputs as the next beta: tests, publishes, reports. | 2-build.md |
+| 2. Build | **BUILD** `[F\|R\|I\|P] [b m M]` | Claude | Builds the waiting inputs as the next beta: tests, publishes, reports. `BUILD P` changes only the process (no new version). | 2-build.md |
 | 3. Test (optional) | **TEST** | Developer + Claude, together | The Developer tries the beta in a browser and Claude follows along: each TEST, Claude looks at the page, its console and requests, and problems are talked through and written up as I items. | 3-test.md |
 | 4. Review | **REVIEW** | ChatGPT ⇄ Claude; the Developer decides | The agents check without the Developer: Claude › ChatGPT › Claude › ChatGPT, then the Developer decides anything still disputed. REVIEW starts it; each REVIEW after that passes the turn. | 4-review.md |
 | 5. Deploy | **DEPLOY** | Claude; the Developer tests | The first DEPLOY prepares the release (a whole-app review, translations, docs) and asks the Developer to test it; the second DEPLOY releases it as Stable/Latest. | 5-deploy.md |
@@ -67,10 +67,10 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   command, with its options, ends the message ("Fix the title. BUILD", "BUILD b FI"); STOP and WAIT count anywhere in it.
 - A command starts its step; said again while the step is open, it continues it (TEST: look now; REVIEW passes
   the turn; the second DEPLOY releases).
-- A step in progress uses only what existed when it started. New F, I and R wait for the next PLAN and BUILD.
+- A step in progress uses only what existed when it started. New F, R, I and P wait for the next PLAN and BUILD.
   To bring them into a step that's running, STOP it and start it again with its command. What happens inside
   a step is part of it: a review's findings, Claude's fixes for them, the Developer's decisions on them.
-- GO and EOF are aliases of BUILD and work the same (GO R = BUILD R). MENU was DASH's name until 0.2.8-beta.18.
+- GO and EOF are aliases of BUILD and work the same (GO P = BUILD P). MENU was DASH's name until 0.2.8-beta.18.
 - A name in parentheses right after a command designates who does that step, overriding the default
   ("BUILD (GPT)", "REVIEW (Claude)"); see Who does what. No name means the default.
 - A question is never a command, even mid-step and even dressed in the step's own words ("can you do a full
@@ -83,7 +83,7 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 
 ## Who does what
 
-- **Developer**: the human. Owns the intent (F, I, R) and the decisions.
+- **Developer**: the human. Owns the intent (F, R, I, P) and the decisions.
 - **Default**: Claude BUILDs, the Developer TESTs, ChatGPT REVIEWs. The Developer may designate
   otherwise for a given step by naming who in parentheses after the command, e.g. **BUILD (GPT)**,
   **REVIEW (Claude)** — either AI may act as Builder or Reviewer when so designated, under the same
@@ -97,9 +97,26 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
 
 ## Inputs
 
-- **F** = a feature request · **I** = an issue (something wrong) · **R** = the README, documentation or these
-  rules. Either case (F or f). Numbered F1, F1.1…; numbers start again after each BUILD.
+The four kinds of item (from the transition, layer-map.md; they replace the old F, I and R):
+
+- **F** = a **Feature**: a capability or section of the app, a module or a distinct function (printing, Rules,
+  Sources). Permanent: a feature has a requirements file and, once ported, its own folder.
+- **R** = a **Requirement**: one checkable rule of behavior of a feature, with an ID, a status (verified or planned) and the
+  test that verifies it. Lives in `requirements/<feature>.md`, not on the Dashboard. A request for something new is a
+  new or changed requirement in the Planned section.
+- **I** = an **Issue**: a component identified as not meeting a requirement. It names the requirement it fails (a
+  problem with no requirement gets the requirement written first). It is closed when that requirement's test passes.
+- **P** = a **Process** rule: how work is done here (this folder, AGENTS.md, CLAUDE.md). What used to be an R.
+- "Rule" alone means a rule in the app's Rules feature, never a process rule.
+- Either case (F or f). Numbers are never reused. Old items keep their numbers in CHANGELOG.md, build-costs.md and beta
+  entries; old R numbers written as R18, R19, R26 … in older text are process rules and are now P18, P19, P26 ….
 - **?** = a question: the Developer wants Claude's suggestion. It isn't an input until the Developer agrees.
+
+**Transition (in progress):** the Developer has frozen all new features and requirements until the Python app is
+ported to Dart/Flutter (layer-map.md is the plan and the record of decisions; its "Resume here" says where it stands).
+Until steps 2 and 3 of that plan are done, the Dashboard's Inputs Status still lists items under their old letters;
+nothing new is added to it. The Python app stays the running app and its suites the oracle; the transition builds
+publish no beta.
 
 ## Ground rules
 
@@ -121,6 +138,8 @@ Usual order: PLAN › BUILD › TEST if wanted, as often as needed › REVIEW wh
   until it's flagged to the Developer with evidence and an accessible proposal (ui_ux.md, Purpose and authority) —
   neither file silently overrides the other. (R21, PR #15 BR11)
 - `dashboard.md`: the Dashboard's rules in full (verdicts first, order, cost graph, editing).
+- `layer-map.md`: the transition plan (Python to Dart/Flutter, feature-first, requirements-driven): decisions, the
+  target layout, the porting map and where the work stands.
 - `roadmap.md`: what's planned.
 - `low-findings.md`: Low review findings waiting for their code to change.
 - `build-costs.md`: what each BUILD cost (estimate and the Developer's readings, by model), used to predict the next.
