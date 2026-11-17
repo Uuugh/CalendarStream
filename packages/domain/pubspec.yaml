@@ -1,0 +1,14 @@
+name: domain
+description: CalendarStream's shared domain model and rules engine (pure Dart, no I/O).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  crypto: ^3.0.3
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^5.0.0

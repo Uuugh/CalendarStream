@@ -9,3 +9,8 @@ __pycache__/
 docs/development/*
 !docs/development/README.md
 node_modules/
+
+# Dart
+.dart_tool/
+.packages
+build/
