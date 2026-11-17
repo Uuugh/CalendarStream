@@ -77,7 +77,7 @@ No direct `assert` statements; the observations above cover all `ok()` call site
 
 ## Coverage limits and reconciliation notes
 
-- Rows 04/05 and 06/07 pair failure sentinels with RuleError handlers. The latter pair repeats for three invalid rules. Text/day/time/date predicates use finite fixture samples, not exhaustive operators/boundaries.
+- Rows 04/05 and 06/07 pair failure sentinels with RuleError handlers. Row 05 is an `ok(True, ...)` handler marker and cannot fail on its own; do not count S36-05 as independently verifying a requirement. The surrounding exception path supplies the rejection evidence. The latter pair repeats for three invalid rules. Text/day/time/date predicates use finite fixture samples, not exhaustive operators/boundaries.
 - Row 13 passes a two-hour no-end default directly to Ruleset; it does not establish environment-file loading. Row 18 tests a specific older migration fixture; later migration refinements also appear in suite 37.
 - Row 24's global position check only says the sole Default label occurs after Local's start, not that it is structurally nested there. Row 27 builds a Google body locally; it does not send reminders to Google.
 - Print rows 31–34 inspect HTML sheet/grid/text markers, not physical print geometry or each date cell. Row 34's five-column check does not verify weekday labels.
