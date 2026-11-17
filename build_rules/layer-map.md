@@ -157,3 +157,7 @@ tooling stays for the Python page only).
   google,diagnostics,shell}.md` (statuses: verified / built / open / planned; the Developer's Good | Bad verdicts were
   read first). Still to do in step 2: the I items stay for step 3; R18–R28 are already in the process files (now P);
   verified requirements come from ChatGPT's inventory plus the README and CHANGELOG, one feature at a time for approval.
+- Step 3, first part (Nov 17): the 20 open Issues on the Dashboard are now GitHub issues #22 to #41, titled "I<n>: …"
+  with labels `issue` and `feature:<name>` and a Requirement line in the body (same I numbers). Not yet done: the
+  Dashboard still shows them; its redesign to read GitHub (and the generated requirements summary) is the rest of step 3.
+  I22 has a Bad verdict but no Dashboard item (F65 absorbed it): not created, to be decided with the Developer.
