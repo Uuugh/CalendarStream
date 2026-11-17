@@ -24,6 +24,33 @@ exception sentinels mean call-site counts are not execution counts or counts of 
 | 20 | [Google notifications](suite_20.md) | watch lifecycle, notifications, two-way sync | 23 | 0 |
 | 21 | [Browser controls and rules](suite_21.md) | calendar, settings, account, rules, feeds, events, sources, shell | 25 | 0 |
 
+## Second batch: suites 22–31
+
+Source revision: `d70343f7476177a25f32827262d991cdc95c045f`. The ten suites contain 197 `ok()` call sites
+and no direct `assert` statements. These are additional static observations, not runtime success claims.
+The first batch remains pinned to its original revision; neither batch assigns permanent requirement IDs.
+
+| Suite | Inventory | Main areas | ok call sites | Direct asserts |
+|---|---|---|---:|---:|
+| 22 | [Update channels](suite_22.md) | settings, account | 15 | 0 |
+| 23 | [Deploy guard regressions](suite_23.md) | settings, account, Google, feeds, sources | 28 | 0 |
+| 24 | [Google guide](suite_24.md) | Google, public address, shell | 10 | 0 |
+| 25 | [Email and password markup](suite_25.md) | settings, Google, shell | 12 | 0 |
+| 26 | [Sources and destinations](suite_26.md) | sources, feeds, Google, rules, templates, events, calendar, shell, diagnostics | 65 | 0 |
+| 27 | [Source configuration](suite_27.md) | sources, built-in rules | 13 | 0 |
+| 28 | [Verification UI](suite_28.md) | sources, account, shell | 15 | 0 |
+| 29 | [Dates and legacy rules](suite_29.md) | feeds, rules, sources, shell | 11 | 0 |
+| 30 | [Beta versions](suite_30.md) | settings, shell | 9 | 0 |
+| 31 | [Responsive layout](suite_31.md) | feeds, calendar, sources, shell, settings, history | 19 | 0 |
+
+Batch-specific setup: suite 26 requires the fresh-install database path (the harness deliberately omits legacy
+source/destination seeding for it). Suite 28 uses a delayed fake credential verifier. Suite 31 checks three widths,
+with some checks conditional on width or node presence, and does not explicitly test both palettes. Suite 23's
+header check samples one page, while its URL/download rejection checks include paired exception sentinels.
+Suite 26's final header observation uses a previously fetched week page. See the per-suite notes before deriving
+requirements from these checks. All 197 source references, row keys and table structures were checked statically;
+the application suites were not run locally for this inventory-only change.
+
 ## Reading and extending the inventory
 
 - One file per suite, named `suite_NN.md`. Evidence keys `SNN-NN` are local to this inventory; do not reuse them
@@ -38,7 +65,7 @@ exception sentinels mean call-site counts are not execution counts or counts of 
   these files do not decide which historical behavior should prevail or promise whole-feature completeness.
 - A later suite batch should use the same structure and its own pinned source revision. Check main, open PRs and
   inventory branches before selecting uncovered suites, including unmerged work, to avoid duplicate batches.
-  This batch covers 12–21 only; no claim is made about suites outside that range.
+  The first two batches cover 12–31; no claim is made about suites outside that range.
 - Use only synthetic fixtures. Historical variable names or docstrings saying REAL do not authorize real data.
 
 ## Execution coverage and validation
@@ -61,3 +88,135 @@ the default run only exercises fresh mode. See each suite's setup section before
 Notable evidence gaps for reconciliation: suite 16's status-message predicate is always true; suite 13's re-tracking
 check uses a permissive OR; suite 20 samples renewal/retry times without proving precise boundaries; suite 21's
 control-height assertion can pass for an empty selection. These are inventory notes for review, not code changes.
+
+## Third batch: suites 32–41
+
+Source revision: `d70343f7476177a25f32827262d991cdc95c045f`. These ten suites contain 271 `ok()` call sites
+and no direct `assert` statements. These are static observations; the application suites were not run locally for
+this documentation change. First-batch evidence remains pinned to its original revision.
+
+Suites 22–31 are covered independently by [PR #44](https://github.com/Uuugh/CalendarStream/pull/44). That PR was
+open and unreviewed when this batch was prepared; its files are not duplicated here. This batch can be reviewed
+independently and does not assume that PR's acceptance or merge.
+
+| Suite | Inventory | Main areas | ok call sites | Direct asserts |
+|---|---|---|---:|---:|
+| 32 | [Updater requests](suite_32.md) | settings, account, shell | 13 | 0 |
+| 33 | [Presets and in-place changes](suite_33.md) | sources, rules, history, diagnostics, calendar, templates, shell | 26 | 0 |
+| 34 | [Help, saves and handles](suite_34.md) | shell, calendar, sources, feeds, rules | 24 | 0 |
+| 35 | [Fonts, icons and feedback](suite_35.md) | shell, sources, Google, feeds, account, documentation | 38 | 0 |
+| 36 | [Rules, Local and event tools](suite_36.md) | rules, sources, events, feeds, Google, calendar, account, history, shell | 58 | 0 |
+| 37 | [Conflicts, links and removal](suite_37.md) | rules, events, calendar, sources, settings, shell | 53 | 0 |
+| 38 | [Counts, colors and auto-update](suite_38.md) | rules, templates, history, sources, settings, calendar, feeds, shell | 20 | 0 |
+| 39 | [Assets and feed validators](suite_39.md) | shell, account, sources, feeds, calendar, Google | 23 | 0 |
+| 40 | [Rule palette and headers](suite_40.md) | rules, templates, sources, feeds, Google, settings, shell | 12 | 0 |
+| 41 | [Module and handle edges](suite_41.md) | sources, feeds, shell | 4 | 0 |
+
+Batch-specific limits: updater tests use a local stand-in or fake invocation rather than installing an image;
+phone and light/dark assertions cover different subsets of scenarios; some geometry predicates can pass on an
+empty selection. Static template string checks do not establish a blanket icon/shape policy. Suite 39's later
+Google client-check request is not mocked by that suite and may need external connectivity. Cache assertions
+check `immutable`, not exact year/day retention. See the individual notes for the exact predicates and overlaps.
+
+All 271 new evidence keys, source anchors and table structures were checked against the pinned suite ASTs;
+the README links were checked against files present in this branch. When selecting the next batch, account for
+both this batch and the separate 22–31 PR, including unmerged work, to avoid duplicate inventory.
+
+## Fourth batch: suites 42–51
+
+Source revision: `8e0e71757323d773cd7f2ec3b9e0671381302973`. These ten suites contain 285 `ok()` call sites
+and no direct `assert` statements. These are static observations; no application suites were run locally for this
+inventory-only change. First/second-batch evidence keeps its original source revisions.
+
+Suites 32–41 were reviewed in [PR #45](https://github.com/Uuugh/CalendarStream/pull/45) and merged during this run.
+The exception-marker clarification was pushed to that same branch after its merge completed; this batch also
+carries that single coverage-note amendment into the current tree. It explicitly treats `ok(True, ...)`
+exception-handler markers as non-independent evidence, not verified requirements.
+This batch continues to separate assertion existence from behavior verification and Developer approval.
+
+| Suite | Inventory | Main areas | ok call sites | Direct asserts |
+|---|---|---|---:|---:|
+| 42 | [Updates after redraw](suite_42.md) | settings, shell | 8 | 0 |
+| 43 | [Repeated check feedback](suite_43.md) | settings, shell | 10 | 0 |
+| 44 | [Theme and clarifications](suite_44.md) | shell, sources, feeds, rules, templates, events, calendar, settings, process | 58 | 0 |
+| 45 | [Two-way Google changes](suite_45.md) | Google, history, calendar, rules, events | 27 | 0 |
+| 46 | [Search and event layout](suite_46.md) | calendar, events, Google, feeds, settings, rules, templates, shell | 29 | 0 |
+| 47 | [Shared update state](suite_47.md) | settings, Google, shell | 9 | 0 |
+| 48 | [Google setup lifecycle](suite_48.md) | Google, history | 24 | 0 |
+| 49 | [History and calendar lifecycle](suite_49.md) | sources, rules, history, events, calendar, Google, account, shell | 57 | 0 |
+| 50 | [Deletion and release source](suite_50.md) | Google, calendar, process | 4 | 0 |
+| 51 | [Feeds and invitations](suite_51.md) | feeds, Google, settings, account, rules, shell | 59 | 0 |
+
+Batch-specific limits: suite 44's light/dark/phone matrix covers only part of its interaction set, and its final
+Clarifications keyword map does not prove all delegated behaviors. Suite 49 needs the fixed-clock Demo.ics scenario
+for external-removal checks. Suite 50 inspects workflow text rather than executing release scans. Suite 51 tests
+stored invitation state and a past expiry, not a real restart or the precise seven-day lifetime. Updater services
+are stand-ins and version changes are simulated. See the per-suite notes for exact limits and overlapping evidence.
+
+All 285 new row keys, pinned line anchors and table cells were validated against source ASTs, along with local index
+links. Include unmerged PRs when selecting the next batch so that covered suite numbers are not duplicated.
+
+## Fifth batch: suites 52–61
+
+Source revision: `8e0e71757323d773cd7f2ec3b9e0671381302973`. These ten suites contain 283 `ok()` call sites
+and no direct `assert` statements. These are static observations; the application suites were not run locally
+for this documentation-only change. Each source link remains pinned to the revision inventoried.
+
+Suites 42–51 are reserved by [PR #46](https://github.com/Uuugh/CalendarStream/pull/46), which was open and
+unreviewed with passing CI when this batch was prepared. This batch is based independently on main and does
+not duplicate that PR's files. Its separate index section can be reviewed without assuming the pending PR is accepted.
+
+| Suite | Inventory | Main areas | ok call sites | Direct asserts |
+|---|---|---|---:|---:|
+| 52 | [Regex limits](suite_52.md) | rules | 11 | 0 |
+| 53 | [Sync, traffic and recurrence](suite_53.md) | diagnostics, Google, account, sources, process, shell | 18 | 0 |
+| 54 | [Google reconnect and health](suite_54.md) | Google | 14 | 0 |
+| 55 | [Google refusals and unlock](suite_55.md) | Google, feeds, history, account, shell | 48 | 0 |
+| 56 | [Calendar color fallbacks](suite_56.md) | Google, history | 29 | 0 |
+| 57 | [Editor and hide/show](suite_57.md) | events, history, templates, calendar, shell | 40 | 0 |
+| 58 | [Links and feed defaults](suite_58.md) | events, feeds, history, rules, calendar, shell | 40 | 0 |
+| 59 | [Update observers and colors](suite_59.md) | settings, process, feeds, events, shell, sources | 28 | 0 |
+| 60 | [Download transports](suite_60.md) | sources | 27 | 0 |
+| 61 | [Theme controls and folding](suite_61.md) | process, rules, templates, sources, shell, history | 28 | 0 |
+
+Batch-specific setup: suite 52 is a pure rules check; suite 60 uses a temporary local TLS server and fixture
+certificate instead of Postgres or the live CCS+ service. The other suites need Postgres; browser scenarios use
+synthetic Demo.ics/work.ics and mock services. Suite 53 intentionally inspects raw fixture credentials/tokens in
+its diagnostic records; this inventory records that predicate without reproducing any live credentials.
+
+Limit notes distinguish exact-limit rule normalization from actual save routes, past-expiry samples from exact
+unlock lifetimes, numeric animation configuration from rendered pulses, and source-string checks from executed
+installer/scheduler behavior. Several successful-handler markers and optional-node fallbacks are not independent
+verification. All 283 new row keys, pinned anchors and table cells were validated against source ASTs, with local
+README links checked. Account for pending PRs when selecting subsequent batches to avoid duplication.
+
+## Sixth batch: suites 62–71
+
+Source revision: `2784fd02c28e1ca903ec8ffc336a5ce10e1ee6c8`, fetched main after PR #47 merged. The branch
+started exactly at that revision. These ten suites contain 259 `ok()` call sites and no direct `assert`
+statements. These are static observations; application suites were not run locally for this inventory change.
+
+| Suite | Inventory | Main areas | ok call sites | Direct asserts |
+|---|---|---|---:|---:|
+| 62 | [Rule actions and installer source](suite_62.md) | rules, events, calendar, shell, process | 23 | 0 |
+| 63 | [Meetings, defaults and power](suite_63.md) | events, Google, feeds, account, sources, rules, shell | 29 | 0 |
+| 64 | [Views, PDFs and Settings](suite_64.md) | calendar, account, settings | 21 | 0 |
+| 65 | [Calendar carryover](suite_65.md) | events, history, calendar, account, settings, shell | 39 | 0 |
+| 66 | [Markup and installer defaults](suite_66.md) | shell, sources, settings, history, calendar, rules, events, process | 33 | 0 |
+| 67 | [Status, dialogs and icon menus](suite_67.md) | shell, history, rules, events, settings, Google, calendar, documentation, process | 60 | 0 |
+| 68 | [Unsigned accounts and health](suite_68.md) | Google, history, diagnostics, account | 17 | 0 |
+| 69 | [Shared Google types](suite_69.md) | Google | 9 | 0 |
+| 70 | [Dictionary-backed Google API](suite_70.md) | Google | 21 | 0 |
+| 71 | [Readiness stages](suite_71.md) | Google | 7 | 0 |
+
+Batch-specific setup: 62 uses direct engine/helper and source checks; 69–71 are database/network-free object
+checks. Suites 63–68 use Postgres. Suites 64/65 generate actual PDF bytes through Chromium and inspect them,
+while many installer/style/interaction labels elsewhere only check source strings or markup. Suites 66/69/70
+include skip or exception-handler success markers that cannot independently verify a requirement. Source dates,
+fixture credentials and made-up events remain synthetic; no real data is included.
+
+Limit notes identify permissive OR/fallback checks, finite time/size samples, PDF geometry limits, simulated
+restart/storage versus real restart, and fake JWT audience checks versus complete token verification. No permanent
+requirement IDs or Developer Good statuses are assigned. All 259 new keys/anchors/table cells and the combined
+inventory index links were checked against their pinned source revisions. Future batches must fetch main and
+branch from the freshly updated `origin/main`, preserving this suite order in the index.
