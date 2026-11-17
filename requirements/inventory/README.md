@@ -1,17 +1,35 @@
 # Python suite inventory — Task A
 
-This is evidence for reconciling the frozen Python oracle into feature requirements during the Dart/Flutter
-transition (`build_rules/layer-map.md`, step 2). It records what existing checks assert. It does not add behavior,
-assign permanent requirement IDs, mark anything Developer-verified, or replace the feature requirement files.
-Claude reviews each batch PR; the Developer decides disputed interpretations and approves the eventual spec.
+This static inventory records the Python oracle for feature-requirement reconciliation during the
+Dart/Flutter transition (`build_rules/layer-map.md`, step 2). Suites 12–81 are inventoried in 70 files.
+The batch PRs were reviewed by Claude and merged; this final index is submitted separately for review.
+Evidence is not an approved requirement, a Developer Good verdict, or proof of whole-feature coverage.
+No application or test behavior is changed.
 
-## First batch: suites 12–21
+## Totals and evidence units
 
-Source revision: `87eadf4fa0f586889473a2598031d9e4bbe71a10`. All source links are pinned to that revision.
-The ten suites contain 283 `ok()` call sites and four direct `assert` statements. Branches, loops and
-exception sentinels mean call-site counts are not execution counts or counts of distinct requirements.
+| Evidence unit | Count |
+|---|---:|
+| Inventoried suite files | 70 |
+| `ok()` call sites | 1,663 |
+| unittest assertion calls (suite 77, including exception contexts) | 33 |
+| Conditional unittest failure callback (suite 77) | 1 |
+| Explicit CSS failure guards (suite 78) | 3 |
+| Evidence rows for the preceding four check types | 1,700 |
+| Direct Python `assert` statements, recorded separately | 4 |
 
-| Suite | Inventory | Main areas | ok call sites | Direct asserts |
+Counts are static source sites, not executions, distinct requirements or independently verified behaviors.
+Loops, conditional paths, deliberate failure sentinels, `ok(True)` handler/skip markers and weak predicates
+must be interpreted with their per-suite limitations. Suite 77 has no `ok()` calls; its 34 rows include
+33 unittest assertion calls and one conditional `self.fail` callback. Suite 78 has no `ok()` calls or
+Python assertions; its three rows document explicit failure guards.
+
+## Full suite index
+
+Each inventory retains its own pinned source revision and setup, candidate owning features, predicates,
+line anchors, direct assertions, gaps and overlaps. Evidence-row counts exclude the separate direct assertions.
+
+| Suite | Inventory | Main areas | Evidence rows | Direct asserts |
 |---|---|---|---:|---:|
 | 12 | [Google connection](suite_12.md) | Google client, OAuth, connection lifecycle | 41 | 2 |
 | 13 | [Google sync](suite_13.md) | event mapping, deltas, full checks, recovery | 37 | 1 |
@@ -23,15 +41,6 @@ exception sentinels mean call-site counts are not execution counts or counts of 
 | 19 | [Event editor and preferences](suite_19.md) | events, calendar, sources, Google, settings, account, feeds, rules | 53 | 0 |
 | 20 | [Google notifications](suite_20.md) | watch lifecycle, notifications, two-way sync | 23 | 0 |
 | 21 | [Browser controls and rules](suite_21.md) | calendar, settings, account, rules, feeds, events, sources, shell | 25 | 0 |
-
-## Second batch: suites 22–31
-
-Source revision: `d70343f7476177a25f32827262d991cdc95c045f`. The ten suites contain 197 `ok()` call sites
-and no direct `assert` statements. These are additional static observations, not runtime success claims.
-The first batch remains pinned to its original revision; neither batch assigns permanent requirement IDs.
-
-| Suite | Inventory | Main areas | ok call sites | Direct asserts |
-|---|---|---|---:|---:|
 | 22 | [Update channels](suite_22.md) | settings, account | 15 | 0 |
 | 23 | [Deploy guard regressions](suite_23.md) | settings, account, Google, feeds, sources | 28 | 0 |
 | 24 | [Google guide](suite_24.md) | Google, public address, shell | 10 | 0 |
@@ -42,65 +51,6 @@ The first batch remains pinned to its original revision; neither batch assigns p
 | 29 | [Dates and legacy rules](suite_29.md) | feeds, rules, sources, shell | 11 | 0 |
 | 30 | [Beta versions](suite_30.md) | settings, shell | 9 | 0 |
 | 31 | [Responsive layout](suite_31.md) | feeds, calendar, sources, shell, settings, history | 19 | 0 |
-
-Batch-specific setup: suite 26 requires the fresh-install database path (the harness deliberately omits legacy
-source/destination seeding for it). Suite 28 uses a delayed fake credential verifier. Suite 31 checks three widths,
-with some checks conditional on width or node presence, and does not explicitly test both palettes. Suite 23's
-header check samples one page, while its URL/download rejection checks include paired exception sentinels.
-Suite 26's final header observation uses a previously fetched week page. See the per-suite notes before deriving
-requirements from these checks. All 197 source references, row keys and table structures were checked statically;
-the application suites were not run locally for this inventory-only change.
-
-## Reading and extending the inventory
-
-- One file per suite, named `suite_NN.md`. Evidence keys `SNN-NN` are local to this inventory; do not reuse them
-  as approved feature requirement IDs. Preserve keys when correcting descriptions; append new evidence keys
-  if a source revision adds checks.
-- Each row names a candidate owning feature, the observed behavior, and the original assertion's line. The setup
-  and nearby source establish the input/state. Interpret the predicate rather than trusting historical labels.
-  Several call sites combine behaviors; feature-spec reconciliation may split them without losing the evidence.
-- Include every `ok()` call site and direct `assert`, including conditional paths, looped checks and deliberate
-  failure sentinels. Do not count screenshots, comments, fixture construction or unasserted requests as coverage.
-- Record limitations, weak predicates, skipped variants and overlaps. Keep duplicate evidence until reconciliation;
-  these files do not decide which historical behavior should prevail or promise whole-feature completeness.
-- A later suite batch should use the same structure and its own pinned source revision. Check main, open PRs and
-  inventory branches before selecting uncovered suites, including unmerged work, to avoid duplicate batches.
-  The first two batches cover 12–31; no claim is made about suites outside that range.
-- Use only synthetic fixtures. Historical variable names or docstrings saying REAL do not authorize real data.
-
-## Execution coverage and validation
-
-This batch is a static, assertion-by-assertion inventory. The application and test code are unchanged; the suites
-were not run for this documentation change. No test-success or Developer Good verdict is inferred from an
-assertion's existence. Source-reference, assertion-count, Markdown-table and whitespace checks validate the
-inventory itself.
-
-At the pinned revision, [`tests/run.sh`](https://github.com/Uuugh/CalendarStream/blob/87eadf4fa0f586889473a2598031d9e4bbe71a10/tests/run.sh)
-creates isolated seeded databases, uses a fixed late-October 2026 clock when faketime is installed, and checks
-FAIL output as well as exit status. All of these suites need Postgres. Browser suites also need Chromium and
-Playwright. Do not run concurrent local suites against the same harness databases.
-
-The default complete run exercises suite 12 configured and unconfigured, and suite 15 with/without PUBLIC_URL;
-it omits suite 17 unless `all` is supplied. Selecting individual suite numbers does **not** add those extra
-variants: suite 15 still needs its URL argument. Suite 16's import branch needs a separate isolated invocation;
-the default run only exercises fresh mode. See each suite's setup section before claiming runtime coverage.
-
-Notable evidence gaps for reconciliation: suite 16's status-message predicate is always true; suite 13's re-tracking
-check uses a permissive OR; suite 20 samples renewal/retry times without proving precise boundaries; suite 21's
-control-height assertion can pass for an empty selection. These are inventory notes for review, not code changes.
-
-## Third batch: suites 32–41
-
-Source revision: `d70343f7476177a25f32827262d991cdc95c045f`. These ten suites contain 271 `ok()` call sites
-and no direct `assert` statements. These are static observations; the application suites were not run locally for
-this documentation change. First-batch evidence remains pinned to its original revision.
-
-Suites 22–31 are covered independently by [PR #44](https://github.com/Uuugh/CalendarStream/pull/44). That PR was
-open and unreviewed when this batch was prepared; its files are not duplicated here. This batch can be reviewed
-independently and does not assume that PR's acceptance or merge.
-
-| Suite | Inventory | Main areas | ok call sites | Direct asserts |
-|---|---|---|---:|---:|
 | 32 | [Updater requests](suite_32.md) | settings, account, shell | 13 | 0 |
 | 33 | [Presets and in-place changes](suite_33.md) | sources, rules, history, diagnostics, calendar, templates, shell | 26 | 0 |
 | 34 | [Help, saves and handles](suite_34.md) | shell, calendar, sources, feeds, rules | 24 | 0 |
@@ -111,31 +61,6 @@ independently and does not assume that PR's acceptance or merge.
 | 39 | [Assets and feed validators](suite_39.md) | shell, account, sources, feeds, calendar, Google | 23 | 0 |
 | 40 | [Rule palette and headers](suite_40.md) | rules, templates, sources, feeds, Google, settings, shell | 12 | 0 |
 | 41 | [Module and handle edges](suite_41.md) | sources, feeds, shell | 4 | 0 |
-
-Batch-specific limits: updater tests use a local stand-in or fake invocation rather than installing an image;
-phone and light/dark assertions cover different subsets of scenarios; some geometry predicates can pass on an
-empty selection. Static template string checks do not establish a blanket icon/shape policy. Suite 39's later
-Google client-check request is not mocked by that suite and may need external connectivity. Cache assertions
-check `immutable`, not exact year/day retention. See the individual notes for the exact predicates and overlaps.
-
-All 271 new evidence keys, source anchors and table structures were checked against the pinned suite ASTs;
-the README links were checked against files present in this branch. When selecting the next batch, account for
-both this batch and the separate 22–31 PR, including unmerged work, to avoid duplicate inventory.
-
-## Fourth batch: suites 42–51
-
-Source revision: `8e0e71757323d773cd7f2ec3b9e0671381302973`. These ten suites contain 285 `ok()` call sites
-and no direct `assert` statements. These are static observations; no application suites were run locally for this
-inventory-only change. First/second-batch evidence keeps its original source revisions.
-
-Suites 32–41 were reviewed in [PR #45](https://github.com/Uuugh/CalendarStream/pull/45) and merged during this run.
-The exception-marker clarification was pushed to that same branch after its merge completed; this batch also
-carries that single coverage-note amendment into the current tree. It explicitly treats `ok(True, ...)`
-exception-handler markers as non-independent evidence, not verified requirements.
-This batch continues to separate assertion existence from behavior verification and Developer approval.
-
-| Suite | Inventory | Main areas | ok call sites | Direct asserts |
-|---|---|---|---:|---:|
 | 42 | [Updates after redraw](suite_42.md) | settings, shell | 8 | 0 |
 | 43 | [Repeated check feedback](suite_43.md) | settings, shell | 10 | 0 |
 | 44 | [Theme and clarifications](suite_44.md) | shell, sources, feeds, rules, templates, events, calendar, settings, process | 58 | 0 |
@@ -146,28 +71,6 @@ This batch continues to separate assertion existence from behavior verification 
 | 49 | [History and calendar lifecycle](suite_49.md) | sources, rules, history, events, calendar, Google, account, shell | 57 | 0 |
 | 50 | [Deletion and release source](suite_50.md) | Google, calendar, process | 4 | 0 |
 | 51 | [Feeds and invitations](suite_51.md) | feeds, Google, settings, account, rules, shell | 59 | 0 |
-
-Batch-specific limits: suite 44's light/dark/phone matrix covers only part of its interaction set, and its final
-Clarifications keyword map does not prove all delegated behaviors. Suite 49 needs the fixed-clock Demo.ics scenario
-for external-removal checks. Suite 50 inspects workflow text rather than executing release scans. Suite 51 tests
-stored invitation state and a past expiry, not a real restart or the precise seven-day lifetime. Updater services
-are stand-ins and version changes are simulated. See the per-suite notes for exact limits and overlapping evidence.
-
-All 285 new row keys, pinned line anchors and table cells were validated against source ASTs, along with local index
-links. Include unmerged PRs when selecting the next batch so that covered suite numbers are not duplicated.
-
-## Fifth batch: suites 52–61
-
-Source revision: `8e0e71757323d773cd7f2ec3b9e0671381302973`. These ten suites contain 283 `ok()` call sites
-and no direct `assert` statements. These are static observations; the application suites were not run locally
-for this documentation-only change. Each source link remains pinned to the revision inventoried.
-
-Suites 42–51 are reserved by [PR #46](https://github.com/Uuugh/CalendarStream/pull/46), which was open and
-unreviewed with passing CI when this batch was prepared. This batch is based independently on main and does
-not duplicate that PR's files. Its separate index section can be reviewed without assuming the pending PR is accepted.
-
-| Suite | Inventory | Main areas | ok call sites | Direct asserts |
-|---|---|---|---:|---:|
 | 52 | [Regex limits](suite_52.md) | rules | 11 | 0 |
 | 53 | [Sync, traffic and recurrence](suite_53.md) | diagnostics, Google, account, sources, process, shell | 18 | 0 |
 | 54 | [Google reconnect and health](suite_54.md) | Google | 14 | 0 |
@@ -178,26 +81,6 @@ not duplicate that PR's files. Its separate index section can be reviewed withou
 | 59 | [Update observers and colors](suite_59.md) | settings, process, feeds, events, shell, sources | 28 | 0 |
 | 60 | [Download transports](suite_60.md) | sources | 27 | 0 |
 | 61 | [Theme controls and folding](suite_61.md) | process, rules, templates, sources, shell, history | 28 | 0 |
-
-Batch-specific setup: suite 52 is a pure rules check; suite 60 uses a temporary local TLS server and fixture
-certificate instead of Postgres or the live CCS+ service. The other suites need Postgres; browser scenarios use
-synthetic Demo.ics/work.ics and mock services. Suite 53 intentionally inspects raw fixture credentials/tokens in
-its diagnostic records; this inventory records that predicate without reproducing any live credentials.
-
-Limit notes distinguish exact-limit rule normalization from actual save routes, past-expiry samples from exact
-unlock lifetimes, numeric animation configuration from rendered pulses, and source-string checks from executed
-installer/scheduler behavior. Several successful-handler markers and optional-node fallbacks are not independent
-verification. All 283 new row keys, pinned anchors and table cells were validated against source ASTs, with local
-README links checked. Account for pending PRs when selecting subsequent batches to avoid duplication.
-
-## Sixth batch: suites 62–71
-
-Source revision: `2784fd02c28e1ca903ec8ffc336a5ce10e1ee6c8`, fetched main after PR #47 merged. The branch
-started exactly at that revision. These ten suites contain 259 `ok()` call sites and no direct `assert`
-statements. These are static observations; application suites were not run locally for this inventory change.
-
-| Suite | Inventory | Main areas | ok call sites | Direct asserts |
-|---|---|---|---:|---:|
 | 62 | [Rule actions and installer source](suite_62.md) | rules, events, calendar, shell, process | 23 | 0 |
 | 63 | [Meetings, defaults and power](suite_63.md) | events, Google, feeds, account, sources, rules, shell | 29 | 0 |
 | 64 | [Views, PDFs and Settings](suite_64.md) | calendar, account, settings | 21 | 0 |
@@ -208,43 +91,70 @@ statements. These are static observations; application suites were not run local
 | 69 | [Shared Google types](suite_69.md) | Google | 9 | 0 |
 | 70 | [Dictionary-backed Google API](suite_70.md) | Google | 21 | 0 |
 | 71 | [Readiness stages](suite_71.md) | Google | 7 | 0 |
+| 72 | [Google failure classification and recovery decisions](suite_72.md) | google | 19 | 0 |
+| 73 | [Google account health with a fake clock](suite_73.md) | google | 13 | 0 |
+| 74 | [Sync helpers and facade composition](suite_74.md) | google | 9 | 0 |
+| 75 | [Dependency-map freshness and Google module headers](suite_75.md) | process | 2 | 0 |
+| 76 | [Traffic retention and serialization](suite_76.md) | diagnostics | 5 | 0 |
+| 77 | [Refactor contracts using unittest](suite_77.md) | process, sources, feeds, events, rules, event_templates, settings, account, google, history | 34 | 0 |
+| 78 | [CSS guard failure branches](suite_78.md) | process | 3 | 0 |
+| 79 | [Calendar stretch controls and clock badge](suite_79.md) | calendar | 13 | 0 |
+| 80 | [Full-page Settings markup](suite_80.md) | settings | 11 | 0 |
+| 81 | [Full-page Settings and live auto-update state](suite_81.md) | settings, sources, account, shell | 13 | 0 |
 
-Batch-specific setup: 62 uses direct engine/helper and source checks; 69–71 are database/network-free object
-checks. Suites 63–68 use Postgres. Suites 64/65 generate actual PDF bytes through Chromium and inspect them,
-while many installer/style/interaction labels elsewhere only check source strings or markup. Suites 66/69/70
-include skip or exception-handler success markers that cannot independently verify a requirement. Source dates,
-fixture credentials and made-up events remain synthetic; no real data is included.
+## Source revisions and reviewed batches
 
-Limit notes identify permissive OR/fallback checks, finite time/size samples, PDF geometry limits, simulated
-restart/storage versus real restart, and fake JWT audience checks versus complete token verification. No permanent
-requirement IDs or Developer Good statuses are assigned. All 259 new keys/anchors/table cells and the combined
-inventory index links were checked against their pinned source revisions. Future batches must fetch main and
-branch from the freshly updated `origin/main`, preserving this suite order in the index.
+| Suites | Pinned source revision | Batch PR |
+|---|---|---|
+| 12–21 | `87eadf4fa0f586889473a2598031d9e4bbe71a10` | [#42](https://github.com/Uuugh/CalendarStream/pull/42) |
+| 22–31 | `d70343f7476177a25f32827262d991cdc95c045f` | [#44](https://github.com/Uuugh/CalendarStream/pull/44) |
+| 32–41 | `d70343f7476177a25f32827262d991cdc95c045f` | [#45](https://github.com/Uuugh/CalendarStream/pull/45) |
+| 42–51 | `8e0e71757323d773cd7f2ec3b9e0671381302973` | [#46](https://github.com/Uuugh/CalendarStream/pull/46) |
+| 52–61 | `8e0e71757323d773cd7f2ec3b9e0671381302973` | [#47](https://github.com/Uuugh/CalendarStream/pull/47) |
+| 62–71 | `2784fd02c28e1ca903ec8ffc336a5ce10e1ee6c8` | [#48](https://github.com/Uuugh/CalendarStream/pull/48) |
+| 72–81 | `2784fd02c28e1ca903ec8ffc336a5ce10e1ee6c8` | [#49](https://github.com/Uuugh/CalendarStream/pull/49) |
 
-## Seventh batch: suites 72–81
+The suite 36 exception-handler-marker clarification requested on #45 reached main through #46.
+Pinned evidence is historical: it should not silently be interpreted as a check of later source changes.
 
-Source revision: `2784fd02c28e1ca903ec8ffc336a5ce10e1ee6c8`. This batch records 85 `ok()` call sites,
-33 unittest assertion calls, one conditional unittest failure callback and three explicit failure guards
-(122 evidence rows total), with no direct Python `assert` statements. These are static observations;
-application suites were not run locally for this documentation-only change.
+## Reading and extending the inventory
 
-Suites 62–71 were merged in [PR #48](https://github.com/Uuugh/CalendarStream/pull/48).
-Their index entries and inventory files are preserved above.
+- Evidence keys `SNN-NN` are local references, not permanent feature requirement IDs. Preserve keys when
+  correcting descriptions. Full predicates and setup govern the interpretation, rather than historical labels.
+- Keep compound predicates together unless they clearly represent separate requirements. Keep overlapping
+  evidence until feature reconciliation decides ownership and disputed behavior.
+- Include every check site and direct assertion, including conditional paths and deliberate failure markers.
+  Screenshots, fixture construction and unasserted requests are not assertion coverage.
+- Future batch PRs add only new `requirements/inventory/suite_NN.md` files. They do not edit README or any
+  existing file. Put counts, suites without `ok()` calls and unusual evidence in the PR description.
+- Fetch and branch from latest `origin/main`, verify the starting revision, and check merged/open PRs before
+  selecting uncovered suites. Keep at most two inventory PRs open. Only synthetic/demo data is permitted.
 
-| Suite | Inventory | Main areas | Evidence rows | Evidence unit |
-|---|---|---|---:|---|
-| 72 | [Google failure classification and recovery decisions](suite_72.md) | see per-suite feature candidates | 19 | ok call sites |
-| 73 | [Google account health with a fake clock](suite_73.md) | see per-suite feature candidates | 13 | ok call sites |
-| 74 | [Sync helpers and facade composition](suite_74.md) | see per-suite feature candidates | 9 | ok call sites |
-| 75 | [Dependency-map freshness and Google module headers](suite_75.md) | see per-suite feature candidates | 2 | ok call sites |
-| 76 | [Traffic retention and serialization](suite_76.md) | see per-suite feature candidates | 5 | ok call sites |
-| 77 | [Refactor contracts using unittest](suite_77.md) | see per-suite feature candidates | 34 | 33 unittest assertions + 1 fail callback |
-| 78 | [CSS guard failure branches](suite_78.md) | see per-suite feature candidates | 3 | explicit failure guards |
-| 79 | [Calendar stretch controls and clock badge](suite_79.md) | see per-suite feature candidates | 13 | ok call sites |
-| 80 | [Full-page Settings markup](suite_80.md) | see per-suite feature candidates | 11 | ok call sites |
-| 81 | [Full-page Settings and live auto-update state](suite_81.md) | see per-suite feature candidates | 13 | ok call sites |
+## Validation and execution limits
 
-Failure classification/recovery, module boundaries and the CSS guard use isolated fixtures. Browser/route
-checks use synthetic demo data. Scope notes distinguish always-true predicates, optional-node fallbacks,
-source-string checks, sampled recovery inputs and unittest callbacks from independent behavior verification.
-All row keys, pinned source anchors, table cells and local index links were statically validated.
+Static validation checked all 1,700 row keys and pinned source anchors against the appropriate AST check
+sites, all four direct assertions, Markdown table cells, and all 70 index links in suite order. This final PR
+changes only this README. Application suites were not run locally for the documentation-only inventory;
+GitHub runtime CI is separate evidence. In particular, the post-merge-update `suites` check for #49 passed
+in [run 44164646492](https://github.com/Uuugh/CalendarStream/actions/runs/44164646492).
+
+Setup varies: many suites need isolated Postgres databases; browser scenarios need Chromium/Playwright;
+others use pure objects, fake clocks, in-memory collaborators or local servers. Fixed-clock Demo.ics scenarios,
+configured/unconfigured modes, URL variants and import/fresh modes must be considered before claiming execution
+coverage. Selecting an individual suite does not necessarily exercise all harness variants. See each suite's
+setup section and the harness at its pinned revision. Do not run concurrent suites against shared databases.
+
+## Open questions for feature reconciliation
+
+- suite_82.py not inventoried: uncommitted at inventory time.
+- Which candidate observations become approved feature requirements, and which feature owns overlapping
+  evidence? These decisions remain with the Developer; this inventory assigns no permanent requirement IDs.
+- How should weak or vacuous predicates be strengthened? Examples include suite 16's status-message check,
+  suite 73's `or True`, permissive OR checks, empty-selection geometry and optional-node fallbacks.
+- Which untested modes and boundaries need direct evidence? Examples include fresh/import and configured modes,
+  exact retry/expiry boundaries, real restart persistence, and complete light/dark/phone interaction matrices.
+- Which source-string/keyword checks and handler/skip success markers need runtime verification? These checks
+  cannot independently establish the behaviors suggested by their labels. Suite 36's S36-05 marker is one example.
+
+Per-suite coverage notes retain the specific predicates and overlaps needed to resolve these questions.
+Inventory completion is reported only after this final README-only PR is merged by the Developer.
