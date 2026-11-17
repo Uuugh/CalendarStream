@@ -220,3 +220,31 @@ restart/storage versus real restart, and fake JWT audience checks versus complet
 requirement IDs or Developer Good statuses are assigned. All 259 new keys/anchors/table cells and the combined
 inventory index links were checked against their pinned source revisions. Future batches must fetch main and
 branch from the freshly updated `origin/main`, preserving this suite order in the index.
+
+## Seventh batch: suites 72–81
+
+Source revision: `2784fd02c28e1ca903ec8ffc336a5ce10e1ee6c8`. This batch records 85 `ok()` call sites,
+33 unittest assertion calls, one conditional unittest failure callback and three explicit failure guards
+(122 evidence rows total), with no direct Python `assert` statements. These are static observations;
+application suites were not run locally for this documentation-only change.
+
+Suites 62–71 were merged in [PR #48](https://github.com/Uuugh/CalendarStream/pull/48).
+Their index entries and inventory files are preserved above.
+
+| Suite | Inventory | Main areas | Evidence rows | Evidence unit |
+|---|---|---|---:|---|
+| 72 | [Google failure classification and recovery decisions](suite_72.md) | see per-suite feature candidates | 19 | ok call sites |
+| 73 | [Google account health with a fake clock](suite_73.md) | see per-suite feature candidates | 13 | ok call sites |
+| 74 | [Sync helpers and facade composition](suite_74.md) | see per-suite feature candidates | 9 | ok call sites |
+| 75 | [Dependency-map freshness and Google module headers](suite_75.md) | see per-suite feature candidates | 2 | ok call sites |
+| 76 | [Traffic retention and serialization](suite_76.md) | see per-suite feature candidates | 5 | ok call sites |
+| 77 | [Refactor contracts using unittest](suite_77.md) | see per-suite feature candidates | 34 | 33 unittest assertions + 1 fail callback |
+| 78 | [CSS guard failure branches](suite_78.md) | see per-suite feature candidates | 3 | explicit failure guards |
+| 79 | [Calendar stretch controls and clock badge](suite_79.md) | see per-suite feature candidates | 13 | ok call sites |
+| 80 | [Full-page Settings markup](suite_80.md) | see per-suite feature candidates | 11 | ok call sites |
+| 81 | [Full-page Settings and live auto-update state](suite_81.md) | see per-suite feature candidates | 13 | ok call sites |
+
+Failure classification/recovery, module boundaries and the CSS guard use isolated fixtures. Browser/route
+checks use synthetic demo data. Scope notes distinguish always-true predicates, optional-node fallbacks,
+source-string checks, sampled recovery inputs and unittest callbacks from independent behavior verification.
+All row keys, pinned source anchors, table cells and local index links were statically validated.
