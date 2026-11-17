@@ -46,3 +46,4 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-40 | verified | A rule shows its title (if any), what it does, and its color by name. | — | S40-01, S40-02, S66-17, S45-26 |
 | RUL-41 | verified | How rules work is explained from the rule dialog. | — | S33-24, S38-01, S38-03, S38-04, S38-13, S21-23 |
 | RUL-43 | verified | An Emoji action lets the user find and choose any emoji by searching (UI-11). | — | S44-41 |
+| RUL-44 | verified | A typed regex is checked for legality as it is typed or saved; when it is not legal, the site says why and highlights the broken part of the pattern. Regexes use Dart (ECMAScript) syntax; Python-only syntax is not supported. | packages/domain/test/rules/text_matching_test.dart | Developer, Nov 17 |

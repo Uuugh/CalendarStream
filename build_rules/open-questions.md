@@ -8,10 +8,3 @@ Only unanswered questions are listed; Claude removes a question once it acts on 
 
 
 
-## Q-P: the port
-
-- **Q-P3** Dart's RegExp is ECMAScript, Python's `regex` module is not: Python-only syntax such as inline flags `(?i)`,
-  named groups `(?P<name>...)`, `\A` / `\Z` and possessive or atomic groups does not compile in Dart. Do any of your saved
-  rules use a typed regex with that kind of syntax? (If not, nothing to do; if so, tell Claude which, and the port will
-  convert them when it migrates the rules.)
-  Answer:

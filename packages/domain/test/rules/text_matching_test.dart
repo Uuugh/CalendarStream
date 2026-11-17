@@ -5,6 +5,7 @@ bool m(String op, String value, String text, {bool cs = false}) =>
     textMatcher(TextCondition(op, value, caseSensitive: cs))(text);
 
 void main() {
+  regexProblemTests();
   // RUL-03 (S36-01)
   group('RUL-03 text conditions', () {
     test('is, contains, whole word, begins, ends match', () {
@@ -54,5 +55,41 @@ void main() {
     });
     test('only the regex kind can fail', () => expect(patternError('(', 'contains'), ''));
     test('empty value gives no results', () => expect(testText('', 'regex', false, ['a']).results, isEmpty));
+  });
+}
+
+// RUL-44: the site checks a typed regex and shows which part is broken.
+void regexProblemTests() {
+  group('RUL-44 regex problem and position', () {
+    RegexProblem? p(String s) => regexProblem(s);
+    test('a legal regex has no problem', () {
+      expect(p(r'E\d{4}'), isNull);
+      expect(p('(a|aa)+\$'), isNull);
+    });
+    test('unterminated group points at its opening bracket', () {
+      final r = p('ab(cd')!;
+      expect([r.start, r.end], [2, 3]);
+    });
+    test('unterminated class points at its [', () {
+      final r = p('x[abc')!;
+      expect([r.start, r.end], [1, 2]);
+    });
+    test('nothing to repeat points at the quantifier', () {
+      final r = p('a**')!;
+      expect(r.message, 'Nothing to repeat');
+      expect([r.start, r.end], [2, 3]);
+    });
+    test('unmatched closing bracket', () {
+      final r = p('ab)')!;
+      expect([r.start, r.end], [2, 3]);
+    });
+    test('Python-only syntax is refused (inline flag, named group)', () {
+      expect(p('(?i)x'), isNotNull);
+      expect(p('(?P<n>x)'), isNotNull);
+    });
+    test('patternError says where (1-based)', () {
+      expect(patternError('ab(cd', 'regex'), 'Not a valid regex: Unterminated group (at character 3).');
+    });
+    test('escaped brackets are not openers', () => expect(p(r'a\(b'), isNull));
   });
 }

@@ -33,15 +33,7 @@ String wildcardToRegex(String value) {
 }
 
 /// Why a regex cannot be used (empty when it can), for the page. Only the `regex` kind can fail.
-String patternError(String value, String op) {
-  if (op != 'regex') return '';
-  try {
-    RegExp(value, unicode: true);
-  } on FormatException catch (e) {
-    return 'Not a valid regex: ${e.message}.';
-  }
-  return '';
-}
+String patternError(String value, String op) {  if (op != 'regex') return '';  final problem = regexProblem(value);  if (problem == null) return '';  return 'Not a valid regex: ${problem.message} (at character ${problem.start + 1}).';}
 
 /// One text condition: how to compare (`is`, `contains`, `word`, `begins`, `ends`, `regex`, `pattern`),
 /// the value, and whether capitals matter.
@@ -112,4 +104,64 @@ TextTestResult testText(String value, String op, bool caseSensitive, List<String
     results.add(TextTestMatch(text, m != null, m == null ? const [] : [m.start, m.end]));
   }
   return TextTestResult('', results);
+}
+
+/// What is wrong with a typed regex and where: the message and the character range `[start, end)` to
+/// highlight. Dart reports the message but not the position, so the position is found here.
+class RegexProblem {
+  const RegexProblem(this.message, this.start, this.end);
+
+  final String message;
+  final int start;
+  final int end;
+}
+
+/// Null when [pattern] is a legal regex; otherwise the problem and the broken part of the pattern.
+RegexProblem? regexProblem(String pattern) {
+  late final String message;
+  try {
+    RegExp(pattern, unicode: true);
+    return null;
+  } on FormatException catch (e) {
+    message = e.message;
+  }
+  if (message.startsWith('Unterminated')) {
+    final opener = _unmatchedOpener(pattern);
+    if (opener >= 0) return RegexProblem(message, opener, opener + 1);
+  }
+  // The first prefix that fails with the same message ends at the broken character.
+  for (var k = 1; k <= pattern.length; k++) {
+    try {
+      RegExp(pattern.substring(0, k), unicode: true);
+    } on FormatException catch (e) {
+      if (e.message != message) continue;
+      var start = k - 1;
+      if (message == 'Invalid group') start = pattern.lastIndexOf('(', k - 1).clamp(0, k - 1);
+      if (message.contains('quantifier')) start = pattern.lastIndexOf('{', k - 1).clamp(0, k - 1);
+      return RegexProblem(message, start, k);
+    }
+  }
+  return RegexProblem(message, 0, pattern.length);
+}
+
+/// The index of the group or character class that is never closed, or -1.
+int _unmatchedOpener(String pattern) {
+  final open = <int>[];
+  var classStart = -1;
+  for (var i = 0; i < pattern.length; i++) {
+    final ch = pattern[i];
+    if (ch == r'\') {
+      i++;
+    } else if (classStart >= 0) {
+      if (ch == ']') classStart = -1;
+    } else if (ch == '[') {
+      classStart = i;
+    } else if (ch == '(') {
+      open.add(i);
+    } else if (ch == ')' && open.isNotEmpty) {
+      open.removeLast();
+    }
+  }
+  if (classStart >= 0) return classStart;
+  return open.isEmpty ? -1 : open.last;
 }

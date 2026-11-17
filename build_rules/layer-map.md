@@ -198,3 +198,7 @@ tooling stays for the Python page only).
   timeout (the domain package keeps the pure matcher); (2) the regex error wording is Dart's own, prefixed "Not a valid
   regex:", so tests assert the prefix, not Python's text. New risk: Python-only regex syntax does not compile in Dart
   (asked as Q-P3).
+- Q-P3 answered Nov 17 (Developer): use Dart's regex, matching Python's syntax is not needed; the requirement is that the user
+  can build a rule or search with a regex, and the site checks its legality and highlights the broken part (new RUL-44,
+  built and tested in packages/domain: `regexProblem` finds the position, because Dart gives only a message). Saved rules
+  that use Python-only syntax will fail to compile; the port flags them as broken at migration instead of dropping them.
