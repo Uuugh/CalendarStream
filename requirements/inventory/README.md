@@ -65,7 +65,7 @@ the application suites were not run locally for this inventory-only change.
   these files do not decide which historical behavior should prevail or promise whole-feature completeness.
 - A later suite batch should use the same structure and its own pinned source revision. Check main, open PRs and
   inventory branches before selecting uncovered suites, including unmerged work, to avoid duplicate batches.
-  The current two batches cover 12–31; no claim is made about suites outside that range.
+  The first two batches cover 12–31; no claim is made about suites outside that range.
 - Use only synthetic fixtures. Historical variable names or docstrings saying REAL do not authorize real data.
 
 ## Execution coverage and validation
@@ -121,3 +121,37 @@ check `immutable`, not exact year/day retention. See the individual notes for th
 All 271 new evidence keys, source anchors and table structures were checked against the pinned suite ASTs;
 the README links were checked against files present in this branch. When selecting the next batch, account for
 both this batch and the separate 22–31 PR, including unmerged work, to avoid duplicate inventory.
+
+## Fourth batch: suites 42–51
+
+Source revision: `8e0e71757323d773cd7f2ec3b9e0671381302973`. These ten suites contain 285 `ok()` call sites
+and no direct `assert` statements. These are static observations; no application suites were run locally for this
+inventory-only change. First/second-batch evidence keeps its original source revisions.
+
+Suites 32–41 were reviewed in [PR #45](https://github.com/Uuugh/CalendarStream/pull/45) and merged during this run.
+The exception-marker clarification was pushed to that same branch after its merge completed; this batch also
+carries that single coverage-note amendment into the current tree. It explicitly treats `ok(True, ...)`
+exception-handler markers as non-independent evidence, not verified requirements.
+This batch continues to separate assertion existence from behavior verification and Developer approval.
+
+| Suite | Inventory | Main areas | ok call sites | Direct asserts |
+|---|---|---|---:|---:|
+| 42 | [Updates after redraw](suite_42.md) | settings, shell | 8 | 0 |
+| 43 | [Repeated check feedback](suite_43.md) | settings, shell | 10 | 0 |
+| 44 | [Theme and clarifications](suite_44.md) | shell, sources, feeds, rules, templates, events, calendar, settings, process | 58 | 0 |
+| 45 | [Two-way Google changes](suite_45.md) | Google, history, calendar, rules, events | 27 | 0 |
+| 46 | [Search and event layout](suite_46.md) | calendar, events, Google, feeds, settings, rules, templates, shell | 29 | 0 |
+| 47 | [Shared update state](suite_47.md) | settings, Google, shell | 9 | 0 |
+| 48 | [Google setup lifecycle](suite_48.md) | Google, history | 24 | 0 |
+| 49 | [History and calendar lifecycle](suite_49.md) | sources, rules, history, events, calendar, Google, account, shell | 57 | 0 |
+| 50 | [Deletion and release source](suite_50.md) | Google, calendar, process | 4 | 0 |
+| 51 | [Feeds and invitations](suite_51.md) | feeds, Google, settings, account, rules, shell | 59 | 0 |
+
+Batch-specific limits: suite 44's light/dark/phone matrix covers only part of its interaction set, and its final
+Clarifications keyword map does not prove all delegated behaviors. Suite 49 needs the fixed-clock Demo.ics scenario
+for external-removal checks. Suite 50 inspects workflow text rather than executing release scans. Suite 51 tests
+stored invitation state and a past expiry, not a real restart or the precise seven-day lifetime. Updater services
+are stand-ins and version changes are simulated. See the per-suite notes for exact limits and overlapping evidence.
+
+All 285 new row keys, pinned line anchors and table cells were validated against source ASTs, along with local index
+links. Include unmerged PRs when selecting the next batch so that covered suite numbers are not duplicated.
