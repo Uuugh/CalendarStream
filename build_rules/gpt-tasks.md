@@ -37,3 +37,6 @@ written ONCE in `requirements/drafts/shared_ui.md` (IDs `UI-NN`). A feature's re
 and never repeats it. If a row you are drafting is shared UI, add or reuse a `UI-NN` row instead (add it in your PR to
 that file only if it is not there yet; otherwise reference the existing one). If the same behavior appears in two
 features, write it once, in the owning feature or in shared_ui.md, and reference it from the other. (Developer, Nov 17.)
+
+After the last feature draft merges, Claude runs a duplication review across all drafts before the Developer sees them
+(layer-map.md, step 2). GPT: do not wait for it, and do not start a duplicate-removal pass yourself.
