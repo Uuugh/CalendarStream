@@ -163,3 +163,9 @@ tooling stays for the Python page only).
   I22 has a Bad verdict but no Dashboard item (F65 absorbed it): not created, to be decided with the Developer.
 - Step 2: ChatGPT's PR #42 (inventory of suites 12-21, `requirements/inventory/`) reviewed by Claude and merged by the
   Developer's instruction (Nov 17). Next batches: suites 22-31 and on. I22 is GitHub issue #43 (open; conflicts with SET-06).
+- I22 (#43) closed Nov 17: the Developer chose to keep the separate Settings pop-ups; SET-06 stands. Inventory PRs #44-#48
+  merged (suites 22-71); #49 (72-81) awaits a README conflict fix by ChatGPT.
+- Dashboard (decided Nov 17): it is redone after all other steps are done, as a live web page, not an artifact. A public
+  read-only page on GitHub Pages (built in CI from GitHub issues and `requirements/*.md`) is possible, but GitHub Pages is
+  public, so the Developer's private files (`docs/development/*`, gitignored) and Good | Bad verdicts never go there.
+  They move into the app itself, in `diagnostics`, behind the app's login, served by the Dart server and never committed.
