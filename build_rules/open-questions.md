@@ -12,17 +12,16 @@ unattended. Options:
    of the rule; nobody merges anything else.
 2. Developer merges by hand (today): safe but waits whenever you are away.
 3. Authorize Claude to merge those PRs, in writing in `2-build.md` (needs your decision; the safety layer may still ask).
-Answer: ___
+Answer: 1 (Developer, Nov 17). Claude added .github/workflows/inventory-automerge.yml.
 
 ## Q-R: rules requirements (requirements/drafts/rules.md)
 
 - **Q-R1** Layout measurements (pixels, offsets, opacity) in the inventory: leave to `theme.md` and the UI tests, not
-  requirements? (Claude's default: yes.)
+  requirements? yes
 - **Q-R2** RUL-35 (migration of legacy tag colors): keep as a requirement for the Dart server, or drop it, if every
-  install has already migrated? (Default: keep until you confirm no old data remains.)
-- **Q-R3** RUL-42 (rule dialog fits a 390 px phone): keep? The Flutter client will have its own phone layout (Claude's
-  default: keep, rewritten as "usable on a phone-width window").
-- **Q-R4** Approve the 41 draft rows as `verified` in `requirements/rules.md`? Claude moves them after you say yes.
+  install has already migrated? keep until items have ported
+- **Q-R3** RUL-42 (rule dialog fits a 390 px phone): keep? The Flutter client will have its own phone layout . the site will use responsive web design so it is viewable on a phone. the actual phone app will piggyback on the responsive theme
+- **Q-R4** Approve the 41 draft rows as `verified` in `requirements/rules.md`? Claude moves them after you say yes. yes
 
 ## Q-S: later steps
 
@@ -36,3 +35,4 @@ Answer: ___
 - **Q-S4** Dart toolchain: the Dart/Flutter SDK is not installed in this shell. Should Claude install it, or will you?
 - **Q-S5** Baseline: Claude will run the full Python suites once in CI before freezing them. OK to push a branch for
   that?
+- Q-R1..Q-R4 answered Nov 17: RUL-03..RUL-43 moved to requirements/rules.md as verified (RUL-42 reworded: responsive web layout; phone app reuses the theme). Draft file removed.
