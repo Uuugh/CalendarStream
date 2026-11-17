@@ -9,11 +9,3 @@ Only unanswered questions are listed; Claude removes a question once it acts on 
 
 
 
-## Q-D: deployment
-
-- **Q-D1** GPT's README scan (requirements/drafts/readme_gaps.md) found about 25 README promises about installing and running the
-  app (supported hosts, installer prompts, second install, generated database credentials, environment settings such as TZ
-  and trusted proxies, updater, backups) that belong to no feature. Add a `deployment` feature (requirements only for now; in
-  the port it is the Docker/installer/updater side), or leave them in `documentation` as what the README must say?
-  Claude recommends a `deployment` feature.
-  Answer:

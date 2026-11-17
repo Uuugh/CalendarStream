@@ -202,3 +202,5 @@ tooling stays for the Python page only).
   can build a rule or search with a regex, and the site checks its legality and highlights the broken part (new RUL-44,
   built and tested in packages/domain: `regexProblem` finds the position, because Dart gives only a message). Saved rules
   that use Python-only syntax will fail to compile; the port flags them as broken at migration instead of dropping them.
+- Q-D1 answered Nov 17: `deployment` is a feature (requirements only for now; in the port, the Docker, installer and updater
+  side). Draft: requirements/drafts/deployment.md (DEP-01..13, from GPT's README scan). Prefix DEP.
