@@ -16,7 +16,8 @@ agents take turns, and the Developer joins only to decide.)
 - Each TEST after that means "look now": Claude takes a screenshot of the tab and reads its console errors and
   network requests, says what it sees, and asks what the Developer expected when it isn't clear.
 - Claude never clicks or types in the Developer's tab unless asked to.
-- Problems found become I items, each with the steps to reproduce and what was expected. Claude reproduces them
+- Problems found become I items (an Issue names the requirement it fails; a problem no requirement covers gets the
+  requirement written first), each with the steps to reproduce and what was expected. Claude reproduces them
   on the demo copy before fixing; the fixes come with the next BUILD.
 - The test ends when the Developer says what passed, or gives the next command.
 

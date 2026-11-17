@@ -3,6 +3,14 @@
 Read before any change to the Dashboard (the "CalendarStream Dashboard" artifact), including a cleanup. The short
 form is in 0-overview.md; this is the detail, kept here so it survives conversations.
 
+## Transition (layer-map.md)
+
+The Dashboard is being redesigned (step 3): Issues (I) move to a database and keep their numbers; Requirements (R)
+live in the repo (`requirements/<feature>.md`) and appear here only as a generated summary; Features (F) are the
+sections, and the sections below (All, Settings, Calendar, Sources, Feeds, Rules, Events, Misc) become the feature
+names (adding Event Templates, History, Google, Account, Diagnostics, Documentation). Until then nothing new is added
+to Inputs Status (all new features and requirements are frozen), and the rules below apply to the items already on it.
+
 ## Before changing Inputs Status
 
 1. **Read the verdicts first**: the `tests` collection (ArtifactData `list`), every time, even for a small edit. The

@@ -7,6 +7,15 @@ Airlines CCS+ schedule and other `.ics` calendars, applies the user's rules and 
 result to Google Calendar (through the Calendar API) and to calendar feeds, with a status page to
 manage it all. See README.md for what it does.
 
+## Transition in progress (Nov 2026)
+
+The Developer is porting this app from Python to Dart/Flutter, organized by feature, with a requirements file per
+feature as the spec. **All new features and requirements are frozen until it is complete**; the Python app below is
+the running app and the reference, and its suites are the oracle. Read `build_rules/layer-map.md` first: it has the
+decisions, the target layout, the Python-to-Dart porting map and where the work stands. Items are now Feature,
+Requirement, Issue and Process (`build_rules/0-overview.md`, Inputs). "Rule" means only a rule in the app's Rules
+feature. The process rules called R18, R19, R26 below are P18, P19, P26 in the new naming.
+
 ## Where things are
 
 - `app/`: the app. `main.py` (composition and compatibility), `services/` (feature application services), `routes/` (the status page's routes, by
