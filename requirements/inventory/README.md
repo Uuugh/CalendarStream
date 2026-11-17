@@ -24,6 +24,33 @@ exception sentinels mean call-site counts are not execution counts or counts of 
 | 20 | [Google notifications](suite_20.md) | watch lifecycle, notifications, two-way sync | 23 | 0 |
 | 21 | [Browser controls and rules](suite_21.md) | calendar, settings, account, rules, feeds, events, sources, shell | 25 | 0 |
 
+## Second batch: suites 22–31
+
+Source revision: `d70343f7476177a25f32827262d991cdc95c045f`. The ten suites contain 197 `ok()` call sites
+and no direct `assert` statements. These are additional static observations, not runtime success claims.
+The first batch remains pinned to its original revision; neither batch assigns permanent requirement IDs.
+
+| Suite | Inventory | Main areas | ok call sites | Direct asserts |
+|---|---|---|---:|---:|
+| 22 | [Update channels](suite_22.md) | settings, account | 15 | 0 |
+| 23 | [Deploy guard regressions](suite_23.md) | settings, account, Google, feeds, sources | 28 | 0 |
+| 24 | [Google guide](suite_24.md) | Google, public address, shell | 10 | 0 |
+| 25 | [Email and password markup](suite_25.md) | settings, Google, shell | 12 | 0 |
+| 26 | [Sources and destinations](suite_26.md) | sources, feeds, Google, rules, templates, events, calendar, shell, diagnostics | 65 | 0 |
+| 27 | [Source configuration](suite_27.md) | sources, built-in rules | 13 | 0 |
+| 28 | [Verification UI](suite_28.md) | sources, account, shell | 15 | 0 |
+| 29 | [Dates and legacy rules](suite_29.md) | feeds, rules, sources, shell | 11 | 0 |
+| 30 | [Beta versions](suite_30.md) | settings, shell | 9 | 0 |
+| 31 | [Responsive layout](suite_31.md) | feeds, calendar, sources, shell, settings, history | 19 | 0 |
+
+Batch-specific setup: suite 26 requires the fresh-install database path (the harness deliberately omits legacy
+source/destination seeding for it). Suite 28 uses a delayed fake credential verifier. Suite 31 checks three widths,
+with some checks conditional on width or node presence, and does not explicitly test both palettes. Suite 23's
+header check samples one page, while its URL/download rejection checks include paired exception sentinels.
+Suite 26's final header observation uses a previously fetched week page. See the per-suite notes before deriving
+requirements from these checks. All 197 source references, row keys and table structures were checked statically;
+the application suites were not run locally for this inventory-only change.
+
 ## Reading and extending the inventory
 
 - One file per suite, named `suite_NN.md`. Evidence keys `SNN-NN` are local to this inventory; do not reuse them
@@ -38,7 +65,7 @@ exception sentinels mean call-site counts are not execution counts or counts of 
   these files do not decide which historical behavior should prevail or promise whole-feature completeness.
 - A later suite batch should use the same structure and its own pinned source revision. Check main, open PRs and
   inventory branches before selecting uncovered suites, including unmerged work, to avoid duplicate batches.
-  This batch covers 12–21 only; no claim is made about suites outside that range.
+  The current two batches cover 12–31; no claim is made about suites outside that range.
 - Use only synthetic fixtures. Historical variable names or docstrings saying REAL do not authorize real data.
 
 ## Execution coverage and validation
