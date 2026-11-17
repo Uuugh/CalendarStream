@@ -170,3 +170,7 @@ tooling stays for the Python page only).
   public, so the Developer's private files (`docs/development/*`, gitignored) and Good | Bad verdicts never go there.
   They move into the app itself, in `diagnostics`, behind the app's login, served by the Dart server and never committed.
 - Answered Nov 17: Q-M (GitHub auto-merge Action for inventory PRs: .github/workflows/inventory-automerge.yml), Q-R1 (layout measurements left to theme), Q-R2 (migration requirement kept until ported), Q-R3 (responsive web layout; phone app reuses the theme), Q-R4 (RUL-03..43 verified in requirements/rules.md).
+- Answers Nov 17: (Q-S1) Claude drafts the requirements for ALL features first, then the Developer reviews them. (Q-S3)
+  Taichi: Ollama at 192.168.0.109 (reachable from this machine, port 11434, no model loaded yet; models to be chosen
+  together with the Developer). (Q-S4) Dart/Flutter SDKs are at C:\Users\rfrie\Development\sdks (flutter, android);
+  Claude uses them from there. (Q-S5) Yes: Claude may push a branch to run the full Python suites in CI as the baseline.
