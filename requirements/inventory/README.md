@@ -155,3 +155,37 @@ are stand-ins and version changes are simulated. See the per-suite notes for exa
 
 All 285 new row keys, pinned line anchors and table cells were validated against source ASTs, along with local index
 links. Include unmerged PRs when selecting the next batch so that covered suite numbers are not duplicated.
+
+## Fifth batch: suites 52–61
+
+Source revision: `8e0e71757323d773cd7f2ec3b9e0671381302973`. These ten suites contain 283 `ok()` call sites
+and no direct `assert` statements. These are static observations; the application suites were not run locally
+for this documentation-only change. Each source link remains pinned to the revision inventoried.
+
+Suites 42–51 are reserved by [PR #46](https://github.com/Uuugh/CalendarStream/pull/46), which was open and
+unreviewed with passing CI when this batch was prepared. This batch is based independently on main and does
+not duplicate that PR's files. Its separate index section can be reviewed without assuming the pending PR is accepted.
+
+| Suite | Inventory | Main areas | ok call sites | Direct asserts |
+|---|---|---|---:|---:|
+| 52 | [Regex limits](suite_52.md) | rules | 11 | 0 |
+| 53 | [Sync, traffic and recurrence](suite_53.md) | diagnostics, Google, account, sources, process, shell | 18 | 0 |
+| 54 | [Google reconnect and health](suite_54.md) | Google | 14 | 0 |
+| 55 | [Google refusals and unlock](suite_55.md) | Google, feeds, history, account, shell | 48 | 0 |
+| 56 | [Calendar color fallbacks](suite_56.md) | Google, history | 29 | 0 |
+| 57 | [Editor and hide/show](suite_57.md) | events, history, templates, calendar, shell | 40 | 0 |
+| 58 | [Links and feed defaults](suite_58.md) | events, feeds, history, rules, calendar, shell | 40 | 0 |
+| 59 | [Update observers and colors](suite_59.md) | settings, process, feeds, events, shell, sources | 28 | 0 |
+| 60 | [Download transports](suite_60.md) | sources | 27 | 0 |
+| 61 | [Theme controls and folding](suite_61.md) | process, rules, templates, sources, shell, history | 28 | 0 |
+
+Batch-specific setup: suite 52 is a pure rules check; suite 60 uses a temporary local TLS server and fixture
+certificate instead of Postgres or the live CCS+ service. The other suites need Postgres; browser scenarios use
+synthetic Demo.ics/work.ics and mock services. Suite 53 intentionally inspects raw fixture credentials/tokens in
+its diagnostic records; this inventory records that predicate without reproducing any live credentials.
+
+Limit notes distinguish exact-limit rule normalization from actual save routes, past-expiry samples from exact
+unlock lifetimes, numeric animation configuration from rendered pulses, and source-string checks from executed
+installer/scheduler behavior. Several successful-handler markers and optional-node fallbacks are not independent
+verification. All 283 new row keys, pinned anchors and table cells were validated against source ASTs, with local
+README links checked. Account for pending PRs when selecting subsequent batches to avoid duplication.
