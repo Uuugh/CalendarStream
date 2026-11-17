@@ -53,3 +53,9 @@ requirements and do not edit README.md. Claude turns the confirmed gaps into req
 ## Task D: CHANGELOG scan (later, same rules; split by version range, 300 lines per PR)
 
 Same method on CHANGELOG.md: list behaviors a release says it added or fixed that no requirement covers.
+
+Task D output (clarified Nov 17): one PR per 300-line chunk of CHANGELOG.md, newest first (lines 1-300, 301-600, ... 2,336).
+Branch `chatgpt/drafts-changelog-<first>-<last>` (for example `chatgpt/drafts-changelog-1-300`); one new file
+`requirements/drafts/changelog_gaps_<first>-<last>.md` in the same table format as `readme_gaps.md`
+(`| CHANGELOG line | release | claim | closest requirement ID or none | proposed owning feature |`), anchors pinned to the
+revision you read. Only new files; stop when the whole file is covered, then report that Task D is complete.
