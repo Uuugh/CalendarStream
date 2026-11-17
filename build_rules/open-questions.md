@@ -6,6 +6,3 @@ layer-map.md or the requirements files). To answer, type your answer after the q
 
 ## Q-S: later steps
 
-- **Q-S2** Suite 82 and the paused test overhaul (uncommitted in your working tree): finish, commit, or discard before
-  the Python suites are frozen as the oracle?
-  Answer:

@@ -179,3 +179,6 @@ tooling stays for the Python page only).
   removes many of the Python suites' problems: ports, shared Postgres, shard timings), then **7 the Dashboard**.
   The paused Python test overhaul is therefore not continued (see Q-S2). The Dashboard must be able to monitor testing
   progress (runs, shards, pass/fail per requirement), so step 6 decides what the test runs report and where.
+- Q-S2 answered Nov 17: the paused Python test overhaul (sharding, ports, suite 82, workflow changes) is parked on the
+  branch `paused/test-parallel` (commit 85f404b, pushed) and is the input for step 6 (analyze parallel testing). It is
+  not merged and not continued on main. The working tree on main is clean.
