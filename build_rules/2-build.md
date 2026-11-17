@@ -1,6 +1,6 @@
 # 2. Build
 
-Command: **BUILD** `[F|f I|i R|r] [b m M]` (GO and EOF are aliases). Read when the Developer says BUILD. Claude first checks its model (0-overview.md, Conversations).
+Command: **BUILD** `[F|R|I|P] [b m M]` (GO and EOF are aliases). Read when the Developer says BUILD. Claude first checks its model (0-overview.md, Conversations).
 
 ## The start-of-BUILD box
 
@@ -32,11 +32,14 @@ Claude can't see the usage meters, so the Developer's readings are the only actu
 
 ## What BUILD builds
 
-- **BUILD**: every waiting input. **BUILD** with F, I and/or R: exactly those kinds; the rest stay waiting.
+- **BUILD**: every waiting input. **BUILD** with F, R, I and/or P: exactly those kinds; the rest stay waiting.
 - Options go in any order, with or without spaces: BUILD b FI = BUILD FI b = BUILD F I b = BUILD b F I. Only b, m and M
   choose the version, and m ≠ M.
-- **R only: no new version; the new rules take effect at the next REVIEW.** Every BUILD puts its R changes into
+- **P only: no new version; the new process rules take effect at the next REVIEW.** Every BUILD puts its P changes into
   effect: Claude moves the `review-rules` branch to that commit (4-review.md).
+- **During the transition** (0-overview.md, Inputs; layer-map.md) there are no new F or R and a BUILD is a P or a
+  port step: it publishes no beta and does not change `VERSION`; the one-commit-ships-it rule below applies again
+  at the end of the transition.
 
 ## Versions (semver: Major.minor.patch[-beta.N])
 
@@ -51,10 +54,15 @@ Documentation-only changes (README, CLAUDE.md, AGENTS.md, build_rules/) don't ch
 
 ## Before a beta is published
 
-- `tests/run.sh` passes (suite 17, translations, waits for the Deploy). New behavior gets tests in a new suite
-  (the next number).
+- The tests pass (for the Python app: `tests/run.sh`; suite 17, translations, waits for the Deploy). **New behavior
+  gets a test that names the requirement it verifies** (`requirements/<feature>.md`, `ID | status | statement |
+  test`), in the feature's own test folder, mirroring the code (`test/` for Dart). It is never a new numbered
+  per-build suite: a test belongs to a component and its requirement, not to the build that wrote it. Every
+  requirement has a test and every requirement ID a test names exists (checked by a script once the first
+  requirements file exists).
 - Anything on the page that changed follows theme.md (look and interaction), checked by the theme suite
-  (suite 44): each Clarification has a check there, added in the same beta.
+  (suite 44): each Clarification has a check there, added in the same beta. (Python page only; the Dart client's
+  look is specified by requirements of `shell` and `shared/ui`, and theme.md's visual rules carry over.)
 - A page change meets ui_ux.md §5: keyboard, visible focus, labels, contrast and reduced motion, in light and dark
   and on a phone. Checks suite 44 can make are added in the same beta.
 - A change to the page is compared before and after, pixel by pixel (`tests/tools/shots.py` before and after,
@@ -114,11 +122,14 @@ discipline as any build in this file — nothing is relaxed because another AI i
   to inferring from the repo and old issue text).
 - **Paste the content instead.** The handoff carries, as plain text, the actual Inputs Status items it's meant to
   build (or the relevant slice) — generated fresh from the live Dashboard, not a link to it.
-- **Scope it.** Name the specific F/I/R items to build (e.g. "Build D: F65, I22, F47/I45 — not F24.1"), the same
-  way a BUILD option (F, I or R) narrows Claude's own build.
-- **Access.** The Developer gives the assigned AI whatever its role needs (push access to the repo to build;
-  read/comment access to review) — there's no existing mechanism for granting this, so Claude asks the Developer
-  how before using this handoff the first time.
+- **Scope it.** Name the specific items to build (e.g. "port the rules domain: requirements RULES-01 to RULES-20"),
+  the same way a BUILD option (F, R, I or P) narrows Claude's own build. Hand over only tasks that need simple,
+  checkable instructions (drafting from existing tests, porting a pure module against shared test vectors); not
+  tightly coupled work such as the shell or Google.
+- **Access (decided Nov 17):** the Developer has given ChatGPT access to the repo and authorized Claude and ChatGPT
+  to communicate through GitHub. ChatGPT works on a branch `chatgpt/<task>` and opens a pull request; it never
+  commits to `main` or merges; Claude reviews the pull request and the Developer merges or says to. ChatGPT may
+  check its pull requests on an hourly timer for Claude's comments.
 - **Checkpoints, the before-publish checklist, the release gate and the Ground rules all apply exactly as they
   do to Claude's own build** (Checkpoints, above; R18–R23; the Developer's real data appears nowhere).
 - **For a risky build** (the Google modules, anything touching stored data or sign-in), the Reviewer for that

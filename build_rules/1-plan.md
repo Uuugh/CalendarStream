@@ -4,7 +4,7 @@ Command: **PLAN**. Read when the Developer says PLAN, and before every BUILD.
 
 ## Inputs
 
-- The Developer gives F, I, R and ? at any time, in any wording.
+- The Developer gives F, R, I, P and ? at any time, in any wording (the letters are defined in 0-overview.md, Inputs).
 - Claude keeps the waiting list:
   - each input tidied: spelling, grammar, numbering;
   - dictation slips corrected ("Texas" → "text is", "safe" → "Save", "subscription" → "subsection"), telling
@@ -14,15 +14,16 @@ Command: **PLAN**. Read when the Developer says PLAN, and before every BUILD.
 ## Before PLAN shows
 
 Claude first reads the Dashboard, including each item's Good | Bad verdict and remark saved in its database (the `tests`
-collection, read with ArtifactData). A Bad reopens its item. A remark that asks for something new becomes a new F or I.
+collection, read with ArtifactData). A Bad reopens its item. A remark that asks for something new becomes a new R (or, if
+a requirement is not being met, an I).
 Each is shown in the list with the Developer's words. A Good comes off the Dashboard and a "move to roadmap" remark goes
 to roadmap.md **before** PLAN shows, so the list shown has neither (dashboard.md).
 
 ## PLAN shows
 
-1. Every waiting F, I and R, numbered.
+1. Every waiting F, R, I and P, numbered.
 2. For each, what Claude would do, in a line or two.
-3. For an R that changes these rules: the actual new wording. BUILD is then the Developer's yes to exactly that.
+3. For a P that changes these rules: the actual new wording. BUILD is then the Developer's yes to exactly that.
 4. Anything to decide first, as a question with Claude's suggested answer. Any Low finding waiting in low-findings.md
    for code this plan changes is named, to be done in the same build.
 5. The recommended builds, sized by checkpoint (2-build.md, Checkpoints): each build lists its checkpoints, so a stop

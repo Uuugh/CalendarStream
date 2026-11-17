@@ -145,6 +145,11 @@ tooling stays for the Python page only).
 
 ## Resume here (updated at each checkpoint)
 
-- Done: decisions above; this file. Next: the Developer approves the tree, then step 1a.
+- Done: decisions above; this file; step 1a for 0-overview.md, 1-plan.md, 2-build.md, 4-review.md, 5-deploy.md
+  (letters, `BUILD P`, tests named by requirement, no new per-version suites, ChatGPT handoff access).
+- Next in 1a: dashboard.md, 3-test.md, AGENTS.md (code map and "Where things are" note the freeze and point here),
+  CLAUDE.md; the review-area table in 4-review.md changes at the port, not now.
+- ChatGPT Task A (inventory of the Python suites into `requirements/inventory/`) was handed over Nov 17 and is
+  in progress on `chatgpt/inventory-*` branches; Claude reviews each pull request.
 - Work can be split with ChatGPT through GitHub (2-build.md, "Handing BUILD to another AI"): content is pasted, never
   the Dashboard link; each task is scoped and checkable; Claude reviews what comes back.

@@ -43,5 +43,5 @@ the same as any other beta — see `release.yml`, `beta`, BR01/BR02.)
 - Drop its suffix (x.y.z-beta.N → x.y.z); tag `vx.y.z`; publish the image as `:x.y.z` and `:latest`; set STABLE
   to x.y.z.
 - CHANGELOG.md: the version's beta entries under one x.y.z heading, a sub-heading per beta (F, I and R numbers
-  restart at each BUILD). It becomes the notes of its GitHub Release, published as Latest (not a pre-release).
+  restart at each BUILD in the entries already written; from the transition on, IDs are never reused). It becomes the notes of its GitHub Release, published as Latest (not a pre-release).
 - Report the release and the next BUILD's version (x.y.(z+1)-beta.1).

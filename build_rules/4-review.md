@@ -128,7 +128,10 @@ final say on anything you and Claude don't agree on.
 - Structure (R18, R19; AGENTS.md, "How code is structured"): is new code a module — one responsibility, a small interface, dependencies passed in rather than reached for in `main.py`, its own fast test that needs no app, Postgres or browser unless that's what it tests? One class per file, named for it, in `snake_case`; loose functions grouped into a class or small module first; a closed family (an exception hierarchy, a set of states) may share one file. Does it respect the `data`/`domain`/`ui` layers (calendar and rule logic never imports storage, network or the page)? Does every new file start with its five-part header (what it holds, Depends on, Used by, what it reads/writes, a Dart note)? No hidden dependencies: no imports inside functions, no reading another module's globals, no `core.<name>` lookups in a new file.
 - Functionality: Does the code behave as the author likely intended? Is the way the code behaves good for its users?
 - Complexity: Could the code be made simpler? Would another programmer be able to easily understand and use this code when they come across it in the future?
-- Tests: Does the code have correct and well-designed automated tests? (`tests/`: one suite per version; `tests/run.sh` runs them.) Does the new behavior have a suite that checks it?
+- Tests: Does the code have correct and well-designed automated tests? Does every requirement the change touches
+  (`requirements/<feature>.md`) have a test that names it, in the feature's own test folder? Does the code do what the
+  requirement says, no more and no less? (The Python suites, one per version, are the oracle until the port replaces
+  them; `tests/run.sh` runs them.)
 - Naming: Did the author choose clear names for variables, classes, methods, etc.?
 - Comments: Are the comments clear and useful?
 - Style: Does the code follow our style guides? PEP 8 and PEP 257 (Python), Google HTML/CSS and JavaScript style guides; ruff runs automatically.
