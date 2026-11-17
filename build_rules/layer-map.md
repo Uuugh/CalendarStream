@@ -161,3 +161,5 @@ tooling stays for the Python page only).
   with labels `issue` and `feature:<name>` and a Requirement line in the body (same I numbers). Not yet done: the
   Dashboard still shows them; its redesign to read GitHub (and the generated requirements summary) is the rest of step 3.
   I22 has a Bad verdict but no Dashboard item (F65 absorbed it): not created, to be decided with the Developer.
+- Step 2: ChatGPT's PR #42 (inventory of suites 12-21, `requirements/inventory/`) reviewed by Claude and merged by the
+  Developer's instruction (Nov 17). Next batches: suites 22-31 and on. I22 is GitHub issue #43 (open; conflicts with SET-06).
