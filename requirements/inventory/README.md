@@ -88,3 +88,36 @@ the default run only exercises fresh mode. See each suite's setup section before
 Notable evidence gaps for reconciliation: suite 16's status-message predicate is always true; suite 13's re-tracking
 check uses a permissive OR; suite 20 samples renewal/retry times without proving precise boundaries; suite 21's
 control-height assertion can pass for an empty selection. These are inventory notes for review, not code changes.
+
+## Third batch: suites 32–41
+
+Source revision: `d70343f7476177a25f32827262d991cdc95c045f`. These ten suites contain 271 `ok()` call sites
+and no direct `assert` statements. These are static observations; the application suites were not run locally for
+this documentation change. First-batch evidence remains pinned to its original revision.
+
+Suites 22–31 are covered independently by [PR #44](https://github.com/Uuugh/CalendarStream/pull/44). That PR was
+open and unreviewed when this batch was prepared; its files are not duplicated here. This batch can be reviewed
+independently and does not assume that PR's acceptance or merge.
+
+| Suite | Inventory | Main areas | ok call sites | Direct asserts |
+|---|---|---|---:|---:|
+| 32 | [Updater requests](suite_32.md) | settings, account, shell | 13 | 0 |
+| 33 | [Presets and in-place changes](suite_33.md) | sources, rules, history, diagnostics, calendar, templates, shell | 26 | 0 |
+| 34 | [Help, saves and handles](suite_34.md) | shell, calendar, sources, feeds, rules | 24 | 0 |
+| 35 | [Fonts, icons and feedback](suite_35.md) | shell, sources, Google, feeds, account, documentation | 38 | 0 |
+| 36 | [Rules, Local and event tools](suite_36.md) | rules, sources, events, feeds, Google, calendar, account, history, shell | 58 | 0 |
+| 37 | [Conflicts, links and removal](suite_37.md) | rules, events, calendar, sources, settings, shell | 53 | 0 |
+| 38 | [Counts, colors and auto-update](suite_38.md) | rules, templates, history, sources, settings, calendar, feeds, shell | 20 | 0 |
+| 39 | [Assets and feed validators](suite_39.md) | shell, account, sources, feeds, calendar, Google | 23 | 0 |
+| 40 | [Rule palette and headers](suite_40.md) | rules, templates, sources, feeds, Google, settings, shell | 12 | 0 |
+| 41 | [Module and handle edges](suite_41.md) | sources, feeds, shell | 4 | 0 |
+
+Batch-specific limits: updater tests use a local stand-in or fake invocation rather than installing an image;
+phone and light/dark assertions cover different subsets of scenarios; some geometry predicates can pass on an
+empty selection. Static template string checks do not establish a blanket icon/shape policy. Suite 39's later
+Google client-check request is not mocked by that suite and may need external connectivity. Cache assertions
+check `immutable`, not exact year/day retention. See the individual notes for the exact predicates and overlaps.
+
+All 271 new evidence keys, source anchors and table structures were checked against the pinned suite ASTs;
+the README links were checked against files present in this branch. When selecting the next batch, account for
+both this batch and the separate 22–31 PR, including unmerged work, to avoid duplicate inventory.
