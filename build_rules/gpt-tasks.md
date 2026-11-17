@@ -28,3 +28,12 @@ For each feature, create ONE file `requirements/drafts/<feature>.md`:
    requirements") and wording, then the Action merges it. The Developer approves the drafts later, feature by feature.
 
 Done: (none yet)
+
+## Rule for every requirements draft: no UI mechanics, no duplication across features
+
+A feature's requirement says what the feature does for the user ("Clicking a day opens the new-event dialog for that
+date"). How dialogs, menus, sections, confirmations, info dots, pickers and phone layouts behave is shared UI and is
+written ONCE in `requirements/drafts/shared_ui.md` (IDs `UI-NN`). A feature's requirement references it ("follows UI-02")
+and never repeats it. If a row you are drafting is shared UI, add or reuse a `UI-NN` row instead (add it in your PR to
+that file only if it is not there yet; otherwise reference the existing one). If the same behavior appears in two
+features, write it once, in the owning feature or in shared_ui.md, and reference it from the other. (Developer, Nov 17.)
