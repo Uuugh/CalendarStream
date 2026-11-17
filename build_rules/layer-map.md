@@ -169,3 +169,4 @@ tooling stays for the Python page only).
   read-only page on GitHub Pages (built in CI from GitHub issues and `requirements/*.md`) is possible, but GitHub Pages is
   public, so the Developer's private files (`docs/development/*`, gitignored) and Good | Bad verdicts never go there.
   They move into the app itself, in `diagnostics`, behind the app's login, served by the Dart server and never committed.
+- Answered Nov 17: Q-M (GitHub auto-merge Action for inventory PRs: .github/workflows/inventory-automerge.yml), Q-R1 (layout measurements left to theme), Q-R2 (migration requirement kept until ported), Q-R3 (responsive web layout; phone app reuses the theme), Q-R4 (RUL-03..43 verified in requirements/rules.md).
