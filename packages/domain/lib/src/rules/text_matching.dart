@@ -7,8 +7,8 @@
 /// Ported from: app/rule_engine/text_matching.py. Requirements: RUL-03, RUL-04, RUL-20, RUL-22.
 ///
 /// Known gaps against the Python app (decisions needed, see build_rules/open-questions.md):
-/// - Dart's RegExp has no time limit, so RUL-22 (a pathological regex is stopped within a second)
-///   is NOT met here; it needs a guard run in an isolate by the server.
+/// - Dart's RegExp (ECMAScript, backtracking, per the Dart docs) has no time limit, so RUL-22 is NOT met here;
+///   the server runs user regexes in an isolate with a timeout (decision in layer-map.md).
 /// - Regex error wording comes from Dart's engine, so it differs from Python's.
 library;
 

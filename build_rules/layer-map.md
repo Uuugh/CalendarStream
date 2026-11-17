@@ -191,3 +191,10 @@ tooling stays for the Python page only).
   has RUL-03..37, 39..41, 43). Q-U1: palettes and emoji pickers are common tools: UI-10 is one shared palette (the event
   editor adds a "calendar default" choice), UI-11 one shared emoji picker. Q-E1 (Claude's decision, the Developer did not
   know the question): EVT-25 merged into the planned EVT-01 (Duplicate).
+- Answers Nov 17 (Q-P1, Q-P2: the Developer pointed to the Dart RegExp docs, api.flutter.dev/flutter/dart-core/RegExp-class.html).
+  The docs confirm Dart's RegExp implements the ECMAScript specification with a backtracking engine that cannot be replaced
+  and has no time limit; a pathological pattern such as `^(a*|b)*c` doubles in time with each extra character. Decisions
+  (Claude, from the docs): (1) RUL-22 is met in the Dart server by running each user regex in a short-lived isolate with a
+  timeout (the domain package keeps the pure matcher); (2) the regex error wording is Dart's own, prefixed "Not a valid
+  regex:", so tests assert the prefix, not Python's text. New risk: Python-only regex syntax does not compile in Dart
+  (asked as Q-P3).
