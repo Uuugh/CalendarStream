@@ -189,3 +189,34 @@ unlock lifetimes, numeric animation configuration from rendered pulses, and sour
 installer/scheduler behavior. Several successful-handler markers and optional-node fallbacks are not independent
 verification. All 283 new row keys, pinned anchors and table cells were validated against source ASTs, with local
 README links checked. Account for pending PRs when selecting subsequent batches to avoid duplication.
+
+## Sixth batch: suites 62–71
+
+Source revision: `2784fd02c28e1ca903ec8ffc336a5ce10e1ee6c8`, fetched main after PR #47 merged. The branch
+started exactly at that revision. These ten suites contain 259 `ok()` call sites and no direct `assert`
+statements. These are static observations; application suites were not run locally for this inventory change.
+
+| Suite | Inventory | Main areas | ok call sites | Direct asserts |
+|---|---|---|---:|---:|
+| 62 | [Rule actions and installer source](suite_62.md) | rules, events, calendar, shell, process | 23 | 0 |
+| 63 | [Meetings, defaults and power](suite_63.md) | events, Google, feeds, account, sources, rules, shell | 29 | 0 |
+| 64 | [Views, PDFs and Settings](suite_64.md) | calendar, account, settings | 21 | 0 |
+| 65 | [Calendar carryover](suite_65.md) | events, history, calendar, account, settings, shell | 39 | 0 |
+| 66 | [Markup and installer defaults](suite_66.md) | shell, sources, settings, history, calendar, rules, events, process | 33 | 0 |
+| 67 | [Status, dialogs and icon menus](suite_67.md) | shell, history, rules, events, settings, Google, calendar, documentation, process | 60 | 0 |
+| 68 | [Unsigned accounts and health](suite_68.md) | Google, history, diagnostics, account | 17 | 0 |
+| 69 | [Shared Google types](suite_69.md) | Google | 9 | 0 |
+| 70 | [Dictionary-backed Google API](suite_70.md) | Google | 21 | 0 |
+| 71 | [Readiness stages](suite_71.md) | Google | 7 | 0 |
+
+Batch-specific setup: 62 uses direct engine/helper and source checks; 69–71 are database/network-free object
+checks. Suites 63–68 use Postgres. Suites 64/65 generate actual PDF bytes through Chromium and inspect them,
+while many installer/style/interaction labels elsewhere only check source strings or markup. Suites 66/69/70
+include skip or exception-handler success markers that cannot independently verify a requirement. Source dates,
+fixture credentials and made-up events remain synthetic; no real data is included.
+
+Limit notes identify permissive OR/fallback checks, finite time/size samples, PDF geometry limits, simulated
+restart/storage versus real restart, and fake JWT audience checks versus complete token verification. No permanent
+requirement IDs or Developer Good statuses are assigned. All 259 new keys/anchors/table cells and the combined
+inventory index links were checked against their pinned source revisions. Future batches must fetch main and
+branch from the freshly updated `origin/main`, preserving this suite order in the index.
