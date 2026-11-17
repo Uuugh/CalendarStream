@@ -40,11 +40,11 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-33 | verified | Saving a condition identical to an existing rule offers Save as new or Merge; the stored count does not change until chosen. | — | S37-42..47 |
 | RUL-34 | verified | An unknown conflict key is refused (400). | — | S37-13 |
 | RUL-35 | verified | Legacy tag-colors and defaults migrate to rules (RDO, VAC color and a 120-minute no-end action), keeping IDs and order, then the legacy records are removed. | — | S29-06, S29-07, S36-18, S37-06, S37-07 |
-| RUL-36 | verified | The rule dialog opens from "New rule…" in a calendar (that calendar preselected) or from All Rules (All preselected); Escape closes the Apply to menu first, then the dialog. | — | S21-15, S37-33..36, S37-41, S67-15, S67-16 |
+| RUL-36 | verified | The rule dialog opens from "New rule…" in a calendar (that calendar preselected) or from All Rules (All preselected); dialog behavior follows UI-02. | — | S21-15, S37-33..36, S37-41, S67-15, S67-16 |
 | RUL-37 | verified | Choosing an action reveals its inputs (minutes, new-event title); the colour action is a palette of eleven named colours. | — | S37-37, S37-38, S40-09..11 |
 | RUL-38 | verified | Bracket controls keep the condition form balanced. | — | S37-39, S37-40 |
 | RUL-39 | verified | Badges show All or the calendar colour; a shared rule shows a striped two-colour badge and "N calendars". | — | S38-05, S38-06, S33-07, S33-09 |
 | RUL-40 | verified | A rule's label shows its title and what it does; the colour with name; long names truncate with the full name in a tooltip. | — | S40-01, S40-02, S66-17, S45-26 |
-| RUL-41 | verified | Rules and templates sections show a count box and one plus control; bodies stay hidden until expanded. "How rules work" lives in the dialog. | — | S33-24, S38-01, S38-03, S38-04, S38-13, S21-23 |
+| RUL-41 | verified | Rules and templates sections show a count box and one plus control; the section behavior is UI-05. "How rules work" lives in the dialog. | — | S33-24, S38-01, S38-03, S38-04, S38-13, S21-23 |
 | RUL-42 | verified | The rule dialog is usable at phone width: the page is responsive, and the phone app reuses that theme. | — | S36-56 |
 | RUL-43 | verified | The emoji picker has search and more than 1000 emoji. | — | S44-41 |

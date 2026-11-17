@@ -182,3 +182,8 @@ tooling stays for the Python page only).
 - Q-S2 answered Nov 17: the paused Python test overhaul (sharding, ports, suite 82, workflow changes) is parked on the
   branch `paused/test-parallel` (commit 85f404b, pushed) and is the input for step 6 (analyze parallel testing). It is
   not merged and not continued on main. The working tree on main is clean.
+- Step 2 rule (Developer, Nov 17): feature requirements state what the feature does; behavior shared by several features is
+  written once in `requirements/drafts/shared_ui.md` (UI-NN) and referenced. **When all feature drafts are built, Claude
+  runs a duplication review across every draft (same behavior stated in two features, UI mechanics inside a feature,
+  overlaps with approved requirements such as RUL-36/41 and planned EVT-01..03) and fixes it BEFORE the Developer
+  reviews.** The Developer reviews only the de-duplicated set. Shared UI rows moved so far: UI-01..UI-10.
