@@ -153,3 +153,7 @@ tooling stays for the Python page only).
   in progress on `chatgpt/inventory-*` branches; Claude reviews each pull request.
 - Work can be split with ChatGPT through GitHub (2-build.md, "Handing BUILD to another AI"): content is pasted, never
   the Dashboard link; each task is scoped and checkable; Claude reviews what comes back.
+- Step 2, first pass (Nov 17): the Dashboard's waiting F items are converted into `requirements/{calendar,settings,events,
+  google,diagnostics,shell}.md` (statuses: verified / built / open / planned; the Developer's Good | Bad verdicts were
+  read first). Still to do in step 2: the I items stay for step 3; R18–R28 are already in the process files (now P);
+  verified requirements come from ChatGPT's inventory plus the README and CHANGELOG, one feature at a time for approval.
