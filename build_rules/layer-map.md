@@ -1,0 +1,150 @@
+# Transition plan: Python to Dart/Flutter, feature-first, requirements-driven
+
+DRAFT for the Developer's approval. Nothing in app/ or tests/ has been moved. This file is the working record of the
+decisions, so a new conversation (or another AI) can resume from it. Sizes are Python line counts at 0.2.8-beta.46.
+
+## Decisions so far (Developer, this conversation)
+
+- **Total freeze:** no new features or requirements until the transition is complete. Python stays the running app.
+- **Letters:** [F]eature = a capability or section of the app (a module, a distinct function such as printing).
+  [R]equirement = one checkable rule of behavior of a feature. [I]ssue = a component identified as not meeting a
+  requirement. [P]rocess = how work is done here (was the old R). "Rule" now only means a rule in the app's Rules feature.
+- **Requirements live in the repo**, one list per feature, with a Planned section (a waiting F becomes a planned
+  requirement; a built F becomes a verified one). **Issues** go to a database, keeping their numbers (default:
+  GitHub Issues titled "I22: …" with a feature label; the Dashboard reads from it).
+- **History is not kept:** old F, I and R items are converted; CHANGELOG.md, build-costs.md and beta entries stay as
+  they are. README and documentation items become planned requirements of a `documentation` feature.
+- **Port, not a Python restructure.** The Python app is the reference and its suites are the oracle. Structure lives in
+  the Dart project. Python splits happen only where they make a clearer specification (the `Store` split into
+  repositories; Google api/sync into service and repository halves).
+- **Dart on the client and the server.** The domain layer is one package shared by both.
+- **No transition build publishes a beta**; one beta ships at the end, then a stable release after the Developer's test.
+- **Plan order:** 1 the tree (this file) · 1a update the Processes (new letters; remove rules that contradict the
+  method) · 2 move Features into requirements · 3 move Issues to the database and redesign the Dashboard ·
+  4 the port, feature by feature · 5 retire Python.
+
+## The Dart layout
+
+```
+calendarstream/
+├─ requirements/                   language-neutral spec, one file per feature (read by both implementations)
+│  └─ <feature>.md                 verified requirements, then a Planned section; each line: ID | status | statement | test
+├─ packages/
+│  ├─ domain/                      pure Dart: no Flutter, no I/O. Shared by the server and the app.
+│  │  ├─ lib/<feature>.dart        a feature's public surface (the only thing others import)
+│  │  ├─ lib/<feature>/src/        models, logic, use_cases (private by Dart's own rule)
+│  │  └─ test/<feature>/           mirrors lib/; each test names its requirement ID
+│  ├─ contract/                    request/response types (JSON) used by the server and the app, so they cannot drift
+│  └─ testing/                     fakes (FakeEventRepository, FakeGoogleCalendarService …) and made-up test data
+│                                  (Demo.ics, work.ics; never real data); mirrors Flutter's testing/ subpackage
+├─ server/                         Dart server (Docker, Postgres): scheduled downloads, feeds, Google sync, the JSON API
+│  ├─ bin/main.dart                composition only
+│  ├─ lib/shared/                  database (pool, schema), utils (clock, crypto, logging), config
+│  ├─ lib/features/<feature>/
+│  │  ├─ data/                     repositories/ (source of truth for one kind of stored data), services/ (one external source)
+│  │  └─ http/                     JSON routes
+│  └─ test/                        mirrors lib/
+├─ client/                         Flutter app: web, phone, desktop from one codebase
+│  ├─ lib/main.dart (+ main_development.dart)
+│  ├─ lib/shell/                   the frame: top bar, modules and sections, navigation, routing, the adaptive
+│  │                               layout choices (by window size, never device type). May import every feature.
+│  ├─ lib/shared/ui/               common widgets: pop-up shell (full-screen on a phone, modal when wide), field with
+│  │                               its note, Cancel | Save row, status words, legend, theme tokens, icons, i18n
+│  ├─ lib/features/<feature>/
+│  │  ├─ data/                     client repositories (call the server through `contract`), platform services
+│  │  └─ ui/                       views and view models (one view + one view model per screen)
+│  └─ test/ · integration_test/    mirrors lib/; the thin end-to-end set
+├─ app/ and tests/                 the Python app and its suites: frozen reference, deleted at step 5
+├─ build_rules/                    Process: P rules, roadmap.md (planned versions only), low-findings.md, build-costs.md
+├─ docs/                           screenshots/, development/ (unchanged)
+└─ README.md, CHANGELOG.md, AGENTS.md, CLAUDE.md, VERSION
+```
+
+Features (each has a requirements file; the domain package and the server/client folders carry the same names):
+`calendar` · `sources` · `feeds` · `rules` · `event_templates` · `events` · `history` · `google` · `settings` ·
+`account` · `diagnostics` (status, Report a problem, health, debug captures) · `documentation` (requirements only, no code).
+`shell` is not a feature: it is the client's own area.
+
+### Rules of the layout
+
+- **Layers** (Flutter's, R18/R26): `domain` imports nothing from `data`, `http` or `ui`. A **Repository** is the source of
+  truth for one kind of stored data and never imports another; a **Service** wraps one external source and holds no
+  state; a use case combines them.
+- **Features depend one way:** `calendar, sources, feeds, history` → `events`, `rules` → `shared`;
+  `event_templates` → `events` (a template is an event with no date) → `shared`; `google` → `events`, `feeds`, `rules`;
+  `settings`, `account`, `diagnostics` → `shared`. The Event model sits in `shared`, so Rules never imports Events.
+  No cycles. A feature imports another only through its public file (`lib/<feature>.dart`; `src/` is private).
+- **UI is standardized once.** Generic widgets are in `shared/ui`; a widget that must know what a rule or an event is
+  belongs to its owning feature and is exported: the rule editor (Rules), the event editor (Events, also used by
+  Event Templates), the calendar picker (Sources). A second copy of either is a defect.
+- **Platform differences stay in the UI layer and in platform services:** layout is chosen by measured window size
+  (compact, medium, expanded); `defaultTargetPlatform`, not `dart:io`, for UI branches.
+- **`main` composes and nothing else** (target: under about 200 lines each for `bin/main.dart` and `lib/main.dart`).
+- **Tests:** `test/` mirrors `lib/`; every requirement has a test that names its ID and every such ID exists (a script
+  checks both ways); fakes come from `packages/testing`. During the port a feature is done when the Dart version meets
+  its requirements and the Python suites that cover them agree.
+
+## Where each Python file goes (the porting map)
+
+`D` domain · `R` repository · `S` service · `U` use case · `V` view model · `W` view.
+
+**Shared (domain/server/client).** `calendars/event.py`, `defaults.py` → domain `shared`. `calendars/errors.py`,
+`download.py`, `google/errors.py`, `rule_engine/rule_error.py` → closed error families in `domain`. `store.py` (460) →
+server `shared/database` + one repository per feature. `config.py`, `secretbox.py`, `clock.py`, `logging_setup.py`,
+`log_tail.py`, `item_order.py` → server `shared`. `i18n.py`, `icons.py`, `templates/index.html` macros, `_theme.html`,
+`js/01-base`, `07-saving`, `10-fields`, `12-handles-checks`, `14-status-fold`, `15-field-notes`, `topbar.html`,
+`styles` shared parts, `static/`, `locales/` → client `shared/ui` and `shell`. `main.py` (1955: 157 functions that
+mostly forward to services for old callers and monkeypatching), `runtime/`, `calsync.py`, `gsync.py`, `rules.py`
+(facades) → nothing; they are not ported.
+
+**calendar:** `services/calendar_view.py` (V), `calendars/view_helpers.py`, `routes/page.py` (calendar and print
+parts, 1045), `calendar.html`, `js/02-calendar`, `11-reminders-print`, `styles/19-calendar*.css`.
+**sources:** `calendars/downloads.py` (437, S), `parsing.py` (D), `validation.py` (D), `services/calendar_sources.py` (R),
+`source_jobs.py` (U), `routes/sources.py` (904), `logins.py` CCS part (R), `sources.html`, `js/09-remove-import`.
+**feeds:** `calendars/feed.py` (D), `services/calendar_destinations.py` (R), `publishing.py` (U),
+`routes/destinations.py` (474), `feeds.html`, `js/13-feeds`.
+**rules:** `rule_engine/*` (about 1000 lines, D), `rules_words.py`, `services/rule_settings.py` (R), `rule_migration.py`,
+`routes/rules.py` (428), `rules.html`, `rule-dialog.html`, `js/06-rules`; exports the rule editor.
+**event_templates:** `services/event_templates.py` (R), `templates.html`, `templates-dialog.html`, its parts of `routes/rules.py`.
+**events:** `calendars/edits.py`, `meeting.py` (D), `services/event_links.py`, `links.py` (U), `deletions.py` (R),
+`routes/events.py` (790), `event-pick.html`, `js/08-events`; exports the event editor.
+**history:** `services/history.py`, `change.py`, `state.py`, `event_history.py` (R, U), `routes/history.py`, `history.html`.
+**google:** `google/api.py` (466; split into `GoogleAuthService`, `GoogleCalendarService`, `GoogleTokenRepository`),
+`google/sync.py` (685; API half to the service, decisions to a use case), `health.py`, `failure_classifier.py`,
+`recovery_policy.py`, `readiness.py` and enums (D), `traffic_*` (R), `services/google_*.py`, `accounts.py`, `invites.py`,
+`routes/google.py` (728), `js/16-beta-traffic`.
+**settings:** `services/page_settings.py`, `addresses.py`, `administrator.py`, `updates.py` (S: `UpdateCheckService`),
+`update_jobs.py`, `routes/settings.py` (328), `settings.html`, `js/03-topbar-settings`, `04-modules`.
+**account:** `services/authentication.py` (259), `logins.py` status-page part (R), `routes/account.py` (274).
+**diagnostics:** `routes/status.py` (187), `report-dialog.html`, `js/05-report`.
+
+Not ported: Jinja templates, the page script and the stylesheets (they are rewritten as widgets; the pixel-diff
+tooling stays for the Python page only).
+
+## Port order
+
+1. Features with only domain logic and clear tests: `rules`, `event_templates`, then `events`, `calendar`'s view logic.
+2. Data-heavy: `sources`, `feeds`, `history`.
+3. External: `google` (risky; reviewed by the other AI, as 2-build.md already requires), `settings`, `account`.
+4. The `shell` and `shared/ui` as the first screens need them.
+5. Retire Python only when every requirement passes on the Dart side and the Developer has tested it.
+
+## Other rules this touches (found by checking build_rules/ and AGENTS.md)
+
+1. "New behavior gets tests in a new suite (the next number)" (2-build.md; tests/README.md) and "one suite per version"
+   (4-review.md) contradict tests that mirror the feature. Removed in step 1a.
+2. The review-area table (4-review.md) is by Python path and already stale (low-findings BR04): becomes by feature.
+3. `dependencies.md` is made by `tests/tools/deps.py` and checked by a test; it describes the Python tree and goes with it.
+4. The paused parallel-test design (ports 8200 + suite number, shard timings by suite number) is for the Python
+   suites only; it stays useful for running the oracle in shards on another machine.
+5. AGENTS.md's "Where things are" and code map are rewritten for the Dart tree. Its `services/` (application
+   services) contradicts R26's Service (one external source, no state); the Dart layout resolves it.
+6. The command letters change: `BUILD R` (old: README, docs, rules; no version) becomes `BUILD P`.
+7. theme.md's paths (`app/styles`, `app/templates/js`, `_theme.html`) change; its visual rules carry over.
+8. No conflict found with R18, R19, R26, the checkpoint rules or ui_ux.md.
+
+## Resume here (updated at each checkpoint)
+
+- Done: decisions above; this file. Next: the Developer approves the tree, then step 1a.
+- Work can be split with ChatGPT through GitHub (2-build.md, "Handing BUILD to another AI"): content is pasted, never
+  the Dashboard link; each task is scoped and checkable; Claude reviews what comes back.
