@@ -1,8 +1,9 @@
 name: Inventory auto-merge
 
-# Merges ChatGPT's inventory pull requests so they do not wait for the Developer (decision Q-M, Nov 17).
-# A PR merges only when ALL hold: branch chatgpt/inventory-*, same repository (not a fork), every changed file is
-# under requirements/inventory/, the "suites" check passed, GitHub says it is mergeable, and a Claude review comment
+# Merges ChatGPT's inventory and draft-requirements pull requests so they do not wait for the Developer (Q-M, Nov 17; drafts added Nov 17).
+# A PR merges only when ALL hold: branch chatgpt/inventory-* (files only under requirements/inventory/) or chatgpt/drafts-*
+# (files only under requirements/drafts/), same repository (not a fork), every changed file is
+# in that folder, the "suites" check passed, GitHub says it is mergeable, and a Claude review comment
 # ("**Claude review, PR #N**") says "No findings that block merging" with no CONFLICT note. Nothing else is ever merged.
 # To stop it: delete this file or disable the workflow in the Actions tab.
 
@@ -26,11 +27,12 @@ jobs:
         run: |
           set -u
           gh pr list --repo "$REPO" --state open --json number,headRefName,isCrossRepository,mergeable \
-            --jq '.[] | select((.headRefName|startswith("chatgpt/inventory-")) and (.isCrossRepository|not)) | "\(.number) \(.mergeable)"' |
-          while read -r n mergeable; do
+            --jq '.[] | select(((.headRefName|startswith("chatgpt/inventory-")) or (.headRefName|startswith("chatgpt/drafts-"))) and (.isCrossRepository|not)) | "\(.number) \(.mergeable) \(.headRefName)"' |
+          while read -r n mergeable ref; do
             [ "$mergeable" = "MERGEABLE" ] || { echo "#$n: not mergeable ($mergeable)"; continue; }
-            outside=$(gh pr diff "$n" --repo "$REPO" --name-only | grep -vc '^requirements/inventory/' || true)
-            [ "$outside" = "0" ] || { echo "#$n: touches files outside requirements/inventory/"; continue; }
+            case "$ref" in chatgpt/drafts-*) dir="requirements/drafts/";; *) dir="requirements/inventory/";; esac
+            outside=$(gh pr diff "$n" --repo "$REPO" --name-only | grep -vc "^$dir" || true)
+            [ "$outside" = "0" ] || { echo "#$n: touches files outside $dir"; continue; }
             suites=$(gh pr view "$n" --repo "$REPO" --json statusCheckRollup \
               --jq '[.statusCheckRollup[] | select(.name=="suites") | .conclusion] | if length>0 and all(.=="SUCCESS") then "ok" else "no" end')
             [ "$suites" = "ok" ] || { echo "#$n: suites not green"; continue; }
