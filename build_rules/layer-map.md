@@ -174,3 +174,8 @@ tooling stays for the Python page only).
   Taichi: Ollama at 192.168.0.109 (reachable from this machine, port 11434, no model loaded yet; models to be chosen
   together with the Developer). (Q-S4) Dart/Flutter SDKs are at C:\Users\rfrie\Development\sdks (flutter, android);
   Claude uses them from there. (Q-S5) Yes: Claude may push a branch to run the full Python suites in CI as the baseline.
+- Step order (Developer, Nov 17): 1 tree, 1a processes, 2 requirements, 3 issues, 4 the port, 5 retire Python, then
+  **6 analyze parallel testing** (new: how the Dart tests are split and run in parallel, now that the Flutter port
+  removes many of the Python suites' problems: ports, shared Postgres, shard timings), then **7 the Dashboard**.
+  The paused Python test overhaul is therefore not continued (see Q-S2). The Dashboard must be able to monitor testing
+  progress (runs, shards, pass/fail per requirement), so step 6 decides what the test runs report and where.
