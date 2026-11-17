@@ -187,3 +187,7 @@ tooling stays for the Python page only).
   runs a duplication review across every draft (same behavior stated in two features, UI mechanics inside a feature,
   overlaps with approved requirements such as RUL-36/41 and planned EVT-01..03) and fixes it BEFORE the Developer
   reviews.** The Developer reviews only the de-duplicated set. Shared UI rows moved so far: UI-01..UI-10.
+- Answers Nov 17: Q-R5 yes: RUL-37, 39, 40, 41, 43 reworded without UI mechanics; RUL-38 and RUL-42 dropped (rules.md now
+  has RUL-03..37, 39..41, 43). Q-U1: palettes and emoji pickers are common tools: UI-10 is one shared palette (the event
+  editor adds a "calendar default" choice), UI-11 one shared emoji picker. Q-E1 (Claude's decision, the Developer did not
+  know the question): EVT-25 merged into the planned EVT-01 (Duplicate).

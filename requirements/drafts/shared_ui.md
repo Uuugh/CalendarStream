@@ -14,6 +14,7 @@ keys are from `requirements/inventory/`. Looks (sizes, colors) stay in `build_ru
 | UI-07 | proposed | An info dot shows its explanatory text on click and opens above or below its icon as space allows. | S58-01, S58-34, S57-35, S66-18 |
 | UI-08 | proposed | A checkbox's label ticks it when clicked; empty space beside the label does not. | S21-19, S21-20 |
 | UI-09 | proposed | The calendar picker is a small month calendar with previous/next month and Today; it opens on a given month, can mark items unselectable, and closes when an item is picked. | S58-07..12, S58-28..30 |
-| UI-10 | proposed (?) | A color palette shows named colors; a picked color shows and closes the palette. (Rules has eleven buttons, events twelve: confirm whether the sets differ.) | S19-41, S19-44, S40-09..11 |
+| UI-10 | proposed | One shared color palette of named colors (Google's eleven event colors) is used wherever a color is chosen (rule action, event, calendar); the event editor adds a "calendar default" choice. A picked color shows and closes the palette. | S19-08, S19-41, S19-44, S40-09..11 |
 
 Pending: the Save | Cancel pair is covered by SET-07; the section header color tokens belong to the theme.
+| UI-11 | proposed | One shared emoji picker, with search, is used wherever an emoji is chosen. | S44-41 |
