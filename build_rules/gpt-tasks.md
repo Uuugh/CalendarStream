@@ -40,3 +40,16 @@ features, write it once, in the owning feature or in shared_ui.md, and reference
 
 After the last feature draft merges, Claude runs a duplication review across all drafts before the Developer sees them
 (layer-map.md, step 2). GPT: do not wait for it, and do not start a duplicate-removal pass yourself.
+
+## Task C: README reconciliation (branch `chatgpt/drafts-readme`, one PR, file `requirements/drafts/readme_gaps.md`)
+
+Start after Task B's last PR. Read README.md section by section (What it does; How it compares; Quick start; Settings;
+How syncing works; The status page; Syncing straight to Google Calendar; Updating; Data and backups). For every claim
+about what the app DOES (behavior a user can observe), check whether it is covered by a requirement in
+`requirements/*.md` or `requirements/drafts/*.md`. List the claims that are NOT covered, as a table
+`| README section/line | claim | closest requirement ID or none | proposed owning feature |`. Do not write new
+requirements and do not edit README.md. Claude turns the confirmed gaps into requirements.
+
+## Task D: CHANGELOG scan (later, same rules; split by version range, 300 lines per PR)
+
+Same method on CHANGELOG.md: list behaviors a release says it added or fixed that no requirement covers.
