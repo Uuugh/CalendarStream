@@ -216,3 +216,11 @@ tooling stays for the Python page only).
   (3) the same jsonb shapes in kv (rules, sources, destinations; keep unknown fields), (4) the idempotent startup
   statements (ALTER ... IF NOT EXISTS) run unchanged, never renaming or dropping, (5) Python-only regexes in saved rules are
   flagged (Q-P3 decision). The Dart app is first run against a COPY of the database; Python stays able to read it until step 5.
+- Data plan REVISED Nov 17 (Developer's suggestion, supersedes the "same schema" plan above): the Dart server owns a NEW
+  database with a schema designed for Dart (typed columns and Dart-owned migrations, not the Python app's kv blob), and a
+  one-time Python migration tool (`tools/migrate_to_dart.py`, built before step 5, deleted with Python) copies the data from
+  the old database. The old database is only read, never changed, so Python and the old data stay usable until the Developer
+  accepts the result. The tool decrypts the Fernet secrets with the Python code and re-encrypts them for Dart, so Dart needs no
+  Fernet; it carries events, edits, custom events, History, rules, sources, destinations, settings, Google connection and
+  feeds, flags rules whose regex is Python-only, and prints a report (row counts and a comparison) to check. The port order gains
+  step 4a: the Dart database schema and the migration tool, after the domain packages and before the server features that store data.
