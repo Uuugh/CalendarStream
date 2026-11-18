@@ -269,3 +269,6 @@ tooling stays for the Python page only).
   able. Common now has Time (TIM), UI and Capabilities (CAP: what an event's or calendar's origin allows, replacing the "never for
   read-only / not for rule events / not for Local calendars" exceptions in EVT-02, EVT-07, SRC-34, SRC-57).
 - CAL-35 dropped Nov 17 (Developer): the calendar header rule (no event count, no "times in" text) is in theme.md section 13.
+- Proposal (Developer, Nov 17): search moves out of calendar to the top bar (left of language) and searches all features; calendar key
+  and visibility condense into one feature, the Calendar filter (filter icon dropdown, multi-select with Ctrl, Shift or Select all, like the
+  language dropdown). Replaces CAL-03 (search position), CAL-06, 07, 08, 10, 37, 38, 54, 55, 56 and CAL-47..51 once Q-F1..Q-F7 are answered.
