@@ -112,10 +112,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Q-C: calendar, the remaining planned rows
 
-- **Q-C2** (CAL-15) Long-press-drag was never built. What should the Theme setting for the press time offer: a default and a range (for example 0.3 to 1.5
-  seconds, default 0.5)? And when an event is dragged in Week or Day, does its start snap to a step (for example 15 minutes), and in Month does it move by
-  whole days?
-  Answer:
 - **Q-C4** (CAL-13) After Expand fills the visible window, and the window is then resized, does the calendar stay at its number of lines (as today), or refill the
   new window until you stretch it by hand?
   Answer:

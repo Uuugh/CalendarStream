@@ -313,3 +313,4 @@ tooling stays for the Python page only).
 - Nov 17 (Developer): the installation's default time zone is part of the deployment feature (DEP-27); TIM-08 only refers to it.
 - Q-D2 answered Nov 17 (Developer): a Default time zone item under Settings > Site Admin, like Domains, stored in the database; the database overrides the installer's TZ (SET-59, DEP-27).
 - Nov 17 (Developer): the database overrides ALL env settings (DEP-28). Claude's reading: only the settings needed before the database can be read (stack, folders, image tag, updater profile, user/group/restart, trusted proxies, DB password) must stay env-only.
+- Q-C2 answered Nov 17 (Developer): hold time 0.5 s default, 0.3 to 1.5 s Theme setting; Week/Day snap to 15 minutes; Month keeps the time and moves the date (CAL-15).

@@ -10,7 +10,7 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-12 | built | The stretch bar can compress the calendar enough to remove the module's vertical scrollbar. | — | F51 |
 | CAL-13 | built | Beside the stretch bar, arrows point up when the calendar is expanded (click: collapse to minimum height) and down when it is collapsed (click: expand to the bottom of the visible browser window). | — | F51 |
 | CAL-14 | built | The view selector (Month, Week, Day, List) shows only the current view's Material icon when closed; each open choice shows its icon left of its word. | — | F52 |
-| CAL-15 |  | Long-press-drag moves an event, and a Theme setting sets how long the press must be held. | — | F61 |
+| CAL-15 |  | Long-press-drag moves an event, for the events that can be edited (CAP-01). In Week and Day the start snaps to 15-minute steps; in Month the event moves to the day it is dropped on and keeps its time. A Theme setting, local to the device, sets how long the press must be held: default 0.5 seconds, from 0.3 to 1.5. (Developer, Nov 17) | — | F61 |
 | CAL-19 |  | Local time: the calendar shows event times in the Local time zone, set in Settings > Time Zones (SET-47): the zone of the device in use, or a fixed zone. Existing events are viewed with the offset of that zone, while each event keeps, unchanged in the database, the time zone it was created in until the user edits it with Edit Event. (Developer, Nov 17) | — | S19-01 |
 | CAL-65 |  | An all-day (24-hour) event is shown like any timed event in the Local time zone, so it is a single day while the Local zone is the event's own zone, and can span two calendar days when the Local zone differs (for example a New York all-day event viewed from Los Angeles). (Developer, Nov 17) | — | Developer |
 | CAL-66 |  | Print prints the view as the user sees it: the Local or temporary time zone, the time format (TIM-10), the language and the Calendar filter (FLT-04). The print options (view, weekends, theme, orientation) are chosen in Print Preview. (Developer, Nov 17) | — | Developer, Nov 17 |
@@ -18,7 +18,7 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 
 | CAL-27 |  | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | — | S21-01, S21-02, S21-03 |
 | CAL-30 | proposed | The calendar displays its source calendars’ events. | — | S26-12 |
-| CAL-33 | proposed | Month, Week, Day and List can be selected; the choice is saved and indicated as selected. Week and Day provide an hourly view. | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
+| CAL-33 |  | Month, Week, Day and List can be selected; the choice is saved and indicated as selected. Week and Day provide an hourly view. | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
 | CAL-34 | proposed | Week view shows its date range and navigates backward and forward by one week. | — | S26-61 |
 | CAL-39 | proposed | Saving print preferences remembers the selected view, weekend choice, theme and automatic orientation. | — | S36-30 |
 | CAL-40 | proposed | Week printing with weekends off includes five days and uses the saved print theme. | — | S36-31, S36-34 |
