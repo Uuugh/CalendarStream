@@ -266,6 +266,12 @@ middle-right, bottom-left, bottom-center, bottom-right. A badge (or any overlay:
 or by any of the other eight points. The offset is relative to the parent's size, so a badge keeps its place when the parent scales
 (13a). Components do not position badges themselves.
 
+## 13c. Icon order inside a zone (Developer, Nov 17)
+
+A zone is an ordered list of icons; the theme defines each zone's order. Calendar header, **right zone**, in order (to confirm):
+Time Zone, View, 12/24 clock, Print, Full page. The Full page icon is the fullscreen icon, and while Full page is on it is the
+Exit full page icon (arrows pointing inward), not a Back arrow.
+
 ## 14. Date range and Import row
 
 Picture 2·14. **Date range**: From | To | ☐ All, in that order, everywhere a range is asked for (search, feeds,
