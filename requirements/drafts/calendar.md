@@ -53,7 +53,7 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 ## Shared UI and owning-feature references
 
 These are evidence mappings, not duplicate CAL requirements. Shared behavior is defined once in
-[shared_ui.md](shared_ui.md); event behavior is owned by [events.md](events.md) and the existing
+[common.md](common.md); event behavior is owned by [events.md](events.md) and the existing
 [events requirements](../events.md). Removed draft IDs remain reserved for review continuity.
 
 - Former CAL-16: S18-19, S18-20, S18-21 → UI-01 and UI-02 (event details/dialog lifetime). The click-outside persistence observation is retained as an open shared-dialog question, rather than restated here.

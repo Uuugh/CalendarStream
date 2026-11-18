@@ -39,7 +39,7 @@ rather than duplicated. No permanent approval or Developer Good status is assign
 These rows remain accounted for without creating duplicate shared-UI or Python implementation requirements.
 
 - S31-13: Activity widths, preview positioning/alignment and collapsed preview presentation belong to theme/shared section UI (UI-05), not a separate history rule.
-- S38-13: Shared section expansion behavior is owned by UI-05 in shared_ui.md.
+- S38-13: Shared section expansion behavior is owned by UI-05 in common.md.
 - S38-14: Activity widths, preview positioning/alignment and collapsed preview presentation belong to theme/shared section UI (UI-05), not a separate history rule.
 - S49-55: Copy-control ID presence is implementation markup; the container-log retrieval outcome is specified above.
 - S58-21: Table column markup/order and draggable attributes are shared table presentation/implementation. These checks do not exercise sorting, dragging or a history state change.
@@ -52,9 +52,9 @@ These rows remain accounted for without creating duplicate shared-UI or Python i
 - S66-13: Table column markup/order and draggable attributes are shared table presentation/implementation. These checks do not exercise sorting, dragging or a history state change.
 - S66-14: Table column markup/order and draggable attributes are shared table presentation/implementation. These checks do not exercise sorting, dragging or a history state change.
 - S67-04: Template source-string check (keep=False), not an executed user behavior.
-- S67-10: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the shared_ui.md pending save/cancel ownership note and SET-07; these references do not claim the exact timings are already specified.
-- S67-11: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the shared_ui.md pending save/cancel ownership note and SET-07; these references do not claim the exact timings are already specified.
-- S67-12: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the shared_ui.md pending save/cancel ownership note and SET-07; these references do not claim the exact timings are already specified.
+- S67-10: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-07; these references do not claim the exact timings are already specified.
+- S67-11: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-07; these references do not claim the exact timings are already specified.
+- S67-12: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-07; these references do not claim the exact timings are already specified.
 - S77-31: Injected record return value is a Python collaborator contract, not a user requirement.
 - S77-34: Injected trimming callback count is an implementation contract; it does not independently prove a user-visible retention limit.
 

@@ -33,10 +33,10 @@ Done: (none yet)
 
 A feature's requirement says what the feature does for the user ("Clicking a day opens the new-event dialog for that
 date"). How dialogs, menus, sections, confirmations, info dots, pickers and phone layouts behave is shared UI and is
-written ONCE in `requirements/drafts/shared_ui.md` (IDs `UI-NN`). A feature's requirement references it ("follows UI-02")
+written ONCE in `requirements/drafts/common.md` (IDs `UI-NN`). A feature's requirement references it ("follows UI-02")
 and never repeats it. If a row you are drafting is shared UI, add or reuse a `UI-NN` row instead (add it in your PR to
 that file only if it is not there yet; otherwise reference the existing one). If the same behavior appears in two
-features, write it once, in the owning feature or in shared_ui.md, and reference it from the other. (Developer, Nov 17.)
+features, write it once, in the owning feature or in common.md, and reference it from the other. (Developer, Nov 17.)
 
 After the last feature draft merges, Claude runs a duplication review across all drafts before the Developer sees them
 (layer-map.md, step 2). GPT: do not wait for it, and do not start a duplicate-removal pass yourself.

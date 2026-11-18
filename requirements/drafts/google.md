@@ -90,6 +90,7 @@ Existing GGL-01..04 remain separate; no traffic-display guarantees are inferred 
 | GGL-82 | proposed | Successful recovery restores healthy state and clears the retry count. New accounts start healthy and eligible to sync. | S73-01, S73-07 |
 | GGL-83 | proposed (?) | Saved health error text is limited to 300 characters. Is this truncation a user-facing diagnostic limit or only a storage policy? | S73-13 |
 | GGL-84 | proposed | Once the API client is accepted, a Google destination can be created. | S39-16 |
+| GGL-85 | proposed | Google sync follows the common time rules (TIM-01 to TIM-07): it reads the time zone of the Google calendar and of each incoming event and records it with the event, and it sends each event's recorded time zone. A stored all-day event is sent to Google as an all-day event for its stored time zone, so it shows on the right days in Google Calendar. (Developer, Nov 17) | Developer |
 
 ## Not requirements
 

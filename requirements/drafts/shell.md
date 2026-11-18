@@ -5,7 +5,7 @@ Not approved. Derived from all inventory rows whose candidate feature includes `
 Evidence keys refer to the pinned predicates, setup and limits in `requirements/inventory/suite_NN.md`.
 No Developer approval or new runtime verification is inferred.
 
-Shared widget mechanics remain in shared_ui.md or their existing owner, rather than being duplicated
+Shared widget mechanics remain in common.md or their existing owner, rather than being duplicated
 here. Visual measurements belong to build_rules/theme.md. A shared-owner mapping is not a claim that
 every detailed observation has already become an approved shared requirement. Claude owns the final
 cross-feature duplication review; this file does not change the other drafts.

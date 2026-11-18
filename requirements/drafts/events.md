@@ -1,6 +1,6 @@
 # DRAFT requirements: events (for the Developer's review)
 
-Not approved. Behavior shared by every feature (dialog Back/Escape/phone, sections, confirmations, info dots, label ticking, the calendar picker) lives once in `shared_ui.md` (UI-NN) and is only referenced here. From the 165 `events` rows of `requirements/inventory/` (suites 12-71; pinned to d70343f). The event
+Not approved. Behavior shared by every feature (dialog Back/Escape/phone, sections, confirmations, info dots, label ticking, the calendar picker) lives once in `common.md` (UI-NN) and is only referenced here. From the 165 `events` rows of `requirements/inventory/` (suites 12-71; pinned to d70343f). The event
 pop-up: adding, editing, hiding, deleting, restoring, reminders, links between events. Existing: EVT-01..03 (planned
 in `requirements/events.md`). Numbering continues from EVT-04. Pixel and alignment rows (S46-16..20, S57-21..24/35/37,
 S59-15..17, S65-34..37, S44-26..28/45) are left to `theme.md` (Q-R1) except where the order itself is the behavior.

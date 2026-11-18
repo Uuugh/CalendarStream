@@ -113,14 +113,14 @@ These mappings account for evidence without defining duplicate UI or implementat
 - S37-30: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S37-31: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S37-32: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S37-48: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in shared_ui.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
-- S37-49: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in shared_ui.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
+- S37-48: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
+- S37-49: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
 - S41-01: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S41-02: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S44-08: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S44-29: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in shared_ui.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
-- S44-30: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in shared_ui.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
-- S44-31: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in shared_ui.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
+- S44-29: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
+- S44-30: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
+- S44-31: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
 - S44-34: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S44-43: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S49-03: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
@@ -152,8 +152,8 @@ These mappings account for evidence without defining duplicate UI or implementat
 - S77-21: Python source-string, injected-provider/logging or cached-version compatibility contract; not a user-facing source requirement.
 - S77-26: Python source-string, injected-provider/logging or cached-version compatibility contract; not a user-facing source requirement.
 - S77-27: Python source-string, injected-provider/logging or cached-version compatibility contract; not a user-facing source requirement.
-- S81-03: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in shared_ui.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
-- S81-05: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in shared_ui.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
+- S81-03: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
+- S81-05: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
 
 ## Coverage and open questions
 

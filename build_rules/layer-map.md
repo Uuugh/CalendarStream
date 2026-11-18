@@ -183,7 +183,7 @@ tooling stays for the Python page only).
   branch `paused/test-parallel` (commit 85f404b, pushed) and is the input for step 6 (analyze parallel testing). It is
   not merged and not continued on main. The working tree on main is clean.
 - Step 2 rule (Developer, Nov 17): feature requirements state what the feature does; behavior shared by several features is
-  written once in `requirements/drafts/shared_ui.md` (UI-NN) and referenced. **When all feature drafts are built, Claude
+  written once in `requirements/drafts/common.md` (UI-NN) and referenced. **When all feature drafts are built, Claude
   runs a duplication review across every draft (same behavior stated in two features, UI mechanics inside a feature,
   overlaps with approved requirements such as RUL-36/41 and planned EVT-01..03) and fixes it BEFORE the Developer
   reviews.** The Developer reviews only the de-duplicated set. Shared UI rows moved so far: UI-01..UI-10.
@@ -249,7 +249,7 @@ tooling stays for the Python page only).
   time zone; it judges days and times in the event's own zone (RUL-07). Open: Q-T5/Q-T7, Q-T8, Q-T9.
 - Q-T5/Q-T7 answered Nov 17 (Developer): all-day (24-hour) events follow the Local zone like timed events and can span two days when
   viewed from another zone (CAL-65). Open: Q-T8, Q-T9, Q-T10 (how Google and feeds receive them).
-- Time model (Developer, Nov 17): one set of shared rules, requirements/drafts/time.md (TIM-01..08): UTC plus the recorded zone per event;
+- Time model (Developer, Nov 17): one set of shared rules, requirements/drafts/common.md (TIM-01..08): UTC plus the recorded zone per event;
   Local zone from Settings > Time Zones; rules not zone-based (the event's zone decides); Google gets the zone (all-day events go as
   24-hour timed events); feeds carry the zone. Q-T10 answered by this. Open: Q-T8 (per device or account), Q-T9 (zone for zoneless imports).
 - Q-T8 answered Nov 17 (Developer): the Time Zones choice is global and recorded in the database (SET-47). Claude's assumption, to
@@ -257,3 +257,7 @@ tooling stays for the Python page only).
 - Nov 17 (Developer): the calendar's own time zone picker is a temporary view change and does not change the Time Zones setting
   (SET-47, CAL-25). Google all-day events are date-only in the API (start.date); how Google's screen shows them after travel is to
   be tested by the Developer; Q-T10 reopened, TIM-06 marked (?).
+- Nov 17 (Developer): shared requirements live in ONE draft, requirements/drafts/common.md (Time TIM-01..08 and UI UI-01..11; it
+  replaces time.md and shared_ui.md, IDs unchanged). Features reference common rows instead of restating them. Q-T10 answered: a stored
+  all-day event is sent to Google as an all-day event for its stored time zone (TIM-04); Google sync reads the zone of the Google
+  calendar and of incoming events and records it with the event (TIM-06, GGL-85 uses the common rules). Open: Q-T9.
