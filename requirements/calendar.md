@@ -7,7 +7,6 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 |---|---|---|---|---|
 | CAL-02 | planned | One control switches between 12 h and 24 h and shows the current setting as a badge (build_rules/theme.md, 13b). | — | F15.2, F43, S21-05, S21-07, S66-16, S79-10, S79-11 |
 | CAL-04 | planned | A Full page icon sits right of Print, in the calendar header's right zone; it hides every other section and becomes an Exit full page icon (the arrows-inward icon, not Back). (Developer, Nov 17) | — | F15.4 |
-| CAL-05 | planned | The lower-left (?) is removed. | — | F15.5 |
 | CAL-09 | built | The footer's vertical rule is centered by default and moves only to make room for extra calendars or keys. | — | F49 |
 | CAL-11 | built | The calendar's stretch control is a bar centered at the bottom of the calendar (not the module), independent of the left/right grips setting, drawn as two rows of six dots like a slider's. | — | F51 |
 | CAL-12 | built | The stretch bar can compress the calendar enough to remove the module's vertical scrollbar. | — | F51 |

@@ -295,3 +295,4 @@ tooling stays for the Python page only).
   The earlier Q-Z2 answer (a minimum width) was withdrawn by the Developer.
 - CAL-02 rewritten, CAL-22 deleted, anchor system (theme 13b, UI-15) Nov 17 (Developer): badges are placed by one of nine anchor points plus an offset defined in the theme.
 - CAL-04 Nov 17 (Developer): the Full page toggle's exit icon is Exit full page (arrows inward), not Back; icons are an ordered list per zone (theme 13c).
+- CAL-05 omitted Nov 17 (Developer): not a requirement. Zones hold text as well as icons (theme 13c).
