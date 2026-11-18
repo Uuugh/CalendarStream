@@ -256,7 +256,7 @@ Every row of controls (a header, a title line, a button group, a key row) has th
 own alignment, and an item belongs to a zone; nothing positions itself. When a row is too narrow the zones **stack, left on top, then
 center, then right**, each keeping its zone's alignment. Within a zone, when the width is still too small, **fonts and icons scale down to
 fit their zone**, never below what stays readable (text resize and reflow, WCAG 1.4.4 and 1.4.10) and never below a 24×24 px target
-(WCAG 2.5.8), the baseline in `ui_ux.md`. Text that still does not fit its zone at that size is clipped at the zone's edge: the part outside the zone is not rendered (no ellipsis, no wrapping), and the full text stays in the item's accessible name. No component has its own responsive rule. One shared row widget does this for every screen. The layout does not mirror for a right-to-left language: the zones keep the same names and places, and only the direction of the text inside an item changes.
+(WCAG 2.5.8), the baseline in `ui_ux.md`. Text that still does not fit its zone at that size is clipped at the zone's edge: the part outside the zone is not rendered (no ellipsis, no wrapping). No component has its own responsive rule. One shared row widget does this for every screen. The layout does not mirror for a right-to-left language: the zones keep the same names and places, and only the direction of the text inside an item changes.
 
 ## 13b. Anchors: badges and overlays (Developer, Nov 17)
 
