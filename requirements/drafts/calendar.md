@@ -18,7 +18,7 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 | CAL-22 | proposed | The selected time format is indicated as 12 or 24 hours. | S21-05, S21-07, S66-16, S79-10, S79-11 |
 | CAL-23 | proposed | An unknown time-format choice is refused. | S19-09 |
 | CAL-24 | proposed | An unknown display time zone is refused. | S19-30 |
-| CAL-25 | proposed | Selecting a Local time zone shows event times in that zone (see CAL-19). | S19-31 |
+| CAL-25 | proposed | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | S19-31 |
 | CAL-27 | proposed | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | S21-01, S21-02, S21-03 |
 | CAL-30 | proposed | The calendar displays its source calendars’ events. | S26-12 |
 | CAL-33 | proposed | Month, Week, Day and List can be selected; the choice is saved and indicated as selected. Week and Day provide an hourly view. | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |

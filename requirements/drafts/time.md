@@ -10,7 +10,7 @@ restate them (Developer, Nov 17: "we are creating lots of exception rules; I wan
 | TIM-03 | proposed | The calendar shows every event in the Local time zone: the system (device) zone, or the fixed zone chosen in Settings > Time Zones (SET-47). Changing the Local zone changes only how times are shown. |
 | TIM-04 | proposed | An all-day event is a 24-hour event, local midnight to the next local midnight in its own time zone, stored in UTC like any other. It is shown like any other event, so it is one day in its own zone and can span two days in another (CAL-65). |
 | TIM-05 | proposed | Rules do not depend on a time zone. A rule is applied to an event, and the event's recorded time zone decides what "Friday" or "22:00" means. Only a rule that is literally about a time zone uses a zone. |
-| TIM-06 | proposed | Google receives each event's time zone with its times (syncing the zone). An all-day event is sent as the 24-hour timed event it is. |
+| TIM-06 | proposed (?) | Google receives each event's time zone with its times (syncing the zone). How an all-day event is sent is open (Q-T10): Google's own all-day events carry only a date. |
 | TIM-07 | proposed | Calendar feeds carry each event's times with its time zone. |
 | TIM-08 | proposed (?) | An imported event that carries no time zone gets a default zone (open: Q-T9). |
 

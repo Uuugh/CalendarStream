@@ -105,3 +105,9 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   have no device to ask. Which zone should such an event get as its own: the Fixed zone if set, otherwise the zone the first
   sign-in used (kept on the server as the account's default)? Claude recommends that.
   Answer:
+- **Q-T10** (reopened) Google's own all-day events are date-only: the API field is `start.date` ("yyyy-mm-dd", no time, no zone). Claude
+  has not seen how Google's screen behaves when you travel, and your experience (an all-day event spanning two days after you
+  change time zone) differs from what the API implies. Please test once: create an all-day event in Google Calendar, then change
+  Google's time zone (Settings > Time zone) or your device's zone to Los Angeles, and say whether it shows on one day or two.
+  Then CalendarStream sends all-day events to Google as: (a) Google all-day (date only), or (b) 24-hour timed events with the zone.
+  Answer:

@@ -254,3 +254,6 @@ tooling stays for the Python page only).
   24-hour timed events); feeds carry the zone. Q-T10 answered by this. Open: Q-T8 (per device or account), Q-T9 (zone for zoneless imports).
 - Q-T8 answered Nov 17 (Developer): the Time Zones choice is global and recorded in the database (SET-47). Claude's assumption, to
   correct if wrong: the calendar's own zone picker edits that same setting (picking a zone makes it Fixed). Open: Q-T9.
+- Nov 17 (Developer): the calendar's own time zone picker is a temporary view change and does not change the Time Zones setting
+  (SET-47, CAL-25). Google all-day events are date-only in the API (start.date); how Google's screen shows them after travel is to
+  be tested by the Developer; Q-T10 reopened, TIM-06 marked (?).
