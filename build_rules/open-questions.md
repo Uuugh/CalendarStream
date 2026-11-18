@@ -37,3 +37,5 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 
 
+- **SET-41** (settings) Resetting the logo removes the custom image. Should it also reset the animation settings (SET-40), or are those separate?
+  Answer:
