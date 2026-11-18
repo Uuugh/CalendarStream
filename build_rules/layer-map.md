@@ -331,3 +331,4 @@ tooling stays for the Python page only).
 - DEP-12 answered Nov 17 (Developer): backup and restore is a requirement in Settings > Site Admin (SET-60), covering both calendar data and the database. Open: Q-BK1 (where the backup goes, whether secrets are included).
 - Q-BK1 answered Nov 17 (Developer): a backup downloads as a file to the device and includes the encrypted saved passwords and Google sign-in (SET-60).
 - DEP-10 reworded Nov 17 (Developer: it made no sense): the updater only acts when the app asks it (Update now, or automatic updating when on); there is no conflict with auto-update because the app does the checking.
+- Nov 17 (Developer): admin settings are retained across devices (stored once in the database); the update settings (whether to check, automatic update, frequency) are admin and must be consistent across devices and browsers. SET-06 reworded: User = device-local view preferences; Site Admin = shared (Login moved there, to confirm).
