@@ -101,10 +101,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 ## Q-T: time storage (Developer, Nov 17: all times are stored in UTC; an event's time zone is for entry and display)
 
 
-- **Q-T8** Time Zones setting (SET-47): is the choice stored per device (your phone can follow the system while your PC uses a
-  fixed zone) or once for the account (every device shares it)? And the calendar's own time zone picker (CAL-24, CAL-25): does
-  picking a zone there switch the setting to Fixed, or only change the view until you reload?
-  Answer:
 - **Q-T9** Imported events that carry no zone (times ending in Z, or floating local times) and the server's scheduled downloads
   have no device to ask. Which zone should such an event get as its own: the Fixed zone if set, otherwise the zone the first
   sign-in used (kept on the server as the account's default)? Claude recommends that.

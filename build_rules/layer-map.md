@@ -252,3 +252,5 @@ tooling stays for the Python page only).
 - Time model (Developer, Nov 17): one set of shared rules, requirements/drafts/time.md (TIM-01..08): UTC plus the recorded zone per event;
   Local zone from Settings > Time Zones; rules not zone-based (the event's zone decides); Google gets the zone (all-day events go as
   24-hour timed events); feeds carry the zone. Q-T10 answered by this. Open: Q-T8 (per device or account), Q-T9 (zone for zoneless imports).
+- Q-T8 answered Nov 17 (Developer): the Time Zones choice is global and recorded in the database (SET-47). Claude's assumption, to
+  correct if wrong: the calendar's own zone picker edits that same setting (picking a zone makes it Fixed). Open: Q-T9.
