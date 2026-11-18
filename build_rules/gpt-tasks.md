@@ -3,7 +3,7 @@
 ChatGPT works from this file, so the Developer does not have to start each task. Read it, take the first task not marked
 done, and when its PR merges mark it done in a later PR. Rules for every task: branch from the latest `origin/main`;
 branch name `chatgpt/<kind>-<what>`; the PR adds only the files the task names (never edit README.md or an existing
-file unless the task says so); put notes in the PR description; keep at most 2 PRs open; never merge (an Action merges a
+file unless the task says so); put notes in the PR description; keep at most 4 PRs open (raised from 2 by the Developer, Nov 18, so Task E can finish while Claude is offline); never merge (an Action merges a
 PR only after Claude's clean review and a green `suites` check, and only for `chatgpt/inventory-*` PRs touching
 `requirements/inventory/` and `chatgpt/drafts-*` PRs touching `requirements/drafts/`); stop and tell the Developer only if
 blocked.
