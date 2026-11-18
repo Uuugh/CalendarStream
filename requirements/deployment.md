@@ -16,7 +16,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | DEP-07 | proposed | FORWARDED_ALLOW_IPS lists the proxies trusted to report the visitor's address and HTTPS use (see ACC-17). | — | L154 |
 | DEP-08 | proposed | Google notifications need valid TLS and proxy access to the unauthenticated notification endpoint; without it the daily check still runs (see GGL-41, GGL-44). | — | L455 |
 | DEP-09 | proposed | Running the installer again keeps the settings and installs the newest image of the selected release (see SET-26). | — | L490 |
-| DEP-10 | proposed (?) | The updater never updates the database, never checks for updates on its own, and removes old images. Conflicts with auto-update (SET-32): which wins? | — | L500 |
+| DEP-10 | proposed | The updater acts only when the app asks it: when the user presses Update now, or when automatic updating is on and a check finds a newer version (SET-32). It never updates the database, and it removes old images after an update. | — | L500 |
 | DEP-11 | proposed | The updater is not reachable from outside the Docker network, needs a generated secret token and uses the Docker socket; the installer can remove it without losing other data (see SET-29). | — | L502 |
 | DEP-12 | proposed | The database and the calendar data are backed up and restored from Settings > Site Admin (SET-60). A restored database needs the deployment secrets (the database password) to read its encrypted credentials. | — | L525 |
 | DEP-13 | proposed | Deleting the Postgres directory resets the app to a fresh install: sources, destinations, edits, rules, templates, settings, logins, the Google connection and feed links. | — | L530 |

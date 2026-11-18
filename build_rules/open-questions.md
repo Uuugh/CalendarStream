@@ -6,8 +6,6 @@ Only unanswered questions are listed; Claude removes a question once it acts on 
 
 Each question is the (?) text of a proposed requirement. Answer on the Answer line; Claude updates the row and removes the question.
 
-- **DEP-10** (deployment) The updater never updates the database, never checks for updates on its own, and removes old images. Conflicts with auto-update (SET-32): which wins? 
-  Answer:
 - **FED-08** (feeds) A stream name accepts letters such as OneWay, but refuses spaces and punctuation such as an exclamation mark; malformed input identifies the stream field. What is the complete allowed character set? 
   Answer:
 - **FED-25** (feeds) Feed creation supplies a generated stream token and explains how an old feed link can be reused. The checked generated tokens contain at least twenty characters. Is twenty the guaranteed minimum rather than just the tested generator length? 
