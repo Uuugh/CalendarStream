@@ -9,8 +9,6 @@ Only unanswered questions are listed; Claude removes a question once it acts on 
 
 Each question is the (?) text of a proposed requirement. Answer on the Answer line; Claude updates the row and removes the question.
 
-- **CAL-35** (calendar) The sampled week header omits the redundant “times in” and event-count wording. Is this omission intended for every view? 
-  Answer:
 - **CAL-37** (calendar) The key omits separate Timed, All-day and Added here color labels in the sampled views. Should this apply to every key variant? 
   Answer:
 - **CAL-57** (calendar) The calendar stretch amount is saved for the sampled negative values -300 and -120; -301 is refused, and a request for 1500 is limited to at most 1200. Are the complete accepted range and clamping rules intended to be specified beyond these samples? 

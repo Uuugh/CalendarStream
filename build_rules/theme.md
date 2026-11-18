@@ -246,6 +246,8 @@ e.g. "Google Cloud › Clients › CalendarStream › Authorized redirect URIs �
 paragraphs: the why goes in the (?). Status words are a word or two (section 7). The theme suite fails a
 sentence on the page longer than 20 words (the (?), the calendar and the log aside).
 
+The calendar header shows the title and controls only: no event count and no "times in" text. (Developer, Nov 17; was CAL-35.)
+
 ## 14. Date range and Import row
 
 Picture 2·14. **Date range**: From | To | ☐ All, in that order, everywhere a range is asked for (search, feeds,

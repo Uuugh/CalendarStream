@@ -22,7 +22,6 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 | CAL-30 | proposed | The calendar displays its source calendars’ events. | S26-12 |
 | CAL-33 | proposed | Month, Week, Day and List can be selected; the choice is saved and indicated as selected. Week and Day provide an hourly view. | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
 | CAL-34 | proposed | Week view shows its date range and navigates backward and forward by one week. | S26-61 |
-| CAL-35 | proposed (?) | The sampled week header omits the redundant “times in” and event-count wording. Is this omission intended for every view? | S26-62 |
 | CAL-37 | proposed (?) | The key omits separate Timed, All-day and Added here color labels in the sampled views. Should this apply to every key variant? | S34-04, S45-25 |
 | CAL-38 | proposed | Changing a source name updates its name in the calendar key. | S34-16 |
 | CAL-39 | proposed | Saving print preferences remembers the selected view, weekend choice, theme and automatic orientation. | S36-30 |

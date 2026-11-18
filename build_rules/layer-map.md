@@ -268,3 +268,4 @@ tooling stays for the Python page only).
 - Principle (Developer, Nov 17): exceptions in general are very bad; fix the requirement instead of adding an exception whenever
   able. Common now has Time (TIM), UI and Capabilities (CAP: what an event's or calendar's origin allows, replacing the "never for
   read-only / not for rule events / not for Local calendars" exceptions in EVT-02, EVT-07, SRC-34, SRC-57).
+- CAL-35 dropped Nov 17 (Developer): the calendar header rule (no event count, no "times in" text) is in theme.md section 13.
