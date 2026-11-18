@@ -5,7 +5,6 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 
 | ID | status | statement | test | was |
 |---|---|---|---|---|
-| CAL-01 | planned | A space separates the date picker and Time Zone; when the top line does not fit, its right half goes under the +, right-aligned. | — | F15.1 |
 | CAL-02 | built | The 12 h / 24 h choice is one outlined clock icon with a 12 or 24 badge showing the current setting; clicking it toggles between the two. | — | F15.2, F43 |
 | CAL-04 | planned | A Full page icon sits right of Print; it hides every other section and becomes a Back icon. | — | F15.4 |
 | CAL-05 | planned | The lower-left (?) is removed. | — | F15.5 |

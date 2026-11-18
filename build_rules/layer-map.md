@@ -288,3 +288,4 @@ tooling stays for the Python page only).
   with proposed (unreviewed) and planned/built/verified rows together; the per-feature drafts are merged into it and removed. The drafts/
   folder keeps only the README and CHANGELOG gap scans and Task E's gaps_<feature>.md. Earlier notes that name requirements/drafts/<feature>.md
   mean requirements/<feature>.md now.
+- CAL-01 removed Nov 17 (Developer): the date picker / Time Zone spacing item (was F15.1) is dropped, not moved to the theme.
