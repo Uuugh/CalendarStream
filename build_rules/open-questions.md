@@ -61,8 +61,3 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   the table later without touching a feature. Yes?
   Answer:
 
-## Q-BK: backup
-
-- **Q-BK1** (SET-60) Where does a backup go: downloaded as a file to the device you are using (recommended: you keep it), or saved in a folder on the server? Restore asks for the file (or picks from the folder) and, because it replaces
-  everything, asks first (UI-06). Does a backup include the saved passwords and Google sign-in (they stay encrypted, and need the same database password to be read after a restore)?
-  Answer:
