@@ -21,7 +21,7 @@ once here for other drafts to reference during Claude's planned duplication revi
 | ACC-08 | proposed | Changing credentials requires the correct current password and matching new-password confirmation. A refused username change leaves the saved username unchanged and identifies the current-password error. | S16-29, S16-30, S64-14 |
 | ACC-09 | proposed | After a credential change, the old credentials are refused and the new credentials are accepted. Changing only the username retains the existing password. | S16-31, S16-33 |
 | ACC-10 | proposed | Changing the login renews the form security token and invalidates the previous token. | S16-32 |
-| ACC-11 | proposed | Ordinary checked logs do not expose setup, CCS+ or replacement passwords. CCS+ storage itself is owned by sources. | S16-34 |
+| ACC-11 | proposed | Passwords (page login, setup, CCS+, replacement), Google client secrets and notification tokens are stored protected, never shown on a page and never written to the logs. Other features refer to this rule. | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-12 | proposed | Changing update settings requires page authentication. This is shared change authorization; other features should reference this rule rather than repeat it. | S22-14 |
 | ACC-13 | proposed | Initial-setup and signed-in form tokens are distinct; a setup token cannot authorize a public-address change. Mismatched form tokens are refused. | S23-02, S23-03, S32-06, S77-23, S77-24, S77-25 |
 | ACC-14 | proposed | Cross-site form changes are refused and leave the saved value unchanged. | S23-23 |

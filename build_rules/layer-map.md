@@ -204,3 +204,8 @@ tooling stays for the Python page only).
   that use Python-only syntax will fail to compile; the port flags them as broken at migration instead of dropping them.
 - Q-D1 answered Nov 17: `deployment` is a feature (requirements only for now; in the port, the Docker, installer and updater
   side). Draft: requirements/drafts/deployment.md (DEP-01..13, from GPT's README scan). Prefix DEP.
+- Duplication review (Nov 17, Claude): done across requirements/drafts/*. Moved to one owner and referenced: secrets and
+  tokens (ACC-11, referenced by SRC-08 and GGL-07; GGL-39 dropped), form security (ACC-13/14, referenced by SRC-05), public
+  address (SET-08..16, referenced by GGL-45), feed name suggestions (FED-15 absorbs FED-26; FED-20 dropped), read/write round
+  trip (FED-29 only; SRC-60 dropped), view change (CAL-33 absorbs CAL-36), templates picker (TPL-05/07; EVT-26 dropped);
+  reload/phone-width mechanics removed from CAL-45/49, SRC-24/31/33. Questions from all (?) rows are in open-questions.md.

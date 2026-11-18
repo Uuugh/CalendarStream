@@ -15,10 +15,10 @@ membership follows source removal, while publishing and calendar display remain 
 | SRC-02 | proposed | The automatic-download interval initially follows the environment setting; saving a different interval overrides it, and restoring the environment value removes the override. | S14-04, S14-05, S14-11, S14-12 |
 | SRC-03 | proposed | The next download is scheduled from the last attempt plus the configured interval; if that time has passed, changing the interval schedules an immediate download. | S14-06, S14-07 |
 | SRC-04 | proposed | Download intervals below 15 minutes and values that are not numbers are refused. | S14-08, S14-09 |
-| SRC-05 | proposed | Changing download settings or source credentials requires a valid page security token. | S14-10, S16-28 |
+| SRC-05 | proposed | Changes to download settings or source credentials follow the shared form-security rules (ACC-13, ACC-14). | S14-10, S16-28 |
 | SRC-06 | proposed | Existing CCS+ credentials can be imported from the legacy configuration, stored encrypted, and recorded as imported activity. | S16-02, S16-03 |
 | SRC-07 | proposed | Saved CCS+ credentials are used for the next download. | S16-22, S16-24 |
-| SRC-08 | proposed | The saved CCS+ password is neither stored in plaintext nor shown on the page or in the checked activity logs; the page shows the saved username and explains how to keep its password. | S16-23, S16-25, S16-34 |
+| SRC-08 | proposed | The saved CCS+ password is protected (ACC-11); the page shows the saved username and explains how to keep its password. | S16-23, S16-25, S16-34 |
 | SRC-09 | proposed | Changing the CCS+ username while leaving the password blank keeps the saved password. | S16-26 |
 | SRC-10 | proposed | An invalid CCS+ username is refused with a username error. | S16-27, S28-13 |
 | SRC-11 | proposed | Missing CCS+ credentials are reported as Setup needed rather than an error, and Sync now is unavailable until credentials are entered. | S18-01, S18-02, S18-06 |
@@ -32,18 +32,18 @@ membership follows source removal, while publishing and calendar display remain 
 | SRC-19 | proposed | Recurring source events expand into distinct occurrences while retaining source-qualified identities. Moving one recurrence preserves the occurrence identities and updates its changed title. | S26-10, S53-13 |
 | SRC-20 | proposed | A successful feed download reports healthy status even when another source has no events. | S26-11 |
 | SRC-21 | proposed | Removing a source removes its stored events and its membership from destinations, while keeping a combined Google destination. | S26-50, S26-51 |
-| SRC-22 | proposed | Legacy migration creates the CCS+ source and scopes migrated feed and Google destinations to it. | S26-64 |
+| SRC-22 | proposed | Legacy migration creates the CCS+ source (destination scoping is in FED-12; the Google destination migration is in the google feature). | S26-64 |
 | SRC-23 | proposed | A custom CCS+ site address must use HTTPS; saving it uses that address, while clearing it removes the override. | S27-02, S27-03, S27-04 |
-| SRC-24 | proposed | After a successful upload, the source reports Last synced; this status remains available at phone width. | S27-05, S31-04, S31-19, S40-04 |
+| SRC-24 | proposed | After a successful upload, the source reports Last synced. | S27-05, S31-04, S31-19, S40-04 |
 | SRC-25 | proposed | Successful upload ends the source’s setup-needed configuration state. | S27-06 |
 | SRC-26 | proposed | Credential saving reports saving/verification progress and a saved acknowledgement before successful validation. Shared save/cancel interaction follows SET-07; this rule specifies the verification outcome. | S28-05, S28-06, S28-07 |
 | SRC-27 | proposed | An unrecognized verification kind is refused. | S28-14 |
 | SRC-28 | proposed | A source can be renamed and given a note; saving updates its name and explanatory note, and clearing the note removes its content. | S18-17, S29-11, S33-05, S39-18, S44-16 |
 | SRC-29 | proposed | Credentials are labeled Username rather than UID. | S31-05 |
 | SRC-30 | proposed | Source presets identify the provider and offer provider-specific setup guidance, including Google secret-address guidance and the United Airlines CCS+ name. Choosing Apple selects the Apple preset. | S33-01, S33-02, S33-23 |
-| SRC-31 | proposed | Sync Now starts an asynchronous source update without reloading the page. It reports Syncing during work and Healthy on success, preserving unrelated unsaved source edits. | S33-15, S33-18, S33-19, S35-28, S35-29, S35-31, S44-18 |
+| SRC-31 | proposed | Sync Now updates a source in the background: it reports Syncing during work and Healthy on success, and keeps unrelated unsaved source edits. | S33-15, S33-18, S33-19, S35-28, S35-29, S35-31, S44-18 |
 | SRC-32 | proposed | A failed source download reports Failed. | S35-32 |
-| SRC-33 | proposed | Saving a source name updates the stored name without reloading the page. | S34-13 |
+| SRC-33 | proposed | Saving a source name updates the stored name. | S34-13 |
 | SRC-34 | proposed | Local calendars do not offer Sync Now; the default calendar is identified, independently of source order. | S36-20, S36-23, S36-24, S49-02, S63-16 |
 | SRC-35 | proposed | Additional Local calendars can be created; an unnamed one is named Local. | S36-22, S36-48 |
 | SRC-36 | proposed | Removing the last Local calendar retains that calendar and empties its events, rather than leaving no Local calendar. Ensuring a Local calendar afterward does not create a duplicate. | S36-46, S36-47, S49-32 |
@@ -70,7 +70,6 @@ membership follows source removal, while publishing and calendar display remain 
 | SRC-57 | proposed | A Local calendar can be selected as default; a read-only CCS+ calendar cannot be made the default. | S63-13, S63-14, S63-15, S66-04 |
 | SRC-58 | proposed | A source can be turned off and back on, with its saved off state cleared when reenabled. | S63-20, S63-21, S63-23 |
 | SRC-59 | proposed | A valid saved Local default takes precedence over ordering; if it no longer exists, the first Local calendar is used. With no sources, creation of a Local calendar also makes it the default. | S77-13, S77-14, S77-15 |
-| SRC-60 | proposed | Reading, producing and reading calendar data again preserves event titles and start/end times. | S77-07 |
 
 ## Not requirements
 

@@ -25,18 +25,16 @@ Claude's cross-feature review.
 | FED-12 | proposed | Legacy migration preserves the feed token and scopes the migrated destination to CCS+. Google migration is owned by the Google feature. | S26-64, S26-65 |
 | FED-13 | proposed | A feed can be limited by start and end dates; clearing both limits restores its full event set. A start date may be saved without an end date. | S29-02, S29-04, S39-19 |
 | FED-14 | proposed | An end date before the start date is refused and identifies the end-date field. | S29-03, S51-13 |
-| FED-15 | proposed | Leaving a new feed’s name and note empty inherits them from its selected source; explicit values are preserved. | S31-01, S58-17, S58-18 |
+| FED-15 | proposed | A new feed's name and note default to the selected source's and follow it when the selected source changes; values the user typed are kept. | S31-01, S58-17, S58-18, S58-37, S58-38 |
 | FED-16 | proposed (?) | Saving a source does not replace an unrelated unsaved feed-name edit. Is preserving unrelated pending edits a shared saving rule for all features? | S34-15 |
 | FED-17 | proposed | Published events include their display reminders, including fifteen-minute and one-hour reminders. Reminder selection belongs to EVT-19. | S36-26 |
 | FED-18 | proposed | An unchanged feed supports conditional reads with an ETag and an empty not-modified response; changing its events causes an old ETag to receive updated content. | S39-10, S39-11 |
 | FED-19 | proposed | An ordinary feed reports reads rather than a next-push schedule. | S46-02 |
-| FED-20 | proposed | Creating a feed saves its chosen name, included calendars, start date and note. | S51-07, S51-52 |
 | FED-21 | proposed | The legacy gfeed kind creates an ordinary calendar feed. | S51-08 |
 | FED-22 | proposed | A valid replacement stream name is saved and its URL serves the feed. | S51-12, S51-18 |
 | FED-23 | proposed | A feed can use a selected configured public base address, and its link combines that address with its stream token. Public-domain configuration belongs to settings. | S26-32, S51-16, S51-17 |
 | FED-24 | proposed | A feed can be sent using email or SMS links. | S51-55 |
 | FED-25 | proposed (?) | Feed creation supplies a generated stream token and explains how an old feed link can be reused. The checked generated tokens contain at least twenty characters. Is twenty the guaranteed minimum rather than just the tested generator length? | S58-15 |
-| FED-26 | proposed | New-feed name and note suggestions follow the selected source; changing which source is selected updates the suggestion. | S58-37, S58-38 |
 | FED-27 | proposed (?) | A stream name may contain one through 128 characters; 129 characters and embedded spaces are refused by the checked validator. Does the same limit apply to every save route? | S63-11 |
 | FED-28 | proposed | Turning a feed off makes its URL temporarily unavailable; turning it back on clears its off state without changing its included calendars. | S63-22, S63-23, S63-24 |
 | FED-29 | proposed | Published calendar data preserves event titles, start times and end times when read back as calendar data. | S77-07 |

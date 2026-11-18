@@ -22,10 +22,9 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 | CAL-26 | proposed | The selected display time zone is identifiable on both desktop and phone. Shared explanatory help follows UI-07. | S31-03, S31-18, S66-15 |
 | CAL-27 | proposed | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | S21-01, S21-02, S21-03 |
 | CAL-30 | proposed | The calendar displays its source calendars’ events. | S26-12 |
-| CAL-33 | proposed | Month, Week, Day and List can be selected; the choice is saved and indicated as selected. Week and Day provide an hourly view. | S26-60, S64-01, S64-03, S67-35, S67-40 |
+| CAL-33 | proposed | Month, Week, Day and List can be selected; the choice is saved and indicated as selected. Week and Day provide an hourly view. | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
 | CAL-34 | proposed | Week view shows its date range and navigates backward and forward by one week. | S26-61 |
 | CAL-35 | proposed (?) | The sampled week header omits the redundant “times in” and event-count wording. Is this omission intended for every view? | S26-62 |
-| CAL-36 | proposed | Changing to Week or List updates the calendar without reloading the page; selecting Week does not add a view parameter to the page address. | S33-16, S33-17 |
 | CAL-37 | proposed (?) | The key omits separate Timed, All-day and Added here color labels in the sampled views. Should this apply to every key variant? | S34-04, S45-25 |
 | CAL-38 | proposed | Changing a source name updates its name in the calendar key. | S34-16 |
 | CAL-39 | proposed | Saving print preferences remembers the selected view, weekend choice, theme and automatic orientation. | S36-30 |
@@ -33,10 +32,10 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 | CAL-41 | proposed | Printing two months produces a sheet for each month and honors the requested weekend and theme choices. | S36-32 |
 | CAL-42 | proposed | Itinerary printing includes events grouped by day. | S36-33 |
 | CAL-43 | proposed | Print Preview opens with the remembered print view; choosing Month updates its preview to Month. | S36-52, S36-53 |
-| CAL-45 | proposed | Changing the source color updates the calendar key and destination source choices without a page reload. | S38-16 |
+| CAL-45 | proposed | Changing a source's color updates it wherever it is shown (the calendar key and the destination source choices). | S38-16 |
 | CAL-47 | proposed | Search displays a result count and events matching the query; a query with no matches displays Nothing found. | S46-07, S46-08, S46-10, S46-12 |
 | CAL-48 | proposed | Search can narrow results by source and date; the sampled filters reduce the nonempty result set. | S46-09 |
-| CAL-49 | proposed | Search preserves the query while results update. Keyboard-focus mechanics are shared UI, not a separate calendar rule. | S46-13 |
+| CAL-49 | proposed | Search keeps the typed query while its results update. | S46-13 |
 | CAL-50 | proposed | Leaving search restores the month calendar. | S46-14 |
 | CAL-51 | proposed | Search without date bounds can find an event 700 days ahead. | S49-35 |
 | CAL-53 | proposed | The calendar can be viewed Full page and returned to normal view. Shared navigation follows UI-02. | S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
