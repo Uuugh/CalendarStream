@@ -281,3 +281,6 @@ tooling stays for the Python page only).
   searches everything (ignores the filter); views and Print stay in calendar, and Print follows the filter. Two new features drafted:
   requirements/drafts/calendar_filter.md (FLT-01..05) and requirements/drafts/search.md (SRH-01..07); the replaced CAL rows are removed
   (header note in requirements/calendar.md). Q-F6 rewritten in plain words.
+- Q-F6 answered Nov 17 (Developer): Search covers events, rules, calendars, feeds, event templates and History; results grouped by
+  feature, calendar events first; first six per feature by default, "more" in steps of that size; the number is a Settings item next to
+  Time Zones (SET-48, SRH-08). Claude's reading of "increment": the number shown first and the step of "more" are the same number.
