@@ -44,7 +44,7 @@ membership follows source removal, while publishing and calendar display remain 
 | SRC-31 | proposed | Sync Now updates a source in the background: it reports Syncing during work and Healthy on success, and keeps unrelated unsaved source edits. | S33-15, S33-18, S33-19, S35-28, S35-29, S35-31, S44-18 |
 | SRC-32 | proposed | A failed source download reports Failed. | S35-32 |
 | SRC-33 | proposed | Saving a source name updates the stored name. | S34-13 |
-| SRC-34 | proposed | Local calendars do not offer Sync Now; the default calendar is identified, independently of source order. | S36-20, S36-23, S36-24, S49-02, S63-16 |
+| SRC-34 | proposed | Local calendars do not offer Sync Now (CAP-06); the default calendar is identified, independently of source order. | S36-20, S36-23, S36-24, S49-02, S63-16 |
 | SRC-35 | proposed | Additional Local calendars can be created; an unnamed one is named Local. | S36-22, S36-48 |
 | SRC-36 | proposed | Removing the last Local calendar retains that calendar and empties its events, rather than leaving no Local calendar. Ensuring a Local calendar afterward does not create a duplicate. | S36-46, S36-47, S49-32 |
 | SRC-37 | proposed | Removing a source can preserve its events by creating a Local calendar with its prior color and destination memberships, or by merging into an existing Local calendar. The original source is removed. | S37-20, S37-21, S37-22, S49-28 |
@@ -67,7 +67,7 @@ membership follows source removal, while publishing and calendar display remain 
 | SRC-54 | proposed | Following a calendar redirect to a different host does not forward the source’s authorization credentials. | S60-18 |
 | SRC-55 | proposed | A download that does not reply reports a timeout and explains the manual-upload alternative. | S60-19 |
 | SRC-56 | proposed (?) | Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? | S60-22, S60-23, S60-24 |
-| SRC-57 | proposed | A Local calendar can be selected as default; a read-only CCS+ calendar cannot be made the default. | S63-13, S63-14, S63-15, S66-04 |
+| SRC-57 | proposed | A Local calendar can be selected as default; a read-only CCS+ calendar cannot (CAP-05). | S63-13, S63-14, S63-15, S66-04 |
 | SRC-58 | proposed | A source can be turned off and back on, with its saved off state cleared when reenabled. | S63-20, S63-21, S63-23 |
 | SRC-59 | proposed | A valid saved Local default takes precedence over ordering; if it no longer exists, the first Local calendar is used. With no sources, creation of a Local calendar also makes it the default. | S77-13, S77-14, S77-15 |
 

@@ -39,3 +39,19 @@ fixed 24-hour source span to the local day.
 
 Pending: the Save | Cancel pair is covered by SET-07; the section header color tokens belong to the theme.
 | UI-11 | proposed | One shared emoji picker, with search, is used wherever an emoji is chosen. | S44-41 |
+
+## Capabilities (CAP)
+
+What a user may do with a calendar or an event follows from where it comes from, stated once here. Features reference these rows
+instead of listing "never for read-only", "not for rule events" and similar exceptions (Developer, Nov 17: fix the requirement,
+do not add exceptions). Origins: **imported** (from a source CalendarStream only reads, such as CCS+), **custom** (added in
+CalendarStream), **rule** (made by a rule).
+
+| ID | status | statement |
+|---|---|---|
+| CAP-01 | proposed | Imported and custom events can be edited; a rule event cannot be opened for editing, because its rule controls it (remote edits to it are corrected on sync, GGL-55). |
+| CAP-02 | proposed | An imported event can be hidden and shown again, never deleted from its source; a custom event can be deleted, and a deletion can be undone. |
+| CAP-03 | proposed | Only custom events can be moved to another calendar; an imported event of a read-only source never is (EVT-02). |
+| CAP-04 | proposed | Imported and custom events can be link targets; a rule event cannot. |
+| CAP-05 | proposed | Any calendar CalendarStream owns (a Local calendar) can be the default calendar; a read-only source calendar cannot. |
+| CAP-06 | proposed | Sync Now is offered only for calendars that download from outside; a Local calendar has nothing to download. |

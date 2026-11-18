@@ -59,3 +59,10 @@ Branch `chatgpt/drafts-changelog-<first>-<last>` (for example `chatgpt/drafts-ch
 `requirements/drafts/changelog_gaps_<first>-<last>.md` in the same table format as `readme_gaps.md`
 (`| CHANGELOG line | release | claim | closest requirement ID or none | proposed owning feature |`), anchors pinned to the
 revision you read. Only new files; stop when the whole file is covered, then report that Task D is complete.
+
+## No exceptions (Developer, Nov 17)
+
+"Exceptions in general are very bad. Fix the requirement instead of adding an exception whenever you can." A requirement that says
+"except", "unless", "never for X", "only for Y" usually means a general rule is missing. Before writing one, look for the general
+rule (requirements/drafts/common.md: TIM time rules, UI interaction rules, CAP what an origin allows) and reference or extend it.
+If no general rule fits, write one in common.md and reference it; list it in your PR description.

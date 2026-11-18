@@ -265,3 +265,6 @@ tooling stays for the Python page only).
   and maps to shared code (packages/domain, client shared/ui); features reference it and add no per-feature exceptions.
 - Cleanup after common.md (Nov 17, Claude): rows that restated time rules now reference TIM: CAL-24 moved to TIM-09, EVT-14, EVT-31 (no
   mixed all-day/timed case), FED-03, GGL-26 reworded.
+- Principle (Developer, Nov 17): exceptions in general are very bad; fix the requirement instead of adding an exception whenever
+  able. Common now has Time (TIM), UI and Capabilities (CAP: what an event's or calendar's origin allows, replacing the "never for
+  read-only / not for rule events / not for Local calendars" exceptions in EVT-02, EVT-07, SRC-34, SRC-57).
