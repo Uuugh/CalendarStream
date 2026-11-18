@@ -250,6 +250,14 @@ The calendar header shows the title and controls only: no event count and no "ti
 
 The calendar filter lists calendars and event states only: no Timed, All-day or Added here color labels. (Developer, Nov 17; was CAL-37.)
 
+## 13a. Layout zones (Developer, Nov 17)
+
+Every row of controls (a header, a title line, a button group, a key row) has three zones: **left, center and right**. Each zone carries its
+own alignment, and an item belongs to a zone; nothing positions itself. When a row is too narrow the zones **stack, left on top, then
+center, then right**, each keeping its zone's alignment. Within a zone, when the width is still too small, **fonts and icons scale down to
+fit their zone**, never below what stays readable (text resize and reflow, WCAG 1.4.4 and 1.4.10) and never below a 24×24 px target
+(WCAG 2.5.8), the baseline in `ui_ux.md`. No component has its own responsive rule. One shared row widget does this for every screen.
+
 ## 14. Date range and Import row
 
 Picture 2·14. **Date range**: From | To | ☐ All, in that order, everywhere a range is asked for (search, feeds,

@@ -289,3 +289,7 @@ tooling stays for the Python page only).
   folder keeps only the README and CHANGELOG gap scans and Task E's gaps_<feature>.md. Earlier notes that name requirements/drafts/<feature>.md
   mean requirements/<feature>.md now.
 - CAL-01 removed Nov 17 (Developer): the date picker / Time Zone spacing item (was F15.1) is dropped, not moved to the theme.
+- Layout zones answered Nov 17 (Developer): left, center and right zones (the names stay left/center/right, not start/end: all six languages
+  read left to right); narrow rows stack left on top, then center, then right, each keeping its alignment; within a zone fonts and icons
+  scale to fit (the floor is WCAG readable text and a 24x24 px target); no per-component exceptions. Written as theme.md 13a and UI-14.
+  The earlier Q-Z2 answer (a minimum width) was withdrawn by the Developer.
