@@ -24,7 +24,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | ID | status | statement |
 |---|---|---|
 | TIM-08 | proposed (?) | An imported event that carries no time zone gets a default zone (open: Q-T9). |
-| TIM-09 | proposed | A time zone name that is not a real zone is refused wherever a zone is chosen (S19-30). |
+| TIM-09 | proposed | A time zone is always one of the real zones: the zone picker offers only real zones, and an imported event that names a zone that does not exist is given the default zone instead (Q-T9). (S19-30) |
 
 Decided elsewhere, not repeated: UTC instants hide daylight-saving jumps, and the default rule "24-hour events" (RUL-29) realigns a
 fixed 24-hour source span to the local day.
