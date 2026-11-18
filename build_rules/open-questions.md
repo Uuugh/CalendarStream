@@ -30,14 +30,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **HIS-19** (history) History retains 100 changes by default, and saving a retention choice of 37 updates the effective retention and displayed value. The input offers bounds of 1 through 200; are these bounds enforced on every save path? 
   Answer:
-- **SET-19** (settings) Versions compare numeric beta sequence numbers in order and place a release after its beta. Unknown installed versions or the checked unrecognized version forms do not produce a newer-version result. Which complete version grammar should be supported? 
-  Answer:
-- **SET-22** (settings) Never disables automatic checks. Hourly checks become due between the checked 30- and 61-minute points, and monthly checks between 29 and 31 days. What exact schedule and meaning of monthly should be promised? 
-  Answer:
-- **SET-36** (settings) A pending update exposes its target version, but an update marker older than sixteen minutes or belonging to a different starting version is no longer effective. What is the exact expiry boundary? 
-  Answer:
-- **SET-40** (settings) Animation intensity and duration preferences are saved; the checked settings 150 and 50 yield factors 1.5 and 0.5. Intensity 500 is refused. What complete ranges and units should users be promised? 
-  Answer:
 - **SHL-12** (shell) The page provides Calendar, Sources, Feeds/Destinations, Rules, Event Templates and Activity/History sections, with the Beta section after Activity. Historical source labels differ; which final section vocabulary should be canonical? 
   Answer:
 - **SHL-18** (shell) An opened section remains open when freshly observed; an open section older than twenty-five hours is closed and its closed state saved independently of another recently opened section. What is the exact expiry rule rather than this tested point? 
