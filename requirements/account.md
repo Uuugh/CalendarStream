@@ -9,7 +9,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | ACC-01 | proposed | A legacy page login is imported with a hashed password; saved page passwords are not stored in plaintext. | — | S16-01, S16-04, S16-14 |
 | ACC-02 | proposed | Before a page login exists, page and status requests lead to initial setup; feed and health endpoints remain accessible. | — | S16-05, S16-06, S16-07 |
 | ACC-03 | proposed | Initial setup requires its generated code, formatted as two groups of four hexadecimal characters. Code entry ignores case and the separating dash; an incorrect code is refused without creating a login. | — | S16-08, S16-09, S16-13 |
-| ACC-04 | proposed | Initial setup refuses a short password, mismatched confirmation and a username containing a space. | — | S16-10, S16-11, S16-12 |
+| ACC-04 | proposed | Initial setup refuses a mismatched confirmation and a username containing a space. A weak or short password is never refused; its strength is shown as in UI-18. | — | S16-10, S16-11, S16-12 |
 | ACC-05 | proposed | After initial login creation, setup is closed and the creating user is signed in. | — | S16-15, S16-16 |
 | ACC-06 | proposed | An unauthenticated page request goes to sign-in and does not expose destination content. A successful session can read the page. | — | S16-17, S49-47, S49-51, S51-29 |
 | ACC-07 | proposed | Login settings identify the saved username and signed-in state; entering a replacement password requires the current password. | — | S16-18, S19-50, S19-51, S28-12 |
@@ -29,7 +29,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | ACC-23 | proposed | A known browser can authenticate during the global block, but does not bypass a block applied specifically to its own address. A new browser remains blocked. | — | S55-29, S55-30, S55-31 |
 | ACC-24 | proposed | A fresh recovery link uses the configured public address, marks the visiting browser as known and directs it to login, allowing that browser to authenticate. | — | S55-32, S55-33, S55-34 |
 | ACC-25 | proposed | Recovery links are single-use and expired links are refused. The oracle checks an already-expired link, not the precise one-hour expiry boundary. | — | S55-35, S55-36 |
-| ACC-26 | proposed | Page passwords require at least twelve characters, a capital letter, a number and a symbol, and prohibit a character repeated three or more times consecutively; doubled letters are allowed. | — | S63-06, S63-07, S63-08 |
+| ACC-26 | proposed | A page password is never refused for its strength. The UI-18 hint recommends at least twelve characters, a capital letter, a number and a symbol, and no character repeated three or more times consecutively (doubled letters are fine). | — | S63-06, S63-07, S63-08 |
 | ACC-27 | proposed | Anonymous users cannot read Google traffic diagnostics. Diagnostic content belongs to the existing Google/diagnostics requirements. | — | S68-17 |
 
 ## Notes from the draft
