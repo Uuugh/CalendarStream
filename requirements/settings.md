@@ -22,7 +22,7 @@
 | SET-11 | proposed | The saved public address is used in feed links and Google callback addresses. Once set, setup no longer reports it as unset. | — | S15-04, S15-05 |
 | SET-12 | proposed | Public addresses using FTP, queries, embedded credentials or malformed non-URLs are refused. | — | S15-06 |
 | SET-13 | proposed | Clearing the public address removes the saved effective address. Legacy HTTP private-IP and localhost installer defaults are treated as unset. | — | S15-08, S23-01, S23-16 |
-| SET-14 | proposed (?) | When opened through a host different from the configured public host, the page warns and identifies both hosts; it omits that warning for the configured host or the checked LAN-IP access. Is LAN-IP suppression intended for all private network addresses? | — | S24-01, S24-08, S24-09 |
+| SET-14 | proposed | When the app is opened through a host that is not the configured public host, the page warns and names both hosts. It does not warn for the configured host or for the user's own networks (ACC-17). | — | S24-01, S24-08, S24-09 |
 | SET-15 | proposed | Administrator email is trimmed when saved; malformed addresses are refused and an empty value clears it. | — | S25-03, S25-04, S25-07 |
 | SET-16 | proposed | Before the first destination is configured, setup suggests a public address from the request; after it is set, that initial setup field is no longer offered. | — | S26-31, S26-34 |
 | SET-17 | proposed | Update checks offer hourly, weekly, monthly or never, with weekly initially selected. Unsupported frequencies are refused. | — | S22-01, S22-09 |
@@ -33,7 +33,7 @@
 | SET-22 | proposed (?) | Never disables automatic checks. Hourly checks become due between the checked 30- and 61-minute points, and monthly checks between 29 and 31 days. What exact schedule and meaning of monthly should be promised? | — | S22-10, S22-11, S22-12, S25-11 |
 | SET-23 | proposed | Updates reports Not checked before a check and shows its next scheduled check time. An hourly check fifty minutes old schedules the next check about ten minutes later. | — | S25-10, S59-05 |
 | SET-24 | proposed | A failed update check preserves the last offered version and reports the failure; a stable channel receiving an invalid beta offer also preserves its last stable offer and reports an error. | — | S22-13, S30-09 |
-| SET-25 | proposed (?) | A manual update check does not clear the stored version already marked as logged. Is this marker intended to suppress repeated update notices? | — | S22-15 |
+| SET-25 | proposed | A manual update check does not clear the marker that a version was already announced, so an available version is announced in History once (SET-53). | — | S22-15 |
 | SET-26 | proposed | Update now is available when the updater service is ready and an update is offered; an unavailable updater leaves installer guidance rather than a runnable update action. | — | S32-01, S32-02, S32-03, S32-13, S37-25, S37-26, S42-01, S42-02, S47-01 |
 | SET-27 | proposed | Update now requests the offered app image through the configured updater using its authorization token; it does not request unrelated images. | — | S32-04 |
 | SET-28 | proposed | Starting an update records an activity message naming its target version. | — | S32-05 |
@@ -45,7 +45,7 @@
 | SET-34 | proposed | Each Check now request performs a new version check, reports whether an update was found, and retains the running-version information. A failed check reports Couldn’t check and its cause. | — | S42-03, S42-07, S43-04, S43-05, S43-06, S43-07, S43-08, S43-09, S67-33 |
 | SET-35 | proposed | Extra public addresses are validated individually; blank extras are omitted and invalid extras identify their field. | — | S51-14, S51-15 |
 | SET-36 | proposed (?) | A pending update exposes its target version, but an update marker older than sixteen minutes or belonging to a different starting version is no longer effective. What is the exact expiry boundary? | — | S59-01, S59-02, S59-03, S59-04 |
-| SET-37 | proposed (?) | While an observed update loses contact with the app, progress changes from Downloading to Restarting; once contact returns, the page reloads after a settling delay. What delay should be required beyond the checked timing samples? | — | S59-24, S59-25, S59-26, S59-27 |
+| SET-37 | proposed | While an update is applying, every open client shows its progress, Downloading and then Restarting, and reconnects when the app is back (UI-13). | — | S59-24, S59-25, S59-26, S59-27 |
 | SET-38 | proposed | Domains can be saved independently of Login settings, and an invalid main address identifies the main-address field. | — | S64-12, S64-13 |
 | SET-39 | proposed | A custom PNG logo can be uploaded and displayed; without one the custom-logo address is unavailable. Invalid favicon bytes and the checked script-bearing SVG are refused. This evidence is not a complete image-sanitization guarantee. | — | S64-15, S64-16, S64-17, S64-18 |
 | SET-40 | proposed (?) | Animation intensity and duration preferences are saved; the checked settings 150 and 50 yield factors 1.5 and 0.5. Intensity 500 is refused. What complete ranges and units should users be promised? | — | S64-19, S64-21 |

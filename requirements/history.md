@@ -11,7 +11,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-05 | proposed | If a former Google client’s calendar cannot be reached for cleanup, History warns that manual deletion is needed. | — | S48-22 |
 | HIS-06 | proposed | Only the newest completed undoable change can be undone; trying to undo an older completed entry is refused. | — | S49-10 |
 | HIS-07 | proposed | Undo restores the state before a rule deletion, and Redo reapplies that same deletion. | — | S49-11, S49-12 |
-| HIS-08 | proposed (?) | History identifies the change type, including Rule, Event, Calendar or Sync in the checked cases. Is this a closed list or may other types be displayed? | — | S49-13 |
+| HIS-08 | proposed | History names the type of each change (for example Calendar, Rule, Event, Sync). | — | S49-13 |
 | HIS-09 | proposed | A deleted event kept for Undo is permanently removed when its deletion leaves the retained history. | — | S49-16 |
 | HIS-10 | proposed | An external removal or Google notification without an undoable local change does not become the current Undo entry. | — | S49-18, S49-41 |
 | HIS-11 | proposed | Undoing an import restores the event set that existed before the import. | — | S49-25 |
@@ -23,7 +23,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-17 | proposed | When a working Google color-update fallback is selected, History identifies the retained method; later successful updates use shorter color wording without repeating the method-selection notice. | — | S56-03, S56-05, S56-08, S56-11, S56-15 |
 | HIS-18 | proposed | Undoing Hide restores the event’s visible state. Event Hide/Show behavior itself belongs to EVT-20. | — | S57-15 |
 | HIS-19 | proposed (?) | History retains 100 changes by default, and saving a retention choice of 37 updates the effective retention and displayed value. The input offers bounds of 1 through 200; are these bounds enforced on every save path? | — | S58-19, S58-20 |
-| HIS-20 | proposed (?) | Completing an undoable change records the before and after states for restoration. The oracle directly captures a change from one to two; what state categories must be included in every snapshot? | — | S77-32, S77-33 |
+| HIS-20 | proposed | An undoable change records what is needed to restore it, before and after. | — | S77-32, S77-33 |
 | HIS-21 | proposed | An unsigned Google module produces one not-signed-in/unsynced warning rather than repeating it on subsequent sync attempts. Resetting the remembered warning permits a new warning. | — | S68-03, S68-04, S68-05 |
 | HIS-22 | proposed | Google setup messages distinguish API Sync being configured from modules being signed in, and identify the signed-out module. | — | S68-07, S68-08 |
 

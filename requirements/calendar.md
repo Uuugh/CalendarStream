@@ -18,8 +18,8 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-33 |  | Month, Week, 5-day (Monday through Friday), Day and List can be selected from the shared dropdown (UI-12); the choice is saved and indicated as selected. Week, 5-day and Day provide an hourly view. (Developer, Nov 17: 5-day is a calendar view) | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
 | CAL-34 |  | Week view shows its date range and navigates backward and forward by one week. | — | S26-61 |
 | CAL-39 |  | Saving print preferences remembers the selected view, theme and orientation, and Print Preview opens with them. | — | S36-30, S36-52, S36-53 |
-| CAL-41 | proposed | Printing two months produces a sheet for each month and honors the requested theme. | — | S36-32 |
-| CAL-42 | proposed | Itinerary printing includes events grouped by day. | — | S36-33 |
+| CAL-41 |  | Printing two months produces a sheet for each month and honors the requested theme. | — | S36-32 |
+| CAL-42 |  | Itinerary printing includes events grouped by day. | — | S36-33 |
 | CAL-57 |  | The calendar uses the shared resize bar (UI-16). Its height is measured in event lines (one line = one event's line height, with its padding and margins, defined in the theme), not in pixels. The stretch control changes it by whole lines and the choice is saved. Collapse gives the fewest lines the view needs; Expand gives the most lines that fit the visible window. There is no fixed pixel minimum or maximum. (Developer, Nov 17) | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
 | CAL-59 |  | The hour height in Week and Day is also measured in event lines per hour, changed by whole lines and saved: at least 1 line per hour, at most 6, default 2, so a line of an event always fits. (Developer, Nov 17) | — | Developer, Nov 17; S65-14, S65-15 |
 | CAL-60 |  | Print orientation is chosen in Print Preview and saved. Until the user chooses, it is automatic: landscape for Month, Week and 5-day sheets, portrait for Day and Itinerary sheets. | — | S65-18..22; gaps_calendar CAL-71 |

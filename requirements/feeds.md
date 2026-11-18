@@ -19,7 +19,6 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | FED-13 | proposed | A feed can be limited by start and end dates; clearing both limits restores its full event set. A start date may be saved without an end date. | — | S29-02, S29-04, S39-19 |
 | FED-14 | proposed | An end date before the start date is refused and identifies the end-date field. | — | S29-03, S51-13 |
 | FED-15 | proposed | A new feed's name and note default to the selected source's and follow it when the selected source changes; values the user typed are kept. | — | S31-01, S58-17, S58-18, S58-37, S58-38 |
-| FED-16 | proposed (?) | Saving a source does not replace an unrelated unsaved feed-name edit. Is preserving unrelated pending edits a shared saving rule for all features? | — | S34-15 |
 | FED-17 | proposed | Published events include their display reminders, including fifteen-minute and one-hour reminders. Reminder selection belongs to EVT-19. | — | S36-26 |
 | FED-18 | proposed | An unchanged feed supports conditional reads with an ETag and an empty not-modified response; changing its events causes an old ETag to receive updated content. | — | S39-10, S39-11 |
 | FED-19 | proposed | An ordinary feed reports reads rather than a next-push schedule. | — | S46-02 |

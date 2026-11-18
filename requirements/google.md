@@ -77,17 +77,17 @@ Google sign-in and 2-way sync, health and recovery, the Beta: Google Traffic sec
 | GGL-70 | proposed | If a calendar color cannot be applied, the module explains that the color does not carry to Google. Repeating that same color does not retry it; selecting a different accepted color applies it and clears the note. | — | S55-09, S55-15, S55-20, S55-21, S56-22, S56-23, S56-24 |
 | GGL-71 | proposed | Calendar coloring falls back from direct RGB to the nearest supported color or a full calendar-entry update; a working method is retained for subsequent updates and existing reminders/selection are preserved where read successfully. | — | S56-06, S56-07, S56-09, S56-10, S56-12, S56-13, S56-14, S56-17, S56-18 |
 | GGL-72 | proposed | An unreachable color request is distinguished from a permanent color refusal and is not remembered as a tried/refused color. | — | S56-26, S56-27, S56-29 |
-| GGL-73 | proposed (?) | Published descriptions place a meeting URL before the original notes; reading fields back avoids duplicating the meeting URL in notes. The reverse-read predicate is permissive: which exact note representation is required? | — | S63-03, S63-04 |
+| GGL-73 | proposed | A meeting link appears before the notes in the Google description, and is not copied back into the notes when the event is read from Google. | — | S63-03, S63-04 |
 | GGL-74 | proposed | A transient server failure degrades only the affected account and defers its next sync; a skipped degraded account does not fail the whole job. An explicit health reset permits syncing again. | — | S68-09, S68-10, S68-11, S73-03, S73-04, S73-09, S73-11 |
 | GGL-75 | proposed | An unexpected account-sync failure is reported as unknown/degraded rather than silently succeeding. | — | S68-12, S68-13 |
 | GGL-76 | proposed | Google sign-in requests offline access with an S256 challenge; pending sign-in requests are bounded and persist across API instances using the same storage. | — | S70-09, S70-10 |
-| GGL-77 | proposed (?) | An account email is accepted only when the checked identity-token audience matches the configured client. This evidence does not establish full identity-token validation. | — | S70-19 |
+| GGL-77 | proposed | Google sign-in accepts an account email only from a verified Google identity issued for this app's client. | — | S70-19 |
 | GGL-78 | proposed | Readiness distinguishes missing client, signed-out account, API error, not-yet-synced account and successful sync; a nonempty error overrides prior success, while an empty error does not. | — | S71-01, S71-02, S71-03, S71-04, S71-05, S71-06, S71-07 |
 | GGL-79 | proposed | Expired access is retried once before requiring reauthorization; revoked consent or permission refusal requires reauthorization without automatic retry. | — | S72-08, S72-09, S72-10, S72-11, S73-08 |
 | GGL-80 | proposed (?) | Transient retries use bounded increasing delay with jitter and a maximum attempt budget; a longer server Retry-After is honored, including 120 seconds. Exact default delays and attempt limits need Developer confirmation beyond tested samples. | — | S72-12, S72-13, S72-14, S72-15, S72-16, S73-02, S73-05, S73-06 |
 | GGL-81 | proposed | A missing calendar pauses recovery rather than immediately retrying; an invalid event or conflict does not make the account unhealthy. Unknown failures get one automatic retry. | — | S72-17, S72-18, S72-19, S73-10 |
 | GGL-82 | proposed | Successful recovery restores healthy state and clears the retry count. New accounts start healthy and eligible to sync. | — | S73-01, S73-07 |
-| GGL-83 | proposed (?) | Saved health error text is limited to 300 characters. Is this truncation a user-facing diagnostic limit or only a storage policy? | — | S73-13 |
+| GGL-83 | proposed | A saved health error is shown in full; a line that is too long for its space follows the clipping rule (UI-14, UI-07). | — | S73-13 |
 | GGL-84 | proposed | Once the API client is accepted, a Google destination can be created. | — | S39-16 |
 
 ## Notes from the draft
