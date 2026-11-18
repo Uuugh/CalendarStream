@@ -12,5 +12,4 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | DOC-06 | proposed | The README's screenshots show the current app, made from the demo data only. | — | — |
 | DOC-07 | proposed | CHANGELOG.md has an entry for every released version, newest first, and is never rewritten for past versions. | — | — |
 | DOC-08 | proposed | No document, screenshot, test or message contains the Developer's real schedule, username or Google client secret. | — | — |
-| DOC-09 | proposed | The CalendarStream logo files have no compression or visual artifacts (see SHL-03). | — | — |
 | DOC-10 | proposed | After the port, the README and AGENTS.md describe the Dart/Flutter layout, how to run the app and how to run the tests; documents that describe only the Python app are removed with it. | — | — |

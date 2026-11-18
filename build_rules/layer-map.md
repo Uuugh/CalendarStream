@@ -323,3 +323,4 @@ tooling stays for the Python page only).
 - CAL-40 removed Nov 17 (Developer): with 5-day as a view and Print printing the view (CAL-66), it is covered; the separate weekends choice in Print goes away (Q-P5 answered); CAL-39 and CAL-41 lose the weekend wording.
 - Nov 17 (Developer): the resize bar is global UI (UI-16: look and operation, collapse and expand single actions); the employing feature defines the unit and how it resizes each view. CAL-11 and CAL-13 moved to UI-16; CAL-12 deleted by the Developer; CAL-57 uses the bar with event lines as the unit.
 - Nov 17 (Developer): UI components are kept separate from features so they can be re-themed globally (UI-17, theme.md intro). CAL-14 merged into CAL-33 (the view dropdown is UI-12).
+- Requirements scan 1 (Nov 17): build_rules/requirements-scan-1.md lists the calendar review lessons and the duplications found; calendar duplicates CAL-43, 45, 53, 58, 61, 62 and DOC-09, TPL-06 removed.
