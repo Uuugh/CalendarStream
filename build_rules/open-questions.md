@@ -14,8 +14,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **CAL-62** (calendar) For Letter and A4, the sampled month print produces one landscape PDF page and the sampled day print starts with a portrait PDF page; the sampled Letter week print has at least two pages. Are these pagination expectations specific to the fixture content? 
   Answer:
-- **CAL-63** (calendar) The sampled portrait month print produces one portrait PDF page. Is single-page output required only for this fixture size? 
-  Answer:
 - **DEP-10** (deployment) The updater never updates the database, never checks for updates on its own, and removes old images. Conflicts with auto-update (SET-32): which wins? 
   Answer:
 - **DEP-12** (deployment) The database is backed up with pg_dump; keeping the deployment secrets is required to read the encrypted credentials after a restore. Is a restore procedure part of the product? 

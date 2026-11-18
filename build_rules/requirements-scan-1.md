@@ -23,7 +23,7 @@ Developer's decision.
 
 - Calendar duplicates removed: CAL-53 (Full page, same as CAL-04; evidence moved), CAL-58 (restated CAL-57 and CAL-59), CAL-43 (same as CAL-39; evidence
   moved), CAL-45 (same as FLT-05), CAL-61 (merged into CAL-60, orientation as one row, with the automatic rule from the gap triage), CAL-62 (replaced by
-  CAL-63, one page-fit rule with its open question).
+  nothing: its question is answered by UI-14, since Print prints the view, CAL-66).
 - DOC-09 removed (same as SHL-03, the logo files); TPL-06 removed (same as RUL-23, a rule that names a missing template is refused).
 
 ## For the Developer to decide

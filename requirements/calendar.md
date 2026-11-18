@@ -23,7 +23,6 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-57 |  | The calendar uses the shared resize bar (UI-16). Its height is measured in event lines (one line = one event's line height, with its padding and margins, defined in the theme), not in pixels. The stretch control changes it by whole lines and the choice is saved. Collapse gives the fewest lines the view needs; Expand gives the most lines that fit the visible window. There is no fixed pixel minimum or maximum. (Developer, Nov 17) | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
 | CAL-59 |  | The hour height in Week and Day is also measured in event lines per hour, changed by whole lines and saved: at least 1 line per hour, at most 6, default 2, so a line of an event always fits. (Developer, Nov 17) | — | Developer, Nov 17; S65-14, S65-15 |
 | CAL-60 | proposed | Print orientation is chosen in Print Preview and saved. Until the user chooses, it is automatic: landscape for Month, Week and 5-day sheets, portrait for Day and Itinerary sheets. | — | S65-18..22; gaps_calendar CAL-71 |
-| CAL-63 | proposed (?) | Each print sheet fits one physical Letter or A4 page without cutting event content. What should happen when the selected events cannot fit at a readable size? | — | S64-08..10, S65-23; gaps_calendar CAL-69 |
 
 ## Notes from the draft
 
