@@ -16,7 +16,7 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-66 |  | Print prints the view as the user sees it: the Local or temporary time zone, the time format (TIM-10), the language and the Calendar filter (FLT-04). The print options (view, weekends, theme, orientation) are chosen in Print Preview. (Developer, Nov 17) | — | Developer, Nov 17 |
 | CAL-25 |  | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | — | S19-31; Developer, Nov 17 |
 
-| CAL-27 | proposed | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | — | S21-01, S21-02, S21-03 |
+| CAL-27 |  | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | — | S21-01, S21-02, S21-03 |
 | CAL-30 | proposed | The calendar displays its source calendars’ events. | — | S26-12 |
 | CAL-33 | proposed | Month, Week, Day and List can be selected; the choice is saved and indicated as selected. Week and Day provide an hourly view. | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
 | CAL-34 | proposed | Week view shows its date range and navigates backward and forward by one week. | — | S26-61 |
