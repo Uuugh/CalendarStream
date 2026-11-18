@@ -247,3 +247,5 @@ tooling stays for the Python page only).
 - Time zones (Developer, Nov 17): Q-T6: the system zone is the user's device; after installation the first sign-in follows it; new
   Settings item "Time Zones" (SET-47): Follow System Time Zone or Fixed Time Zone (same picker as the calendar). Q-T2: a rule has no
   time zone; it judges days and times in the event's own zone (RUL-07). Open: Q-T5/Q-T7, Q-T8, Q-T9.
+- Q-T5/Q-T7 answered Nov 17 (Developer): all-day (24-hour) events follow the Local zone like timed events and can span two days when
+  viewed from another zone (CAL-65). Open: Q-T8, Q-T9, Q-T10 (how Google and feeds receive them).

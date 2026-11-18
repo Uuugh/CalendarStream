@@ -48,6 +48,7 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 | CAL-61 | proposed | Print orientation can be chosen and saved; a later request without an orientation uses the saved portrait preference. | S65-20, S65-21, S65-22 |
 | CAL-62 | proposed (?) | For Letter and A4, the sampled month print produces one landscape PDF page and the sampled day print starts with a portrait PDF page; the sampled Letter week print has at least two pages. Are these pagination expectations specific to the fixture content? | S64-08, S64-09, S64-10 |
 | CAL-63 | proposed (?) | The sampled portrait month print produces one portrait PDF page. Is single-page output required only for this fixture size? | S65-23 |
+| CAL-65 | proposed | An all-day (24-hour) event is shown like any timed event in the Local time zone, so when the Local zone differs from the event's own zone it can span two calendar days (for example a New York all-day event viewed from Los Angeles). (Developer, Nov 17) | Developer |
 
 ## Shared UI and owning-feature references
 

@@ -100,13 +100,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Q-T: time storage (Developer, Nov 17: all times are stored in UTC; an event's time zone is for entry and display)
 
-- **Q-T5** An all-day event is shown on its own local date, whatever the page's display zone is (a New York all-day event stays
-  on its New York day when you view the calendar from Los Angeles). Timed events still follow the display zone (CAL-25). Right?
-  Answer:
-- **Q-T7** CAL-19 says existing events are viewed with the new offset. For an all-day event that would move it to another day
-  when the Local zone is far from its own zone (Q-T5). Do all-day events follow the Local zone like timed ones, or stay on their
-  own date?
-  Answer:
 
 - **Q-T8** Time Zones setting (SET-47): is the choice stored per device (your phone can follow the system while your PC uses a
   fixed zone) or once for the account (every device shares it)? And the calendar's own time zone picker (CAL-24, CAL-25): does
@@ -115,4 +108,10 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **Q-T9** Imported events that carry no zone (times ending in Z, or floating local times) and the server's scheduled downloads
   have no device to ask. Which zone should such an event get as its own: the Fixed zone if set, otherwise the zone the first
   sign-in used (kept on the server as the account's default)? Claude recommends that.
+  Answer:
+- **Q-T10** Publishing (Google, feeds): an all-day event is a 24-hour span in its own zone and the calendar shows it spanning two days
+  from another zone. Google and feed readers have a separate all-day type that carries only dates. Publish such events (a) as
+  all-day with the event's own local dates (so Google shows one day, unlike this app from another zone), or (b) as ordinary timed
+  24-hour events (consistent with the app, but Google no longer treats them as all-day)? Claude recommends (a), keeping Google's
+  all-day behavior, and noting the difference.
   Answer:
