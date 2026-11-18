@@ -318,3 +318,4 @@ tooling stays for the Python page only).
 - Q-F6 answered Nov 17 (Developer, typed into the file): search is global, beginning with calendar events and then proceeding through the remaining sections (SRH-01, SRH-08 already say this).
 - Search detail Nov 17 (Developer): results show as they populate (SRH-09) and clicking a result takes you there (SRH-01).
 - Q-M1 answered Nov 17 (Developer, typed): (b) the page password is not migrated; the user requests a new login password after migration (DEP-14). The rest of the typed line ("Express a get well") was unclear and ignored.
+- Q-M2 answered Nov 17 (Developer): option 1: test the migration tool in three steps: demo database, then a copy of the real database, then the real one (DEP-14).

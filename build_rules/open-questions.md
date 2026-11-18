@@ -81,9 +81,3 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **SRC-56** (sources) Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? 
   Answer:
 
-## Q-M: the migration
-
-- **Q-M2** The migration tool is Python and deleted with the Python app (step 5). Should the Developer run it once on the real
-  database, with Claude present, or should Claude also test it against a made-up demo database first? Claude recommends the
-  demo database first, then your copy, then the real database.
-  Answer:
