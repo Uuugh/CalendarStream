@@ -12,12 +12,10 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 
 | ID | status | statement | evidence |
 |---|---|---|---|
-| CAL-19 | proposed | Local time: the calendar shows event times in the Local time zone, set in Settings > Time Zones (SET-47): the zone of the device in use, or a fixed zone. Existing events are viewed with the offset of that zone, while each event keeps, unchanged in the database, the time zone it was created in until the user edits it with Edit Event. (Developer, Nov 17) | S19-01 |
 | CAL-20 | proposed | Automatic time format uses 12-hour times when the page language is English. | S19-02 |
 | CAL-21 | proposed | Choosing 24-hour format saves it and displays 24-hour event times. Choosing 12-hour format saves that choice again. | S19-03, S19-04, S21-08, S21-09, S79-12, S79-13 |
 | CAL-22 | proposed | The selected time format is indicated as 12 or 24 hours. | S21-05, S21-07, S66-16, S79-10, S79-11 |
 | CAL-23 | proposed | An unknown time-format choice is refused. | S19-09 |
-| CAL-25 | proposed | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | S19-31 |
 | CAL-27 | proposed | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | S21-01, S21-02, S21-03 |
 | CAL-30 | proposed | The calendar displays its source calendars’ events. | S26-12 |
 | CAL-33 | proposed | Month, Week, Day and List can be selected; the choice is saved and indicated as selected. Week and Day provide an hourly view. | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
@@ -36,7 +34,6 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 | CAL-61 | proposed | Print orientation can be chosen and saved; a later request without an orientation uses the saved portrait preference. | S65-20, S65-21, S65-22 |
 | CAL-62 | proposed (?) | For Letter and A4, the sampled month print produces one landscape PDF page and the sampled day print starts with a portrait PDF page; the sampled Letter week print has at least two pages. Are these pagination expectations specific to the fixture content? | S64-08, S64-09, S64-10 |
 | CAL-63 | proposed (?) | The sampled portrait month print produces one portrait PDF page. Is single-page output required only for this fixture size? | S65-23 |
-| CAL-65 | proposed | An all-day (24-hour) event is shown like any timed event in the Local time zone, so it is a single day while the Local zone is the event's own zone, and can span two calendar days when the Local zone differs (for example a New York all-day event viewed from Los Angeles). (Developer, Nov 17) | Developer |
 
 ## Shared UI and owning-feature references
 
