@@ -39,6 +39,8 @@ fixed 24-hour source span to the local day.
 
 Pending: the Save | Cancel pair is covered by SET-07; the section header color tokens belong to the theme.
 | UI-11 | proposed | One shared emoji picker, with search, is used wherever an emoji is chosen. | S44-41 |
+| UI-12 | proposed | One shared multi-select dropdown (the language dropdown and the Calendar filter use it): it opens from a single icon; several items can be chosen with Ctrl, Shift or Select all (on touch, a tap toggles an item); each choice takes effect at once. (Developer, Nov 17; touch behavior to confirm, Q-F3) | Developer |
+| UI-13 | proposed | A change the user makes (a filter, a view, a theme, a setting) is shown at once: nothing needs a page reload or an Apply step. (Developer, Nov 17: the client redraws only the element that changed.) | Developer |
 
 ## Capabilities (CAP)
 

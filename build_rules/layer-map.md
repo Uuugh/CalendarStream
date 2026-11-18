@@ -272,3 +272,6 @@ tooling stays for the Python page only).
 - Proposal (Developer, Nov 17): search moves out of calendar to the top bar (left of language) and searches all features; calendar key
   and visibility condense into one feature, the Calendar filter (filter icon dropdown, multi-select with Ctrl, Shift or Select all, like the
   language dropdown). Replaces CAL-03 (search position), CAL-06, 07, 08, 10, 37, 38, 54, 55, 56 and CAL-47..51 once Q-F1..Q-F7 are answered.
+- Nov 17 (Developer): visibility changes instantly on selection (a Flutter benefit: single elements redraw). Recorded as UI-12 (shared
+  multi-select dropdown) and UI-13 (a user's change is shown at once, no reload or Apply); the "without reloading" wording in feature
+  rows is covered by UI-13 and not repeated.
