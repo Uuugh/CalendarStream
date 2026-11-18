@@ -231,3 +231,7 @@ tooling stays for the Python page only).
   changes the Python model (ISO strings with an offset, in the display zone): the Dart `Event` will hold UTC instants plus
   the zone name for start and end, and all-day events as dates (Q-T1). Touches CAL-24/25, EVT-05/13, FED-03, GGL-11/26,
   RUL-07/08/16, the fingerprint and recurrence expansion; migration needs a zone for old offset-only times (Q-T3).
+- Q-T1 answered Nov 17 (Developer): an all-day event is stored as a 24-hour event, local midnight to local midnight (00:00 to
+  23:59, or 00:01 to 00:00, whichever codes better), with the UTC offset of its local time. The local time zone is the default
+  from the imported event, or whatever was selected when the event was created. Q-T3 (Developer): the migration follows Q-T2's
+  zone rule. Open: Q-T2 (zone for rules), Q-T4 (DST days), Q-T5 (all-day display date).
