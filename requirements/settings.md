@@ -43,7 +43,7 @@
 | SET-38 | proposed | Domains can be saved independently of Login settings. | — | S64-12, S64-13 |
 | SET-39 | proposed | A custom PNG logo can be uploaded and shown; without one the default logo is used. An image that is not a valid PNG logo, or that can carry script, is not accepted. | — | S64-15, S64-16, S64-17, S64-18 |
 | SET-40 | proposed | Animation intensity and animation duration are Theme settings; their defaults and ranges are in DEF-01, and Reset restores the defaults. | — | S64-19, S64-21 |
-| SET-41 | proposed (?) | Resetting the logo removes the custom image. Should it also reset the animation settings (SET-40), or are those separate? | — | S64-20 |
+| SET-41 | proposed | Resetting the logo removes the custom image and restores the default logo. It does not change any other setting. | — | S64-20 |
 | SET-42 | proposed | Module grips are on the left by default; the user may move them to the right. | — | S65-26, S65-27, S65-29 |
 | SET-43 | proposed | Removing or clearing public-address rows leaves one main address field, with its value cleared when removed; removing the extra row leaves the main address row. | — | S67-18, S67-20, S67-22 |
 | SET-45 | proposed | Effective public addresses are deduplicated, with the main address first and valid extras afterward. | — | S77-18 |
