@@ -241,3 +241,5 @@ tooling stays for the Python page only).
 - Q-T4 answered Nov 17 (Developer): an all-day event is local midnight to the next local midnight, end exclusive; daylight saving
   is handled by storing UTC plus the per-source default rule "24-hour events" (RUL-29), which realigns a fixed 24-hour span to the
   local day in the event's zone. Open: Q-T2, Q-T5, Q-T6, Q-T7.
+- Default rules (Developer, Nov 17): the starter rules stay in All Rules and are only unassigned when removed from a calendar
+  (RUL-29 reworded). Python's old test S27-10 deletes the 24-hour rule outright; the port will follow RUL-29. Open: Q-RU1.
