@@ -63,3 +63,25 @@ CalendarStream), **rule** (made by a rule).
 | CAP-04 | proposed | Imported and custom events can be link targets; a rule event cannot. |
 | CAP-05 | proposed | Any calendar CalendarStream owns (a Local calendar) can be the default calendar; a read-only source calendar cannot. |
 | CAP-06 | proposed | Sync Now is offered only for calendars that download from outside; a Local calendar has nothing to download. |
+
+## Defaults and limits (DEF)
+
+| ID | status | statement | test | was |
+|---|---|---|---|---|
+| DEF-01 |  | Every default and limit is defined once, in the table below, and a feature row refers to it instead of repeating the number. A value that an admin setting exposes is stored in the database and overrides the default (DEP-28); the others stay as the defaults. (Developer, Nov 17) | — | Developer, Nov 17 |
+
+| Name | Default | Limit | Stored |
+|---|---|---|---|
+| Update check schedule | weekly | hourly, weekly, monthly (30 days), never | database (Site Admin) |
+| Running-update memory | 15 minutes | | default only |
+| Animation intensity | 100 % | 0 to 200 % | device |
+| Animation duration | 100 % | 25 to 300 % | device |
+| CCS+ sync interval | 60 minutes | 15 to 1,440 minutes | database |
+| History kept | 100 changes | 1 to 200 | database |
+| Login failures per address | 5 (15-minute lock) | | default only |
+| Login failures in total | 25 within 15 minutes | | default only |
+| Trusted address period | 7 days | | default only |
+| Unlock link valid | 24 hours | | default only |
+| Long-press time | 0.5 seconds | 0.3 to 1.5 seconds | device |
+| Hour height | 2 event lines | 1 to 6 | device |
+| Search results per feature | 6 | | device |

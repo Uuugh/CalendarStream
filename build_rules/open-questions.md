@@ -43,11 +43,5 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 
 
-## Q-DEF: one table for the numbers
 
-- **Q-DEF1** About a dozen of the remaining questions ask the same thing: "what exact number should be promised?" (retry counts and delays GGL-80, SRC-56; watch renewal GGL-42; instant-update retry GGL-43; update check schedule SET-22 and
-  marker age SET-36; section auto-close SHL-18; animation ranges SET-40; token and name lengths FED-25, FED-27; history limits HIS-19). Claude proposes ONE rule instead of a dozen answers: the numbers the Python app uses today become
-  the defaults, listed once in a "Defaults and limits" table (in `common.md`), and each feature row says only "retries", "renews", "is limited" and points to the table, with no number in the row. You can change any number in
-  the table later without touching a feature. Yes?
-  Answer:
 
