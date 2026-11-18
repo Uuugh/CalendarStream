@@ -279,6 +279,13 @@ A zone is an ordered list of items (icons, text and controls; many left zones ho
 Time Zone, View, 12/24 clock, Print, Full page. The Full page icon is the fullscreen icon, and while Full page is on it is the
 Exit full page icon (arrows pointing inward), not a Back arrow.
 
+## 13d. Heights are measured in event lines (Developer, Nov 17)
+
+The calendar's heights (the whole calendar, and an hour in Week and Day) are measured in **event lines**, not pixels. One event line is the
+height of one line of an event: its font size plus the event's padding and margins, all defined in this theme. When the theme changes an
+event's height, padding or margin, or when fonts scale (13a), every calendar height follows. The older pixel limits (a stretch of -300 to
++1200 px, an hour of 20 to 120 px) are retired.
+
 ## 14. Date range and Import row
 
 Picture 2·14. **Date range**: From | To | ☐ All, in that order, everywhere a range is asked for (search, feeds,

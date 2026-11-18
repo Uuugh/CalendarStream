@@ -300,3 +300,4 @@ tooling stays for the Python page only).
 - Nov 17 (Developer): the calendar scrolls when it falls outside its zone, so every zone has a kind: control zones clip, content zones scroll (theme 13a, UI-14); not a per-component exception.
 - CAL-09 dropped Nov 17 (Developer): the key footer is replaced by the Calendar filter.
 - CAL-11 Nov 17 (Developer): the stretch control wording is the Developer's: a bar centered at the bottom of the calendar, two rows of six dots like a slider's.
+- Heights Nov 17 (Developer): the calendar's heights are measured in event lines (one line = an event's line height with padding and margins, in the theme), not pixels; the old min/max pixel limits are retired (CAL-57, CAL-59, theme 13d). Open: Q-H1 (hour-height limits).
