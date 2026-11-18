@@ -111,3 +111,17 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   there. (My earlier version, with each feature declaring what it can be searched by, was more complicated than this.) Is that what
   you want, or should it search fewer things (for example only events for now)?
   Answer:
+
+## Q-Z: layout zones (Developer, Nov 17: define left, center and right; screen compression is handled by stacking in that order; the screen cannot compress below the thinnest)
+
+- **Q-Z1** When a line is too narrow, which zone drops to the next row first, and does it keep its alignment there? Claude's reading: the left
+  items stay on the top row; if they don't all fit, the right zone drops first (still right-aligned), then the center zone (still centered).
+  Is that the order you mean ("left, center, right" = the order they stay in place)?
+  Answer:
+- **Q-Z2** "The screen cannot compress less than the thinnest": the minimum window width. Claude suggests a number, 320 px (the narrowest
+  phone), and that every screen must fit at 320 px by stacking alone. Is that what you mean, or should the minimum be the width of the
+  widest single item?
+  Answer:
+- **Q-Z3** Name the zones start, center and end, not left and right, so a right-to-left language could be added later without redoing the
+  layout (all six current languages read left to right, so nothing changes today). OK?
+  Answer:
