@@ -12,14 +12,13 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 
 | ID | status | statement | evidence |
 |---|---|---|---|
-| CAL-19 | proposed | Time format is controlled above the calendar, rather than in Settings. | S19-01 |
+| CAL-19 | proposed | Local time: the calendar shows event times in the Local time zone the user chose, or in the system clock's zone when none is chosen. Existing events are viewed with the offset of that zone, while each event keeps, unchanged in the database, the time zone it was created in until the user edits it with Edit Event. (Developer, Nov 17) | S19-01 |
 | CAL-20 | proposed | Automatic time format uses 12-hour times when the page language is English. | S19-02 |
 | CAL-21 | proposed | Choosing 24-hour format saves it and displays 24-hour event times. Choosing 12-hour format saves that choice again. | S19-03, S19-04, S21-08, S21-09, S79-12, S79-13 |
 | CAL-22 | proposed | The selected time format is indicated as 12 or 24 hours. | S21-05, S21-07, S66-16, S79-10, S79-11 |
 | CAL-23 | proposed | An unknown time-format choice is refused. | S19-09 |
 | CAL-24 | proposed | An unknown display time zone is refused. | S19-30 |
-| CAL-25 | proposed | Selecting a display time zone displays event times in that zone. | S19-31 |
-| CAL-26 | proposed | The selected display time zone is identifiable on both desktop and phone. Shared explanatory help follows UI-07. | S31-03, S31-18, S66-15 |
+| CAL-25 | proposed | Selecting a Local time zone shows event times in that zone (see CAL-19). | S19-31 |
 | CAL-27 | proposed | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | S21-01, S21-02, S21-03 |
 | CAL-30 | proposed | The calendar displays its source calendars’ events. | S26-12 |
 | CAL-33 | proposed | Month, Week, Day and List can be selected; the choice is saved and indicated as selected. Week and Day provide an hourly view. | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |

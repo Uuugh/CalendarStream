@@ -235,3 +235,6 @@ tooling stays for the Python page only).
   23:59, or 00:01 to 00:00, whichever codes better), with the UTC offset of its local time. The local time zone is the default
   from the imported event, or whatever was selected when the event was created. Q-T3 (Developer): the migration follows Q-T2's
   zone rule. Open: Q-T2 (zone for rules), Q-T4 (DST days), Q-T5 (all-day display date).
+- Time zones (Developer, Nov 17): CAL-19 defines Local time: events are viewed in the Local zone the user chose (or the system
+  clock's zone); each event keeps its creation zone in the database until edited with Edit Event; a new event defaults to the system
+  zone, or to the calendar's zone if one is selected (EVT-05). Drafts CAL-19, CAL-25 (CAL-26 merged), EVT-05 updated.

@@ -112,3 +112,11 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **Q-T5** An all-day event is shown on its own local date, whatever the page's display zone is (a New York all-day event stays
   on its New York day when you view the calendar from Los Angeles). Timed events still follow the display zone (CAL-25). Right?
   Answer:
+- **Q-T6** "System time zone" (CAL-19, EVT-05): the zone of the device running the app (your phone or computer, which the Flutter
+  client knows), or the server's `TZ` setting (README: default America/Chicago)? Claude recommends the device's zone, with the
+  server's TZ only as the default for scheduled work (downloads, sync) that has no device.
+  Answer:
+- **Q-T7** CAL-19 says existing events are viewed with the new offset. For an all-day event that would move it to another day
+  when the Local zone is far from its own zone (Q-T5). Do all-day events follow the Local zone like timed ones, or stay on their
+  own date?
+  Answer:

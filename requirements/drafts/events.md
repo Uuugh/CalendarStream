@@ -10,7 +10,7 @@ S59-15..17, S65-34..37, S44-26..28/45) are left to `theme.md` (Q-R1) except wher
 | ID | status | statement | evidence |
 |---|---|---|---|
 | EVT-04 | proposed | Clicking a day (or the plus) opens the new-event dialog for that date. The dialog follows the shared dialog rules (UI-01, UI-02). | S26-03, S46-15, S36-57, S67-13 |
-| EVT-05 | proposed | A new event starts in the calendar's time zone and can be saved into any calendar chosen in the source selector; with none chosen it goes to the initial Local calendar. A custom event appears on its calendar page. | S19-33, S26-30, S36-21, S65-04 |
+| EVT-05 | proposed | A new event defaults to the system clock's time zone, or to the calendar's time zone when the calendar has one selected (Developer, Nov 17). It can be saved into any calendar chosen in the source selector; with none chosen it goes to the initial Local calendar. A custom event appears on its calendar page. | S19-33, S26-30, S36-21, S65-04 |
 | EVT-06 | proposed | Title, start and end dates and start and end times are required; leaving one out blocks saving. | S57-03 |
 | EVT-07 | proposed | Rule-generated events cannot be opened in the editor (400) and cannot be picked as link targets. | S26-21, S58-10 |
 | EVT-08 | proposed | Saving an event updates the calendar at once, and the confirmation names the event. | S36-36, S36-51 |
