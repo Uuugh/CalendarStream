@@ -316,3 +316,4 @@ tooling stays for the Python page only).
 - Q-C2 answered Nov 17 (Developer): hold time 0.5 s default, 0.3 to 1.5 s Theme setting; Week/Day snap to 15 minutes; Month keeps the time and moves the date (CAL-15).
 - Q-C4 answered Nov 17 (Developer): Full page always resizes to the available window (its definition, CAL-04); the stretch bar's Expand and Collapse are single actions that do not follow window resizing (CAL-13).
 - Q-F6 answered Nov 17 (Developer, typed into the file): search is global, beginning with calendar events and then proceeding through the remaining sections (SRH-01, SRH-08 already say this).
+- Search detail Nov 17 (Developer): results show as they populate (SRH-09) and clicking a result takes you there (SRH-01).
