@@ -113,9 +113,3 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 
 
-## Q-H: calendar heights in event lines
-
-- **Q-H1** For the hour height in Week and Day, in event lines per hour: the old pixels (20 to 120, default 44) are roughly 1, 6 and 2 event
-  lines. Claude suggests minimum 1 line per hour (an hour is at least one event line), maximum 6, default 2. Right, or other numbers?
-  The calendar's own height has no number: Collapse is the fewest lines the view needs and Expand fills the visible window.
-  Answer:
