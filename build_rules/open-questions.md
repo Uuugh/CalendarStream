@@ -106,19 +106,8 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Q-F: top-bar Search and the Calendar filter (Developer, Nov 17: search moves to the top bar, left of language, and searches all features; key and visibility become one "Calendar filter" dropdown, a filter icon that works like the language dropdown, multi-select with Ctrl, Shift or Select all)
 
-- **Q-F1** The key under the calendar has two parts today: the **calendars** (each with a color) and the **event states** (Edited, "United changed
-  it since", Hidden from Google, Deleted). Both click to hide or show events on the calendar only. Should the single filter list both,
-  as two groups? Claude recommends yes.
-  Answer:
-- **Q-F2** Does the color legend (calendar names with colors) disappear from the calendar page, or stay as a read-only color key beside
-  the filter? Claude recommends it disappears: the filter list shows each calendar's color swatch next to its name.
-  Answer:
-- **Q-F5** Does Search respect the filter, or search everything? Claude recommends everything (Search is for finding; the filter is for viewing).
-  Answer:
-- **Q-F6** Search scope. "All features" is large, so the first version searches events (what it does today), and each feature then says
-  what it can be searched by (rules: title and conditions; sources: name; feeds: name; templates: title; history: text). Claude
-  recommends this one-by-one approach, with one common search rule in common.md. Is that right, or do you want all features at once?
-  Answer:
-- **Q-F7** The view picker (Month, Week, Day, List) and Print stay in the calendar feature unchanged, and Print ignores the filter
-  (it prints what is shown). Right? Claude recommends yes.
+- **Q-F6** Search, in plain words: you type some words in the top bar, and Search looks for them in the names, titles and text of
+  your events, rules, calendars, feeds, event templates and History. Each result says which of those it is, and clicking it takes you
+  there. (My earlier version, with each feature declaring what it can be searched by, was more complicated than this.) Is that what
+  you want, or should it search fewer things (for example only events for now)?
   Answer:

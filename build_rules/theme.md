@@ -248,6 +248,8 @@ sentence on the page longer than 20 words (the (?), the calendar and the log asi
 
 The calendar header shows the title and controls only: no event count and no "times in" text. (Developer, Nov 17; was CAL-35.)
 
+The calendar filter lists calendars and event states only: no Timed, All-day or Added here color labels. (Developer, Nov 17; was CAL-37.)
+
 ## 14. Date range and Import row
 
 Picture 2·14. **Date range**: From | To | ☐ All, in that order, everywhere a range is asked for (search, feeds,

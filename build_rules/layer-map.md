@@ -277,3 +277,7 @@ tooling stays for the Python page only).
   rows is covered by UI-13 and not repeated.
 - Q-F3, Q-F4 answered Nov 17 (Developer): one tap toggles instantly (selection is instant), Select all and Select none are offered (so
   hiding everything is allowed), tapping outside the dropdown closes it. UI-12 reworded.
+- Q-F1, Q-F2, Q-F5, Q-F7 answered Nov 17 (Developer): the filter lists both calendars and event states; the color legend goes away; Search
+  searches everything (ignores the filter); views and Print stay in calendar, and Print follows the filter. Two new features drafted:
+  requirements/drafts/calendar_filter.md (FLT-01..05) and requirements/drafts/search.md (SRH-01..07); the replaced CAL rows are removed
+  (header note in requirements/calendar.md). Q-F6 rewritten in plain words.

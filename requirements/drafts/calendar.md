@@ -22,23 +22,13 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 | CAL-30 | proposed | The calendar displays its source calendars’ events. | S26-12 |
 | CAL-33 | proposed | Month, Week, Day and List can be selected; the choice is saved and indicated as selected. Week and Day provide an hourly view. | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
 | CAL-34 | proposed | Week view shows its date range and navigates backward and forward by one week. | S26-61 |
-| CAL-37 | proposed (?) | The key omits separate Timed, All-day and Added here color labels in the sampled views. Should this apply to every key variant? | S34-04, S45-25 |
-| CAL-38 | proposed | Changing a source name updates its name in the calendar key. | S34-16 |
 | CAL-39 | proposed | Saving print preferences remembers the selected view, weekend choice, theme and automatic orientation. | S36-30 |
 | CAL-40 | proposed | Week printing with weekends off includes five days and uses the saved print theme. | S36-31, S36-34 |
 | CAL-41 | proposed | Printing two months produces a sheet for each month and honors the requested weekend and theme choices. | S36-32 |
 | CAL-42 | proposed | Itinerary printing includes events grouped by day. | S36-33 |
 | CAL-43 | proposed | Print Preview opens with the remembered print view; choosing Month updates its preview to Month. | S36-52, S36-53 |
-| CAL-45 | proposed | Changing a source's color updates it wherever it is shown (the calendar key and the destination source choices). | S38-16 |
-| CAL-47 | proposed | Search displays a result count and events matching the query; a query with no matches displays Nothing found. | S46-07, S46-08, S46-10, S46-12 |
-| CAL-48 | proposed | Search can narrow results by source and date; the sampled filters reduce the nonempty result set. | S46-09 |
-| CAL-49 | proposed | Search keeps the typed query while its results update. | S46-13 |
-| CAL-50 | proposed | Leaving search restores the month calendar. | S46-14 |
-| CAL-51 | proposed | Search without date bounds can find an event 700 days ahead. | S49-35 |
+| CAL-45 | proposed | Changing a source's color updates it wherever it is shown, including the destination source choices (see FLT-05). | S38-16 |
 | CAL-53 | proposed | The calendar can be viewed Full page and returned to normal view. Shared navigation follows UI-02. | S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
-| CAL-54 | proposed | Calendar-key hidden choices are saved and kept when leaving Full page (the Developer, Nov 17: CAL-07 and CAL-08 are reconciled to this). | S64-05, S64-07, S65-08 |
-| CAL-55 | proposed | View All is absent when nothing is dimmed, appears after dimming a calendar, restores it, and disappears again after restoration. Clearing hidden choices saves an empty selection. | S65-09, S67-52, S67-53, S67-54, S67-55 |
-| CAL-56 | proposed | Calendar-key visibility choices can be changed in both normal and Full page modes. | S65-32, S67-42 |
 | CAL-57 | proposed (?) REWORK BY DEVELOPER | The calendar stretch amount is saved for the sampled negative values -300 and -120; -301 is refused, and a request for 1500 is limited to at most 1200. Are the complete accepted range and clamping rules intended to be specified beyond these samples? | S64-06, S79-06, S79-07, S79-08 |
 | CAL-58 | proposed | The calendar height and Week-view hour height can be adjusted. | S67-50, S79-01, S79-02, S65-16 |
 | CAL-59 | proposed (?) REWORK BY DEVELOPER | An hour height of 64 is saved; heights 10 and 500 are refused. What is the complete accepted hour-height range? | S65-14, S65-15 |
