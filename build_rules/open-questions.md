@@ -113,13 +113,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **Q-F2** Does the color legend (calendar names with colors) disappear from the calendar page, or stay as a read-only color key beside
   the filter? Claude recommends it disappears: the filter list shows each calendar's color swatch next to its name.
   Answer:
-- **Q-F3** A phone has no Ctrl or Shift. On touch, a tap toggles each item (a checkbox), and Ctrl, Shift and Select all work on a
-  keyboard. Right? Claude recommends yes, as one common multi-select dropdown (UI-12) that the language list can also use.
-  Answer:
-- **Q-F4** May the user hide everything (nothing selected)? Claude recommends yes: the calendar is empty, the filter icon shows it is
-  active, and Select all restores everything.
-  Answer:
-- **Q-F5** Does Search respect the filter, or search everything? Claude recommends everything (Search is for finding; the filter is for viewing).
   Answer:
 - **Q-F6** Search scope. "All features" is large, so the first version searches events (what it does today), and each feature then says
   what it can be searched by (rules: title and conditions; sources: name; feeds: name; templates: title; history: text). Claude

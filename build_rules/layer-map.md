@@ -275,3 +275,5 @@ tooling stays for the Python page only).
 - Nov 17 (Developer): visibility changes instantly on selection (a Flutter benefit: single elements redraw). Recorded as UI-12 (shared
   multi-select dropdown) and UI-13 (a user's change is shown at once, no reload or Apply); the "without reloading" wording in feature
   rows is covered by UI-13 and not repeated.
+- Q-F3, Q-F4 answered Nov 17 (Developer): one tap toggles instantly (selection is instant), Select all and Select none are offered (so
+  hiding everything is allowed), tapping outside the dropdown closes it. UI-12 reworded.
