@@ -293,3 +293,4 @@ tooling stays for the Python page only).
   read left to right); narrow rows stack left on top, then center, then right, each keeping its alignment; within a zone fonts and icons
   scale to fit (the floor is WCAG readable text and a 24x24 px target); no per-component exceptions. Written as theme.md 13a and UI-14.
   The earlier Q-Z2 answer (a minimum width) was withdrawn by the Developer.
+- CAL-02 rewritten, CAL-22 deleted, anchor system (theme 13b, UI-15) Nov 17 (Developer): badges are placed by one of nine anchor points plus an offset defined in the theme.

@@ -258,6 +258,14 @@ center, then right**, each keeping its zone's alignment. Within a zone, when the
 fit their zone**, never below what stays readable (text resize and reflow, WCAG 1.4.4 and 1.4.10) and never below a 24×24 px target
 (WCAG 2.5.8), the baseline in `ui_ux.md`. No component has its own responsive rule. One shared row widget does this for every screen. The layout does not mirror for a right-to-left language: the zones keep the same names and places, and only the direction of the text inside an item changes.
 
+## 13b. Anchors: badges and overlays (Developer, Nov 17)
+
+Any image or control can be divided into a **3 by 3 grid of anchor points**: top-left, top-center, top-right, middle-left, **center**,
+middle-right, bottom-left, bottom-center, bottom-right. A badge (or any overlay: a dot, a count, a status mark) is positioned by an
+**anchor point of its parent plus an offset** from that point, and the offset is defined in this theme, per kind of badge, by the center
+or by any of the other eight points. The offset is relative to the parent's size, so a badge keeps its place when the parent scales
+(13a). Components do not position badges themselves.
+
 ## 14. Date range and Import row
 
 Picture 2·14. **Date range**: From | To | ☐ All, in that order, everywhere a range is asked for (search, feeds,

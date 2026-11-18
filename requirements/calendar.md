@@ -5,7 +5,7 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 
 | ID | status | statement | test | was |
 |---|---|---|---|---|
-| CAL-02 | built | The 12 h / 24 h choice is one outlined clock icon with a 12 or 24 badge showing the current setting; clicking it toggles between the two. | — | F15.2, F43 |
+| CAL-02 | planned | One control switches between 12 h and 24 h and shows the current setting as a badge (build_rules/theme.md, 13b). | — | F15.2, F43, S21-05, S21-07, S66-16, S79-10, S79-11 |
 | CAL-04 | planned | A Full page icon sits right of Print; it hides every other section and becomes a Back icon. | — | F15.4 |
 | CAL-05 | planned | The lower-left (?) is removed. | — | F15.5 |
 | CAL-09 | built | The footer's vertical rule is centered by default and moves only to make room for extra calendars or keys. | — | F49 |
@@ -19,7 +19,6 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-25 | planned | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | — | S19-31; Developer, Nov 17 |
 | CAL-20 | proposed | Automatic time format uses 12-hour times when the page language is English. | — | S19-02 |
 | CAL-21 | proposed | Choosing 24-hour format saves it and displays 24-hour event times. Choosing 12-hour format saves that choice again. | — | S19-03, S19-04, S21-08, S21-09, S79-12, S79-13 |
-| CAL-22 | proposed | The selected time format is indicated as 12 or 24 hours. | — | S21-05, S21-07, S66-16, S79-10, S79-11 |
 | CAL-23 | proposed | An unknown time-format choice is refused. | — | S19-09 |
 | CAL-27 | proposed | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | — | S21-01, S21-02, S21-03 |
 | CAL-30 | proposed | The calendar displays its source calendars’ events. | — | S26-12 |
