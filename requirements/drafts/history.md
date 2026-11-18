@@ -26,7 +26,7 @@ rather than duplicated. No permanent approval or Developer Good status is assign
 | HIS-13 | proposed | Undoing CCS+ removal restores the source and its saved credentials. | S49-34 |
 | HIS-14 | proposed | The container log can be retrieved as plain text. | S49-54 |
 | HIS-15 | proposed | A Google color-update failure records the failed operation, upstream status and reasons so the refusal can be diagnosed. | S55-12, S56-20 |
-| HIS-16 | proposed | Account recovery guidance in History tells the user to obtain the recovery link from the container log within an hour. Recovery-link validity itself belongs to account requirements. | S55-28 |
+| HIS-16 | proposed | Account recovery guidance in History tells the user to obtain the recovery link from the container log within 24 hours (ACC-21). Recovery-link validity belongs to account requirements. | S55-28 |
 | HIS-17 | proposed | When a working Google color-update fallback is selected, History identifies the retained method; later successful updates use shorter color wording without repeating the method-selection notice. | S56-03, S56-05, S56-08, S56-11, S56-15 |
 | HIS-18 | proposed | Undoing Hide restores the event’s visible state. Event Hide/Show behavior itself belongs to EVT-20. | S57-15 |
 | HIS-19 | proposed (?) | History retains 100 changes by default, and saving a retention choice of 37 updates the effective retention and displayed value. The input offers bounds of 1 through 200; are these bounds enforced on every save path? | S58-19, S58-20 |

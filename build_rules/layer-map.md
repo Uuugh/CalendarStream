@@ -224,3 +224,6 @@ tooling stays for the Python page only).
   Fernet; it carries events, edits, custom events, History, rules, sources, destinations, settings, Google connection and
   feeds, flags rules whose regex is Python-only, and prints a report (row counts and a comparison) to check. The port order gains
   step 4a: the Dart database schema and the migration tool, after the domain packages and before the server features that store data.
+- Answers Nov 17 (Developer): ACC-16: 5 failures per address, 25 together (Python: 50), 15 minutes, 7 days of trust, 24-hour
+  unlock link (Python: 1 hour); ACC-17: own networks 192.168.0.0 and 10.10.0.0 (taken as /16, to confirm) plus loopback and
+  the public domain; CAL-54: hidden key choices are preserved when leaving Full page, CAL-07 reworded to match CAL-08.

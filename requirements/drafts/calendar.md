@@ -39,7 +39,7 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 | CAL-50 | proposed | Leaving search restores the month calendar. | S46-14 |
 | CAL-51 | proposed | Search without date bounds can find an event 700 days ahead. | S49-35 |
 | CAL-53 | proposed | The calendar can be viewed Full page and returned to normal view. Shared navigation follows UI-02. | S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
-| CAL-54 | proposed (?) | Calendar-key hidden choices are saved and preserved when leaving Full page. This follows the observed behavior, which differs from the reset described by existing CAL-07; should CAL-07 be reconciled with CAL-08? | S64-05, S64-07, S65-08 |
+| CAL-54 | proposed | Calendar-key hidden choices are saved and kept when leaving Full page (the Developer, Nov 17: CAL-07 and CAL-08 are reconciled to this). | S64-05, S64-07, S65-08 |
 | CAL-55 | proposed | View All is absent when nothing is dimmed, appears after dimming a calendar, restores it, and disappears again after restoration. Clearing hidden choices saves an empty selection. | S65-09, S67-52, S67-53, S67-54, S67-55 |
 | CAL-56 | proposed | Calendar-key visibility choices can be changed in both normal and Full page modes. | S65-32, S67-42 |
 | CAL-57 | proposed (?) | The calendar stretch amount is saved for the sampled negative values -300 and -120; -301 is refused, and a request for 1500 is limited to at most 1200. Are the complete accepted range and clamping rules intended to be specified beyond these samples? | S64-06, S79-06, S79-07, S79-08 |

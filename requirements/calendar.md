@@ -11,7 +11,7 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-04 | planned | A Full page icon sits right of Print; it hides every other section and becomes a Back icon. | — | F15.4 |
 | CAL-05 | planned | The lower-left (?) is removed. | — | F15.5 |
 | CAL-06 | planned | The key shows calendars in columns of three from the left and filters in stacks of three from the right; the calendar row grows one row taller when they do not fit; "struck, grey" reads as Deleted. | — | F15.8 |
-| CAL-07 | planned | In Full page, a click on a key item dims it and hides its events there only; nothing is deleted, and leaving Full page shows them again. Week and Day have an hourly grid. | — | F15.9 |
+| CAL-07 | planned | In Full page, a click on a key item dims it and hides its events there; nothing is deleted. The hidden choices are kept when leaving Full page (see CAL-08). Week and Day have an hourly grid. | — | F15.9 |
 | CAL-08 | open | A key item's dim-and-hide works in Month, Full and Config modes, and stays applied on leaving Full page. | — | F48 |
 | CAL-09 | built | The footer's vertical rule is centered by default and moves only to make room for extra calendars or keys. | — | F49 |
 | CAL-10 | open | A View All (eye) button sits right-aligned in the key's title line, with Calendar and Key; one click clears every dimmed item. | — | F50 |

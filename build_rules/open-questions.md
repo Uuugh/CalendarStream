@@ -5,24 +5,13 @@ Only unanswered questions are listed; Claude removes a question once it acts on 
 ## Q-S: later steps
 
 
-
-
-
-
-
 ## Q-X: questions from the drafts (rows marked (?))
 
 Each question is the (?) text of a proposed requirement. Answer on the Answer line; Claude updates the row and removes the question.
 
-- **ACC-16** (account) Failed logins across many addresses can trigger a global block. During the block, a new external address is refused even with valid credentials, while a recently successful address can still authenticate. What exact failure budget and reset period should be required beyond the tested threshold? 
-  Answer:
-- **ACC-17** (account) During the global login block, the checked local/private/loopback addresses and the resolved public-domain address remain exempt. What complete address/trusted-proxy policy should define these exemptions? 
-  Answer:
 - **CAL-35** (calendar) The sampled week header omits the redundant “times in” and event-count wording. Is this omission intended for every view? 
   Answer:
 - **CAL-37** (calendar) The key omits separate Timed, All-day and Added here color labels in the sampled views. Should this apply to every key variant? 
-  Answer:
-- **CAL-54** (calendar) Calendar-key hidden choices are saved and preserved when leaving Full page. This follows the observed behavior, which differs from the reset described by existing CAL-07; should CAL-07 be reconciled with CAL-08? 
   Answer:
 - **CAL-57** (calendar) The calendar stretch amount is saved for the sampled negative values -300 and -120; -301 is refused, and a request for 1500 is limited to at most 1200. Are the complete accepted range and clamping rules intended to be specified beyond these samples? 
   Answer:
