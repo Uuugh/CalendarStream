@@ -243,3 +243,4 @@ tooling stays for the Python page only).
   local day in the event's zone. Open: Q-T2, Q-T5, Q-T6, Q-T7.
 - Default rules (Developer, Nov 17): the starter rules stay in All Rules and are only unassigned when removed from a calendar
   (RUL-29 reworded). Python's old test S27-10 deletes the 24-hour rule outright; the port will follow RUL-29. Open: Q-RU1.
+- Q-RU1 answered Nov 17 (Developer): default rules are permanent: unassigned and re-assigned, never deleted (RUL-29, RUL-28).

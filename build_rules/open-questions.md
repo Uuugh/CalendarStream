@@ -116,9 +116,3 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   own date?
   Answer:
 
-## Q-RU: default rules
-
-- **Q-RU1** Default rules (RUL-29) stay in All Rules even when no calendar uses them. May the user still delete a default rule from
-  All Rules itself (RUL-28), or are the defaults permanent (only unassigned)? Claude recommends deletable from All Rules after a
-  confirmation, with a way to restore the defaults.
-  Answer:
