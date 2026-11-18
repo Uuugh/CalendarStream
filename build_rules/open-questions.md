@@ -97,3 +97,16 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   database, with Claude present, or should Claude also test it against a made-up demo database first? Claude recommends the
   demo database first, then your copy, then the real database.
   Answer:
+
+## Q-T: time storage (Developer, Nov 17: all times are stored in UTC; an event's time zone is for entry and display)
+
+- **Q-T1** All-day events (and CCS+'s 00:01-23:59:59 "whole days") are calendar dates, not instants. Store them as dates with no
+  zone (they stay on the same day everywhere), and store only timed events as UTC? Claude recommends yes.
+  Answer:
+- **Q-T2** Rules match on day of week and time of day (RUL-07, RUL-08: Fri-Mon, overnight 22:00-06:00). In which zone should a
+  rule judge an event: the event's own zone, or the page's display zone? (Python uses the display zone.) Claude recommends
+  the event's own zone, since "Friday 22:00" means the place the event happens.
+  Answer:
+- **Q-T3** Migration: the old database stores times with a UTC offset only (for example -04:00), not a zone name. The
+  migration will give every event the page's display zone unless told otherwise. Is that acceptable?
+  Answer:
