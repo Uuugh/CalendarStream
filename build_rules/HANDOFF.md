@@ -31,9 +31,9 @@ Read this first in a new conversation. Then `build_rules/layer-map.md` (the plan
 4. Port (step 4) in `packages/domain`: rule conditions (days, times, lengths, dates), validation, actions; then the new Dart database and the Python migration tool (DEP-14); then the server features and client. Steps 5 (retire Python), 6 (analyze parallel testing, input: the parked branch), 7 (the Dashboard as a live page).
 5. Timers are session-only: re-create the check in a new conversation if wanted (it reads the Developer's edits, answers, and ChatGPT's PRs).
 
-## State when the first conversation ended (Nov 17, about 2240 EST)
+## State when the second conversation ended (Nov 17, about 2330 EST)
 
-- Claude's review check was turned OFF (timers are session-only). ChatGPT's own timer keeps running (every 10 minutes) and keeps opening Task E pull requests, up to its limit, so
-  unreviewed `chatgpt/drafts-gaps-*` PRs will pile up until a new conversation restarts the check. Task E files merged: deployment, google, settings, sources, calendar, events, shell, account. Open: feeds (#77).
-  Still to come: history, rules, event_templates, diagnostics, documentation, search, calendar_filter.
-- To restart: review each open PR (green check, one outcome per gap row, no exception wording), post `**Claude review, PR #N**`, run `gh workflow run "Inventory auto-merge"`.
+- Claude's review check is OFF again (timers are session-only). To restart: "Restart the check" (review each open `chatgpt/drafts-gaps-*` PR with green suites; post `**Claude review, PR #N**` containing the exact phrase "No findings that block merging" when clean, or the Action will not merge it; run `gh workflow run "Inventory auto-merge"`; re-run it for any reviewed PR whose suites have since turned green).
+- Task E files merged (12 of 16): deployment, google, settings, sources, calendar, events, shell, account, feeds, history, rules, event_templates. Still to come: diagnostics, documentation, search, calendar_filter. ChatGPT's own timer may keep opening PRs; they wait for review.
+- Done this conversation: FED-08, FED-25, FED-27, FED-30 answered; ACC-04 and ACC-26 (nothing refused for strength; strength bar and hint only); new common rows UI-18 (strength bar with recommendation hint) and UI-19 (invalid entry identified at its field); settings.md deduplicated (retired IDs listed in it); SET-41 is the logo only.
+- To do when folding the gap files into the feature files: drop FED-41 (duplicates FED-08 and FED-27); merge RUL-47 into DEP-14, RUL-52 into RUL-51; add to DEF-01 twelve conditions, six actions, the 0.05-second pattern budget and the five-minute whole-day tolerance; SET-59 repeats DEP-27 and SET-48 repeats SET-06 (agreed rows, ask the Developer before trimming). `python` is not installed on this machine; use sed or the editor for edits.
