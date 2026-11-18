@@ -297,3 +297,4 @@ tooling stays for the Python page only).
 - CAL-04 Nov 17 (Developer): the Full page toggle's exit icon is Exit full page (arrows inward), not Back; icons are an ordered list per zone (theme 13c).
 - CAL-05 omitted Nov 17 (Developer): not a requirement. Zones hold text as well as icons (theme 13c).
 - Nov 17 (Developer): text that does not fit its zone is not rendered outside it (clipped, no ellipsis or wrapping); the accessible name keeps the full text (theme 13a, UI-14).
+- Nov 17 (Developer): the calendar scrolls when it falls outside its zone, so every zone has a kind: control zones clip, content zones scroll (theme 13a, UI-14); not a per-component exception.
