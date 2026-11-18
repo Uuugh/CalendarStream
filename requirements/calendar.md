@@ -5,10 +5,10 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 
 | ID | status | statement | test | was |
 |---|---|---|---|---|
-| CAL-04 | planned | A Full page icon sits right of Print, in the calendar header's right zone; it hides every other section and becomes an Exit full page icon (the arrows-inward icon, not Back). (Developer, Nov 17) | — | F15.4 |
+| CAL-04 | planned | A Full page icon sits right of Print, in the calendar header's right zone; it hides every other section and becomes an Exit full page icon (the arrows-inward icon, not Back). Full page always resizes to the available window; that is its definition. (Developer, Nov 17) | — | F15.4 |
 | CAL-11 | built | The calendar's stretch control is a bar centered at the bottom of the calendar, drawn as two rows of six dots like a slider's. | — | F51 |
 | CAL-12 | built | The stretch bar can compress the calendar enough to remove the module's vertical scrollbar. | — | F51 |
-| CAL-13 | built | Beside the stretch bar, arrows point up when the calendar is expanded (click: collapse to minimum height) and down when it is collapsed (click: expand to the bottom of the visible browser window). | — | F51 |
+| CAL-13 | built | Beside the stretch bar, arrows point up when the calendar is expanded (click: collapse to minimum height) and down when it is collapsed (click: expand to the bottom of the visible browser window). Each is a single action: the calendar keeps its height when the window is resized (Developer, Nov 17). | — | F51 |
 | CAL-14 | built | The view selector (Month, Week, Day, List) shows only the current view's Material icon when closed; each open choice shows its icon left of its word. | — | F52 |
 | CAL-15 |  | Long-press-drag moves an event, for the events that can be edited (CAP-01). In Week and Day the start snaps to 15-minute steps; in Month the event moves to the day it is dropped on and keeps its time. A Theme setting, local to the device, sets how long the press must be held: default 0.5 seconds, from 0.3 to 1.5. (Developer, Nov 17) | — | F61 |
 | CAL-19 |  | Local time: the calendar shows event times in the Local time zone, set in Settings > Time Zones (SET-47): the zone of the device in use, or a fixed zone. Existing events are viewed with the offset of that zone, while each event keeps, unchanged in the database, the time zone it was created in until the user edits it with Edit Event. (Developer, Nov 17) | — | S19-01 |
@@ -17,7 +17,7 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-25 |  | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | — | S19-31; Developer, Nov 17 |
 
 | CAL-27 |  | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | — | S21-01, S21-02, S21-03 |
-| CAL-30 | proposed | The calendar displays its source calendars’ events. | — | S26-12 |
+| CAL-30 |  | The calendar displays its source calendars’ events. | — | S26-12 |
 | CAL-33 |  | Month, Week, Day and List can be selected; the choice is saved and indicated as selected. Week and Day provide an hourly view. | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
 | CAL-34 | proposed | Week view shows its date range and navigates backward and forward by one week. | — | S26-61 |
 | CAL-39 | proposed | Saving print preferences remembers the selected view, weekend choice, theme and automatic orientation. | — | S36-30 |

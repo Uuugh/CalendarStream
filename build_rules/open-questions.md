@@ -112,9 +112,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Q-C: calendar, the remaining planned rows
 
-- **Q-C4** (CAL-13) After Expand fills the visible window, and the window is then resized, does the calendar stay at its number of lines (as today), or refill the
-  new window until you stretch it by hand?
-  Answer:
 
 
 

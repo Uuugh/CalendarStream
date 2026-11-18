@@ -314,3 +314,4 @@ tooling stays for the Python page only).
 - Q-D2 answered Nov 17 (Developer): a Default time zone item under Settings > Site Admin, like Domains, stored in the database; the database overrides the installer's TZ (SET-59, DEP-27).
 - Nov 17 (Developer): the database overrides ALL env settings (DEP-28). Claude's reading: only the settings needed before the database can be read (stack, folders, image tag, updater profile, user/group/restart, trusted proxies, DB password) must stay env-only.
 - Q-C2 answered Nov 17 (Developer): hold time 0.5 s default, 0.3 to 1.5 s Theme setting; Week/Day snap to 15 minutes; Month keeps the time and moves the date (CAL-15).
+- Q-C4 answered Nov 17 (Developer): Full page always resizes to the available window (its definition, CAL-04); the stretch bar's Expand and Collapse are single actions that do not follow window resizing (CAL-13).
