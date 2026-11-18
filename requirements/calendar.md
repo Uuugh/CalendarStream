@@ -11,12 +11,12 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-12 | built | The stretch bar can compress the calendar enough to remove the module's vertical scrollbar. | — | F51 |
 | CAL-13 | built | Beside the stretch bar, arrows point up when the calendar is expanded (click: collapse to minimum height) and down when it is collapsed (click: expand to the bottom of the visible browser window). | — | F51 |
 | CAL-14 | built | The view selector (Month, Week, Day, List) shows only the current view's Material icon when closed; each open choice shows its icon left of its word. | — | F52 |
-| CAL-15 | planned | Long-press-drag moves an event, and a Theme setting sets how long the press must be held. | — | F61 |
-| CAL-19 | planned | Local time: the calendar shows event times in the Local time zone, set in Settings > Time Zones (SET-47): the zone of the device in use, or a fixed zone. Existing events are viewed with the offset of that zone, while each event keeps, unchanged in the database, the time zone it was created in until the user edits it with Edit Event. (Developer, Nov 17) | — | S19-01 |
-| CAL-65 | planned | An all-day (24-hour) event is shown like any timed event in the Local time zone, so it is a single day while the Local zone is the event's own zone, and can span two calendar days when the Local zone differs (for example a New York all-day event viewed from Los Angeles). (Developer, Nov 17) | — | Developer |
-| CAL-25 | planned | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | — | S19-31; Developer, Nov 17 |
-| CAL-20 | proposed | Automatic time format uses 12-hour times when the page language is English. | — | S19-02 |
-| CAL-21 | proposed | Choosing 24-hour format saves it and displays 24-hour event times. Choosing 12-hour format saves that choice again. | — | S19-03, S19-04, S21-08, S21-09, S79-12, S79-13 |
+| CAL-15 |  | Long-press-drag moves an event, and a Theme setting sets how long the press must be held. | — | F61 |
+| CAL-19 |  | Local time: the calendar shows event times in the Local time zone, set in Settings > Time Zones (SET-47): the zone of the device in use, or a fixed zone. Existing events are viewed with the offset of that zone, while each event keeps, unchanged in the database, the time zone it was created in until the user edits it with Edit Event. (Developer, Nov 17) | — | S19-01 |
+| CAL-65 |  | An all-day (24-hour) event is shown like any timed event in the Local time zone, so it is a single day while the Local zone is the event's own zone, and can span two calendar days when the Local zone differs (for example a New York all-day event viewed from Los Angeles). (Developer, Nov 17) | — | Developer |
+| CAL-25 |  | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | — | S19-31; Developer, Nov 17 |
+
+| CAL-21 | proposed | The chosen time format (12-hour, such as 1:30pm, or 24-hour, such as 13:30) is saved and used for every event time shown: the calendar, event details, the editor and History. | — | S19-03, S19-04, S21-08, S21-09, S79-12, S79-13 |
 | CAL-23 | proposed | An unknown time-format choice is refused. | — | S19-09 |
 | CAL-27 | proposed | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | — | S21-01, S21-02, S21-03 |
 | CAL-30 | proposed | The calendar displays its source calendars’ events. | — | S26-12 |
