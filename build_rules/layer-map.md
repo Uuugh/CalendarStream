@@ -303,3 +303,4 @@ tooling stays for the Python page only).
 - Heights Nov 17 (Developer): the calendar's heights are measured in event lines (one line = an event's line height with padding and margins, in the theme), not pixels; the old min/max pixel limits are retired (CAL-57, CAL-59, theme 13d). Open: Q-H1 (hour-height limits).
 - Q-H1 answered Nov 17 (Developer): hour height 1 to 6 event lines per hour, default 2 (CAL-59).
 - Status vocabulary (Developer, Nov 17): a blank status means agreed (a Requirement); proposed and planned mean not yet agreed; the Developer removes the word when agreeing. The Developer blanked CAL-15, 19, 25, 65 and deleted CAL-20. CAL-21 reworded.
+- Nov 17 (Developer): the 12/24 time format is a device-local view setting applying to every feature, in the top bar right of the language control (TIM-10; CAL-02 and CAL-21 removed from calendar). Status blank = agreed, applied to the decided rows. Open: Q-V1 (device-local vs global settings), Q-C1 (Automatic).

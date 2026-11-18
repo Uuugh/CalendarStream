@@ -278,6 +278,7 @@ or by any of the other eight points. The offset is relative to the parent's size
 A zone is an ordered list of items (icons, text and controls; many left zones hold text); the theme defines each zone's order. Calendar header, **right zone**, in order (to confirm):
 Time Zone, View, 12/24 clock, Print, Full page. The Full page icon is the fullscreen icon, and while Full page is on it is the
 Exit full page icon (arrows pointing inward), not a Back arrow.
+Top bar, in order (to confirm): Search, Language, 12/24 clock (to the right of Language), then the other top-bar controls.
 
 ## 13d. Heights are measured in event lines (Developer, Nov 17)
 

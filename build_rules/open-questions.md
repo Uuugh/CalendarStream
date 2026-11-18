@@ -116,7 +116,7 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Q-C: calendar, the remaining planned rows
 
-- **Q-C1** (CAL-02, CAL-21) You deleted CAL-20 (Automatic time format). The CHANGELOG says the Python app had an Automatic choice (12-hour for English, 24-hour for the other languages). Is it removed, so there are only 12 h and 24 h and the first sign-in picks 12 h unless you choose otherwise?
+- **Q-C1** (TIM-10) You deleted CAL-20 (Automatic time format). The CHANGELOG says the Python app had an Automatic choice (12-hour for English, 24-hour for the other languages). Is it removed, so there are only 12 h and 24 h and the first sign-in picks 12 h unless you choose otherwise?
   Answer:
 - **Q-C2** (CAL-15) Long-press-drag was never built. What should the Theme setting for the press time offer: a default and a range (for example 0.3 to 1.5
   seconds, default 0.5)? And when an event is dragged in Week or Day, does its start snap to a step (for example 15 minutes), and in Month does it move by
@@ -127,4 +127,12 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **Q-C4** (CAL-13) After Expand fills the visible window, and the window is then resized, does the calendar stay at its number of lines (as today), or refill the
   new window until you stretch it by hand?
+  Answer:
+
+## Q-V: what is local to a device and what is global
+
+- **Q-V1** You said the 12/24 clock format is a view setting local to the device, while the Time Zones choice (SET-47) is global in the database. Which of the other
+  settings are local to the device and which global? Claude's reading: **local to the device** = language, clock format, theme (light/dark), the calendar's temporary zone
+  and the filter (what you look at); **global (in the database)** = Time Zones, search results per feature (SET-48), public address, updates, rules, calendars,
+  feeds, Google (what the app does). The CHANGELOG says the theme was made global so every browser matches (beta 0.0.8); do you want it local now?
   Answer:

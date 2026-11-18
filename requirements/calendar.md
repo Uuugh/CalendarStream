@@ -5,7 +5,6 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 
 | ID | status | statement | test | was |
 |---|---|---|---|---|
-| CAL-02 | planned | One control switches between 12 h and 24 h and shows the current setting as a badge (build_rules/theme.md, 13b). | — | F15.2, F43, S21-05, S21-07, S66-16, S79-10, S79-11 |
 | CAL-04 | planned | A Full page icon sits right of Print, in the calendar header's right zone; it hides every other section and becomes an Exit full page icon (the arrows-inward icon, not Back). (Developer, Nov 17) | — | F15.4 |
 | CAL-11 | built | The calendar's stretch control is a bar centered at the bottom of the calendar, drawn as two rows of six dots like a slider's. | — | F51 |
 | CAL-12 | built | The stretch bar can compress the calendar enough to remove the module's vertical scrollbar. | — | F51 |
@@ -16,7 +15,6 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-65 |  | An all-day (24-hour) event is shown like any timed event in the Local time zone, so it is a single day while the Local zone is the event's own zone, and can span two calendar days when the Local zone differs (for example a New York all-day event viewed from Los Angeles). (Developer, Nov 17) | — | Developer |
 | CAL-25 |  | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | — | S19-31; Developer, Nov 17 |
 
-| CAL-21 | proposed | The chosen time format (12-hour, such as 1:30pm, or 24-hour, such as 13:30) is saved and used for every event time shown: the calendar, event details, the editor and History. | — | S19-03, S19-04, S21-08, S21-09, S79-12, S79-13 |
 | CAL-23 | proposed | An unknown time-format choice is refused. | — | S19-09 |
 | CAL-27 | proposed | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | — | S21-01, S21-02, S21-03 |
 | CAL-30 | proposed | The calendar displays its source calendars’ events. | — | S26-12 |
@@ -29,9 +27,9 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-43 | proposed | Print Preview opens with the remembered print view; choosing Month updates its preview to Month. | — | S36-52, S36-53 |
 | CAL-45 | proposed | Changing a source's color updates it wherever it is shown, including the destination source choices (see FLT-05). | — | S38-16 |
 | CAL-53 | proposed | The calendar can be viewed Full page and returned to normal view. Shared navigation follows UI-02. | — | S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
-| CAL-57 | planned | The calendar's height is measured in event lines (one line = one event's line height, with its padding and margins, defined in the theme), not in pixels. The stretch control changes it by whole lines and the choice is saved. Collapse gives the fewest lines the view needs; Expand gives the most lines that fit the visible window. There is no fixed pixel minimum or maximum. (Developer, Nov 17) | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
+| CAL-57 |  | The calendar's height is measured in event lines (one line = one event's line height, with its padding and margins, defined in the theme), not in pixels. The stretch control changes it by whole lines and the choice is saved. Collapse gives the fewest lines the view needs; Expand gives the most lines that fit the visible window. There is no fixed pixel minimum or maximum. (Developer, Nov 17) | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
 | CAL-58 | proposed | The calendar height and Week-view hour height can be adjusted. | — | S67-50, S79-01, S79-02, S65-16 |
-| CAL-59 | planned | The hour height in Week and Day is also measured in event lines per hour, changed by whole lines and saved: at least 1 line per hour, at most 6, default 2, so a line of an event always fits. (Developer, Nov 17) | — | Developer, Nov 17; S65-14, S65-15 |
+| CAL-59 |  | The hour height in Week and Day is also measured in event lines per hour, changed by whole lines and saved: at least 1 line per hour, at most 6, default 2, so a line of an event always fits. (Developer, Nov 17) | — | Developer, Nov 17; S65-14, S65-15 |
 | CAL-60 | proposed | For the sampled month print requests, automatic or unspecified orientation selects landscape; explicit portrait or landscape is honored. Day printing also honors explicit landscape. | — | S65-18, S65-19 |
 | CAL-61 | proposed | Print orientation can be chosen and saved; a later request without an orientation uses the saved portrait preference. | — | S65-20, S65-21, S65-22 |
 | CAL-62 | proposed (?) | For Letter and A4, the sampled month print produces one landscape PDF page and the sampled day print starts with a portrait PDF page; the sampled Letter week print has at least two pages. Are these pagination expectations specific to the fixture content? | — | S64-08, S64-09, S64-10 |
