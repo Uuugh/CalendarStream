@@ -11,11 +11,9 @@ component not meeting a requirement and is kept in the issues database, not here
 `| ID | status | statement | test | was |`
 
 - **ID**: a feature prefix and a number, never reused (CAL-03).
-- **status**:
-  - `verified`: built, and the Developer said Good;
-  - `built`: built, still waiting for the Developer's verdict;
-  - `open`: built, but the Developer said Bad (the requirement is still right; the code does not meet it);
-  - `planned`: not built.
+- **status** (the Developer's way, Nov 17): a **blank status means the Developer agreed**: it is a Requirement. `proposed` and `planned` mean
+  not yet agreed; the Developer removes the word when they agree with a row. `verified` means a Dart test passes it. The older `built` and
+  `open` came from the Python-era Dashboard and are treated like `planned` until reviewed.
 - **test**: the test that verifies it (path and name), once one exists. `—` until the inventory of the Python suites
   (`requirements/inventory/`) has been matched to requirements.
 - **was**: the old Dashboard item it came from, for the transition only.

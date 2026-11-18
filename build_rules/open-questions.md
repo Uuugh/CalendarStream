@@ -116,9 +116,7 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Q-C: calendar, the remaining planned rows
 
-- **Q-C1** (CAL-02, CAL-20, CAL-21) Is there a third "Automatic" time-format choice besides 12 h and 24 h (Automatic follows the page language: 12-hour for
-  English, 24-hour for the others, per the CHANGELOG), and does the control on the calendar cycle through all three, or only 12 h and 24 h with
-  Automatic set in Settings?
+- **Q-C1** (CAL-02, CAL-21) You deleted CAL-20 (Automatic time format). The CHANGELOG says the Python app had an Automatic choice (12-hour for English, 24-hour for the other languages). Is it removed, so there are only 12 h and 24 h and the first sign-in picks 12 h unless you choose otherwise?
   Answer:
 - **Q-C2** (CAL-15) Long-press-drag was never built. What should the Theme setting for the press time offer: a default and a range (for example 0.3 to 1.5
   seconds, default 0.5)? And when an event is dragged in Week or Day, does its start snap to a step (for example 15 minutes), and in Month does it move by
