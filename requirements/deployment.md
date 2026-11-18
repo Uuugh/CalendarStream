@@ -18,5 +18,5 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | DEP-09 | proposed | Running the installer again keeps the settings and installs the newest image of the selected release (see SET-26). | — | L490 |
 | DEP-10 | proposed (?) | The updater never updates the database, never checks for updates on its own, and removes old images. Conflicts with auto-update (SET-32): which wins? | — | L500 |
 | DEP-11 | proposed | The updater is not reachable from outside the Docker network, needs a generated secret token and uses the Docker socket; the installer can remove it without losing other data (see SET-29). | — | L502 |
-| DEP-12 | proposed (?) | The database is backed up with pg_dump; keeping the deployment secrets is required to read the encrypted credentials after a restore. Is a restore procedure part of the product? | — | L525 |
+| DEP-12 | proposed | The database and the calendar data are backed up and restored from Settings > Site Admin (SET-60). A restored database needs the deployment secrets (the database password) to read its encrypted credentials. | — | L525 |
 | DEP-13 | proposed | Deleting the Postgres directory resets the app to a fresh install: sources, destinations, edits, rules, templates, settings, logins, the Google connection and feed links. | — | L530 |

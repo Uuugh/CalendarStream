@@ -8,8 +8,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 - **DEP-10** (deployment) The updater never updates the database, never checks for updates on its own, and removes old images. Conflicts with auto-update (SET-32): which wins? 
   Answer:
-- **DEP-12** (deployment) The database is backed up with pg_dump; keeping the deployment secrets is required to read the encrypted credentials after a restore. Is a restore procedure part of the product? 
-  Answer:
 - **FED-08** (feeds) A stream name accepts letters such as OneWay, but refuses spaces and punctuation such as an exclamation mark; malformed input identifies the stream field. What is the complete allowed character set? 
   Answer:
 - **FED-25** (feeds) Feed creation supplies a generated stream token and explains how an old feed link can be reused. The checked generated tokens contain at least twenty characters. Is twenty the guaranteed minimum rather than just the tested generator length? 
@@ -61,4 +59,10 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   marker age SET-36; section auto-close SHL-18; animation ranges SET-40; token and name lengths FED-25, FED-27; history limits HIS-19). Claude proposes ONE rule instead of a dozen answers: the numbers the Python app uses today become
   the defaults, listed once in a "Defaults and limits" table (in `common.md`), and each feature row says only "retries", "renews", "is limited" and points to the table, with no number in the row. You can change any number in
   the table later without touching a feature. Yes?
+  Answer:
+
+## Q-BK: backup
+
+- **Q-BK1** (SET-60) Where does a backup go: downloaded as a file to the device you are using (recommended: you keep it), or saved in a folder on the server? Restore asks for the file (or picks from the folder) and, because it replaces
+  everything, asks first (UI-06). Does a backup include the saved passwords and Google sign-in (they stay encrypted, and need the same database password to be read after a restore)?
   Answer:
