@@ -321,3 +321,4 @@ tooling stays for the Python page only).
 - Q-M2 answered Nov 17 (Developer): option 1: test the migration tool in three steps: demo database, then a copy of the real database, then the real one (DEP-14).
 - Nov 17 (Developer): 5-day (Monday through Friday) is a calendar view (CAL-33, CAL-40); CAL-34 and CAL-39 agreed. Open: Q-P5 (does the separate weekends choice in Print go away).
 - CAL-40 removed Nov 17 (Developer): with 5-day as a view and Print printing the view (CAL-66), it is covered; the separate weekends choice in Print goes away (Q-P5 answered); CAL-39 and CAL-41 lose the weekend wording.
+- Nov 17 (Developer): the resize bar is global UI (UI-16: look and operation, collapse and expand single actions); the employing feature defines the unit and how it resizes each view. CAL-11 and CAL-13 moved to UI-16; CAL-12 deleted by the Developer; CAL-57 uses the bar with event lines as the unit.
