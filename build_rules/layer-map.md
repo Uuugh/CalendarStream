@@ -209,3 +209,10 @@ tooling stays for the Python page only).
   address (SET-08..16, referenced by GGL-45), feed name suggestions (FED-15 absorbs FED-26; FED-20 dropped), read/write round
   trip (FED-29 only; SRC-60 dropped), view change (CAL-33 absorbs CAL-36), templates picker (TPL-05/07; EVT-26 dropped);
   reload/phone-width mechanics removed from CAL-45/49, SRC-24/31/33. Questions from all (?) rows are in open-questions.md.
+- Q-L1 answered Nov 17 (Developer): the data must be kept. The Dart server reads and writes the SAME Postgres database the
+  Python app uses (tables kv, events, event_edits, custom_events, google_events, calendar_files, debug_files, activity_log).
+  No table or column changes are needed. Compatibility work for the port: (1) Fernet decryption of kv secrets (key = PBKDF2-
+  SHA256, 390,000 rounds, from DB_PASSWORD, salt in each sealed value), (2) scrypt (n=2^14, r=8, p=1) page-password hashes,
+  (3) the same jsonb shapes in kv (rules, sources, destinations; keep unknown fields), (4) the idempotent startup
+  statements (ALTER ... IF NOT EXISTS) run unchanged, never renaming or dropping, (5) Python-only regexes in saved rules are
+  flagged (Q-P3 decision). The Dart app is first run against a COPY of the database; Python stays able to read it until step 5.

@@ -97,10 +97,3 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **SRC-56** (sources) Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? 
   Answer:
 
-## Q-L: legacy data
-
-- **Q-L1** Several requirements describe migrating data from older Python versions (RUL-35 old tag colors, SRC-22 and FED-12 and
-  GGL-51 older destinations and feed tokens, the old installer public-address default). Does the Dart server need to read an
-  existing Postgres database from the Python app (so all migrations must be ported), or may it start from a fresh database
-  and import only what you choose?
-  Answer:
