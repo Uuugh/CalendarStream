@@ -11,7 +11,7 @@ manage it all. See README.md for what it does.
 
 The Developer is porting this app from Python to Dart/Flutter, organized by feature, with a requirements file per
 feature as the spec. **All new features and requirements are frozen until it is complete**; the Python app below is
-the running app and the reference, and its suites are the oracle. Read `build_rules/layer-map.md` first: it has the
+the running app and the reference, and its suites are the oracle. Read `build_rules/HANDOFF.md` (how we work, where things are) and then `build_rules/layer-map.md`: it has the
 decisions, the target layout, the Python-to-Dart porting map and where the work stands. Items are now Feature,
 Requirement, Issue and Process (`build_rules/0-overview.md`, Inputs). "Rule" means only a rule in the app's Rules
 feature. The process rules called R18, R19, R26 below are P18, P19, P26 in the new naming.
