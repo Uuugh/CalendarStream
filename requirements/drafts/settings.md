@@ -51,6 +51,7 @@ it does not prove deployment or restart behavior against a real installation.
 | SET-44 | proposed | Changing the public address warns about the Google callback configuration. Existing SET-04 owns the assist-box requirement; Google owns callback validation. | S67-25 |
 | SET-45 | proposed | Effective public addresses are deduplicated, with the main address first and valid extras afterward. | S77-18 |
 | SET-46 | proposed | Reopening Updates reflects the current saved auto-update preference, including changes made by another client. A refused auto-update save leaves the prior value in effect. | S81-09, S81-10 |
+| SET-47 | proposed | Settings has a Time Zones item with two choices: Follow System Time Zone (the zone of the device in use, so a phone and a PC may differ) or Fixed Time Zone (chosen with the same time zone picker as the calendar). After installation, the first sign-in follows the system time zone. (Developer, Nov 17) | Developer |
 
 ## Not requirements
 

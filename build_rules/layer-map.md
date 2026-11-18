@@ -244,3 +244,6 @@ tooling stays for the Python page only).
 - Default rules (Developer, Nov 17): the starter rules stay in All Rules and are only unassigned when removed from a calendar
   (RUL-29 reworded). Python's old test S27-10 deletes the 24-hour rule outright; the port will follow RUL-29. Open: Q-RU1.
 - Q-RU1 answered Nov 17 (Developer): default rules are permanent: unassigned and re-assigned, never deleted (RUL-29, RUL-28).
+- Time zones (Developer, Nov 17): Q-T6: the system zone is the user's device; after installation the first sign-in follows it; new
+  Settings item "Time Zones" (SET-47): Follow System Time Zone or Fixed Time Zone (same picker as the calendar). Q-T2: a rule has no
+  time zone; it judges days and times in the event's own zone (RUL-07). Open: Q-T5/Q-T7, Q-T8, Q-T9.

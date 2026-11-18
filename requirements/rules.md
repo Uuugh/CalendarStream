@@ -11,7 +11,7 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-04 | verified | `*` and `#` wildcards are supported: `*E####` matches `Trip E1234` and `e9999` but not `E12345`. | — | S49-04, S52-03 |
 | RUL-05 | verified | A condition on "Any text" matches title, location or notes. | — | S49-09 |
 | RUL-06 | verified | Conditions combine with AND/OR in order with optional brackets: `A OR B AND C` differs from `(A OR B) AND C`. | — | S36-02 |
-| RUL-07 | verified | Day conditions cover selected days, a Fri-Mon range, after and before a day. | — | S36-08, S36-09 |
+| RUL-07 | verified | Day conditions cover selected days, a Fri-Mon range, after and before a day. Conditions on days and times are judged in the event's own time zone: a rule has no time zone of its own (Developer, Nov 17). | — | S36-08, S36-09 |
 | RUL-08 | verified | A time range may be overnight (22:00-06:00 matches 23:00, not daytime). | — | S36-10 |
 | RUL-09 | verified | Date conditions: a range (reversed order is accepted) and "after date". | — | S36-11 |
 | RUL-10 | verified | Length conditions distinguish no end time, a normal event, a near whole-day event and an exact duration. | — | S36-12 |

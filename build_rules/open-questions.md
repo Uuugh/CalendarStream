@@ -100,19 +100,19 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Q-T: time storage (Developer, Nov 17: all times are stored in UTC; an event's time zone is for entry and display)
 
-- **Q-T2** Rules match on day of week and time of day (RUL-07, RUL-08: Fri-Mon, overnight 22:00-06:00). In which zone should a
-  rule judge an event: the event's own zone, or the page's display zone? (Python uses the display zone.) Claude recommends
-  the event's own zone, since "Friday 22:00" means the place the event happens.
-  Answer:
 - **Q-T5** An all-day event is shown on its own local date, whatever the page's display zone is (a New York all-day event stays
   on its New York day when you view the calendar from Los Angeles). Timed events still follow the display zone (CAL-25). Right?
-  Answer:
-- **Q-T6** "System time zone" (CAL-19, EVT-05): the zone of the device running the app (your phone or computer, which the Flutter
-  client knows), or the server's `TZ` setting (README: default America/Chicago)? Claude recommends the device's zone, with the
-  server's TZ only as the default for scheduled work (downloads, sync) that has no device.
   Answer:
 - **Q-T7** CAL-19 says existing events are viewed with the new offset. For an all-day event that would move it to another day
   when the Local zone is far from its own zone (Q-T5). Do all-day events follow the Local zone like timed ones, or stay on their
   own date?
   Answer:
 
+- **Q-T8** Time Zones setting (SET-47): is the choice stored per device (your phone can follow the system while your PC uses a
+  fixed zone) or once for the account (every device shares it)? And the calendar's own time zone picker (CAL-24, CAL-25): does
+  picking a zone there switch the setting to Fixed, or only change the view until you reload?
+  Answer:
+- **Q-T9** Imported events that carry no zone (times ending in Z, or floating local times) and the server's scheduled downloads
+  have no device to ask. Which zone should such an event get as its own: the Fixed zone if set, otherwise the zone the first
+  sign-in used (kept on the server as the account's default)? Claude recommends that.
+  Answer:

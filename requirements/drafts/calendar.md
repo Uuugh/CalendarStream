@@ -12,7 +12,7 @@ remain questions. Questions explicitly identify uncertain generalization or conf
 
 | ID | status | statement | evidence |
 |---|---|---|---|
-| CAL-19 | proposed | Local time: the calendar shows event times in the Local time zone the user chose, or in the system clock's zone when none is chosen. Existing events are viewed with the offset of that zone, while each event keeps, unchanged in the database, the time zone it was created in until the user edits it with Edit Event. (Developer, Nov 17) | S19-01 |
+| CAL-19 | proposed | Local time: the calendar shows event times in the Local time zone, set in Settings > Time Zones (SET-47): the zone of the device in use, or a fixed zone. Existing events are viewed with the offset of that zone, while each event keeps, unchanged in the database, the time zone it was created in until the user edits it with Edit Event. (Developer, Nov 17) | S19-01 |
 | CAL-20 | proposed | Automatic time format uses 12-hour times when the page language is English. | S19-02 |
 | CAL-21 | proposed | Choosing 24-hour format saves it and displays 24-hour event times. Choosing 12-hour format saves that choice again. | S19-03, S19-04, S21-08, S21-09, S79-12, S79-13 |
 | CAL-22 | proposed | The selected time format is indicated as 12 or 24 hours. | S21-05, S21-07, S66-16, S79-10, S79-11 |
