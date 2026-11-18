@@ -263,3 +263,5 @@ tooling stays for the Python page only).
   calendar and of incoming events and records it with the event (TIM-06, GGL-85 uses the common rules). Open: Q-T9.
 - Rule (Developer, Nov 17): requirements follow the code-deduplication rule: shared behavior is written once (requirements/drafts/common.md)
   and maps to shared code (packages/domain, client shared/ui); features reference it and add no per-feature exceptions.
+- Cleanup after common.md (Nov 17, Claude): rows that restated time rules now reference TIM: CAL-24 moved to TIM-09, EVT-14, EVT-31 (no
+  mixed all-day/timed case), FED-03, GGL-26 reworded.

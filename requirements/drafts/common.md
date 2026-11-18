@@ -18,6 +18,7 @@ shared domain package (time) and the client's shared widgets (UI). Evidence keys
 | TIM-06 | proposed | Syncing with an outside calendar reads the time zone of that calendar and of each incoming event and records it with the event (TIM-02), and sends each event's recorded time zone with its times. |
 | TIM-07 | proposed | Calendar feeds carry each event's times with its time zone. |
 | TIM-08 | proposed (?) | An imported event that carries no time zone gets a default zone (open: Q-T9). |
+| TIM-09 | proposed | A time zone name that is not a real zone is refused wherever a zone is chosen (S19-30). |
 
 Decided elsewhere, not repeated: UTC instants hide daylight-saving jumps, and the default rule "24-hour events" (RUL-29) realigns a
 fixed 24-hour source span to the local day.

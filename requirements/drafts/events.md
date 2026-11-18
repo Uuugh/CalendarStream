@@ -23,7 +23,7 @@ S59-15..17, S65-34..37, S44-26..28/45) are left to `theme.md` (Q-R1) except wher
 | EVT-11 | proposed | Changing the start keeps the duration: start 11am moves a one-hour end to 12pm; start 2300 with 90 minutes ends 12:30am the next day; moving an overnight event's start date moves its end date by the same days. | S19-34, S19-37, S19-38 |
 | EVT-12 | proposed | The end time offers suggestions that show their duration (12:30pm, 1h30); choosing one sets the end. | S19-35, S19-36 |
 | EVT-13 | proposed | The end may be in a different time zone from the start; changing the start keeps the end in its own zone (10am New York start, 11am Los Angeles end), and the event reopens with both zones. | S19-43, S19-45, S19-46, S59-11 |
-| EVT-14 | proposed | An all-day event has no times and no end zone. | S59-18, S65-37 |
+| EVT-14 | proposed | An all-day event (TIM-04) is entered without times. | S59-18, S65-37 |
 | EVT-15 | proposed | The location field updates a map link whose address is the URL-encoded location. | S46-23 |
 
 ## Color
@@ -64,7 +64,7 @@ S59-15..17, S65-34..37, S44-26..28/45) are left to `theme.md` (Q-R1) except wher
 | EVT-28 | proposed | Picking an event sets the link target; saving persists the target UID. | S37-52, S58-30, S58-33 |
 | EVT-29 | proposed | Removing a link hides its panel and clears the target; cancelling the editor afterwards keeps the stored original link. | S57-27, S57-31, S58-27 |
 | EVT-30 | proposed | A saved linked event shows its link (event or rule, and the target) when reopened. | S57-18, S58-13, S45-27 |
-| EVT-31 | proposed | A linked event follows its target: moving the target by two hours moves the linked event by two hours; deleting the target removes the linked event and its link. Linking an imported event alone adds no stored edit. The move helper handles timed moves, refuses a mix of all-day and timed, and shifts all-day endpoints together. | S37-05, S37-14, S37-17..19, S62-10 |
+| EVT-31 | proposed | A linked event follows its target: moving the target by two hours moves the linked event by two hours; deleting the target removes the linked event and its link. Linking an imported event alone adds no stored edit. Moving shifts start and end together (an all-day event is a 24-hour event, TIM-04, so it needs no special case). | S37-05, S37-14, S37-17..19, S62-10 |
 | EVT-32 | proposed | Starting a new event-derived rule closes the event dialog; closing the rule dialog restores it (UI-02). | S67-14, S67-17 |
 
 ## Other

@@ -32,7 +32,7 @@ Existing GGL-01..04 remain separate; no traffic-display guarantees are inferred 
 | GGL-23 | proposed | Connecting requests a full synchronization; initial synchronization publishes eligible nonhidden events in the configured window. | S13-02, S13-03, S20-03, S26-44, S45-02, S45-03, S48-09, S48-10 |
 | GGL-24 | proposed | Google events retain source titles and indicate that CalendarStream synchronized them. | S13-06 |
 | GGL-25 | proposed | Published reminders disable Google defaults and use the event’s explicitly selected reminders, including fifteen-minute and one-hour choices. Reminder selection is owned by EVT-19. | S13-07, S36-27 |
-| GGL-26 | proposed | All-day events publish date-only dates; timed events retain their time zone and busy/free information. | S13-08, S13-09, S13-10, S13-18 |
+| GGL-26 | proposed | Events are published as the common time rules say (TIM-04, TIM-06); busy/free information is kept. | S13-08, S13-09, S13-10, S13-18 |
 | GGL-27 | proposed | An event without a color rule does not force a Google event color. Color rules apply the corresponding Google color, using the nearest supported color where necessary. | S13-11, S13-19, S13-22, S26-47, S74-05 |
 | GGL-28 | proposed | An unchanged normal or full synchronization performs no event writes; editing an event schedules synchronization and updates the remote event. | S13-12, S13-13, S13-14, S13-15, S13-16, S13-30 |
 | GGL-29 | proposed | Hiding a local event removes its published Google copy. | S13-17 |

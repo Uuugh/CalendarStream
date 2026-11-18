@@ -13,7 +13,7 @@ Claude's cross-feature review.
 |---|---|---|---|
 | FED-01 | proposed | A feed offers a subscription link and ways to add it to Google Calendar, Apple Calendar and Outlook, with instructions for those choices. | S18-11, S18-12, S39-14, S51-19 |
 | FED-02 | proposed | A feed reports Not read yet until fetched; afterward it reports its last read, identifying Google when Google is the reader. | S19-28, S19-29, S40-05, S44-11 |
-| FED-03 | proposed | Changing the page’s display time zone does not change the feed’s time zone. | S19-32 |
+| FED-03 | proposed | Feeds carry each event's own time zone (TIM-07); the page's display time zone does not change them. | S19-32 |
 | FED-04 | proposed | A missing feed destination or an invalid feed token does not expose a feed and returns not found. | S23-26, S26-04 |
 | FED-05 | proposed | A feed can publish all chosen source calendars under its own name; its calendar data includes those sources’ events and its chosen calendar name. | S26-33, S26-35 |
 | FED-06 | proposed | A feed’s included calendars can be changed independently of other destinations. | S26-36 |
