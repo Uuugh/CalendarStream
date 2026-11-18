@@ -120,16 +120,13 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   seconds, default 0.5)? And when an event is dragged in Week or Day, does its start snap to a step (for example 15 minutes), and in Month does it move by
   whole days?
   Answer:
-- **Q-C3** (CAL-25) The calendar's own time zone picker is a temporary view change. Does Print use that temporary zone (what you see is what is printed, like
-  the filter) or the Local zone from Settings?
-  Answer:
 - **Q-C4** (CAL-13) After Expand fills the visible window, and the window is then resized, does the calendar stay at its number of lines (as today), or refill the
   new window until you stretch it by hand?
   Answer:
 
 ## Q-V: what is local to a device and what is global
 
-- **Q-V1** You said the 12/24 clock format is a view setting local to the device, while the Time Zones choice (SET-47) is global in the database. Which of the other
+- **Q-V1** (two meanings of "global": a setting that applies to every feature, like the time zone, time format and language that Print follows, versus a setting stored once in the database for all devices.) You said the 12/24 clock format is local to the device, while the Time Zones choice (SET-47) is global in the database. Which of the other
   settings are local to the device and which global? Claude's reading: **local to the device** = language, clock format, theme (light/dark), the calendar's temporary zone
   and the filter (what you look at); **global (in the database)** = Time Zones, search results per feature (SET-48), public address, updates, rules, calendars,
   feeds, Google (what the app does). The CHANGELOG says the theme was made global so every browser matches (beta 0.0.8); do you want it local now?

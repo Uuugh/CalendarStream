@@ -13,6 +13,7 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-15 |  | Long-press-drag moves an event, and a Theme setting sets how long the press must be held. | — | F61 |
 | CAL-19 |  | Local time: the calendar shows event times in the Local time zone, set in Settings > Time Zones (SET-47): the zone of the device in use, or a fixed zone. Existing events are viewed with the offset of that zone, while each event keeps, unchanged in the database, the time zone it was created in until the user edits it with Edit Event. (Developer, Nov 17) | — | S19-01 |
 | CAL-65 |  | An all-day (24-hour) event is shown like any timed event in the Local time zone, so it is a single day while the Local zone is the event's own zone, and can span two calendar days when the Local zone differs (for example a New York all-day event viewed from Los Angeles). (Developer, Nov 17) | — | Developer |
+| CAL-66 |  | Print prints the view as the user sees it: the Local or temporary time zone, the time format (TIM-10), the language and the Calendar filter (FLT-04). The print options (view, weekends, theme, orientation) are chosen in Print Preview. (Developer, Nov 17) | — | Developer, Nov 17 |
 | CAL-25 |  | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | — | S19-31; Developer, Nov 17 |
 
 | CAL-23 | proposed | An unknown time-format choice is refused. | — | S19-09 |

@@ -306,3 +306,4 @@ tooling stays for the Python page only).
 - Nov 17 (Developer): the 12/24 time format is a device-local view setting applying to every feature, in the top bar right of the language control (TIM-10; CAL-02 and CAL-21 removed from calendar). Status blank = agreed, applied to the decided rows. Open: Q-V1 (device-local vs global settings), Q-C1 (Automatic).
 - Q-C1 answered Nov 17 (Developer): the time format defaults to 12-hour for US time zones and 24-hour elsewhere (TIM-10); no Automatic choice (CAL-20 deleted).
 - Nov 17 (Developer): a Theme setting chooses the time notation within 12/24 (12:00 PM, 12:00 pm, 1200, 12:00), spelled out in a (?) help (SET-58, TIM-10); local to the device.
+- Q-C3 answered Nov 17 (Developer): Print prints the view: time zone, 12/24 format, language (and the filter) as seen (CAL-66).
