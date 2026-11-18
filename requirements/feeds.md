@@ -11,7 +11,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | FED-05 | proposed | A feed can publish all chosen source calendars under its own name; its calendar data includes those sources’ events and its chosen calendar name. | — | S26-33, S26-35 |
 | FED-06 | proposed | A feed’s included calendars can be changed independently of other destinations. | — | S26-36 |
 | FED-07 | proposed | A feed’s subscription page identifies the feed by its name. | — | S26-37 |
-| FED-08 | proposed (?) | A stream name accepts letters such as OneWay, but refuses spaces and punctuation such as an exclamation mark; malformed input identifies the stream field. What is the complete allowed character set? | — | S26-38, S26-39, S51-11 |
+| FED-08 | proposed | A stream name may contain any character. Characters outside the RFC 3986 unreserved set (letters, digits, hyphen, period, underscore, tilde) are percent-encoded in the feed's address, so a space becomes %20. | — | S26-38, S26-39, S51-11 |
 | FED-09 | proposed | Each feed stream token must be unique; a duplicate is refused without creating another destination and identifies the stream field. | — | S26-40, S51-10 |
 | FED-10 | proposed | Pasting an old full feed URL restores its stream token, both when creating and updating a feed. Once replaced, the new token works and the replaced token no longer does. | — | S26-41, S26-42, S51-09 |
 | FED-11 | proposed | Removing a feed makes its subscription URL stop working. | — | S26-52 |
@@ -27,7 +27,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | FED-23 | proposed | A feed can use a selected configured public base address, and its link combines that address with its stream token. Public-domain configuration belongs to settings. | — | S26-32, S51-16, S51-17 |
 | FED-24 | proposed | A feed can be sent using email or SMS links. | — | S51-55 |
 | FED-25 | proposed (?) | Feed creation supplies a generated stream token and explains how an old feed link can be reused. The checked generated tokens contain at least twenty characters. Is twenty the guaranteed minimum rather than just the tested generator length? | — | S58-15 |
-| FED-27 | proposed (?) | A stream name may contain one through 128 characters; 129 characters and embedded spaces are refused by the checked validator. Does the same limit apply to every save route? | — | S63-11 |
+| FED-27 | proposed | A stream name is one through 128 characters, wherever it is saved; the character rule is FED-08. | — | S63-11 |
 | FED-28 | proposed | Turning a feed off makes its URL temporarily unavailable; turning it back on clears its off state without changing its included calendars. | — | S63-22, S63-23, S63-24 |
 | FED-29 | proposed | Published calendar data preserves event titles, start times and end times when read back as calendar data. | — | S77-07 |
 | FED-30 | proposed | Each feed decides which calendars it carries; the required Local calendar is in a feed only as that feed's own settings say, never because of a rule special to Local. | — | S77-16 |
