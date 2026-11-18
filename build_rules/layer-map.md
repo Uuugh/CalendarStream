@@ -319,3 +319,4 @@ tooling stays for the Python page only).
 - Search detail Nov 17 (Developer): results show as they populate (SRH-09) and clicking a result takes you there (SRH-01).
 - Q-M1 answered Nov 17 (Developer, typed): (b) the page password is not migrated; the user requests a new login password after migration (DEP-14). The rest of the typed line ("Express a get well") was unclear and ignored.
 - Q-M2 answered Nov 17 (Developer): option 1: test the migration tool in three steps: demo database, then a copy of the real database, then the real one (DEP-14).
+- Nov 17 (Developer): 5-day (Monday through Friday) is a calendar view (CAL-33, CAL-40); CAL-34 and CAL-39 agreed. Open: Q-P5 (does the separate weekends choice in Print go away).
