@@ -26,7 +26,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | FED-22 | proposed | A valid replacement stream name is saved and its URL serves the feed. | — | S51-12, S51-18 |
 | FED-23 | proposed | A feed can use a selected configured public base address, and its link combines that address with its stream token. Public-domain configuration belongs to settings. | — | S26-32, S51-16, S51-17 |
 | FED-24 | proposed | A feed can be sent using email or SMS links. | — | S51-55 |
-| FED-25 | proposed (?) | Feed creation supplies a generated stream token and explains how an old feed link can be reused. The checked generated tokens contain at least twenty characters. Is twenty the guaranteed minimum rather than just the tested generator length? | — | S58-15 |
+| FED-25 | proposed | Feed creation supplies a generated stream token and explains how an old feed link can be reused. A generated token has at least 128 bits of randomness from a cryptographically secure generator (OWASP's recommendation for unguessable identifiers). | — | S58-15 |
 | FED-27 | proposed | A stream name is one through 128 characters, wherever it is saved; the character rule is FED-08. | — | S63-11 |
 | FED-28 | proposed | Turning a feed off makes its URL temporarily unavailable; turning it back on clears its off state without changing its included calendars. | — | S63-22, S63-23, S63-24 |
 | FED-29 | proposed | Published calendar data preserves event titles, start times and end times when read back as calendar data. | — | S77-07 |
