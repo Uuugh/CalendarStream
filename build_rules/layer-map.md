@@ -261,3 +261,5 @@ tooling stays for the Python page only).
   replaces time.md and shared_ui.md, IDs unchanged). Features reference common rows instead of restating them. Q-T10 answered: a stored
   all-day event is sent to Google as an all-day event for its stored time zone (TIM-04); Google sync reads the zone of the Google
   calendar and of incoming events and records it with the event (TIM-06, GGL-85 uses the common rules). Open: Q-T9.
+- Rule (Developer, Nov 17): requirements follow the code-deduplication rule: shared behavior is written once (requirements/drafts/common.md)
+  and maps to shared code (packages/domain, client shared/ui); features reference it and add no per-feature exceptions.
