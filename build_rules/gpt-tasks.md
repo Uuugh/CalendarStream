@@ -66,3 +66,23 @@ revision you read. Only new files; stop when the whole file is covered, then rep
 "except", "unless", "never for X", "only for Y" usually means a general rule is missing. Before writing one, look for the general
 rule (requirements/drafts/common.md: TIM time rules, UI interaction rules, CAP what an origin allows) and reference or extend it.
 If no general rule fits, write one in common.md and reference it; list it in your PR description.
+
+## Task E: gap triage into proposed requirements (starts after Task D; one PR per feature)
+
+Task D is complete (README gaps: `requirements/drafts/readme_gaps.md`; CHANGELOG gaps: `requirements/drafts/changelog_gaps_*.md`, 8 files).
+For each feature in this order: deployment, google, settings, sources, calendar, events, shell, account, feeds, history, rules, event_templates,
+diagnostics, documentation, search, calendar_filter (a gap row's "proposed owning feature" column says which; if a row names two, take it for
+the first and say so). Branch `chatgpt/drafts-gaps-<feature>`; ONE new file `requirements/drafts/gaps_<feature>.md`; never edit another file.
+
+For every gap row owned by the feature, give it ONE outcome:
+1. **Covered**: an existing requirement (`requirements/*.md` or `requirements/drafts/*.md`) already says it. Name the ID.
+2. **Superseded**: a Developer decision replaced it (build_rules/layer-map.md: the time model TIM, Capabilities CAP, UI-NN, the filter and search
+   split, default rules RUL-29, global Time Zones SET-47, ACC-16/17 numbers, "no exceptions"). Name the decision.
+3. **New**: write a proposed requirement `| ID | proposed | statement | gap row |`. ID continues the feature's prefix after the highest number
+   in `requirements/drafts/<feature>.md` (and the approved file). Rules for the statement: behavior only (no UI mechanics: those are UI-NN in
+   common.md), no exception wording (extend or reference a common rule instead), no fixture wording, one checkable rule, `(?)` only for a
+   real open question. If it restates another feature's rule, reference it instead.
+4. **Not a requirement** (process, refactor, release note): say why in a few words.
+
+Table columns: `| gap (file and line) | outcome | ID or decision | proposed requirement or reason |`. Claude reviews each PR for the
+rules above and merges through the Action; the Developer approves the new requirements later with the rest of the drafts.
