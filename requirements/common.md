@@ -13,6 +13,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | TIM-07 | planned | Calendar feeds carry each event's times with its time zone. | — | Developer, Nov 17 |
 | UI-12 | planned | One shared multi-select dropdown (the language dropdown and the Calendar filter use it): it opens from a single icon; a single click or tap toggles an item and takes effect at once; Ctrl and Shift select several on a keyboard; Select all and Select none are offered; choosing outside the dropdown (losing focus) closes it. (Developer, Nov 17) | — | Developer |
 | UI-13 | planned | A change the user makes (a filter, a view, a theme, a setting) is shown at once: nothing needs a page reload or an Apply step. (Developer, Nov 17: the client redraws only the element that changed.) | — | Developer |
+$esc
 
 ## Proposed (not yet reviewed)
 
@@ -58,4 +59,3 @@ CalendarStream), **rule** (made by a rule).
 | CAP-04 | proposed | Imported and custom events can be link targets; a rule event cannot. |
 | CAP-05 | proposed | Any calendar CalendarStream owns (a Local calendar) can be the default calendar; a read-only source calendar cannot. |
 | CAP-06 | proposed | Sync Now is offered only for calendars that download from outside; a Local calendar has nothing to download. |
-| UI-14 | planned | Every row of controls has left, center and right zones, each keeping its own alignment. A row that is too narrow stacks its zones, left on top, then center, then right; within a zone, fonts and icons scale down to fit, never below readable text and a 24×24 px target. No component has its own responsive rule (build_rules/theme.md, section 13a). | — | Developer, Nov 17 |
