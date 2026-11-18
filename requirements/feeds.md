@@ -30,7 +30,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | FED-27 | proposed (?) | A stream name may contain one through 128 characters; 129 characters and embedded spaces are refused by the checked validator. Does the same limit apply to every save route? | — | S63-11 |
 | FED-28 | proposed | Turning a feed off makes its URL temporarily unavailable; turning it back on clears its off state without changing its included calendars. | — | S63-22, S63-23, S63-24 |
 | FED-29 | proposed | Published calendar data preserves event titles, start times and end times when read back as calendar data. | — | S77-07 |
-| FED-30 | proposed (?) | When creating the required Local calendar, it is included in the destination checked by the oracle. Should this inclusion apply to every existing destination or only the combined/default destination? | — | S77-16 |
+| FED-30 | proposed | Each feed decides which calendars it carries; the required Local calendar is in a feed only as that feed's own settings say, never because of a rule special to Local. | — | S77-16 |
 
 ## Notes from the draft
 

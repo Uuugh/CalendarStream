@@ -6,13 +6,11 @@ Only unanswered questions are listed; Claude removes a question once it acts on 
 
 Each question is the (?) text of a proposed requirement. Answer on the Answer line; Claude updates the row and removes the question.
 
-- **FED-08** (feeds) A stream name accepts letters such as OneWay, but refuses spaces and punctuation such as an exclamation mark; malformed input identifies the stream field. What is the complete allowed character set? 
+- **FED-08** (feeds) A stream name accepts letters such as OneWay, but refuses spaces and punctuation such as an exclamation mark; malformed input identifies the stream field. What is the complete allowed character set? A complete list of acceptable characters can be found in RFC 3986. Characters outside this range need to be percent encoded. For example, a space character is percent encoded as %20
   Answer:
 - **FED-25** (feeds) Feed creation supplies a generated stream token and explains how an old feed link can be reused. The checked generated tokens contain at least twenty characters. Is twenty the guaranteed minimum rather than just the tested generator length? 
-  Answer:
-- **FED-27** (feeds) A stream name may contain one through 128 characters; 129 characters and embedded spaces are refused by the checked validator. Does the same limit apply to every save route? 
-  Answer:
-- **FED-30** (feeds) When creating the required Local calendar, it is included in the destination checked by the oracle. Should this inclusion apply to every existing destination or only the combined/default destination? 
+  Answer: 20 is a self-generated restriction. It should only be a security recommendation. you need to research recommended best practices and that should be the recommendation.
+- **FED-27** (feeds) A stream name may contain one through 128 characters; 129 characters and embedded spaces are refused by the checked validator. Does the same limit apply to every save route? did i answer in fed-08
   Answer:
 - **GGL-13** (google) A client change is refused while the checked account is connected. How does this restriction relate to the later editable/reconnect setup flow? 
   Answer:
