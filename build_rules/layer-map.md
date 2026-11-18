@@ -299,3 +299,4 @@ tooling stays for the Python page only).
 - Nov 17 (Developer): text that does not fit its zone is not rendered outside it (clipped, no ellipsis or wrapping); the accessible name keeps the full text (theme 13a, UI-14).
 - Nov 17 (Developer): the calendar scrolls when it falls outside its zone, so every zone has a kind: control zones clip, content zones scroll (theme 13a, UI-14); not a per-component exception.
 - CAL-09 dropped Nov 17 (Developer): the key footer is replaced by the Calendar filter.
+- CAL-11 Nov 17 (Developer): the stretch control wording is the Developer's: a bar centered at the bottom of the calendar, two rows of six dots like a slider's.
