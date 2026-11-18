@@ -311,3 +311,4 @@ tooling stays for the Python page only).
 - CAL-23 removed Nov 17: with 12/24 a device-local toggle, an unknown format cannot be chosen. TIM-09 reworded to the same logic for zones.
 - Q-T9 answered Nov 17 (Developer): the time zone defined when the software is installed is the default zone until the user defines otherwise (TIM-08). Open: Q-D2 (how the user changes it).
 - Nov 17 (Developer): the installation's default time zone is part of the deployment feature (DEP-27); TIM-08 only refers to it.
+- Q-D2 answered Nov 17 (Developer): a Default time zone item under Settings > Site Admin, like Domains, stored in the database; the database overrides the installer's TZ (SET-59, DEP-27).
