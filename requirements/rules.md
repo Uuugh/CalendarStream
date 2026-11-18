@@ -33,7 +33,7 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-26 | verified | Rules can be reordered (up/down, before/after a neighbour) and the order is stored and shown. | — | S34-17, S34-18, S36-17, S36-39 |
 | RUL-27 | verified | A rule can be cloned; the clone is unapplied and placed right after the original. | — | S33-10, S36-41 |
 | RUL-28 | verified | Deleting a rule removes it from every list. | — | S19-27, S27-10 |
-| RUL-29 | verified | A calendar starts with two predefined rules (items without an end time, 24-hour events); adding CCS+ again re-adds its starters. | — | S21-13, S27-08, S63-17 |
+| RUL-29 | verified | A calendar starts with two predefined rules (items without an end time, 24-hour events); adding CCS+ again re-adds its starters. The 24-hour rule aligns a whole-day event to the local day: an event spanning about 24 hours becomes all-day, local midnight to the next local midnight in the event's time zone (Developer, Nov 17), so daylight-saving days stay correct. | — | S21-13, S27-08, S63-17 |
 | RUL-30 | verified | A rule whose calendar was removed still shows the saved name; a rule with no calendar says so. | — | S67-07..09 |
 | RUL-31 | verified | All Rules reports a higher rule that shadows a lower one's color, and duplicate rules, with the choices Put first, Keep as is, Drop and Merge. | — | S37-01..03, S37-08..12 |
 | RUL-32 | verified | Merging rules unions their calendars (All if any is All). | — | S37-04, S49-29 |

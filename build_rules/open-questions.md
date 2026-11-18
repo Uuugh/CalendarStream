@@ -104,11 +104,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   rule judge an event: the event's own zone, or the page's display zone? (Python uses the display zone.) Claude recommends
   the event's own zone, since "Friday 22:00" means the place the event happens.
   Answer:
-- **Q-T4** All-day events (Developer, Q-T1): stored as a real span in the event's local time, local midnight to the next local
-  midnight (end exclusive; the same thing as "00:00 to 23:59" without the lost minute), with the UTC offset of that local time.
-  On a daylight-saving day the span is 23 or 25 hours, not 24. Is that right, or do you want a fixed 24 hours?
-  Claude recommends midnight to midnight local, because it is always exactly one calendar day.
-  Answer:
 - **Q-T5** An all-day event is shown on its own local date, whatever the page's display zone is (a New York all-day event stays
   on its New York day when you view the calendar from Los Angeles). Timed events still follow the display zone (CAL-25). Right?
   Answer:

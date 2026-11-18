@@ -238,3 +238,6 @@ tooling stays for the Python page only).
 - Time zones (Developer, Nov 17): CAL-19 defines Local time: events are viewed in the Local zone the user chose (or the system
   clock's zone); each event keeps its creation zone in the database until edited with Edit Event; a new event defaults to the system
   zone, or to the calendar's zone if one is selected (EVT-05). Drafts CAL-19, CAL-25 (CAL-26 merged), EVT-05 updated.
+- Q-T4 answered Nov 17 (Developer): an all-day event is local midnight to the next local midnight, end exclusive; daylight saving
+  is handled by storing UTC plus the per-source default rule "24-hour events" (RUL-29), which realigns a fixed 24-hour span to the
+  local day in the event's zone. Open: Q-T2, Q-T5, Q-T6, Q-T7.
