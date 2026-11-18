@@ -4,7 +4,6 @@ Only unanswered questions are listed; Claude removes a question once it acts on 
 
 ## Q-S: later steps
 
-
 ## Q-X: questions from the drafts (rows marked (?))
 
 Each question is the (?) text of a proposed requirement. Answer on the Answer line; Claude updates the row and removes the question.
@@ -84,7 +83,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **SRC-56** (sources) Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? 
   Answer:
 
-
 ## Q-M: the migration
 
 - **Q-M1** Your page password is stored as a scrypt hash. The migration can (a) carry the hash over, so you sign in with the
@@ -95,23 +93,4 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   database, with Claude present, or should Claude also test it against a made-up demo database first? Claude recommends the
   demo database first, then your copy, then the real database.
   Answer:
-
-## Q-T: time storage (Developer, Nov 17: all times are stored in UTC; an event's time zone is for entry and display)
-
-
-
-## Q-F: top-bar Search and the Calendar filter (Developer, Nov 17: search moves to the top bar, left of language, and searches all features; key and visibility become one "Calendar filter" dropdown, a filter icon that works like the language dropdown, multi-select with Ctrl, Shift or Select all)
-
-- **Q-F6** Search, in plain words: you type some words in the top bar, and Search looks for them in the names, titles and text of
-  your events, rules, calendars, feeds, event templates and History. Each result says which of those it is, and clicking it takes you
-  there. (My earlier version, with each feature declaring what it can be searched by, was more complicated than this.) Is that what
-  you want, or should it search fewer things (for example only events for now)?
-  Answer:
-
-
-
-## Q-C: calendar, the remaining planned rows
-
-
-
 
