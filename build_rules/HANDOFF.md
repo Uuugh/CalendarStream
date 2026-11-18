@@ -30,3 +30,10 @@ Read this first in a new conversation. Then `build_rules/layer-map.md` (the plan
 3. The Developer reviews each feature file in order (calendar is done): answer the questions, blank the status of agreed rows. Remaining questions are in `build_rules/open-questions.md`.
 4. Port (step 4) in `packages/domain`: rule conditions (days, times, lengths, dates), validation, actions; then the new Dart database and the Python migration tool (DEP-14); then the server features and client. Steps 5 (retire Python), 6 (analyze parallel testing, input: the parked branch), 7 (the Dashboard as a live page).
 5. Timers are session-only: re-create the check in a new conversation if wanted (it reads the Developer's edits, answers, and ChatGPT's PRs).
+
+## State when the first conversation ended (Nov 17, about 2240 EST)
+
+- Claude's review check was turned OFF (timers are session-only). ChatGPT's own timer keeps running (every 10 minutes) and keeps opening Task E pull requests, up to its limit, so
+  unreviewed `chatgpt/drafts-gaps-*` PRs will pile up until a new conversation restarts the check. Task E files merged: deployment, google, settings, sources, calendar, events, shell, account. Open: feeds (#77).
+  Still to come: history, rules, event_templates, diagnostics, documentation, search, calendar_filter.
+- To restart: review each open PR (green check, one outcome per gap row, no exception wording), post `**Claude review, PR #N**`, run `gh workflow run "Inventory auto-merge"`.
