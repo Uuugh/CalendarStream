@@ -81,7 +81,4 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 
 
-## Q-T: the triple dot
 
-- **Q-T11** (UI-14) Clipped text ends with a triple dot (…), decided. What happens when the user clicks (or taps) it? Claude recommends one shared behavior for every clipped item (event title, calendar name, label): a small popover appears next to it with the full text, and closes when you click outside (like the dropdown, UI-12). The item's normal click still works (an event still opens). The dot's click area is at least 24×24 px (the touch floor in UI-14). Alternatives: expand the item in place (this breaks the event-line heights), or do nothing special. Yes to the popover?
-  Answer:
