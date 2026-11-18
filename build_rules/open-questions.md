@@ -83,11 +83,3 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Q-M: the migration
 
-- **Q-M1** Your page password is stored as a scrypt hash. The migration can (a) carry the hash over, so you sign in with the
-  same password (Dart then needs a scrypt check), or (b) leave the password out, so you set a new one at the first start
-  (simpler, and this is a single-user app). Claude recommends (b Request a new password for login. Express a get well.
-- **Q-M2** The migration tool is Python and deleted with the Python app (step 5). Should the Developer run it once on the real
-  database, with Claude present, or should Claude also test it against a made-up demo database first? Claude recommends the
-  demo database first, then your copy, then the real database.
-  Answer:
-

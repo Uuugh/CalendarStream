@@ -317,3 +317,4 @@ tooling stays for the Python page only).
 - Q-C4 answered Nov 17 (Developer): Full page always resizes to the available window (its definition, CAL-04); the stretch bar's Expand and Collapse are single actions that do not follow window resizing (CAL-13).
 - Q-F6 answered Nov 17 (Developer, typed into the file): search is global, beginning with calendar events and then proceeding through the remaining sections (SRH-01, SRH-08 already say this).
 - Search detail Nov 17 (Developer): results show as they populate (SRH-09) and clicking a result takes you there (SRH-01).
+- Q-M1 answered Nov 17 (Developer, typed): (b) the page password is not migrated; the user requests a new login password after migration (DEP-14). The rest of the typed line ("Express a get well") was unclear and ignored.
