@@ -6,14 +6,6 @@ Only unanswered questions are listed; Claude removes a question once it acts on 
 
 Each question is the (?) text of a proposed requirement. Answer on the Answer line; Claude updates the row and removes the question.
 
-- **CAL-37** (calendar) The key omits separate Timed, All-day and Added here color labels in the sampled views. Should this apply to every key variant? 
-  Answer:
-- **CAL-57** (calendar) The calendar stretch amount is saved for the sampled negative values -300 and -120; -301 is refused, and a request for 1500 is limited to at most 1200. Are the complete accepted range and clamping rules intended to be specified beyond these samples? 
-  Answer:
-- **CAL-59** (calendar) An hour height of 64 is saved; heights 10 and 500 are refused. What is the complete accepted hour-height range? 
-  Answer:
-- **CAL-62** (calendar) For Letter and A4, the sampled month print produces one landscape PDF page and the sampled day print starts with a portrait PDF page; the sampled Letter week print has at least two pages. Are these pagination expectations specific to the fixture content? 
-  Answer:
 - **DEP-10** (deployment) The updater never updates the database, never checks for updates on its own, and removes old images. Conflicts with auto-update (SET-32): which wins? 
   Answer:
 - **DEP-12** (deployment) The database is backed up with pg_dump; keeping the deployment secrets is required to read the encrypted credentials after a restore. Is a restore procedure part of the product? 
