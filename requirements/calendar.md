@@ -17,24 +17,23 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-30 |  | The calendar displays its source calendars’ events. | — | S26-12 |
 | CAL-33 |  | Month, Week, 5-day (Monday through Friday), Day and List can be selected from the shared dropdown (UI-12); the choice is saved and indicated as selected. Week, 5-day and Day provide an hourly view. (Developer, Nov 17: 5-day is a calendar view) | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
 | CAL-34 |  | Week view shows its date range and navigates backward and forward by one week. | — | S26-61 |
-| CAL-39 |  | Saving print preferences remembers the selected view, theme and orientation, and Print Preview opens with them. | — | S36-30, S36-52, S36-53 |
+| CAL-39 | proposed | Saving print preferences remembers the selected view, theme and orientation, and Print Preview opens with them; before any preference is saved, Print Preview starts with the current calendar view. | — | S36-30, S36-52, S36-53, readme_gaps:52, changelog_gaps_1201-1500:16 |
 | CAL-41 |  | Printing two months produces a sheet for each month and honors the requested theme. | — | S36-32 |
 | CAL-42 |  | Itinerary printing includes events grouped by day. | — | S36-33 |
 | CAL-57 |  | The calendar uses the shared resize bar (UI-16). Its height is measured in event lines (one line = one event's line height, with its padding and margins, defined in the theme), not in pixels. The stretch control changes it by whole lines and the choice is saved. Collapse gives the fewest lines the view needs; Expand gives the most lines that fit the visible window. There is no fixed pixel minimum or maximum. (Developer, Nov 17) | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
 | CAL-59 |  | The hour height in Week and Day is also measured in event lines per hour, changed by whole lines and saved: at least 1 line per hour, at most 6, default 2, so a line of an event always fits. (Developer, Nov 17) | — | Developer, Nov 17; S65-14, S65-15 |
 | CAL-60 |  | Print orientation is chosen in Print Preview and saved. Until the user chooses, it is automatic: landscape for Month, Week and 5-day sheets, portrait for Day and Itinerary sheets. | — | S65-18..22; gaps_calendar CAL-71 |
-| CAL-78 | proposed | The interactive calendar offers a five-day view showing Monday through Friday. | — | readme_gaps:42 |
 | CAL-67 | proposed | Print All selects the date range from the first event through the last event. | — | readme_gaps:52 |
-| CAL-68 | proposed | Before any print preference is saved, Print Preview starts with the current calendar view. | — | readme_gaps:52, changelog_gaps_1201-1500:16 |
 | CAL-69 | proposed (?) | Each print sheet fits one physical Letter or A4 page without cutting event content. What overflow policy should apply when the selected events cannot fit at a readable size? | — | readme_gaps:53, changelog_gaps_301-600:20 |
 | CAL-70 | proposed | Print Preview offers a five-day mode containing Monday through Friday. | — | readme_gaps:53, changelog_gaps_1201-1500:16 |
-| CAL-71 | proposed | Automatic printing uses landscape for Month, Week and five-day sheets and portrait for Day and Itinerary sheets. | — | readme_gaps:53 |
 | CAL-72 | proposed | Printed event titles wrap to show the complete title. | — | changelog_gaps_301-600:20 |
 | CAL-73 | proposed | Calendar Full page hides the page footer as well as the other sections (CAL-04). | — | changelog_gaps_1-300:36 |
 | CAL-74 | proposed (?) | On a phone, the calendar initially uses List view before the user chooses a view. Should the initial choice follow available window space rather than device type under UI-14? | — | changelog_gaps_1501-1800:18 |
 | CAL-75 | proposed | Today returns the main calendar to the current month. | — | changelog_gaps_2101-2336:35 |
 | CAL-76 | proposed | A day cell reports overflow for the visible events that do not fit; event visibility follows CAP-02 and the Calendar filter. | — | changelog_gaps_301-600:15 |
 | CAL-77 | proposed | Printing one event uses Day view for that print and preserves the remembered general print view (EVT-03, CAL-39). | — | changelog_gaps_301-600:43 |
+
+Retired IDs (merged; numbers are never reused): CAL-78 (five-day view) into CAL-33; CAL-71 into CAL-60; CAL-68 into CAL-39.
 
 ## Notes from the draft
 

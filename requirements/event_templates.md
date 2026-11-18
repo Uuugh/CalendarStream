@@ -5,7 +5,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | ID | status | statement | test | was |
 |---|---|---|---|---|
 | TPL-01 | proposed | A template stores a title, a duration, a color and a location (and notes). A saved template keeps its duration, color and location exactly (45 minutes, gray, "Desk"). | — | S26-14, S26-15 |
-| TPL-02 | proposed | A duration is accepted as `1:30`, `2`, `1.5`, `90m` or `1h15` (90, 120, 90, 90, 75 minutes); a duration that is not a time (`x`) is refused (400). | — | S26-16, S26-17 |
+| TPL-02 | proposed | A duration is accepted as `1:30`, `2`, `1.5`, `90m` or `1h15` (90, 120, 90, 90, 75 minutes); a duration that is not a time (`x`) is not valid (UI-19). | — | S26-16, S26-17 |
 | TPL-03 | proposed | Saving normalizes a template: an invalid ID is ignored, runs of spaces in the title collapse, a duration under five minutes is raised to five. | — | S77-17 |
 | TPL-04 | proposed | Event Templates is a section listing the templates with their count and a way to add one (UI-05). | — | S44-32, S46-26, S38-01 |
 | TPL-05 | proposed | Choosing a template in the new-event editor fills the title, location and end time. | — | S57-25, S26-29 |

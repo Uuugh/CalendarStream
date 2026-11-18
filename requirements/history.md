@@ -9,33 +9,22 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-03 | proposed | When a Google change is saved locally, History records that outcome; when a newer local change wins, it records that the local change was kept. | — | S45-08, S45-17 |
 | HIS-04 | proposed | A deletion received from Google is recorded with its Google origin. | — | S45-20 |
 | HIS-05 | proposed | If a former Google client’s calendar cannot be reached for cleanup, History warns that manual deletion is needed. | — | S48-22 |
-| HIS-06 | proposed | Only the newest completed undoable change can be undone; trying to undo an older completed entry is refused. | — | S49-10 |
-| HIS-07 | proposed | Undo restores the state before a rule deletion, and Redo reapplies that same deletion. | — | S49-11, S49-12 |
-| HIS-08 | proposed | History names the type of each change (for example Calendar, Rule, Event, Sync). | — | S49-13 |
+| HIS-06 | proposed | Only the newest completed undoable change can be undone. | — | S49-10 |
+| HIS-07 | proposed | Undo restores the state before any undoable change and Redo reapplies it (HIS-20), in the order HIS-06 sets. This covers rule deletions; feed and event-template changes; an import (the event set before it); a calendar merge (the original calendar and its rule scope, with the merged events removed from the target); CCS+ removal (the source and its saved credentials); and Hide (the event's visible state, EVT-20). | — | S49-11, S49-12, S49-25, S49-30, S49-34, S57-15, changelog_gaps_601-900:32, changelog_gaps_601-900:32 |
+| HIS-08 | proposed | History names the type of each change: Calendar, Rule, Event, Sync, Feed, Google, Settings or Update. | — | S49-13, changelog_gaps_601-900:31 |
 | HIS-09 | proposed | A deleted event kept for Undo is permanently removed when its deletion leaves the retained history. | — | S49-16 |
 | HIS-10 | proposed | An external removal or Google notification without an undoable local change does not become the current Undo entry. | — | S49-18, S49-41 |
-| HIS-11 | proposed | Undoing an import restores the event set that existed before the import. | — | S49-25 |
-| HIS-12 | proposed | Undoing a calendar merge restores its original calendar and rule scope and removes the merged events from the target. | — | S49-30 |
-| HIS-13 | proposed | Undoing CCS+ removal restores the source and its saved credentials. | — | S49-34 |
-| HIS-14 | proposed | The container log can be retrieved as plain text. | — | S49-54 |
-| HIS-15 | proposed | A Google color-update failure records the failed operation, upstream status and reasons so the refusal can be diagnosed. | — | S55-12, S56-20 |
-| HIS-16 | proposed | Account recovery guidance in History tells the user to obtain the recovery link from the container log within 24 hours (ACC-21). Recovery-link validity belongs to account requirements. | — | S55-28 |
-| HIS-17 | proposed | When a working Google color-update fallback is selected, History identifies the retained method; later successful updates use shorter color wording without repeating the method-selection notice. | — | S56-03, S56-05, S56-08, S56-11, S56-15 |
-| HIS-18 | proposed | Undoing Hide restores the event’s visible state. Event Hide/Show behavior itself belongs to EVT-20. | — | S57-15 |
-| HIS-19 | proposed (?) | History retains 100 changes by default, and saving a retention choice of 37 updates the effective retention and displayed value. The input offers bounds of 1 through 200; are these bounds enforced on every save path? | — | S58-19, S58-20 |
+| HIS-15 | proposed | A Google color-update failure records the failed operation, the upstream status and its reasons so the refusal can be diagnosed (GGL-70). | — | S55-12, S56-20 |
+| HIS-19 | proposed (?) | History keeps the number of changes set in Settings, 100 by default (DEF-01); saving a different number updates the effective retention and the displayed value. The input offers the limits in DEF-01; are they enforced on every save? | — | S58-19, S58-20 |
 | HIS-20 | proposed | An undoable change records what is needed to restore it, before and after. | — | S77-32, S77-33 |
-| HIS-21 | proposed | An unsigned Google module produces one not-signed-in/unsynced warning rather than repeating it on subsequent sync attempts. Resetting the remembered warning permits a new warning. | — | S68-03, S68-04, S68-05 |
-| HIS-22 | proposed | Google setup messages distinguish API Sync being configured from modules being signed in, and identify the signed-out module. | — | S68-07, S68-08 |
+| HIS-21 | proposed | An unsigned Google module produces one not-signed-in or unsynced warning (HIS-33); resetting the remembered warning permits a new one. | — | S68-03, S68-04, S68-05 |
 | HIS-23 | proposed | The user can choose the order in which History columns are shown; shared input controls remain separate from the History data rules (UI-17). | — | readme_gaps:71, changelog_gaps_1-300:27 |
-| HIS-24 | proposed | History can be filtered by change type. | — | readme_gaps:71, changelog_gaps_601-900:31 |
-| HIS-25 | proposed | History can be filtered by words in its entries. | — | readme_gaps:71, changelog_gaps_601-900:31 |
-| HIS-26 | proposed | History can be filtered by the time of its entries. | — | readme_gaps:71, changelog_gaps_601-900:31 |
-| HIS-27 | proposed | A synchronization that changes events records the number of events added in its activity summary. | — | changelog_gaps_2101-2336:19 |
-| HIS-28 | proposed | A synchronization that changes events records the number of events updated in its activity summary. | — | changelog_gaps_2101-2336:19 |
-| HIS-29 | proposed | History identifies Feed, Google, Settings and Update changes as distinct change types, alongside Calendar, Rule, Event and Sync (HIS-08). | — | changelog_gaps_601-900:31 |
-| HIS-30 | proposed | Undo and Redo restore and reapply changes made to feeds, following the change-order rules in HIS-06 and HIS-07. | — | changelog_gaps_601-900:32 |
-| HIS-31 | proposed | Undo and Redo restore and reapply changes made to event templates, following the change-order rules in HIS-06 and HIS-07. | — | changelog_gaps_601-900:32 |
+| HIS-24 | proposed | History can be filtered by change type, by words in its entries and by the time of its entries. | — | readme_gaps:71, changelog_gaps_601-900:31, readme_gaps:71, changelog_gaps_601-900:31, readme_gaps:71, changelog_gaps_601-900:31 |
+| HIS-27 | proposed | A synchronization that changes events records in its activity summary how many events it added and how many it updated. | — | changelog_gaps_2101-2336:19, changelog_gaps_2101-2336:19 |
 | HIS-32 | proposed | When removal of a CCS+ calendar leaves retained Undo history, its retained sign-in credentials are forgotten; protection while retained follows ACC-11. | — | changelog_gaps_601-900:33 |
+| HIS-33 | proposed | A failure or warning that repeats unchanged is recorded in History once, until it changes or clears. | — | GGL-36, GGL-43, GGL-68, HIS-21 |
+
+Retired IDs (merged or dropped; numbers are never reused): HIS-29 into HIS-08; HIS-25 and HIS-26 into HIS-24; HIS-28 into HIS-27; HIS-11, HIS-12, HIS-13, HIS-18, HIS-30 and HIS-31 into HIS-07; HIS-14 into DIA-05; HIS-16 into ACC-21; HIS-17 (how a color is sent is implementation); HIS-22 into GGL-91.
 
 ## Notes from the draft
 

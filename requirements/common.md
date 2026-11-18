@@ -20,6 +20,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-17 |  | UI components are kept separate from the features that use them: a component's look comes only from the theme, and a feature supplies only its content and what the component does there. So changing the theme restyles every feature at once, and a new feature reuses the components as they are (Developer, Nov 17). | — | Developer, Nov 17 |
 | UI-18 | proposed | One shared strength bar appears directly beneath any field where the user enters a secret (a password, a feed token), showing how strong the entry is as they type. It measures randomness (bits), not length alone, and never refuses an entry. Beside it, a hint recommends what to do (for example, the recommended minimum, or to use the generated value). The field's feature supplies the recommendation (Developer, Nov 18). | — | Developer, Nov 18 |
 | UI-19 | proposed | An entry that is not valid is marked at its own field with a note saying what is wrong, and it does not affect the other fields' valid values. A feature row says which entries are valid, and refers here for how the problem is shown (Developer's no-duplication rule, Nov 18). | — | SET-12, SET-15, SET-35 |
+| UI-20 | proposed | A color that is not in the shared palette (from an older rule, an import, or a destination that supports fewer colors) is represented by the nearest palette color wherever it is shown or sent (UI-10). | — | RUL-58, GGL-27, GGL-60 |
 
 ## Proposed (not yet reviewed)
 
@@ -83,6 +84,8 @@ CalendarStream), **rule** (made by a rule).
 | Login failures per address | 5 (15-minute lock) | | default only |
 | Login failures in total | 25 within 15 minutes | | default only |
 | Trusted address period | 7 days | | default only |
+| Page sign-in session | 30 days | | default only |
+| Page refresh after an update restarts | 15 seconds | | default only |
 | Unlock link valid | 24 hours | | default only |
 | Long-press time | 0.5 seconds | 0.3 to 1.5 seconds | device |
 | Hour height | 2 event lines | 1 to 6 | device |
@@ -91,3 +94,12 @@ CalendarStream), **rule** (made by a rule).
 | Actions per rule | 6 | 6 | default only |
 | Pattern evaluation budget | 0.05 seconds | | default only |
 | Whole-day recognition tolerance | 5 minutes | | default only |
+| Events kept per download | 5,000 | 5,000 | default only |
+| Download size | 5 MB | 5 MB | default only |
+| Redirects followed (CCS+) | 5 | 5 | default only |
+| Recurrence expansion | 1 year back, 2 years ahead | | default only |
+| CCS+ browser-patient attempts | 3 attempts, 90 seconds each | | default only |
+| Rejected CCS+ sign-ins before pause | 2 | | default only |
+| Google consent state valid | 15 minutes | | default only |
+| Google invitation link valid | 7 days | | default only |
+| Google instant-update lifetime requested | 7 days | | default only |

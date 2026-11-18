@@ -18,7 +18,7 @@
 | SET-59 |  | Settings > Site Admin has a Default time zone item, like Domains. It is stored in the database, and the database value overrides the installation's TZ setting (DEP-27). (Developer, Nov 17) | — | Developer, Nov 17 |
 | SET-60 |  | Settings > Site Admin has Backup and Restore. A backup contains both the calendar data and the database, including the saved passwords and Google sign-in (still encrypted, so the same database password is needed to read them after a restore). Backup downloads as a file to the device in use; Restore takes that file and, because it replaces everything, asks first (UI-06). (Developer, Nov 17) | — | Developer, Nov 17; README Data and backups |
 | SET-08 | proposed | A public address given at installation is saved once. After that the saved address is the only one used (DEP-28), so clearing it leaves it cleared. | — | S15-01, S15-09, S25-12 |
-| SET-09 | proposed | Until a public address is set, setup reports Not set yet and points to Public address settings, the subscription page warns that the address is missing and, before the first destination is configured, setup suggests an address taken from the request. Once an address is set, none of these appear. | — | S15-02, S15-10, S26-31, S26-34 |
+| SET-09 | proposed | Until a public address is set, setup reports Not set yet and points to Public address settings, the subscription page warns that the address is missing and, before the first destination is configured, setup suggests an address taken from the request. Once an address is set, none of these appear; a setup field can be filled from the address used to open the page. | — | S15-02, S15-10, S26-31, S26-34 |
 | SET-10 | proposed | A bare public host becomes an HTTPS address, with lowercase scheme/host, no trailing slash and no default port; a supplied path is preserved. | — | S15-03, S23-05, S23-06, S23-13 |
 | SET-11 | proposed | The saved public address is the one used in feed links; Google's callback address follows GGL-45. | — | S15-04, S15-05 |
 | SET-12 | proposed | An address that uses FTP, has a query or embedded credentials, or is not a URL is not a valid public address (UI-19). | — | S15-06 |
@@ -35,11 +35,11 @@
 | SET-26 | proposed | Update now is offered only when an update is available, the updater service is ready and the installation is not pinned to an exact image version; otherwise the page shows installer guidance. Automatic updating, which the user can turn on or off, follows the same conditions, and a pending update is requested once. | — | S32-01, S32-02, S32-03, S32-08, S32-13, S37-25, S37-26, S38-08, S38-10, S38-11, S38-12, S42-01, S42-02, S47-01 |
 | SET-27 | proposed | Update now requests the offered app image through the configured updater using its authorization token; it does not request unrelated images. | — | S32-04 |
 | SET-28 | proposed | Starting an update records an activity message naming its target version. | — | S32-05 |
-| SET-29 | proposed | Updater token rejection reports update failure and its reason. | — | S32-07, S32-11, S47-05 |
+| SET-29 | proposed | An update that cannot reach the updater, or whose token the updater rejects, reports Update failed and the cause. | — | S32-07, S32-11, S47-05, changelog_gaps_1201-1500:35 |
 | SET-31 | proposed | A running update reports Downloading; once the running version changes, the page identifies the new release and removes the obsolete update offer. | — | S32-09, S32-10, S42-04, S42-05, S42-06, S47-02, S47-03, S47-04 |
 | SET-35 | proposed | Each extra public address is validated on its own; blank extras are left out and an invalid extra is not valid (UI-19). | — | S51-14, S51-15 |
 | SET-36 | proposed | A running update is remembered for the time in DEF-01, and only for the version it started from; after that, or once the running version has changed, it is no longer shown as running. | — | S59-01, S59-02, S59-03, S59-04 |
-| SET-37 | proposed | While an update is applying, every open client shows its progress, Downloading and then Restarting, and reconnects when the app is back (UI-13). | — | S59-24, S59-25, S59-26, S59-27 |
+| SET-37 | proposed | While an update is applying, every open client shows its progress, Downloading and then Restarting, including a client that did not start it; each reconnects when the app is back, refreshes after the time in DEF-01, and shows the new release with its Settings context kept (UI-13). | — | S59-24, S59-25, S59-26, S59-27, readme_gaps:77, changelog_gaps_301-600:41, changelog_gaps_901-1200:23 |
 | SET-38 | proposed | Domains can be saved independently of Login settings. | — | S64-12, S64-13 |
 | SET-39 | proposed | A custom PNG logo can be uploaded and shown; without one the default logo is used. An image that is not a valid PNG logo, or that can carry script, is not accepted. | — | S64-15, S64-16, S64-17, S64-18 |
 | SET-40 | proposed | Animation intensity and animation duration are Theme settings; their defaults and ranges are in DEF-01, and Reset restores the defaults. | — | S64-19, S64-21 |
@@ -47,16 +47,9 @@
 | SET-42 | proposed | Module grips are on the left by default; the user may move them to the right. | — | S65-26, S65-27, S65-29 |
 | SET-43 | proposed | Removing or clearing public-address rows leaves one main address field, with its value cleared when removed; removing the extra row leaves the main address row. | — | S67-18, S67-20, S67-22 |
 | SET-45 | proposed | Effective public addresses are deduplicated, with the main address first and valid extras afterward. | — | S77-18 |
-| SET-46 | proposed | Reopening Updates shows the current saved auto-update preference, including a change made on another client. A change that fails to save leaves the previous value in effect. | — | S81-09, S81-10 |
-| SET-49 | proposed | Every open page refreshes fifteen seconds after an app update enters Restarting. | — | readme_gaps:77 |
-| SET-50 | proposed | Reopening Updates shows the current saved update-check frequency, including changes made by another client. | — | changelog_gaps_1-300:15 |
-| SET-51 | proposed | A refused update-check frequency change leaves the prior saved frequency in effect and shows that effective value. | — | changelog_gaps_1-300:18 |
-| SET-52 | proposed | An update that cannot reach the updater reports Update failed and the cause. | — | changelog_gaps_1201-1500:35 |
-| SET-53 | proposed | Repeated update checks announce an available version in History once for that version. | — | changelog_gaps_1501-1800:34 |
-| SET-54 | proposed | Public-address settings can fill the address from the request used to open the page. | — | changelog_gaps_1801-2100:33 |
-| SET-55 | proposed | Every open page shows an app update in progress, including an update started from another page. | — | changelog_gaps_301-600:41 |
-| SET-56 | proposed | Automatic update checks run when the selected checking interval becomes due. | — | changelog_gaps_301-600:41 |
-| SET-57 | proposed | After an update completes, the page uses the new release assets and preserves the open Settings context. | — | changelog_gaps_901-1200:23 |
+| SET-46 | proposed | Reopening Updates shows the current saved update-check frequency and auto-update preference, including a change made on another client. A change that fails to save leaves the previous value in effect and shows it. | — | S81-09, S81-10, changelog_gaps_1-300:15, changelog_gaps_1-300:18 |
+
+Also retired (merged): SET-49, SET-55 and SET-57 into SET-37; SET-50 and SET-51 into SET-46; SET-52 into SET-29; SET-53 into SET-25; SET-54 into SET-09; SET-56 into SET-17.
 
 Retired IDs (merged; numbers are never reused): SET-16 into SET-09; SET-22 into SET-17; SET-24 and SET-34 into SET-20; SET-30 and SET-32 into SET-26; SET-33 (persistence is SET-06 and UI-13); SET-44 into SET-04.
 
