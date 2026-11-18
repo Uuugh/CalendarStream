@@ -33,6 +33,8 @@ field, 12 px dialog/menu padding, 9 px module side padding, 5 px module vertical
 Component files own their base, states, responsive and print rules. `17-spacing.css` contains shared flow rules;
 it is not a final override layer. See AGENTS.md for the CSS ownership map.
 
+UI components are separate from features (Developer, Nov 17): everything about how a component looks is decided here, in the theme, and nowhere in a feature, so changing this file restyles every feature at once (requirement UI-17).
+
 ## 1. Fonts
 
 Picture 2·1. IBM Plex Sans (`--font`) for everything; IBM Plex Mono (`--mono`) only for what's typed or copied
