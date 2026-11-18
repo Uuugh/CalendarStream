@@ -82,8 +82,3 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 
 
-## Q-P5: weekends in Print
-
-- **Q-P5** (CAL-39, CAL-40, CAL-41) Print Preview today has a separate "weekends" choice. With 5-day as its own view, the same result comes from printing the 5-day view instead of Week. Should the
-  separate weekends choice go away (Month and Week always show seven days, and 5-day is the way to leave weekends out)? Claude recommends yes, one fewer option and no exception.
-  Answer:

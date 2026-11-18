@@ -20,9 +20,8 @@ database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 | CAL-30 |  | The calendar displays its source calendars’ events. | — | S26-12 |
 | CAL-33 |  | Month, Week, 5-day (Monday through Friday), Day and List can be selected; the choice is saved and indicated as selected. Week, 5-day and Day provide an hourly view. (Developer, Nov 17: 5-day is a calendar view) | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
 | CAL-34 |  | Week view shows its date range and navigates backward and forward by one week. | — | S26-61 |
-| CAL-39 |  | Saving print preferences remembers the selected view, weekend choice, theme and automatic orientation. | — | S36-30 |
-| CAL-40 |  | 5-day is a calendar view showing Monday through Friday. Printing it prints those five days in the saved print theme; printing Week prints seven. (Developer, Nov 17) | — | S36-31, S36-34 |
-| CAL-41 | proposed | Printing two months produces a sheet for each month and honors the requested weekend and theme choices. | — | S36-32 |
+| CAL-39 |  | Saving print preferences remembers the selected view, theme and automatic orientation. | — | S36-30 |
+| CAL-41 | proposed | Printing two months produces a sheet for each month and honors the requested theme. | — | S36-32 |
 | CAL-42 | proposed | Itinerary printing includes events grouped by day. | — | S36-33 |
 | CAL-43 | proposed | Print Preview opens with the remembered print view; choosing Month updates its preview to Month. | — | S36-52, S36-53 |
 | CAL-45 | proposed | Changing a source's color updates it wherever it is shown, including the destination source choices (see FLT-05). | — | S38-16 |

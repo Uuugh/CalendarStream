@@ -320,3 +320,4 @@ tooling stays for the Python page only).
 - Q-M1 answered Nov 17 (Developer, typed): (b) the page password is not migrated; the user requests a new login password after migration (DEP-14). The rest of the typed line ("Express a get well") was unclear and ignored.
 - Q-M2 answered Nov 17 (Developer): option 1: test the migration tool in three steps: demo database, then a copy of the real database, then the real one (DEP-14).
 - Nov 17 (Developer): 5-day (Monday through Friday) is a calendar view (CAL-33, CAL-40); CAL-34 and CAL-39 agreed. Open: Q-P5 (does the separate weekends choice in Print go away).
+- CAL-40 removed Nov 17 (Developer): with 5-day as a view and Print printing the view (CAL-66), it is covered; the separate weekends choice in Print goes away (Q-P5 answered); CAL-39 and CAL-41 lose the weekend wording.
