@@ -284,3 +284,7 @@ tooling stays for the Python page only).
 - Q-F6 answered Nov 17 (Developer): Search covers events, rules, calendars, feeds, event templates and History; results grouped by
   feature, calendar events first; first six per feature by default, "more" in steps of that size; the number is a Settings item next to
   Time Zones (SET-48, SRH-08). Claude's reading of "increment": the number shown first and the step of "more" are the same number.
+- Consolidated Nov 17 (Developer asked why decisions sat in a different file): every feature now has ONE file, requirements/<feature>.md,
+  with proposed (unreviewed) and planned/built/verified rows together; the per-feature drafts are merged into it and removed. The drafts/
+  folder keeps only the README and CHANGELOG gap scans and Task E's gaps_<feature>.md. Earlier notes that name requirements/drafts/<feature>.md
+  mean requirements/<feature>.md now.

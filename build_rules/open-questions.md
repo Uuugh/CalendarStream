@@ -106,3 +106,8 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Q-F: top-bar Search and the Calendar filter (Developer, Nov 17: search moves to the top bar, left of language, and searches all features; key and visibility become one "Calendar filter" dropdown, a filter icon that works like the language dropdown, multi-select with Ctrl, Shift or Select all)
 
+- **Q-F6** Search, in plain words: you type some words in the top bar, and Search looks for them in the names, titles and text of
+  your events, rules, calendars, feeds, event templates and History. Each result says which of those it is, and clicking it takes you
+  there. (My earlier version, with each feature declaring what it can be searched by, was more complicated than this.) Is that what
+  you want, or should it search fewer things (for example only events for now)?
+  Answer:

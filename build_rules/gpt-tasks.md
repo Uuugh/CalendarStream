@@ -13,7 +13,7 @@ blocked.
 Features, in this order: calendar, sources, feeds, history, google, settings, account, shell. (Claude has done rules and
 event_templates and is doing events; do not touch those.)
 
-For each feature, create ONE file `requirements/drafts/<feature>.md`:
+For each feature, create ONE file `requirements/<feature>.md`:
 1. Collect the rows of `requirements/inventory/suite_*.md` whose candidate feature includes the feature.
 2. Group them into requirements. A requirement is one checkable rule of the feature's behavior, in the plain words of the
    app's user (not of the Python code). Merge duplicates and overlaps; keep each statement testable.
@@ -33,7 +33,7 @@ Done: (none yet)
 
 A feature's requirement says what the feature does for the user ("Clicking a day opens the new-event dialog for that
 date"). How dialogs, menus, sections, confirmations, info dots, pickers and phone layouts behave is shared UI and is
-written ONCE in `requirements/drafts/common.md` (IDs `UI-NN`). A feature's requirement references it ("follows UI-02")
+written ONCE in `requirements/common.md` (IDs `UI-NN`). A feature's requirement references it ("follows UI-02")
 and never repeats it. If a row you are drafting is shared UI, add or reuse a `UI-NN` row instead (add it in your PR to
 that file only if it is not there yet; otherwise reference the existing one). If the same behavior appears in two
 features, write it once, in the owning feature or in common.md, and reference it from the other. (Developer, Nov 17.)
@@ -64,7 +64,7 @@ revision you read. Only new files; stop when the whole file is covered, then rep
 
 "Exceptions in general are very bad. Fix the requirement instead of adding an exception whenever you can." A requirement that says
 "except", "unless", "never for X", "only for Y" usually means a general rule is missing. Before writing one, look for the general
-rule (requirements/drafts/common.md: TIM time rules, UI interaction rules, CAP what an origin allows) and reference or extend it.
+rule (requirements/common.md: TIM time rules, UI interaction rules, CAP what an origin allows) and reference or extend it.
 If no general rule fits, write one in common.md and reference it; list it in your PR description.
 
 ## Task E: gap triage into proposed requirements (starts after Task D; one PR per feature)
@@ -79,7 +79,7 @@ For every gap row owned by the feature, give it ONE outcome:
 2. **Superseded**: a Developer decision replaced it (build_rules/layer-map.md: the time model TIM, Capabilities CAP, UI-NN, the filter and search
    split, default rules RUL-29, global Time Zones SET-47, ACC-16/17 numbers, "no exceptions"). Name the decision.
 3. **New**: write a proposed requirement `| ID | proposed | statement | gap row |`. ID continues the feature's prefix after the highest number
-   in `requirements/drafts/<feature>.md` (and the approved file). Rules for the statement: behavior only (no UI mechanics: those are UI-NN in
+   in `requirements/<feature>.md` (and the approved file). Rules for the statement: behavior only (no UI mechanics: those are UI-NN in
    common.md), no exception wording (extend or reference a common rule instead), no fixture wording, one checkable rule, `(?)` only for a
    real open question. If it restates another feature's rule, reference it instead.
 4. **Not a requirement** (process, refactor, release note): say why in a few words.

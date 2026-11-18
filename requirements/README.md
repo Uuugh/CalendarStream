@@ -30,9 +30,12 @@ SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell
 Nothing new is added while the transition freeze lasts (build_rules/0-overview.md); these files hold what was already
 asked for.
 
-## Drafts and approval (Nov 17)
+## One file per feature (Nov 17)
 
-`requirements/drafts/` holds requirements that are only **proposed** (drafted by Claude or ChatGPT from the inventory, README and
-CHANGELOG, not yet reviewed). When the Developer decides or approves a row it moves out of `drafts/` into `requirements/<feature>.md`
-with status `planned` (approved, not built yet), keeping its ID and noting the date. A feature's approved requirements are therefore in
-`requirements/<feature>.md`, and its still-unreviewed ones in `requirements/drafts/<feature>.md`.
+Each feature has ONE file here, `requirements/<feature>.md`, with every requirement of that feature in the same table. The status says
+where it stands: `proposed` (drafted from the inventory, README or CHANGELOG, not yet reviewed by the Developer), `planned` (approved,
+not built yet), `built`, `verified`, `open`. Reviewing a feature means changing `proposed` rows to `planned` (or editing or deleting
+them) in that one file. Shared rules (time TIM, shared interface UI, capabilities CAP) are in `common.md`; features reference them.
+
+`requirements/drafts/` now only holds the scans of the README and CHANGELOG (`readme_gaps.md`, `changelog_gaps_*.md`) and ChatGPT's
+Task E output (`gaps_<feature>.md`), which are inputs for Claude; they are not requirements.
