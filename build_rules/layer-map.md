@@ -249,3 +249,6 @@ tooling stays for the Python page only).
   time zone; it judges days and times in the event's own zone (RUL-07). Open: Q-T5/Q-T7, Q-T8, Q-T9.
 - Q-T5/Q-T7 answered Nov 17 (Developer): all-day (24-hour) events follow the Local zone like timed events and can span two days when
   viewed from another zone (CAL-65). Open: Q-T8, Q-T9, Q-T10 (how Google and feeds receive them).
+- Time model (Developer, Nov 17): one set of shared rules, requirements/drafts/time.md (TIM-01..08): UTC plus the recorded zone per event;
+  Local zone from Settings > Time Zones; rules not zone-based (the event's zone decides); Google gets the zone (all-day events go as
+  24-hour timed events); feeds carry the zone. Q-T10 answered by this. Open: Q-T8 (per device or account), Q-T9 (zone for zoneless imports).

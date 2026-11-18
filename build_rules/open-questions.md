@@ -109,9 +109,3 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   have no device to ask. Which zone should such an event get as its own: the Fixed zone if set, otherwise the zone the first
   sign-in used (kept on the server as the account's default)? Claude recommends that.
   Answer:
-- **Q-T10** Publishing (Google, feeds): an all-day event is a 24-hour span in its own zone and the calendar shows it spanning two days
-  from another zone. Google and feed readers have a separate all-day type that carries only dates. Publish such events (a) as
-  all-day with the event's own local dates (so Google shows one day, unlike this app from another zone), or (b) as ordinary timed
-  24-hour events (consistent with the app, but Google no longer treats them as all-day)? Claude recommends (a), keeping Google's
-  all-day behavior, and noting the difference.
-  Answer:
