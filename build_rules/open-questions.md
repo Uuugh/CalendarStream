@@ -99,9 +99,7 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 ## Q-T: time storage (Developer, Nov 17: all times are stored in UTC; an event's time zone is for entry and display)
 
 
-- **Q-T9** Imported events that carry no zone (times ending in Z, or floating local times) and the server's scheduled downloads
-  have no device to ask. Which zone should such an event get as its own: the Fixed zone if set, otherwise the zone the first
-  sign-in used (kept on the server as the account's default)? Claude recommends that.
+- **Q-T9** An imported event that carries no zone (times ending in Z, or floating local times), and the server's scheduled downloads, have no device to ask, and the Time Zones setting now lives on the device. Which zone should such an event get as its own? Claude recommends the server's existing `TZ` setting (README: default America/Chicago), so there is no new setting; a device can still change how it is shown.
   Answer:
 
 ## Q-F: top-bar Search and the Calendar filter (Developer, Nov 17: search moves to the top bar, left of language, and searches all features; key and visibility become one "Calendar filter" dropdown, a filter icon that works like the language dropdown, multi-select with Ctrl, Shift or Select all)
@@ -124,10 +122,4 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   new window until you stretch it by hand?
   Answer:
 
-## Q-V: what is local to a device and what is global
 
-- **Q-V1** (two meanings of "global": a setting that applies to every feature, like the time zone, time format and language that Print follows, versus a setting stored once in the database for all devices.) You said the 12/24 clock format is local to the device, while the Time Zones choice (SET-47) is global in the database. Which of the other
-  settings are local to the device and which global? Claude's reading: **local to the device** = language, clock format, theme (light/dark), the calendar's temporary zone
-  and the filter (what you look at); **global (in the database)** = Time Zones, search results per feature (SET-48), public address, updates, rules, calendars,
-  feeds, Google (what the app does). The CHANGELOG says the theme was made global so every browser matches (beta 0.0.8); do you want it local now?
-  Answer:
