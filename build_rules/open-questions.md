@@ -99,8 +99,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 ## Q-T: time storage (Developer, Nov 17: all times are stored in UTC; an event's time zone is for entry and display)
 
 
-- **Q-T9** An imported event that carries no zone (times ending in Z, or floating local times), and the server's scheduled downloads, have no device to ask, and the Time Zones setting now lives on the device. Which zone should such an event get as its own? Claude recommends the server's existing `TZ` setting (README: default America/Chicago), so there is no new setting; a device can still change how it is shown.
-  Answer:
 
 ## Q-F: top-bar Search and the Calendar filter (Developer, Nov 17: search moves to the top bar, left of language, and searches all features; key and visibility become one "Calendar filter" dropdown, a filter icon that works like the language dropdown, multi-select with Ctrl, Shift or Select all)
 
@@ -123,3 +121,10 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 
 
+
+## Q-D: the installation's default time zone
+
+- **Q-D2** The zone chosen at installation (the server's `TZ`) is the default for events with no zone and for work without a device. "Until the user defines otherwise": how does the user
+  change it? (a) A Settings item, "Default time zone", stored on the server (so it is the one global time setting, because the server has no device); or (b) only by editing
+  `TZ` in `.env` and restarting. Claude recommends (a).
+  Answer:

@@ -309,3 +309,4 @@ tooling stays for the Python page only).
 - Q-C3 answered Nov 17 (Developer): Print prints the view: time zone, 12/24 format, language (and the filter) as seen (CAL-66).
 - Nov 17 (Developer): the Time Zones setting stays on the device for now, consistent with the other view settings (clock format, theme, language); Q-V1 closed. Q-T9 now asks for the server's default zone (recommended: the existing TZ setting).
 - CAL-23 removed Nov 17: with 12/24 a device-local toggle, an unknown format cannot be chosen. TIM-09 reworded to the same logic for zones.
+- Q-T9 answered Nov 17 (Developer): the time zone defined when the software is installed is the default zone until the user defines otherwise (TIM-08). Open: Q-D2 (how the user changes it).
