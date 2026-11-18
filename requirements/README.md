@@ -35,8 +35,7 @@ where it stands: `proposed` (drafted from the inventory, README or CHANGELOG, no
 not built yet), `built`, `verified`, `open`. Reviewing a feature means changing `proposed` rows to `planned` (or editing or deleting
 them) in that one file. Shared rules (time TIM, shared interface UI, capabilities CAP) are in `common.md`; features reference them.
 
-`requirements/drafts/` now only holds the scans of the README and CHANGELOG (`readme_gaps.md`, `changelog_gaps_*.md`) and ChatGPT's
-Task E output (`gaps_<feature>.md`), which are inputs for Claude; they are not requirements.
+The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were folded into these files as `proposed` rows on Nov 18 and the `requirements/drafts/` folder was deleted; the history is in git (commit before the deletion).
 
 ## Index (feature files, click to open)
 

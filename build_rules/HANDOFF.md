@@ -17,16 +17,15 @@ Read this first in a new conversation. Then `build_rules/layer-map.md` (the plan
 ## Where things are
 
 - Plan, steps, decisions: `build_rules/layer-map.md` (steps 1 to 7). Processes: `build_rules/0-overview.md` to `5-deploy.md`.
-- Requirements: `requirements/<feature>.md` (17 files; index in `requirements/README.md`). Inputs only (not requirements): `requirements/drafts/`. The inventory of the Python suites (evidence keys Sxx-NN): `requirements/inventory/`.
+- Requirements: `requirements/<feature>.md` (17 files; index in `requirements/README.md`). The inventory of the Python suites (evidence keys Sxx-NN): `requirements/inventory/`.
 - Issues: GitHub issues (label `issue`, `feature:<name>`, titles "I22: ..."). The Dashboard is rebuilt after the port (DIA-02 to DIA-04).
-- ChatGPT's queue and rules: `build_rules/gpt-tasks.md` (Task E: `gaps_<feature>.md` in `requirements/drafts/`; branch `chatgpt/drafts-gaps-<feature>`).
+- ChatGPT's queue and rules: `build_rules/gpt-tasks.md` (Task E, done; its `gaps_<feature>.md` files were folded in and deleted; branch `chatgpt/drafts-gaps-<feature>`).
 - Dart code: `packages/domain` (Event, rule schema, text matching, regex legality). SDK: `C:\Users\rfrie\Development\sdks\flutter\bin\dart`. Parked test overhaul: branch `paused/test-parallel`.
 - Memory notes for Claude: `C:\Users\rfrie\.claude\projects\C--Users-rfrie-Development-Projects-CalendarStream\memory\`.
 
 ## State and next steps
 
 1. ChatGPT finishes Task E (feeds, history, rules, event_templates, diagnostics, documentation, search, calendar_filter). Claude reviews each PR; the Action merges.
-2. Claude folds the `gaps_*.md` proposals into the feature files as `proposed` rows and deletes `requirements/drafts/` (see its README).
 3. The Developer reviews each feature file in order (calendar is done): answer the questions, blank the status of agreed rows. Remaining questions are in `build_rules/open-questions.md`.
 4. Port (step 4) in `packages/domain`: rule conditions (days, times, lengths, dates), validation, actions; then the new Dart database and the Python migration tool (DEP-14); then the server features and client. Steps 5 (retire Python), 6 (analyze parallel testing, input: the parked branch), 7 (the Dashboard as a live page).
 5. Timers are session-only: re-create the check in a new conversation if wanted (it reads the Developer's edits, answers, and ChatGPT's PRs).
@@ -34,6 +33,6 @@ Read this first in a new conversation. Then `build_rules/layer-map.md` (the plan
 ## State when the second conversation ended (Nov 18, about 0020 EST)
 
 - The review check is no longer needed (Task E complete). ChatGPT's limit is 4 open PRs (gpt-tasks.md); it has no task left in Task E.
-- Task E is COMPLETE (16 of 16 merged, Nov 18, 0020 EST). No review check is needed any more. Next: fold the `gaps_*.md` files into the feature files as `proposed` rows, then delete `requirements/drafts/` (its README says how).
+- Task E is COMPLETE (16 of 16 merged, Nov 18, 0020 EST). No review check is needed any more. Folded into the feature files and `requirements/drafts/` deleted (Nov 18). Next: the duplication review across all feature files, then the Developer reviews each feature file.
 - Done this conversation: FED-08, FED-25, FED-27, FED-30 answered; ACC-04 and ACC-26 (nothing refused for strength; strength bar and hint only); new common rows UI-18 (strength bar with recommendation hint) and UI-19 (invalid entry identified at its field); settings.md deduplicated (retired IDs listed in it); SET-41 is the logo only.
 - To do when folding the gap files into the feature files: drop FED-41 (duplicates FED-08 and FED-27); merge RUL-47 into DEP-14, RUL-52 into RUL-51; add to DEF-01 twelve conditions, six actions, the 0.05-second pattern budget and the five-minute whole-day tolerance; SET-59 repeats DEP-27 and SET-48 repeats SET-06 (agreed rows, ask the Developer before trimming). `python` is not installed on this machine; use sed or the editor for edits.
