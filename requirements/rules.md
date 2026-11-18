@@ -47,3 +47,25 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-41 | verified | How rules work is explained from the rule dialog. | — | S33-24, S38-01, S38-03, S38-04, S38-13, S21-23 |
 | RUL-43 | verified | An Emoji action lets the user find and choose any emoji by searching (UI-11). | — | S44-41 |
 | RUL-44 | verified | A typed regex is checked for legality as it is typed or saved; when it is not legal, the site says why and highlights the broken part of the pattern. Regexes use Dart (ECMAScript) syntax; Python-only syntax is not supported. | packages/domain/test/rules/text_matching_test.dart | Developer, Nov 17 |
+| RUL-45 | proposed | The wildcard ? matches exactly one character in a text pattern (RUL-04). | — | readme_gaps:67, changelog_gaps_601-900:37 |
+| RUL-46 | proposed | A rule scoped to All calendars applies to calendars added later as well as current calendars (RUL-24). | — | readme_gaps:69, changelog_gaps_901-1200:34 |
+| RUL-47 | proposed | Migration preserves the priority order and calendar applicability of rules converted from earlier formats (DEP-14, RUL-35). | — | readme_gaps:70, changelog_gaps_1201-1500:21 |
+| RUL-48 | proposed | Editing a rule preserves its calendar applicability until the user changes that applicability (RUL-24). | — | changelog_gaps_1201-1500:19 |
+| RUL-49 | proposed | A calendar lists its own rules before the shared rules that apply to it (RUL-25). | — | changelog_gaps_1201-1500:20 |
+| RUL-50 | proposed | The user can change the order of rules in an individual calendar’s rule list (RUL-26). | — | changelog_gaps_1201-1500:20 |
+| RUL-51 | proposed | An event deleted by a rule follows that rule’s current outcome: changing or removing the deleting action brings the event back (RUL-14, CAP-01). | — | changelog_gaps_301-600:30 |
+| RUL-52 | proposed | Feed publication reflects rule deletion: an event deleted by a rule is left out of the published feed (RUL-14). | — | changelog_gaps_301-600:30 |
+| RUL-53 | proposed | The user can reorder Then actions; the saved action order determines their priority and emoji sequence (RUL-12). | — | changelog_gaps_301-600:32 |
+| RUL-54 | proposed | Dropping a conflicting action removes the selected field-specific action, preserving actions for other fields (RUL-31). | — | changelog_gaps_301-600:35 |
+| RUL-55 | proposed | A newly added Emoji action starts without a chosen emoji; selection follows UI-11. | — | changelog_gaps_301-600:38 |
+| RUL-56 | proposed | A pattern that exceeds its evaluation budget matches no further events during that evaluation run (RUL-22). | — | changelog_gaps_601-900:19 |
+| RUL-57 | proposed | When adding a rule, the user can reuse an existing rule from another calendar when such a rule is available (RUL-24, RUL-36). | — | changelog_gaps_601-900:43 |
+| RUL-58 | proposed | An older rule’s nonpalette color is represented by the nearest supported palette color when opened for editing (UI-10). | — | changelog_gaps_901-1200:27 |
+| RUL-59 | proposed | Conflict reporting identifies a higher rule that shadows a lower rule’s Emoji or Time action (RUL-31). | — | changelog_gaps_901-1200:30 |
+| RUL-60 | proposed | Choosing Keep as is suppresses that same conflict warning on subsequent observations (RUL-31). | — | changelog_gaps_901-1200:30 |
+| RUL-61 | proposed | A source color change updates the source’s color in rule applicability badges (RUL-39, UI-13, UI-15). | — | changelog_gaps_901-1200:35 |
+| RUL-62 | proposed | Saving a rule without a title generates a title from its conditions and actions (RUL-40). | — | changelog_gaps_301-600:18 |
+| RUL-63 | proposed | An Add-event action can place a template-derived event before or after the matching event’s start or after its end (RUL-17). | — | changelog_gaps_1501-1800:25 |
+| RUL-64 | proposed | Changing an event template updates the events generated from it by rules (RUL-17). | — | changelog_gaps_1501-1800:25 |
+| RUL-65 | proposed | Record changes tracks source title, time and location changes, moved recurring occurrences and dropped events (RUL-18). | — | changelog_gaps_1201-1500:31 |
+| RUL-66 | proposed | Record changes annotates the affected event and records the observed source changes in activity (RUL-18, HIS-01). | — | changelog_gaps_1201-1500:31 |

@@ -26,6 +26,16 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-20 | proposed | An undoable change records what is needed to restore it, before and after. | — | S77-32, S77-33 |
 | HIS-21 | proposed | An unsigned Google module produces one not-signed-in/unsynced warning rather than repeating it on subsequent sync attempts. Resetting the remembered warning permits a new warning. | — | S68-03, S68-04, S68-05 |
 | HIS-22 | proposed | Google setup messages distinguish API Sync being configured from modules being signed in, and identify the signed-out module. | — | S68-07, S68-08 |
+| HIS-23 | proposed | The user can choose the order in which History columns are shown; shared input controls remain separate from the History data rules (UI-17). | — | readme_gaps:71, changelog_gaps_1-300:27 |
+| HIS-24 | proposed | History can be filtered by change type. | — | readme_gaps:71, changelog_gaps_601-900:31 |
+| HIS-25 | proposed | History can be filtered by words in its entries. | — | readme_gaps:71, changelog_gaps_601-900:31 |
+| HIS-26 | proposed | History can be filtered by the time of its entries. | — | readme_gaps:71, changelog_gaps_601-900:31 |
+| HIS-27 | proposed | A synchronization that changes events records the number of events added in its activity summary. | — | changelog_gaps_2101-2336:19 |
+| HIS-28 | proposed | A synchronization that changes events records the number of events updated in its activity summary. | — | changelog_gaps_2101-2336:19 |
+| HIS-29 | proposed | History identifies Feed, Google, Settings and Update changes as distinct change types, alongside Calendar, Rule, Event and Sync (HIS-08). | — | changelog_gaps_601-900:31 |
+| HIS-30 | proposed | Undo and Redo restore and reapply changes made to feeds, following the change-order rules in HIS-06 and HIS-07. | — | changelog_gaps_601-900:32 |
+| HIS-31 | proposed | Undo and Redo restore and reapply changes made to event templates, following the change-order rules in HIS-06 and HIS-07. | — | changelog_gaps_601-900:32 |
+| HIS-32 | proposed | When removal of a CCS+ calendar leaves retained Undo history, its retained sign-in credentials are forgotten; protection while retained follows ACC-11. | — | changelog_gaps_601-900:33 |
 
 ## Notes from the draft
 

@@ -87,3 +87,7 @@ CalendarStream), **rule** (made by a rule).
 | Long-press time | 0.5 seconds | 0.3 to 1.5 seconds | device |
 | Hour height | 2 event lines | 1 to 6 | device |
 | Search results per feature | 6 | | device |
+| Conditions per rule | 12 | 12 | default only |
+| Actions per rule | 6 | 6 | default only |
+| Pattern evaluation budget | 0.05 seconds | | default only |
+| Whole-day recognition tolerance | 5 minutes | | default only |

@@ -35,6 +35,23 @@ The event pop-up, linked events, hiding and reverting. Issues against this featu
 | EVT-31 | proposed | A linked event follows its target: moving the target by two hours moves the linked event by two hours; deleting the target removes the linked event and its link. Linking an imported event alone adds no stored edit. Moving shifts start and end together (an all-day event is a 24-hour event, TIM-04, so it needs no special case). | — | S37-05, S37-14, S37-17..19, S62-10 |
 | EVT-32 | proposed | Starting a new event-derived rule closes the event dialog; closing the rule dialog restores it (UI-02). | — | S67-14, S67-17 |
 | EVT-33 | proposed | A meeting link (Zoom and similar) is found in an event's text or location with its query intact; plain text yields none. | — | S63-01, S63-02 |
+| EVT-35 | proposed | An event can have at most five reminders. | — | readme_gaps:44, changelog_gaps_1201-1500:17 |
+| EVT-36 | proposed | Offered reminder times range from the event start through one week before it; valid-choice storage follows EVT-19. | — | readme_gaps:44, changelog_gaps_1201-1500:17 |
+| EVT-37 | proposed | Following an event’s saved link opens its linked target. | — | readme_gaps:45, changelog_gaps_301-600:42, changelog_gaps_901-1200:22 |
+| EVT-38 | proposed | A linked event’s delete-with and move-with actions can each be enabled or removed independently through its link rule (RUL-11). | — | readme_gaps:46, changelog_gaps_301-600:31 |
+| EVT-39 | proposed | Choosing Rule for an event opens its associated rule, or starts a rule for that event when it has none; returning to the event follows EVT-32 and UI-02. | — | readme_gaps:46 |
+| EVT-40 | proposed | Online meeting information is read from dedicated calendar conference fields as well as the text and location sources in EVT-33. | — | readme_gaps:50, changelog_gaps_301-600:21 |
+| EVT-41 | proposed | An event’s online meeting address is exported in its ICS URL property; feed round-trip preservation follows FED-29. | — | readme_gaps:50 |
+| EVT-42 | proposed | Local edits to an imported event survive subsequent source downloads; the source itself is unchanged (EVT-23). | — | readme_gaps:51, changelog_gaps_2101-2336:27 |
+| EVT-43 | proposed | An edited imported event identifies that it has local edits and indicates when its source changes after those edits. | — | readme_gaps:51, changelog_gaps_2101-2336:27 |
+| EVT-44 | proposed | An imported event’s local edits can be reverted to the current source version. | — | changelog_gaps_2101-2336:27 |
+| EVT-45 | proposed | Event time entry accepts 9:30, 9:30pm, 21:30 and 930; displayed notation follows TIM-10. | — | changelog_gaps_1801-2100:17 |
+| EVT-46 | proposed | Changing an event’s end establishes the duration retained by later start changes (EVT-11). | — | changelog_gaps_1801-2100:23 |
+| EVT-47 | proposed | Starting a rule from an unsaved new event uses its currently entered title and date (RUL-36). | — | changelog_gaps_301-600:16 |
+| EVT-48 | proposed | An event’s online meeting address can be opened. | — | changelog_gaps_301-600:21 |
+| EVT-49 | proposed | Automatic meeting-link extraction preserves an online meeting address already entered by the user. | — | changelog_gaps_301-600:21 |
+| EVT-50 | proposed | At startup, existing event links are migrated into editable link rules while preserving their delete-with and move-with behavior (RUL-11, EVT-31). | — | changelog_gaps_301-600:31 |
+| EVT-51 | proposed | The event’s map action opens its location in Google Maps (EVT-15). | — | changelog_gaps_901-1200:16 |
 
 ## Notes from the draft
 

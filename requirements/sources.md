@@ -63,6 +63,39 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | SRC-57 | proposed | A Local calendar can be selected as default; a read-only CCS+ calendar cannot (CAP-05). | — | S63-13, S63-14, S63-15, S66-04 |
 | SRC-58 | proposed | A source can be turned off and back on, with its saved off state cleared when reenabled. | — | S63-20, S63-21, S63-23 |
 | SRC-59 | proposed | A valid saved Local default takes precedence over ordering; if it no longer exists, the first Local calendar is used. With no sources, creation of a Local calendar also makes it the default. | — | S77-13, S77-14, S77-15 |
+| SRC-60 | proposed (?) | The user can add source calendars and outgoing feeds without an application-defined count limit. How does this promise relate to the one-CCS+ constraint SRC-17? | — | readme_gaps:20 |
+| SRC-61 | proposed | Calendar links from Outlook, Microsoft 365 and iCloud can be downloaded as source calendars. | — | readme_gaps:21 |
+| SRC-62 | proposed | A failed source download preserves the previously downloaded schedule. | — | readme_gaps:22, changelog_gaps_2101-2336:37 |
+| SRC-63 | proposed (?) | A source download that unexpectedly returns an empty calendar preserves the previous schedule. How is an unexpected empty response distinguished from an intentionally emptied source? | — | readme_gaps:22, changelog_gaps_2101-2336:37 |
+| SRC-64 | proposed | Download intervals greater than 1,440 minutes are refused; the minimum is specified by SRC-04. | — | readme_gaps:31, changelog_gaps_1801-2100:34 |
+| SRC-65 | proposed | CCS+ downloading offers auto, browser, browser-patient and curl modes, initially auto. | — | readme_gaps:32, changelog_gaps_301-600:39 |
+| SRC-66 | proposed | In auto mode, an unanswered or blocked CCS+ download tries the browser-like connection, retries with twice the wait, then tries curl. | — | readme_gaps:32, changelog_gaps_301-600:39 |
+| SRC-67 | proposed | Browser-patient mode makes up to three CCS+ download attempts with a ninety-second response allowance per attempt. | — | changelog_gaps_301-600:39 |
+| SRC-68 | proposed | The download diagnostic record identifies the connection mode that answered and the modes previously attempted. | — | changelog_gaps_301-600:39 |
+| SRC-69 | proposed | CCS+ import preserves the source event identifiers and details; event times follow TIM-01–TIM-06 and normalization follows RUL-29. | — | readme_gaps:37 |
+| SRC-70 | proposed | When CCS+ full-day times are normalized, the original times remain available in the event notes. | — | readme_gaps:37 |
+| SRC-71 | proposed | Upload & publish for CCS+ replaces the downloaded schedule with the uploaded schedule. | — | readme_gaps:38, changelog_gaps_601-900:36 |
+| SRC-72 | proposed | After two rejected CCS+ sign-ins, automatic checks pause until the user corrects the credentials and requests Sync Now. | — | readme_gaps:39, changelog_gaps_2101-2336:37 |
+| SRC-73 | proposed | The user can change source-calendar and outgoing-feed order, and the new order is saved immediately; shared interaction follows UI-13. | — | readme_gaps:59, changelog_gaps_1201-1500:15 |
+| SRC-74 | proposed | When source events conflict, the earlier source in the saved source order has priority. | — | readme_gaps:60, changelog_gaps_301-600:27 |
+| SRC-75 | proposed | Recurring source events are expanded from one year before the present through two years ahead. | — | readme_gaps:61, changelog_gaps_1501-1800:24 |
+| SRC-76 | proposed | When an imported event conflicts with an existing event, the user can discard the incoming copy. | — | readme_gaps:62, changelog_gaps_601-900:36 |
+| SRC-77 | proposed | An import-conflict choice can be applied to all remaining conflicts in that import. | — | readme_gaps:62, changelog_gaps_601-900:36 |
+| SRC-78 | proposed | When merging a calendar into another, the user can transfer its owned rules to the target or delete those rules. | — | readme_gaps:63, changelog_gaps_601-900:39 |
+| SRC-79 | proposed | Emptying the final Local calendar preserves its feed and rule memberships; SRC-36 owns retaining the calendar itself. | — | readme_gaps:63, changelog_gaps_601-900:39 |
+| SRC-80 | proposed | Upgrade creates its initial Local calendar once and includes that calendar in every existing feed. | — | changelog_gaps_1201-1500:18 |
+| SRC-81 | proposed | CCS+ setup guidance explains enabling trips as one event and the other calendar options, setting a dedicated Calendar Sync password, and completing the Accomplished checklist. | — | changelog_gaps_1201-1500:24 |
+| SRC-82 | proposed | A CCS+ download follows at most five redirects; HTTPS and credential forwarding follow SRC-52 and SRC-54. | — | changelog_gaps_1501-1800:37, changelog_gaps_301-600:40 |
+| SRC-83 | proposed | The source status event count counts the published feed events, with event visibility determined by CAP-02. | — | changelog_gaps_2101-2336:30 |
+| SRC-84 | proposed | Calendar downloads keep sign-in credentials out of process command-line arguments; stored and displayed secret protection follows ACC-11. | — | changelog_gaps_2101-2336:31 |
+| SRC-85 | proposed | Download failure feedback distinguishes failure to connect from a connected server that does not reply. | — | changelog_gaps_2101-2336:33 |
+| SRC-86 | proposed | SCRAPE_INTERVAL_MINUTES is accepted as the legacy fallback for the download interval configuration; saved interval precedence follows SRC-02. | — | changelog_gaps_2101-2336:38 |
+| SRC-87 | proposed | Turning a source off removes its events from published feeds while retaining its selected feed memberships for reenabling. | — | changelog_gaps_301-600:23 |
+| SRC-88 | proposed | A rejected CCS+ password ends the current download attempt sequence immediately, without trying another connection mode. | — | changelog_gaps_301-600:40 |
+| SRC-89 | proposed | When a recurring source occurrence moves, its existing local edits remain attached using its original-start identity. | — | changelog_gaps_601-900:21 |
+| SRC-90 | proposed | A source feed import retains at most the earliest 5,000 events; earliest-first selection follows SRC-48. | — | changelog_gaps_601-900:22 |
+| SRC-91 | proposed | Future source events that disappear from a refreshed schedule remain available for restoration; SRC-42 retains the open retention-duration question. | — | changelog_gaps_601-900:35 |
+| SRC-92 | proposed | Legacy source notes that merely repeat the source kind are treated as absent notes. | — | changelog_gaps_901-1200:24 |
 
 ## Notes from the draft
 

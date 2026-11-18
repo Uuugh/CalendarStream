@@ -48,6 +48,15 @@
 | SET-43 | proposed | Removing or clearing public-address rows leaves one main address field, with its value cleared when removed; removing the extra row leaves the main address row. | — | S67-18, S67-20, S67-22 |
 | SET-45 | proposed | Effective public addresses are deduplicated, with the main address first and valid extras afterward. | — | S77-18 |
 | SET-46 | proposed | Reopening Updates shows the current saved auto-update preference, including a change made on another client. A change that fails to save leaves the previous value in effect. | — | S81-09, S81-10 |
+| SET-49 | proposed | Every open page refreshes fifteen seconds after an app update enters Restarting. | — | readme_gaps:77 |
+| SET-50 | proposed | Reopening Updates shows the current saved update-check frequency, including changes made by another client. | — | changelog_gaps_1-300:15 |
+| SET-51 | proposed | A refused update-check frequency change leaves the prior saved frequency in effect and shows that effective value. | — | changelog_gaps_1-300:18 |
+| SET-52 | proposed | An update that cannot reach the updater reports Update failed and the cause. | — | changelog_gaps_1201-1500:35 |
+| SET-53 | proposed | Repeated update checks announce an available version in History once for that version. | — | changelog_gaps_1501-1800:34 |
+| SET-54 | proposed | Public-address settings can fill the address from the request used to open the page. | — | changelog_gaps_1801-2100:33 |
+| SET-55 | proposed | Every open page shows an app update in progress, including an update started from another page. | — | changelog_gaps_301-600:41 |
+| SET-56 | proposed | Automatic update checks run when the selected checking interval becomes due. | — | changelog_gaps_301-600:41 |
+| SET-57 | proposed | After an update completes, the page uses the new release assets and preserves the open Settings context. | — | changelog_gaps_901-1200:23 |
 
 Retired IDs (merged; numbers are never reused): SET-16 into SET-09; SET-22 into SET-17; SET-24 and SET-34 into SET-20; SET-30 and SET-32 into SET-26; SET-33 (persistence is SET-06 and UI-13); SET-44 into SET-04.
 

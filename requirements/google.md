@@ -89,6 +89,34 @@ Google sign-in and 2-way sync, health and recovery, the Beta: Google Traffic sec
 | GGL-82 | proposed | Successful recovery restores healthy state and clears the retry count. New accounts start healthy and eligible to sync. | — | S73-01, S73-07 |
 | GGL-83 | proposed | A saved health error is shown in full; a line that is too long for its space follows the clipping rule (UI-14, UI-07). | — | S73-13 |
 | GGL-84 | proposed | Once the API client is accepted, a Google destination can be created. | — | S39-16 |
+| GGL-86 | proposed | Expired-token recovery schedules its automatic retry for the next scheduled synchronization, and reports that timing. | — | changelog_gaps_1-300:L19 |
+| GGL-87 | proposed | Clearing Google Traffic removes the calls currently held in the traffic log. | — | changelog_gaps_1-300:L20 |
+| GGL-88 | proposed | Google Traffic is held in memory and starts empty after the app restarts. | — | changelog_gaps_1-300:L20 |
+| GGL-89 | proposed | Each account’s recorded health and retry deadline persist across an app restart. | — | changelog_gaps_1-300:L21 |
+| GGL-90 | proposed | A successful new sign-in resets that account’s health and retry state while preserving its calendar mappings and settings. | — | changelog_gaps_1-300:L21 |
+| GGL-91 | proposed | API setup completion identifies each Google module that needs sign-in, has a sync error or has not completed its first sync. | — | changelog_gaps_1-300:L22 |
+| GGL-92 | proposed | Pending Google consent and invitation sign-in states expire fifteen minutes after creation. | — | changelog_gaps_1-300:L23 |
+| GGL-93 | proposed | Pending invitation consent remains usable across an app restart until it is consumed or expires. | — | changelog_gaps_1-300:L23 |
+| GGL-94 | proposed | Saved PKCE verifiers use protected credential storage as specified by ACC-11. | — | changelog_gaps_1-300:L23 |
+| GGL-95 | proposed | Repeating a Google setup submission does not create duplicate or orphan destinations. | — | changelog_gaps_1-300:L26 |
+| GGL-96 | proposed | Each Google destination publishes events within its selected start and end bounds; an empty bound leaves that end unrestricted. | — | changelog_gaps_1501-1800:L17, readme_gaps:L81 |
+| GGL-97 | proposed | Google setup guidance tells the user to publish the OAuth app or add the signing-in account as a test user before connecting. | — | changelog_gaps_1501-1800:L28 |
+| GGL-98 | proposed | Google troubleshooting guidance covers a deleted client and repeated reconnection caused by an OAuth app left in testing. | — | changelog_gaps_1501-1800:L29 |
+| GGL-99 | proposed | Synchronization resumes after the database becomes available following a restart. | — | changelog_gaps_1501-1800:L35 |
+| GGL-100 | proposed | Concurrent consent completion and synchronization reuse the same remote calendar mapping rather than creating duplicates. | — | changelog_gaps_1501-1800:L35 |
+| GGL-101 | proposed (?) | Eligible local changes and valid remote change notices trigger reconciliation within seconds under normal service availability. What measurable latency target should replace “within seconds”? | — | changelog_gaps_1801-2100:L19, changelog_gaps_2101-2336:L16, changelog_gaps_901-1200:L18, readme_gaps:L27 |
+| GGL-102 | proposed (?) | Google watch registration is renewed on a weekly schedule and refused registration is retried after six hours. What renewal lead time should be used before the watch expires? | — | changelog_gaps_1801-2100:L20 |
+| GGL-103 | proposed | The initial default Google publication window starts on the first day of the current month. | — | changelog_gaps_2101-2336:L17 |
+| GGL-104 | proposed | Google authorization requests the app-created-calendar scope and email identity, limiting calendar access to calendars created by this app. | — | changelog_gaps_2101-2336:L21, readme_gaps:L80 |
+| GGL-105 | proposed | A color refusal received with an access token issued within the previous minute is reported without refreshing that token again. | — | changelog_gaps_301-600:L44 |
+| GGL-106 | proposed | Upstream Google refusals preserve Google’s explanation in diagnostic feedback. | — | changelog_gaps_601-900:L15, readme_gaps:L66 |
+| GGL-107 | proposed | After module consent completes, the user returns to the destination involved in that consent. | — | changelog_gaps_601-900:L16 |
+| GGL-108 | proposed | Removing the API client reports that Google destinations need their account connections restored after client setup. | — | changelog_gaps_601-900:L17 |
+| GGL-109 | proposed | An invitation link expires seven days after it is created. | — | changelog_gaps_601-900:L26, readme_gaps:L65 |
+| GGL-110 | proposed | Guided Google setup confirms that the callback is authorized before continuing to consent. | — | changelog_gaps_601-900:L44 |
+| GGL-111 | proposed | Removing connected client credentials disconnects the Google accounts while preserving their remote calendars. | — | changelog_gaps_901-1200:L17 |
+| GGL-112 | proposed | Events imported from a Google destination are placed in a Local calendar included by that destination. | — | changelog_gaps_901-1200:L19 |
+| GGL-113 | proposed | Google setup provides a copyable assisted-setup request and a guided route through the required provider configuration. | — | changelog_gaps_901-1200:L21, readme_gaps:L85 |
 
 ## Notes from the draft
 

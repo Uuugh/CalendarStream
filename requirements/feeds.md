@@ -31,6 +31,18 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | FED-28 | proposed | Turning a feed off makes its URL temporarily unavailable; turning it back on clears its off state without changing its included calendars. | — | S63-22, S63-23, S63-24 |
 | FED-29 | proposed | Published calendar data preserves event titles, start times and end times when read back as calendar data. | — | S77-07 |
 | FED-30 | proposed | Each feed decides which calendars it carries; the required Local calendar is in a feed only as that feed's own settings say, never because of a rule special to Local. | — | S77-16 |
+| FED-31 | proposed | A published feed includes events according to their visibility under CAP-02 and EVT-20; hiding an imported event removes it from feed publication. | — | readme_gaps:47 |
+| FED-32 | proposed | A feed subscription address can be sent through the device’s native sharing facility. | — | readme_gaps:64, changelog_gaps_601-900:27 |
+| FED-33 | proposed | The user can copy a feed subscription address. | — | readme_gaps:64, changelog_gaps_601-900:27 |
+| FED-34 | proposed | Subscription guidance explains enabling calendar synchronization on Android and iPhone and using Google’s desktop site to add a subscription (FED-01). | — | readme_gaps:87, changelog_gaps_1501-1800:19 |
+| FED-35 | proposed | Subscription guidance warns that using both a feed subscription and direct synchronization for the same calendar can produce duplicate events. | — | readme_gaps:87 |
+| FED-36 | proposed | Subscription guidance explains that Google may delay reading a feed for up to twelve hours; this is provider guidance, not a CalendarStream delivery guarantee. | — | changelog_gaps_1501-1800:19, changelog_gaps_1801-2100:21 |
+| FED-37 | proposed | Feed-name guidance explains that Google may retain the name from its first read and the user may need to rename the subscribed calendar manually; direct API naming remains GGL-30. | — | changelog_gaps_1801-2100:21, changelog_gaps_2101-2336:22 |
+| FED-38 | proposed | Published ICS carries the feed’s color in X-APPLE-CALENDAR-COLOR for consumers that support that calendar property. | — | changelog_gaps_2101-2336:23, changelog_gaps_601-900:40 |
+| FED-39 | proposed | Feed-color guidance explains that Google feed subscriptions do not use the published calendar-color property. | — | changelog_gaps_2101-2336:23 |
+| FED-40 | proposed | A published event’s online meeting address is also the first line of its notes; publishing the ICS URL is already owned by EVT-41 in gaps_events.md. | — | changelog_gaps_301-600:22 |
+| FED-41 | proposed | A stream name is one through 128 letters, digits, hyphens or underscores on every save path (FED-08, FED-27). | — | changelog_gaps_301-600:28 |
+| FED-42 | proposed | Feed instructions compare the available destination types and identify the type of the current destination; shared explanatory interaction follows UI-07. | — | changelog_gaps_601-900:29 |
 
 ## Notes from the draft
 

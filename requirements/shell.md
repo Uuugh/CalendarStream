@@ -24,6 +24,16 @@ issues database): I4, I27, I33 (2/3-line status box), I39 (animation), I46 and I
 | SHL-17 | proposed | The page provides a favicon and the checked light/dark logo assets. Existing SHL-02 owns the favicon’s appearance; asset existence does not establish artifact-free rendering under planned SHL-03. | — | S61-09 |
 | SHL-18 | proposed (?) | An opened section remains open when freshly observed; an open section older than twenty-five hours is closed and its closed state saved independently of another recently opened section. What is the exact expiry rule rather than this tested point? | — | S61-13, S61-14 |
 | SHL-19 | proposed | With no saved theme override, the page uses Match system; choosing Dark applies it and indicates it as the selected choice. Existing SHL-01 owns the theme-choice affordance. | — | S66-01, S67-47, S67-49 |
+| SHL-20 | proposed | Rendering a CalendarStream page loads its resources from the CalendarStream installation, without contacting external resource providers. | — | readme_gaps:55, changelog_gaps_1201-1500:27 |
+| SHL-21 | proposed | The page footer provides a link to README License & Attribution. | — | changelog_gaps_1201-1500:25 |
+| SHL-22 | proposed | The status API includes Google synchronization status. | — | changelog_gaps_1201-1500:27 |
+| SHL-23 | proposed | The selected page language is retained on the device for subsequent visits; current device-local view preferences follow the Developer decision in layer-map.md. | — | changelog_gaps_1801-2100:29 |
+| SHL-24 | proposed | The selected language applies to every screen, setup guide, error message, month name and day name; user-supplied text follows SHL-08. | — | changelog_gaps_1801-2100:29 |
+| SHL-25 | proposed | Brazilian Portuguese is offered as a page language. | — | changelog_gaps_1801-2100:29 |
+| SHL-26 | proposed | A browser form error presents a localized error page with a way to return to the preceding page; API error responses follow SHL-10. | — | changelog_gaps_1801-2100:30 |
+| SHL-27 | proposed | Saved section-open state is shared across browsers and restored after signing in again; expiry remains governed by SHL-18. | — | changelog_gaps_2101-2336:24 |
+| SHL-28 | proposed | The page starts in the saved theme without first showing another theme; selection follows SHL-19. | — | changelog_gaps_2101-2336:25 |
+| SHL-29 | proposed | Versioned font resources can be cached for one year; versioned asset identity and cache semantics follow SHL-14. | — | changelog_gaps_901-1200:28 |
 
 ## Notes from the draft
 

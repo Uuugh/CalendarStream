@@ -31,6 +31,14 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | ACC-25 | proposed | Recovery links are single-use and expired links are refused. The oracle checks an already-expired link, not the precise one-hour expiry boundary. | — | S55-35, S55-36 |
 | ACC-26 | proposed | A page password is never refused for its strength. The UI-18 hint recommends at least twelve characters, a capital letter, a number and a symbol, and no character repeated three or more times consecutively (doubled letters are fine). | — | S63-06, S63-07, S63-08 |
 | ACC-27 | proposed | Anonymous users cannot read Google traffic diagnostics. Diagnostic content belongs to the existing Google/diagnostics requirements. | — | S68-17 |
+| ACC-28 | proposed | An incorrect initial-setup code counts toward the same per-address failure limit as an incorrect page login (ACC-16). | — | readme_gaps:35 |
+| ACC-29 | proposed | A successful page sign-in establishes a session valid for thirty days. | — | readme_gaps:73 |
+| ACC-30 | proposed | Changing the page login invalidates all previously issued browser sessions. | — | readme_gaps:73, changelog_gaps_601-900:30 |
+| ACC-31 | proposed | Restarting CalendarStream clears the active sign-in lockout state. | — | readme_gaps:75 |
+| ACC-32 | proposed | Concurrent failed sign-ins are all counted toward the applicable failure limits without causing internal errors (ACC-16). | — | changelog_gaps_1501-1800:31 |
+| ACC-33 | proposed | An address remains blocked until its lockout expires; recording failures from other addresses does not remove an active block early (ACC-16). | — | changelog_gaps_1501-1800:33 |
+| ACC-34 | proposed | Initial setup explains how to retrieve its setup code with a command that works independently of the chosen service name; incorrect-code guidance repeats that retrieval instruction (ACC-03, DEP-05). | — | changelog_gaps_1801-2100:27 |
+| ACC-35 | proposed | Password-strength validation applies when creating or changing a password; sign-in verifies the saved password (ACC-18, ACC-26). | — | changelog_gaps_301-600:26 |
 
 ## Notes from the draft
 
