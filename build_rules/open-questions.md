@@ -124,7 +124,7 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Q-D: the installation's default time zone
 
-- **Q-D2** The zone chosen at installation (the server's `TZ`) is the default for events with no zone and for work without a device. "Until the user defines otherwise": how does the user
+- **Q-D2** (deployment, DEP-27) The zone chosen at installation (the server's `TZ`) is the default for events with no zone and for work without a device. "Until the user defines otherwise": how does the user
   change it? (a) A Settings item, "Default time zone", stored on the server (so it is the one global time setting, because the server has no device); or (b) only by editing
   `TZ` in `.env` and restarting. Claude recommends (a).
   Answer:

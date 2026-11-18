@@ -23,7 +23,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 
 | ID | status | statement |
 |---|---|---|
-| TIM-08 |  | The time zone chosen when CalendarStream is installed (the server's TZ setting) is the default zone: an imported event that carries no zone, and any work the server does without a device, uses it until the user defines otherwise. (Developer, Nov 17) | — | Developer, Nov 17 |
+| TIM-08 |  | An imported event that carries no time zone gets the installation's default zone (DEP-27). (Developer, Nov 17) | — | Developer, Nov 17 |
 | TIM-09 | proposed | A time zone is always one of the real zones: the zone picker offers only real zones, and an imported event that names a zone that does not exist is given the default zone (TIM-08) instead. (S19-30) |
 
 Decided elsewhere, not repeated: UTC instants hide daylight-saving jumps, and the default rule "24-hour events" (RUL-29) realigns a
