@@ -21,7 +21,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-18 | proposed | One shared strength bar appears directly beneath any field where the user enters a secret (a password, a feed token), showing how strong the entry is as they type. It measures randomness (bits), not length alone; the bar only shows, and the field's feature decides whether an entry is accepted. Beside it, a hint recommends what to do (for example, the recommended minimum, or to use the generated value). The field's feature supplies the recommendation (Developer, Nov 18). | — | Developer, Nov 18 |
 | UI-19 | proposed | An entry that is not valid is marked at its own field with a note saying what is wrong, and it does not affect the other fields' valid values. A feature row says which entries are valid, and refers here for how the problem is shown (Developer's no-duplication rule, Nov 18). | — | SET-04, SET-06, SET-04 |
 | UI-20 | proposed | A color that is not in the shared palette (from an older rule, an import, or a destination that supports fewer colors) is represented by the nearest palette color wherever it is shown or sent (UI-10). | — | RUL-58, GGL-04, GGL-04 |
-| UI-21 | proposed | One shared filter, used by the Calendar filter and History (and any feature with a filter). It is built on the shared dropdown (UI-12): the user can select one, several, all or none of its choices; Select all shows everything and Select none shows nothing; the filter shows when it is active; the choices are saved and kept; a change applies at once (UI-13). A feature supplies only the choices and what they filter. | — | FLT-02, FLT-03 (Developer, Nov 17) |
+| UI-21 | proposed | One shared filter, used by the Calendar filter and History (and any feature with a filter). It is built on the shared dropdown (UI-12): the user can select one, several, all or none of its choices; Select all shows everything and Select none shows nothing; the filter shows when it is active; the choices are saved and kept; a change applies at once (UI-13). A feature supplies only the choices and what they filter. | — | FLT-01, FLT-01 (Developer, Nov 17) |
 | UI-24 | proposed | A section whose items can be added has a + control as the rightmost item of its header's right zone; it opens the dialog for adding (UI-01). | — | Developer, Nov 19 |
 | UI-25 | proposed | A button that does one thing and shows no state (an icon button, +, Copy, Open, Expand, Close) just does it; Copy then shows "Copied" in place of its icon for the time in DEF-01. | — | theme.md section 5; picture 2·5 |
 | UI-26 | proposed | A field that saves in place shows ✓ once saved, and ✕ \| ✓ while the user types: ✕ puts the saved value back, ✓ saves. | — | theme.md section 5 |
@@ -55,7 +55,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-34 | proposed | A box means the user can change it: fixed text (a title, the release channel) is plain text, never in a field box. A part that looks like a module but has nothing to fold (Settings > Updates) uses the module header layout, always open, with no Expand. | — | theme.md Clarifications |
 | UI-35 | proposed | A Copy button sits inside its field, like the password box's eye. A pair of credential fields (client ID and secret) is laid out like a login, connected or not. | — | theme.md Clarifications |
 | UI-36 | proposed | In every dialog and form a field has a muted label over it and a value that cannot be changed (an event's calendar) is plain text; related fields share a line (Calendar \| Title; Starts \| Ends, each with its Time under it). | — | theme.md Clarifications |
-| UI-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UI-19). | — | FED-01 and FED-14 (S evidence), SRH-03, theme.md section 14 |
+| UI-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UI-19). | — | FED-01 and FED-14 (S evidence), SRH-01, theme.md section 14 |
 
 ## Proposed (not yet reviewed)
 
@@ -155,6 +155,7 @@ CalendarStream), **rule** (made by a rule).
 | Drag step in Week and Day | 15 minutes | | default only |
 | Long-press time | 0.5 seconds | 0.3 to 1.5 seconds | device |
 | Hour height | 2 event lines | 1 to 6 | device |
+| Calendar key name length | 25 characters | | default only |
 | Search results per feature | 6 | | device |
 | Conditions per rule | 12 | 12 | default only |
 | Actions per rule | 6 | 6 | default only |
