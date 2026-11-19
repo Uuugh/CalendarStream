@@ -20,5 +20,5 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **ACC-01.f** (account) A legacy page login is imported with a hashed password; saved page passwords are not stored in plaintext. Is this still needed after the port, given that DEP-14 does not carry the page password over? 
   Answer:
-- **FED-13** (feeds) A feed module's Include box says its date range in words (Dates (optional; empty = all), From over To) in the current app; the shared date range control (UI-23) is From | To | All. Should the feed use the shared control? Recommended: yes.
+- **FED-01.d** (feeds) A feed module's Include box says its date range in words (Dates (optional; empty = all), From over To) in the current app; the shared date range control (UI-23) is From | To | All. Should the feed use the shared control? Recommended: yes.
   Answer:

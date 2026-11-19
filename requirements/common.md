@@ -141,6 +141,7 @@ CalendarStream), **rule** (made by a rule).
 | Section left open folds after | 24 hours | | default only |
 | Database connection retry | every 3 seconds, for up to 60 seconds | | default only |
 | Phone-width window | 700 px wide or narrower | | default only |
+| Stream token: generated length and strength | 22 characters, at least 128 bits of randomness | 1 to 128 characters | default only |
 | Failure records kept (sign-in) | 10,000 addresses | 10,000 | default only |
 | Known-good addresses kept | 1,000 | 1,000 | default only |
 | Container log lines held | 3,000 | 3,000 | default only |
