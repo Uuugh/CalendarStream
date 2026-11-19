@@ -18,7 +18,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-15 |  | A badge or other overlay on an image or control is placed by one of nine anchor points of its parent (the corners, the edge middles and the center) plus an offset relative to the parent's size, both defined in the theme (build_rules/theme.md, 13b); no component places its own badge. | — | Developer, Nov 17 |
 | UI-16 |  | One shared resize bar (Developer, Nov 17; moved from CAL-11 and CAL-13). The UI defines its look and operation: a bar centered at the bottom of what it resizes, drawn as two rows of six dots like a slider's; dragging it, or pressing the up and down keys, resizes in whole units; beside it one arrow collapses to the fewest units needed (arrow up when expanded) or expands to the bottom of the visible window (arrow down when collapsed). Collapse and expand are single actions: the size is kept when the window is resized. The feature that uses the bar defines its unit and what is resized in each of its views. | — | Developer, Nov 17; F51 |
 | UI-17 |  | UI components are kept separate from the features that use them: a component's look comes only from the theme, and a feature supplies only its content and what the component does there. So changing the theme restyles every feature at once, and a new feature reuses the components as they are (Developer, Nov 17). | — | Developer, Nov 17 |
-| UI-18 | proposed | One shared strength bar appears directly beneath any field where the user enters a secret (a password, a feed token), showing how strong the entry is as they type. It measures randomness (bits), not length alone, and never refuses an entry. Beside it, a hint recommends what to do (for example, the recommended minimum, or to use the generated value). The field's feature supplies the recommendation (Developer, Nov 18). | — | Developer, Nov 18 |
+| UI-18 | proposed | One shared strength bar appears directly beneath any field where the user enters a secret (a password, a feed token), showing how strong the entry is as they type. It measures randomness (bits), not length alone; the bar only shows, and the field's feature decides whether an entry is accepted. Beside it, a hint recommends what to do (for example, the recommended minimum, or to use the generated value). The field's feature supplies the recommendation (Developer, Nov 18). | — | Developer, Nov 18 |
 | UI-19 | proposed | An entry that is not valid is marked at its own field with a note saying what is wrong, and it does not affect the other fields' valid values. A feature row says which entries are valid, and refers here for how the problem is shown (Developer's no-duplication rule, Nov 18). | — | SET-12, SET-15, SET-35 |
 | UI-20 | proposed | A color that is not in the shared palette (from an older rule, an import, or a destination that supports fewer colors) is represented by the nearest palette color wherever it is shown or sent (UI-10). | — | RUL-58, GGL-27, GGL-60 |
 
@@ -92,6 +92,11 @@ CalendarStream), **rule** (made by a rule).
 | Google Traffic entries held | 200 | 200 | default only |
 | Container log lines held | 3,000 | 3,000 | default only |
 | Pending Google sign-ins | 20 | 20 | default only |
+| Password minimum length | 11 characters | 8 or more | database (Site Admin) |
+| Password minimum capital letters | 1 | 0 or more | database (Site Admin) |
+| Password minimum lowercase letters | 1 | 0 or more | database (Site Admin) |
+| Password minimum numbers | 1 | 0 or more | database (Site Admin) |
+| Password minimum special characters | 1 | 0 or more | database (Site Admin) |
 | Unlock link valid | 24 hours | | default only |
 | Long-press time | 0.5 seconds | 0.3 to 1.5 seconds | device |
 | Hour height | 2 event lines | 1 to 6 | device |

@@ -15,7 +15,7 @@ Terms used below (defined once):
 | ACC-01.g | proposed | The setup code is accepted in any letter case and with or without the dash between its groups. | — | S16-08, S16-09, S16-13 |
 | ACC-01.h | proposed | An incorrect setup code creates no login. | — | S16-08, S16-09, S16-13 |
 | ACC-01.c | proposed | Initial setup explains how to retrieve its setup code with a command that works independently of the chosen service name; incorrect-code guidance repeats that retrieval instruction (ACC-01.b, DEP-05). | — | changelog_gaps_1801-2100:27 |
-| ACC-01.d | proposed | Initial setup refuses a mismatched password confirmation and a username containing a space. | — | S16-10, S16-11, S16-12 |
+| ACC-01.d | proposed | Initial setup refuses a mismatched password confirmation, a password that does not meet the password requirements (ACC-04) and a username containing a space. | — | S16-10, S16-11, S16-12 |
 | ACC-01.e | proposed | After initial login creation, setup is closed and the creating user is signed in. | — | S16-15, S16-16 |
 | ACC-01.f | proposed (?) | A legacy page login is imported with a hashed password; saved page passwords are not stored in plaintext. Is this still needed after the port, given that DEP-14 does not carry the page password over? | — | S16-01, S16-04, S16-14 |
 | ACC-02 | proposed | A person signs in to see or change anything on the page, and can sign out. | — | — |
@@ -30,10 +30,10 @@ Terms used below (defined once):
 | ACC-03.b | proposed | After a credential change, the old credentials are refused and the new credentials are accepted. Changing only the username retains the existing password. | — | S16-31, S16-33 |
 | ACC-03.c | proposed | Changing the login renews the form security token and invalidates the previous token. | — | S16-32 |
 | ACC-03.d | proposed | Changing the page login invalidates all previously issued browser sessions. | — | readme_gaps:73, changelog_gaps_601-900:30 |
-| ACC-04 | proposed | The user is shown how strong a password is and what is recommended; a password is never refused for its strength. | — | — |
-| ACC-04.a | proposed | A page password is never refused for its strength. The UI-18 hint recommends at least twelve characters, a capital letter, a number and a symbol, and no character repeated three or more times consecutively (doubled letters are fine). | — | S63-06, S63-07, S63-08 |
-| ACC-04.b | proposed | The strength bar (UI-18) is shown when a password is created or changed; sign-in only verifies the saved password (ACC-02.b). | — | changelog_gaps_301-600:26 |
-| ACC-04.c | proposed (?) | Is an empty password accepted, given that a password is never refused for its strength? | — | S63-06, S63-07, S63-08 |
+| ACC-04 | proposed | A new password must meet the password requirements, and the user sees how strong it is and which requirements it still misses. | — | — |
+| ACC-04.a | proposed | A password is accepted only if it has at least the minimum length and at least the minimum number of capital letters, lowercase letters, numbers and special characters set in the password requirements (SET-61, DEF-01: 11 characters and one of each by default). A special character is any character that is not a letter or a digit. | — | S63-06, S63-07, S63-08 |
+| ACC-04.b | proposed | The strength bar (UI-18) is shown when a password is created or changed, with a hint naming the requirements not yet met. Sign-in only verifies the saved password (ACC-02.b). | — | changelog_gaps_301-600:26 |
+| ACC-04.d | proposed | The password requirements apply when a password is created or changed (initial setup, replacement), not to a password already saved; changing the requirements does not sign anyone out. | — | — |
 | ACC-05 | proposed | Passwords, Google client secrets and notification tokens are protected: stored safely and never exposed. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-05.a | proposed | A sign-in password (page login, setup, replacement) is stored only as a one-way hash, never in plaintext. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-05.b | proposed | A credential the app must send on (the CCS+ password, Google client secret and tokens) is stored encrypted with a key from the database password; after the database password changes they cannot be read until entered again (GGL-22). | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |

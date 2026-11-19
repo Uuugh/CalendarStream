@@ -49,3 +49,4 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R2 | 2026-11-18 | ACC-05 | ACC-05, ACC-05.a, ACC-05.b, ACC-05.c, ACC-05.d | split: hashed passwords, encrypted credentials, logs, pages |
 | R2 | 2026-11-18 | ACC-07.a | ACC-07.a, ACC-07.e, ACC-07.f, ACC-07.h | split: start of the block, refusal, 7-day address, end of the block |
 | R2 | 2026-11-18 | ACC-08.a | ACC-08.a, ACC-08.d | split: the warning and its unlock link |
+| R3 | 2026-11-18 | ACC-04.c | ACC-04.d | the empty-password question is answered by ACC-04.a (Developer, Nov 18: passwords are enforced after all) |
