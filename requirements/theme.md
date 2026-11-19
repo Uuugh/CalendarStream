@@ -50,7 +50,20 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-06.g |  | A done, failed or found result fills the button with its status color and a ring pulses out from 0 to 9 px, twice, in 1.1 s ease-out each. | — | theme.md section 7 |
 | THM-06.h |  | After its hold the button shrinks to the bottom in 0.25 s ease; then the new status word fades in, 0.2 s after a 0.25 s delay, never through the old word. | — | theme.md section 7 |
 | THM-06.i |  | The words of the top-bar Update now fade in in 0.25 s ease-out; the bar under them slides in 1.2 s ease-in-out, repeating. | — | theme.md section 7 |
+| THM-07 | proposed | Spacing between content parts uses one set of values. Internal control geometry, calendar cells and anchored header layouts use the component sizes (THM-04), not these. | — | theme.md section 9 (Spacing) |
+| THM-07.a |  | There are 5 px between parts: sections, modules, the parts of a module or a dialog, and buttons in a row. | — | theme.md section 9 |
+| THM-07.b |  | There is 1 px between a label and its field (the label over it); From and To beside their dates have 5 px. | — | theme.md section 9 |
+| THM-07.c |  | Inside a module's border there are 9 px at the sides and 5 px at the top and bottom, the 50 px header unchanged; a box inside a module (Include, an instruction tile) is 5 px by 9 px. The bottom padding is the same folded and open: 5 px in a module, 18 px in a module-like section. | — | theme.md section 9 |
+| THM-07.d |  | Inside every dialog there are 12 px, and the panels of anchored menus have 12 px padding and corners. | — | theme.md sections 9 and 11 |
+| THM-07.e |  | A folded section keeps 14 px below it for the Expand line in its border. A module's Close line has 2 px less above and below it. | — | theme.md section 9 |
+| THM-07.f |  | The calendar key starts 5 px below the calendar. The header's date and navigation gaps are 8 px, tool gaps 5 px, and the wrapped second row has a 6 px gap. | — | theme.md section 9 |
+| THM-08 | proposed | A module's border is its calendar's or feed's color at 45%, its header a 6% tint and the rest a 3% tint of it, in light and dark. Each section has its own border color (THM-02.l) on card. | — | theme.md section 9; picture 2·9 |
+| THM-08.a |  | A dialog has 12 px corners; in a phone-width window it fills the screen with square, edge-to-edge corners. | — | theme.md section 11 |
+| THM-08.b |  | The grip of a handle is two columns of three faint dots, centered on the module's 50 px header or on the rule line. | — | theme.md section 10 |
+| THM-08.c |  | The (?) icon is 15 px, raised after the word it explains. | — | theme.md section 12 |
+| THM-09 | proposed | The event color palette (UI-10) is Google Calendar's eleven colors. | — | theme.md section 11 (Color box) |
+| THM-09.a |  | Tomato #d50000, Flamingo #e67c73, Tangerine #f4511e, Banana #f6bf26, Sage #33b679, Basil #0b8043, Peacock #039be5, Blueberry #3f51b5, Lavender #7986cb, Grape #8e24aa, Graphite #616161. | — | theme.md section 11; picture 2·11 |
 
 Dart note: THM-01 becomes the text theme, THM-02 the color scheme plus an extension for the status colors (ok, run, warn, bad), THM-03 the icon theme, THM-04 the shapes and the component themes.
 
-Conversion progress (temporary): sections 1 to 8 of the legacy file are converted (sections 5 to 8 as UI-25 to UI-28 and THM-05, THM-06). To convert: sections 9 to 16 and the Clarifications. The flows in section 7 (the words each Status/Action button says, in order, and the Remove-a-calendar and Import flows) go into their features: Sync Now (SRC-31), Check now (SET-20), Update now (SET-31), Connect (GGL), Remove a calendar and Import (SRC).
+Conversion progress (temporary): sections 1 to 14 of the legacy file are converted. To convert: section 15 (a deleted event, and the History table: to events.md and history.md in their passes), section 16 and the Clarifications (the event pop-up layout and the detailed decisions). The flows in section 7 (the words each Status/Action button says, in order, and the Remove-a-calendar and Import flows) go into their features: Sync Now (SRC-31), Check now (SET-20), Update now (SET-31), Connect (GGL), Remove a calendar and Import (SRC).

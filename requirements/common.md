@@ -35,6 +35,22 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-28.b |  | Every copy of an action (the top bar and Settings; Feeds and Settings) shows the same words at the same moment and ends together. | — | theme.md section 7 |
 | UI-28.c |  | A good status word shows for the time in DEF-01 and then shrinks to its ✓; the word stays as its tooltip and accessible name. Count boxes keep their numbers. | — | theme.md section 8 |
 | UI-28.d |  | While an update runs only the words of the top-bar Update now change, never a blank pill, and a bar slides under them until the app restarts. | — | theme.md section 7 |
+| UI-29 | proposed | Every calendar and every feed is a module: a header that is all a folded module shows, with its details below when expanded. | — | theme.md section 9; picture 2·9 |
+| UI-29.a |  | The header's first line shows the color box, the kind (fixed text), "Last synced" with its time and the Status/Action buttons on the right. Its second line shows the label, with an (i), and "Next check @" with its time on the right. | — | theme.md section 9 |
+| UI-29.b |  | Expand sits in the module's bottom border; when open, a Close line sits under the header. While expanded the label is a field of the same size. | — | theme.md section 9 |
+| UI-29.c |  | Status lines are unboxed, right-aligned next to their Status/Action button, and visible only while the module is collapsed. | — | theme.md section 9 |
+| UI-29.d |  | Default sits right of a CalendarStream calendar's title; while expanded, the other local calendars offer it as a button and read-only calendars show it disabled (SRC-57). | — | theme.md section 9 |
+| UI-29.e |  | On \| Off sits inline before an expanded module's note; Off dims the module and keeps its settings. | — | theme.md section 9 |
+| UI-29.f |  | (i) is info about the module: what it is, then its note when it has one. (?) is help (UI-07.a). | — | theme.md section 9 |
+| UI-30 | proposed | A list of modules or rule lines can be reordered with one handle in the margin on the left of each line: ▲ above, a grip, ▼ below. | — | theme.md section 10; picture 2·10 |
+| UI-30.a |  | The handle is always visible and takes no extra space; there is none when there is nothing to reorder (a list of one). | — | theme.md section 10 |
+| UI-30.b |  | Dragging the grip reorders; ▲ and ▼ reorder with the keyboard. The grips are on the left, or on the right when the user chooses (SET-42). | — | theme.md section 10 |
+| UI-31 | proposed | Every + opens a dialog (UI-01) centered; a question is a dialog too, never the browser's own alert or confirm box. | — | theme.md section 11; picture 2·11 |
+| UI-31.a |  | A question's answers are on one line, or one under the other when they are sentences; a second line under the question is a note, muted and not bold. | — | theme.md section 11 |
+| UI-31.b |  | A choice of calendars is a drop-down of ticks. | — | theme.md section 11 |
+| UI-31.c |  | The anchored month, view and language menus do not dim the page and do not fill the phone; they keep their compact panel. | — | theme.md section 11 |
+| UI-32 | proposed | In-page words are click paths and short lines (Place › Place › Field: value › Button), with no paragraphs; the why goes in a (?). Status words are a word or two (UI-28). No sentence on the page is longer than 20 words, apart from a (?), the calendar and the log. | — | theme.md section 13; picture 2·13 |
+| UI-33 | proposed | The Import row is the same in every calendar: the heading, the file field (a file icon and "Choose Calendar.ics…", filling the line), the dates (UI-23) and the button on the right. For CCS+ it is Manual Upload, which replaces the schedule, so it has no dates. | — | theme.md section 14; picture 2·14 |
 | UI-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UI-19). | — | FED-13 and FED-14 (S evidence), SRH-03, theme.md section 14 |
 
 ## Proposed (not yet reviewed)
@@ -59,12 +75,15 @@ fixed 24-hour source span to the local day.
 | UI-05 | proposed | A section (Rules, Event Templates, History...) shows a title, status lines, a count box and one plus control; its body stays hidden until expanded; clicking the title alone does not expand it. | S33-24, S38-01, S38-13, S61-02 |
 | UI-06 | proposed | An action that hides or deletes something asks first with a No \| Yes pair; cancelling changes nothing. | S57-33, S58-24, S58-25, S58-35, S44-26 |
 | UI-07 |  | One shared popover, like the info dot: clicking or tapping an info dot, or the triple dot that ends clipped text (UI-14), shows its full text in a popover next to it, above or below as space allows. The popover is never wider than the window and its text wraps inside it, so it adds no horizontal scroll bar; if it is taller than the window it scrolls vertically. It closes when the user chooses outside it. The item's own click still works. The triple dot's click area is at least 24×24 px. This is the global definition of the triple dot; the Developer may revisit it later (Developer, Nov 17). | — | Developer, Nov 17; S58-01, S58-34, S57-35, S66-18 |
+| UI-07.a |  | A (?) is help: how to do something. It sits right after the word it explains; hover, focus or a click shows it. Its pop-up opens with its upper left at the icon; past the window's right edge, its upper right sits at that edge; past the bottom, its lower corners sit at the bottom. Explanations live in an (i) or a (?), never on the page. | — | theme.md section 12; picture 2·12 |
 | UI-08 | proposed | A checkbox's label ticks it when clicked; empty space beside the label does not. | S21-19, S21-20 |
 | UI-09 | proposed | The calendar picker is a small month calendar with previous/next month and Today; it opens on a given month, can mark items unselectable, and closes when an item is picked. | S58-07..12, S58-28..30 |
 | UI-10 | proposed | One shared color palette of named colors (Google's eleven event colors) is used wherever a color is chosen (rule action, event, calendar); the event editor adds a "calendar default" choice. A picked color shows and closes the palette. | S19-08, S19-41, S19-44, S40-09..11 |
+| UI-10.a |  | A click opens the palette (in a module, while it is expanded); the choice goes with the module's Save. The colors are THM-09. | — | theme.md section 11 |
 
 Pending: the Save | Cancel pair is covered by SET-07; the section header color tokens belong to the theme.
 | UI-11 | proposed | One shared emoji picker, with search, is used wherever an emoji is chosen. | S44-41 |
+| UI-11.a |  | The common emoji sit beside the field; a rounded "Search for more emojis" field opens every emoji (up to Emoji 13.0, no flags, drawn by the device), ten a line, scrolling, filtered as the user types. | — | theme.md section 11 |
 
 ## Capabilities (CAP)
 
