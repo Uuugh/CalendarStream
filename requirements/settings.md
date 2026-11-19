@@ -24,7 +24,7 @@
 | SET-04.a | proposed | A public address given at installation is saved once. After that the saved address is the only one used (DEP-05), so clearing it leaves it cleared. | — | S15-01, S15-09, S25-12 |
 | SET-04.b | proposed | Until a public address is set, setup reports Not set yet and points to Public address settings, the subscription page warns that the address is missing and, before the first destination is configured, setup suggests an address taken from the request. Once an address is set, none of these appear; a setup field can be filled from the address used to open the page. | — | S15-02, S15-10, S26-31, S26-34 |
 | SET-04.c | proposed | A bare public host becomes an HTTPS address, with lowercase scheme/host, no trailing slash and no default port; a supplied path is preserved. | — | S15-03, S23-05, S23-06, S23-13 |
-| SET-04.d | proposed | The saved public address is the one used in feed links; Google's callback address follows GAP-01. | — | S15-04, S15-05 |
+| SET-04.d | proposed | The saved public address is the one used in feed links; Google's callback address follows PGA-01. | — | S15-04, S15-05 |
 | SET-04.e | proposed | An address that uses FTP, has a query or embedded credentials, or is not a URL is not a valid public address (UI-19). | — | S15-06 |
 | SET-04.f | proposed | Clearing the public address removes it. An installer default that only works on the local machine or network (HTTP to a private IP address or localhost) is not a public address. | — | S15-08, S23-01, S23-16 |
 | SET-04.g | proposed | The page warns when it is opened through a host that is not a public host of the installation or one of the user's own networks (ACC-07), naming the host used and the configured host. | — | S24-01, S24-08, S24-09 |

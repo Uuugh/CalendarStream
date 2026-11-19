@@ -47,7 +47,8 @@ These apply to every row in `requirements/`. Every rule has a test: a check in `
 
 ## Prefixes
 
-CAL calendar · SRC sources section · FDS feeds section · LCL local calendar · FED generic feed · CCS ccs+ · LNK calendar link · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · GOW google one-way · GTW google two-way · PLG plugins (common) · GAP google plugin ·
+A connection's prefix starts with C, then its service and its mode: L local, O one-way, T two-way (CGO is Google one-way, CGT Google two-way). A plugin's starts with P, then its service and its kind (PGA is the Google API plugin). A new module follows this scheme.
+CAL calendar · SRC sources section · FDS feeds section · CLL local calendar · CFO generic feed · CUO ccs+ · CWO calendar link · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · CGO google one-way · CGT google two-way · PLG plugins (common) · PGA google plugin ·
 SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UI shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
 
 Nothing new is added while the transition freeze lasts (build_rules/0-overview.md); these files hold what was already

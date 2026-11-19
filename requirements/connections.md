@@ -8,7 +8,7 @@ Terms: **one-way** sends changes from CalendarStream to the other side only, **t
 | CON-01 | backlog | A connection synchronizes calendar events locally, one-way or two-way. | — | — |
 | CON-01.a | backlog | Every kind of connection is a connection module with its own file in `connections.d/`. | — | — |
 | CON-01.c | backlog | Each connection is a source (it brings events in), a feed (it sends events out) or both, and says so in its own file. A section contains every connection that has its capability, so a connection that is both is contained by the Sources and the Feeds sections: it is one module, and a change or removal made in either place applies to the connection. | — | — |
-| CON-01.b | backlog | A connection that needs a plugin can be added only while that plugin is set up: a Google connection requires the Google plugin (GAP-01). | — | — |
+| CON-01.b | backlog | A connection that needs a plugin can be added only while that plugin is set up: a Google connection requires the Google plugin (PGA-01). | — | — |
 | CON-01.d | proposed | The number of connections is not limited. | — | readme_gaps:20 |
 | CON-02 | proposed | A connection is named, colored and annotated. | — | — |
 | CON-02.a | proposed | A source can be renamed and given a note; saving updates its name and explanatory note, and clearing the note removes its content. | — | S18-17, S29-11, S33-05, S39-18, S44-16 |

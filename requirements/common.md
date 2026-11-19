@@ -18,7 +18,7 @@
 | UI-17 | backlog | UI components are kept separate from the features that use them: a component's look comes only from the theme, and a feature supplies only its content and what the component does there. So changing the theme restyles every feature at once, and a new feature reuses the components as they are. | — | Developer, Nov 17 |
 | UI-18 | proposed | One shared strength bar appears directly beneath any field where the user enters a secret (a password, a feed token), showing how strong the entry is as they type. It measures randomness (bits), not length alone; the bar only shows, and the field's feature decides whether an entry is accepted. Beside it, a hint recommends what to do (for example, the recommended minimum, or to use the generated value). The field's feature supplies the recommendation. | — | Developer, Nov 18 |
 | UI-19 | proposed | An entry that is not valid is marked at its own field with a note saying what is wrong, and it does not affect the other fields' valid values. A feature row says which entries are valid, and refers here for how the problem is shown (Developer's no-duplication rule, Nov 18). | — | SET-04, SET-06, SET-04 |
-| UI-20 | proposed | A color that is not in the shared palette (from an older rule, an import, or a destination that supports fewer colors) is represented by the nearest palette color wherever it is shown or sent (UI-10). | — | RUL-58, GOW-03, GOW-03 |
+| UI-20 | proposed | A color that is not in the shared palette (from an older rule, an import, or a destination that supports fewer colors) is represented by the nearest palette color wherever it is shown or sent (UI-10). | — | RUL-58, CGO-03, CGO-03 |
 | UI-21 | proposed | One shared filter, used by the Calendar filter and History (and any feature with a filter). It is built on the shared dropdown (UI-12): the user can select one, several, all or none of its choices; Select all shows everything and Select none shows nothing; the filter shows when it is active; the choices are saved and kept; a change applies at once (UI-13). A feature supplies only the choices and what they filter. | — | FLT-01, FLT-01 |
 | UI-24 | proposed | A section whose items can be added has a + control as the rightmost item of its header's right zone; it opens the dialog for adding (UI-01). | — | Developer, Nov 19 |
 | UI-25 | proposed | A button that does one thing and shows no state (an icon button, +, Copy, Open, Expand, Close) just does it; Copy then shows "Copied" in place of its icon for the time in DEF-01. | — | theme.md section 5; picture 2·5 |
@@ -38,7 +38,7 @@
 | UI-29.a | backlog | The header's first line shows the color box, the kind (fixed text), "Last synced" with its time and the Status/Action buttons on the right. Its second line shows the label, with an (i), and "Next check @" with its time on the right. | — | theme.md section 9 |
 | UI-29.b | backlog | Expand sits in the module's bottom border (▸ Expand ◂, pointing at the words); when open, a Close line sits under the header (its triangles point up). While expanded the label is a field of the same size. | — | theme.md section 9 |
 | UI-29.c | backlog | Status lines are unboxed, right-aligned next to their Status/Action button, and visible only while the module is collapsed. | — | theme.md section 9 |
-| UI-29.d | backlog | Default sits right of a CalendarStream calendar's title; while expanded, the other local calendars offer it as a button and read-only calendars show it disabled (LCL-03). | — | theme.md section 9 |
+| UI-29.d | backlog | Default sits right of a CalendarStream calendar's title; while expanded, the other local calendars offer it as a button and read-only calendars show it disabled (CLL-03). | — | theme.md section 9 |
 | UI-29.e | backlog | On \| Off sits inline before an expanded module's note; Off dims the module and keeps its settings. | — | theme.md section 9 |
 | UI-29.f | backlog | (i) is info about the module: what it is, then its note when it has one. (?) is help (UI-07.a). | — | theme.md section 9 |
 | UI-30 | proposed | A list of modules or rule lines can be reordered with one handle in the margin on the left of each line: ▲ above, a grip, ▼ below. | — | theme.md section 10; picture 2·10 |
@@ -53,7 +53,7 @@
 | UI-34 | proposed | A box means the user can change it: fixed text (a title, the release channel) is plain text, never in a field box. A part that looks like a module but has nothing to fold (Settings > Updates) uses the module header layout, always open, with no Expand. | — | theme.md Clarifications |
 | UI-35 | proposed | A Copy button sits inside its field, like the password box's eye. A pair of credential fields (client ID and secret) is laid out like a login, connected or not. | — | theme.md Clarifications |
 | UI-36 | proposed | In every dialog and form a field has a muted label over it and a value that cannot be changed (an event's calendar) is plain text; related fields share a line (Calendar \| Title; Starts \| Ends, each with its Time under it). | — | theme.md Clarifications |
-| UI-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UI-19). | — | FED-01 and FED-14 (S evidence), SRH-01, theme.md section 14 |
+| UI-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UI-19). | — | CFO-01 and CFO-14 (S evidence), SRH-01, theme.md section 14 |
 
 ## Proposed (not yet reviewed)
 
@@ -103,7 +103,7 @@ CalendarStream), **rule** (made by a rule).
 
 | ID | status | statement |
 |---|---|---|
-| CAP-01 | proposed | Imported and custom events can be edited; a rule event cannot be opened for editing, because its rule controls it (remote edits to it are corrected on sync, GTW-01). |
+| CAP-01 | proposed | Imported and custom events can be edited; a rule event cannot be opened for editing, because its rule controls it (remote edits to it are corrected on sync, CGT-01). |
 | CAP-02 | proposed | An imported event can be hidden and shown again, never deleted from its source; a custom event can be deleted, and a deletion can be undone. |
 | CAP-03 | proposed | Only custom events can be moved to another calendar; an imported event of a read-only source never is (EVT-06). |
 | CAP-04 | proposed | Imported and custom events can be link targets; a rule event cannot. |
