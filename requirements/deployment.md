@@ -13,7 +13,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | DEP-01.f | proposed | Deleting the Postgres directory resets the app to a fresh install: sources, destinations, edits, rules, templates, settings, logins, the Google connection and feed links. | — | L530 |
 | DEP-01.g | proposed | The database and the calendar data are backed up and restored from Settings > Site Admin (SET-06). A restored database needs the deployment secrets (the database password) to read its encrypted credentials. | — | L525 |
 | DEP-02 | proposed | An installer sets up the stack and can be run again to keep it current. | — | — |
-| DEP-02.a | proposed | The installer asks for a subdomain or stack prefix, the app, config and data paths and whether to install the updater (enabled by default), and offers working defaults; an existing folder is detected and reused. | — | L103, changelog_gaps_301-600:L33 |
+| DEP-02.a | proposed | The installer asks for a subdomain or stack prefix, stable or beta, the app, config and data paths and whether to install the updater (enabled by default), and offers working defaults; an existing folder is detected and reused. | — | L103, changelog_gaps_301-600:L33 |
 | DEP-02.b | proposed | When the chosen app folder already exists, the installer offers using it, choosing a numbered folder, choosing another path or cancelling. | — | changelog_gaps_1-300:L29, readme_gaps:L24 |
 | DEP-02.c | proposed | A second install on the same host detects the existing containers and picks distinct container names and ports, and remembers them (STACK_NO and PORT). | — | L114 |
 | DEP-02.d | proposed | The installer generates the database credentials, downloads the deployment files, starts the app and prints the address and the setup code (see ACC-01). Running it again keeps the saved settings, the database password and the data folder, offers the saved settings as its defaults, and installs the newest image of the selected release (see SET-05). | — | L119, L490, changelog_gaps_1801-2100:L26 |
@@ -21,7 +21,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | DEP-02.f | proposed | The installer writes the environment configuration with read access restricted to its owner. | — | changelog_gaps_1501-1800:L38 |
 | DEP-02.g | proposed | Installer answers containing pipe or ampersand characters are preserved literally in the saved configuration. | — | changelog_gaps_1501-1800:L38 |
 | DEP-02.h | proposed | The installer accepts stable and latest as names for the stable release channel. | — | changelog_gaps_1801-2100:L28 |
-| DEP-02.i | proposed | The installer accepts an exact release identifier and installs that release with its own matching deployment definition. | — | changelog_gaps_601-900:L24, changelog_gaps_1501-1800:L16 |
+| DEP-02.i | proposed | The installer accepts an exact release identifier, including a beta, and installs that release with its own matching deployment definition. | — | changelog_gaps_601-900:L24, changelog_gaps_1501-1800:L16 |
 | DEP-02.j | proposed | Starting or recreating the app deployment checks the selected image tag for an updated image before starting the app. | — | changelog_gaps_2101-2336:L32 |
 | DEP-03 | proposed | The stack works behind a proxy and with Google's notifications. | — | — |
 | DEP-03.a | proposed | FORWARDED_ALLOW_IPS lists the proxies trusted to report the visitor's address and HTTPS use (see ACC-07). | — | L154 |
