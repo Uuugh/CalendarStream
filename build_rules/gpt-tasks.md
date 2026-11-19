@@ -8,6 +8,8 @@ PR only after Claude's clean review and a green `suites` check, and only for `ch
 `requirements/inventory/` and `chatgpt/drafts-*` PRs touching `requirements/drafts/`); stop and tell the Developer only if
 blocked.
 
+Every requirements row you write follows `requirements/README.md`, section "Rules for writing and changing requirements" (say it once, numbers only in DEF-01, shared things in their one home, no history). Run `tests/tools/req_check.sh` first.
+
 ## Task B: draft requirements per feature (branch `chatgpt/drafts-<feature>`, one PR per feature)
 
 Features, in this order: calendar, sources, feeds, history, google, settings, account, shell. (Claude has done rules and

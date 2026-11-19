@@ -85,3 +85,18 @@ A feature file is not done when its rows are written. After organizing a feature
    - **Reviewer**: the statement says what to build, with no history or Python-app notes; the code can be compared with it row by row.
 
 The aim is that the requirement files speak for themselves, so the build rules can stay short.
+
+## Rules for writing and changing requirements (any agent or person)
+
+These apply to every row in `requirements/`. `tests/tools/req_check.sh` checks what a script can check; the rest is judgment, so read them.
+
+1. **Say it once.** A rule is written in one place and referenced everywhere else. Before adding a row, search the folder for the same rule in other words.
+2. **Numbers live in DEF-01.** A limit, a default, a duration or a count appears only in the table in `common.md`; a row says "the time in DEF-01". A default that is not a number (a view, a theme) is stated in the row of the control it belongs to.
+3. **Three homes for shared things.** An actionable component several features use (picker, filter, button, dropdown, strength bar, date range) is a UI row in `common.md`. A look (color, font, padding, margin, corner, size, duration) is a theme row (`theme.md`) and is used by default. A capability several features use (Print) is its own feature. The user feature only adds details (which content, which order, which default).
+4. **Features add only their specifics.** A feature row never restates how a shared component works.
+5. **Links point at the requirement,** not a sub-requirement, unless exactly one detail is meant. A link names an ID that exists today; when an ID changes, every reference is changed and `oldkey.md` gets a row.
+6. **A row says what to build, once, in the user's words.** One checkable rule per row. No history ("the Python app does…"), no test or script wording, no web-page mechanics, no "is refused" for a control that cannot produce a wrong value. A requirement's own statement is general; its sub-requirements hold the detail and the values.
+7. **Define every term** the first time a file uses it, or point to where it is defined.
+8. **State limits.** Anything that grows with use (a log, a list, a table of records) has a limit in DEF-01 (DEF-02).
+9. **Questions** are rows marked `(?)` and appear in `build_rules/open-questions.md`. Look for the answer in the other requirements, the decisions and the code before asking the Product Owner.
+10. **Nothing you write names an agent or a tool.** Roles are the Product Owner, the developer and the tester.

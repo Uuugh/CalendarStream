@@ -188,3 +188,7 @@ and a file must stand alone and say what it needs.
 appears nowhere (build_rules/0-overview.md, Ground rules).
 
 - `app/item_order.py`: extracted list reordering helper `_moved` (re-exported by `app/main.py`).
+
+## Writing requirements
+
+Any agent or person who adds or changes a row in `requirements/` follows `requirements/README.md`, section "Rules for writing and changing requirements", and runs `tests/tools/req_check.sh` before pushing; it must report no errors.
