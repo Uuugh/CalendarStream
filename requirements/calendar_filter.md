@@ -12,4 +12,7 @@
 | FLT-01.g | backlog | View All, an eye icon on the Key title's line, is shown only when something is dimmed and clears every dimmed item at once. | — | theme.md Clarifications |
 | FLT-01.h | backlog | A rule's key name is cut to the length in DEF-01, with its full name as the tooltip. | — | theme.md Clarifications |
 | FLT-01.i | backlog | The calendar header shows the title and controls only. The filter lists calendars and event states only, with no Timed, All-day or Added color labels. | — | theme.md Clarifications |
-
+| FLT-01.j | proposed | Calendars and Key share the width equally with the rule between them; in a window wider than the phone-width window (DEF-01) each keeps at least the width of its own list. | — | R2 gap |
+| FLT-01.k | proposed | Hiding Hidden from Google hides the events that are hidden from Google and not deleted. | — | R2 gap |
+| FLT-01.l | proposed | Hiding Changed by the source since the edit hides the events the source changed since an edit and that are not deleted. | — | R2 gap |
+| FLT-01.m | proposed | Hiding Edited hides the edited events whose source has not changed since and that are not deleted. | — | R2 gap |

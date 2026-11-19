@@ -60,8 +60,9 @@
 | UIC-37.d | backlog | The crop frame starts centered at the largest size the shape allows and stays inside the picture. | — |
 | UIC-37.e | backlog | An uploaded file larger than the input size in DEF-01 is not valid (UIC-19). | — |
 | UIC-38 | proposed | Every password box has a Show/Hide button (msg:showPassword, msg:hidePassword); the box is hidden again when its form is sent. | — | R1 gap |
-| UIC-39 | proposed | The time zone picker lists a Common group of the zones in DEF-01, in that order, then msg:allTimeZones (region and city names only); the default zone is marked ★; a value that is not UTC or in the list is not valid (msg:unknownTimeZone, UIC-19); choosing the default or nothing clears the stored choice. | — | R1 gap |
+| UIC-39 | proposed | The time zone picker lists a Common group of the zones in DEF-01, in that order, then msg:allTimeZones (region and city names only), without names that start with Etc/, SystemV/, posix/ or right/; the default zone is marked ★; a value that is not UTC or in the list is not valid (msg:unknownTimeZone, UIC-19); choosing the default or nothing clears the stored choice. | — | R1 gap |
 | UIC-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UIC-19). | — | CFED-01 and CFED-14 (S evidence), SRH-01, theme.md section 14 |
+| UIC-16.a | proposed | The resize bar's handle is exposed to assistive tools as a vertical slider named msg:stretchCalendar; its collapse and expand arrows are named msg:collapseCalendar and msg:expandCalendar. | — | R2 gap |
 
 ## Time (TIM)
 
@@ -205,3 +206,16 @@ CalendarStream), **rule** (made by a rule).
 | Reload when the restart was never seen | 0.8 seconds | | default only |
 | Updater readiness check | at start and every 5 minutes | answer within 3 seconds | default only |
 | Common time zones | America/New_York, America/Chicago, America/Denver, America/Phoenix, America/Los_Angeles, America/Anchorage, Pacific/Honolulu, Pacific/Guam, UTC, Europe/London, Europe/Frankfurt, Asia/Tokyo, Asia/Hong_Kong, Australia/Sydney, in this order | | default only |
+| Supported calendar years | 2000 to 2100 | | default only |
+| Swipe size that turns the page | at least 50 px sideways and at least 1.5 times its height | | default only |
+| Month grid width | at least 640 px | | default only |
+| Hour area height | at most 560 px, plus the stretch | | default only |
+| Shortest event drawn in the hourly grid | 15 minutes | | default only |
+| Layout refit delay after a resize | 80 milliseconds | | default only |
+| Full page height margin | 36 px | at least 260 px | default only |
+| Full page hour area minimum | 200 px | | default only |
+| Narrow list width | 600 px wide or narrower | | default only |
+| Print pages at most | Month 24, Week and 5-day 60, Day 62 | | default only |
+| Print range | | at most 731 days after From | default only |
+| Print heading size | 1.7 times the base size | | default only |
+| Search query length | | at most 100 characters | default only |

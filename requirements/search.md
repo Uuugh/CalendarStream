@@ -13,4 +13,11 @@
 | SRH-02 | proposed | Results are grouped by feature, and the user can ask for more. | — | — |
 | SRH-02.a | backlog | Results are grouped by feature, calendar events first. Each feature shows its first results, the number in DEF-01; the user can ask for more in steps of the same size. The size is set in SET-02. | — | Developer |
 | SRH-02.b | backlog | Results show as they populate: the list fills in while the user types and as each feature answers, calendar events first (SRH-02), without waiting for all features to finish (UIC-13). | — | Developer, Nov 17 |
-
+| SRH-03 | proposed | An event matches a query by its words, over a range of dates. | — | R2 gap |
+| SRH-03.a | proposed | The query is split on whitespace into words, compared without regard to case; an event matches when every word is in its title, location or notes. | — | R2 gap |
+| SRH-03.b | proposed | The query is trimmed and cut to the length in DEF-01; an empty query is no search. | — | R2 gap |
+| SRH-03.c | proposed | An event that spans several days is listed once, on its first day inside the range. | — | R2 gap |
+| SRH-03.d | proposed | An event that ends before the range or starts after it is not listed. | — | R2 gap |
+| SRH-03.e | proposed | An event in the results opens its details as in the calendar (EVT-07), and open details stay open when the results update. | — | R2 gap |
+| SRH-01.h | proposed | Opening search puts the cursor in its box. | — | R2 gap |
+| SRH-01.i | proposed | A search is not run again when its query and choices are the same as the last one's. | — | R2 gap |

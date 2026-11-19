@@ -30,7 +30,7 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-04.a | backlog | Controls have 8 px corners. Sections, modules, pop-ups and menus have 12 px corners. Small marks (a color, today, a switch) have 4 to 6 px corners. | — | theme.md section 4 |
 | THM-04.b | backlog | Module headers are 50 px high; controls (fields and buttons) are 34 px high. | — | theme.md section 4 |
 | THM-04.c | backlog | Status/Action buttons are 132 × 50 px. Cancel/Save buttons are 130 × 34 px. | — | theme.md section 4 |
-| THM-04.d | backlog | Icon buttons are 34 × 34 px in the general toolbar and 28 × 28 px in the compact calendar toolbar. | — | theme.md sections 1 and 5 |
+| THM-04.d | backlog | Icon buttons are 34 × 34 px in the general toolbar and 28 × 28 px in the compact calendar toolbar; the calendar header's previous and next buttons are 34 × 34 px. | — | theme.md sections 1 and 5 |
 | THM-04.e | backlog | Today's day in the calendar and the focus outline are marks of 2 px, not borders. | — | theme.md section 4 |
 | THM-04.f | backlog | A trash icon's lines are tinted red (30% of bad in muted, at least 3:1 contrast), the button itself unchanged; fully red on hover. | — | theme.md Clarifications |
 | THM-01.e | backlog | A field label is 12 px, in the muted color, over a 34 px field. | — | theme.md Clarifications |
@@ -65,4 +65,11 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-08.c | backlog | The (?) icon is 15 px, raised after the word it explains. | — | theme.md section 12 |
 | THM-09 | proposed | The event color palette (UIC-10) is Google Calendar's eleven colors. | — | theme.md section 11 (Color box) |
 | THM-09.a | backlog | Tomato #d50000, Flamingo #e67c73, Tangerine #f4511e, Banana #f6bf26, Sage #33b679, Basil #0b8043, Peacock #039be5, Blueberry #3f51b5, Lavender #7986cb, Grape #8e24aa, Graphite #616161. | — | theme.md section 11; picture 2·11 |
-
+| THM-09.b | proposed | The default event color is #1d4ed8. | — | R2 gap |
+| THM-10 | proposed | An event on the calendar has the look below. | — | R2 gap |
+| THM-10.a | proposed | An event's bar is its color mixed with the card color at 18% in the dark palette and 12% in the light palette; its text is its color mixed with the text color at 70% in dark and 60% in light. | — | R2 gap |
+| THM-10.b | proposed | The custom look of an event added here or by a rule is, in dark, #2e1a47 with text #e9d5ff and, in light, #f4eef8 with text #5e3f7a. | — | R2 gap |
+| THM-10.c | proposed | A hidden event's line is struck through at 55% opacity on the calendar and 60% in print; a deleted event is 85% grayscale at 45% opacity. | — | R2 gap |
+| THM-10.d | proposed | Event text in the hourly grid is 11.5 px, and an opened event has a shadow. | — | R2 gap |
+| THM-10.e | proposed | An event in a lane is narrower than its share of the column by 3 px (the lane gap) and starts 1 px right of its lane's edge (the lane offset). | — | R2 gap |
+| THM-10.f | proposed | A List row's date column is 150 px wide. | — | R2 gap |

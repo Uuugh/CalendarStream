@@ -49,4 +49,16 @@ The event pop-up, linked events, hiding and reverting.
 | EVT-06.a | proposed | When editing an event, Duplicate (placed as EVT-01.i says) opens an editor holding a copy of the event in the same calendar; the user may then choose a different calendar with the calendar dropdown before saving. The Duplicate icon in the calendar view (the event tools) stays as it is. | — | F62 |
 | EVT-06.b | proposed | The event dialog offers Move for the events CAP-03 allows to move. | — | F62 |
 | EVT-06.c | proposed | Print includes the event card, not only the calendar grid. | — | F62 |
-
+| EVT-03.i | proposed | An event's color is its own color, else the color of the rule that gave it one, else its calendar's color, else the default event color (THM-09.b). | — | R2 gap |
+| EVT-07 | proposed | Clicking an event on the calendar opens its details in place. | — | R2 gap |
+| EVT-07.a | proposed | The details show the title in bold, the range text, the location with a pin, the notes, the state lines and the tools; they stay open when the calendar is redrawn until Close (msg:closeButton). | — | R2 gap |
+| EVT-07.b | proposed | The range text is "day, start–end" for one day and "day start – day end" across days; an all-day event shows its day, or its first and last days, followed by msg:allDay3. | — | R2 gap |
+| EVT-07.c | proposed | A deleted event's state line says where it was deleted, followed by the date and time when known: msg:deletedInCalendarstream, msg:deletedInGoogleCalendar, msg:deletedByRule, msg:removedByUnited or msg:goneFromFeed. | — | R2 gap |
+| EVT-07.d | proposed | A hidden event shows msg:hiddenFromGoogleCalendar; an edited event whose source changed since shows msg:unitedChangedThisEventAfter2 (United's schedule) or msg:feedChangedThisEventAfter (another source); an edited event shows msg:editedHere. | — | R2 gap |
+| EVT-07.e | proposed | An event added here shows msg:addedHere, followed by msg:notInUnitedSchedule when its calendar is United's schedule or msg:notInCalendarItsFrom when its calendar is another source. | — | R2 gap |
+| EVT-07.f | proposed | An event added by a rule shows msg:addedByRuleChange. | — | R2 gap |
+| EVT-07.g | proposed | A linked event shows msg:linkedTo, where {title} is the title of the event it is linked to. | — | R2 gap |
+| EVT-07.h | proposed | The details name the event's calendar when there is more than one calendar. | — | R2 gap |
+| EVT-07.i | proposed | A deleted event shows a Restore button (msg:restore); when a rule deleted it, the button is replaced by msg:changeOrRemoveRule. | — | R2 gap |
+| EVT-07.j | proposed | The tools row has Close on the left and, on the right, link, reminders, edit, duplicate and delete (hide for an event of a source). | — | R2 gap |
+| EVT-07.k | proposed | Delete asks msg:deleteEventAsk and hide asks msg:hideEventAsk (UIC-06). | — | R2 gap |
