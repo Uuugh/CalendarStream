@@ -79,7 +79,7 @@ fixed 24-hour source span to the local day.
 | UIC-02 | proposed | Back closes the dialog. Escape closes only the topmost open layer (a menu, time list or picker) and a second Escape closes the dialog. A dialog opened from another returns to it when closed. | S57-28..30, S58-32, S37-36, S67-15..17 |
 | UIC-03 | proposed | A dialog fits the window height; its content area grows with a taller field (such as Notes). | S57-23, S57-24 |
 | UIC-05 | proposed | A section (Calendar, Sources, Feeds, All Rules, Event Templates, History...) is a header and a body; its body stays hidden until expanded, and clicking the title alone does not expand it. | S33-24, S38-01, S38-13, S61-02 |
-| UIC-05.a | backlog | Every section's header reads: icon, title, space, status lines, health, + (UIC-24). Calendars and Feeds have no status lines; All Rules and Event Templates have up to three (the conflicts or errors, otherwise how many); + is in the top right corner. | theme.md Clarifications |
+| UIC-05.a | backlog | Every section's header reads: icon, title, space, status lines, health, Print (PRT-01.h), + (UIC-24). Calendars and Feeds have no status lines; All Rules and Event Templates have up to three (the conflicts or errors, otherwise how many); + is in the top right corner. | theme.md Clarifications |
 | UIC-05.b | backlog | A folded section says "Expand to Configure" (Calendars, Feeds, All Rules, Event Templates) or "Expand for Details" (History). | theme.md Clarifications |
 | UIC-05.c | proposed | A section the user left open folds by itself after the time in DEF-01; each section is judged on its own. | S61-13, S61-14 |
 | UIC-05.d | proposed | The open or closed state of a section is a user setting (SET-01). | changelog_gaps_2101-2336:24 |

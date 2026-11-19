@@ -37,5 +37,3 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## From the Coder's second run (Nov 19)
 
-- **Print in a section header (UIC-05.a):** PRT-01.h says every section can be printed, but the header order (icon, title, status lines, health, +) has no Print control. Where does Print go? Recommended: before the +.
-  Answer: yes
