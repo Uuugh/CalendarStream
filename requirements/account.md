@@ -31,7 +31,7 @@ Terms used below (defined once):
 | ACC-03.c | proposed | Changing the login renews the form security token and invalidates the previous token. | — | S16-32 |
 | ACC-03.d | proposed | Changing the page login invalidates all previously issued browser sessions. | — | readme_gaps:73, changelog_gaps_601-900:30 |
 | ACC-04 | proposed | A new password must meet the password requirements, and the user sees how strong it is and which requirements it still misses. | — | — |
-| ACC-04.a | proposed | A password is accepted only if it has at least the minimum length and at least the minimum number of capital letters, lowercase letters, numbers and special characters set in the password requirements (SET-61, DEF-01: 11 characters and one of each by default). A special character is any character that is not a letter or a digit. | — | S63-06, S63-07, S63-08 |
+| ACC-04.a | proposed | A password is accepted only if it has at least the minimum length and at least the minimum number of capital letters, lowercase letters, numbers and special characters set in the password requirements (SET-61; the defaults and floors are in DEF-01). A special character is any character that is not a letter or a digit. | — | S63-06, S63-07, S63-08 |
 | ACC-04.b | proposed | The strength bar (UI-18) is shown when a password is created or changed, with a hint naming the requirements not yet met. Sign-in only verifies the saved password (ACC-02.b). | — | changelog_gaps_301-600:26 |
 | ACC-04.d | proposed | The password requirements apply when a password is created or changed (initial setup, replacement), not to a password already saved; changing the requirements does not sign anyone out. | — | — |
 | ACC-05 | proposed | Passwords, Google client secrets and notification tokens are protected: stored safely and never exposed. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
@@ -40,7 +40,7 @@ Terms used below (defined once):
 | ACC-05.c | proposed | A secret is never written to a log. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-05.d | proposed | A secret is shown on a page only when a user who is authorized to see secrets turns on the Show secrets switch in History (HIS-34). | — | — |
 | ACC-06 | proposed | Repeated failed sign-ins from one address lock that address for a time. | — | — |
-| ACC-06.a | planned | After 5 failed sign-ins from one address, further attempts from it are refused for 15 minutes (DEF-01). | — | S23-19, S23-20, S23-21, S53-10 |
+| ACC-06.a | planned | After the number of failed sign-ins in DEF-01 from one address, further attempts from it are refused for the lock time in DEF-01. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-06.b | proposed | An incorrect initial-setup code counts toward the same per-address failure limit as an incorrect page login (ACC-06.a). | — | readme_gaps:35 |
 | ACC-06.c | proposed | Concurrent failed sign-ins are all counted toward the applicable failure limits without causing internal errors (ACC-06, ACC-07). | — | changelog_gaps_1501-1800:31 |
 | ACC-06.d | proposed | An address remains blocked until its lockout expires; recording failures from other addresses does not remove an active block early (ACC-06.a). | — | changelog_gaps_1501-1800:33 |
@@ -48,10 +48,10 @@ Terms used below (defined once):
 | ACC-06.f | proposed | A successful sign-in clears that address's failure count. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-06.g | proposed | Failure records are kept only while needed: at most the number in DEF-01 at once, forgetting addresses that are not locked out first. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-07 | proposed | Many failed sign-ins across addresses start a global block that refuses new outside addresses, while trusted and known visitors keep access. | — | — |
-| ACC-07.a | planned | 25 failed sign-ins from all addresses together within 15 minutes (DEF-01) start a global block. | — | S23-19, S23-20, S23-21, S53-10 |
-| ACC-07.h | proposed | A global block ends when the failures within the last 15 minutes fall below that number. | — | S23-19, S23-20, S23-21, S53-10 |
+| ACC-07.a | planned | The number of failed sign-ins from all addresses together within the window in DEF-01 starts a global block. | — | S23-19, S23-20, S23-21, S53-10 |
+| ACC-07.h | proposed | A global block ends when the failures within that window fall below the number in DEF-01. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-07.e | planned | During a global block, an outside address is refused even with the right password. | — | S23-19, S23-20, S23-21, S53-10 |
-| ACC-07.f | planned | An address that signed in successfully within the last 7 days (DEF-01) is not an outside address. | — | S23-19, S23-20, S23-21, S53-10 |
+| ACC-07.f | planned | An address that signed in successfully within the trusted-address period in DEF-01 is not an outside address. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-07.b |  | During the global block, requests from the networks 192.168.0.0 and 10.10.0.0 (taken as the /16 ranges) and from loopback, and from CalendarStream's own public domain, are not blocked. An address is judged from what a trusted proxy reports (DEP-07). | — | S53-11, S53-12; Developer, Nov 17 |
 | ACC-07.c | proposed | A successful login issues a signed known-browser cookie; a forged signature is refused. | — | S55-24, S55-25, S55-26 |
 | ACC-07.d | proposed | A known browser can authenticate during the global block, but does not bypass a block applied specifically to its own address. A new browser remains blocked. | — | S55-29, S55-30, S55-31 |
