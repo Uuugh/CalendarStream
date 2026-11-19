@@ -1,14 +1,10 @@
 # Requirements: google
 
-Google sign-in and 2-way sync, health and recovery, the Beta: Google Traffic section. Issues against this feature
+Google sign-in and 2-way sync, health and recovery. Issues against this feature
 (kept in the issues database): I5, I41, I42, I47, I50.
 
 | ID | status | statement | test | was |
 |---|---|---|---|---|
-| GGL-01 | built | A Beta section on the main page, below Activity, lets the Developer start the Google API sync by hand. | — | F59 |
-| GGL-02 | built | The Beta section shows all message traffic between the app and Google, with every secret in it masked unless the Show secrets switch (HIS-34) is on; the traffic is visible only to users authorized to see it. | — | F59 |
-| GGL-03 | built | The normal Sync Now button and health chip are duplicated in each Google module of the Beta section. | — | F59 |
-| GGL-04 | built | A Copy all button next to Clear copies every call currently shown, collapsed rows included, with full request and response, in one click. It copies exactly what is shown, so a masked secret stays masked. | — | F64.2 |
 | GGL-85 |  | Google sync follows the common time rules (TIM-01 to TIM-07): it reads the time zone of the Google calendar and of each incoming event and records it with the event, and it sends each event's recorded time zone. A stored all-day event is sent to Google as an all-day event for its stored time zone, so it shows on the right days in Google Calendar. (Developer, Nov 17) | — | Developer |
 | GGL-05 | proposed | A Google destination can be added only once the API client is set up and accepted; before that, connecting is unavailable and setup guidance is offered. | — | S12-01, S12-02, S39-01, S39-02, S51-01, S51-03, S39-16 |
 | GGL-06 | proposed | Client setup requires a well-formed client ID and an initial secret. Invalid or missing values are identified. | — | S12-03, S12-04, S48-01, S48-02 |
@@ -82,7 +78,6 @@ Google sign-in and 2-way sync, health and recovery, the Beta: Google Traffic sec
 | GGL-81 | proposed | A missing calendar pauses recovery rather than retrying at once; an invalid event or a conflict does not make the account unhealthy. An unknown or unexpected failure is reported as unknown (degraded), never as success, and gets one automatic retry. | — | S72-17, S72-18, S72-19, S73-10, S68-12, S68-13 |
 | GGL-82 | proposed | Successful recovery, or a new successful sign-in, restores the healthy state and clears the retry count, keeping the account's calendar mappings and settings. New accounts start healthy and eligible to sync. | — | S73-01, S73-07, changelog_gaps_1-300:L21 |
 | GGL-83 | proposed | A saved health error is shown in full; a line that is too long for its space follows the clipping rule (UI-14, UI-07). | — | S73-13 |
-| GGL-88 | proposed | Google Traffic is held in memory only, at most the number of calls in DEF-01 (the oldest drop first): it starts empty after the app restarts, and Clear removes the calls currently held. | — | changelog_gaps_1-300:L20, changelog_gaps_1-300:L20 |
 | GGL-89 | proposed | Each account’s recorded health and retry deadline persist across an app restart. | — | changelog_gaps_1-300:L21 |
 | GGL-91 | proposed | API setup completion, and its History message, identify each Google module that needs sign-in, has a sync error or has not completed its first sync. | — | changelog_gaps_1-300:L22 |
 | GGL-93 | proposed | Pending invitation consent remains usable across an app restart until it is consumed or expires. | — | changelog_gaps_1-300:L23 |

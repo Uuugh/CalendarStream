@@ -51,3 +51,5 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R2 | 2026-11-18 | ACC-08.a | ACC-08.a, ACC-08.d | split: the warning and its unlock link |
 | R3 | 2026-11-18 | ACC-04.c | ACC-04.d | the empty-password question is answered by ACC-04.a (Developer, Nov 18: passwords are enforced after all) |
 | R3 | 2026-11-18 | ACC-05.d | ACC-05.d | the question is answered: the Show secrets switch in History (HIS-34) |
+| R4 | 2026-11-18 | GGL-01, GGL-02, GGL-03, GGL-04 | retired | the Beta feature is deleted (Developer, Nov 18): it duplicated Sync Now and the health chip, and History covers the rest |
+| R4 | 2026-11-18 | GGL-88 | retired | the Google traffic log went with the Beta feature |

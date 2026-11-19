@@ -21,6 +21,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-18 | proposed | One shared strength bar appears directly beneath any field where the user enters a secret (a password, a feed token), showing how strong the entry is as they type. It measures randomness (bits), not length alone; the bar only shows, and the field's feature decides whether an entry is accepted. Beside it, a hint recommends what to do (for example, the recommended minimum, or to use the generated value). The field's feature supplies the recommendation (Developer, Nov 18). | — | Developer, Nov 18 |
 | UI-19 | proposed | An entry that is not valid is marked at its own field with a note saying what is wrong, and it does not affect the other fields' valid values. A feature row says which entries are valid, and refers here for how the problem is shown (Developer's no-duplication rule, Nov 18). | — | SET-12, SET-15, SET-35 |
 | UI-20 | proposed | A color that is not in the shared palette (from an older rule, an import, or a destination that supports fewer colors) is represented by the nearest palette color wherever it is shown or sent (UI-10). | — | RUL-58, GGL-27, GGL-60 |
+| UI-21 | proposed | One shared filter, used by the Calendar filter and History (and any feature with a filter). It is built on the shared dropdown (UI-12): the user can select one, several, all or none of its choices; Select all shows everything and Select none shows nothing; the filter shows when it is active; the choices are saved and kept; a change applies at once (UI-13). A feature supplies only the choices and what they filter. | — | FLT-02, FLT-03 (Developer, Nov 17) |
 
 ## Proposed (not yet reviewed)
 
@@ -72,7 +73,7 @@ CalendarStream), **rule** (made by a rule).
 | ID | status | statement | test | was |
 |---|---|---|---|---|
 | DEF-01 |  | Every default and limit is defined once, in the table below, and a feature row refers to it instead of repeating the number. A value that an admin setting exposes is stored in the database and overrides the default (DEP-28); the others stay as the defaults. (Developer, Nov 17) | — | Developer, Nov 17 |
-| DEF-02 | proposed | Every list that grows with use (logs, traffic records, failure records, pending sign-ins) has a stated limit in the table below, and entries no longer needed are forgotten first, so memory cannot fill. A feature row refers to the limit instead of repeating it. | — | Developer, Nov 18 |
+| DEF-02 | proposed | Every list that grows with use (logs, failure records, pending sign-ins) has a stated limit in the table below, and entries no longer needed are forgotten first, so memory cannot fill. A feature row refers to the limit instead of repeating it. | — | Developer, Nov 18 |
 
 | Name | Default | Limit | Stored |
 |---|---|---|---|
@@ -89,7 +90,6 @@ CalendarStream), **rule** (made by a rule).
 | Page refresh after an update restarts | 15 seconds | | default only |
 | Failure records kept (sign-in) | 10,000 addresses | 10,000 | default only |
 | Known-good addresses kept | 1,000 | 1,000 | default only |
-| Google Traffic entries held | 200 | 200 | default only |
 | Container log lines held | 3,000 | 3,000 | default only |
 | Pending Google sign-ins | 20 | 20 | default only |
 | Password minimum length | 11 characters | 8 or more | database (Site Admin) |
