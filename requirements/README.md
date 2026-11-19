@@ -70,3 +70,16 @@ The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were fol
 | Deployment | [requirements/deployment.md](requirements/deployment.md) | 24 | 21 |
 | Documentation | [requirements/documentation.md](requirements/documentation.md) | 9 | 9 |
 | Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) | 36 | 19 |
+
+## Checking a feature file (Developer, Nov 18)
+
+A feature file is not done when its rows are written. After grouping a feature into requirements and sub-requirements, go back over it:
+
+1. **Duplication**: the same rule is not written twice, in this file or another; a number or limit lives only in DEF-01; a repeated detail is merged.
+2. **Common elements**: behavior that other features also use (a filter, a picker, an invalid entry, a strength bar) is in `common.md` and referenced here, so this file adds only its own content.
+3. **Simulate three jobs**, and fix what stops you:
+   - **Coder**: every term is defined; every behavior and boundary is stated; time and size limits are stated; nothing has to be guessed.
+   - **Tester**: every row has a visible pass or fail; one rule per row, so a failure says which; time can be controlled in a test.
+   - **Reviewer**: the statement says what to build, with no history or Python-app notes; the code can be compared with it row by row.
+
+The aim is that the requirement files speak for themselves, so the build rules can stay short.
