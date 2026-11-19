@@ -3,198 +3,6 @@
 One file per feature: the checkable rules of behavior the app must meet. This is the spec for both the Python app
 (the reference) and the Dart port. Defined in `build_rules/0-overview.md` (Inputs); the plan is `build_rules/layer-map.md`.
 
-## Definitions
-
-- **Feature**: an area of the app (Calendar, Sources, Account). One file: `requirements/<feature>.md`.
-- **Requirement**: one checkable rule of a feature's behavior with an ID (ACC-06), a status and a definitive statement of what to build. A requirement has a matching test. Other files link to the requirement, not to a sub-requirement.
-- **Sub-requirement**: one checkable rule that further clarifies a requirement, with a sub-ID (ACC-06.a), a status and a definitive statement of what to build. A sub-requirement has a matching sub-test.
-- **Issue**: a component not meeting a requirement. It lives in GitHub issues, not here.
-- **Process**: how work is done here (`build_rules/`).
-- **Question (?)**: a request for a suggestion; the Product Owner decides.
-- **Shared requirements** (`common.md`): behavior several features use, written once and referenced: time (TIM), shared UI (UI), what an origin allows (CAP), defaults and limits (DEF).
-- **Parent tests**: a requirement that has sub-requirements passes when all its sub-requirements pass; its own test cell may be `—` or name a test of the whole.
-- **Test cell**: a list of tests, or `see <ID>` links to the tests of another requirement or sub-requirement, or `—` while there is none. A sub-test is simply the test the sub-requirement uses; it may be its own, its parent's, or another requirement's. A test says which requirements it verifies and how it runs when several call it (once, or once per requirement); failures are reported per requirement (`build_rules/layer-map.md`, testing decisions).
-- **Evidence (temporary)**: the S keys pointing at the Python suites; deleted when the conversion ends.
-- **Oracle**: the existing Python app and its suites, used once as the reference for what the app does.
-- **`oldkey.md`**: the record of old IDs to new IDs.
-- **Stories, epics, sprints and the backlog** are defined in the process rules. A story names the requirement and sub-requirement IDs it will meet and is done when their tests pass; requirements never refer to a story.
-
-## Line format
-
-`| ID | status | statement | test | evidence (temporary) |`
-
-- **ID**: a feature prefix and a number (CAL-03). A requirement may have sub-requirements (ACC-06, ACC-06.a, ACC-06.b); a link points at the requirement unless it means exactly one sub-requirement. When IDs change, `oldkey.md` records old to new.
-- **status** (the Product Owner's way, Nov 17): a **blank status means the Product Owner agreed**: it is a Requirement. `proposed` and `planned` mean
-  not yet agreed; the Product Owner removes the word when they agree with a row. `verified` means a Dart test passes it. The older `built` and
-  `open` came from the Python-era Dashboard and are treated like `planned` until reviewed.
-- **test**: the test that verifies it (path and name), once one exists. `—` until the inventory of the Python suites
-  (`requirements/inventory/`) has been matched to requirements.
-- **evidence (temporary)**: the Python-suite keys (and old Dashboard items) a row came from; deleted when the conversion ends.
-
-Planned requirements stay in the same table with status `planned`.
-
-## Prefixes
-
-CAL calendar · SRC sources section · FDS feeds section · LCL local calendar · FED generic feed · CCS ccs+ · LNK calendar link · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · GOW google one-way · GTW google two-way · PLG plugins (common) · GAP google plugin ·
-SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UI shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
-
-Nothing new is added while the transition freeze lasts (build_rules/0-overview.md); these files hold what was already
-asked for.
-
-## One file per feature (Nov 17)
-
-Each feature has ONE file here, `requirements/<feature>.md`, with every requirement of that feature in the same table. The status says
-
-Modules come in two kinds, connections and plugins. `connections.md` and `plugins.md` hold what is common to every module of the kind (written once); each module is its own feature file in `connections.d/` or `plugins.d/` and adds only its specifics, linking to the common file.
-where it stands: `proposed` (drafted from the inventory, README or CHANGELOG, not yet reviewed by the Product Owner), `planned` (approved,
-not built yet), `built`, `verified`, `open`. Reviewing a feature means changing `proposed` rows to `planned` (or editing or deleting
-them) in that one file. Shared rules (time TIM, shared interface UI, capabilities CAP) are in `common.md`; features reference them.
-
-The scans of the README and CHANGELOG and the gap triage were folded into these files as `proposed` rows on Nov 18 and the `requirements/drafts/` folder was deleted; the history is in git (commit before the deletion).
-
-## Index (feature files, click to open)
-
-| Feature | File | Requirements | Proposed (to review) |
-|---|---|---|---|
-| Calendar | [requirements/calendar.md](requirements/calendar.md) | 35 | 15 |
-| Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) | 10 | 1 |
-| Print | [requirements/print.md](requirements/print.md) | 10 | 5 |
-| Theme | [requirements/theme.md](requirements/theme.md) | 61 | 9 |
-| Search | [requirements/search.md](requirements/search.md) | 11 | 7 |
-| Events | [requirements/events.md](requirements/events.md) | 46 | 39 |
-| Event templates | [requirements/event_templates.md](requirements/event_templates.md) | 8 | 8 |
-| Rules | [requirements/rules.md](requirements/rules.md) | 64 | 23 |
-| History | [requirements/history.md](requirements/history.md) | 30 | 26 |
-| Sources (section) | [requirements/sources.md](requirements/sources.md) | 5 | 4 |
-| Feeds (section) | [requirements/feeds.md](requirements/feeds.md) | 5 | 4 |
-| Connections (common) | [requirements/connections.md](requirements/connections.md) | 58 | 52 |
-| Local calendar | [requirements/connections.d/local_calendar.md](requirements/connections.d/local_calendar.md) | 16 | 16 |
-| Generic Feed | [requirements/connections.d/generic_feed.md](requirements/connections.d/generic_feed.md) | 28 | 28 |
-| CCS+ | [requirements/connections.d/ccs.md](requirements/connections.d/ccs.md) | 30 | 30 |
-| Calendar link | [requirements/connections.d/calendar_link.md](requirements/connections.d/calendar_link.md) | 5 | 5 |
-| Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) | 71 | 70 |
-| Google two-way sync | [requirements/connections.d/google_two_way.md](requirements/connections.d/google_two_way.md) | 7 | 7 |
-| Plugins (common) | [requirements/plugins.md](requirements/plugins.md) | 1 | 0 |
-| Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) | 19 | 18 |
-| Settings | [requirements/settings.md](requirements/settings.md) | 53 | 39 |
-| Account | [requirements/account.md](requirements/account.md) | 55 | 50 |
-| Shell | [requirements/shell.md](requirements/shell.md) | 21 | 17 |
-| Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) | 17 | 13 |
-| Deployment | [requirements/deployment.md](requirements/deployment.md) | 29 | 26 |
-| Documentation | [requirements/documentation.md](requirements/documentation.md) | 12 | 12 |
-| Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) | 81 | 39 |
-
-## Checking a feature file
-
-A feature file is not done when its rows are written. After organizing a feature into requirements and sub-requirements, go back over it:
-
-1. **The laws and rules**: every row obeys rules 1 to 5 (the two laws, numbers, shared homes, specifics only). Search the other files for the same rule in other words before accepting a row as new.
-2. **Simulate three jobs**, and fix what stops you:
-   - **Coder**: every term is defined; every behavior and boundary is stated; time and size limits are stated; nothing has to be guessed.
-   - **Tester**: every row has a visible pass or fail; one rule per row, so a failure says which; time can be controlled in a test.
-   - **Reviewer**: the statement says what to build, with no history or Python-app notes; the code can be compared with it row by row.
-
-The aim is that the requirement files speak for themselves, so the build rules can stay short.
-
-
-# Requirements
-
-One file per feature: the checkable rules of behavior the app must meet. This is the spec for both the Python app
-(the reference) and the Dart port. Defined in `build_rules/0-overview.md` (Inputs); the plan is `build_rules/layer-map.md`.
-
-## Definitions
-
-- **Feature**: an area of the app (Calendar, Sources, Account). One file: `requirements/<feature>.md`.
-- **Requirement**: one checkable rule of a feature's behavior with an ID (ACC-06), a status and a definitive statement of what to build. A requirement has a matching test. Other files link to the requirement, not to a sub-requirement.
-- **Sub-requirement**: one checkable rule that further clarifies a requirement, with a sub-ID (ACC-06.a), a status and a definitive statement of what to build. A sub-requirement has a matching sub-test.
-- **Issue**: a component not meeting a requirement. It lives in GitHub issues, not here.
-- **Process**: how work is done here (`build_rules/`).
-- **Question (?)**: a request for a suggestion; the Product Owner decides.
-- **Shared requirements** (`common.md`): behavior several features use, written once and referenced: time (TIM), shared UI (UI), what an origin allows (CAP), defaults and limits (DEF).
-- **Parent tests**: a requirement that has sub-requirements passes when all its sub-requirements pass; its own test cell may be `—` or name a test of the whole.
-- **Test cell**: a list of tests, or `see <ID>` links to the tests of another requirement or sub-requirement, or `—` while there is none. A sub-test is simply the test the sub-requirement uses; it may be its own, its parent's, or another requirement's. A test says which requirements it verifies and how it runs when several call it (once, or once per requirement); failures are reported per requirement (`build_rules/layer-map.md`, testing decisions).
-- **Evidence (temporary)**: the S keys pointing at the Python suites; deleted when the conversion ends.
-- **Oracle**: the existing Python app and its suites, used once as the reference for what the app does.
-- **`oldkey.md`**: the record of old IDs to new IDs.
-- **Stories, epics, sprints and the backlog** are defined in the process rules. A story names the requirement and sub-requirement IDs it will meet and is done when their tests pass; requirements never refer to a story.
-
-## Line format
-
-`| ID | status | statement | test | evidence (temporary) |`
-
-- **ID**: a feature prefix and a number (CAL-03). A requirement may have sub-requirements (ACC-06, ACC-06.a, ACC-06.b); a link points at the requirement unless it means exactly one sub-requirement. When IDs change, `oldkey.md` records old to new.
-- **status** (the Product Owner's way, Nov 17): a **blank status means the Product Owner agreed**: it is a Requirement. `proposed` and `planned` mean
-  not yet agreed; the Product Owner removes the word when they agree with a row. `verified` means a Dart test passes it. The older `built` and
-  `open` came from the Python-era Dashboard and are treated like `planned` until reviewed.
-- **test**: the test that verifies it (path and name), once one exists. `—` until the inventory of the Python suites
-  (`requirements/inventory/`) has been matched to requirements.
-- **evidence (temporary)**: the Python-suite keys (and old Dashboard items) a row came from; deleted when the conversion ends.
-
-Planned requirements stay in the same table with status `planned`.
-
-## Prefixes
-
-CAL calendar · SRC sources section · FDS feeds section · LCL local calendar · FED generic feed · CCS ccs+ · LNK calendar link · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · GOW google one-way · GTW google two-way · PLG plugins (common) · GAP google plugin ·
-SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UI shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
-
-Nothing new is added while the transition freeze lasts (build_rules/0-overview.md); these files hold what was already
-asked for.
-
-## One file per feature (Nov 17)
-
-Each feature has ONE file here, `requirements/<feature>.md`, with every requirement of that feature in the same table. The status says
-
-Modules come in two kinds, connections and plugins. `connections.md` and `plugins.md` hold what is common to every module of the kind (written once); each module is its own feature file in `connections.d/` or `plugins.d/` and adds only its specifics, linking to the common file.
-where it stands: `proposed` (drafted from the inventory, README or CHANGELOG, not yet reviewed by the Product Owner), `planned` (approved,
-not built yet), `built`, `verified`, `open`. Reviewing a feature means changing `proposed` rows to `planned` (or editing or deleting
-them) in that one file. Shared rules (time TIM, shared interface UI, capabilities CAP) are in `common.md`; features reference them.
-
-The scans of the README and CHANGELOG and the gap triage were folded into these files as `proposed` rows on Nov 18 and the `requirements/drafts/` folder was deleted; the history is in git (commit before the deletion).
-
-## Index (feature files, click to open)
-
-| Feature | File | Requirements | Proposed (to review) |
-|---|---|---|---|
-| Calendar | [requirements/calendar.md](requirements/calendar.md) | 35 | 15 |
-| Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) | 10 | 1 |
-| Print | [requirements/print.md](requirements/print.md) | 10 | 5 |
-| Theme | [requirements/theme.md](requirements/theme.md) | 61 | 9 |
-| Search | [requirements/search.md](requirements/search.md) | 11 | 7 |
-| Events | [requirements/events.md](requirements/events.md) | 46 | 39 |
-| Event templates | [requirements/event_templates.md](requirements/event_templates.md) | 8 | 8 |
-| Rules | [requirements/rules.md](requirements/rules.md) | 64 | 23 |
-| History | [requirements/history.md](requirements/history.md) | 30 | 26 |
-| Sources (section) | [requirements/sources.md](requirements/sources.md) | 5 | 4 |
-| Feeds (section) | [requirements/feeds.md](requirements/feeds.md) | 5 | 4 |
-| Connections (common) | [requirements/connections.md](requirements/connections.md) | 58 | 52 |
-| Local calendar | [requirements/connections.d/local_calendar.md](requirements/connections.d/local_calendar.md) | 16 | 16 |
-| Generic Feed | [requirements/connections.d/generic_feed.md](requirements/connections.d/generic_feed.md) | 28 | 28 |
-| CCS+ | [requirements/connections.d/ccs.md](requirements/connections.d/ccs.md) | 30 | 30 |
-| Calendar link | [requirements/connections.d/calendar_link.md](requirements/connections.d/calendar_link.md) | 5 | 5 |
-| Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) | 71 | 70 |
-| Google two-way sync | [requirements/connections.d/google_two_way.md](requirements/connections.d/google_two_way.md) | 7 | 7 |
-| Plugins (common) | [requirements/plugins.md](requirements/plugins.md) | 1 | 0 |
-| Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) | 19 | 18 |
-| Settings | [requirements/settings.md](requirements/settings.md) | 53 | 39 |
-| Account | [requirements/account.md](requirements/account.md) | 55 | 50 |
-| Shell | [requirements/shell.md](requirements/shell.md) | 21 | 17 |
-| Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) | 17 | 13 |
-| Deployment | [requirements/deployment.md](requirements/deployment.md) | 29 | 26 |
-| Documentation | [requirements/documentation.md](requirements/documentation.md) | 12 | 12 |
-| Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) | 81 | 39 |
-
-## Checking a feature file
-
-A feature file is not done when its rows are written. After organizing a feature into requirements and sub-requirements, go back over it:
-
-1. **The laws and rules**: every row obeys rules 1 to 5 (the two laws, numbers, shared homes, specifics only). Search the other files for the same rule in other words before accepting a row as new.
-2. **Simulate three jobs**, and fix what stops you:
-   - **Coder**: every term is defined; every behavior and boundary is stated; time and size limits are stated; nothing has to be guessed.
-   - **Tester**: every row has a visible pass or fail; one rule per row, so a failure says which; time can be controlled in a test.
-   - **Reviewer**: the statement says what to build, with no history or Python-app notes; the code can be compared with it row by row.
-
-The aim is that the requirement files speak for themselves, so the build rules can stay short.
-
 ## Rules for writing and changing requirements (any agent or person)
 
 These apply to every row in `requirements/`. Every rule has a test: a check in `tests/tools/req_check.sh` where a script can decide, otherwise a review question.
@@ -210,3 +18,97 @@ These apply to every row in `requirements/`. Every rule has a test: a check in `
 9. **State limits.** Anything that grows with use (a log, a list, a table of records) has a limit in DEF-01 (DEF-02). **Test:** review: for each list that grows, find its limit in DEF-01.
 10. **Questions** are rows marked `(?)` and appear in `build_rules/open-questions.md`. Look for the answer first in the other requirements, the decisions, the code of the running app, and the Flutter and Dart documentation (https://docs.flutter.dev/ and https://dart.dev/), and only then ask the Product Owner. **Test:** `req_check.sh` reports a `(?)` row with no question, and a question with no `(?)` row.
 11. **Nothing you write names an agent or a tool.** Roles are the Product Owner, the developer and the tester. **Test:** `req_check.sh` lists any agent or tool name.
+
+## Definitions
+
+- **Feature**: an area of the app (Calendar, Sources, Account). One file: `requirements/<feature>.md`.
+- **Requirement**: one checkable rule of a feature's behavior with an ID (ACC-06), a status and a definitive statement of what to build. A requirement has a matching test. Other files link to the requirement, not to a sub-requirement.
+- **Sub-requirement**: one checkable rule that further clarifies a requirement, with a sub-ID (ACC-06.a), a status and a definitive statement of what to build. A sub-requirement has a matching sub-test.
+- **Issue**: a component not meeting a requirement. It lives in GitHub issues, not here.
+- **Process**: how work is done here (`build_rules/`).
+- **Question (?)**: a request for a suggestion; the Product Owner decides.
+- **Shared requirements** (`common.md`): behavior several features use, written once and referenced: time (TIM), shared UI (UI), what an origin allows (CAP), defaults and limits (DEF).
+- **Parent tests**: a requirement that has sub-requirements passes when all its sub-requirements pass; its own test cell may be `—` or name a test of the whole.
+- **Test cell**: a list of tests, or `see <ID>` links to the tests of another requirement or sub-requirement, or `—` while there is none. A sub-test is simply the test the sub-requirement uses; it may be its own, its parent's, or another requirement's. A test says which requirements it verifies and how it runs when several call it (once, or once per requirement); failures are reported per requirement (`build_rules/layer-map.md`, testing decisions).
+- **Evidence (temporary)**: the S keys pointing at the Python suites; deleted when the conversion ends.
+- **Oracle**: the existing Python app and its suites, used once as the reference for what the app does.
+- **`oldkey.md`**: the record of old IDs to new IDs.
+- **Stories, epics, sprints and the backlog** are defined in the process rules. A story names the requirement and sub-requirement IDs it will meet and is done when their tests pass; requirements never refer to a story.
+
+## Line format
+
+`| ID | status | statement | test | evidence (temporary) |`
+
+- **ID**: a feature prefix and a number (CAL-03). A requirement may have sub-requirements (ACC-06, ACC-06.a, ACC-06.b); a link points at the requirement unless it means exactly one sub-requirement. When IDs change, `oldkey.md` records old to new.
+- **status** (the Product Owner's way, Nov 17): a **blank status means the Product Owner agreed**: it is a Requirement. `proposed` and `planned` mean
+  not yet agreed; the Product Owner removes the word when they agree with a row. `verified` means a Dart test passes it. The older `built` and
+  `open` came from the Python-era Dashboard and are treated like `planned` until reviewed.
+- **test**: the test that verifies it (path and name), once one exists. `—` until the inventory of the Python suites
+  (`requirements/inventory/`) has been matched to requirements.
+- **evidence (temporary)**: the Python-suite keys (and old Dashboard items) a row came from; deleted when the conversion ends.
+
+Planned requirements stay in the same table with status `planned`.
+
+## Prefixes
+
+CAL calendar · SRC sources section · FDS feeds section · LCL local calendar · FED generic feed · CCS ccs+ · LNK calendar link · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · GOW google one-way · GTW google two-way · PLG plugins (common) · GAP google plugin ·
+SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UI shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
+
+Nothing new is added while the transition freeze lasts (build_rules/0-overview.md); these files hold what was already
+asked for.
+
+## One file per feature (Nov 17)
+
+Each feature has ONE file here, `requirements/<feature>.md`, with every requirement of that feature in the same table. The status says
+
+Modules come in two kinds, connections and plugins. `connections.md` and `plugins.md` hold what is common to every module of the kind (written once); each module is its own feature file in `connections.d/` or `plugins.d/` and adds only its specifics, linking to the common file.
+where it stands: `proposed` (drafted from the inventory, README or CHANGELOG, not yet reviewed by the Product Owner), `planned` (approved,
+not built yet), `built`, `verified`, `open`. Reviewing a feature means changing `proposed` rows to `planned` (or editing or deleting
+them) in that one file. Shared rules (time TIM, shared interface UI, capabilities CAP) are in `common.md`; features reference them.
+
+The scans of the README and CHANGELOG and the gap triage were folded into these files as `proposed` rows on Nov 18 and the `requirements/drafts/` folder was deleted; the history is in git (commit before the deletion).
+
+## Index (feature files, click to open)
+
+| Feature | File | Requirements | Proposed (to review) |
+|---|---|---|---|
+| Calendar | [requirements/calendar.md](requirements/calendar.md) | 35 | 15 |
+| Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) | 10 | 1 |
+| Print | [requirements/print.md](requirements/print.md) | 10 | 5 |
+| Theme | [requirements/theme.md](requirements/theme.md) | 61 | 9 |
+| Search | [requirements/search.md](requirements/search.md) | 11 | 7 |
+| Events | [requirements/events.md](requirements/events.md) | 46 | 39 |
+| Event templates | [requirements/event_templates.md](requirements/event_templates.md) | 8 | 8 |
+| Rules | [requirements/rules.md](requirements/rules.md) | 64 | 23 |
+| History | [requirements/history.md](requirements/history.md) | 30 | 26 |
+| Sources (section) | [requirements/sources.md](requirements/sources.md) | 3 | 2 |
+| Feeds (section) | [requirements/feeds.md](requirements/feeds.md) | 3 | 2 |
+| Connections (common) | [requirements/connections.md](requirements/connections.md) | 58 | 52 |
+| Local calendar | [requirements/connections.d/local_calendar.md](requirements/connections.d/local_calendar.md) | 16 | 16 |
+| Generic Feed | [requirements/connections.d/generic_feed.md](requirements/connections.d/generic_feed.md) | 28 | 28 |
+| CCS+ | [requirements/connections.d/ccs.md](requirements/connections.d/ccs.md) | 31 | 31 |
+| Calendar link | [requirements/connections.d/calendar_link.md](requirements/connections.d/calendar_link.md) | 6 | 6 |
+| Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) | 71 | 70 |
+| Google two-way sync | [requirements/connections.d/google_two_way.md](requirements/connections.d/google_two_way.md) | 7 | 7 |
+| Plugins (common) | [requirements/plugins.md](requirements/plugins.md) | 1 | 0 |
+| Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) | 19 | 18 |
+| Settings | [requirements/settings.md](requirements/settings.md) | 53 | 39 |
+| Account | [requirements/account.md](requirements/account.md) | 55 | 50 |
+| Shell | [requirements/shell.md](requirements/shell.md) | 21 | 17 |
+| Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) | 17 | 13 |
+| Deployment | [requirements/deployment.md](requirements/deployment.md) | 29 | 26 |
+| Documentation | [requirements/documentation.md](requirements/documentation.md) | 12 | 12 |
+| Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) | 82 | 40 |
+
+## Checking a feature file
+
+A feature file is not done when its rows are written. After organizing a feature into requirements and sub-requirements, go back over it:
+
+1. **The laws and rules**: every row obeys rules 1 to 5 (the two laws, numbers, shared homes, specifics only). Search the other files for the same rule in other words before accepting a row as new.
+2. **Simulate three jobs**, and fix what stops you:
+   - **Coder**: every term is defined; every behavior and boundary is stated; time and size limits are stated; nothing has to be guessed.
+   - **Tester**: every row has a visible pass or fail; one rule per row, so a failure says which; time can be controlled in a test.
+   - **Reviewer**: the statement says what to build, with no history or Python-app notes; the code can be compared with it row by row.
+
+The aim is that the requirement files speak for themselves, so the build rules can stay short.
+
