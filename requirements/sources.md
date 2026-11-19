@@ -1,6 +1,8 @@
 # Requirements: sources
 
 Statuses: verified, built, open, planned (approved, not built yet) and proposed (drafted, not yet reviewed by the Developer).
+Terms: a **source** is a place the app reads events from (CCS+, a calendar link, an uploaded file) or a **Local** calendar the user keeps in the app itself; **read-only** means events cannot be added or changed at the source (CAP-05).
+
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
@@ -15,6 +17,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | SRC-01.h | proposed | Source color can be changed and saved; the new color is reflected immediately in its source display. | — | S38-15, S59-22 |
 | SRC-01.i | proposed | Legacy source notes that merely repeat the source kind are treated as absent notes. | — | changelog_gaps_901-1200:24 |
 | SRC-01.j | proposed | The user can change source-calendar and outgoing-feed order, and the new order is saved immediately; shared interaction follows UI-13. | — | readme_gaps:59, changelog_gaps_1201-1500:15 |
+| SRC-01.k |  | A source's kind is fixed text in its module header: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar or Calendar Feed. The module is called Sources. | — | theme.md Clarifications |
 | SRC-02 | proposed | One calendar is the default for the events the user adds. | — | — |
 | SRC-02.a | proposed | A Local calendar can be selected as default; a read-only CCS+ calendar cannot (CAP-05). | — | S63-13, S63-14, S63-15, S66-04 |
 | SRC-02.b | proposed | A valid saved Local default calendar is used whatever the source order; if it no longer exists, the first Local calendar is used. With no sources, creating a Local calendar also makes it the default. | — | S77-13, S77-14, S77-15 |
@@ -86,6 +89,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | SRC-09.d | proposed | The source status event count counts the published feed events, with event visibility determined by CAP-02. | — | changelog_gaps_2101-2336:30 |
 | SRC-09.e | proposed | A source can be turned off and back on, with its saved off state cleared when reenabled. | — | S63-20, S63-21, S63-23 |
 | SRC-09.f | proposed | Turning a source off removes its events from published feeds while retaining its selected feed memberships for reenabling. | — | changelog_gaps_301-600:23 |
+| SRC-09.g |  | A module's status line says "Last synced" or "Sync failed" with its time, never "Last check was successful"; the line beside the action says "Next check @" with its time. | — | theme.md Clarifications |
 | SRC-10 | proposed | The user can remove a source, and keep or merge its events. | — | — |
 | SRC-10.a | proposed | Removing a source removes its stored events and its membership from destinations, while keeping a combined Google destination. | — | S26-50, S26-51 |
 | SRC-10.b | proposed | Removing the last Local calendar keeps that calendar and empties its events, rather than leaving no Local calendar; its feed and rule memberships are kept, and ensuring a Local calendar afterward does not create a duplicate. | — | S36-46, S36-47, S49-32, readme_gaps:63, changelog_gaps_601-900:39 |

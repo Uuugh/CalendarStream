@@ -27,7 +27,6 @@ Where each decision in the legacy `build_rules/theme.md` Clarifications goes, wh
 - Changing the public address with Google API Sync set up pops up a notice pointing at the module's assist box (SET-04).
 
 **sources.md, feeds.md, google.md**
-- Module header words: Last synced hh:mm or Sync failed hh:mm; a feed says Last read by Google hh:mm; Next check @ hh:mm; Google modules say "Next push instantaneous". The kinds (fixed text): CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar, Calendar Feed. The module is called Sources. An Include box's calendars run down columns of three, then a second column; From and To labels are as wide as the longer, dates lined up; a feed's Add to… buttons are as wide as the longest. A feed's Include says the date range in words (Dates (optional; empty = all), From over To): conflicts with UI-23, asked as a question.
 - A credentials row (Client ID / secret) ends with a trash that asks before deleting; a Settings part that works shows everything at once, nothing under Expand, with its Remove (red, lower left) and its options beside it. A row of settings that belong together is one line (Check for updates [Hourly] ☐ Auto-update).
 - The flows of the Status/Action buttons (theme section 7): Sync Now, Check now, Update now, Connect, Remove a calendar, Import.
 
