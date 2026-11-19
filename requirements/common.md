@@ -70,6 +70,11 @@
 |---|---|---|
 | TIM-08 | backlog | An imported event that carries no time zone gets the installation's default zone (DEP-05). | — | Developer, Nov 17 |
 | TIM-09 | proposed | A time zone is always one of the real zones: the zone picker offers only real zones, and an imported event that names a zone that does not exist is given the default zone (TIM-08) instead. |
+| TIM-11 | proposed | The display time zone can be cleared, and "today" everywhere is the day in the display zone. | — | R6 gap |
+| TIM-11.a | proposed | Choosing no zone, or the server zone, clears the display zone; a zone that does not exist is not saved and shows msg:unknownTimeZone. | — | R6 gap |
+| TIM-11.b | proposed | A saved zone that is not valid is ignored and the server zone is used. | — | R6 gap |
+| TIM-11.c | proposed | "Today" in the calendar, the event pages and Print is the current day in the display zone. | — | R6 gap |
+| TIM-11.d | proposed | A time shown with a date is a clock time alone when the day is today, otherwise the short date and the clock time. | — | R6 gap |
 
 ## UI (UI)
 
@@ -240,6 +245,34 @@ CalendarStream), **rule** (made by a rule).
 | Events added in Google remembered as left alone | 500 | 500 | default only |
 | Instant-update channel random values | identifier 16 bytes, token 32 bytes | | default only |
 | Google calendar colors | 1 #ac725e, 2 #d06b64, 3 #f83a22, 4 #fa573c, 5 #ff7537, 6 #ffad46, 7 #42d692, 8 #16a765, 9 #7bd148, 10 #b3dc6c, 11 #fbe983, 12 #fad165, 13 #92e1c0, 14 #9fe1e7, 15 #9fc6e7, 16 #4986e7, 17 #9a9cff, 18 #b99aff, 19 #c2c2c2, 20 #cabdbf, 21 #cca6ac, 22 #f691b2, 23 #cd74e6, 24 #a47ae2 | | default only |
+| History lines kept | 1,000 | | default only |
+| History lines shown on the page | 300 | | default only |
+| Report History lines | 60 | | default only |
+| Report title length | | at most 120 characters | default only |
+| Report download details length | | at most 6,000 characters | default only |
+| Report GitHub link length | | at most 7,000 characters; the log field then cut to 1,500 characters | default only |
+| Redaction lengths | a listed value is replaced from 3 characters; an unbroken run of 32 characters | | default only |
+| Elapsed time in download details | 2 decimals | | default only |
+| Download time limits | 20 seconds to connect, 60 seconds overall | | default only |
+| Web page quoted in a download error | | from the first 4,000 bytes | default only |
+| Import and upload date window | | 3,650 days before and after today | default only |
+| Tags per calendar | | at most 30, each at most 40 characters | default only |
+| Hidden kinds in the calendar key | | at most 60 | default only |
+| Own-address lookup | at most every 10 minutes | | default only |
+| Google traffic entries kept (beta) | | 200, in memory | default only |
+| Sign-in failures from all addresses | 50 within 15 minutes | | default only |
+| Container health check | every 60 seconds, answer within 5 seconds | | default only |
+| Database health check | every 10 seconds, 5 seconds limit, 6 retries, 30 seconds start | | default only |
+| Database connection pool | 1 to 4 connections | | default only |
+| Installer stack defaults | port 8080, or 8078 plus the stack number; stack number 2 or the lowest free; user 1000, group 100 | | default only |
+| Installer secrets | updater token 40 random letters and digits; database password 32 | | default only |
+| Environment defaults | time zone America/Chicago, image tag latest, no profiles, prefix calendar_stream, restart unless-stopped, trusted proxies 127.0.0.1, database calendar_stream, database user ccs | | default only |
+| CCS+ calendar address | https://ccsplus.ual.com/calendarsyncapi/api/Calendar/GetCalendar | | database |
+| Event length when the setting is not valid | 1 hour | | default only |
+| Updater request time limit | 15 seconds | | default only |
+| Identifier lengths | six hexadecimal digits after the letter; a hand-made event 16 hexadecimal digits | | default only |
+| Password hashing | scrypt cost 16,384, block size 8, parallelism 1, 32-byte result, 16-byte random salt | | default only |
+| Secret encryption | PBKDF2-SHA256 390,000 rounds, 16-byte random salt; 8 derived keys cached | | default only |
 | Default icons | favicon 32 px, app icon 192 px, Apple touch icon | | default only |
 | Update check time limit | 15 seconds | | default only |
 | Update checker first wait | 30 seconds | | default only |

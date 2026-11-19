@@ -82,4 +82,7 @@ Terms used below (defined once):
 | ACC-09.a | proposed | Initial-setup and signed-in form tokens are distinct; a setup token cannot authorize a public-address change. Mismatched form tokens are refused. | — | S23-02, S23-03, S32-06, S77-23, S77-24, S77-25 |
 | ACC-09.b | proposed | Cross-site form changes are refused and leave the saved value unchanged. | — | S23-23 |
 | ACC-09.c | proposed | Page responses restrict framing to the same origin, prevent content-type sniffing and suppress referrer disclosure. | — | S23-25, S36-37 |
-
+| ACC-05.e | proposed | A page password is hashed with scrypt using the cost, block size, parallelism, result length and fresh random salt length in DEF-01 (Password hashing). | — | R6 gap |
+| ACC-05.f | proposed | Encrypted credentials use a key derived from the database password and a random salt with the rounds in DEF-01 (Secret encryption); sealing with no database password fails. | — | R6 gap |
+| ACC-05.g | proposed | A credential that cannot be decrypted reads as not set: a CCS+ password counts as unset, a Google client secret is empty, and a Google token reports an error text saying it cannot be decrypted. | — | R6 gap |
+| ACC-05.h | proposed | A saved secret is never shown again; leaving its field blank keeps the saved one. | — | R6 gap |

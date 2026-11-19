@@ -102,3 +102,14 @@ Terms: **one-way** moves events in one direction only (a source brings them in, 
 | CON-09.f | proposed | A published event carries its identifier, the time it was published (UTC), its title, and its location and notes when they are not empty; a free event is marked transparent. | — | R4 gap |
 | CON-09.g | proposed | A published event carries a marker saying whether it was added on the page (added), made by a rule (rule), a source event changed on the page (edited) or unchanged from its source (source). | — | R4 gap |
 | CON-09.h | proposed | A published event's reminders are display reminders titled with the event's title, in whole minutes, without duplicates, largest first. | — | R4 gap |
+| CON-01.g | proposed | A Google account added later gets an identifier of the letter a and six hexadecimal digits, and the CCS+ connection has the identifier ccs. | — | R6 gap |
+| CON-03.p | proposed | A failed download of a feed is always Error, with the reason as its message. | — | R6 gap |
+| CON-03.q | proposed | A rejected sign-in raises the count of rejected sign-ins in a row by one, and a successful reply sets it to 0. | — | R6 gap |
+| CON-03.r | proposed | A CCS+ check with no login saved sets only the status Setup with msg:enterYourCcsUsernameAnd and records no History line. | — | R6 gap |
+| CON-06.u | proposed | Checks start when the app starts and when a source is added; a Local calendar has no checks. | — | R6 gap |
+| CON-06.v | proposed | The browser-like download client imitates the newest browser version it knows; a feed is always downloaded with the plain client. | — | R6 gap |
+| CON-06.w | proposed | Every download waits for the connect time and the total time in DEF-01 (Download time limits) and reports a timeout as a download failure. | — | R6 gap |
+| CON-06.x | proposed | A reply that does not look like a calendar is quoted in the error from the start of the reply up to the length in DEF-01, shortened to the snippet length in DEF-01. | — | R6 gap |
+| CON-07.l | proposed | A source event with a date only as its start is an all-day event, lasting one day when it has no end. | — | R6 gap |
+| CON-07.m | proposed | A timed source event starting exactly at midnight with no end or duration becomes one all-day event. | — | R6 gap |
+| CON-07.n | proposed | A timed source event not starting at midnight with no end is read with its end equal to its start and flagged as having no end, so that rules decide its length; one that no rule changes gets the default length (the event hours setting). | — | R6 gap |

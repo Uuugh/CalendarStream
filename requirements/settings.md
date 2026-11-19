@@ -70,4 +70,8 @@
 | SET-07.a | proposed | Settings lets the Developer select another release (a build), including one typed by hand, for a temporary release made to solve one user's problem. | — | F24.1 |
 | SET-07.b | proposed | Settings can show an alternate port, and write it to `.env`; a change takes effect when the container is recreated. | — | F24.3 |
 | SET-07.c | proposed | The update stream is selectable: Stable, Beta, or a release entered by hand. | — | F24.4, F54 |
-
+| SET-05.x | proposed | The update check reads the version file of the channel (beta or stable) within the time in DEF-01, identifying the app by name and version; the stable channel never offers a beta, and a failure's text is kept. | — | R6 gap |
+| SET-05.y | proposed | The channel is beta when the image tag is beta or contains -beta.; only a strictly newer version is offered, and a beta is older than its own release. | — | R6 gap |
+| SET-05.z | proposed | The app asks the updater to update with the image name, in the background, with the secret token, within the time in DEF-01; the answers started, accepted and busy count as started. | — | R6 gap |
+| SET-05.aa | proposed | A failed request to the updater shows msg:updaterNotSetUp, msg:updaterUnreachable ({reason}), msg:updaterRefusedToken or msg:updaterAnsweredHttp ({status}). | — | R6 gap |
+| SET-05.ab | proposed | An installation pinned to an exact version cannot be updated by the updater, only by the installer. | — | R6 gap |

@@ -32,4 +32,28 @@
 | DEP-05.a | backlog | Environment (.env) values are only starting values: a value saved in the database always overrides the matching environment setting (time zone, sync interval, CCS+ client, calendar name, default event hours, 24-hour rule). The only settings that stay environment-only are the ones the app needs before it can read the database: the stack name and folders, the image tag, the updater profile, the user, group and restart policy, the trusted proxy addresses and the database password. | — | Developer, Nov 17; README Settings |
 | DEP-05.b | backlog | The installer sets the installation's time zone (the server's TZ setting). It is the default zone for an imported event that carries no zone and for server work without a device (scheduled downloads), until the user defines otherwise: a default zone saved in Settings > Site Admin (SET-06) overrides the installer's. | — | Developer, Nov 17 |
 | DEP-05.c | backlog | A one-time migration tool copies all data from a Python-app database into the new Dart database (events, edits, custom events, History, rules, sources, destinations, settings, Google connection and feeds), never changes the old database, and prints a report of what it copied for the Developer to check. The page password is not carried over: after migration the user requests a new login password. The tool is tested in three steps: first on a made-up demo database, then on a copy of the real database, and only then on the real database. | — | Developer, Nov 17 |
-
+| DEP-02.m | proposed | Every installer question shows its default in square brackets and Enter accepts it; later runs default to the current settings, and answers are read from the terminal even when the installer's input is piped. | — | R6 gap |
+| DEP-02.n | proposed | The installer stops at the first failure. | — | R6 gap |
+| DEP-02.o | proposed | The installer finds a previous installation in the current folder (a compose file naming calendar_stream) or else in the default stack folder, and takes its defaults from that folder's .env. | — | R6 gap |
+| DEP-02.p | proposed | The subdomain slug is lower case with every run of other characters replaced by one hyphen and leading and trailing hyphens and dots removed; an empty slug becomes calendarstream. | — | R6 gap |
+| DEP-02.q | proposed | A folder path accepts ~ and relative paths, is made absolute, loses a trailing slash and is created when missing. | — | R6 gap |
+| DEP-02.r | proposed | The default port and stack number follow DEF-01 (Installer stack defaults); containers are named prefix and number, prefix_db and number, and prefix_updater and number, the prefix defaulting to calendar_stream. | — | R6 gap |
+| DEP-02.s | proposed | The installer writes its answers to .env (the image tag, stack prefix, data folder, stack number, port and profiles), replacing an existing or commented line and keeping the others. | — | R6 gap |
+| DEP-02.t | proposed | The installer creates the updater token file, owner-readable, even when the updater is declined, with the length in DEF-01. | — | R6 gap |
+| DEP-06 | proposed | The stack's parts are fixed. | — | — |
+| DEP-06.a | proposed | The stack is the app, a Postgres database and an optional updater started by a profile. | — | R6 gap |
+| DEP-06.b | proposed | The database reports ready by the check in DEF-01 (Database health check). | — | R6 gap |
+| DEP-06.c | proposed | The container reports health by calling the health interface (DIA-03) at the interval in DEF-01 (Container health check). | — | R6 gap |
+| DEP-06.d | proposed | The database name and user take effect when the database is first created. | — | R6 gap |
+| DEP-06.e | proposed | The entrypoint starts as root, reads the secret files with line breaks removed, then runs the app as the configured user and group, without extra groups; a missing secret file is warned about. | — | R6 gap |
+| DEP-06.f | proposed | The app listens on all addresses on the port in DEF-01 (Installer stack defaults) inside the container. | — | R6 gap |
+| DEP-06.g | proposed | The public address is set on the page, not in .env; an older environment value is read once and moved to the page setting, and a value naming only a host address and the app port counts as not set. | — | R6 gap |
+| DEP-06.h | proposed | The defaults of .env are in DEF-01 (Environment defaults). | — | R6 gap |
+| DEP-06.i | proposed | The CCS+ calendar address defaults to the one in DEF-01; a saved link replaces it. | — | R6 gap |
+| DEP-06.j | proposed | A feed token from an older version is made once as a random URL-safe value, and a typed stream name wins over it. | — | R6 gap |
+| DEP-06.k | proposed | Old login files and their secret variants are imported once; the user name is trimmed and the page user name defaults to admin. | — | R6 gap |
+| DEP-06.l | proposed | The database host, port and password (from its secret file) come from the environment; a missing password is warned about, and the user and password are percent-encoded. | — | R6 gap |
+| DEP-06.m | proposed | The database uses the connection pool in DEF-01, and shutdown cancels the background loops and closes the database. | — | R6 gap |
+| DEP-06.n | proposed | A beta image is built when the version changes and the suites pass and the image scan has no fixable high or critical finding; it is tagged with the version, the version with its v prefix, and beta; the latest tag moves when the stable version changes. | — | R6 gap |
+| DEP-06.o | proposed | An event length setting accepts decimals, an h suffix and the all-day words; an invalid one is warned about and the default length in DEF-01 is used. | — | R6 gap |
+| DEP-06.p | proposed | The 24-hour rule setting is off for 0, false, no and off. | — | R6 gap |

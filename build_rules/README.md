@@ -14,6 +14,6 @@ Almost everything here is **legacy** from the Python era and must not be followe
 | `reverse-engineering/` | Requirements reverse-engineered from the Python app by six agents that never saw ours (`reverse/`), and their comparison with ours (`compare/`): the gaps, the differences, and the rows only we have. Working data for filling the gaps; delete when done. |
 | `layer-map.md` | The record of decisions for the port (target layout, testing, time zones). Its status lines and "resume here" are out of date; trust `requirements/` where they differ. |
 
-## Legacy (do not follow; the Product Owner retires these in step 5 of `orchestration.md`)
+## Legacy (do not follow; the Product Owner retires these in step 8 of `orchestration.md`)
 
 `0-overview.md`, `1-plan.md`, `2-build.md`, `3-test.md`, `4-review.md`, `5-deploy.md` (the DASH, PLAN, BUILD, TEST, REVIEW and DEPLOY commands), `dashboard.md`, `roadmap.md`, `low-findings.md`, `build-costs.md`, `dependencies.md`, `ui_ux.md`, `theme.md` and `theme-map.md` (converted into `requirements/theme.md` and `common.md`), `gpt-tasks.md` (the ChatGPT task queue, finished), `requirements-scan-1.md`, `oracle-coverage-notes.md`.

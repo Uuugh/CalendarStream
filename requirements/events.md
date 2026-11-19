@@ -93,3 +93,5 @@ The event pop-up, linked events, hiding and reverting.
 | EVT-05.k | proposed | The picker does not offer the event being edited (shown as msg:linkThisEvent) or an event made by a rule (shown as msg:linkMadeByRule, CAP-04), and does not show deleted events. | — | R3 gap |
 | EVT-05.l | proposed | Saving with a link makes one link rule for the event on its own calendar with the actions Delete this event and Move this event; choosing the same target again leaves the rule as it is, another target updates it, and clearing the link, or a target that is hidden, deleted or missing, removes it. | — | R3 gap |
 | EVT-06.d | proposed | Print in the event dialog opens Print Preview (PRT-01) in Day view for the event's day; the choices made there are not remembered for later prints. | — | R3 gap |
+| EVT-02.l | proposed | A typed time may be written 9:30, 9.30, 9h30, 930, 21:30, 2130, 9 pm, 9:30pm or 9:30 p.m.; a bare hour means that hour and :00, and an am or pm hour is 1 to 12. | — | R6 gap |
+| EVT-02.m | proposed | The event form shows the start and the end each in its own time zone, with the clock's label. | — | R6 gap |
