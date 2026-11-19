@@ -7,7 +7,7 @@ issues database): I4, I27, I33 (2/3-line status box), I39 (animation), I46 and I
 |---|---|---|---|---|
 | SHL-01 | proposed | The page identifies CalendarStream in its title bar, footer and favicon. | — | — |
 | SHL-01.a | proposed | The page identifies CalendarStream in its title. Its footer shows the running version, linked to its release (including the full beta identifier), the copyright, and a link to README License & Attribution (DOC-01). | — | S61-07, S29-01, S30-05, S61-08, changelog_gaps_1201-1500:25 |
-| SHL-01.b | built | The favicon is the light CalendarStream icon with its white background cropped to a circle and the rest transparent. | — | F63 |
+| SHL-01.b | proposed | The favicon is the light CalendarStream icon with its white background cropped to a circle and the rest transparent. | — | F63 |
 | SHL-01.c | proposed | The CalendarStream logo files have no compression or visual artifacts. | — | F1 |
 | SHL-01.d | backlog | The title bar shows the logo's mark (no words; the Light mark on light pages, the Dark mark on dark ones) left of the title, and the title in the logo colors (THM-02.m). One transparent favicon serves light and dark. | — | theme.md Clarifications |
 | SHL-02 | proposed | The page is available in several languages, chosen automatically or by the user. | — | — |
@@ -21,7 +21,7 @@ issues database): I4, I27, I33 (2/3-line status box), I39 (animation), I46 and I
 | SHL-02.h | proposed | A browser form error presents a localized error page with a way to return to the preceding page; API error responses follow SHL-05. | — | changelog_gaps_1801-2100:30 |
 | SHL-03 | proposed | The page uses a light, dark or system theme, and starts in the saved one. | — | — |
 | SHL-03.a | proposed | With no saved theme override, the page uses Match system; choosing Dark applies it and indicates it as the selected choice. The page starts in the saved theme without first showing another (SHL-03 owns the choice control). | — | S66-01, S67-47, S67-49, changelog_gaps_2101-2336:25 |
-| SHL-03.b | built | The Light / Dark / Match system choice is one icon when closed, a button plus menu like the view picker, replacing a three-way cycling button. | — | F57 |
+| SHL-03.b | proposed | The Light / Dark / Match system choice is one icon when closed, a button plus menu like the view picker, replacing a three-way cycling button. | — | F57 |
 | SHL-05 | proposed | The page loads everything from the installation and keeps its errors machine-readable for programs. | — | — |
 | SHL-05.a | proposed | Rendering a CalendarStream page loads its resources, including its fonts (the Mono font with its license), from the CalendarStream installation, without contacting external resource providers such as Google Fonts. | — | readme_gaps:55, changelog_gaps_1201-1500:27, S35-07, S35-08, S35-10, S35-18 |
 | SHL-05.b | proposed | Versioned stylesheet, language-script and font assets can be cached as immutable, fonts for one year; an obsolete script version or an unsupported script language is not served, and the unversioned font is not advertised as immutable. | — | S39-03, S39-04, S39-05, S39-06, S39-07, S39-08, changelog_gaps_901-1200:28 |

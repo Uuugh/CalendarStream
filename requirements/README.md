@@ -40,7 +40,7 @@ These apply to every row in `requirements/`. Every rule has a test: a check in `
 `| ID | status | statement | test | evidence (temporary) |`
 
 - **ID**: a feature prefix and a number (CAL-03). A requirement may have sub-requirements (ACC-06, ACC-06.a, ACC-06.b); a link points at the requirement unless it means exactly one sub-requirement. When IDs change, `oldkey.md` records old to new.
-- **status**: `proposed` (drafted, not yet agreed) or `backlog` (the Product Owner agreed: it is a Requirement, waiting for a sprint). The Product Owner agrees to a row by deleting `proposed`; a blank status is read as `backlog` and the Author writes the word. With Scrum the Dashboard records what follows (the sprint a requirement is built in, and done when its test passes); until then `built` (implemented in the Dart port) and `verified` (a Dart test passes it) may be used. `open` and a `built` that predates the Dart port are Python-era words on some rows; the Product Owner decides each when reviewing it.
+- **status**: `proposed` (drafted, not yet agreed) or `backlog` (the Product Owner agreed: it is a Requirement, waiting for a sprint). The Product Owner agrees to a row by deleting `proposed`; a blank status is read as `backlog` and the Author writes the word. With Scrum the Dashboard records what follows: the sprint a requirement is built in, and done when its test passes.
 - **test**: the test that verifies it (path and name), once one exists. `—` until the inventory of the Python suites
   (`requirements/inventory/`) has been matched to requirements.
 - **evidence (temporary)**: the Python-suite keys (and old Dashboard items) a row came from; deleted when the conversion ends.
@@ -65,14 +65,14 @@ The scans of the README and CHANGELOG and the gap triage were folded into these 
 
 | Feature | File | Requirements | Proposed (to review) |
 |---|---|---|---|
-| Calendar | [requirements/calendar.md](requirements/calendar.md) | 35 | 15 |
+| Calendar | [requirements/calendar.md](requirements/calendar.md) | 35 | 16 |
 | Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) | 10 | 1 |
-| Print | [requirements/print.md](requirements/print.md) | 10 | 5 |
+| Print | [requirements/print.md](requirements/print.md) | 10 | 6 |
 | Theme | [requirements/theme.md](requirements/theme.md) | 61 | 9 |
 | Search | [requirements/search.md](requirements/search.md) | 11 | 7 |
-| Events | [requirements/events.md](requirements/events.md) | 46 | 39 |
+| Events | [requirements/events.md](requirements/events.md) | 46 | 43 |
 | Event templates | [requirements/event_templates.md](requirements/event_templates.md) | 8 | 8 |
-| Rules | [requirements/rules.md](requirements/rules.md) | 64 | 23 |
+| Rules | [requirements/rules.md](requirements/rules.md) | 64 | 63 |
 | History | [requirements/history.md](requirements/history.md) | 30 | 26 |
 | Sources (section) | [requirements/sources.md](requirements/sources.md) | 3 | 2 |
 | Feeds (section) | [requirements/feeds.md](requirements/feeds.md) | 3 | 2 |
@@ -84,11 +84,11 @@ The scans of the README and CHANGELOG and the gap triage were folded into these 
 | Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) | 71 | 70 |
 | Google two-way sync | [requirements/connections.d/google_two_way.md](requirements/connections.d/google_two_way.md) | 7 | 7 |
 | Plugins (common) | [requirements/plugins.md](requirements/plugins.md) | 1 | 0 |
-| Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) | 19 | 18 |
-| Settings | [requirements/settings.md](requirements/settings.md) | 53 | 39 |
-| Account | [requirements/account.md](requirements/account.md) | 55 | 50 |
-| Shell | [requirements/shell.md](requirements/shell.md) | 21 | 17 |
-| Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) | 17 | 13 |
+| Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) | 19 | 19 |
+| Settings | [requirements/settings.md](requirements/settings.md) | 53 | 45 |
+| Account | [requirements/account.md](requirements/account.md) | 55 | 54 |
+| Shell | [requirements/shell.md](requirements/shell.md) | 21 | 20 |
+| Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) | 17 | 14 |
 | Deployment | [requirements/deployment.md](requirements/deployment.md) | 29 | 26 |
 | Documentation | [requirements/documentation.md](requirements/documentation.md) | 12 | 12 |
 | Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) | 82 | 40 |

@@ -8,7 +8,7 @@ Dashboard.
 |---|---|---|---|---|
 | DIA-01 | proposed | The user can get the information needed to diagnose a problem. | — | — |
 | DIA-01.a | proposed | Container log exposes the most recent log lines of the running app (the number in DEF-01), retrievable as plain text and copyable (DIA-01). | — | readme_gaps:72, changelog_gaps_601-900:34 |
-| DIA-01.b | built | A Copy log button next to Container log copies the container log straight to the clipboard, with no new tab and no manual select-all. | — | F64.1 |
+| DIA-01.b | proposed | A Copy log button next to Container log copies the container log straight to the clipboard, with no new tab and no manual select-all. | — | F64.1 |
 | DIA-01.c | proposed | Per-source Activity provides diagnostic details for the last download and makes the last received calendar file available for diagnosis. | — | changelog_gaps_1501-1800:21, changelog_gaps_2101-2336:26, changelog_gaps_1501-1800:21 |
 | DIA-02 | proposed | The user can report a problem or suggest a feature, with a report they control. | — | — |
 | DIA-02.a | proposed | The page offers Report a problem and Suggest a feature, allowing the user to describe a problem or idea; the report or suggestion is prefilled with the running CalendarStream version. | — | readme_gaps:78, changelog_gaps_1201-1500:32, changelog_gaps_1801-2100:25, changelog_gaps_1801-2100:25 |
