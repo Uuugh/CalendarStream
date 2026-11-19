@@ -13,7 +13,7 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **CGOW-04.j** Eligible local changes and valid remote change notices trigger reconciliation within seconds under normal service availability. What measurable latency target should replace “within seconds”? 
   Answer:
 - **HIS-01.j** Activity reports Healthy when its source is healthy and Unhealthy when its source is in error. How should mixed source states determine the overall Activity status? 
-  Answer:
+  Answer: st
 - **SET-03.e** A custom logo can be uploaded and shown; without one the default logo is used. Which image types and sizes are allowed (the old app accepted PNG, SVG, WebP, JPEG and ICO up to 256 KB), and an image that can carry script is not accepted? 
   Answer:
 - **CCCS-02.l** Existing CCS+ credentials can be imported from the old configuration, stored encrypted, and recorded as imported activity. Is this still needed after the port, given that the migration tool (DEP-05) copies the saved credentials? 
@@ -24,9 +24,9 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **CON-06.n** A source download that unexpectedly returns an empty calendar preserves the previous schedule. How is an unexpected empty response distinguished from an intentionally emptied source? 
   Answer:
 
-## Connections and sections (Nov 19)
+## Open, from the connections work (Nov 19)
 
-- **No limit on connections:** CON-01.d says the number of connections is not limited, but DEF-02 says every list that grows has a stated limit. Which wins: a limit in DEF-01, or an exception?
+- **Limit on connections:** CON-01.d says the number of connections is not limited. By DEF-02 (every list that grows has a stated limit) and the law of no exceptions it needs a limit in DEF-01. What number? Recommended: 50 connections.
   Answer:
 
 - **CCCS-03.g** The CCS+ site address can be overridden with a custom HTTPS address (a setting of the old app). Does the custom address still belong in the port?
