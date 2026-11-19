@@ -17,8 +17,8 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-01.h | backlog | Week and Day show an hourly grid: every hour of the day in a scrolling area that starts at the first event or at the hour in DEF-01; events are placed by their time, side by side when they overlap, and all-day events sit above. | — | theme.md Clarifications |
 | CAL-01.i | backlog | Today is marked by a filled date and an accent border around its whole day (THM-04.e). | — | theme.md Clarifications |
 | CAL-01.j | backlog | On a touch screen a horizontal swipe on the calendar turns the page (left: next, right: previous); a vertical swipe still scrolls. | — | theme.md Clarifications |
-| CAL-02 | proposed | The calendar shows times in the Local time zone (TIM-03), and the user can look at another zone for a while. | — | — |
-| CAL-02.a | backlog | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-02) is not changed. | — | S19-31; Developer, Nov 17 |
+| CAL-02 | proposed | The calendar shows times in the Local time zone (TIM-03), and the user can look at another zone. | — | — |
+| CAL-02.a | backlog | Selecting a time zone in the calendar's own picker shows event times in that zone as a view choice kept on the device (CAL-06.b); the Time Zones setting (SET-02) is not changed. | — | S19-31; Developer, Nov 17 |
 | CAL-03 | proposed | The user can move an event they may edit by pressing and dragging it. | — | — |
 | CAL-03.a | backlog | A long-press-drag moves an event, for the events that can be edited (CAP-01). | — | F61 |
 | CAL-03.b | backlog | In Week and Day the start snaps to the drag step in DEF-01. | — | — |
@@ -35,7 +35,7 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-05.a | backlog | Until the user chooses an orientation it is automatic: landscape for Month, Week and 5-day sheets, portrait for Day and Itinerary sheets (PRT-01.c). | — | S65-18..22 |
 | CAL-05.b | proposed | The views that can be printed are the calendar's views (CAL-01.b) and Itinerary, which lists events grouped by day. | — | S36-33, readme_gaps:53, changelog_gaps_1201-1500:16 |
 | CAL-05.c | backlog | Printing two months produces a sheet for each month. | — | S36-32 |
-| CAL-05.d | proposed | Print All sets the date range (UIC-23) from the first event through the last event. | — | readme_gaps:52 |
+| CAL-05.d | proposed | Print All uses the empty date range (UIC-23, All), which prints from the first event through the last event. | — | readme_gaps:52 |
 | CAL-05.e | proposed | Printing one event uses Day view for that print (EVT-06). | — | changelog_gaps_301-600:43 |
 | CAL-06 | proposed | The calendar header's right zone holds the view controls in a fixed order, and what the user chooses with them stays on the device until the user changes it. | — | — |
 | CAL-06.a | proposed | The right zone holds, in this order: Time Zone, View, 12/24 clock, Print, Full page, and + last (UIC-24). Zone alignment and stacking follow UIC-14; what each control does is in its own requirement (CAL-02.a, CAL-01.b, TIM-10, CAL-05, CAL-04). | — | theme.md 13c (to confirm) |

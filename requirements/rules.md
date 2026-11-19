@@ -36,7 +36,7 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-04.d | proposed | An Add-event rule that names an event template that does not exist, and has no title, is not valid (UIC-19). | — | S26-26 |
 | RUL-04.e | proposed | Record changes remembers later edits to a matching event and annotates it ("Changed ... time"). | — | S33-11, S33-12 |
 | RUL-04.f | proposed | Record changes tracks source title, time and location changes, moved recurring occurrences and dropped events, annotates the affected event and records the observed changes in activity (RUL-04, HIS-01). | — | changelog_gaps_1201-1500:31, changelog_gaps_1201-1500:31 |
-| RUL-04.g | proposed | An event deleted by a rule follows that rule’s current outcome: changing or removing the deleting action brings the event back (RUL-03, CAP-01). | — | changelog_gaps_301-600:30 |
+| RUL-04.g | proposed | An event deleted by a rule follows that rule’s current outcome: changing or removing the deleting action brings the event back (RUL-03, CAP-02). | — | changelog_gaps_301-600:30 |
 | RUL-04.h | proposed | A new Then action, "Link to Event", links the rule to a specific event chosen with the existing date picker, alongside "Delete this event" and "Move this event". | — | F60.2 |
 | RUL-04.i | proposed | "Link to" in the rule dialog is simplified to "Link to a Rule": it keeps its place in the dialog but uses the layout of the Sources > Rules subsection. | — | F60.1 |
 | RUL-05 | proposed | A rule applies to all calendars or to chosen ones, and rules have an order. | — | — |

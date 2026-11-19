@@ -7,8 +7,8 @@ The event pop-up, linked events, hiding and reverting.
 | EVT-01 | proposed | The user adds, edits and removes events of their own, in a dialog. | — | — |
 | EVT-01.a | proposed | Clicking a day (or the plus) opens the new-event dialog for that date. The dialog follows the shared dialog rules (UIC-01, UIC-02). | — | S26-03, S46-15, S36-57, S67-13 |
 | EVT-01.b | proposed | A new event defaults to the system clock's time zone, or to the calendar's time zone when the calendar has one selected. It can be saved into any calendar chosen in the source selector; with none chosen it goes to the initial Local calendar. A custom event appears on its calendar page. | — | S19-33, S26-30, S36-21, S65-04 |
-| EVT-01.c | proposed | Title, start and end dates and start and end times are required; leaving one out blocks saving. | — | S57-03 |
-| EVT-01.d | proposed | The confirmation after saving an event names the event (UIC-13). | — | S36-36, S36-51 |
+| EVT-01.c | proposed | Title, start date and end date are required, and so are start time and end time unless the event is all-day (EVT-02.e); leaving one out blocks saving. | — | S57-03 |
+| EVT-01.d | proposed | The confirmation after saving an event names the event. | — | S36-36, S36-51 |
 | EVT-01.e | proposed | A custom event is deleted (asking first, UIC-06) and leaves its calendar; cancelling leaves it.\ | — | Yes) and leaves its calendar; cancelling leaves it. A deleted event keeps a deletion marker in storage. |
 | EVT-01.f | proposed | Restoring a deleted or externally removed event clears its marker and gives it custom origin. | — | S49-15, S49-19 |
 | EVT-01.g | proposed | The Calendar label has an info text (UIC-07) explaining that changes affect CalendarStream and Google only. | — | S58-01, S58-34 |

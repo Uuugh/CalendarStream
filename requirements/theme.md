@@ -11,7 +11,7 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-01.d | backlog | Default text is 14 px; labels are weight 600; notes are 13 px in the muted color. | — | theme.md section 1 |
 | THM-02 | proposed | Every color is a named token with a light value and a dark value. The light palette is the Soft palette. The event colors a user picks are the palette of THM-09, not tokens. | — | theme.md section 2; picture 2·2 |
 | THM-02.a | backlog | bg is the page: light #f7f6f3, dark #0f1218. | — | theme.md section 2 |
-| THM-02.b | backlog | card is sections, modules and pop-ups, and the words on a filled button: light #fdfcfa, dark #171b23. | — | theme.md section 2 |
+| THM-02.b | backlog | card is sections, modules and pop-ups, and the words on a button filled with a status color: light #fdfcfa, dark #171b23. | — | theme.md section 2 |
 | THM-02.c | backlog | soft is quiet fills (instruction tiles, hover): light #f1efeb, dark #1d222c. | — | theme.md section 2 |
 | THM-02.d | backlog | line is every border and divider: light #e8e4de, dark #2a303b. | — | theme.md section 2 |
 | THM-02.e | backlog | text is the text color: light #2b2f36, dark #e6e8ec. muted is labels, notes and status lines: light #626c7c, dark #98a2b3. | — | theme.md section 2 |
@@ -23,7 +23,7 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-02.k | backlog | bad (red: CalendarStream itself failed) is light #b4483c on #faeeeb, dark #f87171 on #2d1414 (badbg). | — | theme.md section 2 |
 | THM-02.l | backlog | Each section has its own border color, shown as 35% of the color mixed with line, on card: Calendar slate blue #5b6f9a, Calendars teal #2a9d8f, Feeds clear blue #2f86c8, All Rules lavender #9b8ad6, Event Templates copper #b8733a, History grey #8a8f98. | — | theme.md section 2 |
 | THM-02.m | backlog | The title's two words use the logo colors: Calendar is navy #0b1f44 in light and #e6e8ec in dark; Stream is #1a8cff in light and #4aa8ff in dark. | — | theme.md section 2 |
-| THM-03 | proposed | Icons are one family in one style, in the text color. | — | theme.md section 3; picture 2·3 |
+| THM-03 | proposed | Icons are one family in one style, and take their color from the part they sit in (the text color in text, THM-05.a in an icon button). | — | theme.md section 3; picture 2·3 |
 | THM-03.a | backlog | The icon family is Material Symbols Rounded at weight 400. | — | theme.md section 3 |
 | THM-03.b | backlog | Icons are 13 to 24 px. Adding an icon does not change an existing one. | — | theme.md section 3 |
 | THM-04 | proposed | Corners are rounded rectangles, never pills, and components have the sizes below; every border is 1 px. | — | theme.md section 4; picture 2·4 |
@@ -31,7 +31,7 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-04.b | backlog | Module headers are 50 px high; controls (fields and buttons) are 34 px high. | — | theme.md section 4 |
 | THM-04.c | backlog | Status/Action buttons are 132 × 50 px. Cancel/Save buttons are 130 × 34 px. | — | theme.md section 4 |
 | THM-04.d | backlog | Icon buttons are 34 × 34 px in the general toolbar and 28 × 28 px in the compact calendar toolbar. | — | theme.md sections 1 and 5 |
-| THM-04.e | backlog | The two 2 px lines are today's day in the calendar and the focus outline. | — | theme.md section 4 |
+| THM-04.e | backlog | Today's day in the calendar and the focus outline are marks of 2 px, not borders. | — | theme.md section 4 |
 | THM-04.f | backlog | A trash icon's lines are tinted red (30% of bad in muted, at least 3:1 contrast), the button itself unchanged; fully red on hover. | — | theme.md Clarifications |
 | THM-01.e | backlog | A field label is 12 px, in the muted color, over a 34 px field. | — | theme.md Clarifications |
 | THM-05 | proposed | Buttons share one look, and a status has one look per meaning. | — | theme.md sections 5 to 7 |
