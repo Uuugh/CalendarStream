@@ -35,7 +35,7 @@ The event pop-up, linked events, hiding and reverting. Issues against this featu
 | EVT-33 | proposed | A meeting link (Zoom and similar) is found in an event's conference fields, text or location with its query intact; plain text yields none. Extraction keeps an online meeting address the user already entered. | — | S63-01, S63-02, readme_gaps:50, changelog_gaps_301-600:21, changelog_gaps_301-600:21 |
 | EVT-38 | proposed | A linked event’s delete-with and move-with actions can each be enabled or removed independently through its link rule (RUL-11). | — | readme_gaps:46, changelog_gaps_301-600:31 |
 | EVT-39 | proposed | Choosing Rule for an event opens its associated rule, or starts a rule for that event when it has none; returning to the event follows EVT-32 and UI-02. | — | readme_gaps:46 |
-| EVT-41 | proposed | An event’s online meeting address is exported in its ICS URL property; feed round-trip preservation follows FED-29. | — | readme_gaps:50 |
+| EVT-41 | proposed | An event’s online meeting address is exported in its ICS URL property; feed round-trip preservation follows FED-04. | — | readme_gaps:50 |
 | EVT-42 | proposed | Local edits to an imported event survive subsequent source downloads; the source itself is unchanged (EVT-23). | — | readme_gaps:51, changelog_gaps_2101-2336:27 |
 | EVT-43 | proposed | An edited imported event identifies that it has local edits and indicates when its source changes after those edits. | — | readme_gaps:51, changelog_gaps_2101-2336:27 |
 | EVT-44 | proposed | An imported event’s local edits can be reverted to the current source version. | — | changelog_gaps_2101-2336:27 |

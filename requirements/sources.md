@@ -23,7 +23,7 @@ Terms: a **source** is a place the app reads events from (CCS+, a calendar link,
 | SRC-02.b | proposed | A valid saved Local default calendar is used whatever the source order; if it no longer exists, the first Local calendar is used. With no sources, creating a Local calendar also makes it the default. | — | S77-13, S77-14, S77-15 |
 | SRC-02.c | proposed | Local calendars do not offer Sync Now (CAP-06); the default calendar is identified (SRC-02). | — | S36-20, S36-23, S36-24, S49-02, S63-16 |
 | SRC-02.d | proposed | Additional Local calendars can be created; an unnamed one is named Local. | — | S36-22, S36-48 |
-| SRC-02.e | proposed | When a Local calendar is created because none exists, it is added to every existing feed; after that each feed decides which calendars it carries (FED-30). | — | changelog_gaps_1201-1500:18 |
+| SRC-02.e | proposed | When a Local calendar is created because none exists, it is added to every existing feed; after that each feed decides which calendars it carries (FED-01). | — | changelog_gaps_1201-1500:18 |
 | SRC-03 | proposed | The user signs in to CCS+ with their own credentials, which the app keeps safe, so it can read their schedule. | — | — |
 | SRC-03.a | proposed | CCS+ guidance distinguishes Calendar Sync credentials from CCS login credentials and explains enabling CCS+. | — | S18-05, S33-03 |
 | SRC-03.b | proposed | CCS+ setup is available directly with the source when it needs configuration, rather than only in Settings. Successful credential saving returns to that source. | — | S16-20, S18-03, S18-04, S18-07, S27-01 |

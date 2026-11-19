@@ -64,4 +64,4 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-64 | proposed | Changing an event template updates the events generated from it by rules (RUL-17). | — | changelog_gaps_1501-1800:25 |
 | RUL-65 | proposed | Record changes tracks source title, time and location changes, moved recurring occurrences and dropped events, annotates the affected event and records the observed changes in activity (RUL-18, HIS-01). | — | changelog_gaps_1201-1500:31, changelog_gaps_1201-1500:31 |
 
-Retired IDs (merged or dropped; numbers are never reused): RUL-47 (migration is DEP-14 and RUL-35); RUL-49 (RUL-25); RUL-50 (RUL-26); RUL-52 (FED-31 and CAP-01 already leave a hidden or rule-deleted event out of a feed); RUL-58 into UI-20; RUL-66 into RUL-65.
+Retired IDs (merged or dropped; numbers are never reused): RUL-47 (migration is DEP-14 and RUL-35); RUL-49 (RUL-25); RUL-50 (RUL-26); RUL-52 (FED-01 and CAP-01 already leave a hidden or rule-deleted event out of a feed); RUL-58 into UI-20; RUL-66 into RUL-65.

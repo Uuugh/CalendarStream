@@ -55,7 +55,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-34 | proposed | A box means the user can change it: fixed text (a title, the release channel) is plain text, never in a field box. A part that looks like a module but has nothing to fold (Settings > Updates) uses the module header layout, always open, with no Expand. | — | theme.md Clarifications |
 | UI-35 | proposed | A Copy button sits inside its field, like the password box's eye. A pair of credential fields (client ID and secret) is laid out like a login, connected or not. | — | theme.md Clarifications |
 | UI-36 | proposed | In every dialog and form a field has a muted label over it and a value that cannot be changed (an event's calendar) is plain text; related fields share a line (Calendar \| Title; Starts \| Ends, each with its Time under it). | — | theme.md Clarifications |
-| UI-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UI-19). | — | FED-13 and FED-14 (S evidence), SRH-03, theme.md section 14 |
+| UI-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UI-19). | — | FED-01 and FED-14 (S evidence), SRH-03, theme.md section 14 |
 
 ## Proposed (not yet reviewed)
 
