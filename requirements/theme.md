@@ -66,6 +66,3 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-09 | proposed | The event color palette (UIC-10) is Google Calendar's eleven colors. | — | theme.md section 11 (Color box) |
 | THM-09.a | backlog | Tomato #d50000, Flamingo #e67c73, Tangerine #f4511e, Banana #f6bf26, Sage #33b679, Basil #0b8043, Peacock #039be5, Blueberry #3f51b5, Lavender #7986cb, Grape #8e24aa, Graphite #616161. | — | theme.md section 11; picture 2·11 |
 
-Dart note: THM-01 becomes the text theme, THM-02 the color scheme plus an extension for the status colors (ok, run, warn, bad), THM-03 the icon theme, THM-04 the shapes and the component themes.
-
-Conversion progress (temporary): the legacy file is converted. Sections 1 to 14 became UIC-25 to UIC-33 and THM-01 to THM-09, the generic Clarifications became UIC-34 to UIC-36 and more, and the feature-specific decisions (section 15, the event dialog, the calendar header, History and the rest) are listed in `build_rules/theme-map.md` and become rows when their feature files are converted. When that list is empty the legacy file can go.

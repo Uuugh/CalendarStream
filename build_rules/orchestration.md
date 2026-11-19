@@ -1,30 +1,39 @@
-# Orchestration board (Nov 19)
+# Orchestration board (updated Nov 19)
 
-The author of the requirements orchestrates and checks; it does not do the other steps. Product Owner = the repository owner, who decides. This file is the memory of what is next, who does it, and how incoming work is checked. Update it when a step changes.
+The orchestrator (the author of the requirements) keeps the requirement files consistent, runs and checks the other agents, and does not build the app. Product Owner = the repository owner, who decides. This file is the memory of what is next and how incoming work is checked; update it when a step changes.
 
 ## Roles
 
-- **Product Owner**: decides; answers `build_rules/open-questions.md`; blanks the status of agreed rows; rewrites `build_rules/` as Scrum; launches the other agents.
-- **Author (this agent)**: keeps the requirement files consistent; parses and corrects work that comes in; runs the turns of a review; never builds the app and never plays the Coder.
-- **Coder**: a separate Dart and Flutter developer; reads only `requirements/` and reports gaps; later builds stories.
-- **Contributor** (for example ChatGPT): produces drafts, scans or stories as pull requests; the author checks them with the list below before they merge.
+- **Product Owner**: decides; answers `build_rules/open-questions.md`; agrees to rows (deletes `proposed`); launches the agents; decides which legacy files go.
+- **Orchestrator (author)**: edits the requirements, parses every agent report against `requirements/README.md`, fixes what is wrong in the one owning row, records ID changes in `requirements/oldkey.md`, passes only real decisions to the Product Owner. Never plays the Coder.
+- **Coder** (a read-only agent now, builders later): reads only `requirements/` and reports what it cannot implement; later builds stories.
+- **Reviewer** (read-only agent): checks requirement files against the README rules.
+- **Contributor**: a person or agent that produces drafts as pull requests; checked with the list below.
 
-## Steps
+How agents are run: cold (no conversation context), read-only, one slice each, a progress file per agent in the scratch folder, shown to the Product Owner as simple progress bars. Prompts are minimal: the role, the repository path and "read AGENTS.md and follow it". The Product Owner reports usage (`/usage`); pause the agents at about 70%.
 
-| # | Step | Owner | Input | Output | The author checks | State |
-|---|---|---|---|---|---|---|
-| 1 | Review slice 1 (Account, Calendar filter, Print, Calendar, common UI, theme) | Coder, then author at REVIEW 2 and 4 | issue #85, commit 51f7354 | findings; fixes in commits | each finding: Accepted, Rejected or Partly, with a reason or a fix commit | issue open, waiting for REVIEW 1 |
-| 2 | Review the other slices: Sources + Feeds; Google; Settings + Shell + Events; Rules + History + Search + Event templates; Deployment + Diagnostics + Documentation | Coder, author | a new issue per slice, same first post as #85 | findings; fixes | as step 1 | after step 1 shows the kinds of gap |
-| 3 | Answer the open questions and review each feature file | Product Owner | `build_rules/open-questions.md`, `requirements/*.md` | answers; agreements (a deleted `proposed`) | apply each answer: update the row, remove the question, record in `oldkey.md` if an ID changes | waiting |
-| 4 | Rewrite `build_rules/` as Scrum (stories, sprints, epics, backlog; per-story tests) | Product Owner (or a Contributor) | the old build rules, `requirements/README.md` | new process files | no agent named; terms as `requirements/README.md`; story = named requirement IDs; tests per the testing decisions in `layer-map.md` | not started. Decision (Product Owner): after `backlog` (the status of an agreed row), the Dashboard records the sprint and done from the stories and test results |
-| 5 | Retire legacy: `build_rules/theme.md`, old build, test, review and deploy files, `theme-map.md`, the evidence column, `oracle-coverage-notes.md` | Product Owner decides; author removes | agreement | files removed | nothing referenced is lost | after steps 1 to 4 |
-| 6 | Port, story by story | Coders | requirements + stories | Dart code, tests naming the requirement IDs | each story's tests pass; touched requirements retested | after step 4 |
+## Steps and their state
 
-## Checking incoming work (a pull request or a draft)
+| # | Step | State |
+|---|---|---|
+| 0 | Reorganize the requirements: features, modules (`connections.d`, `plugins.d`), shared UI and theme, two laws and 14 rules each with a test, `req_check.sh`, `oldkey.md` (R0 to R39), message catalog (`requirements/messages/`) | done |
+| 1 | Coder review of every file by six slices, run 1 (baseline: about 390 of 900 rows cannot be implemented, `coder-review-1.md`) | done |
+| 2 | Fix what that review found (bucket A in `coder-review-1.md`): contradictions are fixed; still to do: about 30 undefined terms, statements that point at the legacy theme file (port the badge and popover values into THM rows), README roles (Author, Coder, Product Owner) and the DEF prefix, `common.md` to the line format | partly done |
+| 3 | Reverse-engineer the Python app with six blind agents and compare with ours (data in `build_rules/reverse-engineering/`: 1,410 rows; about 484 covered, 102 different, 793 gaps, 180 only in ours) | done |
+| 4 | Fill the gaps from `reverse-engineering/compare/slice1..6.md`, one slice at a time: numbers into DEF-01, user-visible wording as `msg:key` rows citing the catalog, behaviors as rows. Start with slice 1 (account, settings, shell). The Product Owner confirms the roughly 100 differences first (ours wins; the big ones are listed in `HANDOFF.md`) | next |
+| 5 | Re-run the six Coder slices; compare with the baseline; repeat 2 to 5 until the count is acceptable | not started |
+| 6 | The Product Owner answers `open-questions.md` and agrees to rows (`proposed` to `backlog`); decides the three proposed rule changes (bucket B in `coder-review-1.md`) | waiting on the Product Owner |
+| 7 | Rewrite the process as Scrum (stories, epics, sprints, backlog; the Dashboard records sprint and done; per-story tests) | not started (Product Owner) |
+| 8 | Retire the legacy files listed in `build_rules/README.md` | not started (Product Owner decides) |
+| 9 | Port, story by story, with the `dart-flutter` skill (`.claude/skills/dart-flutter/`) | after 7 |
+
+Later ideas not yet requirements: a Users feature that decides who may see secrets in logs (until then the one signed-in user is authorized); Outlook and Apple connections; the CCS+ pause and per-source download interval if the Product Owner wants the old app's behavior.
+
+## Checking incoming work (a pull request, a draft or an agent report)
 
 1. `tests/tools/req_check.sh` reports no errors (it runs on GitHub as "Requirements").
 2. It follows the rules in `requirements/README.md` (rules 1 and 2 are the laws).
-3. No history or oracle wording in a statement, no agent or tool named, Scrum terms, the Product Owner as the decider.
-4. New or changed IDs have a row in `oldkey.md`; no reference to an ID that does not exist.
-5. A rule found in more than one place is merged, not copied. A question goes in `open-questions.md` after looking in the other requirements, the code and https://docs.flutter.dev/ and https://dart.dev/.
-6. Say clearly what was not checked.
+3. No history or oracle wording, no agent or tool named, Scrum terms, the Product Owner as the decider.
+4. New or changed IDs have a row in `oldkey.md`; no reference to an ID that does not exist; user-visible wording is a cited message key, not text.
+5. A rule found in more than one place is merged, not copied. A question goes in `open-questions.md` only after looking in the other requirements, the Python app (rule 10) and https://docs.flutter.dev/ and https://dart.dev/.
+6. Read `open-questions.md` for answers before editing anything. Say clearly what was not checked.

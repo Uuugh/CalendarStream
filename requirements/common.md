@@ -68,9 +68,6 @@
 | TIM-08 | backlog | An imported event that carries no time zone gets the installation's default zone (DEP-05). | — | Developer, Nov 17 |
 | TIM-09 | proposed | A time zone is always one of the real zones: the zone picker offers only real zones, and an imported event that names a zone that does not exist is given the default zone (TIM-08) instead. |
 
-Decided elsewhere, not repeated: UTC instants hide daylight-saving jumps, and the default rule "24-hour events" (RUL-06) realigns a
-fixed 24-hour source span to the local day.
-
 ## UI (UI)
 
 | ID | status | statement | evidence |
@@ -189,3 +186,4 @@ CalendarStream), **rule** (made by a rule).
 | Favicon file size | | at most 256 KB | default only |
 | Image editor output size | | at most 512 px on the long side | default only |
 | Image editor input file size | | at most 10 MB | default only |
+

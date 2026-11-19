@@ -11,9 +11,9 @@ manage it all. See README.md for what it does.
 
 The Developer is porting this app from Python to Dart/Flutter, organized by feature, with a requirements file per
 feature as the spec. **All new features and requirements are frozen until it is complete**; the Python app below is
-the running app and the reference, and its suites are the oracle. Read `build_rules/HANDOFF.md` (how we work, where things are) and then `build_rules/layer-map.md`: it has the
+the running app and the reference, and its suites are the oracle. Read `build_rules/README.md` (which notes are live), then `build_rules/HANDOFF.md`; `build_rules/layer-map.md` records the
 decisions, the target layout, the Python-to-Dart porting map and where the work stands. Items are now Feature,
-Requirement, Issue and Process (`build_rules/0-overview.md`, Inputs). "Rule" means only a rule in the app's Rules
+Requirement, Issue and Process (`requirements/README.md`, Definitions). "Rule" means only a rule in the app's Rules
 feature. The process rules called R18, R19, R26 below are P18, P19, P26 in the new naming.
 
 ## Where things are
@@ -26,15 +26,7 @@ feature. The process rules called R18, R19, R26 below are P18, P19, P26 in the n
   server and screenshots (see tests/README.md).
 - `docs/`: `screenshots/` (the README's pictures) and `development/`, the Developer's own scratch work: kept on the
   Developer's machine (its contents are in `.gitignore`), never read for the app or the build.
-- `build_rules/`: how work is done here:
-  - `0-overview.md`: the steps and their commands (DASH, PLAN, BUILD, TEST, REVIEW, DEPLOY, STOP), who does
-    what, the inputs (F, I, R, ?), ground rules. Read first.
-  - `1-plan.md` … `5-deploy.md`: one file per step: Plan, Build, Test, Review, Deploy.
-  - `theme.md`: how the page looks, with the CalendarStream Theme Rules picture beside it.
-  - `ui_ux.md`: usability and accessibility of the page (WCAG 2.2 AA, ARIA, keyboard, focus, motion); theme.md decides exact looks.
-  - `roadmap.md`: what's planned.
-  - `low-findings.md`: Low review findings waiting for their code to change.
-  - `build-costs.md`: what each BUILD cost, to predict the next.
+- `build_rules/`: working notes. Start at `build_rules/README.md`: it lists the live files (the orchestration board, the open questions, the review findings) and the legacy files that must not be followed.
 
 ## Code map (0.2.8-beta.20, F12; 0.2.8-beta.21; 0.2.8-beta.26; 0.2.8-beta.28; 0.2.8-beta.29)
 
@@ -185,7 +177,7 @@ and a file must stand alone and say what it needs.
 ## Before you push
 
 `tests/run.sh` passes, `pip-audit -r requirements.txt` finds nothing, and the Developer's real data
-appears nowhere (build_rules/0-overview.md, Ground rules).
+appears nowhere.
 
 - `app/item_order.py`: extracted list reordering helper `_moved` (re-exported by `app/main.py`).
 

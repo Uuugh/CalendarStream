@@ -48,7 +48,7 @@ Terms: **one-way** moves events in one direction only (a source brings them in, 
 | CON-06.k | proposed | Download failure feedback distinguishes failure to connect from a connected server that does not reply. | — | changelog_gaps_2101-2336:33 |
 | CON-06.l | proposed (?) | Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? | — | S60-22, S60-23, S60-24 |
 | CON-06.m | proposed | A failed source download preserves the previously downloaded schedule. | — | readme_gaps:22, changelog_gaps_2101-2336:37 |
-| CON-06.n | proposed (?) | A source download that unexpectedly returns an empty calendar preserves the previous schedule. How is an unexpected empty response distinguished from an intentionally emptied source? | — | readme_gaps:22, changelog_gaps_2101-2336:37 |
+| CON-06.n | proposed | A download that returns no events while the connection already has events is refused and the previous schedule stays; an empty download is accepted only when there were no events. | — | readme_gaps:22, changelog_gaps_2101-2336:37 |
 | CON-07 | proposed | A downloaded or imported schedule becomes events with their times and recurrences. | — | — |
 | CON-07.a | proposed | Recurring source events expand into distinct occurrences while retaining source-qualified identities. Moving one recurrence preserves the occurrence identities and updates its changed title. | — | S26-10, S53-13 |
 | CON-07.b | proposed | Recurring source events are expanded over the period in DEF-01. | — | readme_gaps:61, changelog_gaps_1501-1800:24 |
