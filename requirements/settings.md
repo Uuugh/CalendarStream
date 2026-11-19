@@ -18,8 +18,9 @@
 | SET-03.b | proposed | Settings > Theme has a Long-press time, a user setting, that sets how long a press must be held before an event can be dragged (CAL-03); its default and range are in DEF-01. | — | CAL-15 (F61) |
 | SET-03.c | proposed | Animation intensity and animation duration are Theme settings; their defaults and ranges are in DEF-01, and Reset restores the defaults. | — | S64-19, S64-21 |
 | SET-03.d | proposed | Module grips are on the left by default; the user may move them to the right. | — | S65-26, S65-27, S65-29 |
-| SET-03.e | backlog | A custom logo can be uploaded and shown; without one the default logo is used. An uploaded image is a PNG, SVG, WebP, JPEG or ICO file no larger than the size in DEF-01; an image that can carry script is not accepted. | — | S64-15, S64-16, S64-17, S64-18 |
-| SET-03.f | proposed | Resetting the logo removes the custom image and restores the default logo. It does not change any other setting. | — | S64-20 |
+| SET-03.e | backlog | A custom logo is set with the image editor (UIC-37), for the logo place in DEF-01; without one the default logo is used. | — | S64-15, S64-16, S64-17, S64-18 |
+| SET-03.f | proposed | Resetting the logo or the favicon removes its custom image and restores the default. It does not change any other setting. | — | S64-20 |
+| SET-03.h | backlog | A custom favicon is set with the image editor (UIC-37), for the favicon place in DEF-01; without one the default favicon is used (SHL-01.b). | — | — |
 | SET-04 | proposed | The installation has a public address, with optional extra addresses, that feed links and Google use. | — | — |
 | SET-04.a | proposed | A public address given at installation is saved once. After that the saved address is the only one used (DEP-05), so clearing it leaves it cleared. | — | S15-01, S15-09, S25-12 |
 | SET-04.b | proposed | Until a public address is set, setup reports Not set yet and points to Public address settings, the subscription page warns that the address is missing and, before the first destination is configured, setup suggests an address taken from the request. Once an address is set, none of these appear; a setup field can be filled from the address used to open the page. | — | S15-02, S15-10, S26-31, S26-34 |

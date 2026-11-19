@@ -53,6 +53,10 @@
 | UIC-34 | proposed | A box means the user can change it: fixed text (a title, the release channel) is plain text, never in a field box. A part that looks like a module but has nothing to fold (Settings > Updates) uses the module header layout, always open, with no Expand. | — | theme.md Clarifications |
 | UIC-35 | proposed | A Copy button sits inside its field, like the password box's eye. A pair of credential fields (client ID and secret) is laid out like a login, connected or not. | — | theme.md Clarifications |
 | UIC-36 | proposed | In every dialog and form a field has a muted label over it and a value that cannot be changed (an event's calendar) is plain text; related fields share a line (Calendar \| Title; Starts \| Ends, each with its Time under it). | — | theme.md Clarifications |
+| UIC-37 | backlog | One shared image editor sets an image for a place in the app (the logo, the favicon): the user picks a file, crops it, and the editor saves it as a PNG that fits the limits in DEF-01 for that place. | — |
+| UIC-37.a | proposed | The editor accepts PNG, SVG, WebP, JPEG and ICO files. | — |
+| UIC-37.b | proposed | The crop frame keeps the shape within the minimum and maximum aspect ratio of the place (DEF-01); the user moves and zooms the picture under the frame and sees the result before saving. | — |
+| UIC-37.c | backlog | The saved image is always a PNG, redrawn as pixels (so nothing in an uploaded file can run), with its long side at most the output size in DEF-01 and its file no larger than the place's file size in DEF-01; if the file is still too large the image is scaled down until it fits. | — |
 | UIC-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UIC-19). | — | CFED-01 and CFED-14 (S evidence), SRH-01, theme.md section 14 |
 
 ## Proposed (not yet reviewed)
@@ -181,4 +185,8 @@ CalendarStream), **rule** (made by a rule).
 | Longest reminder lead | 1 week | | default only |
 | Networks trusted during a global block | 192.168.0.0/16, 10.10.0.0/16 and loopback | | default only |
 | Connections | | at most 50 | default only |
-| Custom logo or favicon file size | | at most 256 KB | default only |
+| Logo image ratio (width to height) | | 1:1 to 1.2:1 | default only |
+| Logo file size | | at most 256 KB | default only |
+| Favicon image ratio (width to height) | | 1:1 to 1:1 | default only |
+| Favicon file size | | at most 256 KB | default only |
+| Image editor output size | | at most 512 px on the long side | default only |

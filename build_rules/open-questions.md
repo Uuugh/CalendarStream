@@ -35,3 +35,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 - **One-way and two-way Google rows:** CGOW-04.k says one-way sync publishes and does not read back, yet CGOW-04.b, CGOW-04.c, CGOW-04.g and the instant updates (CGOW-05) describe reading Google's changes, which are two-way behaviors. Recommended: move those rows to `google_two_way.md`, so one-way holds only publishing and health. Is that right?
   Answer:
+
+- **Logo shape (UIC-37):** DEF-01 gives the logo place a width-to-height ratio of 1:1 to 1.2:1 (your mark is 82 by 76, about 1.08, and the full logo 1400 by 1240, about 1.13) and the favicon 1:1. Are those the ranges you want?
+  Answer: yes
