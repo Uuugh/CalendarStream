@@ -22,3 +22,18 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **ACC-01.f** (account) A legacy page login is imported with a hashed password; saved page passwords are not stored in plaintext. Is this still needed after the port, given that DEP-14 does not carry the page password over? 
   Answer:
+
+## Other questions for the Product Owner (not tied to one requirement row)
+
+- **Theme order:** Convert sections 5 to 8 of the legacy theme file next (buttons, the Cancel | Save pair, the Status/Action buttons, transitions)? Recommended: yes.
+  Answer:
+- **Manual Google sync:** The deleted Beta section also let the user start the Google sync by hand. Is the normal Sync Now enough? Recommended: yes.
+  Answer:
+- **Special character:** A password's special character is any character that is not a letter or a digit (a space counts). Right? Recommended: yes.
+  Answer:
+- **Date range:** The shared date range (UI-23) says All clears both dates and greys them, and typing is done after unticking it. Is that behavior of the control, as written? Recommended: yes.
+  Answer:
+- **Right zone:** The "+" new-event button is not in the calendar header's right-zone order (Time Zone, View, 12/24 clock, Print, Full page). Where does it go? Recommended: the left of the order, first.
+  Answer:
+- **Print users:** Is Print used by any feature besides the Calendar and Events?
+  Answer:
