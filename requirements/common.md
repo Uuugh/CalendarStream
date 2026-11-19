@@ -57,6 +57,8 @@
 | UIC-37.a | proposed | The editor accepts PNG, SVG, WebP, JPEG and ICO files. | — |
 | UIC-37.b | proposed | The crop frame keeps the shape within the minimum and maximum aspect ratio of the place (DEF-01); the user moves and zooms the picture under the frame and sees the result before saving. | — |
 | UIC-37.c | backlog | The saved image is always a PNG, redrawn as pixels (so nothing in an uploaded file can run), with its long side at most the output size in DEF-01 and its file no larger than the place's file size in DEF-01; if the file is still too large the image is scaled down until it fits. | — |
+| UIC-37.d | backlog | The crop frame starts centered at the largest size the shape allows and stays inside the picture. | — |
+| UIC-37.e | backlog | An uploaded file larger than the input size in DEF-01 is not valid (UIC-19). | — |
 | UIC-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UIC-19). | — | CFED-01 and CFED-14 (S evidence), SRH-01, theme.md section 14 |
 
 ## Time (TIM)
@@ -83,7 +85,7 @@ fixed 24-hour source span to the local day.
 | UIC-05.d | proposed | The open or closed state of a section is a user setting (SET-01). | changelog_gaps_2101-2336:24 |
 | UIC-05.e | proposed | A section that contains modules lists them in their saved order and reorders them as UIC-30 says; the new order is saved immediately. | — |
 | UIC-05.f | proposed | The + of a section opens a dialog listing the kinds of connection the section can add, by their kind text (CON-02.d); choosing one opens that connection's own setup. | — |
-| UIC-05.g | backlog | A section's health is Healthy when all its items are healthy and Unhealthy when any one of them is in error; what puts an item in error is stated by its own feature. | — |
+| UIC-05.g | backlog | A section's health is Healthy when all its items are healthy and Unhealthy when any one of them is in error; what puts an item in error is stated by its own feature. An item whose health is disabled (turned off, or with nothing to sync) does not count. | — |
 | UIC-06 | proposed | An action that hides or deletes something asks first with a No \| Yes pair; cancelling changes nothing. | S57-33, S58-24, S58-25, S58-35, S44-26 |
 | UIC-07 | backlog | One shared popover, like the info dot: clicking or tapping an info dot, or the triple dot that ends clipped text (UIC-14), shows its full text in a popover next to it, above or below as space allows. The popover is never wider than the window and its text wraps inside it, so it adds no horizontal scroll bar; if it is taller than the window it scrolls vertically. It closes when the user chooses outside it. The item's own click still works. The triple dot's click area is at least 24×24 px. This is the global definition of the triple dot;. | — | Developer, Nov 17; S58-01, S58-34, S57-35, S66-18 |
 | UIC-07.a | backlog | A (?) is help: how to do something. It sits right after the word it explains; hover, focus or a click shows it. Its pop-up opens with its upper left at the icon; past the window's right edge, its upper right sits at that edge; past the bottom, its lower corners sit at the bottom. Explanations live in an (i) or a (?), never on the page. | — | theme.md section 12; picture 2·12 |
@@ -186,3 +188,4 @@ CalendarStream), **rule** (made by a rule).
 | Favicon image ratio (width to height) | | 1:1 to 1:1 | default only |
 | Favicon file size | | at most 256 KB | default only |
 | Image editor output size | | at most 512 px on the long side | default only |
+| Image editor input file size | | at most 10 MB | default only |

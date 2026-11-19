@@ -39,13 +39,5 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## From the Coder's second run (Nov 19)
 
-- **Where the logo and favicon are kept:** SET-03 is "how the page looks on this device", but a logo and a favicon (the sign-in page shows it) are the same for everyone. Should they be Site Admin settings (SET-06), kept once in the database?
-  Answer: site admin kept in the database
-- **Image editor details (UIC-37):** the crop frame's starting position and size, whether it must stay inside the picture, and a limit on the size of the uploaded file are not stated. Recommended: the frame starts centered at the largest size the shape allows, stays inside the picture, and an uploaded file may be at most 10 MB.
-  Answer: agreed
-- **At the limit of 50 connections:** what does the user see when the + can add no more? Recommended: the + is disabled and says the limit.
-  Answer: yes
 - **Print in a section header (UIC-05.a):** PRT-01.h says every section can be printed, but the header order (icon, title, status lines, health, +) has no Print control. Where does Print go? Recommended: before the +.
   Answer:
-- **"In error" for Activity (HIS-01.j):** a source is in error when its last download or sync failed (CON-03). Does a source that is turned off, or a Local calendar with nothing to sync, count as healthy?
-  Answer: The health is disabled

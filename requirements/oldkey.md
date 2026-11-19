@@ -1394,3 +1394,6 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R38 | 2026-11-19 | CGTW-01.e | CGTW-01 | repeated its parent, removed |
 | R38 | 2026-11-19 | SRC-01.b | UIC-05.f | what + does is said once, in the section component |
 | R38 | 2026-11-19 | FDS-01.b | UIC-05.f | |
+| R39 | 2026-11-19 | SET-03.e | SET-06.e | the logo is a Site Admin setting, kept in the database |
+| R39 | 2026-11-19 | SET-03.h | SET-06.f | the favicon is a Site Admin setting |
+| R39 | 2026-11-19 | SET-03.f | SET-06.g | |

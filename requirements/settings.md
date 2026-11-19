@@ -5,7 +5,7 @@
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | SET-01 | proposed | Settings holds the user's own view settings and the shared Site Admin settings, in separate parts, each opened in a dialog. | — | — |
-| SET-01.a | proposed | Settings has two headings. **User** items are stored on the device (view preferences: Theme, Time Zones, time notation, Search) and can differ from device to device. **Site Admin** items are stored once in the database and are the same on every device and browser: Login, Domains, Google API, Updates (whether to check at all, automatic updating, how often), Default time zone, Backup and Restore, more as added. Every item opens as a pop-up. | — | F65 |
+| SET-01.a | proposed | Settings has two headings. **User** items are stored on the device (view preferences: Theme, Time Zones, time notation, Search) and can differ from device to device. **Site Admin** items are stored once in the database and are the same on every device and browser: Login, Domains, Google API, Updates (whether to check at all, automatic updating, how often), Default time zone, Backup and Restore, Logo and favicon, more as added. Every item opens as a pop-up. | — | F65 |
 | SET-01.b | proposed | In Full mode, the page's sections are hidden elsewhere and listed above Settings under a Configure heading. | — | F65 |
 | SET-01.c | proposed | The Settings pop-up follows the shared dialog rules (UIC-01 to UIC-03) and its Cancel \| Save pair looks as THM-04.c and UIC-27 say. | — | F65 |
 | SET-01.d | backlog | Settings lists its parts in this order: Updates, Login & password, Domains, Theme last, then any others; each part has its own Cancel \| Save. | — | theme.md Clarifications |
@@ -17,9 +17,6 @@
 | SET-03.b | proposed | Settings > Theme has a Long-press time, a user setting, that sets how long a press must be held before an event can be dragged (CAL-03); its default and range are in DEF-01. | — | CAL-15 (F61) |
 | SET-03.c | proposed | Animation intensity and animation duration are Theme settings; their defaults and ranges are in DEF-01, and Reset restores the defaults. | — | S64-19, S64-21 |
 | SET-03.d | proposed | Module grips are on the left by default; the user may move them to the right. | — | S65-26, S65-27, S65-29 |
-| SET-03.e | backlog | A custom logo is set with the image editor (UIC-37), for the logo place in DEF-01; without one the default logo is used. | — | S64-15, S64-16, S64-17, S64-18 |
-| SET-03.f | proposed | Resetting the logo or the favicon removes its custom image and restores the default. It does not change any other setting. | — | S64-20 |
-| SET-03.h | backlog | A custom favicon is set with the image editor (UIC-37), for the favicon place in DEF-01; without one the default favicon is used (SHL-01.b). | — | — |
 | SET-04 | proposed | The installation has a public address, with optional extra addresses, that feed links and Google use. | — | — |
 | SET-04.a | proposed | A public address given at installation is saved once. After that the saved address is the only one used (DEP-05), so clearing it leaves it cleared. | — | S15-01, S15-09, S25-12 |
 | SET-04.b | proposed | Until a public address is set, setup reports Not set yet and points to Public address settings, the subscription page warns that the address is missing and, before the first destination is configured, setup suggests an address taken from the request. Once an address is set, none of these appear; a setup field can be filled from the address used to open the page. | — | S15-02, S15-10, S26-31, S26-34 |
@@ -54,6 +51,9 @@
 | SET-06.b | backlog | Settings > Site Admin has Backup and Restore. A backup contains both the calendar data and the database, including the saved passwords and Google sign-in (still encrypted, so the same database password is needed to read them after a restore). Backup downloads as a file to the device in use; Restore takes that file and, because it replaces everything, asks first (UIC-06). | — | Developer, Nov 17; README Data and backups |
 | SET-06.c | backlog | Settings > Site Admin has Password requirements: the minimum length and the minimum number of capital letters, lowercase letters, numbers and special characters (defaults, and the floor each may not go below, are in DEF-01). They are stored in the database, like the other Site Admin settings, and apply to passwords created or changed afterwards (ACC-04). | — | Developer, Nov 18 |
 | SET-06.d | proposed | Administrator email is trimmed when saved, an empty value clears it, and a malformed address is not valid (UIC-19). | — | S25-03, S25-04, S25-07 |
+| SET-06.e | backlog | A custom logo is set with the image editor (UIC-37), for the logo place in DEF-01; without one the default logo is used. | — | S64-15, S64-16, S64-17, S64-18 |
+| SET-06.f | backlog | A custom favicon is set with the image editor (UIC-37), for the favicon place in DEF-01; without one the default favicon is used (SHL-01.b). | — | — |
+| SET-06.g | proposed | Resetting the logo or the favicon removes its custom image and restores the default. It does not change any other setting. | — | S64-20 |
 | SET-07 | proposed | The Product Owner can choose which release, port and channel an installation uses. | — | — |
 | SET-07.a | proposed | Settings lets the Developer select another release (a build), including one typed by hand, for a temporary release made to solve one user's problem. | — | F24.1 |
 | SET-07.b | proposed | Settings can show an alternate port, and write it to `.env`; a change takes effect when the container is recreated. | — | F24.3 |

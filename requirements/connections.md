@@ -9,7 +9,7 @@ Terms: **one-way** moves events in one direction only (a source brings them in, 
 | CON-01.a | backlog | Every kind of connection is a connection module with its own file in `connections.d/`. | — | — |
 | CON-01.c | backlog | Each connection is a source (it brings events in), a feed (it sends events out) or both, and says so in its own file. A section contains every connection that has its capability, so a connection that is both is contained by the Sources and the Feeds sections: it is one module, and a change or removal made in either place applies to the connection. | — | — |
 | CON-01.b | backlog | A connection that needs a plugin can be added only while that plugin is set up: a Google connection requires the Google plugin (PGAP-01). | — | — |
-| CON-01.d | backlog | The number of connections has the limit in DEF-01; at the limit the + of a section adds no further connection until one is removed. | — | readme_gaps:20 |
+| CON-01.d | backlog | The number of connections has the limit in DEF-01; at the limit the + of a section is disabled and says the limit. | — | readme_gaps:20 |
 | CON-02 | proposed | A connection is named, colored and annotated. | — | — |
 | CON-02.a | proposed | A source can be renamed and given a note; saving updates its name and explanatory note, and clearing the note removes its content. | — | S18-17, S29-11, S33-05, S39-18, S44-16 |
 | CON-02.b | proposed | Source color can be changed and saved; the new color is reflected immediately in its source display. | — | S38-15, S59-22 |
