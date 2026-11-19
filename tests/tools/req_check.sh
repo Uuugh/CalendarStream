@@ -3,12 +3,12 @@
 # ID that does not exist. Warnings (listed, exit 0): a number or duration outside DEF-01, history or script wording.
 # Uses only bash and awk. Run from the repository root: tests/tools/req_check.sh
 cd "$(dirname "$0")/../../requirements" || exit 2
-files=$(ls *.md | grep -v -e '^README.md$' -e '^oldkey.md$')
+files=$(ls *.md *.d/*.md | grep -v -e '^README.md$' -e '^oldkey.md$')
 err=0
 rows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{gsub(/ /,"",$2); print FILENAME" "$2}' $files)
 ids=$(echo "$rows" | awk '{print $2}' | sort)
 echo "== malformed rows (not five columns; common.md has its own layout)"
-cfiles=$(ls *.md | grep -v -e '^README.md$' -e '^oldkey.md$' -e '^common.md$')
+cfiles=$(ls *.md *.d/*.md | grep -v -e '^README.md$' -e '^oldkey.md$' -e '^common.md$')
 bad=$(grep -HE '^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|' $cfiles | sed 's/\\|//g' | awk -F'|' 'NF!=7 {split($1,a,":"); print a[1]": "$2}')
 [ -n "$bad" ] && { echo "$bad"; err=1; } || echo none
 echo "== duplicate IDs"; dup=$(echo "$ids" | uniq -d); [ -n "$dup" ] && { echo "$dup"; err=1; } || echo none

@@ -35,7 +35,7 @@ Planned requirements stay in the same table with status `planned`.
 
 ## Prefixes
 
-CAL calendar · SRC sources · FED feeds · RUL rules · TPL event_templates · EVT events · HIS history · CON connections · PLG plugins ·
+CAL calendar · SRC sources · FED feeds · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · GOW google one-way · GTW google two-way · PLG plugins (common) · GAP google plugin ·
 SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UI shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
 
 Nothing new is added while the transition freeze lasts (build_rules/0-overview.md); these files hold what was already
@@ -44,6 +44,8 @@ asked for.
 ## One file per feature (Nov 17)
 
 Each feature has ONE file here, `requirements/<feature>.md`, with every requirement of that feature in the same table. The status says
+
+Modules come in two kinds, connections and plugins. `connections.md` and `plugins.md` hold what is common to every module of the kind (written once); each module is its own feature file in `connections.d/` or `plugins.d/` and adds only its specifics, linking to the common file.
 where it stands: `proposed` (drafted from the inventory, README or CHANGELOG, not yet reviewed by the Product Owner), `planned` (approved,
 not built yet), `built`, `verified`, `open`. Reviewing a feature means changing `proposed` rows to `planned` (or editing or deleting
 them) in that one file. Shared rules (time TIM, shared interface UI, capabilities CAP) are in `common.md`; features reference them.
@@ -65,8 +67,11 @@ The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were fol
 | Sources | [requirements/sources.md](requirements/sources.md) | 91 | 89 |
 | Feeds | [requirements/feeds.md](requirements/feeds.md) | 32 | 32 |
 | History | [requirements/history.md](requirements/history.md) | 28 | 24 |
-| Connections | [requirements/connections.md](requirements/connections.md) | 77 | 70 |
-| Plugins | [requirements/plugins.md](requirements/plugins.md) | 20 | 18 |
+| Connections (common) | [requirements/connections.md](requirements/connections.md) | 3 | 2 |
+| Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) | 69 | 63 |
+| Google two-way sync | [requirements/connections.d/google_two_way.md](requirements/connections.d/google_two_way.md) | 6 | 5 |
+| Plugins (common) | [requirements/plugins.md](requirements/plugins.md) | 1 | 0 |
+| Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) | 20 | 18 |
 | Settings | [requirements/settings.md](requirements/settings.md) | 55 | 39 |
 | Account | [requirements/account.md](requirements/account.md) | 56 | 51 |
 | Shell | [requirements/shell.md](requirements/shell.md) | 27 | 21 |
