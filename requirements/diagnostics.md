@@ -10,7 +10,7 @@ Dashboard.
 | DIA-02 |  | The Developer's private working files and Good \| Bad verdicts are served by the app itself, behind its login, and are never committed to the repository or published on a public page. | — | Developer, Nov 17 |
 | DIA-03 |  | The Dashboard is a live web page built from the GitHub issues and `requirements/*.md`; it is made after the port is complete. | — | Developer, Nov 17 |
 | DIA-04 |  | The Dashboard shows testing progress: the current and recent test runs, each shard's state, and pass or fail per requirement. | — | Developer, Nov 17 |
-| DIA-05 | proposed | Container log exposes the running app's log output since startup, retrievable as plain text and copyable (DIA-01). | — | readme_gaps:72, changelog_gaps_601-900:34 |
+| DIA-05 | proposed | Container log exposes the most recent log lines of the running app (the number in DEF-01), retrievable as plain text and copyable (DIA-01). | — | readme_gaps:72, changelog_gaps_601-900:34 |
 | DIA-06 | proposed | The page offers Report a problem and Suggest a feature, allowing the user to describe a problem or idea; the report or suggestion is prefilled with the running CalendarStream version. | — | readme_gaps:78, changelog_gaps_1201-1500:32, changelog_gaps_1801-2100:25, changelog_gaps_1801-2100:25 |
 | DIA-07 | proposed | The user chooses independently whether a report includes History, each source’s last-download details, device and setup details, contact details and reply preference. | — | readme_gaps:78, changelog_gaps_1201-1500:32 |
 | DIA-08 | proposed | Report preparation redacts private identifiers: usernames, links, stream names, email addresses and the public address; secret protection also follows ACC-05. | — | readme_gaps:78, changelog_gaps_1201-1500:32 |

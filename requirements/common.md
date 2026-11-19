@@ -72,6 +72,7 @@ CalendarStream), **rule** (made by a rule).
 | ID | status | statement | test | was |
 |---|---|---|---|---|
 | DEF-01 |  | Every default and limit is defined once, in the table below, and a feature row refers to it instead of repeating the number. A value that an admin setting exposes is stored in the database and overrides the default (DEP-28); the others stay as the defaults. (Developer, Nov 17) | — | Developer, Nov 17 |
+| DEF-02 | proposed | Every list that grows with use (logs, traffic records, failure records, pending sign-ins) has a stated limit in the table below, and entries no longer needed are forgotten first, so memory cannot fill. A feature row refers to the limit instead of repeating it. | — | Developer, Nov 18 |
 
 | Name | Default | Limit | Stored |
 |---|---|---|---|
@@ -86,6 +87,11 @@ CalendarStream), **rule** (made by a rule).
 | Trusted address period | 7 days | | default only |
 | Page sign-in session | 30 days | | default only |
 | Page refresh after an update restarts | 15 seconds | | default only |
+| Failure records kept (sign-in) | 10,000 addresses | 10,000 | default only |
+| Known-good addresses kept | 1,000 | 1,000 | default only |
+| Google Traffic entries held | 200 | 200 | default only |
+| Container log lines held | 3,000 | 3,000 | default only |
+| Pending Google sign-ins | 20 | 20 | default only |
 | Unlock link valid | 24 hours | | default only |
 | Long-press time | 0.5 seconds | 0.3 to 1.5 seconds | device |
 | Hour height | 2 event lines | 1 to 6 | device |

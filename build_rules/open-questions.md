@@ -48,3 +48,9 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **ACC-01.f** (account) A legacy page login is imported with a hashed password; saved page passwords are not stored in plaintext. Is this still needed after the port, given that DEP-14 does not carry the page password over? 
   Answer:
+- **ACC-02.f** (account) After sign-in the user goes to the page they asked for when it is on this site. A destination on another site, including one written with a leading //, is never followed; the destination's query and fragment are kept. The Python app also rejects "hidden-tab redirect tricks": what exactly is that? 
+  Answer:
+- **ACC-04.c** (account) Is an empty password accepted, given that a password is never refused for its strength? 
+  Answer:
+- **ACC-05.d** (account) A secret is never shown on a page. The Google traffic view (GGL-02) shows tokens and the client secret to the signed-in Developer: should it hide them? 
+  Answer:

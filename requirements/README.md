@@ -12,6 +12,7 @@ One file per feature: the checkable rules of behavior the app must meet. This is
 - **Process**: how work is done here (`build_rules/`).
 - **Question (?)**: a request for Claude's suggestion; the Developer decides.
 - **Shared requirements** (`common.md`): behavior several features use, written once and referenced: time (TIM), shared UI (UI), what an origin allows (CAP), defaults and limits (DEF).
+- **Parent tests**: a requirement that has sub-requirements passes when all its sub-requirements pass; its own test cell may be `—` or name a test of the whole.
 - **Test cell**: a list of tests, or `see <ID>` links to the tests of another requirement or sub-requirement, or `—` while there is none. A sub-test is simply the test the sub-requirement uses; it may be its own, its parent's, or another requirement's. A test says which requirements it verifies and how it runs when several call it (once, or once per requirement); failures are reported per requirement (`build_rules/layer-map.md`, testing decisions).
 - **Evidence (temporary)**: the S keys pointing at the Python suites; deleted when the conversion ends.
 - **Oracle**: the existing Python app and its suites, used once as the reference for what the app does.

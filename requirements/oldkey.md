@@ -43,3 +43,9 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R1 | 2026-11-18 | ACC-33 | ACC-06.d | |
 | R1 | 2026-11-18 | ACC-34 | ACC-01.c | |
 | R1 | 2026-11-18 | ACC-35 | ACC-04.b | |
+| R2 | 2026-11-18 | ACC-01.b | ACC-01.b, ACC-01.g, ACC-01.h | split: the setup code (requirement, case and dash, incorrect code) |
+| R2 | 2026-11-18 | ACC-01.d | ACC-01.d | the weak-password sentence dropped (it is ACC-04.a) |
+| R2 | 2026-11-18 | ACC-02.b | ACC-02.b, ACC-02.f | split: sign-in result and where the user goes next |
+| R2 | 2026-11-18 | ACC-05 | ACC-05, ACC-05.a, ACC-05.b, ACC-05.c, ACC-05.d | split: hashed passwords, encrypted credentials, logs, pages |
+| R2 | 2026-11-18 | ACC-07.a | ACC-07.a, ACC-07.e, ACC-07.f, ACC-07.h | split: start of the block, refusal, 7-day address, end of the block |
+| R2 | 2026-11-18 | ACC-08.a | ACC-08.a, ACC-08.d | split: the warning and its unlock link |
