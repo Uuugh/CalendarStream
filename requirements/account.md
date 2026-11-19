@@ -73,8 +73,8 @@ Future: a Users feature will decide which users may see secrets in the logs (log
 
 The following observations are excluded or mapped to another owner rather than duplicated.
 
-- S16-02: Legacy CCS+ credential import and its activity record are owned by sources (SRC-06), not a second account requirement.
-- S16-03: Legacy CCS+ credential import and its activity record are owned by sources (SRC-06), not a second account requirement.
+- S16-02: Legacy CCS+ credential import and its activity record are owned by sources (SRC-03), not a second account requirement.
+- S16-03: Legacy CCS+ credential import and its activity record are owned by sources (SRC-03), not a second account requirement.
 - S16-19: Environment-specific performance sample for five authenticated requests; does not establish a portable latency requirement.
 - S21-11: Field alignment is a theme measurement; User name wording is a shared field-label observation, not a separate login capability.
 - S35-09: Static parent-path request rejection belongs to shared asset-serving security; one sampled path does not establish the complete traversal policy.

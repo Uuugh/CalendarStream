@@ -51,7 +51,7 @@ additional feed requirements. Unspecified shared mechanics remain questions for 
 - S31-08: Field/control markup and section configuration mechanics; shared UI ownership (UI-05), with date input details retained for shared-control reconciliation.
 - S31-09: Field/control markup and section configuration mechanics; shared UI ownership (UI-05), with date input details retained for shared-control reconciliation.
 - S35-13: Font and SVG-symbol markup are presentation/implementation, not subscription behavior.
-- S38-16: Source-color change is owned by sources (SRC-39 in its pending draft); calendar-key effects are CAL-45. Source-picker color markup is not restated here.
+- S38-16: Source-color change is owned by sources (SRC-01 in its pending draft); calendar-key effects are CAL-45. Source-picker color markup is not restated here.
 - S39-15: Markup order is presentation, not a separate feed rule.
 - S41-01: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
 - S41-02: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
@@ -75,7 +75,7 @@ additional feed requirements. Unspecified shared mechanics remain questions for 
 - S51-53: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
 - S51-54: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
 - S55-10: Absence of a palette note is presentation, not a publishing guarantee.
-- S58-16: Source metadata/label implementation; source naming and notes belong to sources (SRC-28).
+- S58-16: Source metadata/label implementation; source naming and notes belong to sources (SRC-01).
 - S58-39: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
 - S59-07: Shared removal confirmation (UI-06); newline formatting belongs to presentation. The stopped-link consequence is specified above.
 - S63-05: Source-string presence for URL/meeting notes does not establish executed publishing behavior.

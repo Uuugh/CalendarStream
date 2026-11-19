@@ -12,11 +12,13 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **HIS-02** (history) Activity reports Healthy when the checked source state is healthy and Unhealthy when that source is in error. How should mixed source states determine the overall Activity status? 
   Answer:
-- **SRC-56** (sources) Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? 
+- **SRC-05.l** (sources) Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? 
   Answer:
 - **GGL-101** (google) Eligible local changes and valid remote change notices trigger reconciliation within seconds under normal service availability. What measurable latency target should replace “within seconds”? 
   Answer:
-- **SRC-63** (sources) A source download that unexpectedly returns an empty calendar preserves the previous schedule. How is an unexpected empty response distinguished from an intentionally emptied source? 
+- **SRC-05.n** (sources) A source download that unexpectedly returns an empty calendar preserves the previous schedule. How is an unexpected empty response distinguished from an intentionally emptied source? 
   Answer:
 - **ACC-01.f** (account) A legacy page login is imported with a hashed password; saved page passwords are not stored in plaintext. Is this still needed after the port, given that DEP-14 does not carry the page password over? 
+  Answer:
+- **FED-13** (feeds) A feed module's Include box says its date range in words (Dates (optional; empty = all), From over To) in the current app; the shared date range control (UI-23) is From | To | All. Should the feed use the shared control? Recommended: yes.
   Answer:

@@ -40,7 +40,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-29.a |  | The header's first line shows the color box, the kind (fixed text), "Last synced" with its time and the Status/Action buttons on the right. Its second line shows the label, with an (i), and "Next check @" with its time on the right. | — | theme.md section 9 |
 | UI-29.b |  | Expand sits in the module's bottom border (▸ Expand ◂, pointing at the words); when open, a Close line sits under the header (its triangles point up). While expanded the label is a field of the same size. | — | theme.md section 9 |
 | UI-29.c |  | Status lines are unboxed, right-aligned next to their Status/Action button, and visible only while the module is collapsed. | — | theme.md section 9 |
-| UI-29.d |  | Default sits right of a CalendarStream calendar's title; while expanded, the other local calendars offer it as a button and read-only calendars show it disabled (SRC-57). | — | theme.md section 9 |
+| UI-29.d |  | Default sits right of a CalendarStream calendar's title; while expanded, the other local calendars offer it as a button and read-only calendars show it disabled (SRC-02). | — | theme.md section 9 |
 | UI-29.e |  | On \| Off sits inline before an expanded module's note; Off dims the module and keeps its settings. | — | theme.md section 9 |
 | UI-29.f |  | (i) is info about the module: what it is, then its note when it has one. (?) is help (UI-07.a). | — | theme.md section 9 |
 | UI-30 | proposed | A list of modules or rule lines can be reordered with one handle in the margin on the left of each line: ▲ above, a grip, ▼ below. | — | theme.md section 10; picture 2·10 |
