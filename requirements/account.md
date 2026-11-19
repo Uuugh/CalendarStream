@@ -39,7 +39,7 @@ Terms used below (defined once):
 | ACC-05.c | proposed | A secret is never written to a log. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-05.d | proposed | A secret is shown on a page only when a user who is authorized to see secrets turns on the Show secrets switch in History (HIS-04). | — | — |
 | ACC-06 | proposed | Repeated failed sign-ins from one address lock that address for a time. | — | — |
-| ACC-06.a | planned | After the number of failed sign-ins in DEF-01 from one address, further attempts from it are refused for the lock time in DEF-01. | — | S23-19, S23-20, S23-21, S53-10 |
+| ACC-06.a | proposed | After the number of failed sign-ins in DEF-01 from one address, further attempts from it are refused for the lock time in DEF-01. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-06.b | proposed | An incorrect initial-setup code counts toward the same per-address failure limit as an incorrect page login (ACC-06.a). | — | readme_gaps:35 |
 | ACC-06.c | proposed | Concurrent failed sign-ins are all counted toward the applicable failure limits without causing internal errors (ACC-06, ACC-07). | — | changelog_gaps_1501-1800:31 |
 | ACC-06.d | proposed | An address remains blocked until its lockout expires; recording failures from other addresses does not remove an active block early (ACC-06.a). | — | changelog_gaps_1501-1800:33 |
@@ -47,10 +47,10 @@ Terms used below (defined once):
 | ACC-06.f | proposed | A successful sign-in clears that address's failure count. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-06.g | proposed | Failure records are kept only while needed: at most the number in DEF-01 at once, forgetting addresses that are not locked out first. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-07 | proposed | Many failed sign-ins across addresses start a global block that refuses new outside addresses, while trusted and known visitors keep access. | — | — |
-| ACC-07.a | planned | The number of failed sign-ins from all addresses together within the window in DEF-01 starts a global block. | — | S23-19, S23-20, S23-21, S53-10 |
+| ACC-07.a | proposed | The number of failed sign-ins from all addresses together within the window in DEF-01 starts a global block. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-07.h | proposed | A global block ends when the failures within that window fall below the number in DEF-01. | — | S23-19, S23-20, S23-21, S53-10 |
-| ACC-07.e | planned | During a global block, an outside address is refused even with the right password. | — | S23-19, S23-20, S23-21, S53-10 |
-| ACC-07.f | planned | An address that signed in successfully within the trusted-address period in DEF-01 is not an outside address. | — | S23-19, S23-20, S23-21, S53-10 |
+| ACC-07.e | proposed | During a global block, an outside address is refused even with the right password. | — | S23-19, S23-20, S23-21, S53-10 |
+| ACC-07.f | proposed | An address that signed in successfully within the trusted-address period in DEF-01 is not an outside address. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-07.b | approved | During the global block, requests from the trusted networks in DEF-01 and from CalendarStream's own public domain are not blocked. An address is judged from what a trusted proxy reports (DEP-03). | — | S53-11, S53-12; Developer, Nov 17 |
 | ACC-07.c | proposed | A successful login issues a signed known-browser cookie; a forged signature is refused. | — | S55-24, S55-25, S55-26 |
 | ACC-07.d | proposed | A known browser can authenticate during the global block, but does not bypass a block applied specifically to its own address. A new browser remains blocked. | — | S55-29, S55-30, S55-31 |

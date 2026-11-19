@@ -25,7 +25,7 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-03.c | approved | In Month the event moves to the day it is dropped on and keeps its time. | — | — |
 | CAL-03.d | approved | The press must be held for the long-press time set in Settings > Theme (SET-03, DEF-01). | — | — |
 | CAL-04 | proposed | The user can change how tall the calendar is, and Full page gives it the whole window. | — | — |
-| CAL-04.a | planned | The Full page icon hides every other section and becomes the restore-down icon (two squares) while it is on. Full page always resizes to the available window; that is its definition. | — | F15.4; S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
+| CAL-04.a | proposed | The Full page icon hides every other section and becomes the restore-down icon (two squares) while it is on. Full page always resizes to the available window; that is its definition. | — | F15.4; S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
 | CAL-04.b | approved | The calendar uses the shared resize bar (UI-16). Its height is measured in event lines, not pixels, changes by whole lines, is saved, and has no fixed pixel minimum or maximum. | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
 | CAL-04.c | approved | Collapse gives the fewest lines the view needs; Expand gives the most lines that fit the visible window. | — | — |
 | CAL-04.d | approved | The hour height in Week and Day is measured in event lines per hour, changed by whole lines and saved, within the limits in DEF-01, so a line of an event always fits. | — | Developer, Nov 17; S65-14, S65-15 |

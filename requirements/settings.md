@@ -54,8 +54,8 @@
 | SET-06.b | approved | Settings > Site Admin has Backup and Restore. A backup contains both the calendar data and the database, including the saved passwords and Google sign-in (still encrypted, so the same database password is needed to read them after a restore). Backup downloads as a file to the device in use; Restore takes that file and, because it replaces everything, asks first (UI-06). (Developer, Nov 17) | — | Developer, Nov 17; README Data and backups |
 | SET-06.c | approved | Settings > Site Admin has Password requirements: the minimum length and the minimum number of capital letters, lowercase letters, numbers and special characters (defaults, and the floor each may not go below, are in DEF-01). They are stored in the database, like the other Site Admin settings, and apply to passwords created or changed afterwards (ACC-04). (Developer, Nov 18) | — | Developer, Nov 18 |
 | SET-06.d | proposed | Administrator email is trimmed when saved, an empty value clears it, and a malformed address is not valid (UI-19). | — | S25-03, S25-04, S25-07 |
-| SET-07 | proposed | Planned: the Product Owner can choose which release, port and channel an installation uses. | — | — |
-| SET-07.a | planned | Settings lets the Developer select another release (a build), including one typed by hand, for a temporary release made to solve one user's problem. Deferred: needs a change to the updater container's protocol. | — | F24.1 |
-| SET-07.b | planned | Settings can show an alternate port, and write it to `.env`; a change takes effect when the container is recreated. Deferred with SET-07. | — | F24.3 |
-| SET-07.c | planned | The update channel is selectable: Stable, Beta or Other. Deferred with SET-07. | — | F24.4, F54 |
+| SET-07 | proposed | The Product Owner can choose which release, port and channel an installation uses. | — | — |
+| SET-07.a | proposed | Settings lets the Developer select another release (a build), including one typed by hand, for a temporary release made to solve one user's problem. | — | F24.1 |
+| SET-07.b | proposed | Settings can show an alternate port, and write it to `.env`; a change takes effect when the container is recreated. | — | F24.3 |
+| SET-07.c | proposed | The update stream is selectable: Stable, Beta, or a release entered by hand. | — | F24.4, F54 |
 

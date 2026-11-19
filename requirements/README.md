@@ -40,7 +40,7 @@ These apply to every row in `requirements/`. Every rule has a test: a check in `
 `| ID | status | statement | test | evidence (temporary) |`
 
 - **ID**: a feature prefix and a number (CAL-03). A requirement may have sub-requirements (ACC-06, ACC-06.a, ACC-06.b); a link points at the requirement unless it means exactly one sub-requirement. When IDs change, `oldkey.md` records old to new.
-- **status**: `proposed` (drafted, not yet agreed), `approved` (the Product Owner agreed: it is a Requirement), `built` (implemented in the Dart port), `verified` (a Dart test passes it). The Product Owner approves a row by deleting `proposed`; a blank status is read as `approved` and the Author writes the word. `planned`, `open` and a `built` that predates the Dart port are Python-era words on some rows; the Product Owner decides each when reviewing it.
+- **status**: `proposed` (drafted, not yet agreed), `approved` (the Product Owner agreed: it is a Requirement), `built` (implemented in the Dart port), `verified` (a Dart test passes it). The Product Owner approves a row by deleting `proposed`; a blank status is read as `approved` and the Author writes the word. `open` and a `built` that predates the Dart port are Python-era words on some rows; the Product Owner decides each when reviewing it.
 - **test**: the test that verifies it (path and name), once one exists. `—` until the inventory of the Python suites
   (`requirements/inventory/`) has been matched to requirements.
 - **evidence (temporary)**: the Python-suite keys (and old Dashboard items) a row came from; deleted when the conversion ends.

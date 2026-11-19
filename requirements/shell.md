@@ -8,7 +8,7 @@ issues database): I4, I27, I33 (2/3-line status box), I39 (animation), I46 and I
 | SHL-01 | proposed | The page identifies CalendarStream in its title bar, footer and favicon. | — | — |
 | SHL-01.a | proposed | The page identifies CalendarStream in its title. Its footer shows the running version, linked to its release (including the full beta identifier), the copyright, and a link to README License & Attribution (DOC-01). | — | S61-07, S29-01, S30-05, S61-08, changelog_gaps_1201-1500:25 |
 | SHL-01.b | built | The favicon is the light CalendarStream icon with its white background cropped to a circle and the rest transparent. | — | F63 |
-| SHL-01.c | planned | The CalendarStream logo files have no compression or visual artifacts. | — | F1 |
+| SHL-01.c | proposed | The CalendarStream logo files have no compression or visual artifacts. | — | F1 |
 | SHL-01.d | approved | The title bar shows the logo's mark (no words; the Light mark on light pages, the Dark mark on dark ones) left of the title, and the title in the logo colors (THM-02.m). One transparent favicon serves light and dark. | — | theme.md Clarifications |
 | SHL-02 | proposed | The page is available in several languages, chosen automatically or by the user. | — | — |
 | SHL-02.a | proposed | The initial page language is English; Automatic follows supported browser language preferences, including French, German and Belgian Dutch, while an unknown browser language falls back to English. Choosing Automatic clears the explicit language override. | — | S17-01, S17-02, S17-03, S17-04, S17-10 |

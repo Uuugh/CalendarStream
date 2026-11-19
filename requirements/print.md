@@ -13,4 +13,4 @@ Printing what the user sees. Print is its own feature, used by every section of 
 | PRT-01.e | proposed | Printed titles wrap to show the complete title. | — | changelog_gaps_301-600:20 |
 | PRT-01.f | approved | A print honors the theme the user chose: Light prints on white paper and Dark on dark paper. | — | S36-32 |
 | PRT-01.g | proposed | Print Preview opens as a dialog (UI-01 to UI-03), and a date range in it, where the content has one, is the shared control (UI-23). | — | — |
-| PRT-01.h | planned | Every section of the page can be printed; each section says what is printed and its orientation (PRT-01.c). The print layout of All Rules, Event Templates and History is still to be designed. | — | Developer, Nov 19 |
+| PRT-01.h | proposed | Every section of the page can be printed; each section says what is printed and its orientation (PRT-01.c). The print layout of All Rules, Event Templates and History is still to be designed. | — | Developer, Nov 19 |
