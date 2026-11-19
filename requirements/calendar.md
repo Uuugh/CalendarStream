@@ -8,9 +8,9 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 |---|---|---|---|---|
 | CAL-01 | proposed | The calendar shows the user's events in the view the user chooses and lets them move to any date. | — | — |
 | CAL-01.a | backlog | The calendar displays the events of its source calendars, as far as the Calendar filter (FLT-01) and event visibility (CAP-02) allow. | — | S26-12 |
-| CAL-01.b | backlog | Month, Week, 5-day (Monday through Friday), Day and List can be selected from the shared dropdown (UI-12); the chosen view is indicated as selected. Week, 5-day and Day provide an hourly view. | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
+| CAL-01.b | backlog | Month, Week, 5-day (Monday through Friday), Day and List can be selected from the shared dropdown (UIC-12); the chosen view is indicated as selected. Week, 5-day and Day provide an hourly view. | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
 | CAL-01.c | backlog | Week view shows its date range and navigates backward and forward by one week. | — | S26-61 |
-| CAL-01.d | backlog | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | — | S21-01, S21-02, S21-03 |
+| CAL-01.d | backlog | Selecting a month and year navigates the calendar to that month and year; date selection follows UIC-09. | — | S21-01, S21-02, S21-03 |
 | CAL-01.e | proposed | Today returns the main calendar to the current month. | — | changelog_gaps_2101-2336:35 |
 | CAL-01.f | proposed | Before the user has chosen a view, a phone-width window (DEF-01) opens the calendar in List view. | — | changelog_gaps_1501-1800:18 |
 | CAL-01.g | proposed | A day cell shows how many of its visible events do not fit; event visibility follows CAP-02 and the Calendar filter. | — | changelog_gaps_301-600:15 |
@@ -26,7 +26,7 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-03.d | backlog | The press must be held for the long-press time set in Settings > Theme (SET-03, DEF-01). | — | — |
 | CAL-04 | proposed | The user can change how tall the calendar is, and Full page gives it the whole window. | — | — |
 | CAL-04.a | proposed | The Full page icon hides every other section and becomes the restore-down icon (two squares) while it is on. Full page always resizes to the available window; that is its definition. | — | F15.4; S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
-| CAL-04.b | backlog | The calendar uses the shared resize bar (UI-16). Its height is measured in event lines, not pixels, changes by whole lines, is saved, and has no fixed pixel minimum or maximum. | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
+| CAL-04.b | backlog | The calendar uses the shared resize bar (UIC-16). Its height is measured in event lines, not pixels, changes by whole lines, is saved, and has no fixed pixel minimum or maximum. | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
 | CAL-04.c | backlog | Collapse gives the fewest lines the view needs; Expand gives the most lines that fit the visible window. | — | — |
 | CAL-04.d | backlog | The hour height in Week and Day is measured in event lines per hour, changed by whole lines and saved, within the limits in DEF-01, so a line of an event always fits. | — | Developer, Nov 17; S65-14, S65-15 |
 | CAL-04.e | proposed | Full page also hides the page footer. | — | changelog_gaps_1-300:36 |
@@ -35,10 +35,10 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-05.a | backlog | Until the user chooses an orientation it is automatic: landscape for Month, Week and 5-day sheets, portrait for Day and Itinerary sheets (PRT-01.c). | — | S65-18..22 |
 | CAL-05.b | proposed | The views that can be printed are the calendar's views (CAL-01.b) and Itinerary, which lists events grouped by day. | — | S36-33, readme_gaps:53, changelog_gaps_1201-1500:16 |
 | CAL-05.c | backlog | Printing two months produces a sheet for each month. | — | S36-32 |
-| CAL-05.d | proposed | Print All sets the date range (UI-23) from the first event through the last event. | — | readme_gaps:52 |
+| CAL-05.d | proposed | Print All sets the date range (UIC-23) from the first event through the last event. | — | readme_gaps:52 |
 | CAL-05.e | proposed | Printing one event uses Day view for that print (EVT-06). | — | changelog_gaps_301-600:43 |
 | CAL-06 | proposed | The calendar header's right zone holds the view controls in a fixed order, and what the user chooses with them stays on the device until the user changes it. | — | — |
-| CAL-06.a | proposed | The right zone holds, in this order: Time Zone, View, 12/24 clock, Print, Full page, and + last (UI-24). Zone alignment and stacking follow UI-14; what each control does is in its own requirement (CAL-02.a, CAL-01.b, TIM-10, CAL-05, CAL-04). | — | theme.md 13c (to confirm) |
+| CAL-06.a | proposed | The right zone holds, in this order: Time Zone, View, 12/24 clock, Print, Full page, and + last (UIC-24). Zone alignment and stacking follow UIC-14; what each control does is in its own requirement (CAL-02.a, CAL-01.b, TIM-10, CAL-05, CAL-04). | — | theme.md 13c (to confirm) |
 | CAL-06.b | proposed | The state of each right-zone control that holds one (the time zone, the view, the time format, Full page) is a user setting (SET-01). A default is stated in the control's own requirement. | — | Developer, Nov 18 |
 | CAL-06.c | backlog | The view picker shows icons, not words: closed it shows only the current view's icon (Month calendar_month, Week view_week, Day view_day, List view_list); open, each choice shows its icon left of its word. The 12h \| 24h control is one hollow clock icon with the current format as a badge, and its tooltip names the mode. Time Zone is a globe whose tooltip names the zone and which opens the zone picker. When the right zone's controls do not fit on one line the right group drops to a second line. | — | theme.md Clarifications |
 

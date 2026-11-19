@@ -37,6 +37,12 @@ badstat=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ s=$3; gsub(/^ +| +$/,"",
 echo "== errors: a connection file that does not state its role as a source, a feed or both (connections.md, CON-01.c)"
 norole=$(for f in connections.d/*.md; do case $f in connections.d/README.md) continue;; esac; grep -qE '\| [A-Z]+-[0-9]+(\.[a-z]+)? \|[^|]*\|[^|]*(is a source|is a feed|both a source and a feed)' $f || echo $f; done | tr '\n' ';')
 [ -n "$norole" ] && { echo "$norole"; err=1; } || echo none
+echo "== prefixes: a feature has three letters; a module adds its folder's letter (C connections.d, P plugins.d); see README, Prefixes"
+badpre=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ id=$2; gsub(/ /,"",id); split(id,a,"-"); p=a[1]; if (FILENAME ~ /^connections\.d\//) ok=(p ~ /^C[A-Z][A-Z][A-Z]$/); else if (FILENAME ~ /^plugins\.d\//) ok=(p ~ /^P[A-Z][A-Z][A-Z]$/); else ok=(p ~ /^[A-Z][A-Z][A-Z]$/); if (!ok) { k=FILENAME" "p; if (!(k in seen)) { seen[k]=1; print FILENAME": "p } } }' $files | tr '\n' ';')
+[ -n "$badpre" ] && { echo "$badpre"; err=1; } || echo none
+echo "== errors: a numbered rule in README without a Test line (rule 13)"
+notest=$(awk '/^## Rules for writing and changing requirements/{inr=1; next} /^## /{inr=0} inr && /^[0-9]+\. \*\*/ { if ($0 !~ /\*\*Test:\*\*/) { split($0,a,"."); print a[1] } }' README.md | tr '\n' ' ')
+[ -n "$notest" ] && { echo "rules without a test: $notest"; err=1; } || echo none
 echo "== questions: every (?) row is in open-questions.md and every question there has a (?) row (rule 10)"
 q=../build_rules/open-questions.md
 qrows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/ && $3 ~ /\(\?\)/ {id=$2; gsub(/ /,"",id); print id}' $files | sort)

@@ -8,16 +8,16 @@
 | HIS-01.c | proposed | When a Google change is saved locally, History records that outcome; when a newer local change wins, it records that the local change was kept. | — | S45-08, S45-17 |
 | HIS-01.d | proposed | A deletion received from Google is recorded with its Google origin. | — | S45-20 |
 | HIS-01.e | proposed | If a former Google client’s calendar cannot be reached for cleanup, History warns that manual deletion is needed. | — | S48-22 |
-| HIS-01.f | proposed | A Google color-update failure records the failed operation, the upstream status and its reasons so the refusal can be diagnosed (CGO-03). | — | S55-12, S56-20 |
+| HIS-01.f | proposed | A Google color-update failure records the failed operation, the upstream status and its reasons so the refusal can be diagnosed (CGOW-03). | — | S55-12, S56-20 |
 | HIS-01.g | proposed | An unsigned Google connection produces one not-signed-in or unsynced warning; resetting the remembered warning permits a new one. | — | S68-03, S68-04, S68-05 |
-| HIS-01.h | proposed | A failure or warning that repeats unchanged is recorded in History once, until it changes or clears. | — | CGO-06, CGO-05, CGO-06, HIS-21 |
+| HIS-01.h | proposed | A failure or warning that repeats unchanged is recorded in History once, until it changes or clears. | — | CGOW-06, CGOW-05, CGOW-06, HIS-21 |
 | HIS-01.i | proposed | An external removal or Google notification without an undoable local change does not become the current Undo entry. | — | S49-18, S49-41 |
 | HIS-01.j | proposed (?) | Activity reports Healthy when its source is healthy and Unhealthy when its source is in error. How should mixed source states determine the overall Activity status? | — | S36-43, S36-44 |
 | HIS-01.k | proposed | When remote cleanup is deferred because the write budget was reached, History reports the deferred work. | — | S53-07, S53-08 |
 | HIS-01.l | proposed | Completing Google API setup records a message identifying each Google connection that needs sign-in, has a sync error or has not completed its first sync. | — | changelog_gaps_1-300:L22 |
 | HIS-02 | proposed | History lists its entries with their type, in a table the user can filter and rearrange. | — | — |
 | HIS-02.a | proposed | History names the type of each change: Calendar, Rule, Event, Sync, Feed, Google, Settings or Update. | — | S49-13, changelog_gaps_601-900:31 |
-| HIS-02.b | proposed | History has a filter that follows the common filter rules (UI-21), with three parts: the change type (the types in HIS-02), words in its entries, and the time of its entries. | — | readme_gaps:71, changelog_gaps_601-900:31 |
+| HIS-02.b | proposed | History has a filter that follows the common filter rules (UIC-21), with three parts: the change type (the types in HIS-02), words in its entries, and the time of its entries. | — | readme_gaps:71, changelog_gaps_601-900:31 |
 | HIS-02.c | proposed | The user can choose the order of History's columns by sliding a header, or with the left and right arrows when a header is focused; Undo starts at the end. | — | readme_gaps:71, changelog_gaps_1-300:27 |
 | HIS-02.d | backlog | History is a table: Time \| Type \| Event \| Undo; folded it shows the latest lines with Undo and Redo where they apply, newest first (a stack). | — | theme.md section 15; picture 2·15 |
 | HIS-02.e | backlog | Something done outside CalendarStream (deleted in Google, removed by United) has no Undo icon; Restore is on the event. | — | theme.md section 15 |
@@ -30,6 +30,6 @@
 | HIS-03.d | proposed | A deleted event kept for Undo is permanently removed when its deletion leaves the retained history. | — | S49-16 |
 | HIS-03.e | proposed | When removal of a CCS+ calendar leaves retained Undo history, its retained sign-in credentials are forgotten; protection while retained follows ACC-05. | — | changelog_gaps_601-900:33 |
 | HIS-04 | proposed | History keeps a limited number of changes and does not show secrets unless the user may see them. | — | — |
-| HIS-04.a | proposed | History keeps the number of changes set in Settings (DEF-01 has the default and the limits); saving a different number updates the effective retention and the displayed value, and a number outside the limits is not valid (UI-19). | — | S58-19, S58-20 |
+| HIS-04.a | proposed | History keeps the number of changes set in Settings (DEF-01 has the default and the limits); saving a different number updates the effective retention and the displayed value, and a number outside the limits is not valid (UIC-19). | — | S58-19, S58-20 |
 | HIS-04.b | proposed | History has a Show secrets switch for every log view on the page. By default secrets are masked: authorization headers, client secrets, tokens, authorization codes, and any secret value the app stores, wherever it appears in the text. Turning the switch on shows them, only to a user authorized to see secrets, and it turns off again whenever the page is opened (ACC-05.d). | — | Developer, Nov 18 |
 

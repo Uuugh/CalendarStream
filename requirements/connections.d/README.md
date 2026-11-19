@@ -6,7 +6,7 @@ Rules for this folder (in addition to `../README.md`):
 
 1. **One file per kind of connection.** A new kind of connection is a new file with its own ID prefix, listed in `../README.md` (Prefixes and Index).
 2. **`../connections.md` is the template** for a new connection: the file states what it requires of every connection and links to the rest (rule 5 of `../README.md`).
-3. **A new kind of connection** (for example Outlook or Apple through their own services, not yet created; a plain calendar link from them is already CWO-01) is a new file that states its role; if it is both a source and a feed, the sections already contain it by CON-01.c, with no exception. **A connection that extends another** (Google two-way over Google one-way) holds only what it adds and links to the one it extends.
-4. **Section behavior is not here.** How a section lists, orders, folds or adds modules is the section's feature file (for example `../sources.md`) and the shared UI (`../common.md`, UI-29, UI-30).
+3. **A new kind of connection** (for example Outlook or Apple through their own services, not yet created; a plain calendar link from them is already CLNK-01) is a new file that states its role; if it is both a source and a feed, the sections already contain it by CON-01.c, with no exception. **A connection that extends another** (Google two-way over Google one-way) holds only what it adds and links to the one it extends.
+4. **Section behavior is not here.** How a section lists, orders, folds or adds modules is the section's feature file (for example `../sources.md`) and the shared UI (`../common.md`, UIC-29, UIC-30).
 5. **Plugins** a connection needs are in `../plugins.d/`; the connection links to the plugin's requirement and does not restate it.
 6. Follow `../README.md` for the line format, statuses, links, `oldkey.md` and the check (`tests/tools/req_check.sh`, which also reads this folder).

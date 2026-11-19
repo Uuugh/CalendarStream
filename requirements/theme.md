@@ -9,7 +9,7 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-01.b | backlog | IBM Plex Mono is used only for what is typed or copied exactly: links, IDs, the Username, the client ID and the stream name. | — | theme.md section 1; picture 2·1 |
 | THM-01.c | backlog | The module kind is 17 px at weight 700 (15 px in a phone-width window, DEF-01). | — | theme.md section 1 |
 | THM-01.d | backlog | Default text is 14 px; labels are weight 600; notes are 13 px in the muted color. | — | theme.md section 1 |
-| THM-02 | proposed | Every color is a named token with a light value and a dark value. The light palette is the Soft palette. The event colors that a user picks are not in this theme; they are the shared color palette (UI-10). | — | theme.md section 2; picture 2·2 |
+| THM-02 | proposed | Every color is a named token with a light value and a dark value. The light palette is the Soft palette. The event colors that a user picks are not in this theme; they are the shared color palette (UIC-10). | — | theme.md section 2; picture 2·2 |
 | THM-02.a | backlog | bg is the page: light #f7f6f3, dark #0f1218. | — | theme.md section 2 |
 | THM-02.b | backlog | card is sections, modules and pop-ups, and the words on a filled button: light #fdfcfa, dark #171b23. | — | theme.md section 2 |
 | THM-02.c | backlog | soft is quiet fills (instruction tiles, hover): light #f1efeb, dark #1d222c. | — | theme.md section 2 |
@@ -60,12 +60,12 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-07.e | backlog | A folded section keeps 14 px below it for the Expand line in its border. A module's Close line has 2 px less above and below it. | — | theme.md section 9 |
 | THM-07.f | backlog | The calendar key starts 5 px below the calendar. The header's date and navigation gaps are 8 px, tool gaps 5 px, and the wrapped second row has a 6 px gap. | — | theme.md section 9 |
 | THM-08 | proposed | A module's border is its calendar's or feed's color at 45%, its header a 6% tint and the rest a 3% tint of it, in light and dark. Each section has its own border color (THM-02.l) on card. | — | theme.md section 9; picture 2·9 |
-| THM-08.a | backlog | In a phone-width window a dialog's corners are square and edge to edge (UI-01). | — | theme.md section 11 |
+| THM-08.a | backlog | In a phone-width window a dialog's corners are square and edge to edge (UIC-01). | — | theme.md section 11 |
 | THM-08.b | backlog | The grip of a handle is two columns of three faint dots, centered on the module's 50 px header or on the rule line. | — | theme.md section 10 |
 | THM-08.c | backlog | The (?) icon is 15 px, raised after the word it explains. | — | theme.md section 12 |
-| THM-09 | proposed | The event color palette (UI-10) is Google Calendar's eleven colors. | — | theme.md section 11 (Color box) |
+| THM-09 | proposed | The event color palette (UIC-10) is Google Calendar's eleven colors. | — | theme.md section 11 (Color box) |
 | THM-09.a | backlog | Tomato #d50000, Flamingo #e67c73, Tangerine #f4511e, Banana #f6bf26, Sage #33b679, Basil #0b8043, Peacock #039be5, Blueberry #3f51b5, Lavender #7986cb, Grape #8e24aa, Graphite #616161. | — | theme.md section 11; picture 2·11 |
 
 Dart note: THM-01 becomes the text theme, THM-02 the color scheme plus an extension for the status colors (ok, run, warn, bad), THM-03 the icon theme, THM-04 the shapes and the component themes.
 
-Conversion progress (temporary): the legacy file is converted. Sections 1 to 14 became UI-25 to UI-33 and THM-01 to THM-09, the generic Clarifications became UI-34 to UI-36 and more, and the feature-specific decisions (section 15, the event dialog, the calendar header, History and the rest) are listed in `build_rules/theme-map.md` and become rows when their feature files are converted. When that list is empty the legacy file can go.
+Conversion progress (temporary): the legacy file is converted. Sections 1 to 14 became UIC-25 to UIC-33 and THM-01 to THM-09, the generic Clarifications became UIC-34 to UIC-36 and more, and the feature-specific decisions (section 15, the event dialog, the calendar header, History and the rest) are listed in `build_rules/theme-map.md` and become rows when their feature files are converted. When that list is empty the legacy file can go.

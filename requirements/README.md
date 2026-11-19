@@ -5,7 +5,7 @@ One file per feature: the checkable rules of behavior the app must meet. This is
 
 ## Rules for writing and changing requirements (any agent or person)
 
-These apply to every row in `requirements/`. Every rule has a test: a check in `tests/tools/req_check.sh` where a script can decide, otherwise a review question.
+These apply to every row in `requirements/`.
 
 1. **Law: no duplication. Say it once.** A rule is written in one place and referenced everywhere else. Before adding a row, search the folder for the same rule in other words. **Test:** `req_check.sh` lists identical statements; review: name the one row that owns the rule, and every other row only links to it.
 2. **Law: no exceptions.** If a rule has an exception, the requirement is wrong: change it so it holds for every case, or give the different case its own requirement. A row never says "except", "never for" or "only when X is not". A new kind of thing (a connection, a component) follows the existing rules and does not get a special case. **Test:** `req_check.sh` lists exception wording (a condition that says when something happens is fine; an exception to another rule is not); review: would the rule hold unchanged for the next new connection or component?
@@ -18,6 +18,8 @@ These apply to every row in `requirements/`. Every rule has a test: a check in `
 9. **State limits.** Anything that grows with use (a log, a list, a table of records) has a limit in DEF-01 (DEF-02). **Test:** review: for each list that grows, find its limit in DEF-01.
 10. **Questions** are rows marked `(?)` and appear in `build_rules/open-questions.md`. Look for the answer first in the other requirements, the decisions, the code of the running app, and the Flutter and Dart documentation (https://docs.flutter.dev/ and https://dart.dev/), and only then ask the Product Owner. **Test:** `req_check.sh` reports a `(?)` row with no question, and a question with no `(?)` row.
 11. **Nothing you write names an agent or a tool.** Roles are the Product Owner, the developer and the tester. **Test:** `req_check.sh` lists any agent or tool name.
+12. **Prefixes.** A feature's prefix is three letters. A module in a subfolder adds that folder's letter before its three letters: C for `connections.d` (CGOW is Google one-way) and P for `plugins.d` (PGAP is the Google API plugin); a folder inside a folder adds its letter in turn. **Test:** `req_check.sh` reports a row whose prefix does not match its folder.
+13. **Every rule has a test.** A new rule is added to this list with a `**Test:**` line: a check in `tests/tools/req_check.sh` where a script can decide, otherwise a review question. **Test:** `req_check.sh` reports a rule in this list that has no `**Test:**` line.
 
 ## Definitions
 
@@ -47,9 +49,8 @@ These apply to every row in `requirements/`. Every rule has a test: a check in `
 
 ## Prefixes
 
-A connection's prefix starts with C, then its service and its mode: L local, O one-way, T two-way (CGO is Google one-way, CGT Google two-way). A plugin's starts with P, then its service and its kind (PGA is the Google API plugin). A new module follows this scheme.
-CAL calendar · SRC sources section · FDS feeds section · CLL local calendar · CFO generic feed · CUO ccs+ · CWO calendar link · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · CGO google one-way · CGT google two-way · PLG plugins (common) · PGA google plugin ·
-SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UI shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
+CAL calendar · SRC sources section · FDS feeds section · CLCL local calendar · CFED generic feed · CCCS ccs+ · CLNK calendar link · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · CGOW google one-way · CGTW google two-way · PLG plugins (common) · PGAP google plugin ·
+SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UIC shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
 
 Nothing new is added while the transition freeze lasts (build_rules/0-overview.md); these files hold what was already
 asked for.

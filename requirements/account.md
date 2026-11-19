@@ -24,17 +24,17 @@ Terms used below (defined once):
 | ACC-02.d | proposed | A successful page sign-in establishes a session valid for the time in DEF-01. | — | readme_gaps:73 |
 | ACC-02.e | proposed | Login settings identify the saved username and the signed-in state. | — | S16-18, S19-50, S19-51, S28-12 |
 | ACC-03 | proposed | The user can change the page login, and the change takes effect for every browser. | — | — |
-| ACC-03.a | proposed | Changing credentials, including entering a replacement password, requires the correct current password and a matching new-password confirmation. A username change that fails for a wrong current password leaves the saved username unchanged and identifies the current-password error (UI-19). | — | S16-29, S16-30, S64-14 |
+| ACC-03.a | proposed | Changing credentials, including entering a replacement password, requires the correct current password and a matching new-password confirmation. A username change that fails for a wrong current password leaves the saved username unchanged and identifies the current-password error (UIC-19). | — | S16-29, S16-30, S64-14 |
 | ACC-03.b | proposed | After a credential change, the old credentials are refused and the new credentials are accepted. Changing only the username retains the existing password. | — | S16-31, S16-33 |
 | ACC-03.c | proposed | Changing the login renews the form security token and invalidates the previous token. | — | S16-32 |
 | ACC-03.d | proposed | Changing the page login invalidates all previously issued browser sessions. | — | readme_gaps:73, changelog_gaps_601-900:30 |
 | ACC-04 | proposed | A new password must meet the password requirements, and the user sees how strong it is and which requirements it still misses. | — | — |
 | ACC-04.a | proposed | A password is accepted only if it has at least the minimum length and at least the minimum number of capital letters, lowercase letters, numbers and special characters set in the password requirements (SET-06; the defaults and floors are in DEF-01). A character and a special character are as DEF-03 defines them. | — | S63-06, S63-07, S63-08 |
-| ACC-04.b | proposed | The strength bar (UI-18) is shown when a password is created or changed, with a hint naming the requirements not yet met. Sign-in only verifies the saved password (ACC-02.b). | — | changelog_gaps_301-600:26 |
+| ACC-04.b | proposed | The strength bar (UIC-18) is shown when a password is created or changed, with a hint naming the requirements not yet met. Sign-in only verifies the saved password (ACC-02.b). | — | changelog_gaps_301-600:26 |
 | ACC-04.d | proposed | The password requirements apply when a password is created or changed (initial setup, replacement), not to a password already saved; changing the requirements does not sign anyone out. | — | — |
 | ACC-05 | proposed | Passwords, Google client secrets and notification tokens are protected: stored safely and never exposed. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-05.a | proposed | A sign-in password (page login, setup, replacement) is stored only as a one-way hash, never in plaintext. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
-| ACC-05.b | proposed | A credential the app must send on (the CCS+ password, Google client secret and tokens) is stored encrypted with a key from the database password; after the database password changes they cannot be read until entered again (CGO-01). | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
+| ACC-05.b | proposed | A credential the app must send on (the CCS+ password, Google client secret and tokens) is stored encrypted with a key from the database password; after the database password changes they cannot be read until entered again (CGOW-01). | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-05.c | proposed | A secret is never written to a log. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-05.d | proposed | A secret is shown on a page only when a user who is authorized to see secrets turns on the Show secrets switch in History (HIS-04). | — | — |
 | ACC-06 | proposed | Repeated failed sign-ins from one address lock that address for a time. | — | — |
@@ -64,4 +64,4 @@ Terms used below (defined once):
 | ACC-09.b | proposed | Cross-site form changes are refused and leave the saved value unchanged. | — | S23-23 |
 | ACC-09.c | proposed | Page responses restrict framing to the same origin, prevent content-type sniffing and suppress referrer disclosure. | — | S23-25, S36-37 |
 
-Future: a Users feature will decide which users may see secrets in the logs (log visibility permissions, HIS-04, CGO-01); until then the one signed-in user is authorized.
+Future: a Users feature will decide which users may see secrets in the logs (log visibility permissions, HIS-04, CGOW-01); until then the one signed-in user is authorized.

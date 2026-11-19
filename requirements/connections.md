@@ -8,14 +8,14 @@ Terms: **one-way** sends changes from CalendarStream to the other side only, **t
 | CON-01 | backlog | A connection synchronizes calendar events locally, one-way or two-way. | — | — |
 | CON-01.a | backlog | Every kind of connection is a connection module with its own file in `connections.d/`. | — | — |
 | CON-01.c | backlog | Each connection is a source (it brings events in), a feed (it sends events out) or both, and says so in its own file. A section contains every connection that has its capability, so a connection that is both is contained by the Sources and the Feeds sections: it is one module, and a change or removal made in either place applies to the connection. | — | — |
-| CON-01.b | backlog | A connection that needs a plugin can be added only while that plugin is set up: a Google connection requires the Google plugin (PGA-01). | — | — |
+| CON-01.b | backlog | A connection that needs a plugin can be added only while that plugin is set up: a Google connection requires the Google plugin (PGAP-01). | — | — |
 | CON-01.d | proposed | The number of connections is not limited. | — | readme_gaps:20 |
 | CON-02 | proposed | A connection is named, colored and annotated. | — | — |
 | CON-02.a | proposed | A source can be renamed and given a note; saving updates its name and explanatory note, and clearing the note removes its content. | — | S18-17, S29-11, S33-05, S39-18, S44-16 |
 | CON-02.b | proposed | Source color can be changed and saved; the new color is reflected immediately in its source display. | — | S38-15, S59-22 |
 | CON-02.c | proposed | A note that merely repeats the connection's kind is treated as no note. | — | changelog_gaps_901-1200:24 |
 | CON-02.d | backlog | A connection's kind is fixed text in its module header, stated in its own file. | — | theme.md Clarifications |
-| CON-02.e | proposed | A connection is shown as a module: its header, Expand and Close follow UI-29, and its look follows THM-08. | — | — |
+| CON-02.e | proposed | A connection is shown as a module: its header, Expand and Close follow UIC-29, and its look follows THM-08. | — | — |
 | CON-03 | proposed | Each source shows its status and can be synced or turned off. | — | — |
 | CON-03.a | proposed | Sync Now updates a source in the background: it reports Syncing during work and Healthy on success, and keeps unrelated unsaved source edits. | — | S33-15, S33-18, S33-19, S35-28, S35-29, S35-31, S44-18 |
 | CON-03.b | proposed | A source reports when it last synced (a download or an upload) or that a read, check or download failed. | — | S44-11, S27-05, S31-04, S31-19, S40-04, S35-32 |
@@ -31,7 +31,7 @@ Terms: **one-way** sends changes from CalendarStream to the other side only, **t
 | CON-04.d | proposed | When merging a calendar into another, the user can transfer its owned rules to the target or delete those rules. | — | readme_gaps:63, changelog_gaps_601-900:39 |
 | CON-05 | proposed | A source is downloaded automatically on a schedule, and the user can change the schedule. | — | — |
 | CON-05.a | proposed | The automatic-download interval is an admin setting kept in the database; the installation's value is only its starting value (DEP-05, DEF-01). | — | S14-04, S14-05, S14-11, S14-12, changelog_gaps_2101-2336:38 |
-| CON-05.b | proposed | The download interval stays within the limits in DEF-01; a value outside them, or not a number, is not valid (UI-19). | — | S14-08, S14-09, readme_gaps:31, changelog_gaps_1801-2100:34 |
+| CON-05.b | proposed | The download interval stays within the limits in DEF-01; a value outside them, or not a number, is not valid (UIC-19). | — | S14-08, S14-09, readme_gaps:31, changelog_gaps_1801-2100:34 |
 | CON-05.c | proposed | The next download is scheduled from the last attempt plus the configured interval; if that time has passed, changing the interval schedules an immediate download. | — | S14-06, S14-07 |
 | CON-05.d | proposed | Changes to download settings or source credentials follow the shared form-security rules (ACC-09). | — | S14-10, S16-28 |
 | CON-06 | proposed | A download gets the calendar safely and reports clearly when it cannot. | — | — |
