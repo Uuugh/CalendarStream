@@ -28,6 +28,7 @@ The CCS+ connection: the user's own United Airlines schedule, downloaded with th
 | CCS-03.d | proposed | A CCS+ download follows no more redirects than DEF-01 allows; HTTPS and credential forwarding follow CON-06 and CON-06. | — | changelog_gaps_1501-1800:37, changelog_gaps_301-600:40 |
 | CCS-03.e | proposed | The download diagnostic record identifies the connection mode that answered and the modes previously attempted. | — | changelog_gaps_301-600:39 |
 | CCS-03.f | proposed | After the number of rejected CCS+ sign-ins in DEF-01, automatic checks pause until the user corrects the credentials and requests Sync Now. | — | readme_gaps:39, changelog_gaps_2101-2336:37 |
+| CCS-03.g | proposed (?) | CCS+ is downloaded over HTTPS: a plain HTTP address is not valid. The CCS+ site address can be overridden with a custom HTTPS address; clearing it removes the override. | — | S23-28, S26-07, S60-21, S27-02, S27-03, S27-04 |
 | CCS-04 | proposed | A CCS+ import keeps its source identifiers and its full-day times. | — | — |
 | CCS-04.a | proposed | CCS+ import preserves the source event identifiers and details; event times follow TIM-01–TIM-06 and normalization follows RUL-06. | — | readme_gaps:37 |
 | CCS-04.b | proposed | When CCS+ full-day times are normalized, the original times remain available in the event notes. | — | readme_gaps:37 |

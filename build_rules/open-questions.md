@@ -33,3 +33,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 - **No limit on connections:** CON-01.d says the number of connections is not limited, but DEF-02 says every list that grows has a stated limit. Which wins: a limit in DEF-01, or an exception?
   Answer:
+
+- **CCS-03.g** The CCS+ site address can be overridden with a custom HTTPS address (a setting of the old app). Does the custom address still belong in the port?
+  Answer:

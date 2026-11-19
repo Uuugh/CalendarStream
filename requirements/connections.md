@@ -36,8 +36,8 @@ Connections: Local Calendar (`local_calendar.md`), Generic Feed (`generic_feed.m
 | CON-05.c | proposed | The next download is scheduled from the last attempt plus the configured interval; if that time has passed, changing the interval schedules an immediate download. | — | S14-06, S14-07 |
 | CON-05.d | proposed | Changes to download settings or source credentials follow the shared form-security rules (ACC-09). | — | S14-10, S16-28 |
 | CON-06 | proposed | A download gets the calendar safely and reports clearly when it cannot. | — | — |
-| CON-06.a | proposed | Calendar downloads, including a custom CCS+ site address, require HTTPS; a plain HTTP address is not valid. Clearing a custom CCS+ address removes the override. | — | S23-28, S26-07, S60-21, S27-02, S27-03, S27-04 |
-| CON-06.b | proposed | An HTTPS redirect on the same host can complete the download; a redirect to plain HTTP is refused, and a redirect loop is reported. | — | S60-14, S60-15, S60-16 |
+| CON-06.a | proposed | A downloaded connection states its connection method in its own file (for example HTTPS, curl, web scrape or RSS), and downloads with it. | — | S23-28, S26-07, S60-21, S27-02, S27-03, S27-04 |
+| CON-06.b | proposed | A redirect on the same host can complete the download; a redirect to a less secure address than the connection's method is refused, and a redirect loop is reported. | — | S60-14, S60-15, S60-16 |
 | CON-06.c | proposed | Following a calendar redirect to a different host does not forward the source’s authorization credentials. | — | S60-18 |
 | CON-06.d | proposed | Calendar downloads keep sign-in credentials out of process command-line arguments; stored and displayed secret protection follows ACC-05. | — | changelog_gaps_2101-2336:31 |
 | CON-06.e | proposed | A download larger than the size limit in DEF-01 is not accepted. | — | S60-17 |
