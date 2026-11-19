@@ -15,7 +15,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-09 | proposed | A deleted event kept for Undo is permanently removed when its deletion leaves the retained history. | — | S49-16 |
 | HIS-10 | proposed | An external removal or Google notification without an undoable local change does not become the current Undo entry. | — | S49-18, S49-41 |
 | HIS-15 | proposed | A Google color-update failure records the failed operation, the upstream status and its reasons so the refusal can be diagnosed (GGL-70). | — | S55-12, S56-20 |
-| HIS-19 | proposed (?) | History keeps the number of changes set in Settings, 100 by default (DEF-01); saving a different number updates the effective retention and the displayed value. The input offers the limits in DEF-01; are they enforced on every save? | — | S58-19, S58-20 |
+| HIS-19 | proposed | History keeps the number of changes set in Settings (DEF-01 has the default and the limits); saving a different number updates the effective retention and the displayed value, and a number outside the limits is not valid (UI-19). | — | S58-19, S58-20 |
 | HIS-20 | proposed | An undoable change records what is needed to restore it, before and after. | — | S77-32, S77-33 |
 | HIS-21 | proposed | An unsigned Google module produces one not-signed-in or unsynced warning (HIS-33); resetting the remembered warning permits a new one. | — | S68-03, S68-04, S68-05 |
 | HIS-23 | proposed | The user can choose the order in which History columns are shown; shared input controls remain separate from the History data rules (UI-17). | — | readme_gaps:71, changelog_gaps_1-300:27 |

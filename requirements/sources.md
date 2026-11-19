@@ -39,7 +39,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | SRC-39 | proposed | Source color can be changed and saved; the new color is reflected immediately in its source display. | — | S38-15, S59-22 |
 | SRC-40 | proposed | A source reports when it last synced (a download or an upload) or that a read, check or download failed. | — | S44-11, S27-05, S31-04, S31-19, S40-04, S35-32 |
 | SRC-41 | proposed | Source calendars offer file import. | — | S18-15, S44-38 |
-| SRC-42 | proposed (?) | If a future event disappears from a subsequent source upload, its deletion is retained with its title. How long should this retained deletion remain available? | — | S49-17 |
+| SRC-42 | proposed | A future event that disappears from a refreshed source schedule is kept for restoration, with its title, until its deletion leaves History (HIS-09). | — | S49-17 |
 | SRC-43 | proposed | Importing with a date range (UI-23) excludes events outside it; completing import creates events from the included entries. | — | S49-21, S49-22 |
 | SRC-44 | proposed | Importing an entry that conflicts with an existing event identifies the conflict; choosing merge preserves the incoming changed event and other included entries. | — | S49-23, S49-24 |
 | SRC-45 | proposed | Calendar export downloads an ICS attachment containing its events. | — | S49-26 |
@@ -57,7 +57,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | SRC-57 | proposed | A Local calendar can be selected as default; a read-only CCS+ calendar cannot (CAP-05). | — | S63-13, S63-14, S63-15, S66-04 |
 | SRC-58 | proposed | A source can be turned off and back on, with its saved off state cleared when reenabled. | — | S63-20, S63-21, S63-23 |
 | SRC-59 | proposed | A valid saved Local default calendar is used whatever the source order; if it no longer exists, the first Local calendar is used. With no sources, creating a Local calendar also makes it the default. | — | S77-13, S77-14, S77-15 |
-| SRC-60 | proposed (?) | The user can add source calendars and outgoing feeds without an application-defined count limit. How does this promise relate to the one-CCS+ constraint SRC-17? | — | readme_gaps:20 |
+| SRC-60 | proposed | The number of calendars and feeds is not limited. There is only one CCS+ calendar, the user's own schedule (SRC-17). | — | readme_gaps:20 |
 | SRC-61 | proposed | Calendar links from Outlook, Microsoft 365 and iCloud can be downloaded as source calendars. | — | readme_gaps:21 |
 | SRC-62 | proposed | A failed source download preserves the previously downloaded schedule. | — | readme_gaps:22, changelog_gaps_2101-2336:37 |
 | SRC-63 | proposed (?) | A source download that unexpectedly returns an empty calendar preserves the previous schedule. How is an unexpected empty response distinguished from an intentionally emptied source? | — | readme_gaps:22, changelog_gaps_2101-2336:37 |
@@ -75,7 +75,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | SRC-76 | proposed | When an imported event conflicts with an existing event, the user can discard the incoming copy. | — | readme_gaps:62, changelog_gaps_601-900:36 |
 | SRC-77 | proposed | An import-conflict choice can be applied to all remaining conflicts in that import. | — | readme_gaps:62, changelog_gaps_601-900:36 |
 | SRC-78 | proposed | When merging a calendar into another, the user can transfer its owned rules to the target or delete those rules. | — | readme_gaps:63, changelog_gaps_601-900:39 |
-| SRC-80 | proposed (?) | An upgrade creates its initial Local calendar once. Is it then added to every existing feed, or does each feed decide which calendars it carries (FED-30)? | — | changelog_gaps_1201-1500:18 |
+| SRC-80 | proposed | When a Local calendar is created because none exists, it is added to every existing feed; after that each feed decides which calendars it carries (FED-30). | — | changelog_gaps_1201-1500:18 |
 | SRC-81 | proposed | CCS+ setup guidance explains enabling trips as one event and the other calendar options, setting a dedicated Calendar Sync password, and completing the Accomplished checklist. | — | changelog_gaps_1201-1500:24 |
 | SRC-82 | proposed | A CCS+ download follows no more redirects than DEF-01 allows; HTTPS and credential forwarding follow SRC-52 and SRC-54. | — | changelog_gaps_1501-1800:37, changelog_gaps_301-600:40 |
 | SRC-83 | proposed | The source status event count counts the published feed events, with event visibility determined by CAP-02. | — | changelog_gaps_2101-2336:30 |
@@ -83,7 +83,6 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | SRC-85 | proposed | Download failure feedback distinguishes failure to connect from a connected server that does not reply. | — | changelog_gaps_2101-2336:33 |
 | SRC-87 | proposed | Turning a source off removes its events from published feeds while retaining its selected feed memberships for reenabling. | — | changelog_gaps_301-600:23 |
 | SRC-89 | proposed | When a recurring source occurrence moves, its existing local edits remain attached using its original-start identity. | — | changelog_gaps_601-900:21 |
-| SRC-91 | proposed | Future source events that disappear from a refreshed schedule remain available for restoration; SRC-42 retains the open retention-duration question. | — | changelog_gaps_601-900:35 |
 | SRC-92 | proposed | Legacy source notes that merely repeat the source kind are treated as absent notes. | — | changelog_gaps_901-1200:24 |
 
 Retired IDs (merged or dropped; numbers are never reused): SRC-23 into SRC-15; SRC-64 into SRC-04; SRC-86 into SRC-02; SRC-24 and SRC-32 into SRC-40; SRC-79 into SRC-36; SRC-88 into SRC-50; SRC-90 into SRC-48; SRC-33 (same as SRC-28); SRC-27 and SRC-38 (a control that cannot give a wrong value needs no rule).

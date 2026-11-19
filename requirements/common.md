@@ -89,6 +89,14 @@ CalendarStream), **rule** (made by a rule).
 | Trusted address period | 7 days | | default only |
 | Page sign-in session | 30 days | | default only |
 | Page refresh after an update restarts | 15 seconds | | default only |
+| Google retry: first wait | 5 seconds, doubled each attempt | longest wait 15 minutes | default only |
+| Google retry: attempts | 5 | 5 | default only |
+| Google retry: jitter | up to 25 % added | | default only |
+| Instant-update renewal | 1 day before it expires | | default only |
+| Instant-update retry after refusal | 6 hours | | default only |
+| Section left open folds after | 24 hours | | default only |
+| Database connection retry | every 3 seconds, for up to 60 seconds | | default only |
+| Phone-width window | 700 px wide or narrower | | default only |
 | Failure records kept (sign-in) | 10,000 addresses | 10,000 | default only |
 | Known-good addresses kept | 1,000 | 1,000 | default only |
 | Container log lines held | 3,000 | 3,000 | default only |

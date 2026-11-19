@@ -27,7 +27,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | DEP-22 | proposed | Starting or recreating the app deployment checks the selected image tag for an updated image before starting the app. | — | changelog_gaps_2101-2336:L32 |
 | DEP-23 | proposed | Prebuilt app images run on amd64 and arm64 hosts without building the app locally. | — | changelog_gaps_2101-2336:L36 |
 | DEP-25 | proposed | The installer accepts an exact release identifier, including a beta, and installs that release with its own matching deployment definition. | — | changelog_gaps_601-900:L24, changelog_gaps_1501-1800:L16 |
-| DEP-26 | proposed (?) | Startup retries establishing a database connection while the database is not ready. What retry budget and terminal failure behavior should be required? | — | changelog_gaps_901-1200:L29 |
+| DEP-26 | proposed | When the database is not ready at startup, the app retries the connection at the interval in DEF-01 for up to the wait in DEF-01; if it still cannot connect, startup fails with a message that the database cannot be reached. | — | changelog_gaps_901-1200:L29 |
 
 
 Retired IDs (merged; numbers are never reused): DEP-24 into DEP-03; DEP-09 and DEP-20 into DEP-05; DEP-16 into DEP-25.
