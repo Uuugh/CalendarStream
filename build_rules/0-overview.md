@@ -108,7 +108,7 @@ The four kinds of item (from the transition, layer-map.md; they replace the old 
   problem with no requirement gets the requirement written first). It is closed when that requirement's test passes.
 - **P** = a **Process** rule: how work is done here (this folder, AGENTS.md, CLAUDE.md). What used to be an R.
 - "Rule" alone means a rule in the app's Rules feature, never a process rule.
-- Either case (F or f). Numbers are never reused. Old items keep their numbers in CHANGELOG.md, build-costs.md and beta
+- Either case (F or f). Numbers are never reused for a different item. When IDs are regrouped or renumbered, `requirements/oldkey.md` records old to new. Old items keep their numbers in CHANGELOG.md, build-costs.md and beta
   entries; old R numbers written as R18, R19, R26 … in older text are process rules and are now P18, P19, P26 ….
 - **?** = a question: the Developer wants Claude's suggestion. It isn't an input until the Developer agrees.
 

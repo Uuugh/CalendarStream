@@ -23,7 +23,7 @@
 | SET-11 | proposed | The saved public address is the one used in feed links; Google's callback address follows GGL-45. | — | S15-04, S15-05 |
 | SET-12 | proposed | An address that uses FTP, has a query or embedded credentials, or is not a URL is not a valid public address (UI-19). | — | S15-06 |
 | SET-13 | proposed | Clearing the public address removes it. An installer default that only works on the local machine or network (HTTP to a private IP address or localhost) is not a public address. | — | S15-08, S23-01, S23-16 |
-| SET-14 | proposed | The page warns when it is opened through a host that is not a public host of the installation or one of the user's own networks (ACC-17), naming the host used and the configured host. | — | S24-01, S24-08, S24-09 |
+| SET-14 | proposed | The page warns when it is opened through a host that is not a public host of the installation or one of the user's own networks (ACC-07), naming the host used and the configured host. | — | S24-01, S24-08, S24-09 |
 | SET-15 | proposed | Administrator email is trimmed when saved, an empty value clears it, and a malformed address is not valid (UI-19). | — | S25-03, S25-04, S25-07 |
 | SET-17 | proposed | Update checks run on the chosen schedule (hourly, weekly, monthly or never; the default and values are in DEF-01). Never turns automatic checks off. | — | S22-01, S22-09, S22-10, S22-11, S22-12, S25-11 |
 | SET-18 | proposed | Stable installations check stable releases rather than a newer beta; beta installations check beta releases and can advance to the resulting stable release. A pinned non-beta release selects stable, while a pinned beta selects beta. | — | S22-03, S22-07, S22-08, S30-04, S30-06, S30-07, S30-08 |

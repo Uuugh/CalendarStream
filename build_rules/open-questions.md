@@ -46,3 +46,5 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **GGL-80** (google) Transient failures, including rate limits, are retried with a bounded, increasing, randomized delay and a maximum number of attempts; a longer server Retry-After is honored, including 120 seconds. What default delays and attempt limits should be required (they would go in DEF-01)? 
   Answer:
+- **ACC-01.f** (account) A legacy page login is imported with a hashed password; saved page passwords are not stored in plaintext. Is this still needed after the port, given that DEP-14 does not carry the page password over? 
+  Answer:

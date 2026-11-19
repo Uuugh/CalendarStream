@@ -10,7 +10,7 @@ component not meeting a requirement and is kept in the issues database, not here
 
 `| ID | status | statement | test | was |`
 
-- **ID**: a feature prefix and a number, never reused (CAL-03).
+- **ID**: a feature prefix and a number (CAL-03). Related rules are grouped under one parent ID with sub-requirements (ACC-06, ACC-06.a, ACC-06.b); a reference points at the parent unless it means exactly one detail. When IDs change, `oldkey.md` records old to new.
 - **status** (the Developer's way, Nov 17): a **blank status means the Developer agreed**: it is a Requirement. `proposed` and `planned` mean
   not yet agreed; the Developer removes the word when they agree with a row. `verified` means a Dart test passes it. The older `built` and
   `open` came from the Python-era Dashboard and are treated like `planned` until reviewed.

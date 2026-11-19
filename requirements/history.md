@@ -21,10 +21,10 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-23 | proposed | The user can choose the order in which History columns are shown; shared input controls remain separate from the History data rules (UI-17). | — | readme_gaps:71, changelog_gaps_1-300:27 |
 | HIS-24 | proposed | History can be filtered by change type, by words in its entries and by the time of its entries. | — | readme_gaps:71, changelog_gaps_601-900:31, readme_gaps:71, changelog_gaps_601-900:31, readme_gaps:71, changelog_gaps_601-900:31 |
 | HIS-27 | proposed | A synchronization that changes events records in its activity summary how many events it added and how many it updated. | — | changelog_gaps_2101-2336:19, changelog_gaps_2101-2336:19 |
-| HIS-32 | proposed | When removal of a CCS+ calendar leaves retained Undo history, its retained sign-in credentials are forgotten; protection while retained follows ACC-11. | — | changelog_gaps_601-900:33 |
+| HIS-32 | proposed | When removal of a CCS+ calendar leaves retained Undo history, its retained sign-in credentials are forgotten; protection while retained follows ACC-05. | — | changelog_gaps_601-900:33 |
 | HIS-33 | proposed | A failure or warning that repeats unchanged is recorded in History once, until it changes or clears. | — | GGL-36, GGL-43, GGL-68, HIS-21 |
 
-Retired IDs (merged or dropped; numbers are never reused): HIS-29 into HIS-08; HIS-25 and HIS-26 into HIS-24; HIS-28 into HIS-27; HIS-11, HIS-12, HIS-13, HIS-18, HIS-30 and HIS-31 into HIS-07; HIS-14 into DIA-05; HIS-16 into ACC-21; HIS-17 (how a color is sent is implementation); HIS-22 into GGL-91.
+Retired IDs (merged or dropped; numbers are never reused): HIS-29 into HIS-08; HIS-25 and HIS-26 into HIS-24; HIS-28 into HIS-27; HIS-11, HIS-12, HIS-13, HIS-18, HIS-30 and HIS-31 into HIS-07; HIS-14 into DIA-05; HIS-16 into ACC-08; HIS-17 (how a color is sent is implementation); HIS-22 into GGL-91.
 
 ## Notes from the draft
 

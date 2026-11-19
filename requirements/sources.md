@@ -8,10 +8,10 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | SRC-02 | proposed | The automatic-download interval is an admin setting kept in the database; the installation's value is only its starting value (DEP-28, DEF-01). | — | S14-04, S14-05, S14-11, S14-12, changelog_gaps_2101-2336:38 |
 | SRC-03 | proposed | The next download is scheduled from the last attempt plus the configured interval; if that time has passed, changing the interval schedules an immediate download. | — | S14-06, S14-07 |
 | SRC-04 | proposed | The download interval stays within the limits in DEF-01; a value outside them, or not a number, is not valid (UI-19). | — | S14-08, S14-09, readme_gaps:31, changelog_gaps_1801-2100:34 |
-| SRC-05 | proposed | Changes to download settings or source credentials follow the shared form-security rules (ACC-13, ACC-14). | — | S14-10, S16-28 |
+| SRC-05 | proposed | Changes to download settings or source credentials follow the shared form-security rules (ACC-09). | — | S14-10, S16-28 |
 | SRC-06 | proposed | Existing CCS+ credentials can be imported from the legacy configuration, stored encrypted, and recorded as imported activity. | — | S16-02, S16-03 |
 | SRC-07 | proposed | Saved CCS+ credentials are used for the next download. | — | S16-22, S16-24 |
-| SRC-08 | proposed | The saved CCS+ password is protected (ACC-11); the page shows the saved username and explains how to keep its password. | — | S16-23, S16-25, S16-34 |
+| SRC-08 | proposed | The saved CCS+ password is protected (ACC-05); the page shows the saved username and explains how to keep its password. | — | S16-23, S16-25, S16-34 |
 | SRC-09 | proposed | Changing the CCS+ username while leaving the password blank keeps the saved password. | — | S16-26 |
 | SRC-10 | proposed | An invalid CCS+ username is refused with a username error. | — | S16-27, S28-13 |
 | SRC-11 | proposed | Missing CCS+ credentials are reported as Setup needed rather than an error, and Sync now is unavailable until credentials are entered. | — | S18-01, S18-02, S18-06 |
@@ -79,7 +79,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | SRC-81 | proposed | CCS+ setup guidance explains enabling trips as one event and the other calendar options, setting a dedicated Calendar Sync password, and completing the Accomplished checklist. | — | changelog_gaps_1201-1500:24 |
 | SRC-82 | proposed | A CCS+ download follows no more redirects than DEF-01 allows; HTTPS and credential forwarding follow SRC-52 and SRC-54. | — | changelog_gaps_1501-1800:37, changelog_gaps_301-600:40 |
 | SRC-83 | proposed | The source status event count counts the published feed events, with event visibility determined by CAP-02. | — | changelog_gaps_2101-2336:30 |
-| SRC-84 | proposed | Calendar downloads keep sign-in credentials out of process command-line arguments; stored and displayed secret protection follows ACC-11. | — | changelog_gaps_2101-2336:31 |
+| SRC-84 | proposed | Calendar downloads keep sign-in credentials out of process command-line arguments; stored and displayed secret protection follows ACC-05. | — | changelog_gaps_2101-2336:31 |
 | SRC-85 | proposed | Download failure feedback distinguishes failure to connect from a connected server that does not reply. | — | changelog_gaps_2101-2336:33 |
 | SRC-87 | proposed | Turning a source off removes its events from published feeds while retaining its selected feed memberships for reenabling. | — | changelog_gaps_301-600:23 |
 | SRC-89 | proposed | When a recurring source occurrence moves, its existing local edits remain attached using its original-start identity. | — | changelog_gaps_601-900:21 |
