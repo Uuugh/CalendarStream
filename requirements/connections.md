@@ -2,12 +2,11 @@
 
 This file establishes the rules for creating a connection module: what every connection does and what each one must state in its own file in `connections.d/` (its role, its connection method when it downloads, and the plugin it needs), and nothing else that is common. Connections are modules listed in a section; a connection is a local, one-way or two-way synchronization (plugins are in plugins.md).
 Terms: **one-way** sends changes from CalendarStream to the other side only, **two-way** also reads changes made on the other side; a **downloaded** connection (CCS+, a calendar link) reads a calendar from the internet and is read-only here; a **published** event is an event sent out by a feed or by a Google connection.
-Connections: Local Calendar (`local_calendar.md`), Generic Feed (`generic_feed.md`), CCS+ (`ccs.md`), calendar link (`calendar_link.md`), Google one-way sync (`google_one_way.md`) and Google two-way sync (`google_two_way.md`), all in `connections.d/`.
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | CON-01 | backlog | A connection synchronizes calendar events locally, one-way or two-way. | — | — |
-| CON-01.a | backlog | Local Calendar, Generic Feed, CCS+, calendar link, Google one-way sync and Google two-way sync are connections. | — | — |
+| CON-01.a | backlog | Every kind of connection is a connection module with its own file in `connections.d/`. | — | — |
 | CON-01.c | backlog | Each connection is a source (it brings events in), a feed (it sends events out) or both, and says so in its own file. A section contains every connection that has its capability, so a connection that is both is contained by the Sources and the Feeds sections: it is one module, and a change or removal made in either place applies to the connection. | — | — |
 | CON-01.b | backlog | A connection that needs a plugin can be added only while that plugin is set up: a Google connection requires the Google plugin (GAP-01). | — | — |
 | CON-01.d | proposed | The number of connections is not limited. | — | readme_gaps:20 |
@@ -15,7 +14,7 @@ Connections: Local Calendar (`local_calendar.md`), Generic Feed (`generic_feed.m
 | CON-02.a | proposed | A source can be renamed and given a note; saving updates its name and explanatory note, and clearing the note removes its content. | — | S18-17, S29-11, S33-05, S39-18, S44-16 |
 | CON-02.b | proposed | Source color can be changed and saved; the new color is reflected immediately in its source display. | — | S38-15, S59-22 |
 | CON-02.c | proposed | Legacy source notes that merely repeat the source kind are treated as absent notes. | — | changelog_gaps_901-1200:24 |
-| CON-02.d | backlog | A connection's kind is fixed text in its module header: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar or Calendar Feed. | — | theme.md Clarifications |
+| CON-02.d | backlog | A connection's kind is fixed text in its module header, stated in its own file. | — | theme.md Clarifications |
 | CON-02.e | proposed | A connection is shown as a module: its header, Expand and Close follow UI-29, and its look follows THM-08. | — | — |
 | CON-03 | proposed | Each source shows its status and can be synced or turned off. | — | — |
 | CON-03.a | proposed | Sync Now updates a source in the background: it reports Syncing during work and Healthy on success, and keeps unrelated unsaved source edits. | — | S33-15, S33-18, S33-19, S35-28, S35-29, S35-31, S44-18 |
