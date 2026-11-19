@@ -17,7 +17,6 @@ Terms used below (defined once):
 | ACC-01.c | proposed | Initial setup explains how to retrieve its setup code with a command that works independently of the chosen service name; incorrect-code guidance repeats that retrieval instruction (ACC-01.b, DEP-02). | — | changelog_gaps_1801-2100:27 |
 | ACC-01.d | proposed | Initial setup refuses a mismatched password confirmation, a password that does not meet the password requirements (ACC-04) and a username containing a space. | — | S16-10, S16-11, S16-12 |
 | ACC-01.e | proposed | After initial login creation, setup is closed and the creating user is signed in. | — | S16-15, S16-16 |
-| ACC-01.f | proposed (?) | A legacy page login is imported with a hashed password; saved page passwords are not stored in plaintext. Is this still needed after the port, given that DEP-05 does not carry the page password over? | — | S16-01, S16-04, S16-14 |
 | ACC-02 | proposed | A person signs in to see or change anything on the page, and can sign out. | — | — |
 | ACC-02.a | proposed | An unauthenticated page request goes to sign-in and does not expose destination content; a successful session can read the page. Any change to settings, including update settings, requires that signed-in session. | — | S16-17, S49-47, S49-51, S51-29, S22-14 |
 | ACC-02.b | proposed | An incorrect login password is not accepted; a correct one establishes a session. | — | S49-48, S49-49, S49-50 |

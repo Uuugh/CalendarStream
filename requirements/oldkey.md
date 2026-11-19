@@ -959,3 +959,4 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R31 | 2026-11-19 | SHL-05.c | UI-11.b | emoji guidance belongs to the emoji picker |
 | R31 | 2026-11-19 | SET-01.e | GAP-01.m | the notice is about the Google plugin |
 | R31 | 2026-11-19 | SET-03.g | SHL-03.a | duplicate: the first theme is Match system |
+| R32 | 2026-11-19 | ACC-01.f | retired | the page password is not carried over by the migration (DEP-05.c), and ACC-05.a covers hashing |

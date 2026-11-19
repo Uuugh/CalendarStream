@@ -6,10 +6,6 @@ Only unanswered questions are listed; Claude removes a question once it acts on 
 
 Each question is the (?) text of a proposed requirement. Answer on the Answer line; Claude updates the row and removes the question.
 
-- **ACC-01.f** A legacy page login is imported with a hashed password; saved page passwords are not stored in plaintext. Is this still needed after the port, given that DEP-05 does not carry the page password over? 
-  Answer:
-- **FED-01.d** A feed can be limited by a date range (UI-23); with no range it publishes its full event set. The current app's feed Include box says the range in words instead of using the shared From \ 
-  Answer:
 - **GOW-04.d** Advancing the synchronization window leaves past remote events alone while dropping obsolete tracking; extending it backward can republish eligible events. The backward-extension check is permissive: what exact write behavior should be guaranteed? 
   Answer:
 - **GOW-04.e** If the remote calendar is deleted, synchronization recreates it with a new mapping and publishes eligible events. How does this automatic repair interact with the later missing-calendar paused recovery policy? 
@@ -23,6 +19,7 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **CCS-02.l** Existing CCS+ credentials can be imported from the old configuration, stored encrypted, and recorded as imported activity. Is this still needed after the port, given that the migration tool (DEP-05) copies the saved credentials? 
   Answer:
 - **CON-06.l** Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? 
+  Code check (Nov 19): only CCS+ retries (CCS-03.b and CCS-03.c give its plans); every other download makes one attempt per check. Suggestion: reword CON-06.l to say a failed download is tried again at the next check, and leave retry plans to CCS-03.
   Answer:
 - **CON-06.n** A source download that unexpectedly returns an empty calendar preserves the previous schedule. How is an unexpected empty response distinguished from an intentionally emptied source? 
   Answer:

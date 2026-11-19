@@ -77,7 +77,7 @@ The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were fol
 | Plugins (common) | [requirements/plugins.md](requirements/plugins.md) | 1 | 0 |
 | Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) | 19 | 18 |
 | Settings | [requirements/settings.md](requirements/settings.md) | 53 | 39 |
-| Account | [requirements/account.md](requirements/account.md) | 56 | 51 |
+| Account | [requirements/account.md](requirements/account.md) | 55 | 50 |
 | Shell | [requirements/shell.md](requirements/shell.md) | 21 | 17 |
 | Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) | 17 | 13 |
 | Deployment | [requirements/deployment.md](requirements/deployment.md) | 29 | 26 |
