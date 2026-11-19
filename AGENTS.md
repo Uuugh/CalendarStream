@@ -191,4 +191,4 @@ appears nowhere (build_rules/0-overview.md, Ground rules).
 
 ## Writing requirements
 
-Any agent or person who adds or changes a row in `requirements/` follows `requirements/README.md`, section "Rules for writing and changing requirements" (rules 1 and 2 are the laws), and runs `tests/tools/req_check.sh` before pushing; it must report no errors.
+Before you add or change any row in `requirements/`: (1) read `requirements/README.md`, section "Rules for writing and changing requirements" (rules 1 and 2 are the laws; each rule says how it is tested); (2) run `tests/tools/req_check.sh`, which must pass before you start; (3) run it again before you push.
