@@ -546,5 +546,20 @@
   "error401DeletedClientThe": "<b>Error 401: deleted_client</b> : le client a été supprimé (Google supprime les clients inutilisés depuis 6 mois). Restaurez-le sur la page Clients sous 30 jours, ou refaites l’étape 6.",
   "askedToConnectAgainAfter": "<b>Reconnexion demandée après une semaine</b> : l’app est encore en Testing. Publiez-la (étape 5).",
   "enterTheSetupCodeThe": "Saisissez le <b>code de configuration</b> affiché par l’installateur à la fin. Perdu ? Sur le serveur, dans le dossier de docker-compose.yml, lancez",
-  "googleSignInWasCancelled2": "La connexion Google a été annulée ou refusée. Si Google a indiqué que l’app est réservée aux testeurs, ajoutez votre adresse Gmail sous Audience → Test users dans Google Cloud."
+  "googleSignInWasCancelled2": "La connexion Google a été annulée ou refusée. Si Google a indiqué que l’app est réservée aux testeurs, ajoutez votre adresse Gmail sous Audience → Test users dans Google Cloud.",
+  "signInWrong": "Ce nom d’utilisateur ou ce mot de passe n’est pas correct.",
+  "signInAgainReloadThePage": "Reconnectez-vous (rechargez la page).",
+  "passwordNeeds": "Le mot de passe doit avoir : {rules}",
+  "@passwordNeeds": {"placeholders": {"rules": {"type": "String"}}},
+  "unlockLinkUsedFrom": "Lien de déverrouillage utilisé depuis {ip} : ce navigateur peut de nouveau se connecter",
+  "@unlockLinkUsedFrom": {"placeholders": {"ip": {"type": "String"}}},
+  "lookChanged": "Apparence modifiée (logo, favicon, poignées, animation)",
+  "autoUpdateOn": "Mise à jour automatique activée",
+  "autoUpdateOff": "Mise à jour automatique désactivée",
+  "versionIsAvailableShort": "(v{v} est disponible)",
+  "@versionIsAvailableShort": {"placeholders": {"v": {"type": "String"}}},
+  "signInAction": "Se connecter",
+  "showPassword": "Afficher le mot de passe",
+  "hidePassword": "Masquer le mot de passe",
+  "thisPage": "Cette page"
 }

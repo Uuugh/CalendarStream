@@ -546,5 +546,20 @@
   "error401DeletedClientThe": "<b>Error 401: deleted_client</b>: der Client wurde gelöscht (Google löscht 6 Monate lang unbenutzte Clients). Auf der Clients-Seite innerhalb von 30 Tagen wiederherstellen oder Schritt 6 wiederholen.",
   "askedToConnectAgainAfter": "<b>Nach einer Woche erneut verbinden?</b> Die App ist noch in Testing. Veröffentliche sie (Schritt 5).",
   "enterTheSetupCodeThe": "Gib den <b>Einrichtungscode</b> ein, den der Installer am Ende angezeigt hat. Verloren? Auf dem Server im Ordner mit docker-compose.yml ausführen:",
-  "googleSignInWasCancelled2": "Die Google-Anmeldung wurde abgebrochen oder abgelehnt. Wenn Google sagte, die App sei nur für Tester, trage deine Gmail-Adresse unter Audience → Test users in Google Cloud ein."
+  "googleSignInWasCancelled2": "Die Google-Anmeldung wurde abgebrochen oder abgelehnt. Wenn Google sagte, die App sei nur für Tester, trage deine Gmail-Adresse unter Audience → Test users in Google Cloud ein.",
+  "signInWrong": "Dieser Benutzername oder dieses Passwort stimmt nicht.",
+  "signInAgainReloadThePage": "Bitte erneut anmelden (Seite neu laden).",
+  "passwordNeeds": "Das Passwort braucht: {rules}",
+  "@passwordNeeds": {"placeholders": {"rules": {"type": "String"}}},
+  "unlockLinkUsedFrom": "Entsperrlink von {ip} verwendet: dieser Browser kann sich wieder anmelden",
+  "@unlockLinkUsedFrom": {"placeholders": {"ip": {"type": "String"}}},
+  "lookChanged": "Aussehen geändert (Logo, Favicon, Griffe, Animation)",
+  "autoUpdateOn": "Automatische Updates ein",
+  "autoUpdateOff": "Automatische Updates aus",
+  "versionIsAvailableShort": "(v{v} ist verfügbar)",
+  "@versionIsAvailableShort": {"placeholders": {"v": {"type": "String"}}},
+  "signInAction": "Anmelden",
+  "showPassword": "Passwort anzeigen",
+  "hidePassword": "Passwort verbergen",
+  "thisPage": "Diese Seite"
 }

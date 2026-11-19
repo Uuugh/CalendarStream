@@ -17,7 +17,7 @@ You keep the requirements consistent, run read-only agents (Reviewer, Coder, ana
 
 ## Where things stand
 
-See the steps table in `build_rules/orchestration.md`. In short: the requirements are reorganized and checked; the first full Coder review (baseline about 390 of 900 rows cannot be implemented) is triaged; six blind agents reverse-engineered the Python app and were compared with ours (data in `build_rules/reverse-engineering/`). **Next: fill the gaps slice by slice, starting with `compare/slice1.md` (account, settings, shell), then re-run the Coder review.**
+See the steps table in `build_rules/orchestration.md`. In short: the requirements are reorganized and checked; the first full Coder review (baseline about 390 of 900 rows cannot be implemented) is triaged; six blind agents reverse-engineered the Python app and were compared with ours (data in `build_rules/reverse-engineering/`). **Next: fill the gaps slice by slice, continuing with `compare/slice2.md` (slice 1 is filled), then re-run the Coder review.**
 
 The Product Owner should confirm these differences first (ours wins by default): global block at 25 failures (old app 50), unlock link 24 hours (1 hour), password rules configurable (fixed), stream token 22 characters of any character (32, letters, digits, hyphen, underscore), 50 connections in total (10 calendars, 20 destinations), each event keeps its own time zone in feeds and Google (UTC), a new Local calendar joins feeds only when none existed (every new one), one download interval for all sources (per source), CCS+ pause ends on Sync Now after the credentials are fixed (any successful sign-in), Backup and Restore exists (the old app has none), the 5-day view, dragging events and overflow counts (the old app has none).
 

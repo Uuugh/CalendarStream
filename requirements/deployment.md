@@ -20,6 +20,8 @@
 | DEP-02.h | proposed | The installer accepts stable and latest as names for the stable release channel. | — | changelog_gaps_1801-2100:L28 |
 | DEP-02.i | proposed | The installer accepts an exact release identifier, including a beta, and installs that release with its own matching deployment definition. | — | changelog_gaps_601-900:L24, changelog_gaps_1501-1800:L16 |
 | DEP-02.j | proposed | Starting or recreating the app deployment checks the selected image tag for an updated image before starting the app. | — | changelog_gaps_2101-2336:L32 |
+| DEP-02.k | proposed | The installer lower-cases the subdomain and the names it is given and keeps only letters, digits, dot, underscore and hyphen. | — | R1 gap |
+| DEP-02.l | proposed | Without an answer the installer uses port 8080, the time zone America/Chicago, the image tag latest and the restart policy unless-stopped. | — | R1 gap |
 | DEP-03 | proposed | The stack works behind a proxy and with Google's notifications. | — | — |
 | DEP-03.a | proposed | FORWARDED_ALLOW_IPS lists the proxies trusted to report the visitor's address and HTTPS use (see ACC-07). | — | L154 |
 | DEP-03.b | proposed | Google notifications need valid TLS and proxy access to the unauthenticated notification endpoint; without it the daily check still runs (see CGOW-05). | — | L455 |

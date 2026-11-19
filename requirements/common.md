@@ -59,6 +59,8 @@
 | UIC-37.c | backlog | The saved image is always a PNG, redrawn as pixels (so nothing in an uploaded file can run), with its long side at most the output size in DEF-01 and its file no larger than the place's file size in DEF-01; if the file is still too large the image is scaled down until it fits. | — |
 | UIC-37.d | backlog | The crop frame starts centered at the largest size the shape allows and stays inside the picture. | — |
 | UIC-37.e | backlog | An uploaded file larger than the input size in DEF-01 is not valid (UIC-19). | — |
+| UIC-38 | proposed | Every password box has a Show/Hide button (msg:showPassword, msg:hidePassword); the box is hidden again when its form is sent. | — | R1 gap |
+| UIC-39 | proposed | The time zone picker lists a Common group of the zones in DEF-01, in that order, then msg:allTimeZones (region and city names only); the default zone is marked ★; a value that is not UTC or in the list is not valid (msg:unknownTimeZone, UIC-19); choosing the default or nothing clears the stored choice. | — | R1 gap |
 | UIC-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UIC-19). | — | CFED-01 and CFED-14 (S evidence), SRH-01, theme.md section 14 |
 
 ## Time (TIM)
@@ -187,3 +189,19 @@ CalendarStream), **rule** (made by a rule).
 | Image editor output size | | at most 512 px on the long side | default only |
 | Image editor input file size | | at most 10 MB | default only |
 
+| User name length | | 1 to 64 characters | default only |
+| Session signing key | 32 random bytes | | database |
+| Known-browser cookie valid | 400 days from the last sign-in | | default only |
+| Public address length | | at most 300 characters | default only |
+| Administrator email length | | at most 254 characters | default only |
+| Logo and favicon browser cache | 1 day | | default only |
+| Logo mark size | 39 by 36 px | | default only |
+| Default icons | favicon 32 px, app icon 192 px, Apple touch icon | | default only |
+| Update check time limit | 15 seconds | | default only |
+| Update checker first wait | 30 seconds | | default only |
+| Update checker wait between rounds | until the next check is due | at least 60 seconds, at most 1 hour | default only |
+| Update progress asked | every 2 seconds | gives up after 15 minutes | default only |
+| Update status asked while the page is shown | every minute | | default only |
+| Reload when the restart was never seen | 0.8 seconds | | default only |
+| Updater readiness check | at start and every 5 minutes | answer within 3 seconds | default only |
+| Common time zones | America/New_York, America/Chicago, America/Denver, America/Phoenix, America/Los_Angeles, America/Anchorage, Pacific/Honolulu, Pacific/Guam, UTC, Europe/London, Europe/Frankfurt, Asia/Tokyo, Asia/Hong_Kong, Australia/Sydney, in this order | | default only |

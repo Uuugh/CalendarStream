@@ -546,5 +546,20 @@
   "error401DeletedClientThe": "<b>Error 401: deleted_client</b>: de client is verwijderd (Google verwijdert clients die 6 maanden ongebruikt zijn). Herstel hem binnen 30 dagen op de pagina Clients, of doe stap 6 opnieuw.",
   "askedToConnectAgainAfter": "<b>Na een week opnieuw verbinden?</b> De app staat nog in Testing. Publiceer hem (stap 5).",
   "enterTheSetupCodeThe": "Vul de <b>instelcode</b> in die het installatieprogramma aan het eind toonde. Kwijt? Voer op de server, in de map met docker-compose.yml, uit:",
-  "googleSignInWasCancelled2": "De Google-aanmelding is geannuleerd of geweigerd. Zei Google dat de app alleen voor testers is, voeg dan je Gmail-adres toe onder Audience → Test users in Google Cloud."
+  "googleSignInWasCancelled2": "De Google-aanmelding is geannuleerd of geweigerd. Zei Google dat de app alleen voor testers is, voeg dan je Gmail-adres toe onder Audience → Test users in Google Cloud.",
+  "signInWrong": "Die gebruikersnaam of dat wachtwoord klopt niet.",
+  "signInAgainReloadThePage": "Meld je opnieuw aan (laad de pagina opnieuw).",
+  "passwordNeeds": "Het wachtwoord heeft nodig: {rules}",
+  "@passwordNeeds": {"placeholders": {"rules": {"type": "String"}}},
+  "unlockLinkUsedFrom": "Ontgrendelingslink gebruikt vanaf {ip}: die browser kan weer inloggen",
+  "@unlockLinkUsedFrom": {"placeholders": {"ip": {"type": "String"}}},
+  "lookChanged": "Uiterlijk gewijzigd (logo, favicon, grepen, animatie)",
+  "autoUpdateOn": "Automatisch bijwerken aan",
+  "autoUpdateOff": "Automatisch bijwerken uit",
+  "versionIsAvailableShort": "(v{v} is beschikbaar)",
+  "@versionIsAvailableShort": {"placeholders": {"v": {"type": "String"}}},
+  "signInAction": "Aanmelden",
+  "showPassword": "Wachtwoord tonen",
+  "hidePassword": "Wachtwoord verbergen",
+  "thisPage": "Deze pagina"
 }

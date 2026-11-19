@@ -646,5 +646,20 @@
   "error401DeletedClientThe": "<b>Error 401: deleted_client</b>: the client was deleted (Google deletes clients unused for 6 months). Restore it on the Clients page within 30 days, or do step 6 again.",
   "askedToConnectAgainAfter": "<b>Asked to Connect again after a week</b>: the app is still in Testing. Publish it (step 5).",
   "enterTheSetupCodeThe": "Enter the <b>setup code</b> the installer printed at the end. Lost it? On the server, in the folder with docker-compose.yml, run",
-  "googleSignInWasCancelled2": "Google sign-in was cancelled or refused. If Google said the app is only for testers, add your Gmail address under Audience → Test users in Google Cloud."
+  "googleSignInWasCancelled2": "Google sign-in was cancelled or refused. If Google said the app is only for testers, add your Gmail address under Audience → Test users in Google Cloud.",
+  "signInWrong": "That user name or password isn't right.",
+  "signInAgainReloadThePage": "Sign in again (reload the page).",
+  "passwordNeeds": "The password needs: {rules}",
+  "@passwordNeeds": {"placeholders": {"rules": {"type": "String"}}},
+  "unlockLinkUsedFrom": "Unlock link used from {ip}: that browser can sign in again",
+  "@unlockLinkUsedFrom": {"placeholders": {"ip": {"type": "String"}}},
+  "lookChanged": "Look changed (logo, favicon, grips, animation)",
+  "autoUpdateOn": "Auto-update on",
+  "autoUpdateOff": "Auto-update off",
+  "versionIsAvailableShort": "(v{v} is available)",
+  "@versionIsAvailableShort": {"placeholders": {"v": {"type": "String"}}},
+  "signInAction": "Sign in",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "thisPage": "This page"
 }
