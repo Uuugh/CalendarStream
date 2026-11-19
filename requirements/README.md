@@ -88,9 +88,8 @@ The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were fol
 
 A feature file is not done when its rows are written. After organizing a feature into requirements and sub-requirements, go back over it:
 
-1. **Duplication**: the same rule is not written twice, in this file or another; a number or limit lives only in DEF-01; a repeated detail is merged.
-2. **Common elements**: behavior that other features also use (a filter, a picker, an invalid entry, a strength bar) is in `common.md` and referenced here, so this file adds only its own content.
-3. **Simulate three jobs**, and fix what stops you:
+1. **The laws and rules**: every row obeys rules 1 to 5 (the two laws, numbers, shared homes, specifics only). Search the other files for the same rule in other words before accepting a row as new.
+2. **Simulate three jobs**, and fix what stops you:
    - **Coder**: every term is defined; every behavior and boundary is stated; time and size limits are stated; nothing has to be guessed.
    - **Tester**: every row has a visible pass or fail; one rule per row, so a failure says which; time can be controlled in a test.
    - **Reviewer**: the statement says what to build, with no history or Python-app notes; the code can be compared with it row by row.
@@ -104,7 +103,7 @@ These apply to every row in `requirements/`. `tests/tools/req_check.sh` checks w
 1. **Law: no duplication. Say it once.** A rule is written in one place and referenced everywhere else. Before adding a row, search the folder for the same rule in other words.
 2. **Law: no exceptions.** If a rule has an exception, the requirement is wrong: change it so it holds for every case, or give the different case its own requirement. A row never says "except", "never for" or "only when X is not". A new kind of thing (a connection, a component) follows the existing rules and does not get a special case.
 3. **Numbers live in DEF-01.** A limit, a default, a duration or a count appears only in the table in `common.md`; a row says "the time in DEF-01". A default that is not a number (a view, a theme) is stated in the row of the control it belongs to.
-4. **Three homes for shared things.** An actionable component several features use (picker, filter, button, dropdown, strength bar, date range) is a UI row in `common.md`. A look (color, font, padding, margin, corner, size, duration) is a theme row (`theme.md`) and is used by default. A capability several features use (Print) is its own feature. The user feature only adds details (which content, which order, which default).
+4. **Three homes for shared things.** An actionable component several features use (picker, filter, button, dropdown, strength bar, date range) is a UI row in `common.md`. A look (color, font, padding, margin, corner, size, duration) is a theme row (`theme.md`) and is used by default. A capability several features use (Print) is its own feature.
 5. **Features add only their specifics.** A feature row never restates how a shared component works.
 6. **Links point at the requirement,** not a sub-requirement, unless exactly one detail is meant. A link names an ID that exists today; when an ID changes, every reference is changed and `oldkey.md` gets a row.
 7. **A row says what to build, once, in the user's words.** One checkable rule per row. No history ("the Python app does…"), no test or script wording, no web-page mechanics, no "is refused" for a control that cannot produce a wrong value. A requirement's own statement is general; its sub-requirements hold the detail and the values.
