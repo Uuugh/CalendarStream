@@ -10,6 +10,7 @@ Dashboard.
 | DIA-01.a | proposed | Container log exposes the most recent log lines of the running app (the number in DEF-01), retrievable as plain text and copyable (DIA-01). | — | readme_gaps:72, changelog_gaps_601-900:34 |
 | DIA-01.b | proposed | A Copy log button next to Container log copies the container log straight to the clipboard, with no new tab and no manual select-all. | — | F64.1 |
 | DIA-01.c | proposed | Per-source Activity provides diagnostic details for the last download and makes the last received calendar file available for diagnosis. | — | changelog_gaps_1501-1800:21, changelog_gaps_2101-2336:26, changelog_gaps_1501-1800:21 |
+| DIA-01.d | proposed | The last received calendar file of each downloaded connection is kept for Report a problem with the download record and these reply headers: content-type, content-length, content-disposition, etag, last-modified, server, date, cache-control and www-authenticate. | — | R4 gap |
 | DIA-02 | proposed | The user can report a problem or suggest a feature, with a report they control. | — | — |
 | DIA-02.a | proposed | The page offers Report a problem and Suggest a feature, allowing the user to describe a problem or idea; the report or suggestion is prefilled with the running CalendarStream version. | — | readme_gaps:78, changelog_gaps_1201-1500:32, changelog_gaps_1801-2100:25, changelog_gaps_1801-2100:25 |
 | DIA-02.b | proposed | The user chooses independently whether a report includes History, each source’s last-download details, device and setup details, contact details and reply preference. | — | readme_gaps:78, changelog_gaps_1201-1500:32 |
@@ -19,6 +20,7 @@ Dashboard.
 | DIA-03 | proposed | Monitoring programs can read the app's status and health. | — | — |
 | DIA-03.a | proposed | CalendarStream provides a status monitoring interface (GET /api/status) that identifies every connection and includes its synchronization status; access follows ACC-02. | — | readme_gaps:79, changelog_gaps_1501-1800:26 |
 | DIA-03.b | proposed | CalendarStream provides a health monitoring interface (GET /healthz) that does not disclose database details; access follows ACC-01. | — | readme_gaps:79, changelog_gaps_1501-1800:36 |
+| DIA-03.c | proposed | The status interface lists for each source its identifier, name, type, status, message, whether it is running, its attempt, success and change times, next check and event count. | — | R4 gap |
 | DIA-04 | proposed | The Product Owner's working files and the Dashboard are served by the app, behind its login. | — | — |
 | DIA-04.a | backlog | The Developer's private working files and Good \| Bad verdicts are served by the app itself, behind its login, and are never committed to the repository or published on a public page. | — | Developer, Nov 17 |
 | DIA-04.b | backlog | The Dashboard is a live web page built from the GitHub issues and `requirements/*.md`; it is made after the port is complete. | — | Developer, Nov 17 |

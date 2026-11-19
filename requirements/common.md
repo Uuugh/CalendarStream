@@ -198,6 +198,30 @@ CalendarStream), **rule** (made by a rule).
 | Administrator email length | | at most 254 characters | default only |
 | Logo and favicon browser cache | 1 day | | default only |
 | Logo mark size | 39 by 36 px | | default only |
+| CCS+ Username length and characters | | 2 to 64 characters: letters, digits, dot, underscore, @ and hyphen | default only |
+| CCS+ password length | | at most 200 characters | default only |
+| Return to the CCS+ module after saving credentials | 1.5 seconds | | default only |
+| Wait for a running download before a verification | | at most 120 seconds | default only |
+| CCS+ attempt time limits | 60 seconds overall, 20 seconds to connect | | default only |
+| CCS+ pauses before attempts | browser-patient 0, 5 and 15 seconds; auto 0 and 3 seconds before its first two attempts | | default only |
+| CCS+ auto mode attempts | browser-like at the time limit, browser-like at twice the time limit, then curl at the time limit | | default only |
+| Reply text shown in a download error | | at most 160 characters | default only |
+| Start of a reply or file checked for BEGIN:VCALENDAR | the first 2,000 bytes | | default only |
+| File start shown in an upload error | | at most 120 characters | default only |
+| Notes length of a downloaded event | | at most 2,000 characters | default only |
+| Connection name length | | at most 100 characters | default only |
+| Connection note length | | at most 120 characters | default only |
+| Feed note length | | at most 300 characters | default only |
+| Years accepted for an import range | | 2000 to 2100 | default only |
+| Import check result valid | 30 minutes | | default only |
+| Removed events kept struck through per download | | at most 200 | default only |
+| Removed events listed in one History entry | 5 | | default only |
+| Feed refresh interval and time-to-live published | 1 hour | | default only |
+| Feed unavailable: readers try again after | 1 hour | | default only |
+| Feed read saved at most once per | 1 minute | | default only |
+| Sync Now answers after | 0.5 seconds | | default only |
+| Next check after an unexpected failure | 5 minutes | | default only |
+| Download interval step | 5 minutes | | default only |
 | Default icons | favicon 32 px, app icon 192 px, Apple touch icon | | default only |
 | Update check time limit | 15 seconds | | default only |
 | Update checker first wait | 30 seconds | | default only |
