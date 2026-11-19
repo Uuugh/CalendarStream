@@ -23,7 +23,7 @@ Terms: **one-way** moves events in one direction only (a source brings them in, 
 | CON-03.d | proposed | The source status event count counts the published feed events, with event visibility determined by CAP-02. | — | changelog_gaps_2101-2336:30 |
 | CON-03.e | proposed | A source can be turned off and back on, with its saved off state cleared when reenabled. | — | S63-20, S63-21, S63-23 |
 | CON-03.f | proposed | Turning a source off removes its events from published feeds while retaining its selected feed memberships for reenabling. | — | changelog_gaps_301-600:23 |
-| CON-03.g | backlog | A module's status line says "Last synced" or "Sync failed" with its time, never "Last check was successful"; the line beside the action says "Next check @" with its time. | — | theme.md Clarifications |
+| CON-03.g | backlog | A connection's status line says when it last did its work, with its time, in its own words: "Last synced" or "Sync failed" for a connection that synchronizes, "Last read" for a feed (CFED-05); never "Last check was successful". A connection that checks on a schedule also shows "Next check @" with its time beside the action. | — | theme.md Clarifications |
 | CON-04 | proposed | The user can remove a source, and keep or merge its events. | — | — |
 | CON-04.a | proposed | Removing a source removes its stored events and its membership from destinations, while keeping a combined Google destination. | — | S26-50, S26-51 |
 | CON-04.b | proposed | Removing a source can preserve its events by creating a Local calendar with its prior color and destination memberships, or by merging into an existing Local calendar. The original source is removed. | — | S37-20, S37-21, S37-22, S49-28 |

@@ -27,10 +27,8 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 ## Found by a cold read of the requirements (test of the process)
 
 - **Kind text per connection:** CON-02.d used to list five kind texts (CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar, Calendar Feed) in the common file, which every new connection would have to edit. Each connection now states its own kind text, but none does yet. Recommended: Local calendar = CalendarStream; CCS+ = United Airlines CCS+; calendar link = Google Calendar, Apple Calendar or Calendar Feed by its preset (CLNK-01.c); Google one-way and two-way = Google Calendar. Is that right?
-  Answer:
+  Answer: CON-02.d is invalid
 - **Removing the Google API client:** CGOW-01.r keeps the Google connections in their sections needing their account restored. Does publishing stop, which status do they show, and is the user asked to confirm before removing the client?
-  Answer:
-- **Feeds in the shared status line:** CON-03 says a module shows "Last synced" and "Next check @", but a feed is read by others (CFED-05 "last read") and has no download schedule. What does a feed's status line show?
   Answer:
 
 - **One-way and two-way Google rows:** CGOW-04.k says one-way sync publishes and does not read back, yet CGOW-04.b, CGOW-04.c, CGOW-04.g and the instant updates (CGOW-05) describe reading Google's changes, which are two-way behaviors. Recommended: move those rows to `google_two_way.md`, so one-way holds only publishing and health. Is that right?
@@ -40,4 +38,4 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 ## From the Coder's second run (Nov 19)
 
 - **Print in a section header (UIC-05.a):** PRT-01.h says every section can be printed, but the header order (icon, title, status lines, health, +) has no Print control. Where does Print go? Recommended: before the +.
-  Answer:
+  Answer: yes
