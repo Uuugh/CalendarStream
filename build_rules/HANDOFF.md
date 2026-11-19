@@ -4,7 +4,7 @@ Read, in this order: `build_rules/README.md` (live and legacy files), `requireme
 
 ## Your role
 
-You keep the requirements consistent, run read-only agents (Reviewer, Coder, analysts) in slices, parse every report against the README rules, fix what is wrong in the one owning row, and pass the Product Owner only real decisions. You never build the app and never play the Coder. Show agent progress as simple bars, one per agent, and nothing else.
+You keep the requirements consistent, and you save your own context for every task, not only one step: the work itself (editing requirements, filling a slice, a review, a fix, later the port) is done by subagents, one per slice and one at a time when they share `common.md` or `messages/`; you brief them, check the result with `tests/tools/req_check.sh`, and commit. Run read-only agents (Reviewer, Coder, analysts) in slices, parse every report against the README rules, fix what is wrong in the one owning row, and pass the Product Owner only real decisions. You never build the app and never play the Coder. Show agent progress as simple bars, one per agent, and nothing else: whenever a subagent runs, show its bar (for example `slice 2 [#####-----] 50%`) in every message to the Product Owner until it finishes.
 
 ## How we work
 
@@ -28,3 +28,31 @@ The Product Owner should confirm these differences first (ours wins by default):
 - Tests and CI: the heavy `Tests` workflow skips changes that touch only requirements, build_rules, docs or Markdown; the quick `Requirements` workflow runs `req_check.sh`.
 - Memory notes: `C:\Users\rfrie\.claude\projects\C--Users-rfrie-Development-Projects-CalendarStream\memory\`.
 - Dart SDK: `C:\Users\rfrie\Development\sdks\flutter\bin\dart`; code so far: `packages/domain`.
+
+## Progress bars (how the Product Owner wants agent progress shown)
+
+The Product Owner wants one simple bar per running agent and nothing else: no commentary, no recap of what the agents are doing.
+
+**Setup, before launching agents**
+1. Use the scratch folder named in the session's system prompt (it changes each session). Make a progress file per agent, `progress-<name>.txt`, containing `0/<total>`, where total is the number of units the agent will finish (files in its slice, or topics).
+2. Put in each agent's prompt: after finishing each unit, overwrite that exact file with `done/total` (for example `2/6`). It is the only file the agent may write besides its output file. Some agents write it only once, at the end; that is fine, the bar then jumps.
+3. Launch every agent in the background (`run_in_background`), one per slice, in the same message.
+
+**Showing the bars.** Whenever a report or notification arrives, read the files and render all agents together in a code block, one line per agent: label, 20 characters of bar, `done/total`, and the word `done` when it has finished. Then add at most one sentence (for example the headline of a finished report). Example:
+
+```
+Slice 1  Account, settings, shell      [####################]  5/5  done
+Slice 2  Calendar, print, search       [########............]  2/6
+```
+
+Rendering (bash; `$SP` is the scratch folder):
+
+```bash
+names=("Slice one" "Slice two"); for i in 1 2; do v=$(tr -d '\n' < $SP/progress-$i.txt); d=${v%%/*}; t=${v##*/}; case "$d" in done) d=$t;; esac; w=20; f=$((d*w/t)); printf "%-24s [%s%s] %s/%s\n" "${names[$((i-1))]}" "$(printf '#%.0s' $(seq 1 $f) 2>/dev/null)" "$(printf '.%.0s' $(seq 1 $((w-f))))" $d $t; done
+```
+
+**Rules**
+- Never poll in a loop and never sleep to wait: the harness sends a notification when each agent finishes; draw the bars then.
+- Do not edit the repository while agents are reading it (an agent reading files you change gives inconsistent reports), unless the agents are blind to those files.
+- To pause, stop the agents with the TaskStop tool (their partial output stays in the scratch folder), and tell the Product Owner what was saved. To resume, relaunch with a prompt that says to keep the existing output file and continue with the topics not yet written.
+- Tell the Product Owner the token use each finished agent reports; they read their own usage meter with `/usage`.
