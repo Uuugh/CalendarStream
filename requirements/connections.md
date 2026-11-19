@@ -1,6 +1,6 @@
 # Requirements: connections
 
-What every connection does; each kind of connection adds only its specifics, in `connections.d/`. Connections are modules listed in a section; a connection is a local, one-way or two-way synchronization, and may need a plugin (plugins.md).
+This file establishes the rules for creating a connection module: what every connection does and what each one must state in its own file in `connections.d/` (its role, its connection method when it downloads, and the plugin it needs), and nothing else that is common. Connections are modules listed in a section; a connection is a local, one-way or two-way synchronization (plugins are in plugins.md).
 Terms: **one-way** sends changes from CalendarStream to the other side only, **two-way** also reads changes made on the other side; a **downloaded** connection (CCS+, a calendar link) reads a calendar from the internet and is read-only here; a **published** event is an event sent out by a feed or by a Google connection.
 Connections: Local Calendar (`local_calendar.md`), Generic Feed (`generic_feed.md`), CCS+ (`ccs.md`), calendar link (`calendar_link.md`), Google one-way sync (`google_one_way.md`) and Google two-way sync (`google_two_way.md`), all in `connections.d/`.
 
