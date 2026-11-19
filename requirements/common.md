@@ -23,6 +23,18 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-20 | proposed | A color that is not in the shared palette (from an older rule, an import, or a destination that supports fewer colors) is represented by the nearest palette color wherever it is shown or sent (UI-10). | — | RUL-58, GGL-27, GGL-60 |
 | UI-21 | proposed | One shared filter, used by the Calendar filter and History (and any feature with a filter). It is built on the shared dropdown (UI-12): the user can select one, several, all or none of its choices; Select all shows everything and Select none shows nothing; the filter shows when it is active; the choices are saved and kept; a change applies at once (UI-13). A feature supplies only the choices and what they filter. | — | FLT-02, FLT-03 (Developer, Nov 17) |
 | UI-24 | proposed | A section whose items can be added has a + control as the rightmost item of its header's right zone; it opens the dialog for adding (UI-01). | — | Developer, Nov 19 |
+| UI-25 | proposed | A button that does one thing and shows no state (an icon button, +, Copy, Open, Expand, Close) just does it; Copy then shows "Copied" in place of its icon for the time in DEF-01. | — | theme.md section 5; picture 2·5 |
+| UI-26 | proposed | A field that saves in place shows ✓ once saved, and ✕ \| ✓ while the user types: ✕ puts the saved value back, ✓ saves. | — | theme.md section 5 |
+| UI-27 | proposed | A Cancel \| Save pair sits at the bottom of what it saves and works as the rows below say. | — | theme.md section 6; picture 2·6 |
+| UI-27.a |  | Pressing a side fills the pair with its word ("Saved" or "Cancelled") for the time in DEF-01; then the pair is idle. | — | theme.md section 6 |
+| UI-27.b |  | With nothing to save both sides are disabled: not focusable and announced as unavailable. A pop-up's Cancel, which only closes it, and the buttons of a + Add pop-up, which can be saved with its defaults, stay available. | — | theme.md section 6 |
+| UI-27.c |  | The first change turns the pair on, and Save pulses for the time in DEF-01 and then stays in full color; saving or cancelling returns the pair to idle. | — | theme.md section 6 |
+| UI-27.d |  | A question's answers can be the same pair (No \| Yes, UI-06). | — | theme.md section 6 |
+| UI-28 | proposed | A Status/Action button shows a status chip over the action that updates it (Sync Now, Check now, Update now, Connect, Fix), and a status looks one way for one meaning everywhere. | — | theme.md section 7; picture 2·7 |
+| UI-28.a |  | The four meanings are: done or OK; in action, or waiting on the user; a problem outside CalendarStream, or an entry that was refused; CalendarStream itself failed. Each has its one look (THM-05), whether it appears as a chip, a button, a done or failed state, or a line of text. | — | theme.md section 7 |
+| UI-28.b |  | Every copy of an action (the top bar and Settings; Feeds and Settings) shows the same words at the same moment and ends together. | — | theme.md section 7 |
+| UI-28.c |  | A good status word shows for the time in DEF-01 and then shrinks to its ✓; the word stays as its tooltip and accessible name. Count boxes keep their numbers. | — | theme.md section 8 |
+| UI-28.d |  | While an update runs only the words of the top-bar Update now change, never a blank pill, and a bar slides under them until the app restarts. | — | theme.md section 7 |
 | UI-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UI-19). | — | FED-13 and FED-14 (S evidence), SRH-03, theme.md section 14 |
 
 ## Proposed (not yet reviewed)
@@ -91,6 +103,13 @@ CalendarStream), **rule** (made by a rule).
 | Trusted address period | 7 days | | default only |
 | Page sign-in session | 30 days | | default only |
 | Page refresh after an update restarts | 15 seconds | | default only |
+| Copied shown | 1.8 seconds | | default only |
+| Saved or Cancelled shown | 3 seconds | | default only |
+| Save pulse after the first change | about 5 seconds | | default only |
+| Done, failed or found result held | 2.4 seconds | | default only |
+| Good status word shown before it shrinks | 2.4 seconds | | default only |
+| Working status shown at least | 0.7 seconds (Check now), 0.5 seconds per Connect step | | default only |
+| Typing delay before a search or a regex test | 300 milliseconds | | default only |
 | Google retry: first wait | 5 seconds, doubled each attempt | longest wait 15 minutes | default only |
 | Google retry: attempts | 5 | 5 | default only |
 | Google retry: jitter | up to 25 % added | | default only |

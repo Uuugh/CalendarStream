@@ -57,7 +57,7 @@ The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were fol
 | Calendar | [requirements/calendar.md](requirements/calendar.md) | 25 | 10 |
 | Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) | 5 | 0 |
 | Print | [requirements/print.md](requirements/print.md) | 8 | 6 |
-| Theme | [requirements/theme.md](requirements/theme.md) | 30 | 4 |
+| Theme | [requirements/theme.md](requirements/theme.md) | 59 | 6 |
 | Search | [requirements/search.md](requirements/search.md) | 9 | 5 |
 | Events | [requirements/events.md](requirements/events.md) | 37 | 33 |
 | Event templates | [requirements/event_templates.md](requirements/event_templates.md) | 6 | 6 |

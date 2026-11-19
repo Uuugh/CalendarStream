@@ -32,7 +32,25 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-04.c |  | Status/Action buttons are 132 × 50 px. Cancel/Save buttons are 130 × 34 px. | — | theme.md section 4 |
 | THM-04.d |  | Icon buttons are 34 × 34 px in the general toolbar and 28 × 28 px in the compact calendar toolbar. | — | theme.md sections 1 and 5 |
 | THM-04.e |  | Every border is 1 px. The two 2 px lines are today's day in the calendar and the focus outline. | — | theme.md section 4 |
+| THM-05 | proposed | Buttons share one look, and a status has one look per meaning. | — | theme.md sections 5 to 7 |
+| THM-05.a |  | An icon button's icon is the muted color, with soft behind it on hover. | — | theme.md section 5 |
+| THM-05.b |  | Every pressable button uses the accent look: accent fill and onaccent words. Accent is never used for a status. | — | theme.md section 6 |
+| THM-05.c |  | A disabled Cancel \| Save pair is greyed and faded. The pulse of a first change is the pressed look. | — | theme.md section 6 |
+| THM-05.d |  | Done or OK is green: ok words on okbg; a done button fills ok. | — | theme.md section 7 |
+| THM-05.e |  | In action, or waiting on the user, is pressed: run words on runbg; a working button is card with run words. | — | theme.md section 7 |
+| THM-05.f |  | A problem outside CalendarStream (United, Google, GitHub, the internet), or an entry that was refused, is amber: warn words on warnbg; a failed button fills warn. | — | theme.md section 7 |
+| THM-05.g |  | CalendarStream itself failing is red: bad words on badbg; a failed button fills bad. | — | theme.md section 7 |
+| THM-06 | proposed | Every change of state moves as the rows below say. When reduced motion is requested nothing slides, grows, fades, spins or pulses: each state replaces the last, with the same words and hold times. | — | theme.md section 8; picture 2·8 |
+| THM-06.a |  | A pop-up opens with a fade and a scale from 0.96 to 1 in 0.2 s ease-out; its backdrop (black at 55%, the page blurred 2 px) fades in. | — | theme.md sections 8 and 11 |
+| THM-06.b |  | The color box and the emoji list open at once, with no motion. | — | theme.md section 8 |
+| THM-06.c |  | The pressed side of a Cancel \| Save pair grows over the pair and fades its words in 0.3 s ease; Cancel takes 1 s, in and back. Save pulses in the pressed look once a second, five times, in 1 s ease-out. | — | theme.md section 8 |
+| THM-06.d |  | A good status word shrinks to its ✓ in 0.5 s ease. A ✓ saved in place fades in in 0.45 s ease (messages 0.3 s). | — | theme.md section 8 |
+| THM-06.e |  | The triangles of Expand and Close turn in 0.15 s; Close points up. | — | theme.md section 8 |
+| THM-06.f |  | A Status/Action button grows from the bottom 22 px to the whole box in 0.25 s ease while its chip fades out in 0.2 s; its working words fade in in 0.25 s ease-out beside an icon that turns once a second, linear. | — | theme.md section 7 |
+| THM-06.g |  | A done, failed or found result fills the button with its status color and a ring pulses out from 0 to 9 px, twice, in 1.1 s ease-out each. | — | theme.md section 7 |
+| THM-06.h |  | After its hold the button shrinks to the bottom in 0.25 s ease; then the new status word fades in, 0.2 s after a 0.25 s delay, never through the old word. | — | theme.md section 7 |
+| THM-06.i |  | The words of the top-bar Update now fade in in 0.25 s ease-out; the bar under them slides in 1.2 s ease-in-out, repeating. | — | theme.md section 7 |
 
 Dart note: THM-01 becomes the text theme, THM-02 the color scheme plus an extension for the status colors (ok, run, warn, bad), THM-03 the icon theme, THM-04 the shapes and the component themes.
 
-Conversion progress (temporary): sections 1 to 4 of the legacy file are converted. To convert: sections 5 to 16 and the Clarifications.
+Conversion progress (temporary): sections 1 to 8 of the legacy file are converted (sections 5 to 8 as UI-25 to UI-28 and THM-05, THM-06). To convert: sections 9 to 16 and the Clarifications. The flows in section 7 (the words each Status/Action button says, in order, and the Remove-a-calendar and Import flows) go into their features: Sync Now (SRC-31), Check now (SET-20), Update now (SET-31), Connect (GGL), Remove a calendar and Import (SRC).
