@@ -1,7 +1,5 @@
 # Requirements: history
 
-Statuses: verified, built, open, planned (approved, not built yet) and proposed (drafted, not yet reviewed by the Developer).
-
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | HIS-01 | proposed | History records what changes in the app and what happens with Google, so the user can see what happened and why. | — | — |
@@ -21,10 +19,10 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-02.a | proposed | History names the type of each change: Calendar, Rule, Event, Sync, Feed, Google, Settings or Update. | — | S49-13, changelog_gaps_601-900:31 |
 | HIS-02.b | proposed | History has a filter that follows the common filter rules (UI-21), with three parts: the change type (the types in HIS-02), words in its entries, and the time of its entries. | — | readme_gaps:71, changelog_gaps_601-900:31 |
 | HIS-02.c | proposed | The user can choose the order of History's columns by sliding a header, or with the left and right arrows when a header is focused; Undo starts at the end. | — | readme_gaps:71, changelog_gaps_1-300:27 |
-| HIS-02.d | approved | History is a table: Time \| Type \| Event \| Undo; folded it shows the latest lines with Undo and Redo where they apply, newest first (a stack). | — | theme.md section 15; picture 2·15 |
-| HIS-02.e | approved | Something done outside CalendarStream (deleted in Google, removed by United) has no Undo icon; Restore is on the event. | — | theme.md section 15 |
-| HIS-02.f | approved | An accepted sign-in is shown as a ✓ with no words; the word stays as its tooltip and accessible name. | — | theme.md Clarifications |
-| HIS-02.g | approved | History's three latest lines sit left-aligned in its section header, before its Healthy box. | — | theme.md Clarifications |
+| HIS-02.d | backlog | History is a table: Time \| Type \| Event \| Undo; folded it shows the latest lines with Undo and Redo where they apply, newest first (a stack). | — | theme.md section 15; picture 2·15 |
+| HIS-02.e | backlog | Something done outside CalendarStream (deleted in Google, removed by United) has no Undo icon; Restore is on the event. | — | theme.md section 15 |
+| HIS-02.f | backlog | An accepted sign-in is shown as a ✓ with no words; the word stays as its tooltip and accessible name. | — | theme.md Clarifications |
+| HIS-02.g | backlog | History's three latest lines sit left-aligned in its section header, before its Healthy box. | — | theme.md Clarifications |
 | HIS-03 | proposed | The user can undo and redo what History records. | — | — |
 | HIS-03.a | proposed | Only the newest completed undoable change can be undone. | — | S49-10 |
 | HIS-03.b | proposed | Undo restores the state before any undoable change and Redo reapplies it (HIS-03), in the order HIS-03 sets. This covers rule deletions; feed and event-template changes; an import (the event set before it); a calendar merge (the original calendar and its rule scope, with the merged events removed from the target); CCS+ removal (the source and its saved credentials); and Hide (the event's visible state, EVT-04). | — | S49-11, S49-12, S49-25, S49-30, S49-34, S57-15, changelog_gaps_601-900:32, changelog_gaps_601-900:32 |

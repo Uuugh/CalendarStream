@@ -1,7 +1,5 @@
 # Requirements: documentation
 
-Statuses: verified, built, open, planned (approved, not built yet) and proposed (drafted, not yet reviewed by the Developer).
-
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | DOC-01 | proposed | The README tells a new user what the app is and how to start. | — | — |

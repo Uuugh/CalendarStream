@@ -1,7 +1,5 @@
 # Requirements: Event templates
 
-Statuses: verified, built, open, planned (approved, not built yet) and proposed (drafted, not yet reviewed by the Developer).
-
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | TPL-01 | proposed | An event template is a reusable event that the user saves once and uses for new events and for rules. | — | — |

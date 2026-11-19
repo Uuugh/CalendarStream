@@ -40,7 +40,7 @@ These apply to every row in `requirements/`. Every rule has a test: a check in `
 `| ID | status | statement | test | evidence (temporary) |`
 
 - **ID**: a feature prefix and a number (CAL-03). A requirement may have sub-requirements (ACC-06, ACC-06.a, ACC-06.b); a link points at the requirement unless it means exactly one sub-requirement. When IDs change, `oldkey.md` records old to new.
-- **status**: `proposed` (drafted, not yet agreed), `approved` (the Product Owner agreed: it is a Requirement), `built` (implemented in the Dart port), `verified` (a Dart test passes it). The Product Owner approves a row by deleting `proposed`; a blank status is read as `approved` and the Author writes the word. `open` and a `built` that predates the Dart port are Python-era words on some rows; the Product Owner decides each when reviewing it.
+- **status**: `proposed` (drafted, not yet agreed) or `backlog` (the Product Owner agreed: it is a Requirement, waiting for a sprint). The Product Owner agrees to a row by deleting `proposed`; a blank status is read as `backlog` and the Author writes the word. With Scrum the Dashboard records what follows (the sprint a requirement is built in, and done when its test passes); until then `built` (implemented in the Dart port) and `verified` (a Dart test passes it) may be used. `open` and a `built` that predates the Dart port are Python-era words on some rows; the Product Owner decides each when reviewing it.
 - **test**: the test that verifies it (path and name), once one exists. `—` until the inventory of the Python suites
   (`requirements/inventory/`) has been matched to requirements.
 - **evidence (temporary)**: the Python-suite keys (and old Dashboard items) a row came from; deleted when the conversion ends.
@@ -55,7 +55,7 @@ asked for.
 
 ## One file per feature (Nov 17)
 
-Each feature has ONE file here, `requirements/<feature>.md`, with every requirement of that feature in the same table; the status vocabulary is under Line format. Reviewing a feature means changing `proposed` rows to `approved` (or editing or deleting them) in that one file. Shared rules (time TIM, shared interface UI, capabilities CAP) are in `common.md`; features reference them.
+Each feature has ONE file here, `requirements/<feature>.md`, with every requirement of that feature in the same table; the status vocabulary is under Line format. Reviewing a feature means changing `proposed` rows to `backlog` (or editing or deleting them) in that one file. Shared rules (time TIM, shared interface UI, capabilities CAP) are in `common.md`; features reference them.
 
 Modules come in two kinds, connections and plugins. `connections.md` and `plugins.md` hold what is common to every module of the kind (written once); each module is its own feature file in `connections.d/` or `plugins.d/` and adds only its specifics, linking to the common file.
 

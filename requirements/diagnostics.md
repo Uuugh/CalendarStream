@@ -20,7 +20,7 @@ Dashboard.
 | DIA-03.a | proposed | CalendarStream provides a status monitoring interface (GET /api/status) that identifies every connection and includes its synchronization status; access follows ACC-02. | — | readme_gaps:79, changelog_gaps_1501-1800:26 |
 | DIA-03.b | proposed | CalendarStream provides a health monitoring interface (GET /healthz) that does not disclose database details; access follows ACC-01. | — | readme_gaps:79, changelog_gaps_1501-1800:36 |
 | DIA-04 | proposed | The Product Owner's working files and the Dashboard are served by the app, behind its login. | — | — |
-| DIA-04.a | approved | The Developer's private working files and Good \| Bad verdicts are served by the app itself, behind its login, and are never committed to the repository or published on a public page. | — | Developer, Nov 17 |
-| DIA-04.b | approved | The Dashboard is a live web page built from the GitHub issues and `requirements/*.md`; it is made after the port is complete. | — | Developer, Nov 17 |
-| DIA-04.c | approved | The Dashboard shows testing progress: the current and recent test runs, each shard's state, and pass or fail per requirement. | — | Developer, Nov 17 |
+| DIA-04.a | backlog | The Developer's private working files and Good \| Bad verdicts are served by the app itself, behind its login, and are never committed to the repository or published on a public page. | — | Developer, Nov 17 |
+| DIA-04.b | backlog | The Dashboard is a live web page built from the GitHub issues and `requirements/*.md`; it is made after the port is complete. | — | Developer, Nov 17 |
+| DIA-04.c | backlog | The Dashboard shows testing progress: the current and recent test runs, each shard's state, and pass or fail per requirement. | — | Developer, Nov 17 |
 
