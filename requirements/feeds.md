@@ -16,8 +16,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | FED-10 | proposed | Pasting an old full feed URL restores its stream token, both when creating and updating a feed. Once replaced, the new token works and the replaced token no longer does. | — | S26-41, S26-42, S51-09 |
 | FED-11 | proposed | Removing a feed makes its subscription URL stop working. | — | S26-52 |
 | FED-12 | proposed | Legacy migration preserves the feed token and scopes the migrated destination to CCS+. Google migration is owned by the Google feature. | — | S26-64, S26-65 |
-| FED-13 | proposed | A feed can be limited by start and end dates; clearing both limits restores its full event set. A start date may be saved without an end date. | — | S29-02, S29-04, S39-19 |
-| FED-14 | proposed | An end date before the start date is not valid (UI-19). | — | S29-03, S51-13 |
+| FED-13 | proposed | A feed can be limited by a date range (UI-23); with no range it publishes its full event set. | — | S29-02, S29-04, S39-19, S29-03, S51-13 |
 | FED-15 | proposed | A new feed's name and note default to the selected source's and follow it when the selected source changes; values the user typed are kept. | — | S31-01, S58-17, S58-18, S58-37, S58-38 |
 | FED-17 | proposed | Published events include their display reminders, including fifteen-minute and one-hour reminders. Reminder selection belongs to EVT-19. | — | S36-26 |
 | FED-18 | proposed | An unchanged feed supports conditional reads with an ETag and an empty not-modified response; changing its events causes an old ETag to receive updated content. | — | S39-10, S39-11 |

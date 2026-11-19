@@ -1,8 +1,8 @@
 # Old keys: the history of rekeying
 
-When requirements are grouped or renumbered, the old ID and its new ID are recorded here, so any old reference (in CHANGELOG.md, an issue, a note or a test name) can be found with one search. Rows are only added, never edited or removed. To trace an old ID, search it in the `old ID` column; if its new ID was later rekeyed, search that in turn.
+When requirements are reorganized or renumbered, the old ID and its new ID are recorded here, so any old reference (in CHANGELOG.md, an issue, a note or a test name) can be found with one search. Rows are only added, never edited or removed. To trace an old ID, search it in the `old ID` column; if its new ID was later rekeyed, search that in turn.
 
-An ID can mean something different before and after a batch (the old ACC-01 was a legacy login import; since R1 it is the Initial setup group). A reference older than a batch's date means the old meaning.
+An ID can mean something different before and after a batch (the old ACC-01 was a legacy login import; since R1 it is the Initial setup requirement). A reference older than a batch's date means the old meaning.
 
 Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several for a split, "retired" for a drop), `note`.
 
@@ -80,3 +80,14 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R5 | 2026-11-18 | CAL-76 | CAL-01.g | |
 | R5 | 2026-11-18 | CAL-77 | CAL-05.i | |
 | R6 | 2026-11-18 | CAL-02.b | CAL-06.b | the question is answered: right-zone choices stay on the device until changed (Developer, Nov 18) |
+| R7 | 2026-11-18 | CAL-05.a | UI-22.a | print follows what the user sees; Print Preview became shared UI (UI-22) |
+| R7 | 2026-11-18 | CAL-05.b | UI-22.b | the print choices are kept on the device |
+| R7 | 2026-11-18 | CAL-05.c | CAL-05.a | automatic orientation; the generic part is UI-22.c |
+| R7 | 2026-11-18 | CAL-05.d | CAL-05.c, UI-22.f | two months, and honoring the theme |
+| R7 | 2026-11-18 | CAL-05.e | CAL-05.b | Itinerary |
+| R7 | 2026-11-18 | CAL-05.f | CAL-05.d | Print All; the date range is UI-23 |
+| R7 | 2026-11-18 | CAL-05.g | UI-22.d | page fit |
+| R7 | 2026-11-18 | CAL-05.h | UI-22.e | titles wrap |
+| R7 | 2026-11-18 | CAL-05.i | CAL-05.e | |
+| R7 | 2026-11-18 | CAL-05.j | CAL-05.b | the printable views |
+| R7 | 2026-11-18 | FED-14 | UI-23 | an end before the start is not valid |

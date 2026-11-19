@@ -22,6 +22,14 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-19 | proposed | An entry that is not valid is marked at its own field with a note saying what is wrong, and it does not affect the other fields' valid values. A feature row says which entries are valid, and refers here for how the problem is shown (Developer's no-duplication rule, Nov 18). | — | SET-12, SET-15, SET-35 |
 | UI-20 | proposed | A color that is not in the shared palette (from an older rule, an import, or a destination that supports fewer colors) is represented by the nearest palette color wherever it is shown or sent (UI-10). | — | RUL-58, GGL-27, GGL-60 |
 | UI-21 | proposed | One shared filter, used by the Calendar filter and History (and any feature with a filter). It is built on the shared dropdown (UI-12): the user can select one, several, all or none of its choices; Select all shows everything and Select none shows nothing; the filter shows when it is active; the choices are saved and kept; a change applies at once (UI-13). A feature supplies only the choices and what they filter. | — | FLT-02, FLT-03 (Developer, Nov 17) |
+| UI-22 | proposed | Printing anything opens one shared Print Preview, where the user chooses what to print, its theme and its orientation; the printed result shows what the user sees. | — | — |
+| UI-22.a |  | The print follows what the user sees: the Local or temporary time zone, the time format (TIM-10), the language and the active filter (UI-21). (Developer, Nov 17) | — | Developer, Nov 17 |
+| UI-22.b | proposed | The user's print choices (what to print, theme, orientation) are kept on the device (SET-06), and Print Preview opens with them; before any are saved, it starts with what is on screen. | — | S36-30, S36-52, S36-53, readme_gaps:52, changelog_gaps_1201-1500:16 |
+| UI-22.c | proposed | Until the user chooses an orientation it is chosen automatically from what is printed; the feature says which orientation each kind of content gets. | — | S65-18..22 |
+| UI-22.d | proposed (?) | Each print sheet fits one Letter or A4 page without cutting content. What should happen when the content cannot fit at a readable size? | — | readme_gaps:53, changelog_gaps_301-600:20 |
+| UI-22.e | proposed | Printed titles wrap to show the complete title. | — | changelog_gaps_301-600:20 |
+| UI-22.f |  | A print honors the theme the user chose. | — | S36-32 |
+| UI-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UI-19). | — | FED-13 and FED-14 (S evidence), SRH-03, theme.md section 14 |
 
 ## Proposed (not yet reviewed)
 

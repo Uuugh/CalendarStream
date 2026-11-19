@@ -82,7 +82,7 @@ Google sign-in and 2-way sync, health and recovery. Issues against this feature
 | GGL-91 | proposed | API setup completion, and its History message, identify each Google module that needs sign-in, has a sync error or has not completed its first sync. | — | changelog_gaps_1-300:L22 |
 | GGL-93 | proposed | Pending invitation consent remains usable across an app restart until it is consumed or expires. | — | changelog_gaps_1-300:L23 |
 | GGL-95 | proposed | Repeating a Google setup submission does not create duplicate or orphan destinations. | — | changelog_gaps_1-300:L26 |
-| GGL-96 | proposed | A Google destination can be limited by start and end dates in the same way as a feed (FED-13). | — | changelog_gaps_1501-1800:L17, readme_gaps:L81 |
+| GGL-96 | proposed | A Google destination can be limited by a date range (UI-23). | — | changelog_gaps_1501-1800:L17, readme_gaps:L81 |
 | GGL-99 | proposed | Synchronization resumes after the database becomes available following a restart. | — | changelog_gaps_1501-1800:L35 |
 | GGL-100 | proposed | Concurrent consent completion and synchronization reuse the same remote calendar mapping rather than creating duplicates. | — | changelog_gaps_1501-1800:L35 |
 | GGL-101 | proposed (?) | Eligible local changes and valid remote change notices trigger reconciliation within seconds under normal service availability. What measurable latency target should replace “within seconds”? | — | changelog_gaps_1801-2100:L19, changelog_gaps_2101-2336:L16, changelog_gaps_901-1200:L18, readme_gaps:L27 |

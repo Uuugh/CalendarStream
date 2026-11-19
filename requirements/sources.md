@@ -40,7 +40,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | SRC-40 | proposed | A source reports when it last synced (a download or an upload) or that a read, check or download failed. | — | S44-11, S27-05, S31-04, S31-19, S40-04, S35-32 |
 | SRC-41 | proposed | Source calendars offer file import. | — | S18-15, S44-38 |
 | SRC-42 | proposed (?) | If a future event disappears from a subsequent source upload, its deletion is retained with its title. How long should this retained deletion remain available? | — | S49-17 |
-| SRC-43 | proposed | Importing with a date bound excludes events outside it; completing import creates events from the included entries. | — | S49-21, S49-22 |
+| SRC-43 | proposed | Importing with a date range (UI-23) excludes events outside it; completing import creates events from the included entries. | — | S49-21, S49-22 |
 | SRC-44 | proposed | Importing an entry that conflicts with an existing event identifies the conflict; choosing merge preserves the incoming changed event and other included entries. | — | S49-23, S49-24 |
 | SRC-45 | proposed | Calendar export downloads an ICS attachment containing its events. | — | S49-26 |
 | SRC-46 | proposed | Calendar removal identifies its owned rules, and deleting the calendar removes those rules. | — | S49-27, S49-31 |
