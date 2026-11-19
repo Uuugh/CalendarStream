@@ -53,9 +53,9 @@ These rows remain accounted for without creating duplicate shared-UI or Python i
 - S66-13: Table column markup/order and draggable attributes are shared table presentation/implementation. These checks do not exercise sorting, dragging or a history state change.
 - S66-14: Table column markup/order and draggable attributes are shared table presentation/implementation. These checks do not exercise sorting, dragging or a history state change.
 - S67-04: Template source-string check (keep=False), not an executed user behavior.
-- S67-10: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-07; these references do not claim the exact timings are already specified.
-- S67-11: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-07; these references do not claim the exact timings are already specified.
-- S67-12: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-07; these references do not claim the exact timings are already specified.
+- S67-10: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-01; these references do not claim the exact timings are already specified.
+- S67-11: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-01; these references do not claim the exact timings are already specified.
+- S67-12: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-01; these references do not claim the exact timings are already specified.
 - S77-31: Injected record return value is a Python collaborator contract, not a user requirement.
 - S77-34: Injected trimming callback count is an implementation contract; it does not independently prove a user-visible retention limit.
 

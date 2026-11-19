@@ -15,12 +15,12 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-01.f | proposed | Before the user has chosen a view, a phone-width window (DEF-01) opens the calendar in List view. | — | changelog_gaps_1501-1800:18 |
 | CAL-01.g | proposed | A day cell shows how many of its visible events do not fit; event visibility follows CAP-02 and the Calendar filter. | — | changelog_gaps_301-600:15 |
 | CAL-02 | proposed | The calendar shows times in the Local time zone (TIM-03), and the user can look at another zone for a while. | — | — |
-| CAL-02.a |  | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | — | S19-31; Developer, Nov 17 |
+| CAL-02.a |  | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-02) is not changed. | — | S19-31; Developer, Nov 17 |
 | CAL-03 | proposed | The user can move an event they may edit by pressing and dragging it. | — | — |
 | CAL-03.a |  | A long-press-drag moves an event, for the events that can be edited (CAP-01). | — | F61 |
 | CAL-03.b |  | In Week and Day the start snaps to the drag step in DEF-01. | — | — |
 | CAL-03.c |  | In Month the event moves to the day it is dropped on and keeps its time. | — | — |
-| CAL-03.d |  | The press must be held for the long-press time set in Settings > Theme (SET-62, DEF-01). | — | — |
+| CAL-03.d |  | The press must be held for the long-press time set in Settings > Theme (SET-03, DEF-01). | — | — |
 | CAL-04 | proposed | The user can change how tall the calendar is, and Full page gives it the whole window. | — | — |
 | CAL-04.a | planned | A Full page icon sits right of Print, in the calendar header's right zone; it hides every other section and becomes an Exit full page icon (the arrows-inward icon, not Back). Full page always resizes to the available window; that is its definition. | — | F15.4; S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
 | CAL-04.b |  | The calendar uses the shared resize bar (UI-16). Its height is measured in event lines, not pixels, changes by whole lines, is saved, and has no fixed pixel minimum or maximum. | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
@@ -35,7 +35,7 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-05.e | proposed | Printing one event uses Day view for that print and keeps the remembered print choices (EVT-03, PRT-01.b). | — | changelog_gaps_301-600:43 |
 | CAL-06 | proposed | The calendar header's right zone holds the view controls in a fixed order, and what the user chooses with them stays on the device until the user changes it. | — | — |
 | CAL-06.a | proposed | The right zone holds, in this order: Time Zone, View, 12/24 clock, Print, Full page, and + last (UI-24). Zone alignment and stacking follow UI-14; what each control does is in its own requirement (CAL-02.a, CAL-01.b, TIM-10, CAL-05, CAL-04). | — | theme.md 13c (to confirm) |
-| CAL-06.b | proposed | The state of each right-zone control that holds one (the time zone, the view, the time format, Full page) is kept on the device until the user changes it (SET-06). A default is stated in the control's own requirement. | — | Developer, Nov 18 |
+| CAL-06.b | proposed | The state of each right-zone control that holds one (the time zone, the view, the time format, Full page) is kept on the device until the user changes it (SET-01). A default is stated in the control's own requirement. | — | Developer, Nov 18 |
 
 ## Notes from the draft
 

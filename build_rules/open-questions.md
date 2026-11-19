@@ -22,3 +22,5 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **FED-01.d** (feeds) A feed module's Include box says its date range in words (Dates (optional; empty = all), From over To) in the current app; the shared date range control (UI-23) is From | To | All. Should the feed use the shared control? Recommended: yes.
   Answer:
+- **SET-03.e** (settings) Which image types and sizes may be uploaded as a custom logo or favicon (the old app accepted PNG, SVG, WebP, JPEG and ICO up to 256 KB), and how is an image that can carry script refused? 
+  Answer:

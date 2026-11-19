@@ -31,7 +31,7 @@ Terms used below (defined once):
 | ACC-03.c | proposed | Changing the login renews the form security token and invalidates the previous token. | — | S16-32 |
 | ACC-03.d | proposed | Changing the page login invalidates all previously issued browser sessions. | — | readme_gaps:73, changelog_gaps_601-900:30 |
 | ACC-04 | proposed | A new password must meet the password requirements, and the user sees how strong it is and which requirements it still misses. | — | — |
-| ACC-04.a | proposed | A password is accepted only if it has at least the minimum length and at least the minimum number of capital letters, lowercase letters, numbers and special characters set in the password requirements (SET-61; the defaults and floors are in DEF-01). A character and a special character are as DEF-03 defines them. | — | S63-06, S63-07, S63-08 |
+| ACC-04.a | proposed | A password is accepted only if it has at least the minimum length and at least the minimum number of capital letters, lowercase letters, numbers and special characters set in the password requirements (SET-06; the defaults and floors are in DEF-01). A character and a special character are as DEF-03 defines them. | — | S63-06, S63-07, S63-08 |
 | ACC-04.b | proposed | The strength bar (UI-18) is shown when a password is created or changed, with a hint naming the requirements not yet met. Sign-in only verifies the saved password (ACC-02.b). | — | changelog_gaps_301-600:26 |
 | ACC-04.d | proposed | The password requirements apply when a password is created or changed (initial setup, replacement), not to a password already saved; changing the requirements does not sign anyone out. | — | — |
 | ACC-05 | proposed | Passwords, Google client secrets and notification tokens are protected: stored safely and never exposed. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
@@ -82,11 +82,11 @@ The following observations are excluded or mapped to another owner rather than d
 - S55-39: No window.opener in a new tab is shared external-navigation security, not an account-specific rule.
 - S63-09: Failure sentinel and unconditional exception-handler success marker; not independent password validation evidence.
 - S63-10: Failure sentinel and unconditional exception-handler success marker; not independent password validation evidence.
-- S64-11: Settings form structure and signed-in/out wording are mapped to existing SET-06 and account signed-in state above, not duplicated UI mechanics.
+- S64-11: Settings form structure and signed-in/out wording are mapped to existing SET-01 and account signed-in state above, not duplicated UI mechanics.
 - S65-24: Icon variables and CSS-selector source checks are Python presentation implementation details.
 - S65-25: Icon variables and CSS-selector source checks are Python presentation implementation details.
-- S81-07: Settings dialog navigation and field visibility are shared mechanics (SET-06, UI-01/UI-02), not new account behavior.
-- S81-08: Settings dialog navigation and field visibility are shared mechanics (SET-06, UI-01/UI-02), not new account behavior.
+- S81-07: Settings dialog navigation and field visibility are shared mechanics (SET-01, UI-01/UI-02), not new account behavior.
+- S81-08: Settings dialog navigation and field visibility are shared mechanics (SET-01, UI-01/UI-02), not new account behavior.
 
 ### Coverage and open questions
 

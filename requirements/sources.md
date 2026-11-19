@@ -34,7 +34,7 @@ Terms: a **source** is a place the app reads events from (CCS+, a calendar link,
 | SRC-03.g | proposed | The saved CCS+ password is protected (ACC-05); the page shows the saved username and explains how to keep its password. | — | S16-23, S16-25, S16-34 |
 | SRC-03.h | proposed | Saved CCS+ credentials are used for the next download. | — | S16-22, S16-24 |
 | SRC-03.i | proposed | Rejected CCS+ credentials show a failure reason beside the credential fields; successful verification reports Validated. Editing the credentials removes stale validation or rejection feedback. | — | S18-08, S18-09, S19-19, S19-47, S19-48, S28-01, S28-08, S28-09, S28-10, S28-11 |
-| SRC-03.j | proposed | Credential saving reports saving/verification progress and a saved acknowledgement before successful validation. Shared save/cancel interaction follows SET-07; this rule specifies the verification outcome. | — | S28-05, S28-06, S28-07 |
+| SRC-03.j | proposed | Credential saving reports saving/verification progress and a saved acknowledgement before successful validation. Shared save/cancel interaction follows SET-01; this rule specifies the verification outcome. | — | S28-05, S28-06, S28-07 |
 | SRC-03.k | proposed | CCS+ setup guidance explains enabling trips as one event and the other calendar options, setting a dedicated Calendar Sync password, and completing the Accomplished checklist. | — | changelog_gaps_1201-1500:24 |
 | SRC-03.l | proposed (?) | Existing CCS+ credentials can be imported from the old configuration, stored encrypted, and recorded as imported activity. Is this still needed after the port, given that the migration tool (DEP-14) copies the saved credentials? | — | S16-02, S16-03 |
 | SRC-04 | proposed | A source is downloaded automatically on a schedule, and the user can change the schedule. | — | — |
@@ -113,18 +113,18 @@ These mappings account for evidence without defining duplicate UI or implementat
 - S23-27: Always-true predicate or deliberate failure sentinel, not independent behavior verification.
 - S26-13: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
 - S27-07: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S28-02: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S28-03: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S28-04: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S28-02: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S28-03: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S28-04: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
 - S31-12: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S31-16: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S33-04: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S33-20: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S33-20: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
 - S34-09: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S34-10: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S34-11: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S34-12: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S34-14: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S34-10: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S34-11: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S34-12: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S34-14: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
 - S34-19: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
 - S34-20: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S34-21: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
@@ -134,9 +134,9 @@ These mappings account for evidence without defining duplicate UI or implementat
 - S35-23: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S35-30: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S35-33: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S35-34: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S35-35: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S35-36: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S35-34: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S35-35: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S35-36: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
 - S37-28: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
 - S37-29: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
 - S37-30: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
@@ -166,10 +166,10 @@ These mappings account for evidence without defining duplicate UI or implementat
 - S60-20: Always-true predicate or deliberate failure sentinel, not independent behavior verification.
 - S60-27: Transport selection, user-agent/debug or authorization implementation contract. No additional user-facing source rule inferred; transport/security outcomes are stated separately.
 - S61-06: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S61-19: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S61-20: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S61-21: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S61-22: Shared save/cancel mechanics; see SET-07 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S61-19: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S61-20: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S61-21: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
+- S61-22: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
 - S61-28: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
 - S63-19: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
 - S63-29: Python source-string, injected-provider/logging or cached-version compatibility contract; not a user-facing source requirement.
