@@ -951,3 +951,11 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R30 | 2026-11-19 | HIS-01.k | HIS-01.e | duplicate of HIS-01.e, removed |
 | R30 | 2026-11-19 | HIS-01.l | HIS-01.k | |
 | R30 | 2026-11-19 | HIS-01.m | HIS-01.l | |
+| R31 | 2026-11-19 | SHL-04 | UI-05 | section open and fold is the shared section component |
+| R31 | 2026-11-19 | SHL-04.a | UI-05.c | |
+| R31 | 2026-11-19 | SHL-04.b | UI-05.d | |
+| R31 | 2026-11-19 | SHL-04.c | UI-05.b | |
+| R31 | 2026-11-19 | SHL-04.d | UI-05.a | |
+| R31 | 2026-11-19 | SHL-05.c | UI-11.b | emoji guidance belongs to the emoji picker |
+| R31 | 2026-11-19 | SET-01.e | GAP-01.m | the notice is about the Google plugin |
+| R31 | 2026-11-19 | SET-03.g | SHL-03.a | duplicate: the first theme is Match system |

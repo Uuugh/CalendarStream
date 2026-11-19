@@ -76,7 +76,11 @@ fixed 24-hour source span to the local day.
 | UI-01 | proposed | A dialog opens centered over a dimmed backdrop. In a phone-width window it fills the screen and shows a Back control instead of the dialog header. | S44-27, S57-20, S36-57, S57-37 |
 | UI-02 | proposed | Back closes the dialog. Escape closes only the topmost open layer (a menu, time list or picker) and a second Escape closes the dialog. A dialog opened from another returns to it when closed. | S57-28..30, S58-32, S37-36, S67-15..17 |
 | UI-03 | proposed | A dialog fits the window height; its content area grows with a taller field (such as Notes). | S57-23, S57-24 |
-| UI-05 | proposed | A section (Rules, Event Templates, History...) shows a title, status lines, a count box and one plus control; its body stays hidden until expanded; clicking the title alone does not expand it. | S33-24, S38-01, S38-13, S61-02 |
+| UI-05 | proposed | A section (Calendar, Sources, Feeds, All Rules, Event Templates, History...) is a header and a body; its body stays hidden until expanded, and clicking the title alone does not expand it. | S33-24, S38-01, S38-13, S61-02 |
+| UI-05.a |  | Every section's header reads: icon, title, space, status lines, health, + (UI-24). Calendars and Feeds have no status lines; All Rules and Event Templates have up to three (the conflicts or errors, otherwise how many); + is in the top right corner. | theme.md Clarifications |
+| UI-05.b |  | A folded section says "Expand to Configure" (Calendars, Feeds, All Rules, Event Templates) or "Expand for Details" (History). | theme.md Clarifications |
+| UI-05.c | proposed | A section the user left open folds by itself after the time in DEF-01; each section is judged on its own. | S61-13, S61-14 |
+| UI-05.d | proposed | The open or closed state of a section is a user setting (SET-01). | changelog_gaps_2101-2336:24 |
 | UI-06 | proposed | An action that hides or deletes something asks first with a No \| Yes pair; cancelling changes nothing. | S57-33, S58-24, S58-25, S58-35, S44-26 |
 | UI-07 |  | One shared popover, like the info dot: clicking or tapping an info dot, or the triple dot that ends clipped text (UI-14), shows its full text in a popover next to it, above or below as space allows. The popover is never wider than the window and its text wraps inside it, so it adds no horizontal scroll bar; if it is taller than the window it scrolls vertically. It closes when the user chooses outside it. The item's own click still works. The triple dot's click area is at least 24×24 px. This is the global definition of the triple dot; the Developer may revisit it later (Developer, Nov 17). | — | Developer, Nov 17; S58-01, S58-34, S57-35, S66-18 |
 | UI-07.a |  | A (?) is help: how to do something. It sits right after the word it explains; hover, focus or a click shows it. Its pop-up opens with its upper left at the icon; past the window's right edge, its upper right sits at that edge; past the bottom, its lower corners sit at the bottom. Explanations live in an (i) or a (?), never on the page. | — | theme.md section 12; picture 2·12 |
@@ -88,6 +92,7 @@ fixed 24-hour source span to the local day.
 Pending: the Save | Cancel pair is covered by SET-01; the section header color tokens belong to the theme.
 | UI-11 | proposed | One shared emoji picker, with search, is used wherever an emoji is chosen. | S44-41 |
 | UI-11.a |  | The common emoji sit beside the field; a rounded "Search for more emojis" field opens every emoji (up to Emoji 13.0, no flags, drawn by the device), ten a line, scrolling, filtered as the user types. | — | theme.md section 11 |
+| UI-11.b | proposed | Newer emoji display older-Windows compatibility guidance, while older compatible choices do not. Editing or choosing an older emoji clears the compatibility warning; choosing a newer one displays it. Shared explanatory help follows UI-07. | S55-37, S55-41, S55-43, S55-44, S55-45, S55-46, S55-47 |
 
 ## Capabilities (CAP)
 
@@ -174,3 +179,4 @@ CalendarStream), **rule** (made by a rule).
 | Shortest event template duration | 5 minutes | | default only |
 | Reminders per event | 5 | | default only |
 | Longest reminder lead | 1 week | | default only |
+| Networks trusted during a global block | 192.168.0.0/16, 10.10.0.0/16 and loopback | | default only |

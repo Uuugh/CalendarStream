@@ -31,7 +31,7 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-04.b |  | Module headers are 50 px high; controls (fields and buttons) are 34 px high. | — | theme.md section 4 |
 | THM-04.c |  | Status/Action buttons are 132 × 50 px. Cancel/Save buttons are 130 × 34 px. | — | theme.md section 4 |
 | THM-04.d |  | Icon buttons are 34 × 34 px in the general toolbar and 28 × 28 px in the compact calendar toolbar. | — | theme.md sections 1 and 5 |
-| THM-04.e |  | Every border is 1 px. The two 2 px lines are today's day in the calendar and the focus outline. | — | theme.md section 4 |
+| THM-04.e |  | The two 2 px lines are today's day in the calendar and the focus outline. | — | theme.md section 4 |
 | THM-04.f |  | A trash icon's lines are tinted red (30% of bad in muted, at least 3:1 contrast), the button itself unchanged; fully red on hover. | — | theme.md Clarifications |
 | THM-01.e |  | A field label is 12 px, in the muted color, over a 34 px field. | — | theme.md Clarifications |
 | THM-05 | proposed | Buttons share one look, and a status has one look per meaning. | — | theme.md sections 5 to 7 |
@@ -60,7 +60,7 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-07.e |  | A folded section keeps 14 px below it for the Expand line in its border. A module's Close line has 2 px less above and below it. | — | theme.md section 9 |
 | THM-07.f |  | The calendar key starts 5 px below the calendar. The header's date and navigation gaps are 8 px, tool gaps 5 px, and the wrapped second row has a 6 px gap. | — | theme.md section 9 |
 | THM-08 | proposed | A module's border is its calendar's or feed's color at 45%, its header a 6% tint and the rest a 3% tint of it, in light and dark. Each section has its own border color (THM-02.l) on card. | — | theme.md section 9; picture 2·9 |
-| THM-08.a |  | A dialog has 12 px corners; in a phone-width window it fills the screen with square, edge-to-edge corners. | — | theme.md section 11 |
+| THM-08.a |  | In a phone-width window a dialog's corners are square and edge to edge (UI-01). | — | theme.md section 11 |
 | THM-08.b |  | The grip of a handle is two columns of three faint dots, centered on the module's 50 px header or on the rule line. | — | theme.md section 10 |
 | THM-08.c |  | The (?) icon is 15 px, raised after the word it explains. | — | theme.md section 12 |
 | THM-09 | proposed | The event color palette (UI-10) is Google Calendar's eleven colors. | — | theme.md section 11 (Color box) |

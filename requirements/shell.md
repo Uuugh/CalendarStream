@@ -22,14 +22,8 @@ issues database): I4, I27, I33 (2/3-line status box), I39 (animation), I46 and I
 | SHL-03 | proposed | The page uses a light, dark or system theme, and starts in the saved one. | — | — |
 | SHL-03.a | proposed | With no saved theme override, the page uses Match system; choosing Dark applies it and indicates it as the selected choice. The page starts in the saved theme without first showing another (SHL-03 owns the choice control). | — | S66-01, S67-47, S67-49, changelog_gaps_2101-2336:25 |
 | SHL-03.b | built | The Light / Dark / Match system choice is one icon when closed, a button plus menu like the view picker, replacing a three-way cycling button. | — | F57 |
-| SHL-04 | proposed | The page's sections open and fold, and say how. | — | — |
-| SHL-04.a | proposed | A section the user left open folds by itself after the time in DEF-01; each section is judged on its own, and its closed state is kept (SET-01). | — | S61-13, S61-14 |
-| SHL-04.b | proposed | The open or closed state of the page's sections is a view setting kept on the device, like the other view settings (SET-01); expiry follows SHL-04. | — | changelog_gaps_2101-2336:24 |
-| SHL-04.c |  | A folded section says "Expand to Configure" (Calendars, Feeds, All Rules, Event Templates) or "Expand for Details" (History). | — | theme.md Clarifications |
-| SHL-04.d |  | Every section's header reads: icon, title, space, status lines, health, + (UI-24). Calendars and Feeds have no status lines; All Rules and Event Templates have up to three (the conflicts or errors, otherwise how many); + is in the top right corner. | — | theme.md Clarifications |
 | SHL-05 | proposed | The page loads everything from the installation and keeps its errors machine-readable for programs. | — | — |
 | SHL-05.a | proposed | Rendering a CalendarStream page loads its resources, including its fonts (the Mono font with its license), from the CalendarStream installation, without contacting external resource providers such as Google Fonts. | — | readme_gaps:55, changelog_gaps_1201-1500:27, S35-07, S35-08, S35-10, S35-18 |
 | SHL-05.b | proposed | Versioned stylesheet, language-script and font assets can be cached as immutable, fonts for one year; an obsolete script version or an unsupported script language is not served, and the unversioned font is not advertised as immutable. | — | S39-03, S39-04, S39-05, S39-06, S39-07, S39-08, changelog_gaps_901-1200:28 |
-| SHL-05.c | proposed | Newer emoji display older-Windows compatibility guidance, while older compatible choices do not. Editing or choosing an older emoji clears the compatibility warning; choosing a newer one displays it. Shared explanatory help follows UI-07. | — | S55-37, S55-41, S55-43, S55-44, S55-45, S55-46, S55-47 |
 | SHL-05.d | proposed | API-style requests retain structured JSON errors rather than receiving translated HTML pages. | — | S17-13 |
 

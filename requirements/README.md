@@ -56,7 +56,7 @@ The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were fol
 
 | Feature | File | Requirements | Proposed (to review) |
 |---|---|---|---|
-| Calendar | [requirements/calendar.md](requirements/calendar.md) | 30 | 15 |
+| Calendar | [requirements/calendar.md](requirements/calendar.md) | 35 | 15 |
 | Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) | 10 | 1 |
 | Print | [requirements/print.md](requirements/print.md) | 10 | 5 |
 | Theme | [requirements/theme.md](requirements/theme.md) | 61 | 9 |
@@ -64,25 +64,25 @@ The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were fol
 | Events | [requirements/events.md](requirements/events.md) | 46 | 39 |
 | Event templates | [requirements/event_templates.md](requirements/event_templates.md) | 8 | 8 |
 | Rules | [requirements/rules.md](requirements/rules.md) | 64 | 23 |
-| History | [requirements/history.md](requirements/history.md) | 28 | 24 |
-| Sources (section) | [requirements/sources.md](requirements/sources.md) | 2 | 1 |
-| Feeds (section) | [requirements/feeds.md](requirements/feeds.md) | 2 | 1 |
-| Connections (common) | [requirements/connections.md](requirements/connections.md) | 58 | 49 |
-| Local calendar | [requirements/connections.d/local_calendar.md](requirements/connections.d/local_calendar.md) | 16 | 13 |
-| Generic Feed | [requirements/connections.d/generic_feed.md](requirements/connections.d/generic_feed.md) | 28 | 23 |
-| CCS+ | [requirements/connections.d/ccs.md](requirements/connections.d/ccs.md) | 30 | 25 |
-| Calendar link | [requirements/connections.d/calendar_link.md](requirements/connections.d/calendar_link.md) | 5 | 4 |
-| Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) | 71 | 65 |
-| Google two-way sync | [requirements/connections.d/google_two_way.md](requirements/connections.d/google_two_way.md) | 7 | 6 |
+| History | [requirements/history.md](requirements/history.md) | 30 | 26 |
+| Sources (section) | [requirements/sources.md](requirements/sources.md) | 5 | 4 |
+| Feeds (section) | [requirements/feeds.md](requirements/feeds.md) | 5 | 4 |
+| Connections (common) | [requirements/connections.md](requirements/connections.md) | 58 | 52 |
+| Local calendar | [requirements/connections.d/local_calendar.md](requirements/connections.d/local_calendar.md) | 16 | 16 |
+| Generic Feed | [requirements/connections.d/generic_feed.md](requirements/connections.d/generic_feed.md) | 28 | 28 |
+| CCS+ | [requirements/connections.d/ccs.md](requirements/connections.d/ccs.md) | 30 | 30 |
+| Calendar link | [requirements/connections.d/calendar_link.md](requirements/connections.d/calendar_link.md) | 5 | 5 |
+| Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) | 71 | 70 |
+| Google two-way sync | [requirements/connections.d/google_two_way.md](requirements/connections.d/google_two_way.md) | 7 | 7 |
 | Plugins (common) | [requirements/plugins.md](requirements/plugins.md) | 1 | 0 |
-| Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) | 20 | 18 |
-| Settings | [requirements/settings.md](requirements/settings.md) | 55 | 39 |
+| Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) | 19 | 18 |
+| Settings | [requirements/settings.md](requirements/settings.md) | 53 | 39 |
 | Account | [requirements/account.md](requirements/account.md) | 56 | 51 |
-| Shell | [requirements/shell.md](requirements/shell.md) | 27 | 21 |
+| Shell | [requirements/shell.md](requirements/shell.md) | 21 | 17 |
 | Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) | 17 | 13 |
 | Deployment | [requirements/deployment.md](requirements/deployment.md) | 29 | 26 |
 | Documentation | [requirements/documentation.md](requirements/documentation.md) | 12 | 12 |
-| Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) | 76 | 36 |
+| Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) | 81 | 39 |
 
 ## Checking a feature file
 
