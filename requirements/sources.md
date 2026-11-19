@@ -72,7 +72,7 @@ Terms: a **source** is a place the app reads events from (CCS+, a calendar link,
 | SRC-07.e | proposed | When a recurring source occurrence moves, its existing local edits remain attached using its original-start identity. | — | changelog_gaps_601-900:21 |
 | SRC-07.f | proposed | Free/busy information from an imported calendar is preserved: events marked transparent remain free. | — | S13-01 |
 | SRC-07.g | proposed | When source events conflict, the earlier source in the saved source order has priority. | — | readme_gaps:60, changelog_gaps_301-600:27 |
-| SRC-07.h | proposed | A future event that disappears from a refreshed source schedule is kept for restoration, with its title, until its deletion leaves History (HIS-09). | — | S49-17 |
+| SRC-07.h | proposed | A future event that disappears from a refreshed source schedule is kept for restoration, with its title, until its deletion leaves History (HIS-03). | — | S49-17 |
 | SRC-08 | proposed | The user can import a calendar file, upload a schedule and export a calendar. | — | — |
 | SRC-08.a | proposed | Source calendars offer file import. | — | S18-15, S44-38 |
 | SRC-08.b | proposed | Importing with a date range (UI-23) excludes events outside it; completing import creates events from the included entries. | — | S49-21, S49-22 |

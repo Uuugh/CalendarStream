@@ -38,7 +38,7 @@ Terms used below (defined once):
 | ACC-05.a | proposed | A sign-in password (page login, setup, replacement) is stored only as a one-way hash, never in plaintext. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-05.b | proposed | A credential the app must send on (the CCS+ password, Google client secret and tokens) is stored encrypted with a key from the database password; after the database password changes they cannot be read until entered again (GGL-22). | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-05.c | proposed | A secret is never written to a log. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
-| ACC-05.d | proposed | A secret is shown on a page only when a user who is authorized to see secrets turns on the Show secrets switch in History (HIS-34). | — | — |
+| ACC-05.d | proposed | A secret is shown on a page only when a user who is authorized to see secrets turns on the Show secrets switch in History (HIS-04). | — | — |
 | ACC-06 | proposed | Repeated failed sign-ins from one address lock that address for a time. | — | — |
 | ACC-06.a | planned | After the number of failed sign-ins in DEF-01 from one address, further attempts from it are refused for the lock time in DEF-01. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-06.b | proposed | An incorrect initial-setup code counts toward the same per-address failure limit as an incorrect page login (ACC-06.a). | — | readme_gaps:35 |
@@ -57,7 +57,7 @@ Terms used below (defined once):
 | ACC-07.d | proposed | A known browser can authenticate during the global block, but does not bypass a block applied specifically to its own address. A new browser remains blocked. | — | S55-29, S55-30, S55-31 |
 | ACC-07.g | proposed | The record of addresses that signed in successfully keeps at most the number in DEF-01 (the oldest are forgotten first). | — |  |
 | ACC-08 | proposed | When failed sign-ins lock the administrator out, a single-use recovery link restores access. | — | — |
-| ACC-08.a | proposed | Reaching a global block records one recovery warning (HIS-33) pointing the administrator to the container log. | — | S53-09, S55-27 |
+| ACC-08.a | proposed | Reaching a global block records one recovery warning (HIS-01) pointing the administrator to the container log. | — | S53-09, S55-27 |
 | ACC-08.d | proposed | The warning includes an unlock link that works once and is valid for the time in DEF-01. | — | S53-09, S55-27 |
 | ACC-08.b | proposed | A fresh recovery link uses the configured public address, marks the visiting browser as known and directs it to login, allowing that browser to authenticate. | — | S55-32, S55-33, S55-34 |
 | ACC-08.c | proposed | Recovery links are single-use, and an expired link is not accepted. | — | S55-35, S55-36 |
@@ -66,7 +66,7 @@ Terms used below (defined once):
 | ACC-09.b | proposed | Cross-site form changes are refused and leave the saved value unchanged. | — | S23-23 |
 | ACC-09.c | proposed | Page responses restrict framing to the same origin, prevent content-type sniffing and suppress referrer disclosure. | — | S23-25, S36-37 |
 
-Future: a Users feature will decide which users may see secrets in the logs (log visibility permissions, HIS-34, GGL-02); until then the one signed-in user is authorized. (Developer, Nov 18)
+Future: a Users feature will decide which users may see secrets in the logs (log visibility permissions, HIS-04, GGL-02); until then the one signed-in user is authorized. (Developer, Nov 18)
 ## Notes from the draft
 
 ### Not requirements

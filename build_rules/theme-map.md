@@ -19,9 +19,6 @@ Where each decision in the legacy `build_rules/theme.md` Clarifications goes, wh
 - A deleted event stays struck through and greyed, saying where it was deleted (CalendarStream, Google Calendar, United, the feed), with Restore, until its Undo leaves History; an event added here and deleted here is not drawn at all (History Undo brings it back).
 - Cancel in the rule dialog opened from the event dialog reopens the event exactly as it was, unsaved edits included; Escape does the same (UI-02).
 
-**history.md**
-- History is a table Time | Type | Event | Undo, with a filter (UI-21: type, words, time) on top; folded it shows the latest lines with Undo and Redo where they apply, newest first (a stack); something done outside CalendarStream has no Undo icon and Restore is on the event. The column headers slide to reorder, or move with the left and right arrows when focused; Undo starts at the end. An accepted sign-in is a ✓ with no words. History's three latest lines sit left-aligned before its Healthy box.
-
 **settings.md**
 - Settings order: Updates first, then Login & password, Domains, Theme last, then other modules; Login & password has its status box, Sign out and login fields, Domains one list of address rows (+ at the end of the first row; trashing the domain row clears it, never removes it); each has its own Cancel | Save; the current password is asked only when the user name or password changes. Updates reads the running version ("v1.2.3"), not a plain "Up to date". Theme: your own logo and favicon (PNG, SVG, WebP, JPEG or ICO up to 256 KB), Animation intensity and duration, Reorder grips Left or Right, Reset to defaults. The first theme after install is System.
 - Changing the public address with Google API Sync set up pops up a notice pointing at the module's assist box (SET-04).

@@ -35,13 +35,13 @@ Google sign-in and 2-way sync, health and recovery. Issues against this feature
 | GGL-33 | proposed (?) | Advancing the synchronization window leaves past remote events alone while dropping obsolete tracking; extending it backward can republish eligible events. The backward-extension check is permissive: what exact write behavior should be guaranteed? | — | S13-27, S13-28, S13-29 |
 | GGL-34 | proposed (?) | If the remote calendar is deleted, synchronization recreates it with a new mapping and publishes eligible events. How does this automatic repair interact with the later missing-calendar paused recovery policy? | — | S13-31 |
 | GGL-35 | proposed | Sync Now requests a full check. | — | S13-34, S35-17 |
-| GGL-36 | proposed | Revoked access is shown as an error rather than successful sync; a failure that repeats unchanged is recorded once (HIS-33). | — | S13-35, S13-36 |
+| GGL-36 | proposed | Revoked access is shown as an error rather than successful sync; a failure that repeats unchanged is recorded once (HIS-01). | — | S13-35, S13-36 |
 | GGL-37 | proposed | Client checking distinguishes accepted credentials, rejected secrets, unknown client IDs and an unreachable service; unreachable is not reported as invalid credentials. | — | S14-13, S14-15, S14-16, S14-17, S19-20, S19-22, S48-03, S48-04, S54-13 |
 | GGL-38 | proposed | Instant updates start with synchronization. Registering them uses the HTTPS public notification address and the selected calendar; they need HTTPS and have the lifetime in DEF-01. | — | S20-02, S20-04, S20-07 |
 | GGL-40 | proposed | Notifications with a wrong token or unknown channel are acknowledged and ignored; a channel sync message does not trigger a check. | — | S20-08, S20-09, S20-10, S23-24 |
 | GGL-41 | proposed | A valid change notification requests a full check without a page login; processing it records the last notice time and retains Google edits locally. | — | S20-11, S20-12, S20-13 |
 | GGL-42 | proposed | A change-notification watch is renewed the time in DEF-01 before it expires and the old one stopped; a fresh watch is reused, and a changed public address replaces the target rather than accumulating watches. | — | S20-14, S20-15, S20-16, changelog_gaps_1801-2100:L20 |
-| GGL-43 | proposed | Refused instant updates report the reason without preventing ordinary autosync; a refusal that repeats unchanged is recorded once (HIS-33), and a later successful retry clears the error. After a refusal the retry waits the time in DEF-01. | — | S20-17, S20-18, S20-19, S20-20 |
+| GGL-43 | proposed | Refused instant updates report the reason without preventing ordinary autosync; a refusal that repeats unchanged is recorded once (HIS-01), and a later successful retry clears the error. After a refusal the retry waits the time in DEF-01. | — | S20-17, S20-18, S20-19, S20-20 |
 | GGL-44 | proposed | Disconnecting stops the instant-update channel, and a notice that arrives late is still acknowledged. | — | S20-21, S20-22, S20-23 |
 | GGL-45 | proposed | Without an explicit public address, setup derives the callback from the request host; unsupported public IP/local-host addresses do not advertise an unusable callback and instead request public-address setup. Public-address rules: SET-08..SET-09. | — | S23-04, S23-17, S23-18 |
 | GGL-46 | proposed | A missing authorized redirect is reported separately from client acceptance and supplies the exact callback to authorize. Changing the public address invalidates stale address feedback. | — | S23-07, S23-08, S23-10, S23-11, S23-12, S23-22, S48-05, S48-06, S67-26 |
@@ -53,9 +53,9 @@ Google sign-in and 2-way sync, health and recovery. Issues against this feature
 | GGL-53 | proposed | A handmade remote event is imported once as a local custom event, placed in a Local calendar that the destination includes; its remote identity is replaced by the mapped CalendarStream identity. | — | S45-10, S45-11, changelog_gaps_901-1200:L19 |
 | GGL-54 | proposed | In two-way synchronization, remote deletion hides or marks the corresponding local event deleted; restoring one clears its marker and restores that remote event without restoring other deleted events. Event restoration is owned by EVT-22. | — | S45-12, S45-19, S45-22, S45-23, S49-40 |
 | GGL-55 | proposed | Rule-generated events remain governed by the rule: remote title edits and deletions are corrected on synchronization. | — | S45-13, S45-14, S45-15 |
-| GGL-56 | proposed | When local and remote edits conflict, the newer change wins. History records the winning outcome under HIS-03. | — | S45-16, S45-18, S53-05 |
+| GGL-56 | proposed | When local and remote edits conflict, the newer change wins. History records the winning outcome under HIS-01. | — | S45-16, S45-18, S53-05 |
 | GGL-57 | proposed | Disconnected modules remain Not connected and are skipped without turning the whole sync into an error. | — | S48-12, S48-13, S68-01, S68-02 |
-| GGL-58 | proposed | Connecting a different client creates a new mapping without repeatedly recreating it, leaving the unreachable former calendar for manual cleanup. History owns the cleanup warning under HIS-05. | — | S48-19, S48-20, S48-21, S48-24 |
+| GGL-58 | proposed | Connecting a different client creates a new mapping without repeatedly recreating it, leaving the unreachable former calendar for manual cleanup. History owns the cleanup warning under HIS-01. | — | S48-19, S48-20, S48-21, S48-24 |
 | GGL-59 | proposed | Google modules distinguish one-way and two-way synchronization; one-way sync restores a remote-deleted local event rather than hiding it locally. | — | S49-37, S49-38, S49-42, S49-45 |
 | GGL-60 | proposed | The Google calendar follows its module’s selected calendar color when the upstream service accepts it. | — | S49-39, S56-02 |
 | GGL-61 | proposed | A new Google module starts with its own unconnected account; it does not silently use another module’s account or create a remote calendar before its own sign-in. | — | S51-24, S51-25, S51-26, S70-07, S70-08 |
@@ -65,7 +65,7 @@ Google sign-in and 2-way sync, health and recovery. Issues against this feature
 | GGL-65 | proposed | Connect me can sign a new module into the user’s account. Removing a same-account module does not revoke access still used by another module; removing a separately invited account revokes its credentials. | — | S51-44, S51-45, S51-46, S51-47 |
 | GGL-66 | proposed | When a write budget prevents completing remote cleanup in one sync, remaining work continues at the next full sync. History reports the deferred work. | — | S53-07, S53-08 |
 | GGL-67 | proposed | A module not yet synchronized does not claim Last synced; a failed sign-in offers a way to reconnect. | — | S54-01, S54-09 |
-| GGL-68 | proposed | A color-update failure does not stop event synchronization or falsely report that sign-in was lost. A failure that repeats unchanged is recorded once (HIS-33); History owns diagnostic wording under HIS-15. | — | S54-05, S54-06, S55-11, S55-13, S55-18, S56-19, S56-21, S56-28 |
+| GGL-68 | proposed | A color-update failure does not stop event synchronization or falsely report that sign-in was lost. A failure that repeats unchanged is recorded once (HIS-01); History owns diagnostic wording under HIS-01. | — | S54-05, S54-06, S55-11, S55-13, S55-18, S56-19, S56-21, S56-28 |
 | GGL-69 | proposed | After first calendar creation, opening it waits for synchronization and then opens Google Calendar for the correct account. The setup action is no longer offered once shown; ordinary feeds do not support this action. | — | S55-01, S55-02, S55-03, S55-04, S55-05, S55-06, S55-07, S55-08, S55-38, S55-40 |
 | GGL-70 | proposed | If a calendar color cannot be applied, the module explains that the color does not carry to Google; repeating the same color does not retry it, and selecting a different accepted color applies it and clears the note. A color request that could not reach Google is not remembered as refused. | — | S55-09, S55-15, S55-20, S55-21, S56-22, S56-23, S56-24, S56-26, S56-27, S56-29 |
 | GGL-73 | proposed | A meeting link appears before the notes in the Google description, and is not copied back into the notes when the event is read from Google. | — | S63-03, S63-04 |
@@ -108,20 +108,20 @@ A reference identifies ownership; it does not assert that every shared mechanic 
 - S12-13: Shared page-authentication/security-token checks; owned by shared/account security rather than duplicated per feature.
 - S12-14: Shared page-authentication/security-token checks; owned by shared/account security rather than duplicated per feature.
 - S12-16: Setup/navigation/control markup and shared mechanics; UI-01/UI-02 govern shared dialog layers. Underlying connection/address outcomes are retained above; presentation is not a separate Google rule.
-- S12-23: History message observations; History owns recording outcomes (HIS-03..05 and its activity rules), while sync outcomes are specified above.
-- S12-32: History message observations; History owns recording outcomes (HIS-03..05 and its activity rules), while sync outcomes are specified above.
+- S12-23: History message observations; History owns recording outcomes (HIS-01..05 and its activity rules), while sync outcomes are specified above.
+- S12-32: History message observations; History owns recording outcomes (HIS-01..05 and its activity rules), while sync outcomes are specified above.
 - S12-38: Failure sentinels or unconditional exception-handler success markers; not independent behavior verification.
 - S12-40: Failure sentinels or unconditional exception-handler success markers; not independent behavior verification.
 - S13-04: Exact HTTP-method counts, internal status-key shapes, color lookup-table size and saved method spellings are implementation contracts. User-visible publication/color fallback outcomes are specified above.
-- S13-05: History message observations; History owns recording outcomes (HIS-03..05 and its activity rules), while sync outcomes are specified above.
-- S13-21: History message observations; History owns recording outcomes (HIS-03..05 and its activity rules), while sync outcomes are specified above.
-- S13-26: History message observations; History owns recording outcomes (HIS-03..05 and its activity rules), while sync outcomes are specified above.
-- S13-32: History message observations; History owns recording outcomes (HIS-03..05 and its activity rules), while sync outcomes are specified above.
+- S13-05: History message observations; History owns recording outcomes (HIS-01..05 and its activity rules), while sync outcomes are specified above.
+- S13-21: History message observations; History owns recording outcomes (HIS-01..05 and its activity rules), while sync outcomes are specified above.
+- S13-26: History message observations; History owns recording outcomes (HIS-01..05 and its activity rules), while sync outcomes are specified above.
+- S13-32: History message observations; History owns recording outcomes (HIS-01..05 and its activity rules), while sync outcomes are specified above.
 - S13-33: Setup/navigation/control markup and shared mechanics; UI-01/UI-02 govern shared dialog layers. Underlying connection/address outcomes are retained above; presentation is not a separate Google rule.
 - S14-14: Setup/navigation/control markup and shared mechanics; UI-01/UI-02 govern shared dialog layers. Underlying connection/address outcomes are retained above; presentation is not a separate Google rule.
 - S18-10: Setup/navigation/control markup and shared mechanics; UI-01/UI-02 govern shared dialog layers. Underlying connection/address outcomes are retained above; presentation is not a separate Google rule.
 - S19-21: Setup/navigation/control markup and shared mechanics; UI-01/UI-02 govern shared dialog layers. Underlying connection/address outcomes are retained above; presentation is not a separate Google rule.
-- S20-06: History message observations; History owns recording outcomes (HIS-03..05 and its activity rules), while sync outcomes are specified above.
+- S20-06: History message observations; History owns recording outcomes (HIS-01..05 and its activity rules), while sync outcomes are specified above.
 - S23-09: Setup/navigation/control markup and shared mechanics; UI-01/UI-02 govern shared dialog layers. Underlying connection/address outcomes are retained above; presentation is not a separate Google rule.
 - S24-04: Setup/navigation/control markup and shared mechanics; UI-01/UI-02 govern shared dialog layers. Underlying connection/address outcomes are retained above; presentation is not a separate Google rule.
 - S24-06: Setup/navigation/control markup and shared mechanics; UI-01/UI-02 govern shared dialog layers. Underlying connection/address outcomes are retained above; presentation is not a separate Google rule.
