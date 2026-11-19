@@ -14,7 +14,7 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-01.e | proposed | Today returns the main calendar to the current month. | — | changelog_gaps_2101-2336:35 |
 | CAL-01.f | proposed | Before the user has chosen a view, a phone-width window (DEF-01) opens the calendar in List view. | — | changelog_gaps_1501-1800:18 |
 | CAL-01.g | proposed | A day cell shows how many of its visible events do not fit; event visibility follows CAP-02 and the Calendar filter. | — | changelog_gaps_301-600:15 |
-| CAL-01.h |  | Week and Day show an hourly grid: all 24 hours in a scrolling area that starts at the first event or at 7 am; events are placed by their time, side by side when they overlap, and all-day events sit above. | — | theme.md Clarifications |
+| CAL-01.h |  | Week and Day show an hourly grid: every hour of the day in a scrolling area that starts at the first event or at the hour in DEF-01; events are placed by their time, side by side when they overlap, and all-day events sit above. | — | theme.md Clarifications |
 | CAL-01.i |  | Today is marked by a filled date and an accent border around its whole day (THM-04.e). | — | theme.md Clarifications |
 | CAL-01.j |  | On a touch screen a horizontal swipe on the calendar turns the page (left: next, right: previous); a vertical swipe still scrolls. | — | theme.md Clarifications |
 | CAL-02 | proposed | The calendar shows times in the Local time zone (TIM-03), and the user can look at another zone for a while. | — | — |

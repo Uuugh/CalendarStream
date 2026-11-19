@@ -17,22 +17,27 @@ Read this first in a new conversation. Then `build_rules/layer-map.md` (the plan
 ## Where things are
 
 - Plan, steps, decisions: `build_rules/layer-map.md` (steps 1 to 7). Processes: `build_rules/0-overview.md` to `5-deploy.md`.
-- Requirements: `requirements/<feature>.md` (17 files; index in `requirements/README.md`). The inventory of the Python suites (evidence keys Sxx-NN): `requirements/inventory/`.
+- Requirements: `requirements/<feature>.md` (index in `requirements/README.md`). The inventory of the Python suites (evidence keys Sxx-NN): `requirements/inventory/`.
 - Issues: GitHub issues (label `issue`, `feature:<name>`, titles "I22: ..."). The Dashboard is rebuilt after the port (DIA-02 to DIA-04).
 - ChatGPT's queue and rules: `build_rules/gpt-tasks.md` (Task E, done; its `gaps_<feature>.md` files were folded in and deleted; branch `chatgpt/drafts-gaps-<feature>`).
 - Dart code: `packages/domain` (Event, rule schema, text matching, regex legality). SDK: `C:\Users\rfrie\Development\sdks\flutter\bin\dart`. Parked test overhaul: branch `paused/test-parallel`.
 - Memory notes for Claude: `C:\Users\rfrie\.claude\projects\C--Users-rfrie-Development-Projects-CalendarStream\memory\`.
 
-## State and next steps
+## State and next steps (Nov 19)
 
-1. ChatGPT finishes Task E (feeds, history, rules, event_templates, diagnostics, documentation, search, calendar_filter). Claude reviews each PR; the Action merges.
-3. The Developer reviews each feature file in order (calendar is done): answer the questions, blank the status of agreed rows. Remaining questions are in `build_rules/open-questions.md`.
-4. Port (step 4) in `packages/domain`: rule conditions (days, times, lengths, dates), validation, actions; then the new Dart database and the Python migration tool (DEP-14); then the server features and client. Steps 5 (retire Python), 6 (analyze parallel testing, input: the parked branch), 7 (the Dashboard as a live page).
-5. Timers are session-only: re-create the check in a new conversation if wanted (it reads the Developer's edits, answers, and ChatGPT's PRs).
+All process language is Scrum (Product Owner, story, epic, sprint, backlog) and nothing in the requirement files names an agent. `requirements/README.md` has the definitions and the ten rules for writing requirements (say it once, numbers only in DEF-01, shared things in their one home, no history); `tests/tools/req_check.sh` checks what a script can and runs on GitHub when `requirements/` changes (workflow "Requirements").
 
-## State when the second conversation ended (Nov 18, about 0020 EST)
+Done in the third conversation:
+- Task E (ChatGPT's gap triage) was folded into the feature files; `requirements/drafts/` is deleted.
+- Every feature file is organized into requirements with sub-requirements (ACC-06, ACC-06.a), duplicates merged, numbers moved to DEF-01 in `common.md`, shared things moved to `common.md` (UI-NN) and `theme.md` (THM-NN), and Print made its own feature (`print.md`, PRT). `requirements/oldkey.md` records every old ID to new ID (batches R0 to R23).
+- `build_rules/theme.md` (legacy, kept only as the oracle) is converted into `requirements/theme.md` and the UI rows; `build_rules/theme-map.md` is empty of work except the note. The legacy file can go when the Product Owner agrees.
+- The Python app's code answered most questions (limits such as retry delays, watch renewal, memory bounds); those values are in DEF-01 as proposed rows for the Product Owner to review.
+- The Beta section was deleted; History has a Show secrets switch (HIS-04.b); passwords are enforced (ACC-04, SET-06.c).
 
-- The review check is no longer needed (Task E complete). ChatGPT's limit is 4 open PRs (gpt-tasks.md); it has no task left in Task E.
-- Task E is COMPLETE (16 of 16 merged, Nov 18, 0020 EST). No review check is needed any more. Folded into the feature files and `requirements/drafts/` deleted (Nov 18). Next: the Developer reviews each feature file in order.
-- Done this conversation: FED-08, FED-25, FED-27, FED-30 answered; ACC-04 password requirements (Developer reversed on Nov 18: passwords ARE enforced, 11 characters minimum, 1 capital, 1 lowercase, 1 number, 1 special; Site Admin setting SET-61, length never below 8, the others may be 0; the strength bar and hint stay); new common rows UI-18 (strength bar with recommendation hint) and UI-19 (invalid entry identified at its field); settings.md deduplicated (retired IDs listed in it); SET-41 is the logo only.
-- Duplication review DONE Nov 18 (Claude): merged and retired rows are listed at the end of each feature file ("Retired IDs"); new common rows UI-19 (invalid entry), UI-20 (nearest palette color), DEF-01 rows for the limits that were in features; HIS-33 (repeated failure recorded once). Left for the Developer: see open-questions.md (20 questions). Open points from the review: the stream name and stream token in feeds look like one field (FED-08, FED-09, FED-25, FED-27); SRC-80 vs FED-30 (does an upgrade add Local to every feed); RUL-22 says "within a second" but DEF-01 has 0.05 seconds; SHL-27 vs SET-06 (section state shared or per device). `python` is not installed on this machine; use sed or the editor for edits.
+Next:
+1. **The Product Owner answers `build_rules/open-questions.md`** (10 questions) and reviews each feature file, blanking the status of the rows they agree.
+2. **The coder review.** After the Product Owner is content, a developer who knows Flutter and Dart reads only `requirements/` (starting with its README) and lists every guess they had to make (undefined term, two readings, conflict, missing limit or default, untestable, duplicated, a rule that belongs in common or theme). Method: the REVIEW process adapted to Scrum terms, one issue as the channel, numbered turns.
+3. The Product Owner rewrites `build_rules/` as Scrum (stories, sprints, epics, backlog) with per-story testing against the touched requirements; the old build, test, review and deploy files and `theme.md` retire.
+4. Port in `packages/domain` and onward, story by story; the evidence column and `build_rules/oracle-coverage-notes.md` are deleted when the conversion ends.
+
+Notes: `python` is not installed on this machine; use bash, sed, awk or the editor. A tool layer may halve backslashes in commands; test any sed that must match a literal backslash. The check script reports errors for duplicate IDs, missing parents, dangling references and malformed rows.

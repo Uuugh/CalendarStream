@@ -14,7 +14,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-01.g | proposed | An unsigned Google module produces one not-signed-in or unsynced warning (HIS-01); resetting the remembered warning permits a new one. | — | S68-03, S68-04, S68-05 |
 | HIS-01.h | proposed | A failure or warning that repeats unchanged is recorded in History once, until it changes or clears. | — | GGL-07, GGL-06, GGL-07, HIS-21 |
 | HIS-01.i | proposed | An external removal or Google notification without an undoable local change does not become the current Undo entry. | — | S49-18, S49-41 |
-| HIS-01.j | proposed (?) | Activity reports Healthy when the checked source state is healthy and Unhealthy when that source is in error. How should mixed source states determine the overall Activity status? | — | S36-43, S36-44 |
+| HIS-01.j | proposed (?) | Activity reports Healthy when its source is healthy and Unhealthy when its source is in error. How should mixed source states determine the overall Activity status? | — | S36-43, S36-44 |
 | HIS-02 | proposed | History lists its entries with their type, in a table the user can filter and rearrange. | — | — |
 | HIS-02.a | proposed | History names the type of each change: Calendar, Rule, Event, Sync, Feed, Google, Settings or Update. | — | S49-13, changelog_gaps_601-900:31 |
 | HIS-02.b | proposed | History has a filter that follows the common filter rules (UI-21), with three parts: the change type (the types in HIS-02), words in its entries, and the time of its entries. | — | readme_gaps:71, changelog_gaps_601-900:31 |

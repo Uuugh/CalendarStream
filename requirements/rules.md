@@ -25,7 +25,7 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-03.c | verified | Color: the higher rule wins; a lower rule still adds its emoji; a second pass does not duplicate it; several emoji actions prefix the title in order. | — | S36-14, S49-08 |
 | RUL-03.d | verified | Change title replaces the title; Add appends (a new line for notes, a space for location). | — | S62-05 |
 | RUL-03.e | verified | Delete hides the event with a rule-labelled marker; non-matching events stay. | — | S62-02 |
-| RUL-03.f | verified | Move shifts start and end together, forward or back (+90, -30 minutes). | — | S62-03, S62-04 |
+| RUL-03.f | verified | Move shifts start and end together, forward or back by a number of minutes. | — | S62-03, S62-04 |
 | RUL-03.g | verified | Change length makes a near whole-day event all-day (keeping an original-time note) or shortens a normal one. | — | S36-13, S27-09, S27-13 |
 | RUL-03.h | verified | An Emoji action lets the user find and choose any emoji by searching (UI-11). | — | S44-41 |
 | RUL-03.i | proposed | A newly added Emoji action starts without a chosen emoji; selection follows UI-11. | — | changelog_gaps_301-600:38 |

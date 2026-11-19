@@ -15,5 +15,5 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | DOC-03 | proposed | The project's documents are accurate and private. | — | — |
 | DOC-03.a | proposed | CHANGELOG.md has an entry for every released version, newest first, and is never rewritten for past versions. | — | — |
 | DOC-03.b | proposed | No document, screenshot, test or message contains the Developer's real schedule, username or Google client secret. | — | — |
-| DOC-03.c | proposed | After the port, the README and AGENTS.md describe the Dart/Flutter layout, how to run the app and how to run the tests; documents that describe only the Python app are removed with it. | — | — |
+| DOC-03.c | proposed | After the port, the README and AGENTS.md describe the Dart/Flutter layout, how to run the app and how to run the tests; documents that describe only the old app are removed with it. | — | — |
 
