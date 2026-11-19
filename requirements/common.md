@@ -30,7 +30,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-27.b |  | With nothing to save both sides are disabled: not focusable and announced as unavailable. A pop-up's Cancel, which only closes it, and the buttons of a + Add pop-up, which can be saved with its defaults, stay available. | — | theme.md section 6 |
 | UI-27.c |  | The first change turns the pair on, and Save pulses for the time in DEF-01 and then stays in full color; saving or cancelling returns the pair to idle. | — | theme.md section 6 |
 | UI-27.d |  | A question's answers can be the same pair (No \| Yes, UI-06). | — | theme.md section 6 |
-| UI-27.e |  | Adding something (+ Add a calendar…) ends with the same Cancel | Save pair as editing it. | — | theme.md Clarifications |
+| UI-27.e |  | Adding something (+ Add a calendar…) ends with the same Cancel \| Save pair as editing it. | — | theme.md Clarifications |
 | UI-28 | proposed | A Status/Action button shows a status chip over the action that updates it (Sync Now, Check now, Update now, Connect, Fix), and a status looks one way for one meaning everywhere. | — | theme.md section 7; picture 2·7 |
 | UI-28.a |  | The four meanings are: done or OK; in action, or waiting on the user; a problem outside CalendarStream, or an entry that was refused; CalendarStream itself failed. Each has its one look (THM-05), whether it appears as a chip, a button, a done or failed state, or a line of text. | — | theme.md section 7 |
 | UI-28.b |  | Every copy of an action (the top bar and Settings; Feeds and Settings) shows the same words at the same moment and ends together. | — | theme.md section 7 |

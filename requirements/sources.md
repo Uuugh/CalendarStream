@@ -3,7 +3,6 @@
 Statuses: verified, built, open, planned (approved, not built yet) and proposed (drafted, not yet reviewed by the Developer).
 Terms: a **source** is a place the app reads events from (CCS+, a calendar link, an uploaded file) or a **Local** calendar the user keeps in the app itself; **read-only** means events cannot be added or changed at the source (CAP-05).
 
-
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | SRC-01 | proposed | The user's calendars come from sources of several kinds, and each can be named, colored and ordered. | — | — |
@@ -98,96 +97,3 @@ Terms: a **source** is a place the app reads events from (CCS+, a calendar link,
 | SRC-10.e | proposed | When merging a calendar into another, the user can transfer its owned rules to the target or delete those rules. | — | readme_gaps:63, changelog_gaps_601-900:39 |
 | SRC-10.f | proposed | Removing CCS+ also removes its active saved login. | — | S49-33 |
 
-## Notes from the draft
-
-### Not requirements
-
-These mappings account for evidence without defining duplicate UI or implementation requirements.
-
-- S14-02: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S14-03: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S16-21: Always-true predicate or deliberate failure sentinel, not independent behavior verification.
-- S19-24: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S21-12: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S21-24: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S23-27: Always-true predicate or deliberate failure sentinel, not independent behavior verification.
-- S26-13: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S27-07: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S28-02: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S28-03: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S28-04: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S31-12: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S31-16: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S33-04: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S33-20: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S34-09: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S34-10: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S34-11: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S34-12: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S34-14: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S34-19: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S34-20: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S34-21: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S34-22: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S35-19: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S35-22: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S35-23: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S35-30: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S35-33: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S35-34: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S35-35: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S35-36: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S37-28: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S37-29: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S37-30: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S37-31: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S37-32: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S37-48: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
-- S37-49: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
-- S41-01: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S41-02: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S44-08: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S44-29: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
-- S44-30: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
-- S44-31: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
-- S44-34: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S44-43: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S49-03: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S49-20: Always-true predicate or deliberate failure sentinel, not independent behavior verification.
-- S53-17: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S60-01: Transport selection, user-agent/debug or authorization implementation contract. No additional user-facing source rule inferred; transport/security outcomes are stated separately.
-- S60-02: Transport selection, user-agent/debug or authorization implementation contract. No additional user-facing source rule inferred; transport/security outcomes are stated separately.
-- S60-03: Transport selection, user-agent/debug or authorization implementation contract. No additional user-facing source rule inferred; transport/security outcomes are stated separately.
-- S60-04: Transport selection, user-agent/debug or authorization implementation contract. No additional user-facing source rule inferred; transport/security outcomes are stated separately.
-- S60-06: Transport selection, user-agent/debug or authorization implementation contract. No additional user-facing source rule inferred; transport/security outcomes are stated separately.
-- S60-07: Transport selection, user-agent/debug or authorization implementation contract. No additional user-facing source rule inferred; transport/security outcomes are stated separately.
-- S60-08: Transport selection, user-agent/debug or authorization implementation contract. No additional user-facing source rule inferred; transport/security outcomes are stated separately.
-- S60-09: Transport selection, user-agent/debug or authorization implementation contract. No additional user-facing source rule inferred; transport/security outcomes are stated separately.
-- S60-20: Always-true predicate or deliberate failure sentinel, not independent behavior verification.
-- S60-27: Transport selection, user-agent/debug or authorization implementation contract. No additional user-facing source rule inferred; transport/security outcomes are stated separately.
-- S61-06: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S61-19: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S61-20: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S61-21: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S61-22: Shared save/cancel mechanics; see SET-01 in requirements/settings.md. Source outcome requirements above retain only persisted data and verification results.
-- S61-28: Theme/layout/font/CSS measurement or implementation styling; belongs to build_rules/theme.md, not a source requirement.
-- S63-19: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S63-29: Python source-string, injected-provider/logging or cached-version compatibility contract; not a user-facing source requirement.
-- S66-02: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S66-03: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S66-05: Rendered control structure, wording history or shared control mechanics; no separate source-data rule. Generic sections/help belong to shared UI (UI-05/UI-07). These observations do not independently prove the labeled behavior.
-- S77-19: Python source-string, injected-provider/logging or cached-version compatibility contract; not a user-facing source requirement.
-- S77-20: Python source-string, injected-provider/logging or cached-version compatibility contract; not a user-facing source requirement.
-- S77-21: Python source-string, injected-provider/logging or cached-version compatibility contract; not a user-facing source requirement.
-- S77-26: Python source-string, injected-provider/logging or cached-version compatibility contract; not a user-facing source requirement.
-- S77-27: Python source-string, injected-provider/logging or cached-version compatibility contract; not a user-facing source requirement.
-- S81-03: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
-- S81-05: Shared dialog/navigation mechanics: see UI-01, UI-02 and UI-06 in common.md. Default merge selection/self-target disabling in S37-48 remains an open removal-flow detail for owner review.
-
-### Coverage and open questions
-
-All 227 source-candidate rows are accounted for: 60 proposed requirements and
-79 excluded/shared-owner evidence mappings. No application suites were run locally.
-Questions above preserve uncertainty about retention and automatic retries. The import conflict policy,
-complete validation ranges and source-removal dialog defaults require Developer review beyond the finite
-examples in the oracle; these drafts do not silently add broader guarantees.

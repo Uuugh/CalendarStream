@@ -33,35 +33,3 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-04.a | proposed | History keeps the number of changes set in Settings (DEF-01 has the default and the limits); saving a different number updates the effective retention and the displayed value, and a number outside the limits is not valid (UI-19). | — | S58-19, S58-20 |
 | HIS-04.b | proposed | History has a Show secrets switch for every log view on the page. By default secrets are masked: authorization headers, client secrets, tokens, authorization codes, and any secret value the app stores, wherever it appears in the text. Turning the switch on shows them, only to a user authorized to see secrets, and it turns off again whenever the page is opened (ACC-05.d). | — | Developer, Nov 18 |
 
-## Notes from the draft
-
-### Not requirements
-
-These rows remain accounted for without creating duplicate shared-UI or Python implementation requirements.
-
-- S31-13: Activity widths, preview positioning/alignment and collapsed preview presentation belong to theme/shared section UI (UI-05), not a separate history rule.
-- S38-13: Shared section expansion behavior is owned by UI-05 in common.md.
-- S38-14: Activity widths, preview positioning/alignment and collapsed preview presentation belong to theme/shared section UI (UI-05), not a separate history rule.
-- S49-55: Copy-control ID presence is implementation markup; the container-log retrieval outcome is specified above.
-- S58-21: Table column markup/order and draggable attributes are shared table presentation/implementation. These checks do not exercise sorting, dragging or a history state change.
-- S58-23: Activity widths, preview positioning/alignment and collapsed preview presentation belong to theme/shared section UI (UI-05), not a separate history rule.
-- S61-18: Activity widths, preview positioning/alignment and collapsed preview presentation belong to theme/shared section UI (UI-05), not a separate history rule.
-- S65-06: Deleted-event storage marker belongs to events (EVT-01); its retention consequence for Undo is specified above.
-- S66-10: Permissive accepted-check/icon markup predicate does not independently establish a history behavior.
-- S66-11: Table column markup/order and draggable attributes are shared table presentation/implementation. These checks do not exercise sorting, dragging or a history state change.
-- S66-12: ok(True) skip marker when the History table is absent; not independent verification.
-- S66-13: Table column markup/order and draggable attributes are shared table presentation/implementation. These checks do not exercise sorting, dragging or a history state change.
-- S66-14: Table column markup/order and draggable attributes are shared table presentation/implementation. These checks do not exercise sorting, dragging or a history state change.
-- S67-04: Template source-string check (keep=False), not an executed user behavior.
-- S67-10: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-01; these references do not claim the exact timings are already specified.
-- S67-11: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-01; these references do not claim the exact timings are already specified.
-- S67-12: Shared save acknowledgement/shrink/dismiss mechanics; shared UI owns feedback timing, not a separate history rule. See the common.md pending save/cancel ownership note and SET-01; these references do not claim the exact timings are already specified.
-- S77-31: Injected record return value is a Python collaborator contract, not a user requirement.
-- S77-34: Injected trimming callback count is an implementation contract; it does not independently prove a user-visible retention limit.
-
-### Coverage and open questions
-
-All 55 history-candidate rows are accounted for in 22 proposed requirements and
-19 excluded/shared-owner mappings. Open questions above cover aggregate health, type vocabulary,
-retention validation and snapshot scope; no broader guarantees are inferred from finite examples.
-No application suites were run locally for this documentation-only draft.

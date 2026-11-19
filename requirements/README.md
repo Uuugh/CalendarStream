@@ -54,25 +54,25 @@ The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were fol
 
 | Feature | File | Requirements | Proposed (to review) |
 |---|---|---|---|
-| Calendar | [requirements/calendar.md](requirements/calendar.md) | 25 | 10 |
-| Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) | 5 | 0 |
-| Print | [requirements/print.md](requirements/print.md) | 8 | 6 |
-| Theme | [requirements/theme.md](requirements/theme.md) | 59 | 6 |
-| Search | [requirements/search.md](requirements/search.md) | 9 | 5 |
-| Events | [requirements/events.md](requirements/events.md) | 37 | 33 |
-| Event templates | [requirements/event_templates.md](requirements/event_templates.md) | 6 | 6 |
-| Rules | [requirements/rules.md](requirements/rules.md) | 58 | 16 |
-| Sources | [requirements/sources.md](requirements/sources.md) | 81 | 81 |
-| Feeds | [requirements/feeds.md](requirements/feeds.md) | 30 | 30 |
-| History | [requirements/history.md](requirements/history.md) | 19 | 19 |
-| Google | [requirements/google.md](requirements/google.md) | 92 | 87 |
-| Settings | [requirements/settings.md](requirements/settings.md) | 43 | 31 |
-| Account | [requirements/account.md](requirements/account.md) | 32 | 30 |
-| Shell | [requirements/shell.md](requirements/shell.md) | 20 | 17 |
-| Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) | 13 | 9 |
-| Deployment | [requirements/deployment.md](requirements/deployment.md) | 24 | 21 |
-| Documentation | [requirements/documentation.md](requirements/documentation.md) | 9 | 9 |
-| Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) | 36 | 19 |
+| Calendar | [requirements/calendar.md](requirements/calendar.md) | 30 | 15 |
+| Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) | 10 | 1 |
+| Print | [requirements/print.md](requirements/print.md) | 10 | 5 |
+| Theme | [requirements/theme.md](requirements/theme.md) | 61 | 9 |
+| Search | [requirements/search.md](requirements/search.md) | 11 | 7 |
+| Events | [requirements/events.md](requirements/events.md) | 46 | 39 |
+| Event templates | [requirements/event_templates.md](requirements/event_templates.md) | 8 | 8 |
+| Rules | [requirements/rules.md](requirements/rules.md) | 64 | 23 |
+| Sources | [requirements/sources.md](requirements/sources.md) | 91 | 89 |
+| Feeds | [requirements/feeds.md](requirements/feeds.md) | 32 | 32 |
+| History | [requirements/history.md](requirements/history.md) | 28 | 24 |
+| Google | [requirements/google.md](requirements/google.md) | 93 | 92 |
+| Settings | [requirements/settings.md](requirements/settings.md) | 55 | 39 |
+| Account | [requirements/account.md](requirements/account.md) | 56 | 51 |
+| Shell | [requirements/shell.md](requirements/shell.md) | 27 | 21 |
+| Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) | 17 | 13 |
+| Deployment | [requirements/deployment.md](requirements/deployment.md) | 29 | 26 |
+| Documentation | [requirements/documentation.md](requirements/documentation.md) | 12 | 12 |
+| Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) | 76 | 36 |
 
 ## Checking a feature file
 

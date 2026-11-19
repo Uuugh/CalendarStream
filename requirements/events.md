@@ -51,7 +51,3 @@ The event pop-up, linked events, hiding and reverting. Issues against this featu
 | EVT-06.b | planned | Right of Duplicate there is a Move icon, shown only for events CalendarStream itself owns, never for a read-only source such as CCS+ (United) (CAP-03). | — | F62 |
 | EVT-06.c | planned | Print includes the event card, not only the calendar grid. | — | F62 |
 
-## Notes from the draft
-
-Not requirements: source-text checks (S62-12, S62-16, S62-17, S65-01..03 partly, S66-19, S66-20, S77-22 failure
-callback), `ok(True)`-style markers, and the layout rows listed in the header.

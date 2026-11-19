@@ -67,30 +67,3 @@ Terms used below (defined once):
 | ACC-09.c | proposed | Page responses restrict framing to the same origin, prevent content-type sniffing and suppress referrer disclosure. | — | S23-25, S36-37 |
 
 Future: a Users feature will decide which users may see secrets in the logs (log visibility permissions, HIS-04, GGL-02); until then the one signed-in user is authorized. (Developer, Nov 18)
-## Notes from the draft
-
-### Not requirements
-
-The following observations are excluded or mapped to another owner rather than duplicated.
-
-- S16-02: Legacy CCS+ credential import and its activity record are owned by sources (SRC-03), not a second account requirement.
-- S16-03: Legacy CCS+ credential import and its activity record are owned by sources (SRC-03), not a second account requirement.
-- S16-19: Environment-specific performance sample for five authenticated requests; does not establish a portable latency requirement.
-- S21-11: Field alignment is a theme measurement; User name wording is a shared field-label observation, not a separate login capability.
-- S35-09: Static parent-path request rejection belongs to shared asset-serving security; one sampled path does not establish the complete traversal policy.
-- S39-09: Authenticated-page compression header policy belongs to shared HTTP security, not credential behavior; retained for shared review.
-- S55-39: No window.opener in a new tab is shared external-navigation security, not an account-specific rule.
-- S63-09: Failure sentinel and unconditional exception-handler success marker; not independent password validation evidence.
-- S63-10: Failure sentinel and unconditional exception-handler success marker; not independent password validation evidence.
-- S64-11: Settings form structure and signed-in/out wording are mapped to existing SET-01 and account signed-in state above, not duplicated UI mechanics.
-- S65-24: Icon variables and CSS-selector source checks are Python presentation implementation details.
-- S65-25: Icon variables and CSS-selector source checks are Python presentation implementation details.
-- S81-07: Settings dialog navigation and field visibility are shared mechanics (SET-01, UI-01/UI-02), not new account behavior.
-- S81-08: Settings dialog navigation and field visibility are shared mechanics (SET-01, UI-01/UI-02), not new account behavior.
-
-### Coverage and open questions
-
-All 81 account-candidate rows are accounted for in 27 proposed requirements and
-14 excluded/shared-owner mappings. The exact block budget, reset interval, trusted-address
-policy and expiry boundary remain questions; finite security samples are not comprehensive audits.
-No real credentials or schedules are included. No application suites were run locally.

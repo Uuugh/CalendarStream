@@ -3,14 +3,13 @@
 Statuses: verified, built, open, planned (approved, not built yet) and proposed (drafted, not yet reviewed by the Developer).
 Terms: the **stream token** is the part of a feed's address that identifies it (called the stream name in the old app); a **destination** is a feed or a Google calendar that the app publishes to.
 
-
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | FED-01 | proposed | A feed publishes the calendars the user chooses, under its own name, for other apps to read. | — | — |
 | FED-01.a | proposed | A feed can publish all chosen source calendars under its own name; its calendar data includes those sources’ events and its chosen calendar name. | — | S26-33, S26-35 |
 | FED-01.b | proposed | A feed’s included calendars can be changed independently of other destinations. | — | S26-36 |
 | FED-01.c | proposed | Each feed decides which calendars it carries; the required Local calendar is in a feed only as that feed's own settings say, never because of a rule special to Local. | — | S77-16 |
-| FED-01.d | proposed | A feed can be limited by a date range (UI-23); with no range it publishes its full event set. | — | S29-02, S29-04, S39-19, S29-03, S51-13 |
+| FED-01.d | proposed (?) | A feed can be limited by a date range (UI-23); with no range it publishes its full event set. The current app's feed Include box says the range in words instead of using the shared From \| To \| All control: should the feed use the shared control? | — | S29-02, S29-04, S39-19, S29-03, S51-13 |
 | FED-01.e | proposed | A published feed includes events according to their visibility under CAP-02 and EVT-04; hiding an imported event removes it from feed publication. | — | readme_gaps:47 |
 | FED-01.f | proposed | A new feed's name and note default to the selected source's and follow it when the selected source changes; values the user typed are kept. | — | S31-01, S58-17, S58-18, S58-37, S58-38 |
 | FED-01.g | proposed | A feed’s subscription page identifies the feed by its name. | — | S26-37 |
@@ -39,53 +38,3 @@ Terms: the **stream token** is the part of a feed's address that identifies it (
 | FED-05.a | proposed | A feed reports Not read yet until fetched; afterward it reports its last read, identifying Google when Google is the reader. | — | S19-28, S19-29, S40-05, S44-11 |
 | FED-05.b | proposed | An ordinary feed reports reads rather than a next-push schedule. | — | S46-02 |
 
-## Notes from the draft
-
-### Not requirements
-
-Each remaining row is mapped to shared ownership or excluded with its reason. These are not
-additional feed requirements. Unspecified shared mechanics remain questions for shared-UI review.
-
-- S18-23: Shared copy-control feedback and icon reset; owned by shared UI, not a separate feed rule. UI-01/UI-02 do not yet specify copy feedback; retained for shared-UI review.
-- S18-24: Shared copy-control feedback and icon reset; owned by shared UI, not a separate feed rule. UI-01/UI-02 do not yet specify copy feedback; retained for shared-UI review.
-- S21-21: Google sign-in placement belongs to settings/google; historical two-destination arrangement is not a separate feed behavior rule.
-- S29-05: Field/control markup and section configuration mechanics; shared UI ownership (UI-05), with date input details retained for shared-control reconciliation.
-- S31-02: Field/control markup and section configuration mechanics; shared UI ownership (UI-05), with date input details retained for shared-control reconciliation.
-- S31-08: Field/control markup and section configuration mechanics; shared UI ownership (UI-05), with date input details retained for shared-control reconciliation.
-- S31-09: Field/control markup and section configuration mechanics; shared UI ownership (UI-05), with date input details retained for shared-control reconciliation.
-- S35-13: Font and SVG-symbol markup are presentation/implementation, not subscription behavior.
-- S38-16: Source-color change is owned by sources (SRC-01 in its pending draft); calendar-key effects are CAL-45. Source-picker color markup is not restated here.
-- S39-15: Markup order is presentation, not a separate feed rule.
-- S41-01: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
-- S41-02: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
-- S44-08: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
-- S44-23: Single-destination handle visibility is shared reorder-control UI, not feed publishing behavior; retained as an open shared-UI mapping.
-- S44-31: Shared modal/backdrop behavior: UI-01; visual filter belongs to theme.
-- S44-37: Shared date-range input grouping rather than a separate feed rule; actual date filtering is specified above.
-- S44-49: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
-- S44-54: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
-- S44-55: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
-- S44-56: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
-- S44-57: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
-- S51-05: Shared multi-step add-dialog mechanics and choice-panel markup; UI-01/UI-02 cover dialog layers, while module-choice enabling belongs to google/settings.
-- S51-06: Shared multi-step add-dialog mechanics and choice-panel markup; UI-01/UI-02 cover dialog layers, while module-choice enabling belongs to google/settings.
-- S51-20: Markup order is presentation, not a separate feed rule.
-- S51-21: Markup order is presentation, not a separate feed rule.
-- S51-48: Shared multi-step add-dialog mechanics and choice-panel markup; UI-01/UI-02 cover dialog layers, while module-choice enabling belongs to google/settings.
-- S51-49: Shared multi-step add-dialog mechanics and choice-panel markup; UI-01/UI-02 cover dialog layers, while module-choice enabling belongs to google/settings.
-- S51-50: Shared field-error styling/reset mechanics, not feed behavior. Invalid stream rejection is specified above; styling belongs to theme.
-- S51-51: Shared field-error styling/reset mechanics, not feed behavior. Invalid stream rejection is specified above; styling belongs to theme.
-- S51-53: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
-- S51-54: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
-- S55-10: Absence of a palette note is presentation, not a publishing guarantee.
-- S58-16: Source metadata/label implementation; source naming and notes belong to sources (SRC-01).
-- S58-39: Pixel geometry, alignment, dimensions and responsive columns belong to build_rules/theme.md.
-- S59-07: Shared removal confirmation (UI-06); newline formatting belongs to presentation. The stopped-link consequence is specified above.
-- S63-05: Source-string presence for URL/meeting notes does not establish executed publishing behavior.
-
-### Coverage and open questions
-
-All 93 feed-candidate evidence rows are accounted for in 30 proposed requirements and
-36 excluded/shared-owner mappings. Questions in the table preserve uncertainty rather than
-generalizing beyond the oracle. The complete stream character set, generated-token guarantee and
-default-destination inclusion policy need review. No application suites were run locally.

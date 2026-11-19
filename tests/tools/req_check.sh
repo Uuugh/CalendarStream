@@ -7,6 +7,10 @@ files=$(ls *.md | grep -v -e '^README.md$' -e '^oldkey.md$')
 err=0
 rows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{gsub(/ /,"",$2); print FILENAME" "$2}' $files)
 ids=$(echo "$rows" | awk '{print $2}' | sort)
+echo "== malformed rows (not five columns; common.md has its own layout)"
+cfiles=$(ls *.md | grep -v -e '^README.md$' -e '^oldkey.md$' -e '^common.md$')
+bad=$(grep -HE '^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|' $cfiles | sed 's/\\|//g' | awk -F'|' 'NF!=7 {split($1,a,":"); print a[1]": "$2}')
+[ -n "$bad" ] && { echo "$bad"; err=1; } || echo none
 echo "== duplicate IDs"; dup=$(echo "$ids" | uniq -d); [ -n "$dup" ] && { echo "$dup"; err=1; } || echo none
 echo "== sub-requirements without a parent"
 for s in $(echo "$ids" | grep '\.'); do p=${s%%.*}; echo "$ids" | grep -qx "$p" || { echo "$s"; err=1; }; done | grep . || echo none

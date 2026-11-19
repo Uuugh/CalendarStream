@@ -61,21 +61,3 @@
 | SET-07.b | planned | Settings can show an alternate port, and write it to `.env`; a change takes effect when the container is recreated. Deferred with SET-07. | — | F24.3 |
 | SET-07.c | planned | The update channel is selectable: Stable, Beta or Other. Deferred with SET-07. | — | F24.4, F54 |
 
-## Notes from the draft
-
-### Not requirements
-
-Evidence rows that belong elsewhere, by reason:
-
-- **Belongs to theme.md (pixels, colors, dimensions):** S19-53, S21-10, S31-17, S38-19, S43-02, S44-20.
-- **Settings grouping, headings and form markup (SET-06 owns organization):** S19-49, S19-52, S22-02, S37-24, S64-11, S66-06, S66-07, S66-08, S66-09, S67-29, S67-30, S67-31, S67-32.
-- **Control state, callbacks and feedback reset (UI mechanics; the check and update outcomes are above):** S38-09, S40-07, S43-01, S43-03, S44-19, S46-04, S46-28, S47-06, S59-23.
-- **Add/remove-row controls and notice dismissal (shared UI; UI-02 governs layers):** S67-19, S67-21, S67-23, S67-28.
-- **Settings/Configure navigation and dialogs (SET-05, SET-06, UI-01, UI-02):** S80-01 to S80-11, S81-01, S81-02, S81-04, S81-06.
-- **Shared security or validation:** S15-07 (change-security token, account security), S31-10 (section-key validation, shared UI).
-- **Failure markers, not coverage:** S23-14, S23-15.
-- **Saving persists the choice (SET-06, UI-13):** S38-17, S38-18.
-
-### Coverage
-
-All 165 settings-candidate evidence rows are in a requirement above or in the list above.
