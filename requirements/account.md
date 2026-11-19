@@ -38,7 +38,7 @@ Terms used below (defined once):
 | ACC-05.a | proposed | A sign-in password (page login, setup, replacement) is stored only as a one-way hash, never in plaintext. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-05.b | proposed | A credential the app must send on (the CCS+ password, Google client secret and tokens) is stored encrypted with a key from the database password; after the database password changes they cannot be read until entered again (GGL-22). | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
 | ACC-05.c | proposed | A secret is never written to a log. | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
-| ACC-05.d | proposed (?) | A secret is never shown on a page. The Google traffic view (GGL-02) shows tokens and the client secret to the signed-in Developer: should it hide them? | — | S16-34, S16-23, S16-25, S12-06, S12-07, S12-08, S70-02, S70-03, S70-04, S20-05 |
+| ACC-05.d | proposed | A secret is shown on a page only when a user who is authorized to see secrets turns on the Show secrets switch in History (HIS-34). | — | — |
 | ACC-06 | proposed | Repeated failed sign-ins from one address lock that address for a time. | — | — |
 | ACC-06.a | planned | After 5 failed sign-ins from one address, further attempts from it are refused for 15 minutes (DEF-01). | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-06.b | proposed | An incorrect initial-setup code counts toward the same per-address failure limit as an incorrect page login (ACC-06.a). | — | readme_gaps:35 |
@@ -66,6 +66,7 @@ Terms used below (defined once):
 | ACC-09.b | proposed | Cross-site form changes are refused and leave the saved value unchanged. | — | S23-23 |
 | ACC-09.c | proposed | Page responses restrict framing to the same origin, prevent content-type sniffing and suppress referrer disclosure. | — | S23-25, S36-37 |
 
+Future: a Users feature will decide which users may see secrets in the logs (log visibility permissions, HIS-34, GGL-02); until then the one signed-in user is authorized. (Developer, Nov 18)
 ## Notes from the draft
 
 ### Not requirements

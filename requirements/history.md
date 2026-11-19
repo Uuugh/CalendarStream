@@ -23,6 +23,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-27 | proposed | A synchronization that changes events records in its activity summary how many events it added and how many it updated. | — | changelog_gaps_2101-2336:19, changelog_gaps_2101-2336:19 |
 | HIS-32 | proposed | When removal of a CCS+ calendar leaves retained Undo history, its retained sign-in credentials are forgotten; protection while retained follows ACC-05. | — | changelog_gaps_601-900:33 |
 | HIS-33 | proposed | A failure or warning that repeats unchanged is recorded in History once, until it changes or clears. | — | GGL-36, GGL-43, GGL-68, HIS-21 |
+| HIS-34 | proposed | History has a Show secrets switch for every log view on the page (History and Google Traffic). By default secrets are masked: authorization headers, client secrets, tokens, authorization codes, and any secret value the app stores, wherever it appears in the text. Turning the switch on shows them, only to a user authorized to see secrets, and it turns off again whenever the page is opened (ACC-05.d). | — | Developer, Nov 18 |
 
 Retired IDs (merged or dropped; numbers are never reused): HIS-29 into HIS-08; HIS-25 and HIS-26 into HIS-24; HIS-28 into HIS-27; HIS-11, HIS-12, HIS-13, HIS-18, HIS-30 and HIS-31 into HIS-07; HIS-14 into DIA-05; HIS-16 into ACC-08; HIS-17 (how a color is sent is implementation); HIS-22 into GGL-91.
 
