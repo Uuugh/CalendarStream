@@ -3,29 +3,35 @@
 The frame (top bar, modules, navigation), theme and branding, shared widgets. Issues against this area (kept in the
 issues database): I4, I27, I33 (2/3-line status box), I39 (animation), I46 and I35 (icon alignment), I48.
 
-| ID | status | statement | test | was |
+| ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
-| SHL-01 | built | The Light / Dark / Match system choice is one icon when closed, a button plus menu like the view picker, replacing a three-way cycling button. | — | F57 |
-| SHL-02 | built | The favicon is the light CalendarStream icon with its white background cropped to a circle and the rest transparent. | — | F63 |
-| SHL-03 | planned | The CalendarStream logo files have no compression or visual artifacts. | — | F1 |
-| SHL-04 | proposed | The initial page language is English; Automatic follows supported browser language preferences, including French, German and Belgian Dutch, while an unknown browser language falls back to English. Choosing Automatic clears the explicit language override. | — | S17-01, S17-02, S17-03, S17-04, S17-10 |
-| SHL-07 | proposed | The subscription page and Google setup-error guide follow the visitor’s supported browser language. | — | S17-12, S24-10 |
-| SHL-08 | proposed | Translation supports composed and nested messages, including sync-change summaries and download-failure explanations, without translating user event titles. Unknown messages retain their original English wording. | — | S17-14, S17-15, S17-16, S17-17 |
-| SHL-09 | proposed | Values inserted into translated messages are escaped rather than interpreted as markup. | — | S17-18 |
-| SHL-10 | proposed | API-style requests retain structured JSON errors rather than receiving translated HTML pages. | — | S17-13 |
-| SHL-14 | proposed | Versioned stylesheet, language-script and font assets can be cached as immutable, fonts for one year; an obsolete script version or an unsupported script language is not served, and the unversioned font is not advertised as immutable. | — | S39-03, S39-04, S39-05, S39-06, S39-07, S39-08, changelog_gaps_901-1200:28 |
-| SHL-15 | proposed | Newer emoji display older-Windows compatibility guidance, while older compatible choices do not. Editing or choosing an older emoji clears the compatibility warning; choosing a newer one displays it. Shared explanatory help follows UI-07. | — | S55-37, S55-41, S55-43, S55-44, S55-45, S55-46, S55-47 |
-| SHL-16 | proposed | The page identifies CalendarStream in its title. Its footer shows the running version, linked to its release (including the full beta identifier), the copyright, and a link to README License & Attribution (DOC-05). | — | S61-07, S29-01, S30-05, S61-08, changelog_gaps_1201-1500:25 |
-| SHL-18 | proposed | A section the user left open folds by itself after the time in DEF-01; each section is judged on its own, and its closed state is kept (SET-01). | — | S61-13, S61-14 |
-| SHL-19 | proposed | With no saved theme override, the page uses Match system; choosing Dark applies it and indicates it as the selected choice. The page starts in the saved theme without first showing another (SHL-01 owns the choice control). | — | S66-01, S67-47, S67-49, changelog_gaps_2101-2336:25 |
-| SHL-20 | proposed | Rendering a CalendarStream page loads its resources, including its fonts (the Mono font with its license), from the CalendarStream installation, without contacting external resource providers such as Google Fonts. | — | readme_gaps:55, changelog_gaps_1201-1500:27, S35-07, S35-08, S35-10, S35-18 |
-| SHL-23 | proposed | The selected page language is retained on the device for subsequent visits; current device-local view preferences follow the Developer decision in layer-map.md. | — | changelog_gaps_1801-2100:29 |
-| SHL-24 | proposed | The selected language applies to every screen, setup guide, error message (including validation guidance), month name and day name; user-supplied text follows SHL-08. Languages offered include Spanish, French, German, Portuguese and Dutch (SHL-25 adds Brazilian Portuguese). | — | changelog_gaps_1801-2100:29, S17-05, S17-06, S17-07, S17-08, S17-09, S17-11 |
-| SHL-25 | proposed | Brazilian Portuguese is offered as a page language. | — | changelog_gaps_1801-2100:29 |
-| SHL-26 | proposed | A browser form error presents a localized error page with a way to return to the preceding page; API error responses follow SHL-10. | — | changelog_gaps_1801-2100:30 |
-| SHL-27 | proposed | The open or closed state of the page's sections is a view setting kept on the device, like the other view settings (SET-01); expiry follows SHL-18. | — | changelog_gaps_2101-2336:24 |
-
-Retired IDs (merged or dropped; numbers are never reused): SHL-05 and SHL-06 into SHL-24; SHL-29 into SHL-14; SHL-13 into SHL-20; SHL-17 (SHL-02 owns the favicon, SHL-03 the logo files); SHL-28 into SHL-19; SHL-11 and SHL-21 into SHL-16; SHL-22 into DIA-13.
+| SHL-01 | proposed | The page identifies CalendarStream in its title bar, footer and favicon. | — | — |
+| SHL-01.a | proposed | The page identifies CalendarStream in its title. Its footer shows the running version, linked to its release (including the full beta identifier), the copyright, and a link to README License & Attribution (DOC-05). | — | S61-07, S29-01, S30-05, S61-08, changelog_gaps_1201-1500:25 |
+| SHL-01.b | built | The favicon is the light CalendarStream icon with its white background cropped to a circle and the rest transparent. | — | F63 |
+| SHL-01.c | planned | The CalendarStream logo files have no compression or visual artifacts. | — | F1 |
+| SHL-01.d |  | The title bar shows the logo's mark (no words; the Light mark on light pages, the Dark mark on dark ones) left of the title, and the title in the logo colors (THM-02.m). One transparent favicon serves light and dark. | — | theme.md Clarifications |
+| SHL-02 | proposed | The page is available in several languages, chosen automatically or by the user. | — | — |
+| SHL-02.a | proposed | The initial page language is English; Automatic follows supported browser language preferences, including French, German and Belgian Dutch, while an unknown browser language falls back to English. Choosing Automatic clears the explicit language override. | — | S17-01, S17-02, S17-03, S17-04, S17-10 |
+| SHL-02.b | proposed | The selected language applies to every screen, setup guide, error message (including validation guidance), month name and day name; user-supplied text follows SHL-02. Languages offered include Spanish, French, German, Portuguese and Dutch (SHL-02 adds Brazilian Portuguese). | — | changelog_gaps_1801-2100:29, S17-05, S17-06, S17-07, S17-08, S17-09, S17-11 |
+| SHL-02.c | proposed | Brazilian Portuguese is offered as a page language. | — | changelog_gaps_1801-2100:29 |
+| SHL-02.d | proposed | The selected page language is a view setting kept on the device for later visits (SET-01). | — | changelog_gaps_1801-2100:29 |
+| SHL-02.e | proposed | Translation supports composed and nested messages, including sync-change summaries and download-failure explanations, without translating user event titles. Unknown messages retain their original English wording. | — | S17-14, S17-15, S17-16, S17-17 |
+| SHL-02.f | proposed | Values inserted into translated messages are escaped rather than interpreted as markup. | — | S17-18 |
+| SHL-02.g | proposed | The subscription page and Google setup-error guide follow the visitor’s supported browser language. | — | S17-12, S24-10 |
+| SHL-02.h | proposed | A browser form error presents a localized error page with a way to return to the preceding page; API error responses follow SHL-05. | — | changelog_gaps_1801-2100:30 |
+| SHL-03 | proposed | The page uses a light, dark or system theme, and starts in the saved one. | — | — |
+| SHL-03.a | proposed | With no saved theme override, the page uses Match system; choosing Dark applies it and indicates it as the selected choice. The page starts in the saved theme without first showing another (SHL-03 owns the choice control). | — | S66-01, S67-47, S67-49, changelog_gaps_2101-2336:25 |
+| SHL-03.b | built | The Light / Dark / Match system choice is one icon when closed, a button plus menu like the view picker, replacing a three-way cycling button. | — | F57 |
+| SHL-04 | proposed | The page's sections open and fold, and say how. | — | — |
+| SHL-04.a | proposed | A section the user left open folds by itself after the time in DEF-01; each section is judged on its own, and its closed state is kept (SET-01). | — | S61-13, S61-14 |
+| SHL-04.b | proposed | The open or closed state of the page's sections is a view setting kept on the device, like the other view settings (SET-01); expiry follows SHL-04. | — | changelog_gaps_2101-2336:24 |
+| SHL-04.c |  | A folded section says "Expand to Configure" (Calendars, Feeds, All Rules, Event Templates) or "Expand for Details" (History). | — | theme.md Clarifications |
+| SHL-04.d |  | Every section's header reads: icon, title, space, status lines, health, + (UI-24). Calendars and Feeds have no status lines; All Rules and Event Templates have up to three (the conflicts or errors, otherwise how many); + is in the top right corner. | — | theme.md Clarifications |
+| SHL-05 | proposed | The page loads everything from the installation and keeps its errors machine-readable for programs. | — | — |
+| SHL-05.a | proposed | Rendering a CalendarStream page loads its resources, including its fonts (the Mono font with its license), from the CalendarStream installation, without contacting external resource providers such as Google Fonts. | — | readme_gaps:55, changelog_gaps_1201-1500:27, S35-07, S35-08, S35-10, S35-18 |
+| SHL-05.b | proposed | Versioned stylesheet, language-script and font assets can be cached as immutable, fonts for one year; an obsolete script version or an unsupported script language is not served, and the unversioned font is not advertised as immutable. | — | S39-03, S39-04, S39-05, S39-06, S39-07, S39-08, changelog_gaps_901-1200:28 |
+| SHL-05.c | proposed | Newer emoji display older-Windows compatibility guidance, while older compatible choices do not. Editing or choosing an older emoji clears the compatibility warning; choosing a newer one displays it. Shared explanatory help follows UI-07. | — | S55-37, S55-41, S55-43, S55-44, S55-45, S55-46, S55-47 |
+| SHL-05.d | proposed | API-style requests retain structured JSON errors rather than receiving translated HTML pages. | — | S17-13 |
 
 ## Notes from the draft
 

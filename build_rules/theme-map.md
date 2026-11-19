@@ -24,4 +24,3 @@ Where each decision in the legacy `build_rules/theme.md` Clarifications goes, wh
 - The flows of the Status/Action buttons (theme section 7): Sync Now, Check now, Update now, Connect, Remove a calendar, Import.
 
 
-**shell.md**: the title bar has the logo's mark (the Light mark on light pages, the Dark mark on dark ones) left of the title, the title in the logo's colors, the version and © in the footer, one transparent favicon for both; sections say "Expand to Configure" (Calendars, Feeds, All Rules, Event Templates) or "Expand for Details" (History); every section's header reads icon · title · space · status lines · health · + (Calendars and Feeds have no status lines; All Rules and Event Templates up to three, the conflicts or errors, otherwise how many; + top right).
