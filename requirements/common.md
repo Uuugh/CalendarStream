@@ -22,6 +22,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | UI-19 | proposed | An entry that is not valid is marked at its own field with a note saying what is wrong, and it does not affect the other fields' valid values. A feature row says which entries are valid, and refers here for how the problem is shown (Developer's no-duplication rule, Nov 18). | — | SET-12, SET-15, SET-35 |
 | UI-20 | proposed | A color that is not in the shared palette (from an older rule, an import, or a destination that supports fewer colors) is represented by the nearest palette color wherever it is shown or sent (UI-10). | — | RUL-58, GGL-27, GGL-60 |
 | UI-21 | proposed | One shared filter, used by the Calendar filter and History (and any feature with a filter). It is built on the shared dropdown (UI-12): the user can select one, several, all or none of its choices; Select all shows everything and Select none shows nothing; the filter shows when it is active; the choices are saved and kept; a change applies at once (UI-13). A feature supplies only the choices and what they filter. | — | FLT-02, FLT-03 (Developer, Nov 17) |
+| UI-24 | proposed | A section whose items can be added has a + control as the rightmost item of its header's right zone; it opens the dialog for adding (UI-01). | — | Developer, Nov 19 |
 | UI-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UI-19). | — | FED-13 and FED-14 (S evidence), SRH-03, theme.md section 14 |
 
 ## Proposed (not yet reviewed)
@@ -75,6 +76,7 @@ CalendarStream), **rule** (made by a rule).
 |---|---|---|---|---|
 | DEF-01 |  | Every default and limit is defined once, in the table below, and a feature row refers to it instead of repeating the number. A value that an admin setting exposes is stored in the database and overrides the default (DEP-28); the others stay as the defaults. (Developer, Nov 17) | — | Developer, Nov 17 |
 | DEF-02 | proposed | Every list that grows with use (logs, failure records, pending sign-ins) has a stated limit in the table below, and entries no longer needed are forgotten first, so memory cannot fill. A feature row refers to the limit instead of repeating it. | — | Developer, Nov 18 |
+| DEF-03 | proposed | Wherever a limit or a count is in characters (a password length, a name length, a token length), a character is what the user sees as one character (a Unicode extended grapheme cluster), not a code unit; a special character is any character that is not a letter or a digit. | — | Developer, Nov 19 |
 
 | Name | Default | Limit | Stored |
 |---|---|---|---|
