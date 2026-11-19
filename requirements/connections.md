@@ -1,7 +1,7 @@
 # Requirements: connections
 
 This file establishes the rules for creating a connection module: what every connection does and what each one must state in its own file in `connections.d/` (its role, its connection method when it downloads, and the plugin it needs), and nothing else that is common. Connections are modules listed in a section; a connection is a local, one-way or two-way synchronization (plugins are in plugins.md).
-Terms: **one-way** sends changes from CalendarStream to the other side only, **two-way** also reads changes made on the other side; a **downloaded** connection (CCS+, a calendar link) reads a calendar from the internet and is read-only here; a **published** event is an event sent out by a feed or by a Google connection.
+Terms: **one-way** moves events in one direction only (a source brings them in, a feed sends them out), **two-way** does both; a **downloaded** connection (CCS+, a calendar link) reads a calendar from the internet and is read-only here; a **published** event is an event sent out by a feed or by a Google connection.
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
@@ -63,3 +63,4 @@ Terms: **one-way** sends changes from CalendarStream to the other side only, **t
 | CON-09.b | proposed | A published event carries its display reminders, including fifteen-minute and one-hour reminders. Reminder selection belongs to EVT-03. | — | S36-26 |
 | CON-09.c | proposed | A published event's online meeting address is also the first line of its notes (EVT-03 owns the ICS URL). | — | changelog_gaps_301-600:22 |
 | CON-09.d | proposed | A hidden event is not published, and hiding an event removes its published copy. Visibility is CAP-02 and EVT-04. | — | readme_gaps:47, S13-17 |
+| CON-09.e | proposed | A published calendar can be limited by a date range (UIC-23); with no range it publishes its full event set. | — | S29-02, S29-04, S39-19, S29-03, S51-13 |

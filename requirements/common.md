@@ -17,7 +17,7 @@
 | UIC-16 | backlog | One shared resize bar. The UI defines its look and operation: a bar centered at the bottom of what it resizes, drawn as two rows of six dots like a slider's; dragging it, or pressing the up and down keys, resizes in whole units; beside it one arrow collapses to the fewest units needed (arrow up when expanded) or expands to the bottom of the visible window (arrow down when collapsed). Collapse and expand are single actions: the size is kept when the window is resized. The feature that uses the bar defines its unit and what is resized in each of its views. | — | Developer, Nov 17; F51 |
 | UIC-17 | backlog | UI components are kept separate from the features that use them: a component's look comes only from the theme, and a feature supplies only its content and what the component does there. So changing the theme restyles every feature at once, and a new feature reuses the components as they are. | — | Developer, Nov 17 |
 | UIC-18 | proposed | One shared strength bar appears directly beneath any field where the user enters a secret (a password, a feed token), showing how strong the entry is as they type. It measures randomness (bits), not length alone; the bar only shows, and the field's feature decides whether an entry is accepted. Beside it, a hint recommends what to do (for example, the recommended minimum, or to use the generated value). The field's feature supplies the recommendation. | — | Developer, Nov 18 |
-| UIC-19 | proposed | An entry that is not valid is marked at its own field with a note saying what is wrong, and it does not affect the other fields' valid values. A feature row says which entries are valid, and refers here for how the problem is shown (Developer's no-duplication rule, Nov 18). | — | SET-04, SET-06, SET-04 |
+| UIC-19 | proposed | An entry that is not valid is marked at its own field with a note saying what is wrong, and it does not affect the other fields' valid values. A feature row says which entries are valid, and refers here for how the problem is shown. | — | SET-04, SET-06, SET-04 |
 | UIC-20 | proposed | A color that is not in the shared palette (from an older rule, an import, or a destination that supports fewer colors) is represented by the nearest palette color wherever it is shown or sent (UIC-10). | — | RUL-58, CGOW-03, CGOW-03 |
 | UIC-21 | proposed | One shared filter, used by the Calendar filter and History (and any feature with a filter). It is built on the shared dropdown (UIC-12): the user can select one, several, all or none of its choices; Select all shows everything and Select none shows nothing; the filter shows when it is active; the choices are saved and kept; a change applies at once (UIC-13). A feature supplies only the choices and what they filter. | — | FLT-01, FLT-01 |
 | UIC-24 | proposed | A section whose items can be added has a + control as the rightmost item of its header's right zone; it opens the dialog for adding (UIC-01). | — | Developer, Nov 19 |
@@ -59,14 +59,12 @@
 | UIC-37.c | backlog | The saved image is always a PNG, redrawn as pixels (so nothing in an uploaded file can run), with its long side at most the output size in DEF-01 and its file no larger than the place's file size in DEF-01; if the file is still too large the image is scaled down until it fits. | — |
 | UIC-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UIC-19). | — | CFED-01 and CFED-14 (S evidence), SRH-01, theme.md section 14 |
 
-## Proposed (not yet reviewed)
-
 ## Time (TIM)
 
 | ID | status | statement |
 |---|---|---|
 | TIM-08 | backlog | An imported event that carries no time zone gets the installation's default zone (DEP-05). | — | Developer, Nov 17 |
-| TIM-09 | proposed | A time zone is always one of the real zones: the zone picker offers only real zones, and an imported event that names a zone that does not exist is given the default zone (TIM-08) instead. (S19-30) |
+| TIM-09 | proposed | A time zone is always one of the real zones: the zone picker offers only real zones, and an imported event that names a zone that does not exist is given the default zone (TIM-08) instead. |
 
 Decided elsewhere, not repeated: UTC instants hide daylight-saving jumps, and the default rule "24-hour events" (RUL-06) realigns a
 fixed 24-hour source span to the local day.
@@ -86,14 +84,12 @@ fixed 24-hour source span to the local day.
 | UIC-05.e | proposed | A section that contains modules lists them in their saved order and reorders them as UIC-30 says; the new order is saved immediately. | — |
 | UIC-05.f | proposed | The + of a section opens a dialog listing the kinds of connection the section can add, by their kind text (CON-02.d); choosing one opens that connection's own setup. | — |
 | UIC-06 | proposed | An action that hides or deletes something asks first with a No \| Yes pair; cancelling changes nothing. | S57-33, S58-24, S58-25, S58-35, S44-26 |
-| UIC-07 | backlog | One shared popover, like the info dot: clicking or tapping an info dot, or the triple dot that ends clipped text (UIC-14), shows its full text in a popover next to it, above or below as space allows. The popover is never wider than the window and its text wraps inside it, so it adds no horizontal scroll bar; if it is taller than the window it scrolls vertically. It closes when the user chooses outside it. The item's own click still works. The triple dot's click area is at least 24×24 px. This is the global definition of the triple dot; the Developer may revisit it later. | — | Developer, Nov 17; S58-01, S58-34, S57-35, S66-18 |
+| UIC-07 | backlog | One shared popover, like the info dot: clicking or tapping an info dot, or the triple dot that ends clipped text (UIC-14), shows its full text in a popover next to it, above or below as space allows. The popover is never wider than the window and its text wraps inside it, so it adds no horizontal scroll bar; if it is taller than the window it scrolls vertically. It closes when the user chooses outside it. The item's own click still works. The triple dot's click area is at least 24×24 px. This is the global definition of the triple dot;. | — | Developer, Nov 17; S58-01, S58-34, S57-35, S66-18 |
 | UIC-07.a | backlog | A (?) is help: how to do something. It sits right after the word it explains; hover, focus or a click shows it. Its pop-up opens with its upper left at the icon; past the window's right edge, its upper right sits at that edge; past the bottom, its lower corners sit at the bottom. Explanations live in an (i) or a (?), never on the page. | — | theme.md section 12; picture 2·12 |
 | UIC-08 | proposed | A checkbox's label ticks it when clicked; empty space beside the label does not. | S21-19, S21-20 |
 | UIC-09 | proposed | The calendar picker is a small month calendar with previous/next month and Today; it opens on a given month, can mark items unselectable, and closes when an item is picked. | S58-07..12, S58-28..30 |
 | UIC-10 | proposed | One shared color palette of named colors (Google's eleven event colors) is used wherever a color is chosen (rule action, event, calendar); the event editor adds a "calendar default" choice. A picked color shows and closes the palette. | S19-08, S19-41, S19-44, S40-09..11 |
 | UIC-10.a | backlog | A click opens the palette (in a module, while it is expanded); the choice goes with the module's Save. The colors are THM-09. | — | theme.md section 11 |
-
-Pending: the Save | Cancel pair is covered by SET-01; the section header color tokens belong to the theme.
 | UIC-11 | proposed | One shared emoji picker, with search, is used wherever an emoji is chosen. | S44-41 |
 | UIC-11.a | backlog | The common emoji sit beside the field; a rounded "Search for more emojis" field opens every emoji (up to Emoji 13.0, no flags, drawn by the device), ten a line, scrolling, filtered as the user types. | — | theme.md section 11 |
 | UIC-11.b | proposed | Newer emoji display older-Windows compatibility guidance, while older compatible choices do not. Editing or choosing an older emoji clears the compatibility warning; choosing a newer one displays it. Shared explanatory help follows UIC-07. | S55-37, S55-41, S55-43, S55-44, S55-45, S55-46, S55-47 |
@@ -101,8 +97,7 @@ Pending: the Save | Cancel pair is covered by SET-01; the section header color t
 ## Capabilities (CAP)
 
 What a user may do with a calendar or an event follows from where it comes from, stated once here. Features reference these rows
-instead of listing "never for read-only", "not for rule events" and similar exceptions (Developer, Nov 17: fix the requirement,
-do not add exceptions). Origins: **imported** (from a source CalendarStream only reads, such as CCS+), **custom** (added in
+instead of listing "never for read-only", "not for rule events" and similar exceptions. Origins: **imported** (from a source CalendarStream only reads, such as CCS+), **custom** (added in
 CalendarStream), **rule** (made by a rule).
 
 | ID | status | statement |

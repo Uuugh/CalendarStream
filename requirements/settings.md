@@ -1,7 +1,6 @@
 # Requirements: settings
 
-☰ Settings, preferences, updates, public address. Issues against this feature (kept in the issues database): I2
-(auto-update toggle, built beta.46), I25. I22 was closed Nov 17: the Developer decided to keep the separate pop-ups, so SET-01.a stands as written.
+☰ Settings, preferences, updates, public address.
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|

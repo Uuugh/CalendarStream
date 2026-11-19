@@ -1387,3 +1387,10 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R37 | 2026-11-19 | UI-11 | UIC-11 | every prefix is three letters (a module adds its folder letter) |
 | R37 | 2026-11-19 | UI-11.a | UIC-11.a | every prefix is three letters (a module adds its folder letter) |
 | R37 | 2026-11-19 | UI-11.b | UIC-11.b | every prefix is three letters (a module adds its folder letter) |
+| R38 | 2026-11-19 | CGOW-02.k | CON-09.e | a limit by date range is said once for every published calendar |
+| R38 | 2026-11-19 | CFED-01.d | CON-09.e | |
+| R38 | 2026-11-19 | EVT-01.h | CAP-01, CAP-04 | repeated them, removed |
+| R38 | 2026-11-19 | DEP-01.a | DEP-01 | repeated its parent, removed |
+| R38 | 2026-11-19 | CGTW-01.e | CGTW-01 | repeated its parent, removed |
+| R38 | 2026-11-19 | SRC-01.b | UIC-05.f | what + does is said once, in the section component |
+| R38 | 2026-11-19 | FDS-01.b | UIC-05.f | |

@@ -18,14 +18,14 @@ The CCS+ connection: the user's own United Airlines schedule, downloaded with th
 | CCCS-02.g | proposed | The saved CCS+ password is protected (ACC-05); the page shows the saved username and explains how to keep its password. | — | S16-23, S16-25, S16-34 |
 | CCCS-02.h | proposed | Saved CCS+ credentials are used for the next download. | — | S16-22, S16-24 |
 | CCCS-02.i | proposed | Rejected CCS+ credentials show a failure reason beside the credential fields; successful verification reports Validated. Editing the credentials removes stale validation or rejection feedback. | — | S18-08, S18-09, S19-19, S19-47, S19-48, S28-01, S28-08, S28-09, S28-10, S28-11 |
-| CCCS-02.j | proposed | Credential saving reports saving/verification progress and a saved acknowledgement before successful validation. Shared save/cancel interaction follows SET-01; this rule specifies the verification outcome. | — | S28-05, S28-06, S28-07 |
+| CCCS-02.j | proposed | Credential saving reports saving/verification progress and a saved acknowledgement before successful validation. Shared save/cancel interaction follows UIC-27; this rule specifies the verification outcome. | — | S28-05, S28-06, S28-07 |
 | CCCS-02.k | proposed | CCS+ setup guidance explains enabling trips as one event and the other calendar options, setting a dedicated Calendar Sync password, and completing the Accomplished checklist. | — | changelog_gaps_1201-1500:24 |
 | CCCS-02.l | proposed (?) | Existing CCS+ credentials can be imported from the old configuration, stored encrypted, and recorded as imported activity. Is this still needed after the port, given that the migration tool (DEP-05) copies the saved credentials? | — | S16-02, S16-03 |
 | CCCS-03 | proposed | CCS+ is downloaded with a browser-like connection when the site's protection requires it. | — | — |
 | CCCS-03.a | proposed | CCS+ downloading offers auto, browser, browser-patient and curl modes, initially auto. | — | readme_gaps:32, changelog_gaps_301-600:39 |
 | CCCS-03.b | proposed | In auto mode, an unanswered or blocked CCS+ download tries the browser-like connection, retries with twice the wait, then tries curl. | — | readme_gaps:32, changelog_gaps_301-600:39 |
 | CCCS-03.c | proposed | Browser-patient mode makes the number of CCS+ download attempts in DEF-01, each with its response allowance. | — | changelog_gaps_301-600:39 |
-| CCCS-03.d | proposed | A CCS+ download follows no more redirects than DEF-01 allows; HTTPS and credential forwarding follow CON-06 and CON-06. | — | changelog_gaps_1501-1800:37, changelog_gaps_301-600:40 |
+| CCCS-03.d | proposed | A CCS+ download follows no more redirects than DEF-01 allows; HTTPS and credential forwarding follow CON-06. | — | changelog_gaps_1501-1800:37, changelog_gaps_301-600:40 |
 | CCCS-03.e | proposed | The download diagnostic record identifies the connection mode that answered and the modes previously attempted. | — | changelog_gaps_301-600:39 |
 | CCCS-03.f | proposed | After the number of rejected CCS+ sign-ins in DEF-01, automatic checks pause until the user corrects the credentials and requests Sync Now. | — | readme_gaps:39, changelog_gaps_2101-2336:37 |
 | CCCS-03.g | proposed | CCS+ is downloaded over HTTPS. | — | S23-28, S60-21 |

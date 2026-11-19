@@ -10,7 +10,6 @@ Terms: the **stream token** is the part of a feed's address that identifies it (
 | CFED-01.a | proposed | A feed can publish all chosen source calendars under its own name; its calendar data includes those sources’ events and its chosen calendar name. | — | S26-33, S26-35 |
 | CFED-01.b | proposed | A feed’s included calendars can be changed independently of other destinations. | — | S26-36 |
 | CFED-01.c | proposed | Each feed decides which calendars it carries; the required Local calendar is in a feed only as that feed's own settings say, never because of a rule special to Local. | — | S77-16 |
-| CFED-01.d | proposed | A feed can be limited by a date range (UIC-23); with no range it publishes its full event set. | — | S29-02, S29-04, S39-19, S29-03, S51-13 |
 | CFED-01.e | proposed | A new feed's name and note default to the selected source's and follow it when the selected source changes; values the user typed are kept. | — | S31-01, S58-17, S58-18, S58-37, S58-38 |
 | CFED-01.f | proposed | A feed’s subscription page identifies the feed by its name. | — | S26-37 |
 | CFED-01.g | proposed | Turning a feed off makes its URL temporarily unavailable; turning it back on clears its off state without changing its included calendars. | — | S63-22, S63-23, S63-24 |
@@ -33,3 +32,4 @@ Terms: the **stream token** is the part of a feed's address that identifies it (
 | CFED-05 | proposed | A feed shows when it was last read. | — | — |
 | CFED-05.a | proposed | A feed reports Not read yet until fetched; afterward it reports its last read, identifying Google when Google is the reader. | — | S19-28, S19-29, S40-05, S44-11 |
 | CFED-05.b | proposed | An ordinary feed reports reads rather than a next-push schedule. | — | S46-02 |
+

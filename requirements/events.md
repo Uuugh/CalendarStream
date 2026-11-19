@@ -1,6 +1,6 @@
 # Requirements: events
 
-The event pop-up, linked events, hiding and reverting. Issues against this feature: none open on the Dashboard.
+The event pop-up, linked events, hiding and reverting.
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
@@ -12,8 +12,7 @@ The event pop-up, linked events, hiding and reverting. Issues against this featu
 | EVT-01.e | proposed | A custom event is deleted (asking first, UIC-06) and leaves its calendar; cancelling leaves it.\ | — | Yes) and leaves its calendar; cancelling leaves it. A deleted event keeps a deletion marker in storage. |
 | EVT-01.f | proposed | Restoring a deleted or externally removed event clears its marker and gives it custom origin. | — | S49-15, S49-19 |
 | EVT-01.g | proposed | The Calendar label has an info text (UIC-07) explaining that changes affect CalendarStream and Google only. | — | S58-01, S58-34 |
-| EVT-01.h | proposed | Rule-generated events cannot be opened in the editor and cannot be picked as link targets (CAP-01, CAP-04). | — | S26-21, S58-10 |
-| EVT-01.i | backlog | The event dialog shows ← and the title with its tools in the upper right (Choose from template, Print, Duplicate); the fields on the left and Notes on the right as tall as them (dragging Notes taller grows the dialog); Link to below, closed until Event or Rule; Delete (Hide or Show for a calendar source's event, with its (i)) at the bottom left and Cancel \| Save at the right; one column on a phone. | — | theme.md Clarifications; picture 2·16 |
+| EVT-01.i | backlog | The event dialog shows ← and the title with its tools in the upper right (Choose from template, Print, Duplicate, Move); the fields on the left and Notes on the right as tall as them (dragging Notes taller grows the dialog); Link to below, closed until Event or Rule; Delete (Hide or Show for a calendar source's event, with its (i)) at the bottom left and Cancel \| Save at the right; one column on a phone. | — | theme.md Clarifications; picture 2·16 |
 | EVT-01.j | backlog | All-day Event sits on the Ends line and Different end time zone on the end Time's line; ticking them never resizes the dialog; the dialog's icons stay on one line, shrinking before they wrap. | — | theme.md Clarifications |
 | EVT-02 | proposed | An event has a start and an end that follow the common time rules. | — | — |
 | EVT-02.a | proposed | Times show in the page's time notation (TIM-10) and accept typed forms: 9:30, 9:30pm, 21:30, 930, 1:30 pm and 1505 are read as the times they mean (13:30 and 15:05 for the last two); an entry such as 13pm or 25:00 is not valid (UIC-19) and blocks saving. | — | S19-05..07, S19-10..12, S19-14, S19-39, changelog_gaps_1801-2100:17 |
@@ -38,7 +37,7 @@ The event pop-up, linked events, hiding and reverting. Issues against this featu
 | EVT-04.e | proposed | An imported event’s local edits can be reverted to the current source version. | — | changelog_gaps_2101-2336:27 |
 | EVT-04.f | backlog | A deleted event stays struck through and greyed, saying where it was deleted (CalendarStream, Google Calendar, United, the feed), with Restore, until its Undo leaves History; an event added here and deleted here is not drawn at all (History Undo brings it back). | — | theme.md section 15 and Clarifications; picture 2·15 |
 | EVT-05 | proposed | An event can be linked to another event or to a rule, and follows it. | — | — |
-| EVT-05.a | proposed | An event can be linked to another event or to a rule. Choosing the target uses the shared calendar picker (UIC-09), opened on the edited event's month; the event itself and rule-generated events cannot be chosen. Picking an event sets the link target, and saving keeps it. | — | S37-50..52, S57-26, S58-10, S58-28, S37-52, S58-30, S58-33 |
+| EVT-05.a | proposed | An event can be linked to another event or to a rule. Choosing the target uses the shared calendar picker (UIC-09), opened on the edited event's month. Picking an event sets the link target, and saving keeps it. | — | S37-50..52, S57-26, S58-10, S58-28, S37-52, S58-30, S58-33 |
 | EVT-05.b | proposed | Removing a link hides its panel and clears the target; cancelling the editor afterwards keeps the stored original link. | — | S57-27, S57-31, S58-27 |
 | EVT-05.c | proposed | A saved linked event shows its link (event or rule, and the target) when reopened, and following the link opens the target. | — | S57-18, S58-13, S45-27, readme_gaps:45, changelog_gaps_301-600:42, changelog_gaps_901-1200:22 |
 | EVT-05.d | proposed | A linked event follows its target: moving the target by two hours moves the linked event by two hours; deleting the target removes the linked event and its link. Linking an imported event alone adds no stored edit. Moving shifts start and end together (an all-day event is a 24-hour event, TIM-04, so it needs no special case). | — | S37-05, S37-14, S37-17..19, S62-10 |

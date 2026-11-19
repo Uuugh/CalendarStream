@@ -43,3 +43,25 @@ FLT-01.b and FLT-01.c (a link and one added fact); PRT-01.a (detail of the paren
 
 Already in `open-questions.md`: kind text per connection; removing the Google API client; a feed's status line; one-way and two-way Google rows; the update stream; limit on connections.
 New: (1) limits for lists the user grows (connections, Local calendars, feeds, rules, templates, custom events, deletion markers, extra public addresses, imports, debug captures, the last received file): one policy or one limit each; (2) the section name: Calendars (UIC-05.b, FLT-01.f, THM-02.l) or Sources (SRC-01.a); (3) ACC-05.c (a secret is never written to a log) against HIS-04.b (secrets are masked, with a Show secrets switch); (4) CLCL-01.d (a new Local calendar is added to every feed) against CFED-01.c (a feed decides what it carries); (5) DIA-04 and DOC-03 (the Dashboard, the CHANGELOG and the README are process, not app behavior): move to the Scrum rewrite? (6) UIC-12 says the language dropdown is multi-select, but a language is one choice.
+
+## Round 2 (Nov 19): Reviewer on the real repository, Coder on five new questions
+
+Both read-only (git status clean before and after). The Reviewer read all 30 files and reported only new findings; the Coder answered all five questions correctly by following pointers, and listed what it could not decide.
+
+### Fixed (A)
+
+- The requirement rows UIC-11, UIC-11.a and UIC-11.b sat outside their table after a loose "Pending:" line; an empty heading removed; "(Developer ...)" attributions removed from common.md.
+- README index links pointed at `requirements/requirements/x.md`; fixed.
+- File headers listed issue numbers (Issues live in GitHub); removed from calendar, diagnostics, events, rules, settings, shell, CGOW and CFED.
+- Repeated rules removed: DEP-01.a, CGTW-01.e, EVT-01.h, SRC-01.b, FDS-01.b; date-range limit for published calendars said once (CON-09.e); DEP-04.a, SHL-01.a, EVT-05.a, SRH-01.c trimmed.
+- THM-05.b (no exception: a button that shows no status), THM-02 (palette is in THM-09), EVT-01.i (Move added), two wrong pointers in CCCS, and the connections terms (one-way and two-way describe both inbound and outbound connections).
+- `req_check.sh` no longer writes any file (the Coder skipped it for that reason), and it now reports a row outside its table and a README link to a missing file.
+
+### Still to triage (new, from round 2)
+
+- **Placement:** PGAP-01.a/.d/.e/.m and PGAP-02 still describe connections (plugins.d/README rule 3); THM-08.a/.b/.c are filed under the module border; FLT-01.i belongs with the calendar header (CAL-06); CLNK-01.c holds a CCS+ preset; SET-01.a and SET-01.d lists are incomplete (Password requirements, Administrator email, Language, Time Zones, Search, Backup); EVT-04.a repeats CAP-02, EVT-04.b repeats EVT-01.i.
+- **Numbers (rule 3):** UIC-07 and UIC-14 (24 by 24 px), UIC-32 (20 words), CAL-04.f (2:3), SHL-05.b (one year), SET-05.a (lists the values it says are in DEF-01), RUL-01.i, RUL-03.g and RUL-06.c (point at the whole-day tolerance in DEF-01), THM-06.c (repeats the Save pulse in DEF-01).
+- **Self-links:** a sub-requirement citing its own parent (RUL-04.b/.c, RUL-05.b/.c, RUL-07.d to .f, HIS-03.b, EVT-04.c, DIA-01.a, SHL-02.b, SHL-03.a).
+- **Terms (rule 8):** Activity, outside address (circular), the browser, browser-patient and curl modes, invalid CCS+ username, ordinary feed and next-push, the regex tester, initial secret, assisted-setup request, source presets, combined destination, Upload & publish against Manual Upload, "source" in CON-02 to CON-08 against feed-only connections.
+- **Rows with several rules (rule 7):** RUL-03.c, RUL-05.d, EVT-05.d, CLNK-01.c; history wording in RUL-04.h/.i, EVT-06.a, SHL-03.b, SHL-01.c, PRT-01.h, DOC-01.a; page mechanics in EVT-03.a, SHL-02.f/.h.
+- **Content gaps:** TPL-02.b fills only title, location and end time though a template stores color and notes; CGTW-01.a lists only title, location and start time; the language list in SHL-02.a to .c differs (Belgian Dutch or Dutch); the favicon is described twice (SHL-01.b and SHL-01.d); common.md mixes 4-column and 5-column rows (UIC-37 has 4).

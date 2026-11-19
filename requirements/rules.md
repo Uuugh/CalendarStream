@@ -1,7 +1,6 @@
 # Requirements: rules
 
-The app's Rules: the rule model and engine, the rule dialog, All Rules, link rules. Issues against this feature
-(GitHub, label `feature:rules`): I3, I35, I38, I40.
+The app's Rules: the rule model and engine, the rule dialog, All Rules, link rules.
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|

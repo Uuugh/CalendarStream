@@ -67,33 +67,33 @@ The scans of the README and CHANGELOG and the gap triage were folded into these 
 
 | Feature | File |
 |---|---|
-| Calendar | [requirements/calendar.md](requirements/calendar.md) |
-| Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) |
-| Print | [requirements/print.md](requirements/print.md) |
-| Theme | [requirements/theme.md](requirements/theme.md) |
-| Search | [requirements/search.md](requirements/search.md) |
-| Events | [requirements/events.md](requirements/events.md) |
-| Event templates | [requirements/event_templates.md](requirements/event_templates.md) |
-| Rules | [requirements/rules.md](requirements/rules.md) |
-| History | [requirements/history.md](requirements/history.md) |
-| Sources (section) | [requirements/sources.md](requirements/sources.md) |
-| Feeds (section) | [requirements/feeds.md](requirements/feeds.md) |
-| Connections (common) | [requirements/connections.md](requirements/connections.md) |
-| Local calendar | [requirements/connections.d/local_calendar.md](requirements/connections.d/local_calendar.md) |
-| Generic Feed | [requirements/connections.d/generic_feed.md](requirements/connections.d/generic_feed.md) |
-| CCS+ | [requirements/connections.d/ccs.md](requirements/connections.d/ccs.md) |
-| Calendar link | [requirements/connections.d/calendar_link.md](requirements/connections.d/calendar_link.md) |
-| Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) |
-| Google two-way sync | [requirements/connections.d/google_two_way.md](requirements/connections.d/google_two_way.md) |
-| Plugins (common) | [requirements/plugins.md](requirements/plugins.md) |
-| Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) |
-| Settings | [requirements/settings.md](requirements/settings.md) |
-| Account | [requirements/account.md](requirements/account.md) |
-| Shell | [requirements/shell.md](requirements/shell.md) |
-| Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) |
-| Deployment | [requirements/deployment.md](requirements/deployment.md) |
-| Documentation | [requirements/documentation.md](requirements/documentation.md) |
-| Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) |
+| Calendar | [requirements/calendar.md](calendar.md) |
+| Calendar filter | [requirements/calendar_filter.md](calendar_filter.md) |
+| Print | [requirements/print.md](print.md) |
+| Theme | [requirements/theme.md](theme.md) |
+| Search | [requirements/search.md](search.md) |
+| Events | [requirements/events.md](events.md) |
+| Event templates | [requirements/event_templates.md](event_templates.md) |
+| Rules | [requirements/rules.md](rules.md) |
+| History | [requirements/history.md](history.md) |
+| Sources (section) | [requirements/sources.md](sources.md) |
+| Feeds (section) | [requirements/feeds.md](feeds.md) |
+| Connections (common) | [requirements/connections.md](connections.md) |
+| Local calendar | [requirements/connections.d/local_calendar.md](connections.d/local_calendar.md) |
+| Generic Feed | [requirements/connections.d/generic_feed.md](connections.d/generic_feed.md) |
+| CCS+ | [requirements/connections.d/ccs.md](connections.d/ccs.md) |
+| Calendar link | [requirements/connections.d/calendar_link.md](connections.d/calendar_link.md) |
+| Google one-way sync | [requirements/connections.d/google_one_way.md](connections.d/google_one_way.md) |
+| Google two-way sync | [requirements/connections.d/google_two_way.md](connections.d/google_two_way.md) |
+| Plugins (common) | [requirements/plugins.md](plugins.md) |
+| Google plugin (API client) | [requirements/plugins.d/google_api.md](plugins.d/google_api.md) |
+| Settings | [requirements/settings.md](settings.md) |
+| Account | [requirements/account.md](account.md) |
+| Shell | [requirements/shell.md](shell.md) |
+| Diagnostics | [requirements/diagnostics.md](diagnostics.md) |
+| Deployment | [requirements/deployment.md](deployment.md) |
+| Documentation | [requirements/documentation.md](documentation.md) |
+| Common (time, shared UI, capabilities) | [requirements/common.md](common.md) |
 
 ## Checking a feature file
 

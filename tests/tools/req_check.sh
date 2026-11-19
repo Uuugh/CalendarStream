@@ -16,9 +16,9 @@ echo "== duplicate IDs"; dup=$(echo "$ids" | uniq -d); [ -n "$dup" ] && { echo "
 echo "== sub-requirements without a parent"
 for s in $(echo "$ids" | grep '\.'); do p=${s%%.*}; echo "$ids" | grep -qx "$p" || { echo "$s"; err=1; }; done | grep . || echo none
 echo "== references to IDs that do not exist"
-awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{s=$4; while (match(s,/[A-Z][A-Z]+-[0-9]+(\.[a-z]+)?/)) {print $2" -> "substr(s,RSTART,RLENGTH); s=substr(s,RSTART+RLENGTH)}}' $files \
- | awk '{print $1" "$3}' | sort -u | while read from to; do echo "$ids" | grep -qx "$to" || { echo "$from -> $to"; }; done > /tmp/req_missing.txt
-[ -s /tmp/req_missing.txt ] && { cat /tmp/req_missing.txt; err=1; } || echo none
+missing=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{s=$4; while (match(s,/[A-Z][A-Z]+-[0-9]+(\.[a-z]+)?/)) {print $2" -> "substr(s,RSTART,RLENGTH); s=substr(s,RSTART+RLENGTH)}}' $files \
+ | awk '{print $1" "$3}' | sort -u | while read from to; do echo "$ids" | grep -qx "$to" || { echo "$from -> $to"; }; done)
+[ -n "$missing" ] && { echo "$missing"; err=1; } || echo none
 echo "== warnings: numbers with units outside DEF-01 (rows not in common.md)"
 awk -F"|" 'FILENAME!="common.md" && FILENAME!="theme.md" && /^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if ($4 ~ /[0-9]+ ?(minutes?|seconds?|milliseconds?|ms|hours?|days?|characters|px|mm|KB|MB|%)/ && $4 !~ /DEF-01/) print FILENAME": "$2}' $files | sed 's/ $//' | sort | uniq -c | awk '{print $2" "$3" "$4}' | tr '\n' ';'; echo
 echo "== warnings: history or script wording"
@@ -43,6 +43,10 @@ badpre=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ id=$2; gsub(/ /,"",id); s
 echo "== errors: a numbered rule in README without a Test line (rule 13)"
 notest=$(awk '/^## Rules for writing and changing requirements/{inr=1; next} /^## /{inr=0} inr && /^[0-9]+\. \*\*/ { if ($0 !~ /\*\*Test:\*\*/) { split($0,a,"."); print a[1] } }' README.md | tr '\n' ' ')
 [ -n "$notest" ] && { echo "rules without a test: $notest"; err=1; } || echo none
+echo "== errors: a requirement row outside its table (a non-table line before it) or a README link to a missing file"
+outside=$(awk '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (prev !~ /^\|/) print FILENAME": line "FNR } { prev=$0 }' $files | tr '\n' ';')
+badlink=$(grep -o '](\([^)#]*\))' README.md | sed 's/^](//; s/)$//' | grep -v '^http' | while read p; do [ -f "$p" ] || echo "$p"; done | tr '\n' ';')
+[ -n "$outside$badlink" ] && { echo "$outside$badlink"; err=1; } || echo none
 echo "== questions: every (?) row is in open-questions.md and every question there has a (?) row (rule 10)"
 q=../build_rules/open-questions.md
 qrows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/ && $3 ~ /\(\?\)/ {id=$2; gsub(/ /,"",id); print id}' $files | sort)

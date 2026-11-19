@@ -9,7 +9,7 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-01.b | backlog | IBM Plex Mono is used only for what is typed or copied exactly: links, IDs, the Username, the client ID and the stream name. | — | theme.md section 1; picture 2·1 |
 | THM-01.c | backlog | The module kind is 17 px at weight 700 (15 px in a phone-width window, DEF-01). | — | theme.md section 1 |
 | THM-01.d | backlog | Default text is 14 px; labels are weight 600; notes are 13 px in the muted color. | — | theme.md section 1 |
-| THM-02 | proposed | Every color is a named token with a light value and a dark value. The light palette is the Soft palette. The event colors that a user picks are not in this theme; they are the shared color palette (UIC-10). | — | theme.md section 2; picture 2·2 |
+| THM-02 | proposed | Every color is a named token with a light value and a dark value. The light palette is the Soft palette. The event colors a user picks are the palette of THM-09, not tokens. | — | theme.md section 2; picture 2·2 |
 | THM-02.a | backlog | bg is the page: light #f7f6f3, dark #0f1218. | — | theme.md section 2 |
 | THM-02.b | backlog | card is sections, modules and pop-ups, and the words on a filled button: light #fdfcfa, dark #171b23. | — | theme.md section 2 |
 | THM-02.c | backlog | soft is quiet fills (instruction tiles, hover): light #f1efeb, dark #1d222c. | — | theme.md section 2 |
@@ -36,7 +36,7 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-01.e | backlog | A field label is 12 px, in the muted color, over a 34 px field. | — | theme.md Clarifications |
 | THM-05 | proposed | Buttons share one look, and a status has one look per meaning. | — | theme.md sections 5 to 7 |
 | THM-05.a | backlog | An icon button's icon is the muted color, with soft behind it on hover. | — | theme.md section 5 |
-| THM-05.b | backlog | Every pressable button uses the accent look: accent fill and onaccent words. Accent is never used for a status. | — | theme.md section 6 |
+| THM-05.b | backlog | A pressable button that shows no status uses the accent look: accent fill and onaccent words. Accent is never used for a status. | — | theme.md section 6 |
 | THM-05.c | backlog | A disabled Cancel \| Save pair is greyed and faded. The pulse of a first change is the pressed look. | — | theme.md section 6 |
 | THM-05.d | backlog | Done or OK is green: ok words on okbg; a done button fills ok. | — | theme.md section 7 |
 | THM-05.e | backlog | In action, or waiting on the user, is pressed: run words on runbg; a working button is card with run words. | — | theme.md section 7 |

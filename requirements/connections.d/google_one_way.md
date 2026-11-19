@@ -1,6 +1,6 @@
 # Requirements: Google one-way sync
 
-A Google connection: a Google calendar destination with its own account that CalendarStream publishes to. Common connection rules are in connections.md; the Google plugin is plugins.d/google_api.md. Issues against this feature (kept in the issues database): I5, I41, I42, I47, I50.
+A Google connection: a Google calendar destination with its own account that CalendarStream publishes to. Common connection rules are in connections.md; the Google plugin is plugins.d/google_api.md.
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
@@ -35,7 +35,6 @@ A Google connection: a Google calendar destination with its own account that Cal
 | CGOW-02.h | proposed | Concurrent consent completion and synchronization reuse the same remote calendar mapping rather than creating duplicates. | — | changelog_gaps_1501-1800:L35 |
 | CGOW-02.i | proposed | Renaming a destination updates the existing Google calendar’s name. | — | S13-20, S26-48 |
 | CGOW-02.j | proposed | The initial default Google publication window starts on the first day of the current month. | — | changelog_gaps_2101-2336:L17 |
-| CGOW-02.k | proposed | A Google destination can be limited by a date range (UIC-23). | — | changelog_gaps_1501-1800:L17, readme_gaps:L81 |
 | CGOW-02.l | proposed | Each Google destination publishes only its selected sources; a combined destination may include multiple sources. | — | S26-46 |
 | CGOW-02.m | proposed | Connecting requests a full synchronization; initial synchronization publishes eligible nonhidden events in the configured window. | — | S13-02, S13-03, S20-03, S26-44, S45-02, S45-03, S48-09, S48-10 |
 | CGOW-03 | proposed | The events published to Google keep their time, title, reminders and color as the app shows them. | — | — |
@@ -75,3 +74,4 @@ A Google connection: a Google calendar destination with its own account that Cal
 | CGOW-06.f | proposed | Successful recovery, or a new successful sign-in, restores the healthy state and clears the retry count, keeping the account's calendar mappings and settings. New accounts start healthy and eligible to sync. | — | S73-01, S73-07, changelog_gaps_1-300:L21 |
 | CGOW-06.g | proposed | A saved health error is shown in full; a line that is too long for its space follows the clipping rule (UIC-14, UIC-07). | — | S73-13 |
 | CGOW-06.h | proposed | Each account’s recorded health and retry deadline persist across an app restart. | — | changelog_gaps_1-300:L21 |
+

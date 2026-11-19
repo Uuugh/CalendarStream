@@ -6,4 +6,3 @@ The Sources section: a container for the connections that are sources. Everythin
 |---|---|---|---|---|
 | SRC-01 | backlog | The Sources section contains the connections that are sources; each connection supplies its own header, settings and operation, and the section adds nothing about them. | — | — |
 | SRC-01.a | proposed | The section is called Sources and is a section as UIC-05 says, with its own border color (THM-02.l). | — | theme.md Clarifications |
-| SRC-01.b | proposed | The + control in its header (UIC-24) adds one of the connections that are sources. | — | — |

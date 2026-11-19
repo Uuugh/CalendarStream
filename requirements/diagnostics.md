@@ -1,6 +1,6 @@
 # Requirements: diagnostics
 
-Status, Report a problem, health, debug captures, the container log. Issues against this feature: none open on the
+Status, Report a problem, health, debug captures, the container log.
 
 Dashboard.
 

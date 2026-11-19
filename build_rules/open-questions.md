@@ -36,3 +36,16 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **One-way and two-way Google rows:** CGOW-04.k says one-way sync publishes and does not read back, yet CGOW-04.b, CGOW-04.c, CGOW-04.g and the instant updates (CGOW-05) describe reading Google's changes, which are two-way behaviors. Recommended: move those rows to `google_two_way.md`, so one-way holds only publishing and health. Is that right?
   Answer:
 
+
+## From the Coder's second run (Nov 19)
+
+- **Where the logo and favicon are kept:** SET-03 is "how the page looks on this device", but a logo and a favicon (the sign-in page shows it) are the same for everyone. Should they be Site Admin settings (SET-06), kept once in the database?
+  Answer:
+- **Image editor details (UIC-37):** the crop frame's starting position and size, whether it must stay inside the picture, and a limit on the size of the uploaded file are not stated. Recommended: the frame starts centered at the largest size the shape allows, stays inside the picture, and an uploaded file may be at most 10 MB.
+  Answer:
+- **At the limit of 50 connections:** what does the user see when the + can add no more? Recommended: the + is disabled and says the limit.
+  Answer:
+- **Print and health in a section header (UIC-05.a):** PRT-01.h says every section can be printed, but the header order (icon, title, status lines, health, +) has no Print control, and what a section's health shows is not stated. Where does Print go (recommended: before the +), and what does a section's health show?
+  Answer:
+- **"In error" for Activity (HIS-01.j):** a source is in error when its last download or sync failed (CON-03). Does a source that is turned off, or a Local calendar with nothing to sync, count as healthy?
+  Answer:

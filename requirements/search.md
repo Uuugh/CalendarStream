@@ -5,7 +5,7 @@
 | SRH-01 | proposed | Search finds the user's data across the page and shows what it finds as it arrives. | — | — |
 | SRH-01.a | backlog | Search is in the top bar, left of the language control. It finds the words typed in the names, titles and text of events, rules, calendars, feeds, event templates and History, and shows which feature each result belongs to; clicking a result takes the user there. | — | Developer |
 | SRH-01.b | backlog | Search looks at everything: it ignores the Calendar filter. | — | Developer |
-| SRH-01.c | proposed | Search finds an event however far ahead it is, with no date limit; a date range (UIC-23) narrows it. | — | S49-35 |
+| SRH-01.c | proposed | Search finds an event however far ahead it is, with no date limit. | — | S49-35 |
 | SRH-01.d | proposed | Search shows a result count and the items matching the query; a query with no matches shows "Nothing found". | — | S46-07, S46-08, S46-10, S46-12 |
 | SRH-01.e | proposed | Event results can be narrowed by calendar and by a date range (UIC-23). | — | S46-09 |
 | SRH-01.f | proposed | Search keeps the typed query while its results update (UIC-13). | — | S46-13 |

@@ -1,6 +1,6 @@
 # Requirements: calendar
 
-Month, week, day and list views, the stretch bar, print. Issues against this feature (kept in the issues database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
+Month, week, day and list views, the stretch bar, print.
 
 Terms: the **Local time zone** is defined in TIM-03; an **event line** is one event's line height, with its padding and margins, defined in the theme; **Itinerary** is a printed list of events grouped by day.
 

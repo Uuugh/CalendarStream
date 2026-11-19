@@ -3,7 +3,6 @@
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | DEP-01 | proposed | The app runs in the user's own Docker stack and keeps all of its data there. | — | — |
-| DEP-01.a | proposed | The app runs as a Docker stack and keeps its calendars, credentials and history in the user's own deployment, not with any outside service. | — | L5 |
 | DEP-01.b | proposed | The installer supports Linux, macOS (Docker Desktop) and Windows (WSL). | — | L94 |
 | DEP-01.c | proposed | Prebuilt app images run on amd64 and arm64 hosts without building the app locally. | — | changelog_gaps_2101-2336:L36 |
 | DEP-01.d | proposed | The configured user and group identity and the restart policy are applied to the stack. | — | L153 |
@@ -25,7 +24,7 @@
 | DEP-03.a | proposed | FORWARDED_ALLOW_IPS lists the proxies trusted to report the visitor's address and HTTPS use (see ACC-07). | — | L154 |
 | DEP-03.b | proposed | Google notifications need valid TLS and proxy access to the unauthenticated notification endpoint; without it the daily check still runs (see CGOW-05). | — | L455 |
 | DEP-04 | proposed | An updater, when installed, acts only when the app asks it and is not reachable from outside. | — | — |
-| DEP-04.a | proposed | The updater acts only when the app asks it: when the user presses Update now, or when automatic updating is on and a check finds a newer version (SET-05). It never updates the database, and it removes old images after an update. | — | L500 |
+| DEP-04.a | proposed | The app asks the updater to update when the user presses Update now, or when automatic updating is on and a check finds a newer version (SET-05). The updater never updates the database and removes old images after an update. | — | L500 |
 | DEP-04.b | proposed | The updater is not reachable from outside the Docker network, needs a generated secret token and uses the Docker socket; the installer can remove it without losing other data (see SET-05). | — | L502 |
 | DEP-05 | proposed | Settings can start in the environment and move to the database, and a Python installation can be migrated. | — | — |
 | DEP-05.a | backlog | Environment (.env) values are only starting values: a value saved in the database always overrides the matching environment setting (time zone, sync interval, CCS+ client, calendar name, default event hours, 24-hour rule). The only settings that stay environment-only are the ones the app needs before it can read the database: the stack name and folders, the image tag, the updater profile, the user, group and restart policy, the trusted proxy addresses and the database password. | — | Developer, Nov 17; README Settings |
