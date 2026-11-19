@@ -961,3 +961,9 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R31 | 2026-11-19 | SET-03.g | SHL-03.a | duplicate: the first theme is Match system |
 | R32 | 2026-11-19 | ACC-01.f | retired | the page password is not carried over by the migration (DEP-05.c), and ACC-05.a covers hashing |
 | R33 | 2026-11-19 | CON-06.a | CON-06.a, CCS-03.g, LNK-01.e | each connection states its own connection method; HTTPS is stated by CCS+ and calendar link |
+| R34 | 2026-11-19 | SRC-01.b | UI-05.e | ordering of a section's modules is the shared section component |
+| R34 | 2026-11-19 | FDS-01.b | UI-05.e | |
+| R34 | 2026-11-19 | SRC-01.c | SRC-01.b | |
+| R34 | 2026-11-19 | FDS-01.c | FDS-01.b | |
+| R34 | 2026-11-19 | SRC-01.d | PRT-01.h | every section can be printed, said once |
+| R34 | 2026-11-19 | FDS-01.d | PRT-01.h | |

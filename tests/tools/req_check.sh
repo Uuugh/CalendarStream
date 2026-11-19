@@ -22,4 +22,16 @@ echo "== warnings: numbers with units outside DEF-01 (rows not in common.md)"
 awk -F"|" 'FILENAME!="common.md" && FILENAME!="theme.md" && /^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if ($4 ~ /[0-9]+ ?(minutes?|seconds?|hours?|days?|characters|px|MB|%)/ && $4 !~ /DEF-01/) print FILENAME": "$2}' $files | sed 's/ $//' | sort | uniq -c | awk '{print $2" "$3" "$4}' | tr '\n' ';'; echo
 echo "== warnings: history or script wording"
 awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (tolower($4) ~ /python app|the checked|oracle|sampled|fixture|\(400\)/) print FILENAME": "$2}' $files | tr '\n' ';'; echo
+echo "== warnings: the same statement in two rows (rule 1, say it once)"
+awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ s=tolower($4); gsub(/^ +| +$/,"",s); if (length(s)>40) { id=$2; gsub(/ /,"",id); if (s in seen) print seen[s]" = "id; else seen[s]=id } }' $files | tr '\n' ';'; echo
+echo "== warnings: exception wording (rule 2, no exceptions; a judgment call, read the row)"
+awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (tolower($4) ~ /(^|[^a-z])(except|unless)([^a-z]|$)|never for|only when/) { id=$2; gsub(/ /,"",id); print id } }' $files | tr '\n' ' '; echo
+echo "== warnings: an agent or tool is named (rule 11)"
+grep -nE 'Claude|ChatGPT|GPT|Codex|Copilot|Anthropic|OpenAI' $files README.md | cut -d: -f1,2 | tr '\n' ';'; echo
+echo "== questions: every (?) row is in open-questions.md and every question there has a (?) row (rule 10)"
+q=../build_rules/open-questions.md
+qrows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/ && $3 ~ /\(\?\)/ {id=$2; gsub(/ /,"",id); print id}' $files | sort)
+qfile=$(grep -oE '^- \*\*[A-Z]+-[0-9]+(\.[a-z]+)?\*\*' $q | grep -oE '[A-Z]+-[0-9]+(\.[a-z]+)?' | sort)
+qbad=$( { comm -23 <(echo "$qrows") <(echo "$qfile") | sed 's/^/no question for row: /'; comm -13 <(echo "$qrows") <(echo "$qfile") | sed 's/^/question without a (?) row: /'; } )
+[ -n "$qbad" ] && { echo "$qbad"; err=1; } || echo none
 [ $err -ne 0 ] && echo "RESULT: errors" || echo "RESULT: no errors"; exit $err
