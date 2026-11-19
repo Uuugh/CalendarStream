@@ -79,3 +79,4 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R5 | 2026-11-18 | CAL-75 | CAL-01.e | |
 | R5 | 2026-11-18 | CAL-76 | CAL-01.g | |
 | R5 | 2026-11-18 | CAL-77 | CAL-05.i | |
+| R6 | 2026-11-18 | CAL-02.b | CAL-06.b | the question is answered: right-zone choices stay on the device until changed (Developer, Nov 18) |

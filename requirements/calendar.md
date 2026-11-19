@@ -8,7 +8,7 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 |---|---|---|---|---|
 | CAL-01 | proposed | The calendar shows the user's events in the view the user chooses and lets them move to any date. | — | — |
 | CAL-01.a |  | The calendar displays the events of its source calendars, as far as the Calendar filter (FLT-01) and event visibility (CAP-02) allow. | — | S26-12 |
-| CAL-01.b |  | Month, Week, 5-day (Monday through Friday), Day and List can be selected from the shared dropdown (UI-12); the choice is saved and indicated as selected. Week, 5-day and Day provide an hourly view. | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
+| CAL-01.b |  | Month, Week, 5-day (Monday through Friday), Day and List can be selected from the shared dropdown (UI-12); the chosen view is indicated as selected. Week, 5-day and Day provide an hourly view. | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
 | CAL-01.c |  | Week view shows its date range and navigates backward and forward by one week. | — | S26-61 |
 | CAL-01.d |  | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | — | S21-01, S21-02, S21-03 |
 | CAL-01.e | proposed | Today returns the main calendar to the current month. | — | changelog_gaps_2101-2336:35 |
@@ -16,7 +16,6 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-01.g | proposed | A day cell shows how many of its visible events do not fit; event visibility follows CAP-02 and the Calendar filter. | — | changelog_gaps_301-600:15 |
 | CAL-02 | proposed | The calendar shows times in the Local time zone (TIM-03), and the user can look at another zone for a while. | — | — |
 | CAL-02.a |  | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | — | S19-31; Developer, Nov 17 |
-| CAL-02.b | proposed (?) | How long does the temporary zone stay: until the page is reopened, or until the user changes it? | — | — |
 | CAL-03 | proposed | The user can move an event they may edit by pressing and dragging it. | — | — |
 | CAL-03.a |  | A long-press-drag moves an event, for the events that can be edited (CAP-01). | — | F61 |
 | CAL-03.b |  | In Week and Day the start snaps to the drag step in DEF-01. | — | — |
@@ -39,6 +38,9 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-05.h | proposed | Printed event titles wrap to show the complete title. | — | changelog_gaps_301-600:20 |
 | CAL-05.i | proposed | Printing one event uses Day view for that print and preserves the remembered general print view (EVT-03, CAL-39). | — | changelog_gaps_301-600:43 |
 | CAL-05.j | proposed | Print Preview offers the same views as the calendar, including 5-day (CAL-01.b). | — | readme_gaps:53, changelog_gaps_1201-1500:16 |
+| CAL-06 | proposed | The calendar header's right zone holds the view controls in a fixed order, and what the user chooses with them stays on the device until the user changes it. | — | — |
+| CAL-06.a | proposed | The right zone holds, in this order: Time Zone, View, 12/24 clock, Print, Full page. Zone alignment and stacking follow UI-14; what each control does is in its own requirement (CAL-02.a, CAL-01.b, TIM-10, CAL-05, CAL-04). | — | theme.md 13c (to confirm) |
+| CAL-06.b | proposed | The state of each right-zone control that holds one (the time zone, the view, the time format, the print preferences, Full page) is kept on the device until the user changes it (SET-06). A default is stated in the control's own requirement. | — | Developer, Nov 18 |
 
 ## Notes from the draft
 
