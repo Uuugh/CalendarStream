@@ -31,3 +31,10 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 - **Tests workflow:** Every push to main, including one that only changes `requirements/`, runs the whole heavy Tests workflow, while the quick Requirements workflow already checks those files. Should the heavy workflow skip pushes and pull requests that only touch `requirements/`, `build_rules/`, `docs/` or Markdown files? Recommended: yes, to keep usage low. I did not change it because it alters the checks that guard the app.
   Answer:
+
+## Connections and sections (Nov 19)
+
+- **Two-way display:** A Google two-way connection is both a source and a feed. Should it show as one module in both the Sources and Feeds sections, or as one module in a single place marked as both? Recommended: one module that appears in both sections (a thin section only filters by capability).
+  Answer:
+- **No limit on connections:** CON-01.d says the number of connections is not limited, but DEF-02 says every list that grows has a stated limit. Which wins: a limit in DEF-01, or an exception?
+  Answer:

@@ -6,6 +6,7 @@ Terms: the **stream token** is the part of a feed's address that identifies it (
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | FED-01 | proposed | A feed publishes the calendars the user chooses, under its own name, for other apps to read. | — | — |
+| FED-01.i | proposed | A Generic Feed is a feed. | — | — |
 | FED-01.a | proposed | A feed can publish all chosen source calendars under its own name; its calendar data includes those sources’ events and its chosen calendar name. | — | S26-33, S26-35 |
 | FED-01.b | proposed | A feed’s included calendars can be changed independently of other destinations. | — | S26-36 |
 | FED-01.c | proposed | Each feed decides which calendars it carries; the required Local calendar is in a feed only as that feed's own settings say, never because of a rule special to Local. | — | S77-16 |

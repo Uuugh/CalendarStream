@@ -48,6 +48,7 @@ A Google connection: a Google calendar destination with its own account that Cal
 | GOW-03.g | proposed | If a calendar color cannot be applied, the connection explains that the color does not carry to Google; repeating the same color does not retry it, and selecting a different accepted color applies it and clears the note. A color request that could not reach Google is not remembered as refused. | — | S55-09, S55-15, S55-20, S55-21, S56-22, S56-23, S56-24, S56-26, S56-27, S56-29 |
 | GOW-03.h | proposed | A meeting link appears before the notes in the Google description (CON-09.c), and is not copied back into the notes when the event is read from Google. | — | S63-03, S63-04 |
 | GOW-04 | proposed | Events published to Google are kept in step with CalendarStream: a change made here reaches Google. | — | — |
+| GOW-04.k | proposed | Google one-way sync is a feed: it publishes events to Google and does not read them back. | — | — |
 | GOW-04.a | proposed | An unchanged normal or full synchronization performs no event writes; editing an event schedules synchronization and updates the remote event. | — | S13-12, S13-13, S13-14, S13-15, S13-16, S13-30 |
 | GOW-04.b | proposed | A normal synchronization does not inspect Google’s event copy; full checks reconcile Google changes. | — | S13-23, S13-24, S45-04 |
 | GOW-04.c | proposed | A full check removes obsolete CalendarStream-owned remote events while keeping handmade remote events eligible for import. | — | S13-25 |

@@ -940,3 +940,9 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R27 | 2026-11-19 | GAP-01.d | GAP-01.d, GOW-01.r | the effect on connections moved to the connection |
 | R27 | 2026-11-19 | GOW-02.f | GOW-02.f, HIS-01.k | History warning moved to History |
 | R27 | 2026-11-19 | GOW-04.h | GOW-04.h, HIS-01.l | History report moved to History |
+| R28 | 2026-11-19 | SRC-01.a | CON-01.d | the section holds only what it contains; connections carry their own operation |
+| R28 | 2026-11-19 | SRC-01.b | LNK-01.c | presets belong to the connection |
+| R28 | 2026-11-19 | SRC-01.c | CON-02.e | a connection's kind in its header |
+| R28 | 2026-11-19 | SRC-02 | LCL-03 | the default calendar is a Local calendar rule |
+| R28 | 2026-11-19 | SRC-02.a | LCL-03.a | |
+| R28 | 2026-11-19 | SRC-02.b | LCL-03.b | |

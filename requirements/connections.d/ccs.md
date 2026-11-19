@@ -5,6 +5,7 @@ The CCS+ connection: the user's own United Airlines schedule, downloaded with th
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | CCS-01 | proposed | There is one CCS+ connection: the user's own United Airlines schedule. | — | — |
+| CCS-01.c | proposed | CCS+ is a source. | — | — |
 | CCS-01.a | proposed | One CCS+ source can be added; attempting to add a second is refused. | — | S26-05, S26-06 |
 | CCS-01.b | proposed | Removing CCS+ also removes its active saved login. | — | S49-33 |
 | CCS-02 | proposed | The user signs in to CCS+ with their own credentials, which the app keeps safe, so it can read their schedule. | — | — |
