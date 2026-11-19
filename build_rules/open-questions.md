@@ -24,8 +24,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Open, from the connections work (Nov 19)
 
-- **CCCS-03.g** The CCS+ site address can be overridden with a custom HTTPS address (a setting of the old app). Does the custom address still belong in the port?
-  Answer:
 
 ## Found by a cold read of the requirements (test of the process)
 
