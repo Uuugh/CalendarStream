@@ -12,7 +12,7 @@
 | HIS-01.g | proposed | An unsigned Google connection produces one not-signed-in or unsynced warning; resetting the remembered warning permits a new one. | — | S68-03, S68-04, S68-05 |
 | HIS-01.h | proposed | A failure or warning that repeats unchanged is recorded in History once, until it changes or clears. | — | CGOW-06, CGOW-05, CGOW-06, HIS-21 |
 | HIS-01.i | proposed | An external removal or Google notification without an undoable local change does not become the current Undo entry. | — | S49-18, S49-41 |
-| HIS-01.j | backlog | Activity reports Healthy when all its sources are healthy, and Unhealthy when any one of them is in error. | — | S36-43, S36-44 |
+| HIS-01.j | backlog | History's Activity health is the section health of UIC-05.g, with its sources as its items. | — | S36-43, S36-44 |
 | HIS-01.k | proposed | When remote cleanup is deferred because the write budget was reached, History reports the deferred work. | — | S53-07, S53-08 |
 | HIS-01.l | proposed | Completing Google API setup records a message identifying each Google connection that needs sign-in, has a sync error or has not completed its first sync. | — | changelog_gaps_1-300:L22 |
 | HIS-02 | proposed | History lists its entries with their type, in a table the user can filter and rearrange. | — | — |
