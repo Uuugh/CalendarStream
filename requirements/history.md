@@ -10,9 +10,9 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-01.c | proposed | When a Google change is saved locally, History records that outcome; when a newer local change wins, it records that the local change was kept. | — | S45-08, S45-17 |
 | HIS-01.d | proposed | A deletion received from Google is recorded with its Google origin. | — | S45-20 |
 | HIS-01.e | proposed | If a former Google client’s calendar cannot be reached for cleanup, History warns that manual deletion is needed. | — | S48-22 |
-| HIS-01.f | proposed | A Google color-update failure records the failed operation, the upstream status and its reasons so the refusal can be diagnosed (GGL-70). | — | S55-12, S56-20 |
+| HIS-01.f | proposed | A Google color-update failure records the failed operation, the upstream status and its reasons so the refusal can be diagnosed (GGL-04). | — | S55-12, S56-20 |
 | HIS-01.g | proposed | An unsigned Google module produces one not-signed-in or unsynced warning (HIS-01); resetting the remembered warning permits a new one. | — | S68-03, S68-04, S68-05 |
-| HIS-01.h | proposed | A failure or warning that repeats unchanged is recorded in History once, until it changes or clears. | — | GGL-36, GGL-43, GGL-68, HIS-21 |
+| HIS-01.h | proposed | A failure or warning that repeats unchanged is recorded in History once, until it changes or clears. | — | GGL-07, GGL-06, GGL-07, HIS-21 |
 | HIS-01.i | proposed | An external removal or Google notification without an undoable local change does not become the current Undo entry. | — | S49-18, S49-41 |
 | HIS-01.j | proposed (?) | Activity reports Healthy when the checked source state is healthy and Unhealthy when that source is in error. How should mixed source states determine the overall Activity status? | — | S36-43, S36-44 |
 | HIS-02 | proposed | History lists its entries with their type, in a table the user can filter and rearrange. | — | — |
