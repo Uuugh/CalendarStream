@@ -29,7 +29,7 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-03.g | verified | Change length makes a near whole-day event all-day (keeping an original-time note) or shortens a normal one. | — | S36-13, S27-09, S27-13 |
 | RUL-03.h | verified | An Emoji action lets the user find and choose any emoji by searching (UI-11). | — | S44-41 |
 | RUL-03.i | proposed | A newly added Emoji action starts without a chosen emoji; selection follows UI-11. | — | changelog_gaps_301-600:38 |
-| RUL-03.j | proposed | The user can reorder Then actions; the saved action order determines their priority and emoji sequence (RUL-03). | — | changelog_gaps_301-600:32 |
+| RUL-03.j | proposed | Then actions are reordered as UI-30 says; the saved action order determines their priority and emoji sequence (RUL-03). | — | changelog_gaps_301-600:32 |
 | RUL-04 | proposed | A rule can create events, follow events and record changes. | — | — |
 | RUL-04.a | verified | Add event creates a rule-origin event relative to the matching event (e.g. a Prep event 08:00-08:45, an hour before), from an existing event template. | — | S36-15, S26-19 |
 | RUL-04.b | proposed | An Add-event action can place a template-derived event before or after the matching event’s start or after its end (RUL-04). | — | changelog_gaps_1501-1800:25 |
@@ -45,7 +45,7 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-05.b | proposed | A rule scoped to All calendars applies to calendars added later as well as current calendars (RUL-05). | — | readme_gaps:69, changelog_gaps_901-1200:34 |
 | RUL-05.c | proposed | Editing a rule preserves its calendar applicability until the user changes that applicability (RUL-05). | — | changelog_gaps_1201-1500:19 |
 | RUL-05.d | verified | A new calendar-specific rule is first in that calendar's list; an all-calendar rule goes last; renaming a calendar keeps its rules. | — | S19-25, S19-26, S36-16, S36-38 |
-| RUL-05.e | verified | Rules can be reordered (up/down, before/after a neighbour) and the order is stored and shown. | — | S34-17, S34-18, S36-17, S36-39 |
+| RUL-05.e | verified | Rules are reordered as UI-30 says, and the order is stored and shown. | — | S34-17, S34-18, S36-17, S36-39 |
 | RUL-05.f | verified | A rule whose calendar was removed still shows the saved name; a rule with no calendar says so. | — | S67-07..09 |
 | RUL-05.g | proposed | When adding a rule, the user can reuse an existing rule from another calendar when such a rule is available (RUL-05, RUL-06). | — | changelog_gaps_601-900:43 |
 | RUL-05.h | proposed | A source color change updates the source’s color in rule applicability badges (RUL-05, UI-13, UI-15). | — | changelog_gaps_901-1200:35 |

@@ -13,6 +13,6 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | SRH-01.f | proposed | Search keeps the typed query while its results update (UI-13). | — | S46-13 |
 | SRH-01.g | proposed | Closing search returns to what was showing before. | — | S46-14 |
 | SRH-02 | proposed | Results are grouped by feature, and the user can ask for more. | — | — |
-| SRH-02.a |  | Results are grouped by feature, calendar events first. Each feature shows its first six results; the user can ask for more in steps of the same size. The size (six by default) is a setting (SET-02). (Developer, Nov 17) | — | Developer |
+| SRH-02.a |  | Results are grouped by feature, calendar events first. Each feature shows its first results, the number in DEF-01; the user can ask for more in steps of the same size. The size is a user setting (SET-01). (Developer, Nov 17) | — | Developer |
 | SRH-02.b |  | Results show as they populate: the list fills in while the user types and as each feature answers, calendar events first (SRH-02), without waiting for all features to finish (UI-13). (Developer, Nov 17) | — | Developer, Nov 17 |
 

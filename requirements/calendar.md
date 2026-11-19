@@ -25,20 +25,20 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-03.c |  | In Month the event moves to the day it is dropped on and keeps its time. | — | — |
 | CAL-03.d |  | The press must be held for the long-press time set in Settings > Theme (SET-03, DEF-01). | — | — |
 | CAL-04 | proposed | The user can change how tall the calendar is, and Full page gives it the whole window. | — | — |
-| CAL-04.a | planned | A Full page icon sits right of Print, in the calendar header's right zone; it hides every other section and becomes an Exit full page icon (the arrows-inward icon, not Back). Full page always resizes to the available window; that is its definition. | — | F15.4; S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
+| CAL-04.a | planned | The Full page icon hides every other section and becomes the restore-down icon (two squares) while it is on. Full page always resizes to the available window; that is its definition. | — | F15.4; S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
 | CAL-04.b |  | The calendar uses the shared resize bar (UI-16). Its height is measured in event lines, not pixels, changes by whole lines, is saved, and has no fixed pixel minimum or maximum. | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
 | CAL-04.c |  | Collapse gives the fewest lines the view needs; Expand gives the most lines that fit the visible window. | — | — |
 | CAL-04.d |  | The hour height in Week and Day is measured in event lines per hour, changed by whole lines and saved, within the limits in DEF-01, so a line of an event always fits. | — | Developer, Nov 17; S65-14, S65-15 |
 | CAL-04.e | proposed | Full page also hides the page footer. | — | changelog_gaps_1-300:36 |
-| CAL-04.f |  | In Full page the calendar fills the window and every other section is hidden; a day is at most 2:3 (width:length), weeks of the next and previous month are added until the page is full, and the page fits the window with no scrollbar of its own. The Full page icon becomes the restore-down icon (two squares) while it is on. | — | theme.md Clarifications |
+| CAL-04.f |  | In Full page a day is at most 2:3 (width:length), weeks of the next and previous month are added until the page is full, and the page fits the window with no scrollbar of its own. | — | theme.md Clarifications |
 | CAL-05 | proposed | The user can print the calendar through Print Preview (PRT-01). | — | — |
 | CAL-05.a |  | Until the user chooses an orientation it is automatic: landscape for Month, Week and 5-day sheets, portrait for Day and Itinerary sheets (PRT-01.c). | — | S65-18..22 |
 | CAL-05.b | proposed | The views that can be printed are the calendar's views (CAL-01.b) and Itinerary, which lists events grouped by day. | — | S36-33, readme_gaps:53, changelog_gaps_1201-1500:16 |
 | CAL-05.c |  | Printing two months produces a sheet for each month. | — | S36-32 |
 | CAL-05.d | proposed | Print All sets the date range (UI-23) from the first event through the last event. | — | readme_gaps:52 |
-| CAL-05.e | proposed | Printing one event uses Day view for that print and keeps the remembered print choices (EVT-06, PRT-01.b). | — | changelog_gaps_301-600:43 |
+| CAL-05.e | proposed | Printing one event uses Day view for that print (EVT-06). | — | changelog_gaps_301-600:43 |
 | CAL-06 | proposed | The calendar header's right zone holds the view controls in a fixed order, and what the user chooses with them stays on the device until the user changes it. | — | — |
 | CAL-06.a | proposed | The right zone holds, in this order: Time Zone, View, 12/24 clock, Print, Full page, and + last (UI-24). Zone alignment and stacking follow UI-14; what each control does is in its own requirement (CAL-02.a, CAL-01.b, TIM-10, CAL-05, CAL-04). | — | theme.md 13c (to confirm) |
-| CAL-06.b | proposed | The state of each right-zone control that holds one (the time zone, the view, the time format, Full page) is kept on the device until the user changes it (SET-01). A default is stated in the control's own requirement. | — | Developer, Nov 18 |
+| CAL-06.b | proposed | The state of each right-zone control that holds one (the time zone, the view, the time format, Full page) is a user setting (SET-01). A default is stated in the control's own requirement. | — | Developer, Nov 18 |
 | CAL-06.c |  | The view picker shows icons, not words: closed it shows only the current view's icon (Month calendar_month, Week view_week, Day view_day, List view_list); open, each choice shows its icon left of its word. The 12h \| 24h control is one hollow clock icon with the current format as a badge, and its tooltip names the mode. Time Zone is a globe whose tooltip names the zone and which opens the zone picker. When the right zone's controls do not fit on one line the right group drops to a second line. | — | theme.md Clarifications |
 

@@ -948,3 +948,6 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R28 | 2026-11-19 | SRC-02.b | LCL-03.b | |
 | R29 | 2026-11-19 | CON-02.d | SRC-01.b, FDS-01.b | ordering is the section's, as UI-30 says |
 | R29 | 2026-11-19 | CON-02.e | CON-02.d | |
+| R30 | 2026-11-19 | HIS-01.k | HIS-01.e | duplicate of HIS-01.e, removed |
+| R30 | 2026-11-19 | HIS-01.l | HIS-01.k | |
+| R30 | 2026-11-19 | HIS-01.m | HIS-01.l | |
