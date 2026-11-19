@@ -15,8 +15,8 @@ Connections: Local Calendar (`local_calendar.md`), Generic Feed (`generic_feed.m
 | CON-02.a | proposed | A source can be renamed and given a note; saving updates its name and explanatory note, and clearing the note removes its content. | — | S18-17, S29-11, S33-05, S39-18, S44-16 |
 | CON-02.b | proposed | Source color can be changed and saved; the new color is reflected immediately in its source display. | — | S38-15, S59-22 |
 | CON-02.c | proposed | Legacy source notes that merely repeat the source kind are treated as absent notes. | — | changelog_gaps_901-1200:24 |
-| CON-02.e |  | A connection's kind is fixed text in its module header: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar or Calendar Feed. | — | theme.md Clarifications |
-| CON-02.d | proposed | The user can change source-calendar and outgoing-feed order, and the new order is saved immediately; shared interaction follows UI-13. | — | readme_gaps:59, changelog_gaps_1201-1500:15 |
+| CON-02.d |  | A connection's kind is fixed text in its module header: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar or Calendar Feed. | — | theme.md Clarifications |
+| CON-02.e | proposed | A connection is shown as a module: its header, Expand and Close follow UI-29, and its look follows THM-08. | — | — |
 | CON-03 | proposed | Each source shows its status and can be synced or turned off. | — | — |
 | CON-03.a | proposed | Sync Now updates a source in the background: it reports Syncing during work and Healthy on success, and keeps unrelated unsaved source edits. | — | S33-15, S33-18, S33-19, S35-28, S35-29, S35-31, S44-18 |
 | CON-03.b | proposed | A source reports when it last synced (a download or an upload) or that a read, check or download failed. | — | S44-11, S27-05, S31-04, S31-19, S40-04, S35-32 |

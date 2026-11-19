@@ -946,3 +946,5 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R28 | 2026-11-19 | SRC-02 | LCL-03 | the default calendar is a Local calendar rule |
 | R28 | 2026-11-19 | SRC-02.a | LCL-03.a | |
 | R28 | 2026-11-19 | SRC-02.b | LCL-03.b | |
+| R29 | 2026-11-19 | CON-02.d | SRC-01.b, FDS-01.b | ordering is the section's, as UI-30 says |
+| R29 | 2026-11-19 | CON-02.e | CON-02.d | |
