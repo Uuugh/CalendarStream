@@ -47,6 +47,13 @@ echo "== errors: a requirement row outside its table (a non-table line before it
 outside=$(awk '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (prev !~ /^\|/) print FILENAME": line "FNR } { prev=$0 }' $files | tr '\n' ';')
 badlink=$(grep -o '](\([^)#]*\))' README.md | sed 's/^](//; s/)$//' | grep -v '^http' | while read p; do [ -f "$p" ] || echo "$p"; done | tr '\n' ';')
 [ -n "$outside$badlink" ] && { echo "$outside$badlink"; err=1; } || echo none
+echo "== errors: a cited message key (msg:key) missing from messages/app_en.arb, or a locale file lacking a key the template has (rule 14)"
+tkeys=$(grep -o '^  "[A-Za-z0-9]*":' messages/app_en.arb | tr -d ' ":' | sort)
+cited=$(grep -ho 'msg:[A-Za-z0-9]*' $files | sed 's/^msg://' | sort -u)
+missing_cited=$(comm -13 <(echo "$tkeys") <(echo "$cited") | grep . | tr '\n' ' ')
+lacking=$(for l in messages/app_*.arb; do case $l in messages/app_en.arb) continue;; esac; k=$(grep -o '^  "[A-Za-z0-9]*":' $l | tr -d ' ":' | sort); n=$(comm -23 <(echo "$tkeys") <(echo "$k") | wc -l); [ "$n" -gt 0 ] && echo "$l lacks $n keys"; done | tr '\n' ';')
+[ -n "$missing_cited$lacking" ] && { echo "$missing_cited$lacking"; err=1; } || echo none
+echo "   message keys not yet cited by a requirement: $(comm -23 <(echo "$tkeys") <(echo "$cited") | grep -c .) of $(echo "$tkeys" | wc -l)"
 echo "== questions: every (?) row is in open-questions.md and every question there has a (?) row (rule 10)"
 q=../build_rules/open-questions.md
 qrows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/ && $3 ~ /\(\?\)/ {id=$2; gsub(/ /,"",id); print id}' $files | sort)

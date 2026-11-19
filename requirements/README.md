@@ -20,6 +20,7 @@ These apply to every row in `requirements/`.
 11. **Nothing you write names an agent or a tool.** Roles are the Product Owner, the developer and the tester. **Test:** `req_check.sh` lists any agent or tool name.
 12. **Prefixes.** A feature's prefix is three letters. A module in a subfolder adds that folder's letter before its three letters: C for `connections.d` (CGOW is Google one-way) and P for `plugins.d` (PGAP is the Google API plugin); a folder inside a folder adds its letter in turn. **Test:** `req_check.sh` reports a row whose prefix does not match its folder.
 13. **Every rule has a test.** A new rule is added to this list with a `**Test:**` line: a check in `tests/tools/req_check.sh` where a script can decide, otherwise a review question. **Test:** `req_check.sh` reports a rule in this list that has no `**Test:**` line.
+14. **Messages are keys.** A requirement never contains the wording of a message the user sees; it cites the message as `msg:key` and says when it is shown and what its placeholders hold. The wording and its translations live only in `messages/` (`app_en.arb` is the template). **Test:** `req_check.sh` reports a cited key missing from the template, a locale file that lacks a key the template has, and counts the keys no requirement cites yet.
 
 ## Definitions
 
