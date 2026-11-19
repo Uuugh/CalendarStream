@@ -1,6 +1,6 @@
 # Requirements: plugins
 
-What every plugin does; each plugin adds only its specifics, in `plugins.d/`. A plugin is what a connection requires before it can work (CON-01.b).
+This file establishes the rules for creating a plugin module: what every plugin does and what each one must state in its own file in `plugins.d/`, and nothing else that is common. A plugin is what a connection requires before it can work (CON-01.b); connections are in connections.md.
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
