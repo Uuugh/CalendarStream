@@ -25,7 +25,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | DEP-02.j | proposed | Starting or recreating the app deployment checks the selected image tag for an updated image before starting the app. | — | changelog_gaps_2101-2336:L32 |
 | DEP-03 | proposed | The stack works behind a proxy and with Google's notifications. | — | — |
 | DEP-03.a | proposed | FORWARDED_ALLOW_IPS lists the proxies trusted to report the visitor's address and HTTPS use (see ACC-07). | — | L154 |
-| DEP-03.b | proposed | Google notifications need valid TLS and proxy access to the unauthenticated notification endpoint; without it the daily check still runs (see GGL-06, GGL-06). | — | L455 |
+| DEP-03.b | proposed | Google notifications need valid TLS and proxy access to the unauthenticated notification endpoint; without it the daily check still runs (see CON-06). | — | L455 |
 | DEP-04 | proposed | An updater, when installed, acts only when the app asks it and is not reachable from outside. | — | — |
 | DEP-04.a | proposed | The updater acts only when the app asks it: when the user presses Update now, or when automatic updating is on and a check finds a newer version (SET-05). It never updates the database, and it removes old images after an update. | — | L500 |
 | DEP-04.b | proposed | The updater is not reachable from outside the Docker network, needs a generated secret token and uses the Docker socket; the installer can remove it without losing other data (see SET-05). | — | L502 |

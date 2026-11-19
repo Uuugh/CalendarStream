@@ -10,11 +10,11 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **FED-01.d** A feed can be limited by a date range (UI-23); with no range it publishes its full event set. The current app's feed Include box says the range in words instead of using the shared From \ 
   Answer:
-- **GGL-05.d** Advancing the synchronization window leaves past remote events alone while dropping obsolete tracking; extending it backward can republish eligible events. The backward-extension check is permissive: what exact write behavior should be guaranteed? 
+- **CON-05.d** Advancing the synchronization window leaves past remote events alone while dropping obsolete tracking; extending it backward can republish eligible events. The backward-extension check is permissive: what exact write behavior should be guaranteed? 
   Answer:
-- **GGL-05.e** If the remote calendar is deleted, synchronization recreates it with a new mapping and publishes eligible events. How does this automatic repair interact with the later missing-calendar paused recovery policy? 
+- **CON-05.e** If the remote calendar is deleted, synchronization recreates it with a new mapping and publishes eligible events. How does this automatic repair interact with the later missing-calendar paused recovery policy? 
   Answer:
-- **GGL-05.o** Eligible local changes and valid remote change notices trigger reconciliation within seconds under normal service availability. What measurable latency target should replace “within seconds”? 
+- **CON-05.o** Eligible local changes and valid remote change notices trigger reconciliation within seconds under normal service availability. What measurable latency target should replace “within seconds”? 
   Answer:
 - **HIS-01.j** Activity reports Healthy when its source is healthy and Unhealthy when its source is in error. How should mixed source states determine the overall Activity status? 
   Answer:

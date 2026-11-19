@@ -153,7 +153,7 @@ All 93 feed-candidate evidence rows are accounted for in 30 proposed requirement
 generalizing beyond the oracle. The complete stream character set, generated-token guarantee and
 default-destination inclusion policy need review. No application suites were run locally.
 
-## google.md
+## google.md (now connections.md and plugins.md)
 
 
 ### Not requirements

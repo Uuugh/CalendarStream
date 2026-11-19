@@ -35,7 +35,7 @@ Planned requirements stay in the same table with status `planned`.
 
 ## Prefixes
 
-CAL calendar · SRC sources · FED feeds · RUL rules · TPL event_templates · EVT events · HIS history · GGL google ·
+CAL calendar · SRC sources · FED feeds · RUL rules · TPL event_templates · EVT events · HIS history · CON connections · PLG plugins ·
 SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UI shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
 
 Nothing new is added while the transition freeze lasts (build_rules/0-overview.md); these files hold what was already
@@ -65,7 +65,8 @@ The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were fol
 | Sources | [requirements/sources.md](requirements/sources.md) | 91 | 89 |
 | Feeds | [requirements/feeds.md](requirements/feeds.md) | 32 | 32 |
 | History | [requirements/history.md](requirements/history.md) | 28 | 24 |
-| Google | [requirements/google.md](requirements/google.md) | 93 | 92 |
+| Connections | [requirements/connections.md](requirements/connections.md) | 77 | 70 |
+| Plugins | [requirements/plugins.md](requirements/plugins.md) | 20 | 18 |
 | Settings | [requirements/settings.md](requirements/settings.md) | 55 | 39 |
 | Account | [requirements/account.md](requirements/account.md) | 56 | 51 |
 | Shell | [requirements/shell.md](requirements/shell.md) | 27 | 21 |
