@@ -53,3 +53,29 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R3 | 2026-11-18 | ACC-05.d | ACC-05.d | the question is answered: the Show secrets switch in History (HIS-34) |
 | R4 | 2026-11-18 | GGL-01, GGL-02, GGL-03, GGL-04 | retired | the Beta feature is deleted (Developer, Nov 18): it duplicated Sync Now and the health chip, and History covers the rest |
 | R4 | 2026-11-18 | GGL-88 | retired | the Google traffic log went with the Beta feature |
+| R0 | 2026-11-18 | CAL-78, CAL-71, CAL-68 | merged | into CAL-33, CAL-60, CAL-39 as they were before R5 |
+| R5 | 2026-11-18 | CAL-04 | CAL-04.a | and its footer part is CAL-04.e (was CAL-73) |
+| R5 | 2026-11-18 | CAL-15 | CAL-03.a, CAL-03.b, CAL-03.c, CAL-03.d | split; the press time is also SET-62 |
+| R5 | 2026-11-18 | CAL-19 | retired | duplicated TIM-03 |
+| R5 | 2026-11-18 | CAL-25 | CAL-02.a | |
+| R5 | 2026-11-18 | CAL-27 | CAL-01.d | |
+| R5 | 2026-11-18 | CAL-30 | CAL-01.a | |
+| R5 | 2026-11-18 | CAL-33 | CAL-01.b | |
+| R5 | 2026-11-18 | CAL-34 | CAL-01.c | |
+| R5 | 2026-11-18 | CAL-39 | CAL-05.b | |
+| R5 | 2026-11-18 | CAL-41 | CAL-05.d | |
+| R5 | 2026-11-18 | CAL-42 | CAL-05.e | |
+| R5 | 2026-11-18 | CAL-57 | CAL-04.b, CAL-04.c | split: resize bar and Collapse/Expand |
+| R5 | 2026-11-18 | CAL-59 | CAL-04.d | |
+| R5 | 2026-11-18 | CAL-60 | CAL-05.c | |
+| R5 | 2026-11-18 | CAL-65 | retired | duplicated TIM-04 |
+| R5 | 2026-11-18 | CAL-66 | CAL-05.a | |
+| R5 | 2026-11-18 | CAL-67 | CAL-05.f | |
+| R5 | 2026-11-18 | CAL-69 | CAL-05.g | |
+| R5 | 2026-11-18 | CAL-70 | CAL-05.j | |
+| R5 | 2026-11-18 | CAL-72 | CAL-05.h | |
+| R5 | 2026-11-18 | CAL-73 | CAL-04.e | |
+| R5 | 2026-11-18 | CAL-74 | CAL-01.f | |
+| R5 | 2026-11-18 | CAL-75 | CAL-01.e | |
+| R5 | 2026-11-18 | CAL-76 | CAL-01.g | |
+| R5 | 2026-11-18 | CAL-77 | CAL-05.i | |

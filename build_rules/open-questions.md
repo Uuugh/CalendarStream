@@ -50,3 +50,5 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **ACC-02.f** (account) After sign-in the user goes to the page they asked for when it is on this site. A destination on another site, including one written with a leading //, is never followed; the destination's query and fragment are kept. The Python app also rejects "hidden-tab redirect tricks": what exactly is that? 
   Answer:
+- **CAL-02.b** (calendar) How long does the temporary zone stay: until the page is reopened, or until the user changes it? 
+  Answer:

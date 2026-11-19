@@ -1,39 +1,44 @@
 # Requirements: calendar
 
-Month, week, day and list views, the stretch bar, print. (Moved Nov 17: CAL-03, CAL-47..51 to search.md as SRH; CAL-06, 07, 08, 10, 37, 38, 54, 55, 56 to calendar_filter.md as FLT.) Issues against this feature (kept in the issues
-database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
+Month, week, day and list views, the stretch bar, print. Issues against this feature (kept in the issues database): I43, I44, I49 (stretch), I35 and I46 (icon alignment).
 
-| ID | status | statement | test | was |
+Terms: the **Local time zone** is defined in TIM-03; an **event line** is one event's line height, with its padding and margins, defined in the theme; **Itinerary** is a printed list of events grouped by day.
+
+| ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
-| CAL-04 | planned | A Full page icon sits right of Print, in the calendar header's right zone; it hides every other section and becomes an Exit full page icon (the arrows-inward icon, not Back). Full page always resizes to the available window; that is its definition. (Developer, Nov 17) | — | F15.4; S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
-
-| CAL-15 |  | Long-press-drag moves an event, for the events that can be edited (CAP-01). In Week and Day the start snaps to 15-minute steps; in Month the event moves to the day it is dropped on and keeps its time. A Theme setting, local to the device, sets how long the press must be held: default 0.5 seconds, from 0.3 to 1.5. (Developer, Nov 17) | — | F61 |
-| CAL-19 |  | Local time: the calendar shows event times in the Local time zone, set in Settings > Time Zones (SET-47): the zone of the device in use, or a fixed zone. Existing events are viewed with the offset of that zone, while each event keeps, unchanged in the database, the time zone it was created in until the user edits it with Edit Event. (Developer, Nov 17) | — | S19-01 |
-| CAL-65 |  | An all-day (24-hour) event is shown like any timed event in the Local time zone, so it is a single day while the Local zone is the event's own zone, and can span two calendar days when the Local zone differs (for example a New York all-day event viewed from Los Angeles). (Developer, Nov 17) | — | Developer |
-| CAL-66 |  | Print prints the view as the user sees it: the Local or temporary time zone, the time format (TIM-10), the language and the Calendar filter (FLT-04). The print options (view, theme, orientation) are chosen in Print Preview. (Developer, Nov 17) | — | Developer, Nov 17 |
-| CAL-25 |  | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | — | S19-31; Developer, Nov 17 |
-
-| CAL-27 |  | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | — | S21-01, S21-02, S21-03 |
-| CAL-30 |  | The calendar displays its source calendars’ events. | — | S26-12 |
-| CAL-33 |  | Month, Week, 5-day (Monday through Friday), Day and List can be selected from the shared dropdown (UI-12); the choice is saved and indicated as selected. Week, 5-day and Day provide an hourly view. (Developer, Nov 17: 5-day is a calendar view) | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
-| CAL-34 |  | Week view shows its date range and navigates backward and forward by one week. | — | S26-61 |
-| CAL-39 | proposed | Saving print preferences remembers the selected view, theme and orientation, and Print Preview opens with them; before any preference is saved, Print Preview starts with the current calendar view. | — | S36-30, S36-52, S36-53, readme_gaps:52, changelog_gaps_1201-1500:16 |
-| CAL-41 |  | Printing two months produces a sheet for each month and honors the requested theme. | — | S36-32 |
-| CAL-42 |  | Itinerary printing includes events grouped by day. | — | S36-33 |
-| CAL-57 |  | The calendar uses the shared resize bar (UI-16). Its height is measured in event lines (one line = one event's line height, with its padding and margins, defined in the theme), not in pixels. The stretch control changes it by whole lines and the choice is saved. Collapse gives the fewest lines the view needs; Expand gives the most lines that fit the visible window. There is no fixed pixel minimum or maximum. (Developer, Nov 17) | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
-| CAL-59 |  | The hour height in Week and Day is also measured in event lines per hour, changed by whole lines and saved: at least 1 line per hour, at most 6, default 2, so a line of an event always fits. (Developer, Nov 17) | — | Developer, Nov 17; S65-14, S65-15 |
-| CAL-60 |  | Print orientation is chosen in Print Preview and saved. Until the user chooses, it is automatic: landscape for Month, Week and 5-day sheets, portrait for Day and Itinerary sheets. | — | S65-18..22; gaps_calendar CAL-71 |
-| CAL-67 | proposed | Print All selects the date range from the first event through the last event. | — | readme_gaps:52 |
-| CAL-69 | proposed (?) | Each print sheet fits one physical Letter or A4 page without cutting event content. What overflow policy should apply when the selected events cannot fit at a readable size? | — | readme_gaps:53, changelog_gaps_301-600:20 |
-| CAL-70 | proposed | Print Preview offers a five-day mode containing Monday through Friday. | — | readme_gaps:53, changelog_gaps_1201-1500:16 |
-| CAL-72 | proposed | Printed event titles wrap to show the complete title. | — | changelog_gaps_301-600:20 |
-| CAL-73 | proposed | Calendar Full page hides the page footer as well as the other sections (CAL-04). | — | changelog_gaps_1-300:36 |
-| CAL-74 | proposed (?) | On a phone, the calendar initially uses List view before the user chooses a view. Should the initial choice follow available window space rather than device type under UI-14? | — | changelog_gaps_1501-1800:18 |
-| CAL-75 | proposed | Today returns the main calendar to the current month. | — | changelog_gaps_2101-2336:35 |
-| CAL-76 | proposed | A day cell reports overflow for the visible events that do not fit; event visibility follows CAP-02 and the Calendar filter. | — | changelog_gaps_301-600:15 |
-| CAL-77 | proposed | Printing one event uses Day view for that print and preserves the remembered general print view (EVT-03, CAL-39). | — | changelog_gaps_301-600:43 |
-
-Retired IDs (merged; numbers are never reused): CAL-78 (five-day view) into CAL-33; CAL-71 into CAL-60; CAL-68 into CAL-39.
+| CAL-01 | proposed | The calendar shows the user's events in the view the user chooses and lets them move to any date. | — | — |
+| CAL-01.a |  | The calendar displays the events of its source calendars, as far as the Calendar filter (FLT-01) and event visibility (CAP-02) allow. | — | S26-12 |
+| CAL-01.b |  | Month, Week, 5-day (Monday through Friday), Day and List can be selected from the shared dropdown (UI-12); the choice is saved and indicated as selected. Week, 5-day and Day provide an hourly view. | — | S26-60, S64-01, S64-03, S67-35, S67-40, S33-16, S33-17 |
+| CAL-01.c |  | Week view shows its date range and navigates backward and forward by one week. | — | S26-61 |
+| CAL-01.d |  | Selecting a month and year navigates the calendar to that month and year; date selection follows UI-09. | — | S21-01, S21-02, S21-03 |
+| CAL-01.e | proposed | Today returns the main calendar to the current month. | — | changelog_gaps_2101-2336:35 |
+| CAL-01.f | proposed (?) | On a phone, the calendar initially uses List view before the user chooses a view. Should the initial choice follow available window space rather than device type under UI-14? | — | changelog_gaps_1501-1800:18 |
+| CAL-01.g | proposed | A day cell shows how many of its visible events do not fit; event visibility follows CAP-02 and the Calendar filter. | — | changelog_gaps_301-600:15 |
+| CAL-02 | proposed | The calendar shows times in the Local time zone (TIM-03), and the user can look at another zone for a while. | — | — |
+| CAL-02.a |  | Selecting a time zone in the calendar's own picker shows event times in that zone as a temporary view change; the Time Zones setting (SET-47) is not changed. | — | S19-31; Developer, Nov 17 |
+| CAL-02.b | proposed (?) | How long does the temporary zone stay: until the page is reopened, or until the user changes it? | — | — |
+| CAL-03 | proposed | The user can move an event they may edit by pressing and dragging it. | — | — |
+| CAL-03.a |  | A long-press-drag moves an event, for the events that can be edited (CAP-01). | — | F61 |
+| CAL-03.b |  | In Week and Day the start snaps to the drag step in DEF-01. | — | — |
+| CAL-03.c |  | In Month the event moves to the day it is dropped on and keeps its time. | — | — |
+| CAL-03.d |  | The press must be held for the long-press time set in Settings > Theme (SET-62, DEF-01). | — | — |
+| CAL-04 | proposed | The user can change how tall the calendar is, and Full page gives it the whole window. | — | — |
+| CAL-04.a | planned | A Full page icon sits right of Print, in the calendar header's right zone; it hides every other section and becomes an Exit full page icon (the arrows-inward icon, not Back). Full page always resizes to the available window; that is its definition. | — | F15.4; S64-04, S65-10, S65-12, S65-13, S65-33, S67-41 |
+| CAL-04.b |  | The calendar uses the shared resize bar (UI-16). Its height is measured in event lines, not pixels, changes by whole lines, is saved, and has no fixed pixel minimum or maximum. | — | Developer, Nov 17; S64-06, S79-06, S79-07, S79-08 |
+| CAL-04.c |  | Collapse gives the fewest lines the view needs; Expand gives the most lines that fit the visible window. | — | — |
+| CAL-04.d |  | The hour height in Week and Day is measured in event lines per hour, changed by whole lines and saved, within the limits in DEF-01, so a line of an event always fits. | — | Developer, Nov 17; S65-14, S65-15 |
+| CAL-04.e | proposed | Full page also hides the page footer. | — | changelog_gaps_1-300:36 |
+| CAL-05 | proposed | The user can print what the calendar shows, choosing the view, theme and orientation in Print Preview. | — | — |
+| CAL-05.a |  | Print prints the view as the user sees it: the Local or temporary time zone, the time format (TIM-10), the language and the Calendar filter (FLT-04). The print options (view, theme, orientation) are chosen in Print Preview. (Developer, Nov 17) | — | Developer, Nov 17 |
+| CAL-05.b | proposed | Saving print preferences remembers the selected view, theme and orientation, and Print Preview opens with them; before any preference is saved, Print Preview starts with the current calendar view. | — | S36-30, S36-52, S36-53, readme_gaps:52, changelog_gaps_1201-1500:16 |
+| CAL-05.c |  | Print orientation is chosen in Print Preview and saved. Until the user chooses, it is automatic: landscape for Month, Week and 5-day sheets, portrait for Day and Itinerary sheets. | — | S65-18..22 |
+| CAL-05.d |  | Printing two months produces a sheet for each month and honors the requested theme. | — | S36-32 |
+| CAL-05.e |  | Itinerary printing lists events grouped by day. | — | S36-33 |
+| CAL-05.f | proposed | Print All selects the date range from the first event through the last event. | — | readme_gaps:52 |
+| CAL-05.g | proposed (?) | Each print sheet fits one physical Letter or A4 page without cutting event content. What overflow policy should apply when the selected events cannot fit at a readable size? | — | readme_gaps:53, changelog_gaps_301-600:20 |
+| CAL-05.h | proposed | Printed event titles wrap to show the complete title. | — | changelog_gaps_301-600:20 |
+| CAL-05.i | proposed | Printing one event uses Day view for that print and preserves the remembered general print view (EVT-03, CAL-39). | — | changelog_gaps_301-600:43 |
+| CAL-05.j | proposed | Print Preview offers the same views as the calendar, including 5-day (CAL-01.b). | — | readme_gaps:53, changelog_gaps_1201-1500:16 |
 
 ## Notes from the draft
 

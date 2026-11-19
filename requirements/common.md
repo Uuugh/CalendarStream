@@ -7,7 +7,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | TIM-01 |  | Every event's start and end are stored in UTC together with the time zone each was recorded in. | — | Developer, Nov 17 |
 | TIM-02 |  | An event's time zone is set when it is created (imported: from the source, or the zone the source's calendar reports; added: the system zone, or the calendar's zone if one is selected, EVT-05) and stays as recorded until the user edits the event with Edit Event. | — | Developer, Nov 17 |
 | TIM-03 |  | The calendar shows every event in the Local time zone: the system (device) zone, or the fixed zone chosen in Settings > Time Zones (SET-47). Changing the Local zone changes only how times are shown. | — | Developer, Nov 17 |
-| TIM-04 |  | An all-day event is a 24-hour event, local midnight to the next local midnight in its own time zone, stored in UTC like any other. It is shown like any other event, so it is one day in its own zone and can span two days in another (CAL-65). When it is sent to an outside calendar that has an all-day type (Google, calendar feeds), it is sent as an all-day event for its stored time zone, with that zone's local dates. | — | Developer, Nov 17 |
+| TIM-04 |  | An all-day event is a 24-hour event, local midnight to the next local midnight in its own time zone, stored in UTC like any other. It is shown like any other event, so it is one day in its own zone and can span two days in another. When it is sent to an outside calendar that has an all-day type (Google, calendar feeds), it is sent as an all-day event for its stored time zone, with that zone's local dates. | — | Developer, Nov 17 |
 | TIM-05 |  | Rules do not depend on a time zone. A rule is applied to an event, and the event's recorded time zone decides what "Friday" or "22:00" means. Only a rule that is literally about a time zone uses a zone. | — | Developer, Nov 17 |
 | TIM-06 |  | Syncing with an outside calendar reads the time zone of that calendar and of each incoming event and records it with the event (TIM-02), and sends each event's recorded time zone with its times. | — | Developer, Nov 17 |
 | TIM-07 |  | Calendar feeds carry each event's times with its time zone. | — | Developer, Nov 17 |
@@ -98,6 +98,7 @@ CalendarStream), **rule** (made by a rule).
 | Password minimum numbers | 1 | 0 or more | database (Site Admin) |
 | Password minimum special characters | 1 | 0 or more | database (Site Admin) |
 | Unlock link valid | 24 hours | | default only |
+| Drag step in Week and Day | 15 minutes | | default only |
 | Long-press time | 0.5 seconds | 0.3 to 1.5 seconds | device |
 | Hour height | 2 event lines | 1 to 6 | device |
 | Search results per feature | 6 | | device |
