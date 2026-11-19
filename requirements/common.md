@@ -96,6 +96,7 @@
 | UIC-11 | proposed | One shared emoji picker, with search, is used wherever an emoji is chosen. | S44-41 |
 | UIC-11.a | backlog | The common emoji sit beside the field; a rounded "Search for more emojis" field opens every emoji (up to Emoji 13.0, no flags, drawn by the device), ten a line, scrolling, filtered as the user types. | — | theme.md section 11 |
 | UIC-11.b | proposed | Newer emoji display older-Windows compatibility guidance, while older compatible choices do not. Editing or choosing an older emoji clears the compatibility warning; choosing a newer one displays it. Shared explanatory help follows UIC-07. | S55-37, S55-41, S55-43, S55-44, S55-45, S55-46, S55-47 |
+| UIC-11.c | proposed | The quick emoji beside the field are the ones in DEF-01; Enter in the search field picks the first match. | R3 gap |
 
 ## Capabilities (CAP)
 
@@ -219,3 +220,43 @@ CalendarStream), **rule** (made by a rule).
 | Print range | | at most 731 days after From | default only |
 | Print heading size | 1.7 times the base size | | default only |
 | Search query length | | at most 100 characters | default only |
+| Text condition value length | | at most 200 characters | default only |
+| Pattern and regex condition value length | | at most 100 characters | default only |
+| Test-box samples offered | 10 different titles | at most 30 samples | default only |
+| Test-box sample length | | at most 300 characters | default only |
+| Test-box value length | | at most 100 characters | default only |
+| Longest length in a Length condition | | 52 weeks (524,160 minutes) | default only |
+| Length match tolerance | 5 minutes | | default only |
+| Shortest length matched with the tolerance | 1 hour | | default only |
+| Brackets per condition | | at most 3 opening and 3 closing | default only |
+| Unbalanced-bracket flash | 1.5 seconds | | default only |
+| Conflict lines shown | | at most 3 | default only |
+| Conflict choices remembered | | 200 | default only |
+| Rules kept | | at most 60 | default only |
+| Rule title length | | at most 80 characters | default only |
+| Rule ID length | | 1 to 16 characters | default only |
+| Emoji action text length | | at most 16 characters | default only |
+| Quick emoji | ✈️ 🏝️ 📚 🏠 🚗 ⭐ ❗ 🛌 🎓 🎉, in this order | | default only |
+| Change length action | 60 minutes | 5 to 10,080 minutes | default only |
+| Move action | | -10,080 to +10,080 minutes, not 0 | default only |
+| Create event offset | 0 | 0 to 10,080 minutes | default only |
+| Rule text action lengths | | Title 200, Notes 1,000, Location 200 characters | default only |
+| Note a rule prepends to an event's notes | | at most 2,000 characters | default only |
+| Notes length after all rules | | at most 4,000 characters | default only |
+| Location length after all rules | | at most 200 characters | default only |
+| Changes noted per event | | last 20 | default only |
+| Linked event title length | | at most 200 characters | default only |
+| Event title length | | at most 200 characters | default only |
+| Event location length | | at most 200 characters | default only |
+| Online meeting address length | | at most 500 characters | default only |
+| Event notes length | | at most 4,000 characters | default only |
+| Event notes field height | 10 lines | | default only |
+| New event start and length | 9:00, 1 hour | | default only |
+| Event time list | every 15 minutes (96 entries); entry within 8 minutes of the typed time highlighted; 9:00 when empty | | default only |
+| Reminder choices | at the start, 5, 10, 15, 30 minutes, 1, 2 hours, 1, 2 days, 1 week | | default only |
+| Event templates kept | | at most 30 | default only |
+| Event template title length | | at most 200 characters | default only |
+| Event template location length | | at most 200 characters | default only |
+| Event template notes length | | at most 2,000 characters | default only |
+| Event template length | 60 minutes | 5 to 1,440 minutes | default only |
+| Event template length typed | 1:00 when empty | up to 3 hour digits | default only |
