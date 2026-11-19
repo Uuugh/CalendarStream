@@ -1,6 +1,6 @@
-# Requirements: feeds
+# Requirements: Generic Feed
 
-Statuses: verified, built, open, planned (approved, not built yet) and proposed (drafted, not yet reviewed by the Developer).
+The Generic Feed connection: the user's events published as a calendar feed that other calendar apps subscribe to. Common connection rules and the content every published event carries are in `connections.md` (CON-09). Issues and history of this feature are in git.
 Terms: the **stream token** is the part of a feed's address that identifies it (called the stream name in the old app); a **destination** is a feed or a Google calendar that the app publishes to.
 
 | ID | status | statement | test | evidence (temporary) |
@@ -10,11 +10,10 @@ Terms: the **stream token** is the part of a feed's address that identifies it (
 | FED-01.b | proposed | A feed’s included calendars can be changed independently of other destinations. | — | S26-36 |
 | FED-01.c | proposed | Each feed decides which calendars it carries; the required Local calendar is in a feed only as that feed's own settings say, never because of a rule special to Local. | — | S77-16 |
 | FED-01.d | proposed (?) | A feed can be limited by a date range (UI-23); with no range it publishes its full event set. The current app's feed Include box says the range in words instead of using the shared From \| To \| All control: should the feed use the shared control? | — | S29-02, S29-04, S39-19, S29-03, S51-13 |
-| FED-01.e | proposed | A published feed includes events according to their visibility under CAP-02 and EVT-04; hiding an imported event removes it from feed publication. | — | readme_gaps:47 |
-| FED-01.f | proposed | A new feed's name and note default to the selected source's and follow it when the selected source changes; values the user typed are kept. | — | S31-01, S58-17, S58-18, S58-37, S58-38 |
-| FED-01.g | proposed | A feed’s subscription page identifies the feed by its name. | — | S26-37 |
-| FED-01.h | proposed | Turning a feed off makes its URL temporarily unavailable; turning it back on clears its off state without changing its included calendars. | — | S63-22, S63-23, S63-24 |
-| FED-01.i | proposed | Removing a feed makes its subscription URL stop working. | — | S26-52 |
+| FED-01.e | proposed | A new feed's name and note default to the selected source's and follow it when the selected source changes; values the user typed are kept. | — | S31-01, S58-17, S58-18, S58-37, S58-38 |
+| FED-01.f | proposed | A feed’s subscription page identifies the feed by its name. | — | S26-37 |
+| FED-01.g | proposed | Turning a feed off makes its URL temporarily unavailable; turning it back on clears its off state without changing its included calendars. | — | S63-22, S63-23, S63-24 |
+| FED-01.h | proposed | Removing a feed makes its subscription URL stop working. | — | S26-52 |
 | FED-02 | proposed | A feed has an address that contains its stream token, which is generated or chosen by the user. | — | — |
 | FED-02.a | proposed | A token is generated automatically when a feed is created, with the length and strength in DEF-01, from a cryptographically secure generator (OWASP's recommendation for unguessable identifiers). The user may enter a different token instead; its strength is shown as UI-18, with the hint recommending the strength in DEF-01. Reusing an old feed link is FED-02.b. | — | S58-15 |
 | FED-02.b | proposed | Pasting an old full feed URL restores its stream token, both when creating and updating a feed. Once replaced, the new token works and the replaced token no longer does. | — | S26-41, S26-42, S51-09 |
@@ -28,13 +27,8 @@ Terms: the **stream token** is the part of a feed's address that identifies it (
 | FED-03.b | proposed | The user can share a feed subscription address by copying it, through the device's own sharing facility, or in an email or SMS link. | — | S51-55, readme_gaps:64, changelog_gaps_601-900:27, readme_gaps:64, changelog_gaps_601-900:27 |
 | FED-03.c | proposed | Subscription guidance (shown with the feed's instructions, FED-03.a) tells the user: to enable calendar synchronization on Android and iPhone and to use Google's desktop site to add a subscription; that using a feed and direct synchronization for the same calendar can duplicate events; that Google may take up to twelve hours to read a feed; that Google may keep the name from its first read, so the user may need to rename the subscribed calendar (direct naming is GOW-02); that Google subscriptions do not use the feed's color; and how the destination types compare, naming the current one (UI-07). This is provider guidance, not a CalendarStream delivery guarantee. | — | readme_gaps:87, changelog_gaps_1501-1800:19, readme_gaps:87, changelog_gaps_1501-1800:19, changelog_gaps_1801-2100:21, changelog_gaps_1801-2100:21, changelog_gaps_2101-2336:22, changelog_gaps_2101-2336:23, changelog_gaps_601-900:29 |
 | FED-04 | proposed | A feed's content reads correctly in calendar apps. | — | — |
-| FED-04.a | proposed | Feeds carry each event's own time zone (TIM-07); the page's display time zone does not change them. | — | S19-32 |
-| FED-04.b | proposed | Published calendar data preserves event titles, start times and end times when read back as calendar data. | — | S77-07 |
-| FED-04.c | proposed | Published events include their display reminders, including fifteen-minute and one-hour reminders. Reminder selection belongs to EVT-03. | — | S36-26 |
-| FED-04.d | proposed | Published ICS carries the feed’s color in X-APPLE-CALENDAR-COLOR for consumers that support that calendar property. | — | changelog_gaps_2101-2336:23, changelog_gaps_601-900:40 |
-| FED-04.e | proposed | A published event's online meeting address is also the first line of its notes (EVT-03 owns the ICS URL). | — | changelog_gaps_301-600:22 |
-| FED-04.f | proposed | An unchanged feed supports conditional reads with an ETag and an empty not-modified response; changing its events causes an old ETag to receive updated content. | — | S39-10, S39-11 |
+| FED-04.a | proposed | Published ICS carries the feed’s color in X-APPLE-CALENDAR-COLOR for consumers that support that calendar property. | — | changelog_gaps_2101-2336:23, changelog_gaps_601-900:40 |
+| FED-04.b | proposed | An unchanged feed supports conditional reads with an ETag and an empty not-modified response; changing its events causes an old ETag to receive updated content. | — | S39-10, S39-11 |
 | FED-05 | proposed | A feed shows when it was last read. | — | — |
 | FED-05.a | proposed | A feed reports Not read yet until fetched; afterward it reports its last read, identifying Google when Google is the reader. | — | S19-28, S19-29, S40-05, S44-11 |
 | FED-05.b | proposed | An ordinary feed reports reads rather than a next-push schedule. | — | S46-02 |
-

@@ -35,7 +35,7 @@ Planned requirements stay in the same table with status `planned`.
 
 ## Prefixes
 
-CAL calendar · SRC sources · FED feeds · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · GOW google one-way · GTW google two-way · PLG plugins (common) · GAP google plugin ·
+CAL calendar · SRC sources (section) · LCL local calendar · FED generic feed · CCS ccs+ · LNK calendar link · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · GOW google one-way · GTW google two-way · PLG plugins (common) · GAP google plugin ·
 SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UI shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
 
 Nothing new is added while the transition freeze lasts (build_rules/0-overview.md); these files hold what was already
@@ -64,11 +64,14 @@ The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were fol
 | Events | [requirements/events.md](requirements/events.md) | 46 | 39 |
 | Event templates | [requirements/event_templates.md](requirements/event_templates.md) | 8 | 8 |
 | Rules | [requirements/rules.md](requirements/rules.md) | 64 | 23 |
-| Sources | [requirements/sources.md](requirements/sources.md) | 91 | 89 |
-| Feeds | [requirements/feeds.md](requirements/feeds.md) | 32 | 32 |
 | History | [requirements/history.md](requirements/history.md) | 28 | 24 |
-| Connections (common) | [requirements/connections.md](requirements/connections.md) | 3 | 2 |
-| Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) | 69 | 63 |
+| Sources (section) | [requirements/sources.md](requirements/sources.md) | 7 | 5 |
+| Connections (common) | [requirements/connections.md](requirements/connections.md) | 55 | 46 |
+| Local calendar | [requirements/connections.d/local_calendar.md](requirements/connections.d/local_calendar.md) | 12 | 10 |
+| Generic Feed | [requirements/connections.d/generic_feed.md](requirements/connections.d/generic_feed.md) | 27 | 22 |
+| CCS+ | [requirements/connections.d/ccs.md](requirements/connections.d/ccs.md) | 29 | 24 |
+| Calendar link | [requirements/connections.d/calendar_link.md](requirements/connections.d/calendar_link.md) | 3 | 2 |
+| Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) | 68 | 62 |
 | Google two-way sync | [requirements/connections.d/google_two_way.md](requirements/connections.d/google_two_way.md) | 6 | 5 |
 | Plugins (common) | [requirements/plugins.md](requirements/plugins.md) | 1 | 0 |
 | Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) | 20 | 18 |

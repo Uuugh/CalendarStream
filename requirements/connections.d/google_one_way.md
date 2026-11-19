@@ -40,12 +40,11 @@ A Google connection: a Google calendar destination with its own account that Cal
 | GOW-03.a |  | Google sync follows the common time rules (TIM-01 to TIM-07): it reads the time zone of the Google calendar and of each incoming event and records it with the event, and it sends each event's recorded time zone. A stored all-day event is sent to Google as an all-day event for its stored time zone, so it shows on the right days in Google Calendar. (Developer, Nov 17) | — | Developer |
 | GOW-03.b | proposed | The busy or free state of an event is kept when it is published. | — | S13-08, S13-09, S13-10, S13-18 |
 | GOW-03.c | proposed | Google events retain source titles and indicate that CalendarStream synchronized them. | — | S13-06 |
-| GOW-03.d | proposed | Published reminders disable Google defaults and use the event’s explicitly selected reminders, including fifteen-minute and one-hour choices. Reminder selection is owned by EVT-03. | — | S13-07, S36-27 |
+| GOW-03.d | proposed | A Google event carries the reminders of CON-09.b with Google's default reminders disabled. | — | S13-07, S36-27 |
 | GOW-03.e | proposed | An event without a color rule does not force a Google event color. Color rules apply the corresponding Google color (UI-20). | — | S13-11, S13-19, S13-22, S26-47, S74-05 |
 | GOW-03.f | proposed | The Google calendar follows its connection’s selected calendar color when the upstream service accepts it. | — | S49-39, S56-02 |
 | GOW-03.g | proposed | If a calendar color cannot be applied, the connection explains that the color does not carry to Google; repeating the same color does not retry it, and selecting a different accepted color applies it and clears the note. A color request that could not reach Google is not remembered as refused. | — | S55-09, S55-15, S55-20, S55-21, S56-22, S56-23, S56-24, S56-26, S56-27, S56-29 |
-| GOW-03.h | proposed | A meeting link appears before the notes in the Google description, and is not copied back into the notes when the event is read from Google. | — | S63-03, S63-04 |
-| GOW-03.i | proposed | Hiding a local event removes its published Google copy. | — | S13-17 |
+| GOW-03.h | proposed | A meeting link appears before the notes in the Google description (CON-09.c), and is not copied back into the notes when the event is read from Google. | — | S63-03, S63-04 |
 | GOW-04 | proposed | Events published to Google are kept in step with CalendarStream: a change made here reaches Google. | — | — |
 | GOW-04.a | proposed | An unchanged normal or full synchronization performs no event writes; editing an event schedules synchronization and updates the remote event. | — | S13-12, S13-13, S13-14, S13-15, S13-16, S13-30 |
 | GOW-04.b | proposed | A normal synchronization does not inspect Google’s event copy; full checks reconcile Google changes. | — | S13-23, S13-24, S45-04 |

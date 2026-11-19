@@ -1,99 +1,14 @@
 # Requirements: sources
 
-Statuses: verified, built, open, planned (approved, not built yet) and proposed (drafted, not yet reviewed by the Developer).
+The Sources section: the list of the user's calendars and which one new events go to. How each kind of source works is in its connection (`connections.md` and `connections.d/`).
 Terms: a **source** is a place the app reads events from (CCS+, a calendar link, an uploaded file) or a **Local** calendar the user keeps in the app itself; **read-only** means events cannot be added or changed at the source (CAP-05).
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | SRC-01 | proposed | The user's calendars come from sources of several kinds, and each can be named, colored and ordered. | — | — |
-| SRC-01.a | proposed | A fresh installation starts with one Local calendar as the default, with no configured CCS+ source or destinations. | — | S26-01, S26-02, S36-19, S49-01, S63-12 |
-| SRC-01.b | proposed | One CCS+ source can be added; attempting to add a second is refused. | — | S26-05, S26-06 |
-| SRC-01.c | proposed | The number of calendars and feeds is not limited. There is only one CCS+ calendar, the user's own schedule (SRC-01). | — | readme_gaps:20 |
-| SRC-01.d | proposed | A webcal source address is saved as its equivalent HTTPS address with its chosen name; duplicate source addresses are refused. | — | S26-08, S26-09 |
-| SRC-01.e | proposed | Calendar links from Outlook, Microsoft 365 and iCloud can be downloaded as source calendars. | — | readme_gaps:21 |
-| SRC-01.f | proposed | Source presets identify the provider and offer provider-specific setup guidance, including Google secret-address guidance and the United Airlines CCS+ name. Choosing Apple selects the Apple preset. | — | S33-01, S33-02, S33-23 |
-| SRC-01.g | proposed | A source can be renamed and given a note; saving updates its name and explanatory note, and clearing the note removes its content. | — | S18-17, S29-11, S33-05, S39-18, S44-16 |
-| SRC-01.h | proposed | Source color can be changed and saved; the new color is reflected immediately in its source display. | — | S38-15, S59-22 |
-| SRC-01.i | proposed | Legacy source notes that merely repeat the source kind are treated as absent notes. | — | changelog_gaps_901-1200:24 |
-| SRC-01.j | proposed | The user can change source-calendar and outgoing-feed order, and the new order is saved immediately; shared interaction follows UI-13. | — | readme_gaps:59, changelog_gaps_1201-1500:15 |
-| SRC-01.k |  | A source's kind is fixed text in its module header: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar or Calendar Feed. The module is called Sources. | — | theme.md Clarifications |
+| SRC-01.a | proposed | The number of calendars and feeds is not limited. There is only one CCS+ calendar, the user's own schedule (SRC-01). | — | readme_gaps:20 |
+| SRC-01.b | proposed | Source presets identify the provider and offer provider-specific setup guidance, including Google secret-address guidance and the United Airlines CCS+ name. Choosing Apple selects the Apple preset. | — | S33-01, S33-02, S33-23 |
+| SRC-01.c |  | A source's kind is fixed text in its module header: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar or Calendar Feed. The module is called Sources. | — | theme.md Clarifications |
 | SRC-02 | proposed | One calendar is the default for the events the user adds. | — | — |
 | SRC-02.a | proposed | A Local calendar can be selected as default; a read-only CCS+ calendar cannot (CAP-05). | — | S63-13, S63-14, S63-15, S66-04 |
 | SRC-02.b | proposed | A valid saved Local default calendar is used whatever the source order; if it no longer exists, the first Local calendar is used. With no sources, creating a Local calendar also makes it the default. | — | S77-13, S77-14, S77-15 |
-| SRC-02.c | proposed | Local calendars do not offer Sync Now (CAP-06); the default calendar is identified (SRC-02). | — | S36-20, S36-23, S36-24, S49-02, S63-16 |
-| SRC-02.d | proposed | Additional Local calendars can be created; an unnamed one is named Local. | — | S36-22, S36-48 |
-| SRC-02.e | proposed | When a Local calendar is created because none exists, it is added to every existing feed; after that each feed decides which calendars it carries (FED-01). | — | changelog_gaps_1201-1500:18 |
-| SRC-03 | proposed | The user signs in to CCS+ with their own credentials, which the app keeps safe, so it can read their schedule. | — | — |
-| SRC-03.a | proposed | CCS+ guidance distinguishes Calendar Sync credentials from CCS login credentials and explains enabling CCS+. | — | S18-05, S33-03 |
-| SRC-03.b | proposed | CCS+ setup is available directly with the source when it needs configuration, rather than only in Settings. Successful credential saving returns to that source. | — | S16-20, S18-03, S18-04, S18-07, S27-01 |
-| SRC-03.c | proposed | Missing CCS+ credentials are reported as Setup needed rather than an error, and Sync now is unavailable until credentials are entered. | — | S18-01, S18-02, S18-06 |
-| SRC-03.d | proposed | Credentials are labeled Username rather than UID. | — | S31-05 |
-| SRC-03.e | proposed | Changing the CCS+ username while leaving the password blank keeps the saved password. | — | S16-26 |
-| SRC-03.f | proposed | An invalid CCS+ username is refused with a username error. | — | S16-27, S28-13 |
-| SRC-03.g | proposed | The saved CCS+ password is protected (ACC-05); the page shows the saved username and explains how to keep its password. | — | S16-23, S16-25, S16-34 |
-| SRC-03.h | proposed | Saved CCS+ credentials are used for the next download. | — | S16-22, S16-24 |
-| SRC-03.i | proposed | Rejected CCS+ credentials show a failure reason beside the credential fields; successful verification reports Validated. Editing the credentials removes stale validation or rejection feedback. | — | S18-08, S18-09, S19-19, S19-47, S19-48, S28-01, S28-08, S28-09, S28-10, S28-11 |
-| SRC-03.j | proposed | Credential saving reports saving/verification progress and a saved acknowledgement before successful validation. Shared save/cancel interaction follows SET-01; this rule specifies the verification outcome. | — | S28-05, S28-06, S28-07 |
-| SRC-03.k | proposed | CCS+ setup guidance explains enabling trips as one event and the other calendar options, setting a dedicated Calendar Sync password, and completing the Accomplished checklist. | — | changelog_gaps_1201-1500:24 |
-| SRC-03.l | proposed (?) | Existing CCS+ credentials can be imported from the old configuration, stored encrypted, and recorded as imported activity. Is this still needed after the port, given that the migration tool (DEP-05) copies the saved credentials? | — | S16-02, S16-03 |
-| SRC-04 | proposed | A source is downloaded automatically on a schedule, and the user can change the schedule. | — | — |
-| SRC-04.a | proposed | The automatic-download interval is an admin setting kept in the database; the installation's value is only its starting value (DEP-05, DEF-01). | — | S14-04, S14-05, S14-11, S14-12, changelog_gaps_2101-2336:38 |
-| SRC-04.b | proposed | The download interval stays within the limits in DEF-01; a value outside them, or not a number, is not valid (UI-19). | — | S14-08, S14-09, readme_gaps:31, changelog_gaps_1801-2100:34 |
-| SRC-04.c | proposed | The next download is scheduled from the last attempt plus the configured interval; if that time has passed, changing the interval schedules an immediate download. | — | S14-06, S14-07 |
-| SRC-04.d | proposed | Changes to download settings or source credentials follow the shared form-security rules (ACC-09). | — | S14-10, S16-28 |
-| SRC-04.e | proposed | After the number of rejected CCS+ sign-ins in DEF-01, automatic checks pause until the user corrects the credentials and requests Sync Now. | — | readme_gaps:39, changelog_gaps_2101-2336:37 |
-| SRC-05 | proposed | A download gets the calendar safely and reports clearly when it cannot. | — | — |
-| SRC-05.a | proposed | Calendar downloads, including a custom CCS+ site address, require HTTPS; a plain HTTP address is not valid. Clearing a custom CCS+ address removes the override. | — | S23-28, S26-07, S60-21, S27-02, S27-03, S27-04 |
-| SRC-05.b | proposed | An HTTPS redirect on the same host can complete the download; a redirect to plain HTTP is refused, and a redirect loop is reported. | — | S60-14, S60-15, S60-16 |
-| SRC-05.c | proposed | Following a calendar redirect to a different host does not forward the source’s authorization credentials. | — | S60-18 |
-| SRC-05.d | proposed | Calendar downloads keep sign-in credentials out of process command-line arguments; stored and displayed secret protection follows ACC-05. | — | changelog_gaps_2101-2336:31 |
-| SRC-05.e | proposed | A download larger than the size limit in DEF-01 is not accepted. | — | S60-17 |
-| SRC-05.f | proposed | A download keeps at most the number of events in DEF-01; the earliest events are kept, whatever the input order. | — | S53-14, changelog_gaps_601-900:22 |
-| SRC-05.g | proposed | A downloaded calendar retains calendar content and cache validators; a matching ETag can return an unchanged result rather than downloading the content again. | — | S60-05, S60-10 |
-| SRC-05.h | proposed | A wrong download password is reported as a credential rejection; upstream protection denial is reported as blocking, not as invalid credentials. A rejected password ends the download attempt at once, without trying another connection mode or spending a retry delay. | — | S60-11, S60-12, S60-25, S60-26, changelog_gaps_301-600:40 |
-| SRC-05.i | proposed | A successful HTTP response containing HTML instead of calendar data is refused; malformed calendar data is also refused. | — | S60-13, S77-08, S77-09 |
-| SRC-05.j | proposed | A download that does not reply reports a timeout and explains the manual-upload alternative. | — | S60-19 |
-| SRC-05.k | proposed | Download failure feedback distinguishes failure to connect from a connected server that does not reply. | — | changelog_gaps_2101-2336:33 |
-| SRC-05.l | proposed (?) | Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? | — | S60-22, S60-23, S60-24 |
-| SRC-05.m | proposed | A failed source download preserves the previously downloaded schedule. | — | readme_gaps:22, changelog_gaps_2101-2336:37 |
-| SRC-05.n | proposed (?) | A source download that unexpectedly returns an empty calendar preserves the previous schedule. How is an unexpected empty response distinguished from an intentionally emptied source? | — | readme_gaps:22, changelog_gaps_2101-2336:37 |
-| SRC-06 | proposed | CCS+ is downloaded with a browser-like connection when the site's protection requires it. | — | — |
-| SRC-06.a | proposed | CCS+ downloading offers auto, browser, browser-patient and curl modes, initially auto. | — | readme_gaps:32, changelog_gaps_301-600:39 |
-| SRC-06.b | proposed | In auto mode, an unanswered or blocked CCS+ download tries the browser-like connection, retries with twice the wait, then tries curl. | — | readme_gaps:32, changelog_gaps_301-600:39 |
-| SRC-06.c | proposed | Browser-patient mode makes the number of CCS+ download attempts in DEF-01, each with its response allowance. | — | changelog_gaps_301-600:39 |
-| SRC-06.d | proposed | A CCS+ download follows no more redirects than DEF-01 allows; HTTPS and credential forwarding follow SRC-05 and SRC-05. | — | changelog_gaps_1501-1800:37, changelog_gaps_301-600:40 |
-| SRC-06.e | proposed | The download diagnostic record identifies the connection mode that answered and the modes previously attempted. | — | changelog_gaps_301-600:39 |
-| SRC-07 | proposed | A downloaded or imported schedule becomes events with their times and recurrences. | — | — |
-| SRC-07.a | proposed | CCS+ import preserves the source event identifiers and details; event times follow TIM-01–TIM-06 and normalization follows RUL-06. | — | readme_gaps:37 |
-| SRC-07.b | proposed | When CCS+ full-day times are normalized, the original times remain available in the event notes. | — | readme_gaps:37 |
-| SRC-07.c | proposed | Recurring source events expand into distinct occurrences while retaining source-qualified identities. Moving one recurrence preserves the occurrence identities and updates its changed title. | — | S26-10, S53-13 |
-| SRC-07.d | proposed | Recurring source events are expanded over the period in DEF-01. | — | readme_gaps:61, changelog_gaps_1501-1800:24 |
-| SRC-07.e | proposed | When a recurring source occurrence moves, its existing local edits remain attached using its original-start identity. | — | changelog_gaps_601-900:21 |
-| SRC-07.f | proposed | Free/busy information from an imported calendar is preserved: events marked transparent remain free. | — | S13-01 |
-| SRC-07.g | proposed | When source events conflict, the earlier source in the saved source order has priority. | — | readme_gaps:60, changelog_gaps_301-600:27 |
-| SRC-07.h | proposed | A future event that disappears from a refreshed source schedule is kept for restoration, with its title, until its deletion leaves History (HIS-03). | — | S49-17 |
-| SRC-08 | proposed | The user can import a calendar file, upload a schedule and export a calendar. | — | — |
-| SRC-08.a | proposed | Source calendars offer file import. | — | S18-15, S44-38 |
-| SRC-08.b | proposed | Importing with a date range (UI-23) excludes events outside it; completing import creates events from the included entries. | — | S49-21, S49-22 |
-| SRC-08.c | proposed | Importing an entry that conflicts with an existing event identifies the conflict; choosing merge preserves the incoming changed event and other included entries. | — | S49-23, S49-24 |
-| SRC-08.d | proposed | When an imported event conflicts with an existing event, the user can discard the incoming copy. | — | readme_gaps:62, changelog_gaps_601-900:36 |
-| SRC-08.e | proposed | An import-conflict choice can be applied to all remaining conflicts in that import. | — | readme_gaps:62, changelog_gaps_601-900:36 |
-| SRC-08.f | proposed | Upload & publish for CCS+ replaces the downloaded schedule with the uploaded schedule. | — | readme_gaps:38, changelog_gaps_601-900:36 |
-| SRC-08.g | proposed | Successful upload ends the source’s setup-needed configuration state. | — | S27-06 |
-| SRC-08.h | proposed | Calendar export downloads an ICS attachment containing its events. | — | S49-26 |
-| SRC-09 | proposed | Each source shows its status and can be synced or turned off. | — | — |
-| SRC-09.a | proposed | Sync Now updates a source in the background: it reports Syncing during work and Healthy on success, and keeps unrelated unsaved source edits. | — | S33-15, S33-18, S33-19, S35-28, S35-29, S35-31, S44-18 |
-| SRC-09.b | proposed | A source reports when it last synced (a download or an upload) or that a read, check or download failed. | — | S44-11, S27-05, S31-04, S31-19, S40-04, S35-32 |
-| SRC-09.c | proposed | A successful feed download reports healthy status even when another source has no events. | — | S26-11 |
-| SRC-09.d | proposed | The source status event count counts the published feed events, with event visibility determined by CAP-02. | — | changelog_gaps_2101-2336:30 |
-| SRC-09.e | proposed | A source can be turned off and back on, with its saved off state cleared when reenabled. | — | S63-20, S63-21, S63-23 |
-| SRC-09.f | proposed | Turning a source off removes its events from published feeds while retaining its selected feed memberships for reenabling. | — | changelog_gaps_301-600:23 |
-| SRC-09.g |  | A module's status line says "Last synced" or "Sync failed" with its time, never "Last check was successful"; the line beside the action says "Next check @" with its time. | — | theme.md Clarifications |
-| SRC-10 | proposed | The user can remove a source, and keep or merge its events. | — | — |
-| SRC-10.a | proposed | Removing a source removes its stored events and its membership from destinations, while keeping a combined Google destination. | — | S26-50, S26-51 |
-| SRC-10.b | proposed | Removing the last Local calendar keeps that calendar and empties its events, rather than leaving no Local calendar; its feed and rule memberships are kept, and ensuring a Local calendar afterward does not create a duplicate. | — | S36-46, S36-47, S49-32, readme_gaps:63, changelog_gaps_601-900:39 |
-| SRC-10.c | proposed | Removing a source can preserve its events by creating a Local calendar with its prior color and destination memberships, or by merging into an existing Local calendar. The original source is removed. | — | S37-20, S37-21, S37-22, S49-28 |
-| SRC-10.d | proposed | Calendar removal identifies its owned rules, and deleting the calendar removes those rules. | — | S49-27, S49-31 |
-| SRC-10.e | proposed | When merging a calendar into another, the user can transfer its owned rules to the target or delete those rules. | — | readme_gaps:63, changelog_gaps_601-900:39 |
-| SRC-10.f | proposed | Removing CCS+ also removes its active saved login. | — | S49-33 |
-
