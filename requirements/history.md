@@ -15,6 +15,9 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-01.h | proposed | A failure or warning that repeats unchanged is recorded in History once, until it changes or clears. | — | GOW-06, GOW-05, GOW-06, HIS-21 |
 | HIS-01.i | proposed | An external removal or Google notification without an undoable local change does not become the current Undo entry. | — | S49-18, S49-41 |
 | HIS-01.j | proposed (?) | Activity reports Healthy when its source is healthy and Unhealthy when its source is in error. How should mixed source states determine the overall Activity status? | — | S36-43, S36-44 |
+| HIS-01.k | proposed | Connecting a different Google client records a warning that the former remote calendar is unreachable and needs manual cleanup. | — | S48-19, S48-20, S48-21, S48-24 |
+| HIS-01.l | proposed | When remote cleanup is deferred because the write budget was reached, History reports the deferred work. | — | S53-07, S53-08 |
+| HIS-01.m | proposed | Completing Google API setup records a message identifying each Google connection that needs sign-in, has a sync error or has not completed its first sync. | — | changelog_gaps_1-300:L22 |
 | HIS-02 | proposed | History lists its entries with their type, in a table the user can filter and rearrange. | — | — |
 | HIS-02.a | proposed | History names the type of each change: Calendar, Rule, Event, Sync, Feed, Google, Settings or Update. | — | S49-13, changelog_gaps_601-900:31 |
 | HIS-02.b | proposed | History has a filter that follows the common filter rules (UI-21), with three parts: the change type (the types in HIS-02), words in its entries, and the time of its entries. | — | readme_gaps:71, changelog_gaps_601-900:31 |

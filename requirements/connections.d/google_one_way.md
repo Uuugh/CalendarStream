@@ -22,13 +22,15 @@ A Google connection: a Google calendar destination with its own account that Cal
 | GOW-01.o | proposed | Pending invitation consent remains usable across an app restart until it is consumed or expires. | — | changelog_gaps_1-300:L23 |
 | GOW-01.p | proposed | Google authorization requests the app-created-calendar scope and email identity, limiting calendar access to calendars created by this app. | — | changelog_gaps_2101-2336:L21, readme_gaps:L80 |
 | GOW-01.q | proposed | After connection consent completes, the user returns to the destination involved in that consent. | — | changelog_gaps_601-900:L16 |
+| GOW-01.r | proposed | When the API client is removed (GAP-01.d), the Google accounts are disconnected with their remote calendars kept, and the page reports that each Google connection needs its account restored after the client is set up again. | — | S12-09, S46-06, S48-17, S48-18, S54-14 |
+| GOW-01.s | proposed | Repeating a Google setup submission does not create duplicate or orphan connections. | — | changelog_gaps_1-300:L26 |
 | GOW-02 | proposed | Connecting a connection creates or reuses its Google calendar, which holds only what the connection publishes. | — | — |
 | GOW-02.a | proposed | Connection creates a calendar named for the destination, using the calendar’s configured time zone. | — | S12-18, S12-19, S26-43, S26-45 |
 | GOW-02.b | proposed | Reconnecting the same account reuses its retained calendar rather than creating a duplicate, preserving its synchronized event set. | — | S12-27, S12-29, S12-30, S48-14, S48-15, S48-16, S54-08 |
 | GOW-02.c | proposed | Disconnecting without deleting revokes access and clears connection while keeping the remote calendar and its remembered mapping. | — | S12-28, S48-11, S54-07 |
 | GOW-02.d | proposed | Disconnecting with deletion removes the remote calendar, forgets its mapping and clears synchronization tracking. | — | S12-31, S13-37 |
 | GOW-02.e | proposed | Removing a Google destination can keep its remote calendar while clearing its local mapping, or delete that remote calendar. | — | S26-53, S26-54, S49-46 |
-| GOW-02.f | proposed | Connecting a different client creates a new mapping without repeatedly recreating it, leaving the unreachable former calendar for manual cleanup. History owns the cleanup warning under HIS-01. | — | S48-19, S48-20, S48-21, S48-24 |
+| GOW-02.f | proposed | Connecting a different client creates a new mapping without repeatedly recreating it, leaving the unreachable former calendar for manual cleanup. | — | S48-19, S48-20, S48-21, S48-24 |
 | GOW-02.g | proposed | After first calendar creation, opening it waits for synchronization and then opens Google Calendar for the correct account. The setup action is no longer offered once shown; ordinary feeds do not support this action. | — | S55-01, S55-02, S55-03, S55-04, S55-05, S55-06, S55-07, S55-08, S55-38, S55-40 |
 | GOW-02.h | proposed | Concurrent consent completion and synchronization reuse the same remote calendar mapping rather than creating duplicates. | — | changelog_gaps_1501-1800:L35 |
 | GOW-02.i | proposed | Renaming a destination updates the existing Google calendar’s name. | — | S13-20, S26-48 |
@@ -53,7 +55,7 @@ A Google connection: a Google calendar destination with its own account that Cal
 | GOW-04.e | proposed (?) | If the remote calendar is deleted, synchronization recreates it with a new mapping and publishes eligible events. How does this automatic repair interact with the later missing-calendar paused recovery policy? | — | S13-31 |
 | GOW-04.f | proposed | Sync Now requests a full check. | — | S13-34, S35-17 |
 | GOW-04.g | proposed | One-way sync restores a remote-deleted local event rather than hiding it locally; two-way sync is GTW-01. | — | S49-37, S49-38, S49-42, S49-45 |
-| GOW-04.h | proposed | When a write budget prevents completing remote cleanup in one sync, remaining work continues at the next full sync. History reports the deferred work. | — | S53-07, S53-08 |
+| GOW-04.h | proposed | When a write budget prevents completing remote cleanup in one sync, remaining work continues at the next full sync. | — | S53-07, S53-08 |
 | GOW-04.i | proposed | Synchronization resumes after the database becomes available following a restart. | — | changelog_gaps_1501-1800:L35 |
 | GOW-04.j | proposed (?) | Eligible local changes and valid remote change notices trigger reconciliation within seconds under normal service availability. What measurable latency target should replace “within seconds”? | — | changelog_gaps_1801-2100:L19, changelog_gaps_2101-2336:L16, changelog_gaps_901-1200:L18, readme_gaps:L27 |
 | GOW-05 | proposed | Google tells the app about changes at once, so they do not wait for the next scheduled check. | — | — |
@@ -61,12 +63,12 @@ A Google connection: a Google calendar destination with its own account that Cal
 | GOW-05.b | proposed | Notifications with a wrong token or unknown channel are acknowledged and ignored; a channel sync message does not trigger a check. | — | S20-08, S20-09, S20-10, S23-24 |
 | GOW-05.c | proposed | A valid change notification requests a full check without a page login; processing it records the last notice time and retains Google edits locally. | — | S20-11, S20-12, S20-13 |
 | GOW-05.d | proposed | A change-notification watch is renewed the time in DEF-01 before it expires and the old one stopped; a fresh watch is reused, and a changed public address replaces the target rather than accumulating watches. | — | S20-14, S20-15, S20-16, changelog_gaps_1801-2100:L20 |
-| GOW-05.e | proposed | Refused instant updates report the reason without preventing ordinary autosync; a refusal that repeats unchanged is recorded once (HIS-01), and a later successful retry clears the error. After a refusal the retry waits the time in DEF-01. | — | S20-17, S20-18, S20-19, S20-20 |
+| GOW-05.e | proposed | Refused instant updates report the reason without preventing ordinary autosync; a later successful retry clears the error. After a refusal the retry waits the time in DEF-01. | — | S20-17, S20-18, S20-19, S20-20 |
 | GOW-05.f | proposed | Disconnecting stops the instant-update channel, and a notice that arrives late is still acknowledged. | — | S20-21, S20-22, S20-23 |
 | GOW-06 | proposed | Each account's health is shown clearly, and a failure never turns into a false success. | — | — |
-| GOW-06.a | proposed | Revoked access is shown as an error rather than successful sync; a failure that repeats unchanged is recorded once (HIS-01). | — | S13-35, S13-36 |
+| GOW-06.a | proposed | Revoked access is shown as an error rather than successful sync. | — | S13-35, S13-36 |
 | GOW-06.b | proposed | Disconnected connections remain Not connected and are skipped without turning the whole sync into an error. | — | S48-12, S48-13, S68-01, S68-02 |
-| GOW-06.c | proposed | A color-update failure does not stop event synchronization or falsely report that sign-in was lost. A failure that repeats unchanged is recorded once (HIS-01); History owns diagnostic wording under HIS-01. | — | S54-05, S54-06, S55-11, S55-13, S55-18, S56-19, S56-21, S56-28 |
+| GOW-06.c | proposed | A color-update failure does not stop event synchronization or falsely report that sign-in was lost. | — | S54-05, S54-06, S55-11, S55-13, S55-18, S56-19, S56-21, S56-28 |
 | GOW-06.d | proposed | A transient server failure degrades only the affected account and defers its next sync; a skipped degraded account does not fail the whole job. An explicit health reset permits syncing again. | — | S68-09, S68-10, S68-11, S73-03, S73-04, S73-09, S73-11 |
 | GOW-06.e | proposed | Readiness distinguishes missing client, signed-out account, API error, not-yet-synced account and successful sync; a nonempty error overrides prior success, while an empty error does not. | — | S71-01, S71-02, S71-03, S71-04, S71-05, S71-06, S71-07 |
 | GOW-06.f | proposed | Successful recovery, or a new successful sign-in, restores the healthy state and clears the retry count, keeping the account's calendar mappings and settings. New accounts start healthy and eligible to sync. | — | S73-01, S73-07, changelog_gaps_1-300:L21 |

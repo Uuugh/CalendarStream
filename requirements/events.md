@@ -31,7 +31,7 @@ The event pop-up, linked events, hiding and reverting. Issues against this featu
 | EVT-03.g | proposed | An event’s online meeting address can be opened. | — | changelog_gaps_301-600:21 |
 | EVT-03.h | proposed | An event’s online meeting address is exported in its ICS URL property; feed round-trip preservation follows FED-04. | — | readme_gaps:50 |
 | EVT-04 | proposed | An event that comes from a calendar source can be changed, hidden and reverted locally without changing the source. | — | — |
-| EVT-04.a | proposed | An imported event can be hidden (asking first, UI-06) and shown again; both are recorded in History. Hide then Show on an unedited event leaves no edit record. Hiding an unknown UID returns 404. A renamed hidden event stays hidden when saved. | — | S57-10..14, S57-16, S57-33, S57-34, S57-36, S26-58 |
+| EVT-04.a | proposed | An imported event can be hidden (asking first, UI-06) and shown again. Hide then Show on an unedited event leaves no edit record. Hiding an unknown UID returns 404. A renamed hidden event stays hidden when saved. | — | S57-10..14, S57-16, S57-33, S57-34, S57-36, S26-58 |
 | EVT-04.b | proposed | The footer of an imported event explains that edits persist across downloads and never change CCS+; a custom event shows Delete (with confirmation) and no Hide; a new event shows no Delete or Hide. | — | S57-06, S57-08, S57-17, S58-03, S58-04 |
 | EVT-04.c | proposed | Local edits to an imported event survive subsequent source downloads; the source itself is unchanged (EVT-04). | — | readme_gaps:51, changelog_gaps_2101-2336:27 |
 | EVT-04.d | proposed | An edited imported event identifies that it has local edits and indicates when its source changes after those edits. | — | readme_gaps:51, changelog_gaps_2101-2336:27 |

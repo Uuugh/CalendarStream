@@ -935,3 +935,8 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R26 | 2026-11-19 | FED-04.e | CON-09.c | sources.md and feeds.md reorganized into connections and sections |
 | R26 | 2026-11-19 | FED-04.f | FED-04.b | sources.md and feeds.md reorganized into connections and sections |
 | R26 | 2026-11-19 | GOW-03.i | CON-09.d | sources.md and feeds.md reorganized into connections and sections |
+| R27 | 2026-11-19 | GAP-01.m | HIS-01.m | History wording belongs to History |
+| R27 | 2026-11-19 | GAP-01.n | GOW-01.s | a plugin does not describe its connections |
+| R27 | 2026-11-19 | GAP-01.d | GAP-01.d, GOW-01.r | the effect on connections moved to the connection |
+| R27 | 2026-11-19 | GOW-02.f | GOW-02.f, HIS-01.k | History warning moved to History |
+| R27 | 2026-11-19 | GOW-04.h | GOW-04.h, HIS-01.l | History report moved to History |
