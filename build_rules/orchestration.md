@@ -23,7 +23,7 @@ The author of the requirements orchestrates and checks; it does not do the other
 ## Checking incoming work (a pull request or a draft)
 
 1. `tests/tools/req_check.sh` reports no errors (it runs on GitHub as "Requirements").
-2. It follows the two laws (no duplication, no exceptions) and the eleven rules in `requirements/README.md`: said once; no exceptions; numbers only in DEF-01; shared things in `common.md` (components), `theme.md` (looks) or their own feature; a feature adds only its specifics; links point at the requirement; one checkable rule per row; terms defined; limits stated.
+2. It follows the rules in `requirements/README.md` (rules 1 and 2 are the laws).
 3. No history or oracle wording in a statement, no agent or tool named, Scrum terms, the Product Owner as the decider.
 4. New or changed IDs have a row in `oldkey.md`; no reference to an ID that does not exist.
 5. A rule found in more than one place is merged, not copied. A question goes in `open-questions.md` after looking in the other requirements, the code and https://docs.flutter.dev/ and https://dart.dev/.

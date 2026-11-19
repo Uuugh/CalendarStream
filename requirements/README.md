@@ -3,13 +3,6 @@
 One file per feature: the checkable rules of behavior the app must meet. This is the spec for both the Python app
 (the reference) and the Dart port. Defined in `build_rules/0-overview.md` (Inputs); the plan is `build_rules/layer-map.md`.
 
-## The two laws
-
-Every row in this folder obeys two laws; the numbered rules below are how.
-
-1. **No duplication.** A rule is written once, in the one place that owns it, and linked from everywhere else (rules 1, 3, 4, 5).
-2. **No exceptions.** A rule holds for every case; if it does not, the requirement is wrong (rule 2).
-
 ## Definitions
 
 - **Feature**: an area of the app (Calendar, Sources, Account). One file: `requirements/<feature>.md`.
@@ -108,8 +101,8 @@ The aim is that the requirement files speak for themselves, so the build rules c
 
 These apply to every row in `requirements/`. `tests/tools/req_check.sh` checks what a script can check; the rest is judgment, so read them.
 
-1. **Say it once.** A rule is written in one place and referenced everywhere else. Before adding a row, search the folder for the same rule in other words.
-2. **No exceptions.** If a rule has an exception, the requirement is wrong: change it so it holds for every case, or give the different case its own requirement. A row never says "except", "never for" or "only when X is not". A new kind of thing (a connection, a component) follows the existing rules and does not get a special case.
+1. **Law: no duplication. Say it once.** A rule is written in one place and referenced everywhere else. Before adding a row, search the folder for the same rule in other words.
+2. **Law: no exceptions.** If a rule has an exception, the requirement is wrong: change it so it holds for every case, or give the different case its own requirement. A row never says "except", "never for" or "only when X is not". A new kind of thing (a connection, a component) follows the existing rules and does not get a special case.
 3. **Numbers live in DEF-01.** A limit, a default, a duration or a count appears only in the table in `common.md`; a row says "the time in DEF-01". A default that is not a number (a view, a theme) is stated in the row of the control it belongs to.
 4. **Three homes for shared things.** An actionable component several features use (picker, filter, button, dropdown, strength bar, date range) is a UI row in `common.md`. A look (color, font, padding, margin, corner, size, duration) is a theme row (`theme.md`) and is used by default. A capability several features use (Print) is its own feature. The user feature only adds details (which content, which order, which default).
 5. **Features add only their specifics.** A feature row never restates how a shared component works.
