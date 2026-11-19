@@ -40,14 +40,10 @@ These apply to every row in `requirements/`. Every rule has a test: a check in `
 `| ID | status | statement | test | evidence (temporary) |`
 
 - **ID**: a feature prefix and a number (CAL-03). A requirement may have sub-requirements (ACC-06, ACC-06.a, ACC-06.b); a link points at the requirement unless it means exactly one sub-requirement. When IDs change, `oldkey.md` records old to new.
-- **status** (the Product Owner's way, Nov 17): a **blank status means the Product Owner agreed**: it is a Requirement. `proposed` and `planned` mean
-  not yet agreed; the Product Owner removes the word when they agree with a row. `verified` means a Dart test passes it. The older `built` and
-  `open` came from the Python-era Dashboard and are treated like `planned` until reviewed.
+- **status**: `proposed` (drafted, not yet agreed), `approved` (the Product Owner agreed: it is a Requirement), `built` (implemented in the Dart port), `verified` (a Dart test passes it). The Product Owner approves a row by deleting `proposed`; a blank status is read as `approved` and the Author writes the word. `planned`, `open` and a `built` that predates the Dart port are Python-era words on some rows; the Product Owner decides each when reviewing it.
 - **test**: the test that verifies it (path and name), once one exists. `—` until the inventory of the Python suites
   (`requirements/inventory/`) has been matched to requirements.
 - **evidence (temporary)**: the Python-suite keys (and old Dashboard items) a row came from; deleted when the conversion ends.
-
-Planned requirements stay in the same table with status `planned`.
 
 ## Prefixes
 
@@ -59,12 +55,9 @@ asked for.
 
 ## One file per feature (Nov 17)
 
-Each feature has ONE file here, `requirements/<feature>.md`, with every requirement of that feature in the same table. The status says
+Each feature has ONE file here, `requirements/<feature>.md`, with every requirement of that feature in the same table; the status vocabulary is under Line format. Reviewing a feature means changing `proposed` rows to `approved` (or editing or deleting them) in that one file. Shared rules (time TIM, shared interface UI, capabilities CAP) are in `common.md`; features reference them.
 
 Modules come in two kinds, connections and plugins. `connections.md` and `plugins.md` hold what is common to every module of the kind (written once); each module is its own feature file in `connections.d/` or `plugins.d/` and adds only its specifics, linking to the common file.
-where it stands: `proposed` (drafted from the inventory, README or CHANGELOG, not yet reviewed by the Product Owner), `planned` (approved,
-not built yet), `built`, `verified`, `open`. Reviewing a feature means changing `proposed` rows to `planned` (or editing or deleting
-them) in that one file. Shared rules (time TIM, shared interface UI, capabilities CAP) are in `common.md`; features reference them.
 
 The scans of the README and CHANGELOG and the gap triage were folded into these files as `proposed` rows on Nov 18 and the `requirements/drafts/` folder was deleted; the history is in git (commit before the deletion).
 

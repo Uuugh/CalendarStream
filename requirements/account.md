@@ -51,7 +51,7 @@ Terms used below (defined once):
 | ACC-07.h | proposed | A global block ends when the failures within that window fall below the number in DEF-01. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-07.e | planned | During a global block, an outside address is refused even with the right password. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-07.f | planned | An address that signed in successfully within the trusted-address period in DEF-01 is not an outside address. | — | S23-19, S23-20, S23-21, S53-10 |
-| ACC-07.b |  | During the global block, requests from the trusted networks in DEF-01 and from CalendarStream's own public domain are not blocked. An address is judged from what a trusted proxy reports (DEP-03). | — | S53-11, S53-12; Developer, Nov 17 |
+| ACC-07.b | approved | During the global block, requests from the trusted networks in DEF-01 and from CalendarStream's own public domain are not blocked. An address is judged from what a trusted proxy reports (DEP-03). | — | S53-11, S53-12; Developer, Nov 17 |
 | ACC-07.c | proposed | A successful login issues a signed known-browser cookie; a forged signature is refused. | — | S55-24, S55-25, S55-26 |
 | ACC-07.d | proposed | A known browser can authenticate during the global block, but does not bypass a block applied specifically to its own address. A new browser remains blocked. | — | S55-29, S55-30, S55-31 |
 | ACC-07.g | proposed | The record of addresses that signed in successfully keeps at most the number in DEF-01 (the oldest are forgotten first). | — |  |

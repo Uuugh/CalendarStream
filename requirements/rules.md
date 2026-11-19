@@ -61,7 +61,7 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-06.h | verified | A rule with no actions is not valid (UI-19). | — | S27-12 |
 | RUL-06.i | verified | A malformed regex, an unmatched bracket, an incomplete date range or an empty Add is not valid (UI-19). | — | S36-03..07, S40, S49-07, S62-06, S62-07 |
 | RUL-06.j | verified | A rule has at most the number of conditions and of actions in DEF-01; one more is not valid (UI-19) and the message names the limit; a rule at the limit saves. | — | S52-07..11 |
-| RUL-06.k |  | A rule line says what the rule does, titled or not (for example "Items without an end time → Change length to 1:00"); its color reads "Color ■ (Name)". | — | theme.md Clarifications |
+| RUL-06.k | approved | A rule line says what the rule does, titled or not (for example "Items without an end time → Change length to 1:00"); its color reads "Color ■ (Name)". | — | theme.md Clarifications |
 | RUL-07 | proposed | Rules that conflict or repeat each other are reported, and the user chooses what to do. | — | — |
 | RUL-07.a | verified | All Rules reports a higher rule that shadows a lower one's color, and duplicate rules, with the choices Put first, Keep as is, Drop and Merge. | — | S37-01..03, S37-08..12 |
 | RUL-07.b | verified | Merging rules unions their calendars (All if any is All). | — | S37-04, S49-29 |

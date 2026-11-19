@@ -6,16 +6,16 @@ Connections: Local Calendar (`local_calendar.md`), Generic Feed (`generic_feed.m
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
-| CON-01 | | A connection synchronizes calendar events locally, one-way or two-way. | — | — |
-| CON-01.a | | Local Calendar, Generic Feed, CCS+, calendar link, Google one-way sync and Google two-way sync are connections. | — | — |
-| CON-01.c |  | Each connection is a source (it brings events in), a feed (it sends events out) or both, and says so in its own file. A section contains every connection that has its capability, so a connection that is both is contained by the Sources and the Feeds sections: it is one module, and a change or removal made in either place applies to the connection. | — | — |
-| CON-01.b | | A connection that needs a plugin can be added only while that plugin is set up: a Google connection requires the Google plugin (GAP-01). | — | — |
+| CON-01 | approved | A connection synchronizes calendar events locally, one-way or two-way. | — | — |
+| CON-01.a | approved | Local Calendar, Generic Feed, CCS+, calendar link, Google one-way sync and Google two-way sync are connections. | — | — |
+| CON-01.c | approved | Each connection is a source (it brings events in), a feed (it sends events out) or both, and says so in its own file. A section contains every connection that has its capability, so a connection that is both is contained by the Sources and the Feeds sections: it is one module, and a change or removal made in either place applies to the connection. | — | — |
+| CON-01.b | approved | A connection that needs a plugin can be added only while that plugin is set up: a Google connection requires the Google plugin (GAP-01). | — | — |
 | CON-01.d | proposed | The number of connections is not limited. | — | readme_gaps:20 |
 | CON-02 | proposed | A connection is named, colored and annotated. | — | — |
 | CON-02.a | proposed | A source can be renamed and given a note; saving updates its name and explanatory note, and clearing the note removes its content. | — | S18-17, S29-11, S33-05, S39-18, S44-16 |
 | CON-02.b | proposed | Source color can be changed and saved; the new color is reflected immediately in its source display. | — | S38-15, S59-22 |
 | CON-02.c | proposed | Legacy source notes that merely repeat the source kind are treated as absent notes. | — | changelog_gaps_901-1200:24 |
-| CON-02.d |  | A connection's kind is fixed text in its module header: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar or Calendar Feed. | — | theme.md Clarifications |
+| CON-02.d | approved | A connection's kind is fixed text in its module header: CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar or Calendar Feed. | — | theme.md Clarifications |
 | CON-02.e | proposed | A connection is shown as a module: its header, Expand and Close follow UI-29, and its look follows THM-08. | — | — |
 | CON-03 | proposed | Each source shows its status and can be synced or turned off. | — | — |
 | CON-03.a | proposed | Sync Now updates a source in the background: it reports Syncing during work and Healthy on success, and keeps unrelated unsaved source edits. | — | S33-15, S33-18, S33-19, S35-28, S35-29, S35-31, S44-18 |
@@ -24,7 +24,7 @@ Connections: Local Calendar (`local_calendar.md`), Generic Feed (`generic_feed.m
 | CON-03.d | proposed | The source status event count counts the published feed events, with event visibility determined by CAP-02. | — | changelog_gaps_2101-2336:30 |
 | CON-03.e | proposed | A source can be turned off and back on, with its saved off state cleared when reenabled. | — | S63-20, S63-21, S63-23 |
 | CON-03.f | proposed | Turning a source off removes its events from published feeds while retaining its selected feed memberships for reenabling. | — | changelog_gaps_301-600:23 |
-| CON-03.g |  | A module's status line says "Last synced" or "Sync failed" with its time, never "Last check was successful"; the line beside the action says "Next check @" with its time. | — | theme.md Clarifications |
+| CON-03.g | approved | A module's status line says "Last synced" or "Sync failed" with its time, never "Last check was successful"; the line beside the action says "Next check @" with its time. | — | theme.md Clarifications |
 | CON-04 | proposed | The user can remove a source, and keep or merge its events. | — | — |
 | CON-04.a | proposed | Removing a source removes its stored events and its membership from destinations, while keeping a combined Google destination. | — | S26-50, S26-51 |
 | CON-04.b | proposed | Removing a source can preserve its events by creating a Local calendar with its prior color and destination memberships, or by merging into an existing Local calendar. The original source is removed. | — | S37-20, S37-21, S37-22, S49-28 |

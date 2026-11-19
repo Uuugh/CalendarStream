@@ -4,4 +4,4 @@ This file establishes the rules for creating a plugin module: what every plugin 
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
-| PLG-01 | | A plugin is set up once and shared by every connection that requires it. | — | — |
+| PLG-01 | approved | A plugin is set up once and shared by every connection that requires it. | — | — |
