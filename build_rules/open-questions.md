@@ -26,9 +26,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 ## Open, from the connections work (Nov 19)
 
-- **Limit on connections:** CON-01.d says the number of connections is not limited. By DEF-02 (every list that grows has a stated limit) and the law of no exceptions it needs a limit in DEF-01. What number? Recommended: 50 connections.
-  Answer:
-
 - **CCCS-03.g** The CCS+ site address can be overridden with a custom HTTPS address (a setting of the old app). Does the custom address still belong in the port?
   Answer:
 
