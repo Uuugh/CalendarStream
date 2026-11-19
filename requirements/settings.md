@@ -1,7 +1,7 @@
 # Requirements: settings
 
 ☰ Settings, preferences, updates, public address. Issues against this feature (kept in the issues database): I2
-(auto-update toggle, built beta.46), I25. I22 was closed Nov 17: the Developer decided to keep the separate pop-ups, so SET-01.a stands as written.
+(auto-update toggle), I25. I22 was closed Nov 17: the Developer decided to keep the separate pop-ups, so SET-01.a stands as written.
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
@@ -34,8 +34,8 @@
 | SET-04.k | proposed | Effective public addresses are deduplicated, with the main address first and valid extras afterward. | — | S77-18 |
 | SET-05 | proposed | The app checks for newer versions and can update itself, and shows what is happening. | — | — |
 | SET-05.a | proposed | Update checks run on the chosen schedule (hourly, weekly, monthly or never; the default and values are in DEF-01). Never turns automatic checks off. | — | S22-01, S22-09, S22-10, S22-11, S22-12, S25-11 |
-| SET-05.b | proposed | Stable installations check stable releases rather than a newer beta; beta installations check beta releases and can advance to the resulting stable release. A pinned non-beta release selects stable, while a pinned beta selects beta. | — | S22-03, S22-07, S22-08, S30-04, S30-06, S30-07, S30-08 |
-| SET-05.c | proposed | A version is major.minor.patch with an optional -beta.N (0.2.8-beta.46). A release is newer than its betas, and betas compare by their number. A version that does not follow this form, and an unknown installed version, cannot be compared, so it is not offered as newer. | — | S30-01, S30-02, S30-03 |
+| SET-05.b | proposed | Update checks look only at stable releases. | — | S22-03, S22-07, S22-08, S30-04, S30-06, S30-07, S30-08 |
+| SET-05.c | proposed | A version is major.minor.patch (for example 0.2.8), and versions compare by their numbers. A version that does not follow this form, and an unknown installed version, cannot be compared, so it is not offered as newer. | — | S30-01, S30-02, S30-03 |
 | SET-05.d | proposed | A check, scheduled or Check now, reports Up to date when nothing newer is available; otherwise it offers the newer version with links to the running and available releases, and keeps the running-version information. A failed check, including an invalid offer, reports Couldn't check and its cause and keeps the last offered version. | — | S22-04, S22-05, S22-13, S30-09, S42-03, S42-07, S43-04, S43-05, S43-06, S43-07, S43-08, S43-09, S67-33 |
 | SET-05.e | proposed | Changing update channel clears the previous channel’s check result. | — | S22-06 |
 | SET-05.f | proposed | Updates reports Not checked before the first check and shows the next scheduled check time. | — | S25-10, S59-05 |

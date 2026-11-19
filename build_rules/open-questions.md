@@ -36,3 +36,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 
 - **CCS-03.g** The CCS+ site address can be overridden with a custom HTTPS address (a setting of the old app). Does the custom address still belong in the port?
   Answer:
+
+- **Update channel (beta is gone):** With no beta release, is there still more than one update channel? SET-05.e (changing the update channel clears the previous check result), DEP-02.h (the installer accepts stable and latest as names for the stable channel) and SET-07.c (the channel is selectable: Stable, Beta or Other; deferred) still speak of channels. Recommended: delete SET-05.e and SET-07.c and keep DEP-02.h.
+  Answer:
