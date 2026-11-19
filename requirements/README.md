@@ -99,5 +99,5 @@ These apply to every row in `requirements/`. `tests/tools/req_check.sh` checks w
 6. **A row says what to build, once, in the user's words.** One checkable rule per row. No history ("the Python app does…"), no test or script wording, no web-page mechanics, no "is refused" for a control that cannot produce a wrong value. A requirement's own statement is general; its sub-requirements hold the detail and the values.
 7. **Define every term** the first time a file uses it, or point to where it is defined.
 8. **State limits.** Anything that grows with use (a log, a list, a table of records) has a limit in DEF-01 (DEF-02).
-9. **Questions** are rows marked `(?)` and appear in `build_rules/open-questions.md`. Look for the answer in the other requirements, the decisions and the code before asking the Product Owner.
+9. **Questions** are rows marked `(?)` and appear in `build_rules/open-questions.md`. Look for the answer first in the other requirements, the decisions, the code of the running app, and the Flutter and Dart documentation (https://docs.flutter.dev/ and https://dart.dev/), and only then ask the Product Owner.
 10. **Nothing you write names an agent or a tool.** Roles are the Product Owner, the developer and the tester.
