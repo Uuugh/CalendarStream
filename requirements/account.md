@@ -2,7 +2,7 @@
 
 Approved by the Developer (decisions and reviewed rows). Statuses: planned = approved, not built yet.
 Terms used below (defined once):
-- **Address**: the visitor's network address as reported by a trusted proxy (DEP-07).
+- **Address**: the visitor's network address as reported by a trusted proxy (DEP-03).
 - **Trusted network**: a network listed in ACC-07.b.
 - **Known browser**: a browser holding the signed cookie issued at a successful sign-in (ACC-07.c).
 - **Outside address**: an address that is not on a trusted network, not a known browser's, and has not signed in successfully recently (ACC-07.f).
@@ -14,10 +14,10 @@ Terms used below (defined once):
 | ACC-01.b | proposed | Initial setup requires its generated setup code, written as two groups of four hexadecimal characters. | — | S16-08, S16-09, S16-13 |
 | ACC-01.g | proposed | The setup code is accepted in any letter case and with or without the dash between its groups. | — | S16-08, S16-09, S16-13 |
 | ACC-01.h | proposed | An incorrect setup code creates no login. | — | S16-08, S16-09, S16-13 |
-| ACC-01.c | proposed | Initial setup explains how to retrieve its setup code with a command that works independently of the chosen service name; incorrect-code guidance repeats that retrieval instruction (ACC-01.b, DEP-05). | — | changelog_gaps_1801-2100:27 |
+| ACC-01.c | proposed | Initial setup explains how to retrieve its setup code with a command that works independently of the chosen service name; incorrect-code guidance repeats that retrieval instruction (ACC-01.b, DEP-02). | — | changelog_gaps_1801-2100:27 |
 | ACC-01.d | proposed | Initial setup refuses a mismatched password confirmation, a password that does not meet the password requirements (ACC-04) and a username containing a space. | — | S16-10, S16-11, S16-12 |
 | ACC-01.e | proposed | After initial login creation, setup is closed and the creating user is signed in. | — | S16-15, S16-16 |
-| ACC-01.f | proposed (?) | A legacy page login is imported with a hashed password; saved page passwords are not stored in plaintext. Is this still needed after the port, given that DEP-14 does not carry the page password over? | — | S16-01, S16-04, S16-14 |
+| ACC-01.f | proposed (?) | A legacy page login is imported with a hashed password; saved page passwords are not stored in plaintext. Is this still needed after the port, given that DEP-05 does not carry the page password over? | — | S16-01, S16-04, S16-14 |
 | ACC-02 | proposed | A person signs in to see or change anything on the page, and can sign out. | — | — |
 | ACC-02.a | proposed | An unauthenticated page request goes to sign-in and does not expose destination content; a successful session can read the page. Any change to settings, including update settings, requires that signed-in session. | — | S16-17, S49-47, S49-51, S51-29, S22-14 |
 | ACC-02.b | proposed | An incorrect login password is not accepted; a correct one establishes a session. | — | S49-48, S49-49, S49-50 |
@@ -52,7 +52,7 @@ Terms used below (defined once):
 | ACC-07.h | proposed | A global block ends when the failures within that window fall below the number in DEF-01. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-07.e | planned | During a global block, an outside address is refused even with the right password. | — | S23-19, S23-20, S23-21, S53-10 |
 | ACC-07.f | planned | An address that signed in successfully within the trusted-address period in DEF-01 is not an outside address. | — | S23-19, S23-20, S23-21, S53-10 |
-| ACC-07.b |  | During the global block, requests from the networks 192.168.0.0 and 10.10.0.0 (taken as the /16 ranges) and from loopback, and from CalendarStream's own public domain, are not blocked. An address is judged from what a trusted proxy reports (DEP-07). | — | S53-11, S53-12; Developer, Nov 17 |
+| ACC-07.b |  | During the global block, requests from the networks 192.168.0.0 and 10.10.0.0 (taken as the /16 ranges) and from loopback, and from CalendarStream's own public domain, are not blocked. An address is judged from what a trusted proxy reports (DEP-03). | — | S53-11, S53-12; Developer, Nov 17 |
 | ACC-07.c | proposed | A successful login issues a signed known-browser cookie; a forged signature is refused. | — | S55-24, S55-25, S55-26 |
 | ACC-07.d | proposed | A known browser can authenticate during the global block, but does not bypass a block applied specifically to its own address. A new browser remains blocked. | — | S55-29, S55-30, S55-31 |
 | ACC-07.g | proposed | The record of addresses that signed in successfully keeps at most the number in DEF-01 (the oldest are forgotten first). | — |  |

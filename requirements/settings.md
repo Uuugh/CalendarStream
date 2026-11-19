@@ -1,15 +1,15 @@
 # Requirements: settings
 
 ☰ Settings, preferences, updates, public address. Issues against this feature (kept in the issues database): I2
-(auto-update toggle, built beta.46), I25. I22 was closed Nov 17: the Developer decided to keep the separate pop-ups, so SET-06 stands as written.
+(auto-update toggle, built beta.46), I25. I22 was closed Nov 17: the Developer decided to keep the separate pop-ups, so SET-01.a stands as written.
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
 | SET-01 | proposed | Settings holds the user's own view settings and the shared Site Admin settings, in separate parts, each opened in a dialog. | — | — |
 | SET-01.a | built | Settings has two headings. **User** items are stored on the device (view preferences: Theme, Time Zones, time notation, Search) and can differ from device to device. **Site Admin** items are stored once in the database and are the same on every device and browser: Login, Domains, Google API, Updates (whether to check at all, automatic updating, how often), Default time zone, Backup and Restore, more as added. Every item opens as a pop-up. (Developer, Nov 17: admin settings are retained across devices, which is why they are in admin.) | — | F65 |
 | SET-01.b | built | In Full mode, the page's modules (Calendar, Sources, Feeds, All Rules, Event Templates, History) are hidden elsewhere and listed above Settings under a Configure heading. | — | F65 |
-| SET-01.c | built | The Settings pop-up follows the shared dialog rules (UI-01 to UI-03) and its Cancel \ | — | F65 |
-| SET-01.d |  | Settings lists its parts in this order: Updates, Login & password, Domains, Theme last, then any others; each part has its own Cancel \ | — |  Save. |
+| SET-01.c | built | The Settings pop-up follows the shared dialog rules (UI-01 to UI-03) and its Cancel \| Save pair looks as THM-04.c and UI-27 say. | — | F65 |
+| SET-01.d |  | Settings lists its parts in this order: Updates, Login & password, Domains, Theme last, then any others; each part has its own Cancel \| Save. | — | theme.md Clarifications |
 | SET-01.e | open | Changing or adding a domain or the public address, with Google Calendar API Sync already configured, pops up a notice pointing at that module's assist box, since the API always becomes unhealthy (GGL-01 gives the callback to authorize). | — | F56, S67-25 |
 | SET-02 | proposed | The user chooses how time zones and search work on their device. | — | — |
 | SET-02.a |  | Settings has a Time Zones item with two choices: Follow System Time Zone (the zone of the device in use, so a phone and a PC may differ) or Fixed Time Zone (chosen with the same time zone picker as the calendar). After installation, the first sign-in follows the system time zone. The choice (Follow System or Fixed, and the fixed zone) is stored on the device, like the other view settings (Developer, Nov 17: for now, to stay consistent). The calendar's own time zone picker only changes the view temporarily and does not change this setting. (Developer, Nov 17) | — | Developer |
@@ -23,7 +23,7 @@
 | SET-03.f | proposed | Resetting the logo removes the custom image and restores the default logo. It does not change any other setting. | — | S64-20 |
 | SET-03.g |  | The first theme after installation is System (Match system). | — | theme.md Clarifications |
 | SET-04 | proposed | The installation has a public address, with optional extra addresses, that feed links and Google use. | — | — |
-| SET-04.a | proposed | A public address given at installation is saved once. After that the saved address is the only one used (DEP-28), so clearing it leaves it cleared. | — | S15-01, S15-09, S25-12 |
+| SET-04.a | proposed | A public address given at installation is saved once. After that the saved address is the only one used (DEP-05), so clearing it leaves it cleared. | — | S15-01, S15-09, S25-12 |
 | SET-04.b | proposed | Until a public address is set, setup reports Not set yet and points to Public address settings, the subscription page warns that the address is missing and, before the first destination is configured, setup suggests an address taken from the request. Once an address is set, none of these appear; a setup field can be filled from the address used to open the page. | — | S15-02, S15-10, S26-31, S26-34 |
 | SET-04.c | proposed | A bare public host becomes an HTTPS address, with lowercase scheme/host, no trailing slash and no default port; a supplied path is preserved. | — | S15-03, S23-05, S23-06, S23-13 |
 | SET-04.d | proposed | The saved public address is the one used in feed links; Google's callback address follows GGL-01. | — | S15-04, S15-05 |
@@ -52,7 +52,7 @@
 | SET-05.o | proposed | Reopening Updates shows the current saved update-check frequency and auto-update preference, including a change made on another client. A change that fails to save leaves the previous value in effect and shows it. | — | S81-09, S81-10, changelog_gaps_1-300:15, changelog_gaps_1-300:18 |
 | SET-05.p |  | When nothing newer is available the Updates status reads the running version itself (for example "v1.2.3"), not only "Up to date". | — | theme.md Clarifications |
 | SET-06 | proposed | Site Admin settings are kept in the database and are the same on every device. | — | — |
-| SET-06.a |  | Settings > Site Admin has a Default time zone item, like Domains. It is stored in the database, and the database value overrides the installation's TZ setting (DEP-27). (Developer, Nov 17) | — | Developer, Nov 17 |
+| SET-06.a |  | Settings > Site Admin has a Default time zone item, like Domains. It is stored in the database, and the database value overrides the installation's TZ setting (DEP-05). (Developer, Nov 17) | — | Developer, Nov 17 |
 | SET-06.b |  | Settings > Site Admin has Backup and Restore. A backup contains both the calendar data and the database, including the saved passwords and Google sign-in (still encrypted, so the same database password is needed to read them after a restore). Backup downloads as a file to the device in use; Restore takes that file and, because it replaces everything, asks first (UI-06). (Developer, Nov 17) | — | Developer, Nov 17; README Data and backups |
 | SET-06.c |  | Settings > Site Admin has Password requirements: the minimum length and the minimum number of capital letters, lowercase letters, numbers and special characters (defaults, and the floor each may not go below, are in DEF-01). They are stored in the database, like the other Site Admin settings, and apply to passwords created or changed afterwards (ACC-04). (Developer, Nov 18) | — | Developer, Nov 18 |
 | SET-06.d | proposed | Administrator email is trimmed when saved, an empty value clears it, and a malformed address is not valid (UI-19). | — | S25-03, S25-04, S25-07 |

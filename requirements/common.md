@@ -63,7 +63,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 
 | ID | status | statement |
 |---|---|---|
-| TIM-08 |  | An imported event that carries no time zone gets the installation's default zone (DEP-27). (Developer, Nov 17) | — | Developer, Nov 17 |
+| TIM-08 |  | An imported event that carries no time zone gets the installation's default zone (DEP-05). (Developer, Nov 17) | — | Developer, Nov 17 |
 | TIM-09 | proposed | A time zone is always one of the real zones: the zone picker offers only real zones, and an imported event that names a zone that does not exist is given the default zone (TIM-08) instead. (S19-30) |
 
 Decided elsewhere, not repeated: UTC instants hide daylight-saving jumps, and the default rule "24-hour events" (RUL-06) realigns a
@@ -109,7 +109,7 @@ CalendarStream), **rule** (made by a rule).
 
 | ID | status | statement | test | was |
 |---|---|---|---|---|
-| DEF-01 |  | Every default and limit is defined once, in the table below, and a feature row refers to it instead of repeating the number. A value that an admin setting exposes is stored in the database and overrides the default (DEP-28); the others stay as the defaults. (Developer, Nov 17) | — | Developer, Nov 17 |
+| DEF-01 |  | Every default and limit is defined once, in the table below, and a feature row refers to it instead of repeating the number. A value that an admin setting exposes is stored in the database and overrides the default (DEP-05); the others stay as the defaults. (Developer, Nov 17) | — | Developer, Nov 17 |
 | DEF-02 | proposed | Every list that grows with use (logs, failure records, pending sign-ins) has a stated limit in the table below, and entries no longer needed are forgotten first, so memory cannot fill. A feature row refers to the limit instead of repeating it. | — | Developer, Nov 18 |
 | DEF-03 | proposed | Wherever a limit or a count is in characters (a password length, a name length, a token length), a character is what the user sees as one character (a Unicode extended grapheme cluster), not a code unit; a special character is any character that is not a letter or a digit. | — | Developer, Nov 19 |
 

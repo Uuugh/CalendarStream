@@ -19,7 +19,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-02.a | proposed | History names the type of each change: Calendar, Rule, Event, Sync, Feed, Google, Settings or Update. | — | S49-13, changelog_gaps_601-900:31 |
 | HIS-02.b | proposed | History has a filter that follows the common filter rules (UI-21), with three parts: the change type (the types in HIS-02), words in its entries, and the time of its entries. | — | readme_gaps:71, changelog_gaps_601-900:31 |
 | HIS-02.c | proposed | The user can choose the order of History's columns by sliding a header, or with the left and right arrows when a header is focused; Undo starts at the end. | — | readme_gaps:71, changelog_gaps_1-300:27 |
-| HIS-02.d |  | History is a table: Time \ | — |  Type \ |
+| HIS-02.d |  | History is a table: Time \| Type \| Event \| Undo; folded it shows the latest lines with Undo and Redo where they apply, newest first (a stack). | — | theme.md section 15; picture 2·15 |
 | HIS-02.e |  | Something done outside CalendarStream (deleted in Google, removed by United) has no Undo icon; Restore is on the event. | — | theme.md section 15 |
 | HIS-02.f |  | An accepted sign-in is shown as a ✓ with no words; the word stays as its tooltip and accessible name. | — | theme.md Clarifications |
 | HIS-02.g |  | History's three latest lines sit left-aligned in its section header, before its Healthy box. | — | theme.md Clarifications |
