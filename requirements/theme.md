@@ -32,6 +32,8 @@ How the app looks: colors, fonts, icons, corners and sizes, in a light and a dar
 | THM-04.c |  | Status/Action buttons are 132 × 50 px. Cancel/Save buttons are 130 × 34 px. | — | theme.md section 4 |
 | THM-04.d |  | Icon buttons are 34 × 34 px in the general toolbar and 28 × 28 px in the compact calendar toolbar. | — | theme.md sections 1 and 5 |
 | THM-04.e |  | Every border is 1 px. The two 2 px lines are today's day in the calendar and the focus outline. | — | theme.md section 4 |
+| THM-04.f |  | A trash icon's lines are tinted red (30% of bad in muted, at least 3:1 contrast), the button itself unchanged; fully red on hover. | — | theme.md Clarifications |
+| THM-01.e |  | A field label is 12 px, in the muted color, over a 34 px field. | — | theme.md Clarifications |
 | THM-05 | proposed | Buttons share one look, and a status has one look per meaning. | — | theme.md sections 5 to 7 |
 | THM-05.a |  | An icon button's icon is the muted color, with soft behind it on hover. | — | theme.md section 5 |
 | THM-05.b |  | Every pressable button uses the accent look: accent fill and onaccent words. Accent is never used for a status. | — | theme.md section 6 |

@@ -14,8 +14,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **SRC-56** (sources) Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? 
   Answer:
-- **PRT-01.d** (print) Each print sheet fits one Letter or A4 page without cutting content. What should happen when the content cannot fit at a readable size? 
-  Answer:
 - **GGL-101** (google) Eligible local changes and valid remote change notices trigger reconciliation within seconds under normal service availability. What measurable latency target should replace “within seconds”? 
   Answer:
 - **SRC-63** (sources) A source download that unexpectedly returns an empty calendar preserves the previous schedule. How is an unexpected empty response distinguished from an intentionally emptied source? 
