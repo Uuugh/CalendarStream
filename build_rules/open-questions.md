@@ -12,8 +12,7 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **CGOW-04.j** Eligible local changes and valid remote change notices trigger reconciliation within seconds under normal service availability. What measurable latency target should replace “within seconds”? 
   Answer:
-- **SET-03.e** A custom logo can be uploaded and shown; without one the default logo is used. Which image types and sizes are allowed (the old app accepted PNG, SVG, WebP, JPEG and ICO up to 256 KB), and an image that can carry script is not accepted? 
-  Answer:
+
 - **CCCS-02.l** Existing CCS+ credentials can be imported from the old configuration, stored encrypted, and recorded as imported activity. Is this still needed after the port, given that the migration tool (DEP-05) copies the saved credentials? 
   Answer:
 - **CON-06.l** Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? 

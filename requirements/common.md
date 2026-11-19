@@ -181,3 +181,4 @@ CalendarStream), **rule** (made by a rule).
 | Longest reminder lead | 1 week | | default only |
 | Networks trusted during a global block | 192.168.0.0/16, 10.10.0.0/16 and loopback | | default only |
 | Connections | | at most 50 | default only |
+| Custom logo or favicon file size | | at most 256 KB | default only |

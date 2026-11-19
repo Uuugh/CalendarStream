@@ -18,7 +18,7 @@
 | SET-03.b | proposed | Settings > Theme has a Long-press time, a user setting, that sets how long a press must be held before an event can be dragged (CAL-03); its default and range are in DEF-01. | — | CAL-15 (F61) |
 | SET-03.c | proposed | Animation intensity and animation duration are Theme settings; their defaults and ranges are in DEF-01, and Reset restores the defaults. | — | S64-19, S64-21 |
 | SET-03.d | proposed | Module grips are on the left by default; the user may move them to the right. | — | S65-26, S65-27, S65-29 |
-| SET-03.e | proposed (?) | A custom logo can be uploaded and shown; without one the default logo is used. Which image types and sizes are allowed (suggested: PNG, SVG, WebP, JPEG and ICO up to 256 KB), and an image that can carry script is not accepted? | — | S64-15, S64-16, S64-17, S64-18 |
+| SET-03.e | backlog | A custom logo can be uploaded and shown; without one the default logo is used. An uploaded image is a PNG, SVG, WebP, JPEG or ICO file no larger than the size in DEF-01; an image that can carry script is not accepted. | — | S64-15, S64-16, S64-17, S64-18 |
 | SET-03.f | proposed | Resetting the logo removes the custom image and restores the default logo. It does not change any other setting. | — | S64-20 |
 | SET-04 | proposed | The installation has a public address, with optional extra addresses, that feed links and Google use. | — | — |
 | SET-04.a | proposed | A public address given at installation is saved once. After that the saved address is the only one used (DEP-05), so clearing it leaves it cleared. | — | S15-01, S15-09, S25-12 |
