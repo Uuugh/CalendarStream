@@ -91,3 +91,4 @@ Columns: `batch` (R1, R2, ... in order), `date`, `old ID`, `new ID(s)` (several 
 | R7 | 2026-11-18 | CAL-05.i | CAL-05.e | |
 | R7 | 2026-11-18 | CAL-05.j | CAL-05.b | the printable views |
 | R7 | 2026-11-18 | FED-14 | UI-23 | an end before the start is not valid |
+| R8 | 2026-11-18 | UI-22, UI-22.a, UI-22.b, UI-22.c, UI-22.d, UI-22.e, UI-22.f | PRT-01, PRT-01.a, PRT-01.b, PRT-01.c, PRT-01.d, PRT-01.e, PRT-01.f | Print is its own feature (print.md), used by the Calendar and Events; PRT-01.g is new |

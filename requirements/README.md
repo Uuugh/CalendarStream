@@ -36,7 +36,7 @@ Planned requirements stay in the same table with status `planned`.
 ## Prefixes
 
 CAL calendar · SRC sources · FED feeds · RUL rules · TPL event_templates · EVT events · HIS history · GGL google ·
-SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UI shared interface, CAP capabilities (all three in common.md)
+SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UI shared interface, CAP capabilities (all three in common.md) · PRT print
 
 Nothing new is added while the transition freeze lasts (build_rules/0-overview.md); these files hold what was already
 asked for.
@@ -56,6 +56,7 @@ The scans of the README and CHANGELOG and ChatGPT's gap triage (Task E) were fol
 |---|---|---|---|
 | Calendar | [requirements/calendar.md](requirements/calendar.md) | 25 | 10 |
 | Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) | 5 | 0 |
+| Print | [requirements/print.md](requirements/print.md) | 8 | 6 |
 | Search | [requirements/search.md](requirements/search.md) | 9 | 5 |
 | Events | [requirements/events.md](requirements/events.md) | 37 | 33 |
 | Event templates | [requirements/event_templates.md](requirements/event_templates.md) | 6 | 6 |

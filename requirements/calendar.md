@@ -27,12 +27,12 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-04.c |  | Collapse gives the fewest lines the view needs; Expand gives the most lines that fit the visible window. | — | — |
 | CAL-04.d |  | The hour height in Week and Day is measured in event lines per hour, changed by whole lines and saved, within the limits in DEF-01, so a line of an event always fits. | — | Developer, Nov 17; S65-14, S65-15 |
 | CAL-04.e | proposed | Full page also hides the page footer. | — | changelog_gaps_1-300:36 |
-| CAL-05 | proposed | The user can print the calendar through Print Preview (UI-22). | — | — |
-| CAL-05.a |  | Until the user chooses an orientation it is automatic: landscape for Month, Week and 5-day sheets, portrait for Day and Itinerary sheets (UI-22.c). | — | S65-18..22 |
+| CAL-05 | proposed | The user can print the calendar through Print Preview (PRT-01). | — | — |
+| CAL-05.a |  | Until the user chooses an orientation it is automatic: landscape for Month, Week and 5-day sheets, portrait for Day and Itinerary sheets (PRT-01.c). | — | S65-18..22 |
 | CAL-05.b | proposed | The views that can be printed are the calendar's views (CAL-01.b) and Itinerary, which lists events grouped by day. | — | S36-33, readme_gaps:53, changelog_gaps_1201-1500:16 |
 | CAL-05.c |  | Printing two months produces a sheet for each month. | — | S36-32 |
 | CAL-05.d | proposed | Print All sets the date range (UI-23) from the first event through the last event. | — | readme_gaps:52 |
-| CAL-05.e | proposed | Printing one event uses Day view for that print and keeps the remembered print choices (EVT-03, UI-22.b). | — | changelog_gaps_301-600:43 |
+| CAL-05.e | proposed | Printing one event uses Day view for that print and keeps the remembered print choices (EVT-03, PRT-01.b). | — | changelog_gaps_301-600:43 |
 | CAL-06 | proposed | The calendar header's right zone holds the view controls in a fixed order, and what the user chooses with them stays on the device until the user changes it. | — | — |
 | CAL-06.a | proposed | The right zone holds, in this order: Time Zone, View, 12/24 clock, Print, Full page. Zone alignment and stacking follow UI-14; what each control does is in its own requirement (CAL-02.a, CAL-01.b, TIM-10, CAL-05, CAL-04). | — | theme.md 13c (to confirm) |
 | CAL-06.b | proposed | The state of each right-zone control that holds one (the time zone, the view, the time format, Full page) is kept on the device until the user changes it (SET-06). A default is stated in the control's own requirement. | — | Developer, Nov 18 |
