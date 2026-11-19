@@ -12,7 +12,7 @@ The CCS+ connection: the user's own United Airlines schedule, downloaded with th
 | CCS-02.a | proposed | CCS+ guidance distinguishes Calendar Sync credentials from CCS login credentials and explains enabling CCS+. | — | S18-05, S33-03 |
 | CCS-02.b | proposed | CCS+ setup is available directly with the source when it needs configuration, rather than only in Settings. Successful credential saving returns to that source. | — | S16-20, S18-03, S18-04, S18-07, S27-01 |
 | CCS-02.c | proposed | Missing CCS+ credentials are reported as Setup needed rather than an error, and Sync now is unavailable until credentials are entered. | — | S18-01, S18-02, S18-06 |
-| CCS-02.d | proposed | Credentials are labeled Username rather than UID. | — | S31-05 |
+| CCS-02.d | proposed | Credentials are labeled Username. | — | S31-05 |
 | CCS-02.e | proposed | Changing the CCS+ username while leaving the password blank keeps the saved password. | — | S16-26 |
 | CCS-02.f | proposed | An invalid CCS+ username is refused with a username error. | — | S16-27, S28-13 |
 | CCS-02.g | proposed | The saved CCS+ password is protected (ACC-05); the page shows the saved username and explains how to keep its password. | — | S16-23, S16-25, S16-34 |

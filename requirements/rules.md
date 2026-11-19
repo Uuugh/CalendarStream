@@ -11,7 +11,7 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-01.c | proposed | The wildcard ? matches exactly one character in a text pattern (RUL-01). | — | readme_gaps:67, changelog_gaps_601-900:37 |
 | RUL-01.d | proposed | A condition on "Any text" matches title, location or notes. | — | S49-09 |
 | RUL-01.e | proposed | Conditions combine with AND/OR in order with optional brackets: `A OR B AND C` differs from `(A OR B) AND C`. | — | S36-02 |
-| RUL-01.f | proposed | Day conditions cover selected days, a Fri-Mon range, after and before a day. Conditions on days and times are judged in the event's own time zone: a rule has no time zone of its own (Developer, Nov 17). | — | S36-08, S36-09 |
+| RUL-01.f | proposed | Day conditions cover selected days, a Fri-Mon range, after and before a day. Conditions on days and times are judged in the event's own time zone: a rule has no time zone of its own. | — | S36-08, S36-09 |
 | RUL-01.g | proposed | A time range may be overnight (22:00-06:00 matches 23:00, not daytime). | — | S36-10 |
 | RUL-01.h | proposed | Date conditions: a range (reversed order is accepted) and "after date". | — | S36-11 |
 | RUL-01.i | proposed | Length conditions distinguish no end time, a normal event, a near whole-day event and an exact duration. | — | S36-12 |
@@ -53,7 +53,7 @@ The app's Rules: the rule model and engine, the rule dialog, All Rules, link rul
 | RUL-06 | proposed | The user creates, shows, clones and deletes rules. | — | — |
 | RUL-06.a | proposed | A rule can be cloned; the clone is unapplied and placed right after the original. | — | S33-10, S36-41 |
 | RUL-06.b | proposed | Deleting a rule removes it from every list; default rules (RUL-06) cannot be deleted. | — | S19-27, S27-10 |
-| RUL-06.c | proposed | A calendar starts with two predefined rules (items without an end time, 24-hour events), kept in All Rules like any rule. Default rules are permanent: they can be unassigned from a calendar and assigned again, but never deleted (Developer, Nov 17). Adding CCS+ again re-assigns its starters. The 24-hour rule aligns a whole-day event to the local day: an event spanning about 24 hours becomes all-day, local midnight to the next local midnight in the event's time zone, so daylight-saving days stay correct. | — | S21-13, S27-08, S63-17 |
+| RUL-06.c | proposed | A calendar starts with two predefined rules (items without an end time, 24-hour events), kept in All Rules like any rule. Default rules are permanent: they can be unassigned from a calendar and assigned again, but never deleted. Adding CCS+ again re-assigns its starters. The 24-hour rule aligns a whole-day event to the local day: an event spanning about 24 hours becomes all-day, local midnight to the next local midnight in the event's time zone, so daylight-saving days stay correct. | — | S21-13, S27-08, S63-17 |
 | RUL-06.d | proposed | The rule dialog opens from "New rule…" in a calendar (that calendar preselected) or from All Rules (All preselected); dialog behavior follows UI-02. | — | S21-15, S37-33..36, S37-41, S67-15, S67-16 |
 | RUL-06.e | proposed | A rule shows its title (if any), what it does, and its color by name. | — | S40-01, S40-02, S66-17, S45-26 |
 | RUL-06.f | proposed | Saving a rule without a title generates a title from its conditions and actions (RUL-06). | — | changelog_gaps_301-600:18 |

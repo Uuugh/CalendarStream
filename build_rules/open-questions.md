@@ -45,3 +45,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **Feeds in the shared status line:** CON-03 says a module shows "Last synced" and "Next check @", but a feed is read by others (FED-05 "last read") and has no download schedule. What does a feed's status line show?
   Answer:
+
+- **One-way and two-way Google rows:** GOW-04.k says one-way sync publishes and does not read back, yet GOW-04.b, GOW-04.c, GOW-04.g and the instant updates (GOW-05) describe reading Google's changes, which are two-way behaviors. Recommended: move those rows to `google_two_way.md`, so one-way holds only publishing and health. Is that right?
+  Answer:

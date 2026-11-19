@@ -63,35 +63,35 @@ The scans of the README and CHANGELOG and the gap triage were folded into these 
 
 ## Index (feature files, click to open)
 
-| Feature | File | Requirements | Proposed (to review) |
-|---|---|---|---|
-| Calendar | [requirements/calendar.md](requirements/calendar.md) | 35 | 16 |
-| Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) | 10 | 1 |
-| Print | [requirements/print.md](requirements/print.md) | 10 | 6 |
-| Theme | [requirements/theme.md](requirements/theme.md) | 61 | 9 |
-| Search | [requirements/search.md](requirements/search.md) | 11 | 7 |
-| Events | [requirements/events.md](requirements/events.md) | 46 | 43 |
-| Event templates | [requirements/event_templates.md](requirements/event_templates.md) | 8 | 8 |
-| Rules | [requirements/rules.md](requirements/rules.md) | 64 | 63 |
-| History | [requirements/history.md](requirements/history.md) | 30 | 26 |
-| Sources (section) | [requirements/sources.md](requirements/sources.md) | 3 | 2 |
-| Feeds (section) | [requirements/feeds.md](requirements/feeds.md) | 3 | 2 |
-| Connections (common) | [requirements/connections.md](requirements/connections.md) | 58 | 52 |
-| Local calendar | [requirements/connections.d/local_calendar.md](requirements/connections.d/local_calendar.md) | 16 | 16 |
-| Generic Feed | [requirements/connections.d/generic_feed.md](requirements/connections.d/generic_feed.md) | 28 | 28 |
-| CCS+ | [requirements/connections.d/ccs.md](requirements/connections.d/ccs.md) | 31 | 31 |
-| Calendar link | [requirements/connections.d/calendar_link.md](requirements/connections.d/calendar_link.md) | 6 | 6 |
-| Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) | 71 | 70 |
-| Google two-way sync | [requirements/connections.d/google_two_way.md](requirements/connections.d/google_two_way.md) | 7 | 7 |
-| Plugins (common) | [requirements/plugins.md](requirements/plugins.md) | 1 | 0 |
-| Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) | 19 | 19 |
-| Settings | [requirements/settings.md](requirements/settings.md) | 53 | 45 |
-| Account | [requirements/account.md](requirements/account.md) | 55 | 54 |
-| Shell | [requirements/shell.md](requirements/shell.md) | 21 | 20 |
-| Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) | 17 | 14 |
-| Deployment | [requirements/deployment.md](requirements/deployment.md) | 29 | 26 |
-| Documentation | [requirements/documentation.md](requirements/documentation.md) | 12 | 12 |
-| Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) | 82 | 40 |
+| Feature | File |
+|---|---|
+| Calendar | [requirements/calendar.md](requirements/calendar.md) |
+| Calendar filter | [requirements/calendar_filter.md](requirements/calendar_filter.md) |
+| Print | [requirements/print.md](requirements/print.md) |
+| Theme | [requirements/theme.md](requirements/theme.md) |
+| Search | [requirements/search.md](requirements/search.md) |
+| Events | [requirements/events.md](requirements/events.md) |
+| Event templates | [requirements/event_templates.md](requirements/event_templates.md) |
+| Rules | [requirements/rules.md](requirements/rules.md) |
+| History | [requirements/history.md](requirements/history.md) |
+| Sources (section) | [requirements/sources.md](requirements/sources.md) |
+| Feeds (section) | [requirements/feeds.md](requirements/feeds.md) |
+| Connections (common) | [requirements/connections.md](requirements/connections.md) |
+| Local calendar | [requirements/connections.d/local_calendar.md](requirements/connections.d/local_calendar.md) |
+| Generic Feed | [requirements/connections.d/generic_feed.md](requirements/connections.d/generic_feed.md) |
+| CCS+ | [requirements/connections.d/ccs.md](requirements/connections.d/ccs.md) |
+| Calendar link | [requirements/connections.d/calendar_link.md](requirements/connections.d/calendar_link.md) |
+| Google one-way sync | [requirements/connections.d/google_one_way.md](requirements/connections.d/google_one_way.md) |
+| Google two-way sync | [requirements/connections.d/google_two_way.md](requirements/connections.d/google_two_way.md) |
+| Plugins (common) | [requirements/plugins.md](requirements/plugins.md) |
+| Google plugin (API client) | [requirements/plugins.d/google_api.md](requirements/plugins.d/google_api.md) |
+| Settings | [requirements/settings.md](requirements/settings.md) |
+| Account | [requirements/account.md](requirements/account.md) |
+| Shell | [requirements/shell.md](requirements/shell.md) |
+| Diagnostics | [requirements/diagnostics.md](requirements/diagnostics.md) |
+| Deployment | [requirements/deployment.md](requirements/deployment.md) |
+| Documentation | [requirements/documentation.md](requirements/documentation.md) |
+| Common (time, shared UI, capabilities) | [requirements/common.md](requirements/common.md) |
 
 ## Checking a feature file
 

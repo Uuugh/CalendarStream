@@ -13,7 +13,7 @@ Terms: **one-way** sends changes from CalendarStream to the other side only, **t
 | CON-02 | proposed | A connection is named, colored and annotated. | — | — |
 | CON-02.a | proposed | A source can be renamed and given a note; saving updates its name and explanatory note, and clearing the note removes its content. | — | S18-17, S29-11, S33-05, S39-18, S44-16 |
 | CON-02.b | proposed | Source color can be changed and saved; the new color is reflected immediately in its source display. | — | S38-15, S59-22 |
-| CON-02.c | proposed | Legacy source notes that merely repeat the source kind are treated as absent notes. | — | changelog_gaps_901-1200:24 |
+| CON-02.c | proposed | A note that merely repeats the connection's kind is treated as no note. | — | changelog_gaps_901-1200:24 |
 | CON-02.d | backlog | A connection's kind is fixed text in its module header, stated in its own file. | — | theme.md Clarifications |
 | CON-02.e | proposed | A connection is shown as a module: its header, Expand and Close follow UI-29, and its look follows THM-08. | — | — |
 | CON-03 | proposed | Each source shows its status and can be synced or turned off. | — | — |

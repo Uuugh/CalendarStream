@@ -64,4 +64,4 @@ Terms used below (defined once):
 | ACC-09.b | proposed | Cross-site form changes are refused and leave the saved value unchanged. | — | S23-23 |
 | ACC-09.c | proposed | Page responses restrict framing to the same origin, prevent content-type sniffing and suppress referrer disclosure. | — | S23-25, S36-37 |
 
-Future: a Users feature will decide which users may see secrets in the logs (log visibility permissions, HIS-04, GOW-01); until then the one signed-in user is authorized. (Developer, Nov 18)
+Future: a Users feature will decide which users may see secrets in the logs (log visibility permissions, HIS-04, GOW-01); until then the one signed-in user is authorized.
