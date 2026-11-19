@@ -65,7 +65,7 @@ Terms: a **source** is a place the app reads events from (CCS+, a calendar link,
 | SRC-06.d | proposed | A CCS+ download follows no more redirects than DEF-01 allows; HTTPS and credential forwarding follow SRC-05 and SRC-05. | — | changelog_gaps_1501-1800:37, changelog_gaps_301-600:40 |
 | SRC-06.e | proposed | The download diagnostic record identifies the connection mode that answered and the modes previously attempted. | — | changelog_gaps_301-600:39 |
 | SRC-07 | proposed | A downloaded or imported schedule becomes events with their times and recurrences. | — | — |
-| SRC-07.a | proposed | CCS+ import preserves the source event identifiers and details; event times follow TIM-01–TIM-06 and normalization follows RUL-29. | — | readme_gaps:37 |
+| SRC-07.a | proposed | CCS+ import preserves the source event identifiers and details; event times follow TIM-01–TIM-06 and normalization follows RUL-06. | — | readme_gaps:37 |
 | SRC-07.b | proposed | When CCS+ full-day times are normalized, the original times remain available in the event notes. | — | readme_gaps:37 |
 | SRC-07.c | proposed | Recurring source events expand into distinct occurrences while retaining source-qualified identities. Moving one recurrence preserves the occurrence identities and updates its changed title. | — | S26-10, S53-13 |
 | SRC-07.d | proposed | Recurring source events are expanded over the period in DEF-01. | — | readme_gaps:61, changelog_gaps_1501-1800:24 |

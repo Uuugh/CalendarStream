@@ -30,6 +30,5 @@ Where each decision in the legacy `build_rules/theme.md` Clarifications goes, wh
 - A credentials row (Client ID / secret) ends with a trash that asks before deleting; a Settings part that works shows everything at once, nothing under Expand, with its Remove (red, lower left) and its options beside it. A row of settings that belong together is one line (Check for updates [Hourly] ☐ Auto-update).
 - The flows of the Status/Action buttons (theme section 7): Sync Now, Check now, Update now, Connect, Remove a calendar, Import.
 
-**rules.md**: rule lines say what the rule does, titled or not ("Items without an end time → Change length to 1:00"); a rule's color reads "Color ■ (Name)".
 
 **shell.md**: the title bar has the logo's mark (the Light mark on light pages, the Dark mark on dark ones) left of the title, the title in the logo's colors, the version and © in the footer, one transparent favicon for both; sections say "Expand to Configure" (Calendars, Feeds, All Rules, Event Templates) or "Expand for Details" (History); every section's header reads icon · title · space · status lines · health · + (Calendars and Feeds have no status lines; All Rules and Event Templates up to three, the conflicts or errors, otherwise how many; + top right).

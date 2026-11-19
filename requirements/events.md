@@ -33,13 +33,13 @@ The event pop-up, linked events, hiding and reverting. Issues against this featu
 | EVT-31 | proposed | A linked event follows its target: moving the target by two hours moves the linked event by two hours; deleting the target removes the linked event and its link. Linking an imported event alone adds no stored edit. Moving shifts start and end together (an all-day event is a 24-hour event, TIM-04, so it needs no special case). | — | S37-05, S37-14, S37-17..19, S62-10 |
 | EVT-32 | proposed | Starting a new event-derived rule closes the event dialog; closing the rule dialog restores it (UI-02). | — | S67-14, S67-17 |
 | EVT-33 | proposed | A meeting link (Zoom and similar) is found in an event's conference fields, text or location with its query intact; plain text yields none. Extraction keeps an online meeting address the user already entered. | — | S63-01, S63-02, readme_gaps:50, changelog_gaps_301-600:21, changelog_gaps_301-600:21 |
-| EVT-38 | proposed | A linked event’s delete-with and move-with actions can each be enabled or removed independently through its link rule (RUL-11). | — | readme_gaps:46, changelog_gaps_301-600:31 |
+| EVT-38 | proposed | A linked event’s delete-with and move-with actions can each be enabled or removed independently through its link rule (RUL-03). | — | readme_gaps:46, changelog_gaps_301-600:31 |
 | EVT-39 | proposed | Choosing Rule for an event opens its associated rule, or starts a rule for that event when it has none; returning to the event follows EVT-32 and UI-02. | — | readme_gaps:46 |
 | EVT-41 | proposed | An event’s online meeting address is exported in its ICS URL property; feed round-trip preservation follows FED-04. | — | readme_gaps:50 |
 | EVT-42 | proposed | Local edits to an imported event survive subsequent source downloads; the source itself is unchanged (EVT-23). | — | readme_gaps:51, changelog_gaps_2101-2336:27 |
 | EVT-43 | proposed | An edited imported event identifies that it has local edits and indicates when its source changes after those edits. | — | readme_gaps:51, changelog_gaps_2101-2336:27 |
 | EVT-44 | proposed | An imported event’s local edits can be reverted to the current source version. | — | changelog_gaps_2101-2336:27 |
-| EVT-47 | proposed | Starting a rule from an unsaved new event uses its currently entered title and date (RUL-36). | — | changelog_gaps_301-600:16 |
+| EVT-47 | proposed | Starting a rule from an unsaved new event uses its currently entered title and date (RUL-06). | — | changelog_gaps_301-600:16 |
 | EVT-48 | proposed | An event’s online meeting address can be opened. | — | changelog_gaps_301-600:21 |
 
 Retired IDs (merged or dropped; numbers are never reused): EVT-45 into EVT-10; EVT-46 into EVT-11; EVT-51 into EVT-15; EVT-35 and EVT-36 into EVT-19; EVT-28 into EVT-27; EVT-37 into EVT-30; EVT-40 and EVT-49 into EVT-33; EVT-25 (already merged into EVT-01); EVT-50 (migration is DEP-14; EVT-31 and EVT-38 already keep the behavior).

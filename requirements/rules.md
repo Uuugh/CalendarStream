@@ -3,65 +3,70 @@
 The app's Rules: the rule model and engine, the rule dialog, All Rules, link rules. Issues against this feature
 (GitHub, label `feature:rules`): I3, I35, I38, I40.
 
-| ID | status | statement | test | was |
+| ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
-| RUL-01 | planned | "Link to" in the rule dialog is simplified to "Link to a Rule": it keeps its place in the dialog but uses the layout of the Sources > Rules subsection. | — | F60.1 |
-| RUL-02 | planned | A new Then action, "Link to Event", links the rule to a specific event chosen with the existing date picker, alongside "Delete this event" and "Move this event". | — | F60.2 |
-| RUL-03 | verified | A text condition matches by equality (trimmed), contains, whole word, prefix, suffix or regex; whole word `RDO` does not match `RDOS`. Case is ignored. | — | S36-01, S52-04 |
-| RUL-04 | verified | `*` and `#` wildcards are supported: `*E####` matches `Trip E1234` and `e9999` but not `E12345`. | — | S49-04, S52-03 |
-| RUL-05 | verified | A condition on "Any text" matches title, location or notes. | — | S49-09 |
-| RUL-06 | verified | Conditions combine with AND/OR in order with optional brackets: `A OR B AND C` differs from `(A OR B) AND C`. | — | S36-02 |
-| RUL-07 | verified | Day conditions cover selected days, a Fri-Mon range, after and before a day. Conditions on days and times are judged in the event's own time zone: a rule has no time zone of its own (Developer, Nov 17). | — | S36-08, S36-09 |
-| RUL-08 | verified | A time range may be overnight (22:00-06:00 matches 23:00, not daytime). | — | S36-10 |
-| RUL-09 | verified | Date conditions: a range (reversed order is accepted) and "after date". | — | S36-11 |
-| RUL-10 | verified | Length conditions distinguish no end time, a normal event, a near whole-day event and an exact duration. | — | S36-12 |
-| RUL-11 | verified | Actions: Color, Emoji, Change title, Change notes, Add text, Change length, Change time, Delete, Move, Add event, Record changes, link rules (delete/move). | — | S62-01, S62-09 |
-| RUL-12 | verified | Color: the higher rule wins; a lower rule still adds its emoji; a second pass does not duplicate it; several emoji actions prefix the title in order. | — | S36-14, S49-08 |
-| RUL-13 | verified | Change title replaces the title; Add appends (a new line for notes, a space for location). | — | S62-05 |
-| RUL-14 | verified | Delete hides the event with a rule-labelled marker; non-matching events stay. | — | S62-02 |
-| RUL-15 | verified | Move shifts start and end together, forward or back (+90, -30 minutes). | — | S62-03, S62-04 |
-| RUL-16 | verified | Change length makes a near whole-day event all-day (keeping an original-time note) or shortens a normal one. | — | S36-13, S27-09, S27-13 |
-| RUL-17 | verified | Add event creates a rule-origin event relative to the matching event (e.g. a Prep event 08:00-08:45, an hour before), from an existing event template. | — | S36-15, S26-19 |
-| RUL-18 | verified | Record changes remembers later edits to a matching event and annotates it ("Changed ... time"). | — | S33-11, S33-12 |
-| RUL-19 | verified | A rule with no actions is refused (400). | — | S27-12 |
-| RUL-20 | verified | A malformed regex, unmatched bracket, incomplete date range or empty Add is refused with a clear message; unmatched brackets are cleared when not strict. | — | S36-03..07, S40, S49-07, S62-06, S62-07 |
-| RUL-21 | verified | Maximum conditions and actions per rule are enforced with a message naming the limit; a rule at the limit saves. | — | S52-07..11 |
-| RUL-22 | verified | A regex that could take too long is stopped within a second with "Too slow"; the regex tester reports an invalid pattern, match spans and highlights the match. | — | S52-01, S52-05, S52-06, S49-05, S49-06, S49-56 |
-| RUL-23 | verified | An Add-event rule naming a template that does not exist, with no title, is refused. | — | S26-26 |
-| RUL-24 | verified | A rule applies to all calendars or to chosen ones; unapplying removes it from that calendar and keeps it in All Rules. | — | S21-17, S21-18, S26-22..24, S33-06, S33-08 |
-| RUL-25 | verified | A new calendar-specific rule is first in that calendar's list; an all-calendar rule goes last; renaming a calendar keeps its rules. | — | S19-25, S19-26, S36-16, S36-38 |
-| RUL-26 | verified | Rules can be reordered (up/down, before/after a neighbour) and the order is stored and shown. | — | S34-17, S34-18, S36-17, S36-39 |
-| RUL-27 | verified | A rule can be cloned; the clone is unapplied and placed right after the original. | — | S33-10, S36-41 |
-| RUL-28 | verified | Deleting a rule removes it from every list; default rules (RUL-29) cannot be deleted. | — | S19-27, S27-10 |
-| RUL-29 | verified | A calendar starts with two predefined rules (items without an end time, 24-hour events), kept in All Rules like any rule. Default rules are permanent: they can be unassigned from a calendar and assigned again, but never deleted (Developer, Nov 17). Adding CCS+ again re-assigns its starters. The 24-hour rule aligns a whole-day event to the local day: an event spanning about 24 hours becomes all-day, local midnight to the next local midnight in the event's time zone, so daylight-saving days stay correct. | — | S21-13, S27-08, S63-17 |
-| RUL-30 | verified | A rule whose calendar was removed still shows the saved name; a rule with no calendar says so. | — | S67-07..09 |
-| RUL-31 | verified | All Rules reports a higher rule that shadows a lower one's color, and duplicate rules, with the choices Put first, Keep as is, Drop and Merge. | — | S37-01..03, S37-08..12 |
-| RUL-32 | verified | Merging rules unions their calendars (All if any is All). | — | S37-04, S49-29 |
-| RUL-33 | verified | Saving a condition identical to an existing rule offers Save as new or Merge; the stored count does not change until chosen. | — | S37-42..47 |
-| RUL-34 | verified | An unknown conflict key is refused (400). | — | S37-13 |
-| RUL-35 | verified | Legacy tag-colors and defaults migrate to rules (RDO, VAC color and a 120-minute no-end action), keeping IDs and order, then the legacy records are removed. | — | S29-06, S29-07, S36-18, S37-06, S37-07 |
-| RUL-36 | verified | The rule dialog opens from "New rule…" in a calendar (that calendar preselected) or from All Rules (All preselected); dialog behavior follows UI-02. | — | S21-15, S37-33..36, S37-41, S67-15, S67-16 |
-| RUL-37 | verified | Each action asks for what it needs: minutes for Change length, a title or an event template for Add event, a color for Color (UI-10). | — | S37-37, S37-38, S40-09..11 |
-| RUL-39 | verified | A rule shows which calendars it applies to: All, one calendar, or several (with the count). | — | S38-05, S38-06, S33-07, S33-09 |
-| RUL-40 | verified | A rule shows its title (if any), what it does, and its color by name. | — | S40-01, S40-02, S66-17, S45-26 |
-| RUL-41 | verified | How rules work is explained from the rule dialog. | — | S33-24, S38-01, S38-03, S38-04, S38-13, S21-23 |
-| RUL-43 | verified | An Emoji action lets the user find and choose any emoji by searching (UI-11). | — | S44-41 |
-| RUL-44 | verified | A typed regex is checked for legality as it is typed or saved; when it is not legal, the site says why and highlights the broken part of the pattern. Regexes use Dart (ECMAScript) syntax; Python-only syntax is not supported. | packages/domain/test/rules/text_matching_test.dart | Developer, Nov 17 |
-| RUL-45 | proposed | The wildcard ? matches exactly one character in a text pattern (RUL-04). | — | readme_gaps:67, changelog_gaps_601-900:37 |
-| RUL-46 | proposed | A rule scoped to All calendars applies to calendars added later as well as current calendars (RUL-24). | — | readme_gaps:69, changelog_gaps_901-1200:34 |
-| RUL-48 | proposed | Editing a rule preserves its calendar applicability until the user changes that applicability (RUL-24). | — | changelog_gaps_1201-1500:19 |
-| RUL-51 | proposed | An event deleted by a rule follows that rule’s current outcome: changing or removing the deleting action brings the event back (RUL-14, CAP-01). | — | changelog_gaps_301-600:30 |
-| RUL-53 | proposed | The user can reorder Then actions; the saved action order determines their priority and emoji sequence (RUL-12). | — | changelog_gaps_301-600:32 |
-| RUL-54 | proposed | Dropping a conflicting action removes the selected field-specific action, preserving actions for other fields (RUL-31). | — | changelog_gaps_301-600:35 |
-| RUL-55 | proposed | A newly added Emoji action starts without a chosen emoji; selection follows UI-11. | — | changelog_gaps_301-600:38 |
-| RUL-56 | proposed | A pattern that exceeds its evaluation budget (DEF-01) matches no further events during that evaluation run (RUL-22). | — | changelog_gaps_601-900:19 |
-| RUL-57 | proposed | When adding a rule, the user can reuse an existing rule from another calendar when such a rule is available (RUL-24, RUL-36). | — | changelog_gaps_601-900:43 |
-| RUL-59 | proposed | Conflict reporting identifies a higher rule that shadows a lower rule’s Emoji or Time action (RUL-31). | — | changelog_gaps_901-1200:30 |
-| RUL-60 | proposed | Choosing Keep as is suppresses that same conflict warning on subsequent observations (RUL-31). | — | changelog_gaps_901-1200:30 |
-| RUL-61 | proposed | A source color change updates the source’s color in rule applicability badges (RUL-39, UI-13, UI-15). | — | changelog_gaps_901-1200:35 |
-| RUL-62 | proposed | Saving a rule without a title generates a title from its conditions and actions (RUL-40). | — | changelog_gaps_301-600:18 |
-| RUL-63 | proposed | An Add-event action can place a template-derived event before or after the matching event’s start or after its end (RUL-17). | — | changelog_gaps_1501-1800:25 |
-| RUL-64 | proposed | Changing an event template updates the events generated from it by rules (RUL-17). | — | changelog_gaps_1501-1800:25 |
-| RUL-65 | proposed | Record changes tracks source title, time and location changes, moved recurring occurrences and dropped events, annotates the affected event and records the observed changes in activity (RUL-18, HIS-01). | — | changelog_gaps_1201-1500:31, changelog_gaps_1201-1500:31 |
+| RUL-01 | proposed | A rule has conditions that decide which events it matches. | — | — |
+| RUL-01.a | verified | A text condition matches by equality (trimmed), contains, whole word, prefix, suffix or regex; whole word `RDO` does not match `RDOS`. Case is ignored. | — | S36-01, S52-04 |
+| RUL-01.b | verified | `*` and `#` wildcards are supported: `*E####` matches `Trip E1234` and `e9999` but not `E12345`. | — | S49-04, S52-03 |
+| RUL-01.c | proposed | The wildcard ? matches exactly one character in a text pattern (RUL-01). | — | readme_gaps:67, changelog_gaps_601-900:37 |
+| RUL-01.d | verified | A condition on "Any text" matches title, location or notes. | — | S49-09 |
+| RUL-01.e | verified | Conditions combine with AND/OR in order with optional brackets: `A OR B AND C` differs from `(A OR B) AND C`. | — | S36-02 |
+| RUL-01.f | verified | Day conditions cover selected days, a Fri-Mon range, after and before a day. Conditions on days and times are judged in the event's own time zone: a rule has no time zone of its own (Developer, Nov 17). | — | S36-08, S36-09 |
+| RUL-01.g | verified | A time range may be overnight (22:00-06:00 matches 23:00, not daytime). | — | S36-10 |
+| RUL-01.h | verified | Date conditions: a range (reversed order is accepted) and "after date". | — | S36-11 |
+| RUL-01.i | verified | Length conditions distinguish no end time, a normal event, a near whole-day event and an exact duration. | — | S36-12 |
+| RUL-02 | proposed | A regular expression in a condition is checked as the user types and cannot slow the app down. | — | — |
+| RUL-02.a | verified | A typed regex is checked for legality as it is typed or saved; when it is not legal, the site says why and highlights the broken part of the pattern. Regexes use Dart (ECMAScript) syntax; Python-only syntax is not supported. | — | Developer, Nov 17 |
+| RUL-02.b | verified | A regex that takes too long is stopped within the pattern budget in DEF-01 and reported as Too slow; the regex tester reports an invalid pattern, shows the match spans and highlights the match. | — | S52-01, S52-05, S52-06, S49-05, S49-06, S49-56 |
+| RUL-02.c | proposed | A pattern that exceeds its evaluation budget (DEF-01) matches no further events during that evaluation run (RUL-02). | — | changelog_gaps_601-900:19 |
+| RUL-03 | proposed | A rule has actions that change the events it matches. | — | — |
+| RUL-03.a | verified | Actions: Color, Emoji, Change title, Change notes, Add text, Change length, Change time, Delete, Move, Add event, Record changes, link rules (delete/move). | — | S62-01, S62-09 |
+| RUL-03.b | verified | Each action asks for what it needs: minutes for Change length, a title or an event template for Add event, a color for Color (UI-10). | — | S37-37, S37-38, S40-09..11 |
+| RUL-03.c | verified | Color: the higher rule wins; a lower rule still adds its emoji; a second pass does not duplicate it; several emoji actions prefix the title in order. | — | S36-14, S49-08 |
+| RUL-03.d | verified | Change title replaces the title; Add appends (a new line for notes, a space for location). | — | S62-05 |
+| RUL-03.e | verified | Delete hides the event with a rule-labelled marker; non-matching events stay. | — | S62-02 |
+| RUL-03.f | verified | Move shifts start and end together, forward or back (+90, -30 minutes). | — | S62-03, S62-04 |
+| RUL-03.g | verified | Change length makes a near whole-day event all-day (keeping an original-time note) or shortens a normal one. | — | S36-13, S27-09, S27-13 |
+| RUL-03.h | verified | An Emoji action lets the user find and choose any emoji by searching (UI-11). | — | S44-41 |
+| RUL-03.i | proposed | A newly added Emoji action starts without a chosen emoji; selection follows UI-11. | — | changelog_gaps_301-600:38 |
+| RUL-03.j | proposed | The user can reorder Then actions; the saved action order determines their priority and emoji sequence (RUL-03). | — | changelog_gaps_301-600:32 |
+| RUL-04 | proposed | A rule can create events, follow events and record changes. | — | — |
+| RUL-04.a | verified | Add event creates a rule-origin event relative to the matching event (e.g. a Prep event 08:00-08:45, an hour before), from an existing event template. | — | S36-15, S26-19 |
+| RUL-04.b | proposed | An Add-event action can place a template-derived event before or after the matching event’s start or after its end (RUL-04). | — | changelog_gaps_1501-1800:25 |
+| RUL-04.c | proposed | Changing an event template updates the events generated from it by rules (RUL-04). | — | changelog_gaps_1501-1800:25 |
+| RUL-04.d | verified | An Add-event rule that names an event template that does not exist, and has no title, is not valid (UI-19). | — | S26-26 |
+| RUL-04.e | verified | Record changes remembers later edits to a matching event and annotates it ("Changed ... time"). | — | S33-11, S33-12 |
+| RUL-04.f | proposed | Record changes tracks source title, time and location changes, moved recurring occurrences and dropped events, annotates the affected event and records the observed changes in activity (RUL-04, HIS-01). | — | changelog_gaps_1201-1500:31, changelog_gaps_1201-1500:31 |
+| RUL-04.g | proposed | An event deleted by a rule follows that rule’s current outcome: changing or removing the deleting action brings the event back (RUL-03, CAP-01). | — | changelog_gaps_301-600:30 |
+| RUL-04.h | planned | A new Then action, "Link to Event", links the rule to a specific event chosen with the existing date picker, alongside "Delete this event" and "Move this event". | — | F60.2 |
+| RUL-04.i | planned | "Link to" in the rule dialog is simplified to "Link to a Rule": it keeps its place in the dialog but uses the layout of the Sources > Rules subsection. | — | F60.1 |
+| RUL-05 | proposed | A rule applies to all calendars or to chosen ones, and rules have an order. | — | — |
+| RUL-05.a | verified | A rule applies to all calendars or to chosen ones; unapplying removes it from that calendar and keeps it in All Rules. | — | S21-17, S21-18, S26-22..24, S33-06, S33-08 |
+| RUL-05.b | proposed | A rule scoped to All calendars applies to calendars added later as well as current calendars (RUL-05). | — | readme_gaps:69, changelog_gaps_901-1200:34 |
+| RUL-05.c | proposed | Editing a rule preserves its calendar applicability until the user changes that applicability (RUL-05). | — | changelog_gaps_1201-1500:19 |
+| RUL-05.d | verified | A new calendar-specific rule is first in that calendar's list; an all-calendar rule goes last; renaming a calendar keeps its rules. | — | S19-25, S19-26, S36-16, S36-38 |
+| RUL-05.e | verified | Rules can be reordered (up/down, before/after a neighbour) and the order is stored and shown. | — | S34-17, S34-18, S36-17, S36-39 |
+| RUL-05.f | verified | A rule whose calendar was removed still shows the saved name; a rule with no calendar says so. | — | S67-07..09 |
+| RUL-05.g | proposed | When adding a rule, the user can reuse an existing rule from another calendar when such a rule is available (RUL-05, RUL-06). | — | changelog_gaps_601-900:43 |
+| RUL-05.h | proposed | A source color change updates the source’s color in rule applicability badges (RUL-05, UI-13, UI-15). | — | changelog_gaps_901-1200:35 |
+| RUL-05.i | verified | A rule shows which calendars it applies to: All, one calendar, or several (with the count). | — | S38-05, S38-06, S33-07, S33-09 |
+| RUL-06 | proposed | The user creates, shows, clones and deletes rules. | — | — |
+| RUL-06.a | verified | A rule can be cloned; the clone is unapplied and placed right after the original. | — | S33-10, S36-41 |
+| RUL-06.b | verified | Deleting a rule removes it from every list; default rules (RUL-06) cannot be deleted. | — | S19-27, S27-10 |
+| RUL-06.c | verified | A calendar starts with two predefined rules (items without an end time, 24-hour events), kept in All Rules like any rule. Default rules are permanent: they can be unassigned from a calendar and assigned again, but never deleted (Developer, Nov 17). Adding CCS+ again re-assigns its starters. The 24-hour rule aligns a whole-day event to the local day: an event spanning about 24 hours becomes all-day, local midnight to the next local midnight in the event's time zone, so daylight-saving days stay correct. | — | S21-13, S27-08, S63-17 |
+| RUL-06.d | verified | The rule dialog opens from "New rule…" in a calendar (that calendar preselected) or from All Rules (All preselected); dialog behavior follows UI-02. | — | S21-15, S37-33..36, S37-41, S67-15, S67-16 |
+| RUL-06.e | verified | A rule shows its title (if any), what it does, and its color by name. | — | S40-01, S40-02, S66-17, S45-26 |
+| RUL-06.f | proposed | Saving a rule without a title generates a title from its conditions and actions (RUL-06). | — | changelog_gaps_301-600:18 |
+| RUL-06.g | verified | How rules work is explained from the rule dialog. | — | S33-24, S38-01, S38-03, S38-04, S38-13, S21-23 |
+| RUL-06.h | verified | A rule with no actions is not valid (UI-19). | — | S27-12 |
+| RUL-06.i | verified | A malformed regex, an unmatched bracket, an incomplete date range or an empty Add is not valid (UI-19). | — | S36-03..07, S40, S49-07, S62-06, S62-07 |
+| RUL-06.j | verified | A rule has at most the number of conditions and of actions in DEF-01; one more is not valid (UI-19) and the message names the limit; a rule at the limit saves. | — | S52-07..11 |
+| RUL-06.k |  | A rule line says what the rule does, titled or not (for example "Items without an end time → Change length to 1:00"); its color reads "Color ■ (Name)". | — | theme.md Clarifications |
+| RUL-07 | proposed | Rules that conflict or repeat each other are reported, and the user chooses what to do. | — | — |
+| RUL-07.a | verified | All Rules reports a higher rule that shadows a lower one's color, and duplicate rules, with the choices Put first, Keep as is, Drop and Merge. | — | S37-01..03, S37-08..12 |
+| RUL-07.b | verified | Merging rules unions their calendars (All if any is All). | — | S37-04, S49-29 |
+| RUL-07.c | verified | Saving a condition identical to an existing rule offers Save as new or Merge; the stored count does not change until chosen. | — | S37-42..47 |
+| RUL-07.d | proposed | Dropping a conflicting action removes the selected field-specific action, preserving actions for other fields (RUL-07). | — | changelog_gaps_301-600:35 |
+| RUL-07.e | proposed | Conflict reporting identifies a higher rule that shadows a lower rule’s Emoji or Time action (RUL-07). | — | changelog_gaps_901-1200:30 |
+| RUL-07.f | proposed | Choosing Keep as is suppresses that same conflict warning on subsequent observations (RUL-07). | — | changelog_gaps_901-1200:30 |
 
-Retired IDs (merged or dropped; numbers are never reused): RUL-47 (migration is DEP-14 and RUL-35); RUL-49 (RUL-25); RUL-50 (RUL-26); RUL-52 (FED-01 and CAP-01 already leave a hidden or rule-deleted event out of a feed); RUL-58 into UI-20; RUL-66 into RUL-65.
