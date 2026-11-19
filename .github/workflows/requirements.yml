@@ -1,0 +1,15 @@
+# Checks the requirements folder quickly (bash and awk only, no packages). Runs only when requirements change.
+name: Requirements
+on:
+  push:
+    branches: [main]
+    paths: ["requirements/**", "tests/tools/req_check.sh"]
+  pull_request:
+    paths: ["requirements/**", "tests/tools/req_check.sh"]
+jobs:
+  requirements:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the requirements
+        run: bash tests/tools/req_check.sh

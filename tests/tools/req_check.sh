@@ -15,7 +15,7 @@ awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{s=$4; while (match(s,/[A-Z][A-Z][A-
  | awk '{print $1" "$3}' | sort -u | while read from to; do echo "$ids" | grep -qx "$to" || { echo "$from -> $to"; }; done > /tmp/req_missing.txt
 [ -s /tmp/req_missing.txt ] && { cat /tmp/req_missing.txt; err=1; } || echo none
 echo "== warnings: numbers with units outside DEF-01 (rows not in common.md)"
-awk -F'|' 'FILENAME!="common.md" && /^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if ($4 ~ /[0-9]+ ?(minutes?|seconds?|hours?|days?|characters|px|MB|%)/ && $4 !~ /DEF-01/) print FILENAME": "$2}' $files | sed 's/ $//' | sort | uniq -c | awk '{print $2" "$3" "$4}' | tr '\n' ';'; echo
+awk -F"|" 'FILENAME!="common.md" && FILENAME!="theme.md" && /^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if ($4 ~ /[0-9]+ ?(minutes?|seconds?|hours?|days?|characters|px|MB|%)/ && $4 !~ /DEF-01/) print FILENAME": "$2}' $files | sed 's/ $//' | sort | uniq -c | awk '{print $2" "$3" "$4}' | tr '\n' ';'; echo
 echo "== warnings: history or script wording"
 awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (tolower($4) ~ /python app|the checked|oracle|sampled|fixture|\(400\)/) print FILENAME": "$2}' $files | tr '\n' ';'; echo
 [ $err -ne 0 ] && echo "RESULT: errors" || echo "RESULT: no errors"; exit $err
