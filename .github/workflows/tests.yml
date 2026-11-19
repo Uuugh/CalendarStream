@@ -4,10 +4,14 @@
 # ChatGPT working the issue #12 reorg) so its own PR carries a real pass/fail, not just pushes to main.
 name: Tests
 
+# A change that only touches the requirements, the process files, the docs or Markdown cannot break the app:
+# the quick Requirements workflow checks those, and a story runs the tests of the requirements it touches.
 on:
   push:
     branches: [main]
+    paths-ignore: ["requirements/**", "build_rules/**", "docs/**", "**.md"]
   pull_request:
+    paths-ignore: ["requirements/**", "build_rules/**", "docs/**", "**.md"]
   workflow_dispatch:
 
 permissions:

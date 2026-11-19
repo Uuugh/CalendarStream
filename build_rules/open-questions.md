@@ -24,11 +24,6 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **CON-06.n** A source download that unexpectedly returns an empty calendar preserves the previous schedule. How is an unexpected empty response distinguished from an intentionally emptied source? 
   Answer:
 
-## Process question for the Product Owner
-
-- **Tests workflow:** Every push to main, including one that only changes `requirements/`, runs the whole heavy Tests workflow, while the quick Requirements workflow already checks those files. Should the heavy workflow skip pushes and pull requests that only touch `requirements/`, `build_rules/`, `docs/` or Markdown files? Recommended: yes, to keep usage low. I did not change it because it alters the checks that guard the app.
-  Answer:
-
 ## Connections and sections (Nov 19)
 
 - **No limit on connections:** CON-01.d says the number of connections is not limited, but DEF-02 says every list that grows has a stated limit. Which wins: a limit in DEF-01, or an exception?
