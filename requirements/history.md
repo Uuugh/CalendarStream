@@ -25,7 +25,7 @@ Statuses: verified, built, open, planned (approved, not built yet) and proposed 
 | HIS-02.g |  | History's three latest lines sit left-aligned in its section header, before its Healthy box. | — | theme.md Clarifications |
 | HIS-03 | proposed | The user can undo and redo what History records. | — | — |
 | HIS-03.a | proposed | Only the newest completed undoable change can be undone. | — | S49-10 |
-| HIS-03.b | proposed | Undo restores the state before any undoable change and Redo reapplies it (HIS-03), in the order HIS-03 sets. This covers rule deletions; feed and event-template changes; an import (the event set before it); a calendar merge (the original calendar and its rule scope, with the merged events removed from the target); CCS+ removal (the source and its saved credentials); and Hide (the event's visible state, EVT-20). | — | S49-11, S49-12, S49-25, S49-30, S49-34, S57-15, changelog_gaps_601-900:32, changelog_gaps_601-900:32 |
+| HIS-03.b | proposed | Undo restores the state before any undoable change and Redo reapplies it (HIS-03), in the order HIS-03 sets. This covers rule deletions; feed and event-template changes; an import (the event set before it); a calendar merge (the original calendar and its rule scope, with the merged events removed from the target); CCS+ removal (the source and its saved credentials); and Hide (the event's visible state, EVT-04). | — | S49-11, S49-12, S49-25, S49-30, S49-34, S57-15, changelog_gaps_601-900:32, changelog_gaps_601-900:32 |
 | HIS-03.c | proposed | An undoable change records what is needed to restore it, before and after. | — | S77-32, S77-33 |
 | HIS-03.d | proposed | A deleted event kept for Undo is permanently removed when its deletion leaves the retained history. | — | S49-16 |
 | HIS-03.e | proposed | When removal of a CCS+ calendar leaves retained Undo history, its retained sign-in credentials are forgotten; protection while retained follows ACC-05. | — | changelog_gaps_601-900:33 |
@@ -46,7 +46,7 @@ These rows remain accounted for without creating duplicate shared-UI or Python i
 - S58-21: Table column markup/order and draggable attributes are shared table presentation/implementation. These checks do not exercise sorting, dragging or a history state change.
 - S58-23: Activity widths, preview positioning/alignment and collapsed preview presentation belong to theme/shared section UI (UI-05), not a separate history rule.
 - S61-18: Activity widths, preview positioning/alignment and collapsed preview presentation belong to theme/shared section UI (UI-05), not a separate history rule.
-- S65-06: Deleted-event storage marker belongs to events (EVT-21); its retention consequence for Undo is specified above.
+- S65-06: Deleted-event storage marker belongs to events (EVT-01); its retention consequence for Undo is specified above.
 - S66-10: Permissive accepted-check/icon markup predicate does not independently establish a history behavior.
 - S66-11: Table column markup/order and draggable attributes are shared table presentation/implementation. These checks do not exercise sorting, dragging or a history state change.
 - S66-12: ok(True) skip marker when the History table is absent; not independent verification.

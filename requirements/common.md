@@ -5,7 +5,7 @@ Approved by the Developer (decisions and reviewed rows). Statuses: planned = app
 | ID | status | statement | test | was |
 |---|---|---|---|---|
 | TIM-01 |  | Every event's start and end are stored in UTC together with the time zone each was recorded in. | — | Developer, Nov 17 |
-| TIM-02 |  | An event's time zone is set when it is created (imported: from the source, or the zone the source's calendar reports; added: the system zone, or the calendar's zone if one is selected, EVT-05) and stays as recorded until the user edits the event with Edit Event. | — | Developer, Nov 17 |
+| TIM-02 |  | An event's time zone is set when it is created (imported: from the source, or the zone the source's calendar reports; added: the system zone, or the calendar's zone if one is selected, EVT-01) and stays as recorded until the user edits the event with Edit Event. | — | Developer, Nov 17 |
 | TIM-03 |  | The calendar shows every event in the Local time zone: the system (device) zone, or the fixed zone chosen in Settings > Time Zones (SET-02). Changing the Local zone changes only how times are shown. | — | Developer, Nov 17 |
 | TIM-04 |  | An all-day event is a 24-hour event, local midnight to the next local midnight in its own time zone, stored in UTC like any other. It is shown like any other event, so it is one day in its own zone and can span two days in another. When it is sent to an outside calendar that has an all-day type (Google, calendar feeds), it is sent as an all-day event for its stored time zone, with that zone's local dates. | — | Developer, Nov 17 |
 | TIM-05 |  | Rules do not depend on a time zone. A rule is applied to an event, and the event's recorded time zone decides what "Friday" or "22:00" means. Only a rule that is literally about a time zone uses a zone. | — | Developer, Nov 17 |
@@ -100,7 +100,7 @@ CalendarStream), **rule** (made by a rule).
 |---|---|---|
 | CAP-01 | proposed | Imported and custom events can be edited; a rule event cannot be opened for editing, because its rule controls it (remote edits to it are corrected on sync, GGL-05). |
 | CAP-02 | proposed | An imported event can be hidden and shown again, never deleted from its source; a custom event can be deleted, and a deletion can be undone. |
-| CAP-03 | proposed | Only custom events can be moved to another calendar; an imported event of a read-only source never is (EVT-02). |
+| CAP-03 | proposed | Only custom events can be moved to another calendar; an imported event of a read-only source never is (EVT-06). |
 | CAP-04 | proposed | Imported and custom events can be link targets; a rule event cannot. |
 | CAP-05 | proposed | Any calendar CalendarStream owns (a Local calendar) can be the default calendar; a read-only source calendar cannot. |
 | CAP-06 | proposed | Sync Now is offered only for calendars that download from outside; a Local calendar has nothing to download. |

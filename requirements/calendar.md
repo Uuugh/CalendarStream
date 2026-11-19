@@ -32,7 +32,7 @@ Terms: the **Local time zone** is defined in TIM-03; an **event line** is one ev
 | CAL-05.b | proposed | The views that can be printed are the calendar's views (CAL-01.b) and Itinerary, which lists events grouped by day. | — | S36-33, readme_gaps:53, changelog_gaps_1201-1500:16 |
 | CAL-05.c |  | Printing two months produces a sheet for each month. | — | S36-32 |
 | CAL-05.d | proposed | Print All sets the date range (UI-23) from the first event through the last event. | — | readme_gaps:52 |
-| CAL-05.e | proposed | Printing one event uses Day view for that print and keeps the remembered print choices (EVT-03, PRT-01.b). | — | changelog_gaps_301-600:43 |
+| CAL-05.e | proposed | Printing one event uses Day view for that print and keeps the remembered print choices (EVT-06, PRT-01.b). | — | changelog_gaps_301-600:43 |
 | CAL-06 | proposed | The calendar header's right zone holds the view controls in a fixed order, and what the user chooses with them stays on the device until the user changes it. | — | — |
 | CAL-06.a | proposed | The right zone holds, in this order: Time Zone, View, 12/24 clock, Print, Full page, and + last (UI-24). Zone alignment and stacking follow UI-14; what each control does is in its own requirement (CAL-02.a, CAL-01.b, TIM-10, CAL-05, CAL-04). | — | theme.md 13c (to confirm) |
 | CAL-06.b | proposed | The state of each right-zone control that holds one (the time zone, the view, the time format, Full page) is kept on the device until the user changes it (SET-01). A default is stated in the control's own requirement. | — | Developer, Nov 18 |
@@ -46,15 +46,15 @@ These are evidence mappings, not duplicate CAL requirements. Shared behavior is 
 [events requirements](../events.md). Removed draft IDs remain reserved for review continuity.
 
 - Former CAL-16: S18-19, S18-20, S18-21 → UI-01 and UI-02 (event details/dialog lifetime). The click-outside persistence observation is retained as an open shared-dialog question, rather than restated here.
-- Former CAL-17: S18-22 → EVT-04 (new event for a selected day).
-- Former CAL-18: S18-18 → UI-02 (Close), EVT-19 (reminders) and EVT-04 (Add event). Old pin replacement is presentation history.
+- Former CAL-17: S18-22 → EVT-01 (new event for a selected day).
+- Former CAL-18: S18-18 → UI-02 (Close), EVT-03 (reminders) and EVT-01 (Add event). Old pin replacement is presentation history.
 - Former CAL-28: S21-04 → UI-09 (date selection). Outside-click dismissal is an open shared-picker question; it is not a second calendar rule.
 - Former CAL-29: S21-06, S21-22, S64-02 → UI-07 (explanatory help). Calendar/Key grouping is presentation; no new help mechanic is defined here.
-- Former CAL-31: S26-57, S39-20 → Events owns event tools; see EVT-23 and UI-02. Editor/Delete availability evidence is retained for its review.
-- Former CAL-32: S39-21 → Events owns generated-event tools; see EVT-07. Copy-only availability is retained as an events coverage question, not duplicated here.
-- Former CAL-44: S37-16 → EVT-30 (saved event link).
-- Former CAL-46: S44-42, S45-21, S50-02, S65-07 → EVT-21 and EVT-22 (deletion/restoration). The imported-event tombstone/deletion-note observations remain evidence for events reconciliation; these references do not claim those drafts already specify every detail.
-- Former CAL-52: S57-32, S57-39 → Existing planned EVT-03 (event printing); UI-01 and UI-02 govern dialog layers. No implementation or approval status is inferred.
+- Former CAL-31: S26-57, S39-20 → Events owns event tools; see EVT-04 and UI-02. Editor/Delete availability evidence is retained for its review.
+- Former CAL-32: S39-21 → Events owns generated-event tools; see EVT-01. Copy-only availability is retained as an events coverage question, not duplicated here.
+- Former CAL-44: S37-16 → EVT-05 (saved event link).
+- Former CAL-46: S44-42, S45-21, S50-02, S65-07 → EVT-01 and EVT-01 (deletion/restoration). The imported-event tombstone/deletion-note observations remain evidence for events reconciliation; these references do not claim those drafts already specify every detail.
+- Former CAL-52: S57-32, S57-39 → Existing planned EVT-06 (event printing); UI-01 and UI-02 govern dialog layers. No implementation or approval status is inferred.
 - Former CAL-64: S67-36, S67-37, S67-39 → Shared menu mechanics. Open/choose/dismiss evidence is retained for shared UI review; UI-02 covers layer dismissal, but a general menu rule is still an open shared-UI question.
 
 Other shared-UI observations retained in the table evidence (not separate calendar rules): CAL-22’s

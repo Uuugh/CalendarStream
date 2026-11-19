@@ -11,7 +11,7 @@ Terms: the **stream token** is the part of a feed's address that identifies it (
 | FED-01.b | proposed | A feed’s included calendars can be changed independently of other destinations. | — | S26-36 |
 | FED-01.c | proposed | Each feed decides which calendars it carries; the required Local calendar is in a feed only as that feed's own settings say, never because of a rule special to Local. | — | S77-16 |
 | FED-01.d | proposed | A feed can be limited by a date range (UI-23); with no range it publishes its full event set. | — | S29-02, S29-04, S39-19, S29-03, S51-13 |
-| FED-01.e | proposed | A published feed includes events according to their visibility under CAP-02 and EVT-20; hiding an imported event removes it from feed publication. | — | readme_gaps:47 |
+| FED-01.e | proposed | A published feed includes events according to their visibility under CAP-02 and EVT-04; hiding an imported event removes it from feed publication. | — | readme_gaps:47 |
 | FED-01.f | proposed | A new feed's name and note default to the selected source's and follow it when the selected source changes; values the user typed are kept. | — | S31-01, S58-17, S58-18, S58-37, S58-38 |
 | FED-01.g | proposed | A feed’s subscription page identifies the feed by its name. | — | S26-37 |
 | FED-01.h | proposed | Turning a feed off makes its URL temporarily unavailable; turning it back on clears its off state without changing its included calendars. | — | S63-22, S63-23, S63-24 |
@@ -31,9 +31,9 @@ Terms: the **stream token** is the part of a feed's address that identifies it (
 | FED-04 | proposed | A feed's content reads correctly in calendar apps. | — | — |
 | FED-04.a | proposed | Feeds carry each event's own time zone (TIM-07); the page's display time zone does not change them. | — | S19-32 |
 | FED-04.b | proposed | Published calendar data preserves event titles, start times and end times when read back as calendar data. | — | S77-07 |
-| FED-04.c | proposed | Published events include their display reminders, including fifteen-minute and one-hour reminders. Reminder selection belongs to EVT-19. | — | S36-26 |
+| FED-04.c | proposed | Published events include their display reminders, including fifteen-minute and one-hour reminders. Reminder selection belongs to EVT-03. | — | S36-26 |
 | FED-04.d | proposed | Published ICS carries the feed’s color in X-APPLE-CALENDAR-COLOR for consumers that support that calendar property. | — | changelog_gaps_2101-2336:23, changelog_gaps_601-900:40 |
-| FED-04.e | proposed | A published event's online meeting address is also the first line of its notes (EVT-41 owns the ICS URL). | — | changelog_gaps_301-600:22 |
+| FED-04.e | proposed | A published event's online meeting address is also the first line of its notes (EVT-03 owns the ICS URL). | — | changelog_gaps_301-600:22 |
 | FED-04.f | proposed | An unchanged feed supports conditional reads with an ETag and an empty not-modified response; changing its events causes an old ETag to receive updated content. | — | S39-10, S39-11 |
 | FED-05 | proposed | A feed shows when it was last read. | — | — |
 | FED-05.a | proposed | A feed reports Not read yet until fetched; afterward it reports its last read, identifying Google when Google is the reader. | — | S19-28, S19-29, S40-05, S44-11 |
