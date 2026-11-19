@@ -28,9 +28,9 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 - **SRC-56** (sources) Automatic downloading retries a transient nonreply and can succeed on a later attempt; a persistent nonreply eventually fails. What retry budget and timing should be promised beyond the observed attempts? 
   Answer:
-- **CAL-69** (calendar) Each print sheet fits one physical Letter or A4 page without cutting event content. What overflow policy should apply when the selected events cannot fit at a readable size? 
+- **UI-22.d** (common) Each print sheet fits one Letter or A4 page without cutting content. What should happen when the content cannot fit at a readable size? 
   Answer:
-- **CAL-74** (calendar) On a phone, the calendar initially uses List view before the user chooses a view. Should the initial choice follow available window space rather than device type under UI-14? 
+- **CAL-01.f** (calendar) On a phone, the calendar initially uses List view before the user chooses a view. Should the initial choice follow available window space rather than device type under UI-14? 
   Answer:
 - **DEP-26** (deployment) Startup retries establishing a database connection while the database is not ready. What retry budget and terminal failure behavior should be required? 
   Answer:
