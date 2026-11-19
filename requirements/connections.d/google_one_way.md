@@ -74,4 +74,74 @@ A Google connection: a Google calendar destination with its own account that Cal
 | CGOW-06.f | proposed | Successful recovery, or a new successful sign-in, restores the healthy state and clears the retry count, keeping the account's calendar mappings and settings. New accounts start healthy and eligible to sync. | — | S73-01, S73-07, changelog_gaps_1-300:L21 |
 | CGOW-06.g | proposed | A saved health error is shown in full; a line that is too long for its space follows the clipping rule (UIC-14, UIC-07). | — | S73-13 |
 | CGOW-06.h | proposed | Each account’s recorded health and retry deadline persist across an app restart. | — | changelog_gaps_1-300:L21 |
-
+| CGOW-01.t | proposed | The accounts in use are the first account and the account of each Google connection, without duplicates, the first account first. | — | R5 gap |
+| CGOW-01.u | proposed | Each account keeps its refresh credential, email, time connected, last synchronization and its result, last error and the calendars of its connections. | — | R5 gap |
+| CGOW-03.i | proposed | The nearest of Google's event colors to a color is the one with the least squared difference in red, green and blue; a tie goes to the first in the order of THM-09.a. | — | R5 gap |
+| CGOW-05.g | proposed | Registering a watch uses the notification address (the public address followed by /google/notify), a random channel identifier and a random token of the sizes in DEF-01, and asks for the lifetime in DEF-01. | — | R5 gap |
+| CGOW-05.h | proposed | A stored channel keeps its identifier, Google's resource identifier, its token encrypted (ACC-05), its address, its calendar, its expiry (Google's, else now plus the requested lifetime), the time it was last tried and the last notice received. | — | R5 gap |
+| CGOW-05.i | proposed | The notification address is empty when the public host is localhost, 127.0.0.1 or ends in .local, and no watch is registered. | — | R5 gap |
+| CGOW-05.j | proposed | Channels are checked after each connection's synchronization when its account is connected and a notification address exists; a connection with no calendar records the attempt and starts nothing. | — | R5 gap |
+| CGOW-05.k | proposed | A failure to start instant updates records a warning in History once with msg:googleInstantUpdatesArenT ({error}) and is not repeated for the same error; the first success records msg:googleInstantUpdatesTurnedOn. | — | R5 gap |
+| CGOW-05.l | proposed | A notification is accepted when its channel identifier and token match the stored channel; the token is compared in constant time and a stored token that cannot be decrypted never matches. | — | R5 gap |
+| CGOW-05.m | proposed | The connection shows instant updates off with msg:needsAPublicHttpsAddress, off with the stored error as the reason (msg:instantUpdatesFromGoogleOff, {why}), on with msg:lastNoticeFromGoogle ({when}) once a notice arrived (msg:instantUpdatesFromGoogleOn), or msg:startsWithTheNextSync before the first synchronization. | — | R5 gap |
+| CGOW-05.n | proposed | The status line reads msg:nextPushInstantaneous when instant updates are on and msg:instantUpdatesOffShort when off, with tooltips msg:instantTipOn and msg:instantTipDaily. | — | R5 gap |
+| CGOW-06.i | proposed | Each account's health holds its state (healthy, degraded, recovering, reauthorization required or paused), the failure kind, a reason, the number of attempts, the next retry time and the last error (cut to the length in DEF-01) with its time. | — | R5 gap |
+| CGOW-06.j | proposed | A failure adds one attempt when the decision is to retry, and sets the next retry to now plus the wait when the decision retries and the wait is not zero. | — | R5 gap |
+| CGOW-06.k | proposed | The states recovering, paused and reauthorization required are set only by the recovery decisions; health belongs to the account, not to a connection. | — | R5 gap |
+| CGOW-06.l | proposed | A connection whose account is not connected shows msg:invited when an invitation exists and msg:notConnected otherwise; one with an error shows msg:syncProblem (bad when the error begins with msg:googleSyncFailed, a warning otherwise); a synchronized one shows msg:connected; a new one shows msg:starting. | — | R5 gap |
+| CGOW-06.m | proposed | A connection whose error says the sign-in failed shows msg:signInFailedStatus with a msg:fixButton button that restarts that account's sign-in. | — | R5 gap |
+| CGOW-06.n | proposed | A synchronization failure is logged at error when its text differs from the account's previous last error; an unexpected failure reads msg:googleSyncFailed with {error} the kind and the message. | — | R5 gap |
+| CGOW-07 | proposed | Connect and the return from Google complete the sign-in and report every outcome. | — | R5 gap |
+| CGOW-07.a | proposed | Connect is refused with msg:saveTheGoogleOauthClient when no client is saved and with msg:setThePublicAddressSettings when no usable public address is set. | — | R5 gap |
+| CGOW-07.b | proposed | A sign-in request carries a random state and a random verifier of the sizes in DEF-01 (Google sign-in random values); the verifier is stored encrypted (ACC-05). | — | R5 gap |
+| CGOW-07.c | proposed | Pending sign-ins older than the time in DEF-01 are dropped first; when the limit in DEF-01 is reached the oldest is removed to make room. | — | R5 gap |
+| CGOW-07.d | proposed | An unknown, expired or already used state is reported as msg:thisGoogleSignInHas. | — | R5 gap |
+| CGOW-07.e | proposed | The returned code is exchanged with the same callback address, the sign-in's verifier and the client's ID and secret. | — | R5 gap |
+| CGOW-07.f | proposed | An exchange that returns no refresh credential fails with msg:googleDidnTSendA. | — | R5 gap |
+| CGOW-07.g | proposed | A new email that differs from the account's stored email clears the account's stored details and calendars. | — | R5 gap |
+| CGOW-07.h | proposed | On success the refresh credential is stored encrypted, the client check is saved as accepted and listed (PGAP-03.a) and the access credential is cached until the margin in DEF-01 before it expires. | — | R5 gap |
+| CGOW-07.i | proposed | History records msg:googleCalendarConnectedAsCalendar or msg:googleCalendarConnectedAsCalendar2 for each connection of the account ({email} the account's email or msg:yourAccount, {calendar} its calendar). | — | R5 gap |
+| CGOW-07.j | proposed | A failed sign-in is stored as the account's last error and logged at error as msg:google ({text} the message). | — | R5 gap |
+| CGOW-07.k | proposed | The return from Google needs the page login when its state belongs to a normal sign-in; an invitation sign-in return needs none (CGOW-08.g). | — | R5 gap |
+| CGOW-08 | proposed | An invitation lets another person sign a Google account in for one connection. | — | R5 gap |
+| CGOW-08.a | proposed | An invitation is made only for a Google connection while the API client is set up; its token is random with the size in DEF-01; a connection has one live invitation and a new one replaces the old. | — | R5 gap |
+| CGOW-08.b | proposed | Making an invitation records History msg:googleInviteMade ({name} the connection, {days} the lifetime in DEF-01 in days); withdrawing it records msg:googleInviteWithdrawn. | — | R5 gap |
+| CGOW-08.c | proposed | An invitation link is valid when its token has the length in DEF-01, the invitation is live and the connection still exists on the account the invitation was made from; any other link shows msg:googleInviteUnavailable. | — | R5 gap |
+| CGOW-08.d | proposed | The invitation page is titled msg:calendarInvite, shows msg:youAreInvitedToGet ({name} the connection), a msg:continueWithGoogle button and msg:googleInviteSignInNote. | — | R5 gap |
+| CGOW-08.e | proposed | Continuing needs the token the invitation page issued; a missing or wrong token shows msg:googleInvitePageExpired. | — | R5 gap |
+| CGOW-08.f | proposed | Continuing shows msg:googleInviteCantSignIn when the API client is not set up or the callback address is not acceptable. | — | R5 gap |
+| CGOW-08.g | proposed | An invitation sign-in is remembered for the time in DEF-01, at most the number in DEF-01, the oldest dropped first; its return needs no page login. | — | R5 gap |
+| CGOW-08.h | proposed | A cancelled or failed invitation sign-in shows msg:googleInviteCancelled. | — | R5 gap |
+| CGOW-08.i | proposed | A successful invitation sign-in records History msg:googleConnectedThroughInvite ({name}, {email} or msg:googleInvitedAccount), shows msg:calendarNowInYourGoogle and runs a full synchronization. | — | R5 gap |
+| CGOW-09 | proposed | Moving a connection between accounts and disconnecting one leave every other account as it was. | — | R5 gap |
+| CGOW-09.a | proposed | Back on the first account puts the connection on the first account, records History msg:googleBackOnFirstAccount and requests a full synchronization. | — | R5 gap |
+| CGOW-09.b | proposed | Disconnecting a connection on the first account gives it a new unconnected account; the first account and every other connection stay signed in. | — | R5 gap |
+| CGOW-09.c | proposed | A disconnection runs while no synchronization runs, stops the connection's instant-update channel and keeps its calendar; Google's grant is revoked when no other connected account uses the same Gmail address (compared without regard to letter case). | — | R5 gap |
+| CGOW-09.d | proposed | History records msg:googleCalendarDisconnected, msg:googleCalendarDisconnected2 or their calendar-deleted forms (msg:googleCalendarDisconnectedAndIts, msg:googleCalendarDisconnectedAndIts2), as a warning when there are notes and as information otherwise. | — | R5 gap |
+| CGOW-09.e | proposed | Revoking posts the refresh credential to Google; a success or an already revoked grant is accepted, and otherwise the note is msg:googleDidnTConfirmRemoving ({code}) or msg:couldnTReachGoogleTo2; a calendar that could not be deleted adds msg:theCalendarWasnTDeleted ({error}). | — | R5 gap |
+| CGOW-09.f | proposed | Disconnect for the first account in Settings stops every channel, offers msg:alsoDeleteThisCalendarIn, forgets each event's per-event state when the calendars are deleted and records its History line. | — | R5 gap |
+| CGOW-10 | proposed | A connection's calendar color reaches Google by the first way Google accepts. | — | R5 gap |
+| CGOW-10.a | proposed | The ways are tried in order: the RGB color (with a white foreground), the nearest of Google's calendar colors (DEF-01, Google calendar colors), and a full replacement of the calendar's list entry; the way accepted last is tried first. | — | R5 gap |
+| CGOW-10.b | proposed | The nearest calendar color is the one with the least squared difference in red, green and blue. | — | R5 gap |
+| CGOW-10.c | proposed | The full replacement starts from Google's copy of the entry without its color identifier, tag and kind, marked selected and not hidden, with RGB colors turned on. | — | R5 gap |
+| CGOW-10.d | proposed | Only a refusal by Google moves to the next way; an unreachable, busy or revoked answer stops at once; the refusals are joined with "; ". | — | R5 gap |
+| CGOW-10.e | proposed | History records msg:googleColorSet ({who} the connection, {how} a space and the way: msg:googleColorWayRgb, msg:googleColorWayNearest ({color} the calendar color used) or msg:googleColorWayFull, followed by msg:googleColorWayKept when the way differs from the one kept before). | — | R5 gap |
+| CGOW-11 | proposed | Each synchronization writes what changed to Google and reports it. | — | R5 gap |
+| CGOW-11.a | proposed | A calendar that Google reports gone, or refuses because another client made it, is made again; any other failure fails the synchronization. | — | R5 gap |
+| CGOW-11.b | proposed | A stored calendar that differs from the last synchronized one drops all per-event state and runs a full synchronization. | — | R5 gap |
+| CGOW-11.c | proposed | A connection that is switched off is skipped by every synchronization. | — | R5 gap |
+| CGOW-11.d | proposed | A Google event's identifier is the lower-case base32hex of the SHA256 digest of the event's UID without padding; its status is confirmed and it carries private properties marking CalendarStream and holding the UID cut to the length in DEF-01. | — | R5 gap |
+| CGOW-11.e | proposed | A Google event has Google's default reminders off and the event's reminders as popups, earliest first, at most the number in DEF-01 (Reminders per event). | — | R5 gap |
+| CGOW-11.f | proposed | Each event's hash of its body (keys sorted) is stored with its end, Google identifier and Google's updated time. | — | R5 gap |
+| CGOW-11.g | proposed | Each event's result is added, updated (content changed), repaired (the Google copy was deleted or changed by hand) or unchanged. | — | R5 gap |
+| CGOW-11.h | proposed | A known event is replaced at its fixed identifier and is inserted when Google no longer has it; a new event is inserted and is replaced when Google already has it, reviving a deleted one; no event is ever duplicated. | — | R5 gap |
+| CGOW-11.i | proposed | A synchronization makes at most the writes in DEF-01 (Google writes per connection per sync); the rest wait for the next and the History line reads msg:moreAtTheNextSync. | — | R5 gap |
+| CGOW-11.j | proposed | The summary joins msg:added2, msg:updated2, msg:removed and msg:repaired with commas, leaving out zero counts, then msg:calendarRenamed when the calendar was renamed, or reads msg:noChanges. | — | R5 gap |
+| CGOW-11.k | proposed | History records msg:googleNameText ({name} the connection, {text} the summary and any notes) when something changed or there are notes. | — | R5 gap |
+| CGOW-11.l | proposed | A completed synchronization stores the connection's last synchronization time and event count and the account's last synchronization and result, and clears the last error. | — | R5 gap |
+| CGOW-11.m | proposed | A Google copy counts as changed when it is missing, cancelled or its updated time differs from the last write; with no stored time the tolerance in DEF-01 (Google copy changed tolerance) applies. | — | R5 gap |
+| CGOW-12 | proposed | A background job keeps the connections synchronized. | — | R5 gap |
+| CGOW-12.a | proposed | The job runs at start with a full check, when a change wakes it, and at least as often as the full-check interval in DEF-01 (Google job timing). | — | R5 gap |
+| CGOW-12.b | proposed | After a wake-up the job waits the settle time in DEF-01 so bursts of changes become one run, and the wait for the next run is never shorter than the minimum in DEF-01. | — | R5 gap |
+| CGOW-12.c | proposed | An unexpected exception is logged and counts as a failed run; the job continues. | — | R5 gap |
+| CGOW-12.d | proposed | One synchronization or disconnection runs at a time; a run covers all connections account by account and does nothing when no client is saved or no connection exists. | — | R5 gap |

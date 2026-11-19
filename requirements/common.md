@@ -222,6 +222,24 @@ CalendarStream), **rule** (made by a rule).
 | Sync Now answers after | 0.5 seconds | | default only |
 | Next check after an unexpected failure | 5 minutes | | default only |
 | Download interval step | 5 minutes | | default only |
+| Google client ID | | 10 to 200 characters (letters, digits, dot, underscore, hyphen) followed by .apps.googleusercontent.com | default only |
+| Google client secret | | at most 200 characters, no whitespace | default only |
+| Client ID characters shown in History | 12 | | default only |
+| People who can sign in through an unverified Google app | 100 | | default only |
+| Google call time limits | 20 seconds overall, 10 seconds to connect | | default only |
+| Google sign-in random values | state 24 bytes, verifier 48 bytes | | default only |
+| Google invitation token | 24 random bytes | accepted length 20 to 64 characters | default only |
+| Invitation sign-ins remembered | 15 minutes | 50 | default only |
+| Google access credential margin | renewed 60 seconds before it expires; 3,600 seconds when Google gives no lifetime | | default only |
+| Google error text kept | | 300 characters of Google's message; the first 2,000 characters of its answer logged | default only |
+| Google writes per connection per sync | 1,500 | 1,500 | default only |
+| Google event private identifier kept | | the first 900 characters of the UID | default only |
+| Event fields read from Google | | title 200, location 200, notes 4,000 characters | default only |
+| Google copy changed tolerance | 30 seconds | | default only |
+| Google job timing | wait 2 seconds after a wake-up; at least 60 seconds between runs; full check at least every 24 hours | | default only |
+| Events added in Google remembered as left alone | 500 | 500 | default only |
+| Instant-update channel random values | identifier 16 bytes, token 32 bytes | | default only |
+| Google calendar colors | 1 #ac725e, 2 #d06b64, 3 #f83a22, 4 #fa573c, 5 #ff7537, 6 #ffad46, 7 #42d692, 8 #16a765, 9 #7bd148, 10 #b3dc6c, 11 #fbe983, 12 #fad165, 13 #92e1c0, 14 #9fe1e7, 15 #9fc6e7, 16 #4986e7, 17 #9a9cff, 18 #b99aff, 19 #c2c2c2, 20 #cabdbf, 21 #cca6ac, 22 #f691b2, 23 #cd74e6, 24 #a47ae2 | | default only |
 | Default icons | favicon 32 px, app icon 192 px, Apple touch icon | | default only |
 | Update check time limit | 15 seconds | | default only |
 | Update checker first wait | 30 seconds | | default only |
