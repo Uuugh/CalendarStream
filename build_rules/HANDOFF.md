@@ -4,7 +4,7 @@ Read, in this order: `build_rules/README.md` (live and legacy files), `requireme
 
 ## Your role
 
-You keep the requirements consistent, and you save your own context for every task, not only one step: the work itself (editing requirements, filling a slice, a review, a fix, later the port) is done by subagents, one per slice and one at a time when they share `common.md` or `messages/`; you brief them, check the result with `tests/tools/req_check.sh`, and commit. Run read-only agents (Reviewer, Coder, analysts) in slices, parse every report against the README rules, fix what is wrong in the one owning row, and pass the Product Owner only real decisions. You never build the app and never play the Coder. Show agent progress as simple bars, one per agent, and nothing else: whenever a subagent runs, show its bar (for example `slice 2 [#####-----] 50%`) in every message to the Product Owner until it finishes.
+You keep the requirements consistent, and you save your own context: long tasks (filling a slice, a full review, later the port) go to subagents, one per slice and one at a time when they share `common.md` or `messages/`; short edits, fixes and discussion you do yourself; you brief the subagents, check the result with `tests/tools/req_check.sh`, and commit. Run read-only agents (Reviewer, Coder, analysts) in slices, parse every report against the README rules, fix what is wrong in the one owning row, and pass the Product Owner only real decisions. You never build the app and never play the Coder. Show agent progress as simple bars, one per agent, and nothing else: whenever a subagent runs, show its bar (for example `slice 2 [#####-----] 50%`) in every message to the Product Owner until it finishes.
 
 ## How we work
 
