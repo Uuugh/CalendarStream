@@ -5,9 +5,9 @@ Limits: worktree `CalendarStream-dashboard`, branch `dashboard`, never write mai
 `git merge main`. Approved: placement `SCRUM.d/dashboard`, dependencies `intl`, `flutter_localizations`, `flutter_lints`.
 
 A. Layout. The page fits the window with no page scroll; every column and block area has its own vertical scrollbar;
-nothing clips. TOP 2/5: a story board: a Backlog block, then a `+` that adds a story, an epic or a sprint (ask which, and
+nothing clips. TOP (about 60% of the height, the ratio of the current build, which the Product Owner likes; record it as a DEF-01 row): a story board: a Backlog block, then a `+` that adds a story, an epic or a sprint (ask which, and
 its name). Any block can be dragged anywhere (story into epic or sprint, epic into sprint, story between sprints).
-BOTTOM 3/5: three columns: Requirements (filterable, drag up into a block), Issues (filterable, a `+ issue` that writes a
+BOTTOM (the remaining height): three columns: Requirements (filterable, drag up into a block), Issues (filterable, a `+ issue` that writes a
 GitHub issue tied to a requirement through dropdowns), Agent progress.
 
 B. Filters. Use the shared filter requirement UIC-21 (common.md) for feature, requirement and status in both the
@@ -56,3 +56,50 @@ left it to the Orchestrator to sort into a requirement and sub-requirements; wri
   shows no triangle.
 - DSH-11.c: a switch above the column collapses every requirement or expands every requirement at once.
 - DSH-11.d: when the page opens every requirement is collapsed (the Orchestrator's recommendation; the Product Owner can change it).
+
+I. Add controls and the add popup (the Product Owner, after seeing round 3 start). Sort into one requirement with
+sub-requirements at the next free DSH number, `proposed`, each with a Method and a Test:
+- The board's "Add block" and the issue column's "New issue" buttons become a `+` control each (accessible name and tooltip
+  from message keys); the requirement column gets a `+` too, which opens the add popup for a new requirement.
+- The popup for a new requirement or a new issue has an optional number field; it may be left empty.
+- When the number is empty the dashboard suggests where the item belongs: one or more choices (the feature, and for a
+  requirement the parent requirement and the next free ID), ranked by how many words of the entered text match the feature
+  names and the requirement statements; how many choices are shown is a DEF-01 row. The suggestion is computed by the
+  dashboard, with no AI call (if the Product Owner meant an AI agent suggesting, the Orchestrator asks).
+- The Product Owner picks one suggestion or types their own place; the choice sets the feature, the ID and the parent.
+- A requirement made in the popup has status `proposed` until the Product Owner drags it into Backlog; an issue made in the
+  popup is created in GitHub with the matching label.
+- The three add controls and the popup are one shared widget, parameterised by what differs (requirement or issue).
+
+J. Relaunch plan (the Product Owner approved): round 3 is one epic, "Redesign", of seven vertical stories. Each story names its
+requirement IDs, has its own Coder (build) and its own Coder (tests) working from the requirements only, and is done when its
+tests pass (the progress bar reads stories done of 7). Estimates use the baseline rate of `SCRUM.d/usage.md` (about 1.3
+session % per changed file); stop and report at the 70% line. What is already built and uncommitted in the worktree counts
+toward the story it belongs to; check it first, do not rewrite it. The Retrospective is per sprint; the Product Owner accepts
+each story at the Review or earlier with the board's Accept control.
+
+| Story | What the Product Owner sees when it is done | Estimate (files, session %) |
+|---|---|---|
+| 1. Block board | Backlog block, `+` to add a story, epic or sprint, drag any block, left-aligned | 8 files, 10 |
+| 2. Requirement column | UIC-21 filters, outline, collapse that keeps top-level rows, the `+` | 7 files, 9 |
+| 3. Issue column | Filters, groups under features, untied issues stay visible, `+` issue | 6 files, 8 |
+| 4. Status moves | Dragging sets backlog, planned or done with validation; issue labels | 8 files, 10 |
+| 5. Add popup | Optional number, suggestions, pick or type your own | 9 files, 12 |
+| 6. Progress column | Agent bars and the usage chart at the top | 6 files, 8 |
+| 7. Layout and fixes | The current height ratio kept, text encoding, a missing sprint file is an empty board | 4 files, 5 |
+
+Total estimate about 62 session %.
+
+Requirement IDs per story (from `requirements/dashboard.md` on the `dashboard` branch; a sub-requirement follows its parent
+unless the story below names it): story 1: DSH-02, DSH-06, DSH-16 (the block add control); story 2: DSH-03, DSH-04 (the
+requirement column), DSH-11 (outline and collapse, requirement part); story 3: DSH-05, DSH-04 (the issue column), DSH-11 (issue
+groups); story 4: DSH-07 (moves), DSH-08 (Accept); story 5: DSH-09 (the New issue form), DSH-16 (the other two add controls
+and the popup); story 6: DSH-10, DSH-12, DSH-14; story 7: DSH-15, DSH-01, DSH-13 and the fixes (text encoding, a missing sprint
+file). Each Coder (tests) works from these rows only.
+
+K. Agent progress names (the Product Owner, 14:5x): in the Agent progress column each agent is named by its role and the story it
+works on, for example "Coder (build), story 2" or "Reviewer, story 6", not by a file name or an agent id. The label comes from
+the progress file name (`<role>-<story>.progress`, e.g. `coder-build-story-2.progress`); the dashboard turns the role part into
+the role's display name from message keys in six languages. Write it as a requirement with sub-requirements (one rule per row),
+a Method and a Test each. The Product Owner also expects to see the DSH requirements in the Requirements column; they are in
+`requirements/dashboard.md`, so check on a fresh server that the column lists them (the first look used an older server).
