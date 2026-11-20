@@ -10,3 +10,12 @@ Rules for this folder (in addition to `../README.md`):
 4. **Section behavior is not here.** How a section lists, orders, folds or adds modules is the section's feature file (for example `../sources.md`) and the shared UI (`../common.md`, UIC-29, UIC-30).
 5. **Plugins** a connection needs are in `../plugins.d/`; the connection links to the plugin's requirement and does not restate it.
 6. Follow `../README.md` for the line format, statuses, links, `oldkey.md` and the check (`tests/tools/req_check.sh`, which also reads this folder).
+
+## Parts
+
+- `calendar_link.md`: a calendar published at a web address, downloaded as a read-only calendar
+- `ccs.md`: the user's own airline schedule, downloaded with their own sign-in, read only
+- `generic_feed.md`: the user's events published as a calendar feed other apps subscribe to
+- `google_one_way.md`: a Google calendar destination that CalendarStream publishes to
+- `google_two_way.md`: a Google connection that also reads changes made in Google
+- `local_calendar.md`: a calendar the user keeps in the app itself, which can be added to and edited

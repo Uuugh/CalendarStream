@@ -2,14 +2,13 @@
 
 This is the Orchestrator's memory. If your brief or the Product Owner has not made you the Orchestrator, ignore this folder and file.
 
-Everything here is temporary and holds no rules. Delete an item when its work is done (git history keeps it). Keep this file under about 40 lines and list every file of this folder below.
+Everything here is temporary and holds no rules, so no check reads it. Delete an item when its work is done (git history keeps it). Keep this file under about 40 lines and list every file of this folder below.
 
 ## Work in progress and awaiting action
 
 In order; Product Owner items first, then what the Orchestrator can do now, then what waits.
 
 - [ ] The Product Owner reviews the `proposed` rows and answers `requirements/open-questions.md` (a blank status they leave means `backlog`); decides the three proposed rule changes (bucket B in `WORKING.d/CalendarStream.old/build_rules/coder-review-1.md`)
-- [ ] Add the checks to `tests/tools/req_check.sh`: status regression, every folder README lists its parts, links in `AGENTS.md`, `SCRUM.d/`, `packages/README.md` and this file resolve, this file under its size limit with no ticked item (the Orchestrator makes this change; see `WORKING.d/move-plan.md`)
 - [ ] Write the Test line for the 32 rules in `SCRUM.d`, `tests` and `packages` READMEs that `req_check.sh` lists as warnings (law 3), and trim the duplicates in `packages/README.md` Testing (its Location line also contradicts `tests/README.md`)
 - [ ] Restore or delete the placeholders left when the old app moved (list: `WORKING.d/placeholders.md`)
 - [ ] Open: still to fix from the first Coder review: about 30 undefined terms, statements pointing at the legacy theme file, README roles and the DEF prefix, `common.md` to the line format
