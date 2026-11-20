@@ -15,7 +15,7 @@ In order; Product Owner items first, then what the Orchestrator can do now, then
 - [ ] Cold-agent acceptance test of `AGENTS.md`: who am I, where are the rules, the tests and the open questions, what do I read next
 - [ ] Story: define how test runs are split and run in parallel and what a run reports; inputs: the parked branch `paused/test-parallel` (commit 85f404b) and requirement DIA-04.c (see `tests/README.md`)
 - [ ] Re-run the six Coder slices and compare with the baseline (about 390 of 900 rows could not be implemented); repeat the fix, check and review cycle until the count is acceptable
-- [ ] First story, to test the Scrum process: the Scrum dashboard in Flutter/Dart; the Product Owner launches this sprint (brief given: backlog from unassigned requirements and GitHub issues with filters, drag and drop sprint building, issue entry with dropdowns, sprint progress, usage and estimate; samples bolt.new, zeda.io, monday.com agile dashboards, `Desktop/kanban-board-example.jpg`; plan: branch `dashboard` in its own worktree, a pre-push guard keeps `main` untouched); then port story by story with the `dart-flutter` skill
+- [ ] First story, to test the Scrum process: the Scrum dashboard in Flutter/Dart; the Product Owner launches this sprint (brief given: backlog from unassigned requirements and GitHub issues with filters, drag and drop sprint building, issue entry with dropdowns, sprint progress, usage and estimate; samples bolt.new, zeda.io, monday.com agile dashboards, `Desktop/kanban-board-example.jpg`, `Desktop/Scrum-Master-Dashboard-for-Project-Management.png`; plan: branch `dashboard` in its own worktree, a pre-push guard keeps `main` untouched); then port story by story with the `dart-flutter` skill
 
 ## Files in this folder
 
