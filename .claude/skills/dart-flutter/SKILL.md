@@ -5,7 +5,7 @@ description: Use when writing, reviewing or testing Dart or Flutter code for Cal
 
 # Dart and Flutter for CalendarStream
 
-Read `requirements/README.md` first: its rules, and above all its two laws (no duplication, no exceptions), apply to code as they do to requirements. Sources for any Dart or Flutter question, before asking the Product Owner: https://docs.flutter.dev/ and https://dart.dev/.
+Rules for all Dart code (structure, testing) are in `packages/README.md`; read it and `requirements/README.md` first: its rules, and above all its two laws (no duplication, no exceptions), apply to code as they do to requirements. Sources for any Dart or Flutter question, before asking the Product Owner: https://docs.flutter.dev/ and https://dart.dev/.
 
 ## What to build, and from what
 
