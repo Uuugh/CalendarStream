@@ -57,7 +57,7 @@ echo "   message keys not yet cited by a requirement: $(comm -23 <(echo "$tkeys"
 echo "== questions: every (?) row is in open-questions.md and every question there has a (?) row (rule 10)"
 q=../build_rules/open-questions.md
 qrows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/ && $3 ~ /\(\?\)/ {id=$2; gsub(/ /,"",id); print id}' $files | sort)
-qfile=$(grep -oE '^- \*\*[A-Z]+-[0-9]+(\.[a-z]+)?\*\*' $q | grep -oE '[A-Z]+-[0-9]+(\.[a-z]+)?' | sort)
+qfile=$(sed '/^## Differences from the old app/,$d' $q | grep -oE '^- \*\*[A-Z]+-[0-9]+(\.[a-z]+)?\*\*' | grep -oE '[A-Z]+-[0-9]+(\.[a-z]+)?' | sort)
 qbad=$( { comm -23 <(echo "$qrows") <(echo "$qfile") | sed 's/^/no question for row: /'; comm -13 <(echo "$qrows") <(echo "$qfile") | sed 's/^/question without a (?) row: /'; } )
 [ -n "$qbad" ] && { echo "$qbad"; err=1; } || echo none
 [ $err -ne 0 ] && echo "RESULT: errors" || echo "RESULT: no errors"; exit $err
