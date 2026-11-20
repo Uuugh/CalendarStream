@@ -1,6 +1,6 @@
-# Open questions for the Developer
+# Open questions for the Product Owner
 
-Only unanswered questions are listed. Answer on the `Answer:` line under a question (or tell the orchestrator); the orchestrator applies the answer to the requirement rows and removes the question. Before asking, the orchestrator looks in the other requirements, the Python app (`build_rules/reverse-engineering/`) and https://docs.flutter.dev/ and https://dart.dev/.
+Only unanswered questions are listed. Answer on the `Answer:` line under a question (or tell the orchestrator); the orchestrator applies the answer to the requirement rows and removes the question. Before asking, the orchestrator looks in the other requirements, the retired Python app and its reverse-engineering notes (`WORKING.d/CalendarStream.old/build_rules/reverse-engineering/`) and https://docs.flutter.dev/ and https://dart.dev/.
 
 ## Q-X: questions from the drafts (rows marked (?))
 
@@ -20,13 +20,8 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Code check (Nov 19): only CCS+ retries (CCCS-03.b and CCCS-03.c give its plans); every other download makes one attempt per check. Suggestion: reword CON-06.l to say a failed download is tried again at the next check, and leave retry plans to CCCS-03.
   Answer:
 
-## Open, from the connections work (Nov 19)
-
-
 ## Found by a cold read of the requirements (test of the process)
 
-- **Kind text per connection:** CON-02.d used to list five kind texts (CalendarStream, United Airlines CCS+, Google Calendar, Apple Calendar, Calendar Feed) in the common file, which every new connection would have to edit. Each connection now states its own kind text, but none does yet. Recommended: Local calendar = CalendarStream; CCS+ = United Airlines CCS+; calendar link = Google Calendar, Apple Calendar or Calendar Feed by its preset (CLNK-01.c); Google one-way and two-way = Google Calendar. Is that right?
-  Answer: CON-02.d is invalid
 - **Removing the Google API client:** CGOW-01.r keeps the Google connections in their sections needing their account restored. Does publishing stop, which status do they show, and is the user asked to confirm before removing the client?
   Answer:
 
