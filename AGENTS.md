@@ -4,6 +4,11 @@ For any AI agent (or person) working on CalendarStream: a self-hosted calendar a
 Dart/Flutter, one feature at a time, with `requirements/` as the spec). Read this file, then the README of the area
 you will touch.
 
+## Your role
+
+Your role comes from your brief or from the Product Owner's first message. If neither names one, ask. The roles and
+what each does are in `SCRUM.d/README.md`.
+
 ## The two laws
 
 1. **No duplication. Say it once.** A rule is written in one place and referenced everywhere else (code, tests,
@@ -30,6 +35,12 @@ you will touch.
 - **Push after each verified commit; never merge a pull request by hand.** **Test:** `git status` is clean and
   `git log origin/<branch>` matches before you stop.
 
+## Folders: `<topic>.md`, `<topic>.d/`, `<topic>.d/README.md`
+
+`<topic>.md` holds what is common to the topic, written once. `<topic>.d/` holds the parts of the topic, one file
+each. `<topic>.d/README.md` holds the rules of that folder and indexes its parts; read it before touching the folder.
+**Test:** `tests/tools/req_check.sh` reports a part not listed in its folder's README and a listed part that does not exist.
+
 ## Environment
 
 No Python is installed: use bash, sed and awk. A tool layer may halve backslashes in commands; test any sed that must
@@ -38,22 +49,15 @@ is run once at a time.
 
 ## Table of contents
 
+Read the README of an area before touching anything in it.
+
 | Path | What it holds |
 |---|---|
+| `SCRUM.d/` | Roles, stories, sprints, definition of done, how the Orchestrator briefs and checks agents (`SCRUM.d/README.md`) |
+| `WORKING.d/` | The Orchestrator's memory: work in progress and awaiting action; temporary (`WORKING.d/README.md`) |
 | `requirements/` | The spec, one file per feature; `README.md` has the rules for writing it; `open-questions.md` (for now `build_rules/open-questions.md`) the questions for the Product Owner |
-| `scrum/` | Roles, stories, sprints, definition of done, how the Orchestrator briefs and checks agents |
-| `WORKING.md`, `WORKING.d/` | The temporary checklist: work in progress or awaiting action |
 | `packages/`, `server/`, `client/` | The Dart port; `packages/README.md` holds its rules |
 | `app/`, `tests/` | The Python app and its suites: the running app and the reference until the port is complete |
 | `build_rules/` | Old working notes; `build_rules/README.md` says which files are live; do not follow the rest |
-| `.claude/skills/dart-flutter/` | The Dart and Flutter skill |
+| `.claude/skills/dart-flutter/` | The Dart and Flutter skill (the only project skill) |
 | `docs/`, `tools/` | `docs/screenshots/` the README's pictures; `docs/development/` is the Product Owner's scratch work (never read it); `tools/` holds `vendor_icons.py`, a Python helper that goes with the app |
-
-## Before touching an area
-
-Read the README of that area first (`requirements/README.md`, `packages/README.md`, `scrum/README.md`); it holds the
-rules that apply there.
-
-## Responsibilities
-
-Who does what (Product Owner, Orchestrator, Coder, Tester, Reviewer) and how agents are briefed and checked: `scrum/README.md`.

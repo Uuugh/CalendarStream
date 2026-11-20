@@ -1,4 +1,1 @@
-# CLAUDE.md
-
 @AGENTS.md
-@WORKING.md

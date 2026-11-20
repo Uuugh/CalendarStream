@@ -1,6 +1,6 @@
 # Move plan (temporary; delete when the move is done)
 
-Procedure for moving the live files into the new layout. It is a one-time procedure, so it lives here and not in `scrum/`.
+Procedure for moving the live files into the new layout. It is a one-time procedure, so it lives here and not in `SCRUM.d/`.
 
 1. Work on a branch and a pull request, not on main. Tag the commit before the move. Use `git mv` so history follows.
 2. Run no Coder or Reviewer agents during the move (they read the repository).
@@ -18,9 +18,10 @@ Procedure for moving the live files into the new layout. It is a one-time proced
 
 ## Edits to `requirements/README.md`
 - Rules 1 and 2 become numbered stubs linking to `AGENTS.md`, so rule numbers and `oldkey.md` do not shift.
-- Replace "defined in the process rules" (stories, epics, sprints) with a link to `scrum/README.md`.
+- Replace "defined in the process rules" (stories, epics, sprints) with a link to `SCRUM.d/README.md`.
 - Replace "Process: build_rules/" and the `build_rules/0-overview.md` pointers.
 - Add: run `tests/tools/req_check.sh` before and after changing any row (it was in the old `AGENTS.md`).
+- Rule 12 stays with its number and Test line; reword it to begin "In `requirements/`, a `.d` folder (see `AGENTS.md`)" and keep the C and P letters; line 63 ("Modules come in two kinds...") shrinks to a link to the `.d` definition in `AGENTS.md`.
 
 ## New check in `req_check.sh`
 Compare the working tree and the range since the merge-base with the base branch (CI: the pull request base; locally `origin/main`). Raising a status (`proposed` to `backlog`) is fine; lowering one (`backlog` or blank to `proposed`) is an error unless the ID is named on a `Status-reset:` line in a commit message in the range. A removed row is a warning (merges are recorded in `oldkey.md`).
