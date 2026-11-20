@@ -27,3 +27,4 @@ In order; Product Owner items first, then what the Orchestrator can do now, then
 - `CalendarStream.old/`: the retired Python app, frozen, an oracle only; delete it when the port is complete
 - `repo-review.md`: the Reviewer agent's findings on the process files against the laws (for decision; delete after)
 - `dashboard-review.md`: the Reviewer agent's findings on the `dashboard` branch (for decision; delete after)
+- `dashboard-brief.md`: the full round 3 brief for the dashboard agent, including the usage chart (delete when the dashboard merges)

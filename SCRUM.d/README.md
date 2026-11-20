@@ -112,6 +112,14 @@ criteria as requirement IDs, and names what is out of scope and which paths the 
     says who it is, where the rules, the tests and the open questions are, and what it reads next; each wrong answer is a
     finding. **Test:** the Retrospective in `sprint.md` records that run for every sprint in which a process file changed.
 
+11. **Usage.** At the start and at the end of a sprint ask the Product Owner for the 5-hour and 7-day usage readings (`/usage`
+    or the status line) and record them in `SCRUM.d/usage.md`: for each sprint and story its estimate, the before and after
+    readings and the actual (after minus before; a window reset in between makes the actual unknown). Estimate the next
+    sprint from the nearest finished stories by size, multiplied by the ratio of actual to estimate seen so far, as a range of
+    plus or minus 20% with the projected after-reading (before plus estimate). Split stories until each fits the usage left in
+    the window. **Test:** `usage.md` holds a before and an after reading for every finished sprint, and each planned sprint
+    shows its estimate range.
+
 ## Checking work (a story, a pull request, a draft or an agent report)
 
 1. `tests/tools/req_check.sh` reports no errors.
