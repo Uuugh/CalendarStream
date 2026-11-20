@@ -62,5 +62,5 @@ Read the README of an area before touching anything in it.
 | `requirements/` | The spec, one file per feature; `README.md` has the rules for writing it; `open-questions.md` the questions for the Product Owner |
 | `packages/`, `server/`, `client/` | The Dart port; `packages/README.md` holds its rules |
 | `tests/` | Requirement tests mirroring `requirements/`, and `tests/tools/req_check.sh` (`tests/README.md`) |
-| `.claude/skills/dart-flutter/` | The Dart and Flutter skill (the only project skill) |
+| `.claude/skills/` | The project skills: `dart-flutter` (Dart and Flutter) and `scrum` (general Scrum knowledge, for building `SCRUM.d/`) |
 | `docs/` | `docs/screenshots/` the README's pictures; `docs/development/` is the Product Owner's scratch work (never read it) |
