@@ -6,6 +6,7 @@ Delete an item when done (git history keeps it). Keep under 4,000 characters, on
 
 ## To do (order: PO, Orchestrator now, waiting)
 
+- [ ] Rewrite the READMEs (start `requirements/README.md`, skill `doc-coauthoring`), then update the rule citations in `readme-links.md`.
 - [ ] PO: review `proposed` rows; answer `requirements/open-questions.md` (blank status = `backlog`).
 - [ ] Dashboard epic of 7 stories (`dashboard-brief.md` J, K): Orchestrator launches each story's Coder (build) and Coder (tests) itself, no sub-orchestrator; first the Reviewer on the whole repo (~25 session %); ask the PO for 5h and 7d readings first and after each story; stop agents at 70%; first window = the Reviewer plus the stories that fit the usage left, chosen by the Orchestrator from the estimates (smallest and most independent first); the PO only launches the sprint.
 - [ ] Worktree `CalendarStream-dashboard` (branch `dashboard`): 43 uncommitted files; `flutter build web` fails ("Too few positional arguments: 2 required, 1 given"), fix first; port 8765 serves a stale build. Queued, unbuilt: collapse keeps top-level rows, `+` buttons, add popup (optional number, suggestions), missing sprint file shows an empty board.
@@ -20,6 +21,7 @@ Delete an item when done (git history keeps it). Keep under 4,000 characters, on
 
 ## Files
 
+- `readme-links.md`: files that cite README rule numbers, to update after the rewrite
 - `move-plan.md`: plan for moving files into the new layout
 - `placeholders.md`: plain-text stand-ins left when the old app moved
 - `repo-review.md`: Reviewer findings on the process files (decide, then delete)
