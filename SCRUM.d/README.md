@@ -78,8 +78,8 @@ Treats an agent's report as a claim and checks it against the diff and the test 
 criteria as requirement IDs, and names what is out of scope and which paths the agent may write.
 
 1. **Pre-flight.** Read `WORKING.d/README.md` (your memory); run `git status` and `git diff`; read the `Answer:` lines in `requirements/open-questions.md`; commit the
-   Product Owner's uncommitted work first, in its own commit; start the dashboard if it is not running (the start command is in
-   the dashboard's README) and give the Product Owner its address. **Test:** review: the first message of the session
+   Product Owner's uncommitted work first, in its own commit; start the dashboard if `SCRUM.d/dashboard/` exists and it is not running (the start command is in
+   its README) and give the Product Owner its address. **Test:** review: the first message of the session
    names the address of a running dashboard.
 2. **Brief.** One line each: role, slice, output file, what the agent may write, its progress file, the skills it must
    load and use (`dart-flutter` for Dart, `scrum` for Scrum files), and "read AGENTS.md and follow it". For a slice of

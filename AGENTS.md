@@ -62,7 +62,7 @@ area's README.
 ## Environment
 
 No Python is installed: use bash, sed and awk. A tool layer may halve backslashes in commands; test any sed that must
-match one. Line-ending warnings are harmless. `tests/tools/req_check.sh` takes about 30 seconds, writes no files, and
+match one. Line-ending warnings are harmless. `tests/tools/req_check.sh` takes about 2 minutes, writes two scratch files in `/tmp`, and
 is run once at a time.
 
 ## Table of contents
