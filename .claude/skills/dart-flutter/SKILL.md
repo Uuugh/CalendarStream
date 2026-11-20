@@ -14,7 +14,7 @@ Rules for all Dart code (structure, testing) are in `packages/README.md`; read i
 - Messages: no user-visible text in code. Use the generated `AppLocalizations` from the ARB files (`requirements/messages/`, moved to `lib/l10n/` at the port). A requirement cites `msg:key`; the key is the getter's name. Missing translations are listed by `flutter gen-l10n`.
 - Numbers (limits, defaults, durations) come from one constants class built from the `DEF-01` table; do not write a number in a widget.
 
-## Layout (from AGENTS.md and build_rules/layer-map.md)
+## Layout (from AGENTS.md and the old layer map, moved with the old app)
 
 - Feature-first folders: `lib/features/<feature>/{data,domain,ui}`; a connection or plugin is a feature under `connections/` or `plugins/`. Domain code never imports storage, network or UI.
 - One public class per file, named in `snake_case.dart`. A repository owns one kind of stored data; a service wraps one outside API and holds no state. Dependencies are passed in, never reached for.
@@ -32,13 +32,13 @@ Rules for all Dart code (structure, testing) are in `packages/README.md`; read i
 
 ## Do not
 
-- Follow the old process files in `build_rules/` (see `build_rules/README.md`; only the files it lists as live apply).
+- Follow the old process files in the old working notes (moved with the old app; only the files its README lists as live apply).
 - Add a requirement during the freeze, or change a requirement to match the old Python app (the requirement wins).
 - Name an agent or a tool in a requirement.
 
 ## Tests: where they live
 
-- **Dart tests sit beside the code they test**, in each package's `test/` folder, which mirrors `lib/`: `packages/domain/test/<feature>/`, `server/test/`, `client/test/`, and `client/integration_test/` for the thin end-to-end set. Fakes and made-up data (Demo.ics; never real data) are in `packages/testing`. The layout is the plan in `build_rules/layer-map.md`; only `packages/domain` exists so far.
+- **Dart tests sit beside the code they test**, in each package's `test/` folder, which mirrors `lib/`: `packages/domain/test/<feature>/`, `server/test/`, `client/test/`, and `client/integration_test/` for the thin end-to-end set. Fakes and made-up data (Demo.ics; never real data) are in `packages/testing`. The layout is the plan in the old layer map (moved with the old app); only `packages/domain` exists so far.
 - **Never in `requirements/`**, and never in the Python `tests/` folder: that is the frozen old reference and is deleted when the port is done.
 - **Every test names the requirement IDs it verifies** (in its name or a tag) and declares whether one run covers them all or it runs once per ID.
 - **The requirement's `test` cell** lists the tests (path and name), or `see <ID>`, or `—` while there is none. A row passes only when all its tests pass; a test that cannot run marks its rows "not run", not "failed". A requirement that depends on time uses a clock the test controls.

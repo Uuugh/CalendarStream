@@ -1,7 +1,7 @@
 # Requirements
 
 One file per feature: the checkable rules of behavior the app must meet. This is the spec for both the Python app
-(the reference) and the Dart port. Defined in `build_rules/0-overview.md` (Inputs); the plan is `build_rules/layer-map.md`.
+(the reference) and the Dart port. Defined in the old process notes (Inputs; moved with the old app); the plan is the old layer map (moved with the old app).
 
 ## Rules for writing and changing requirements (any agent or person)
 
@@ -28,11 +28,11 @@ These apply to every row in `requirements/`.
 - **Requirement**: one checkable rule of a feature's behavior with an ID (ACC-06), a status and a definitive statement of what to build. A requirement has a matching test. Other files link to the requirement, not to a sub-requirement.
 - **Sub-requirement**: one checkable rule that further clarifies a requirement, with a sub-ID (ACC-06.a), a status and a definitive statement of what to build. A sub-requirement has a matching sub-test.
 - **Issue**: a component not meeting a requirement. It lives in GitHub issues, not here.
-- **Process**: how work is done here (`build_rules/`).
+- **Process**: how work is done here (the old process notes, moved with the old app).
 - **Question (?)**: a request for a suggestion; the Product Owner decides.
 - **Shared requirements** (`common.md`): behavior several features use, written once and referenced: time (TIM), shared UI (UI), what an origin allows (CAP), defaults and limits (DEF).
 - **Parent tests**: a requirement that has sub-requirements passes when all its sub-requirements pass; its own test cell may be `—` or name a test of the whole.
-- **Test cell**: a list of tests, or `see <ID>` links to the tests of another requirement or sub-requirement, or `—` while there is none. A sub-test is simply the test the sub-requirement uses; it may be its own, its parent's, or another requirement's. A test says which requirements it verifies and how it runs when several call it (once, or once per requirement); failures are reported per requirement (`build_rules/layer-map.md`, testing decisions).
+- **Test cell**: a list of tests, or `see <ID>` links to the tests of another requirement or sub-requirement, or `—` while there is none. A sub-test is simply the test the sub-requirement uses; it may be its own, its parent's, or another requirement's. A test says which requirements it verifies and how it runs when several call it (once, or once per requirement); failures are reported per requirement (the old layer map, moved with the old app: testing decisions).
 - **Evidence (temporary)**: the S keys pointing at the Python suites; deleted when the conversion ends.
 - **Oracle**: the existing Python app and its suites, used once as the reference for what the app does.
 - **`oldkey.md`**: the record of old IDs to new IDs.
@@ -53,7 +53,7 @@ These apply to every row in `requirements/`.
 CAL calendar · SRC sources section · FDS feeds section · CLCL local calendar · CFED generic feed · CCCS ccs+ · CLNK calendar link · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · CGOW google one-way · CGTW google two-way · PLG plugins (common) · PGAP google plugin ·
 SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UIC shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
 
-Nothing new is added while the transition freeze lasts (build_rules/0-overview.md); these files hold what was already
+Nothing new is added while the transition freeze lasts (the old process overview, moved with the old app); these files hold what was already
 asked for.
 
 ## One file per feature (Nov 17)

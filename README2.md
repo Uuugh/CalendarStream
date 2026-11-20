@@ -1,4 +1,4 @@
-<h1><img src="app/static/logo/source/CalendarStream_Logo.png" alt="" width="38" height="38" align="absmiddle"> CalendarStream</h1>
+<h1>CalendarStream</h1>
 
 **Self-hosted calendar aggregation, synchronization, automation, and publishing.**
 
@@ -80,7 +80,7 @@ use the feed instead.
 bash <(curl -fsSL https://raw.githubusercontent.com/Uuugh/CalendarStream/main/install.sh)
 ```
 
-[`install.sh`](install.sh) asks four questions (press Enter for the default):
+The old installer (moved with the old app) asks four questions (press Enter for the default):
 
 1. which release to install, `latest` (stable) or `beta` (`stable`);
 2. the folder for `docker-compose.yml` and `.env` (`~/stacks/calendarstream`);
@@ -198,7 +198,7 @@ logins or setup codes lock an address out for 15 minutes.
   on controls, 12 px on sections and modules); nothing is pill-shaped. The fonts and icons come with
   CalendarStream, so the page never loads anything from elsewhere. The **CalendarStream Theme
   Rules** picture names the page's parts and gives every rule, measured from the page itself:
-  [light](build_rules/CalendarStream_Theme_Rules_Light.png) · [dark](build_rules/CalendarStream_Theme_Rules_Dark.png)
+  light and dark (pictures moved with the old app)
   (redrawn whenever the theme changes).
 - A small **(?)**, raised right after the word it explains like a superscript, is help (how to): point at it, or
   click (tap) it to keep it open. A module's **(i)**, after its label, is info: what it is, then its note.
@@ -434,9 +434,9 @@ link on calendar.google.com stays hidden on the phone until it's turned on there
 
 ## Tests
 
-`tests/run.sh` runs the test suites (one per version, most with a real browser) against a
-Postgres of your choice; see [tests/README.md](tests/README.md). How work on CalendarStream is done
-(versions, betas, reviews, the theme) is in [AGENTS.md](AGENTS.md) and [build_rules/](build_rules).
+The old test runner (moved with the old app) runs the test suites (one per version, most with a real browser) against a
+Postgres of your choice; see the old tests' notes (moved with the old app). How work on CalendarStream is done
+(versions, betas, reviews, the theme) is in [AGENTS.md](AGENTS.md) and the old working notes (moved with the old app).
 
 ## Updating
 
@@ -463,7 +463,7 @@ containrrr/watchtower, was archived in December 2025).
 
 Versions follow [semver](https://semver.org): `x.y.z` for a stable release, and `x.y.z-beta.N` for
 the betas leading up to it (0.2.7-beta.1, 0.2.7-beta.2, … then 0.2.7). Each version has a git tag,
-a GitHub Release with its [`CHANGELOG.md`](CHANGELOG.md) notes, and an image
+a GitHub Release with its notes in the old changelog (moved with the old app), and an image
 `ghcr.io/uuugh/calendarstream:<version>`. `beta` is the newest version; `latest` is the last stable
 one (the `STABLE` file). The **Release** GitHub Action builds a version when `VERSION` changes and
 moves `latest` when `STABLE` changes (or from **Actions → Release → Run workflow**). A stable
@@ -501,9 +501,9 @@ CalendarStream includes these, under their own licenses (a copy of each comes wi
 
 | What | By | License | Copy in this repository |
 | --- | --- | --- | --- |
-| [Material Symbols](https://github.com/google/material-design-icons) (Rounded, weight 400): every icon on the pages | Google | [Apache License 2.0](app/material_symbols/LICENSE) | `app/material_symbols/` |
-| [IBM Plex Sans and IBM Plex Mono](https://github.com/IBM/plex): the pages' fonts | IBM Corp. | [SIL Open Font License 1.1](app/static/fonts/OFL.txt) | `app/static/fonts/` |
-| [unicode-emoji-json](https://github.com/muan/unicode-emoji-json) 0.6.0: the emoji picker's list (names and groups; each device draws the emoji itself; which are newer than Emoji 12.0 is marked from Unicode's emoji data) | Mu-An Chiou | [MIT](app/static/emoji-LICENSE.txt) | `app/static/emoji.json` |
+| [Material Symbols](https://github.com/google/material-design-icons) (Rounded, weight 400): every icon on the pages | Google | Apache License 2.0 (file moved with the old app) | the old app's icon folder |
+| [IBM Plex Sans and IBM Plex Mono](https://github.com/IBM/plex): the pages' fonts | IBM Corp. | SIL Open Font License 1.1 (file moved with the old app) | the old app's fonts folder |
+| [unicode-emoji-json](https://github.com/muan/unicode-emoji-json) 0.6.0: the emoji picker's list (names and groups; each device draws the emoji itself; which are newer than Emoji 12.0 is marked from Unicode's emoji data) | Mu-An Chiou | MIT (file moved with the old app) | the old app's emoji list |
 
 The icons are copied from the [`@material-symbols/svg-400`](https://www.npmjs.com/package/@material-symbols/svg-400)
 package by `tools/vendor_icons.py`; the fonts are the `latin` and `latin-ext` files of

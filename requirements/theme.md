@@ -1,6 +1,6 @@
 # Requirements: theme
 
-How the app looks: colors, fonts, icons, corners and sizes, in a light and a dark palette. Every component uses this theme by default; a row elsewhere states a look only to depart from it. Components, and what they do, are in `common.md`. Values are written here once and no other file repeats them. Converted from `build_rules/theme.md` (the legacy file, kept only as the oracle until the product built from these rows exists).
+How the app looks: colors, fonts, icons, corners and sizes, in a light and a dark palette. Every component uses this theme by default; a row elsewhere states a look only to depart from it. Components, and what they do, are in `common.md`. Values are written here once and no other file repeats them. Converted from the old theme notes (moved with the old app; the legacy file, kept only as the oracle until the product built from these rows exists).
 
 | ID | status | statement | test | evidence (temporary) |
 |---|---|---|---|---|
