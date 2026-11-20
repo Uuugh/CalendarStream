@@ -34,8 +34,7 @@ The Orchestrator launches a team per story: both Coders and a Tester.
   passes and the Tester reports `pass` for every requirement of the story, the Reviewer reports no finding against a rule
   or a requirement, the README and docs the story affects are updated, and the Product Owner accepts it at the Review.
   **Method:** the Coder (build) updates the affected docs in the same step as the code, searching them for the behaviors
-  of the story's requirement IDs. The Product Owner approves the Dart
-  commands (static analysis and tests) that are added to this list once Dart tests exist for the requirement.
+  of the story's requirement IDs. `flutter analyze` is clean and `flutter test` passes, run by CI once it exists.
   A story that misses done is split, spilled over to the next sprint or stopped by the Orchestrator.
   **Test:** the Tester's report per requirement and the Reviewer's report, which names any doc the diff makes out of
   date, are recorded in `sprint.md`; `req_check.sh` reports a dead link or missing picture in the project `README.md`.
@@ -59,8 +58,7 @@ the Product Owner did not direct to merge.
 Works in the smallest testable step, verifies, then commits; touches only the files the story needs; does not weaken or
 delete a test to make it pass; reviews its own diff for
 redundancy and a simpler way before reporting. When a requirement is unclear it proposes alternatives with pros and
-cons and sends the defect to the Orchestrator. Until the port starts, a Coder is a read-only agent reviewing the
-requirements for what cannot be implemented. Builds as `packages/README.md` says.
+cons and sends the defect to the Orchestrator. Builds as `packages/README.md` says.
 
 ### Coder (tests)
 Works from the requirements only, never the implementation, in `tests/`. Creates the tests as `tests/README.md` says.
