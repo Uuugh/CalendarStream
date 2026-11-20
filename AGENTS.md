@@ -47,7 +47,7 @@ is run once at a time.
 | `app/`, `tests/` | The Python app and its suites: the running app and the reference until the port is complete |
 | `build_rules/` | Old working notes; `build_rules/README.md` says which files are live; do not follow the rest |
 | `.claude/skills/dart-flutter/` | The Dart and Flutter skill |
-| `docs/`, `tools/` | Screenshots; the Product Owner's scratch work (never read it) and tools |
+| `docs/`, `tools/` | `docs/screenshots/` the README's pictures; `docs/development/` is the Product Owner's scratch work (never read it); `tools/` holds `vendor_icons.py`, a Python helper that goes with the app |
 
 ## Before touching an area
 

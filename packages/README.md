@@ -3,14 +3,14 @@
 The port is built from `requirements/`; the two laws are in `AGENTS.md`. Flutter's structure is the model: a file
 stands alone and says what it needs.
 
-## Structure (R18, R19, R26)
+## Structure (P18, P19, P26)
 
 - **A module per responsibility.** One responsibility per file, a small interface, dependencies passed in, and its own
   fast test that needs no app, database or browser unless that is what it tests.
-- **One public class per file** (R19), named for it in `snake_case.dart`. A closed family a `sealed class` or an enum
+- **One public class per file** (P19), named for it in `snake_case.dart`. A closed family a `sealed class` or an enum
   holds (an exception hierarchy, a set of states) shares one file. Small private helpers stay in the file that uses them.
 - **Layers** (`data`, `domain`, `ui`), one folder per feature: domain never imports storage, network or the page.
-- **Within `data`** (R26): a **Repository** is the source of truth for one kind of stored data (caching, retry,
+- **Within `data`** (P26): a **Repository** is the source of truth for one kind of stored data (caching, retry,
   persistence) and never reaches into another repository; combine data one layer up. A **Service** wraps one external
   API or data source and holds no state.
 - **Name a class for its role**: `GoogleSyncService`, `CalendarSourceRepository`.
