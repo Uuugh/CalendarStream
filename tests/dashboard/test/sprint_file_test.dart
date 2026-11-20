@@ -3,11 +3,13 @@ import 'dart:io';
 
 import 'package:dashboard/features/dashboard/data/sprint_repository.dart';
 import 'package:dashboard/features/dashboard/domain/sprint.dart';
+import 'package:dashboard/features/dashboard/domain/sprint_edit.dart';
 import 'package:dashboard/features/dashboard/domain/stage.dart';
 import 'package:dashboard/features/dashboard/domain/story.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/fixtures.dart';
+import '../support/memory_file_access.dart';
 
 void main() {
   late Directory repo;
@@ -118,5 +120,139 @@ void main() {
     await repoFor().save(const Sprint(stories: [Story(id: 'N-1', title: 'New')]));
     expect(File(path).existsSync(), isTrue);
     expect((await repoFor().load()).stories.single.id, 'N-1');
+  });
+
+  group('what the dashboard does not edit (DSH-02.e) and round trips (DSH-02.c)', () {
+    const rich = '''Preamble above the title.
+
+# Sprint
+
+Intro note.
+
+Goal: Keep goals
+
+Note after the goal.
+
+## Stories
+
+A note above the table.
+
+| story | title | items | stage | assignee | estimate | usage |
+|---|---|---|---|---|---|---|
+| S-1 | First | AAA-01 | Build | Ann | 3 | 1.5 |
+| a row that cannot be read |
+| S-2 | Second | #7 | Ready |  | 2 | 0 |
+
+Trailing note of the stories.
+
+## Review
+
+Review text.
+
+## Lessons
+
+A heading that is not a section.
+
+## Stories
+
+Not the table: an earlier section's heading, inside the review.
+
+## Retrospective
+
+Retro text.
+
+## Review
+
+An earlier section's heading, inside the retrospective.
+
+### Sub heading
+
+## Another heading
+''';
+
+    String again(String text) => SprintRepository.format(SprintRepository.parse(text));
+
+    void sameSprint(Sprint a, Sprint b) {
+      expect(a.goal, b.goal);
+      expect(a.review, b.review);
+      expect(a.retrospective, b.retrospective);
+      expect(a.stories.map((s) => [s.id, s.title, s.items, s.stage, s.assignee, s.estimate, s.usage]),
+          b.stories.map((s) => [s.id, s.title, s.items, s.stage, s.assignee, s.estimate, s.usage]));
+    }
+
+    test('DSH-02.e: text before the Goal line, between it and Stories, other lines and headings are written back as they were', () {
+      final out = again(rich);
+      var from = 0;
+      for (final line in [
+        'Preamble above the title.', '# Sprint', 'Intro note.', 'Goal: Keep goals', 'Note after the goal.', '## Stories',
+        'A note above the table.', '| S-1 | First |', '| a row that cannot be read |', '| S-2 | Second |',
+        'Trailing note of the stories.', '## Review', 'Review text.', '## Lessons', 'A heading that is not a section.',
+        'Not the table: an earlier section\'s heading, inside the review.', '## Retrospective', 'Retro text.',
+        'An earlier section\'s heading, inside the retrospective.', '### Sub heading', '## Another heading',
+      ]) {
+        final at = out.indexOf(line, from);
+        expect(at, greaterThanOrEqualTo(from), reason: 'missing or out of order: $line\n$out');
+        from = at;
+      }
+      expect(out, contains('## Stories\n\nNot the table'));
+      expect(out, contains('## Review\n\nAn earlier section'));
+    });
+
+    test('DSH-02.e: only an exact heading that comes later in the order ends a section', () {
+      final s = SprintRepository.parse(rich);
+      expect(s.review, contains('## Lessons'));
+      expect(s.review, contains('## Stories'));
+      expect(s.review, isNot(contains('Retro text.')));
+      expect(s.retrospective, contains('## Review'));
+      expect(s.retrospective, contains('## Another heading'));
+      expect(s.stories.map((x) => x.id), ['S-1', 'S-2']);
+    });
+
+    test('DSH-02.e: a story row it cannot read is kept where it stood', () {
+      final s = SprintRepository.parse(rich);
+      expect(s.keptLines.map((k) => k.text), contains('| a row that cannot be read |'));
+      final out = again(rich);
+      final bad = out.indexOf('| a row that cannot be read |');
+      expect(bad, greaterThan(out.indexOf('| S-1 |')));
+      expect(bad, lessThan(out.indexOf('| S-2 |')));
+    });
+
+    test('DSH-02.e and DSH-02.c: formatting twice changes nothing more (a round trip is stable) and keeps every field', () {
+      final once = again(rich);
+      expect(again(once), once);
+      sameSprint(SprintRepository.parse(once), SprintRepository.parse(rich));
+    });
+
+    test('DSH-02.c: a change to one story keeps the goal, the review, the retrospective and everything it does not edit', () {
+      final changed = SprintEdit.moveStory(SprintRepository.parse(rich), 'S-2', Stage.done);
+      final out = SprintRepository.format(changed);
+      expect(SprintRepository.parse(out).stories.last.stage, Stage.done);
+      for (final line in ['Preamble above the title.', 'Intro note.', 'Note after the goal.', 'A note above the table.', '| a row that cannot be read |', 'Trailing note of the stories.', 'A heading that is not a section.', '### Sub heading']) {
+        expect(out, contains(line));
+      }
+      final back = SprintRepository.parse(out);
+      expect(back.goal, 'Keep goals');
+      expect(back.review, SprintRepository.parse(rich).review);
+      expect(back.retrospective, SprintRepository.parse(rich).retrospective);
+    });
+
+    test('DSH-02.c: saving and loading through the file keeps what is not edited (in memory)', () async {
+      final files = MemoryFileAccess({'/r/sprint.md': rich});
+      final repo = SprintRepository(files: files, path: '/r/sprint.md');
+      final loaded = await repo.load();
+      await repo.save(SprintEdit.setUsage(loaded, 'S-1', 2));
+      final text = files.files['/r/sprint.md']!;
+      expect(text, contains('Preamble above the title.'));
+      expect(text, contains('| a row that cannot be read |'));
+      expect(text, contains('## Lessons'));
+      sameSprint(await repo.load(), SprintEdit.setUsage(loaded, 'S-1', 2));
+    });
+
+    test('DSH-02.d: a sprint that was never loaded (no text before, no kept lines) is written in the default layout and read back', () {
+      final out = SprintRepository.format(const Sprint(goal: 'G', stories: [Story(id: 'N-1', title: 'New')]));
+      expect(out, contains('Goal: G'));
+      expect(out, contains('## Stories'));
+      expect(SprintRepository.parse(out).stories.single.id, 'N-1');
+    });
   });
 }

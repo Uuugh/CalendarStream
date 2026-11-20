@@ -25,7 +25,7 @@ class AssigneeDot extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: empty ? null : AssigneeColors.of(assignee),
+          color: empty ? null : AssigneeColors.of(Theme.of(context), assignee),
           border: empty ? Border.all(color: outline) : null,
         ),
       ),

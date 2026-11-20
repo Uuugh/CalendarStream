@@ -41,7 +41,7 @@ void main() {
     expect(r.statement, 'Beta one.');
     expect(r.feature, 'beta');
     final g = (await load()).firstWhere((r) => r.id == 'GGG-01');
-    expect(g.status, 'done');
+    expect(g.status, 'proposed');
     expect(g.feature, 'gamma');
   });
 

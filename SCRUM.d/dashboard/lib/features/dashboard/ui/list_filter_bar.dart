@@ -1,4 +1,4 @@
-// Holds: the filter bar both lists share (DSH-04, DSH-04.a-d, UIC-21): feature and status dropdowns, a requirement
+// Holds: the filter bar both lists share (DSH-04, DSH-04.a-e, UIC-21): feature and status dropdowns, a requirement
 // text box, and the shown-of-total count. Depends on: ListFilter, AppLocalizations. Used by: the dashboard page.
 // Reads or writes: nothing.
 
@@ -57,6 +57,8 @@ class ListFilterBar extends StatelessWidget {
 
   Widget _dropdown(String label, String all, String? value, List<String> values, String Function(String) text,
       ValueChanged<String?> onSelected) {
+    // DSH-04.e: the applied value is always offered, even when no entry has it
+    final offered = value == null || values.contains(value) ? values : [...values, value];
     return SizedBox(
       width: DashboardLayout.filterWidth,
       child: InputDecorator(
@@ -65,10 +67,10 @@ class ListFilterBar extends StatelessWidget {
           child: DropdownButton<String?>(
             isDense: true,
             isExpanded: true,
-            value: values.contains(value) ? value : null,
+            value: value,
             items: [
               DropdownMenuItem<String?>(value: null, child: Text(all)),
-              for (final v in values) DropdownMenuItem<String?>(value: v, child: Text(text(v))),
+              for (final v in offered) DropdownMenuItem<String?>(value: v, child: Text(text(v))),
             ],
             onChanged: onSelected,
           ),

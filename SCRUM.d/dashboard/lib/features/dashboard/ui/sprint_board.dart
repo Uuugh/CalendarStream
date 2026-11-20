@@ -47,7 +47,7 @@ class SprintBoard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Padding(
         padding: const EdgeInsets.all(DashboardLayout.gap),
@@ -56,14 +56,14 @@ class SprintBoard extends StatelessWidget {
       SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          for (final stage in Stage.values) _column(context, t, scheme, stage),
+          for (final stage in Stage.values) _column(context, t, theme, stage),
         ]),
       ),
     ]);
   }
 
-  Widget _column(BuildContext context, AppLocalizations t, ColorScheme scheme, Stage stage) {
-    final color = StageColors.of(scheme, stage);
+  Widget _column(BuildContext context, AppLocalizations t, ThemeData theme, Stage stage) {
+    final color = StageColors.of(theme, stage);
     final cards = sprint.stories.where((s) => s.stage == stage).toList();
     return DragTarget<DragPayload>(
       key: Key('column-${stage.name}'),

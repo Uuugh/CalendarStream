@@ -6,10 +6,12 @@ import 'package:dashboard/features/dashboard/domain/story.dart';
 import 'package:dashboard/features/dashboard/ui/assignee_colors.dart';
 import 'package:dashboard/features/dashboard/ui/assignee_dot.dart';
 import 'package:dashboard/features/dashboard/ui/sprint_board.dart';
-import 'package:dashboard/l10n/app_localizations.dart';
+import 'package:dashboard/features/dashboard/ui/stage_colors.dart';
+import 'package:dashboard/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../support/page_harness.dart';
 
 const sprint = Sprint(goal: 'Board goal', stories: [
   Story(id: 'S-1', title: 'First story', stage: Stage.build, assignee: 'Ann', estimate: 3),
@@ -23,32 +25,52 @@ void main() {
   setUp(changes.clear);
 
   Future<void> pump(WidgetTester t, {ThemeData? theme}) async {
-    t.view.physicalSize = const Size(2400, 1200);
-    t.view.devicePixelRatio = 1;
-    addTearDown(t.view.reset);
-    await t.pumpWidget(MaterialApp(
-      theme: theme,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: SprintBoard(sprint: sprint, onChanged: changes.add)),
-    ));
+    bigView(t, size: const Size(2400, 1200));
+    await t.pumpWidget(testApp(Scaffold(body: SprintBoard(sprint: sprint, onChanged: changes.add)), theme: theme));
     await t.pumpAndSettle();
   }
 
-  Color? columnColor(WidgetTester t, Stage s) {
-    final box = find
-        .descendant(of: find.byKey(Key('column-${s.name}')), matching: find.byType(DecoratedBox))
-        .evaluate()
-        .map((e) => (e.widget as DecoratedBox).decoration)
-        .whereType<BoxDecoration>()
-        .map((d) => d.color)
-        .whereType<Color>();
-    return box.isEmpty ? null : box.first;
+  // Every color a column or a card shows: text, fills and borders.
+  Set<int> colorsIn(WidgetTester t, Finder root) {
+    final out = <int>{};
+    void add(Color? c) {
+      if (c != null) out.add(c.toARGB32() & 0xFFFFFF);
+    }
+    for (final e in find.descendant(of: root, matching: find.byType(DecoratedBox)).evaluate()) {
+      final d = (e.widget as DecoratedBox).decoration;
+      if (d is BoxDecoration) {
+        add(d.color);
+        final b = d.border;
+        if (b is Border) {
+          for (final side in [b.top, b.left, b.right, b.bottom]) {
+            add(side.color);
+          }
+        }
+      }
+    }
+    for (final e in find.descendant(of: root, matching: find.byType(Text)).evaluate()) {
+      add((e.widget as Text).style?.color);
+    }
+    for (final e in find.descendant(of: root, matching: find.byType(Container)).evaluate()) {
+      add((e.widget as Container).color);
+    }
+    void addShape(ShapeBorder? shape) {
+      if (shape is OutlinedBorder) add(shape.side.color);
+    }
+    for (final e in find.descendant(of: root, matching: find.byType(Card)).evaluate()) {
+      final c = e.widget as Card;
+      add(c.color);
+      addShape(c.shape);
+    }
+    for (final e in find.descendant(of: root, matching: find.byType(Material)).evaluate()) {
+      final m = e.widget as Material;
+      add(m.color);
+      addShape(m.shape);
+    }
+    for (final e in find.descendant(of: root, matching: find.byType(Icon)).evaluate()) {
+      add((e.widget as Icon).color);
+    }
+    return out;
   }
 
   testWidgets('DSH-06: the goal and six columns in stage order', (t) async {
@@ -88,21 +110,28 @@ void main() {
     expect(find.descendant(of: card, matching: find.byKey(const Key('assignee-dot-S-1'))), findsOneWidget);
   });
 
-  testWidgets('DSH-06.c: column colors differ per stage and follow the theme', (t) async {
-    await pump(t, theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal)));
-    final a = [for (final s in Stage.values) columnColor(t, s)];
-    expect(a.every((c) => c != null), isTrue, reason: '$a');
-    expect(a.toSet(), hasLength(6));
-    await pump(t, theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange)));
-    final b = [for (final s in Stage.values) columnColor(t, s)];
-    expect(b, isNot(equals(a)));
+  testWidgets('DSH-06.c: each column has its own color from the theme, in light and dark, and its cards carry it', (t) async {
+    for (final theme in [AppTheme.light, AppTheme.dark]) {
+      await pump(t, theme: theme);
+      final colors = {for (final s in Stage.values) s: StageColors.of(theme, s)};
+      expect(colors.values.toSet(), hasLength(6), reason: 'one color for each stage');
+      for (final e in colors.entries) {
+        expect(colorsIn(t, find.byKey(Key('column-${e.key.name}'))), contains(e.value.toARGB32() & 0xFFFFFF), reason: 'column ${e.key.name}');
+      }
+      for (final c in {'S-1': Stage.build, 'S-3': Stage.done, 'S-4': Stage.ready}.entries) {
+        expect(colorsIn(t, find.byKey(Key('card-${c.key}'))), contains(colors[c.value]!.toARGB32() & 0xFFFFFF), reason: 'card ${c.key}');
+      }
+    }
+    expect({for (final s in Stage.values) StageColors.of(AppTheme.light, s)}, isNot(equals({for (final s in Stage.values) StageColors.of(AppTheme.dark, s)})));
   });
 
-  testWidgets('DSH-06.d: same assignee same dot color, tooltip is the name, empty dot has no fill and says no assignee', (t) async {
+  testWidgets('DSH-06.d: same assignee same dot color from the theme, tooltip is the name, empty dot has no fill and says no assignee', (t) async {
     await pump(t);
-    expect(AssigneeColors.of('Ann'), AssigneeColors.of('Ann'));
+    final theme = AppTheme.light;
+    expect(AssigneeColors.of(theme, 'Ann'), AssigneeColors.of(theme, 'Ann'));
     // Distinct names need not differ (a palette can collide), but the palette must not be a single color.
-    expect({for (final n in ['Ann', 'Bob', 'Cy', 'Di', 'Ed', 'Flo']) AssigneeColors.of(n)}.length, greaterThan(1));
+    expect({for (final n in ['Ann', 'Bob', 'Cy', 'Di', 'Ed', 'Flo']) AssigneeColors.of(theme, n)}.length, greaterThan(1));
+    expect(AssigneeColors.palette(AppTheme.light), isNot(equals(AssigneeColors.palette(AppTheme.dark))));
     Color? fill(String id) {
       final dot = find.byKey(Key('assignee-dot-$id'));
       final d = find
@@ -115,8 +144,8 @@ void main() {
     }
     expect(fill('S-1'), isNotNull);
     expect(fill('S-1'), fill('S-2'));
-    expect(fill('S-3'), AssigneeColors.of('Bob'));
-    expect(fill('S-1'), AssigneeColors.of('Ann'));
+    expect(fill('S-3'), AssigneeColors.of(theme, 'Bob'));
+    expect(fill('S-1'), AssigneeColors.of(theme, 'Ann'));
     expect(fill('S-4'), isNull);
     final tips = find.descendant(of: find.byType(AssigneeDot), matching: find.byType(Tooltip)).evaluate().map((e) => (e.widget as Tooltip).message);
     expect(tips, containsAll(['Ann', 'Bob', 'No assignee']));

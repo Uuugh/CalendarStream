@@ -2,9 +2,6 @@
 // above the estimate), DSH-09.d (sprint line adds up), and DSH-01.c (Reload reads everything again).
 // One run covers each ID named in the test name. Logic rows use the domain classes alone; UI rows use the widgets.
 import 'package:dashboard/features/dashboard/data/command_result.dart';
-import 'package:dashboard/features/dashboard/data/issue_service.dart';
-import 'package:dashboard/features/dashboard/data/requirement_repository.dart';
-import 'package:dashboard/features/dashboard/data/sprint_repository.dart';
 import 'package:dashboard/features/dashboard/domain/points_format.dart';
 import 'package:dashboard/features/dashboard/domain/sprint.dart';
 import 'package:dashboard/features/dashboard/domain/sprint_edit.dart';
@@ -14,39 +11,21 @@ import 'package:dashboard/features/dashboard/domain/usage_summary.dart';
 import 'package:dashboard/features/dashboard/ui/sprint_board.dart';
 import 'package:dashboard/features/dashboard/ui/usage_colors.dart';
 import 'package:dashboard/features/dashboard/ui/usage_panel.dart';
-import 'package:dashboard/features/dashboard/ui/dashboard_page.dart';
-import 'package:dashboard/l10n/app_localizations.dart';
+import 'package:dashboard/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/fixtures.dart';
 import '../support/memory_file_access.dart';
 import '../support/mutable_runner.dart';
+import '../support/page_harness.dart';
+import '../support/theme_colors.dart';
 
 const sprint = Sprint(goal: 'G', review: 'R', retrospective: 'T', stories: [
   Story(id: 'S-1', title: 'First story', stage: Stage.build, estimate: 3, usage: 1.5),
   Story(id: 'S-2', title: 'Second story', stage: Stage.build, estimate: 2, usage: 4),
   Story(id: 'S-3', title: 'Third story', stage: Stage.done),
 ]);
-
-Widget app(Widget home, {ThemeData? theme}) => MaterialApp(
-      theme: theme,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: home,
-    );
-
-void bigView(WidgetTester t) {
-  t.view.physicalSize = const Size(2400, 1800);
-  t.view.devicePixelRatio = 1;
-  addTearDown(t.view.reset);
-}
 
 LinearProgressIndicator bar(WidgetTester t, String key) => t.widget<LinearProgressIndicator>(find.byKey(Key(key)));
 
@@ -105,19 +84,25 @@ void main() {
       expect(UsageSummary(const Sprint(goal: 'x')).totalEstimate, 0);
     });
 
-    test('DSH-09.c: the warning color is the scheme error color above the estimate, else primary', () {
-      final cs = ColorScheme.fromSeed(seedColor: Colors.teal);
-      expect(UsageColors.of(cs, over: true), cs.error);
-      expect(UsageColors.of(cs, over: false), cs.primary);
+    test('DSH-09.c and DSH-01.g: above the estimate the bar color is the warn token (THM-02.j) in light and dark; otherwise it is another theme color', () {
+      expect(UsageColors.of(AppTheme.light, over: true), const Color(0xFF946A24));
+      expect(UsageColors.of(AppTheme.dark, over: true), const Color(0xFFFBBF24));
+      for (final theme in [AppTheme.light, AppTheme.dark]) {
+        expect(UsageColors.of(theme, over: true), StatusColors.of(theme).warn);
+        expect(UsageColors.of(theme, over: false), isNot(StatusColors.of(theme).warn));
+        expect(themeColors(theme), contains(UsageColors.of(theme, over: false).toARGB32()));
+      }
     });
   });
 
   group('panel', () {
-    testWidgets('DSH-09.c and DSH-09.d: one row and bar per story, warning color only when over, sprint line adds up', (t) async {
+    testWidgets('DSH-09.c and DSH-09.d and DSH-01.g: one row and bar per story, warn token only when over, sprint line adds up, in light and dark', (t) async {
       bigView(t);
-      final theme = ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal));
-      await t.pumpWidget(app(const Scaffold(body: UsagePanel(sprint: sprint)), theme: theme));
+      for (final theme in [AppTheme.light, AppTheme.dark]) {
+      await t.pumpWidget(testApp(const Scaffold(body: UsagePanel(sprint: sprint)), theme: theme));
       await t.pumpAndSettle();
+      final warn = theme == AppTheme.light ? const Color(0xFF946A24) : const Color(0xFFFBBF24);
+      final under = UsageColors.of(theme, over: false);
       for (final id in ['S-1', 'S-2', 'S-3']) {
         expect(find.byKey(Key('usage-row-$id')), findsOneWidget, reason: id);
         expect(find.byKey(Key('usage-bar-$id')), findsOneWidget, reason: id);
@@ -127,10 +112,9 @@ void main() {
       expect(bar(t, 'usage-bar-S-1').value, 0.5);
       expect(bar(t, 'usage-bar-S-2').value, 1);
       expect(bar(t, 'usage-bar-S-3').value, 0);
-      final cs = theme.colorScheme;
-      expect(barColor(t, 'usage-bar-S-1'), cs.primary);
-      expect(barColor(t, 'usage-bar-S-2'), cs.error);
-      expect(barColor(t, 'usage-bar-S-3'), cs.primary);
+      expect(barColor(t, 'usage-bar-S-1'), under);
+      expect(barColor(t, 'usage-bar-S-2'), warn);
+      expect(barColor(t, 'usage-bar-S-3'), under);
       // Sprint line: 5 estimate, 5.5 usage, over, so the total bar is in the warning color.
       expect(find.byKey(const Key('usage-total')), findsOneWidget);
       final total = [
@@ -139,7 +123,8 @@ void main() {
       final own = t.widgetList(find.byKey(const Key('usage-total'))).whereType<Text>().map((w) => w.data ?? '').join(' ');
       expect('$total $own', allOf(contains('5.5'), contains('5')));
       expect(bar(t, 'usage-bar-total').value, 1);
-      expect(barColor(t, 'usage-bar-total'), cs.error);
+      expect(barColor(t, 'usage-bar-total'), warn);
+      }
     });
   });
 
@@ -147,7 +132,7 @@ void main() {
     testWidgets('DSH-09.a: editing the estimate and the usage on a card fires onChanged with the edited sprint', (t) async {
       bigView(t);
       final changes = <Sprint>[];
-      await t.pumpWidget(app(Scaffold(body: SprintBoard(sprint: sprint, onChanged: changes.add))));
+      await t.pumpWidget(testApp(Scaffold(body: SprintBoard(sprint: sprint, onChanged: changes.add))));
       await t.pumpAndSettle();
       await t.tap(find.byKey(const Key('estimate-S-1')));
       await t.pumpAndSettle();
@@ -193,18 +178,12 @@ Do more of X.
 ''';
 
     Future<void> pump(WidgetTester t, String goal, String tracker) async {
-      bigView(t);
       files = MemoryFileAccess({
         sprintPath: sprintFile(goal, 'First story'),
         '$reqDir/alpha.md': reqFile(['| AAA-01 | backlog | Alpha one. | — | — |', '| AAA-02 | backlog | Alpha two. | — | — |']),
       });
       runner = MutableRunner(CommandResult(exitCode: 0, stdout: tracker));
-      await t.pumpWidget(app(DashboardPage(
-        sprints: SprintRepository(files: files, path: sprintPath),
-        requirements: RequirementRepository(files: files, directory: reqDir),
-        issues: IssueService(runner: runner),
-      )));
-      await t.pumpAndSettle();
+      await pumpPage(t, files: files, runner: runner, sprintPath: sprintPath, requirementsDir: reqDir);
     }
 
     testWidgets('DSH-09.a: editing on a card through the page writes the sprint file and keeps review and retrospective', (t) async {

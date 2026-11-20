@@ -81,7 +81,7 @@ class StoryCard extends StatelessWidget {
       key: Key('card-${story.id}'),
       data: CardDrag(story.id),
       feedback: Material(
-        color: Colors.transparent,
+        type: MaterialType.transparency,
         child: SizedBox(width: DashboardLayout.columnWidth - 2 * DashboardLayout.gap, child: _body(context)),
       ),
       childWhenDragging: Opacity(opacity: 0.4, child: _body(context)),

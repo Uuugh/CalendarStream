@@ -1,22 +1,18 @@
-// Holds: the app entry point and shell. Depends on: the dashboard feature, AppLocalizations.
-// Used by: Flutter. Reads or writes: nothing itself; the repositories read the repo at REPO_ROOT
-// (dart-define, default `../..`). The web build cannot read files, so it shows an error there.
+// Holds: the app entry point and shell. Depends on: the dashboard feature, DashboardBackend, AppLocalizations.
+// Used by: Flutter. Reads or writes: nothing itself; the backend of the platform does (desktop: files and `gh`; web: the server).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'features/dashboard/data/disk_file_access.dart';
-import 'features/dashboard/data/issue_service.dart';
-import 'features/dashboard/data/process_command_runner.dart';
+import 'features/dashboard/data/dashboard_backend.dart';
 import 'features/dashboard/data/requirement_repository.dart';
 import 'features/dashboard/data/sprint_repository.dart';
 import 'features/dashboard/ui/dashboard_page.dart';
 import 'l10n/app_localizations.dart';
-
-const _repoRoot = String.fromEnvironment('REPO_ROOT', defaultValue: '../..');
+import 'theme/app_theme.dart';
 
 void main() {
-  const files = DiskFileAccess();
+  final backend = DashboardBackend.create();
   runApp(MaterialApp(
     localizationsDelegates: const [
       AppLocalizations.delegate,
@@ -25,10 +21,12 @@ void main() {
       GlobalCupertinoLocalizations.delegate,
     ],
     supportedLocales: AppLocalizations.supportedLocales,
+    theme: AppTheme.light,
+    darkTheme: AppTheme.dark,
     home: DashboardPage(
-      sprints: SprintRepository(files: files, path: '$_repoRoot/SCRUM.d/sprint.md'),
-      requirements: RequirementRepository(files: files, directory: '$_repoRoot/requirements'),
-      issues: const IssueService(runner: ProcessCommandRunner()),
+      sprints: SprintRepository(files: backend.files, path: backend.sprintPath),
+      requirements: RequirementRepository(files: backend.files, directory: backend.requirementsDirectory),
+      issues: backend.issues,
     ),
   ));
 }

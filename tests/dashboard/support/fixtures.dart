@@ -45,19 +45,22 @@ Do more of X.
 String reqFile(List<String> rows) =>
     '# Requirements: demo\n\nIntro.\n\n| ID | status | statement | test | evidence |\n|---|---|---|---|---|\n${rows.join('\n')}\n';
 
-/// Builds a requirements directory with feature files, `.d` parts and the
-/// excluded files, all with made-up rows. Returns its path.
+/// The requirement files of the made-up repository (feature files, `.d` parts and the excluded files), by path
+/// relative to the repository root.
+Map<String, String> requirementFiles() => {
+      'requirements/alpha.md': reqFile(
+          ['| AAA-01 | proposed | Alpha one. | — | — |', '| AAA-02 |  | Alpha two blank. | — | — |']),
+      'requirements/connections.d/beta.md': reqFile(['| BBB-01 | backlog | Beta one. | — | — |']),
+      'requirements/plugins.d/gamma.md': reqFile(['| GGG-01 | proposed | Gamma one. | — | — |']),
+      'requirements/README.md': reqFile(['| RDM-01 | backlog | Readme row. | — | — |']),
+      'requirements/oldkey.md': reqFile(['| OLD-01 | backlog | Old row. | — | — |']),
+      'requirements/open-questions.md': reqFile(['| OQ-01 | backlog | Question row. | — | — |']),
+      'requirements/connections.d/README.md': reqFile(['| CRD-01 | backlog | Folder readme. | — | — |']),
+    };
+
+/// Writes [requirementFiles] into [repo]. Returns the requirements directory.
 String makeRequirements(Directory repo) {
-  writeFile(repo, 'requirements/alpha.md',
-      reqFile(['| AAA-01 | proposed | Alpha one. | — | — |', '| AAA-02 |  | Alpha two blank. | — | — |']));
-  writeFile(repo, 'requirements/connections.d/beta.md',
-      reqFile(['| BBB-01 | backlog | Beta one. | — | — |']));
-  writeFile(repo, 'requirements/plugins.d/gamma.md',
-      reqFile(['| GGG-01 | done | Gamma one. | — | — |']));
-  writeFile(repo, 'requirements/README.md', reqFile(['| RDM-01 | backlog | Readme row. | — | — |']));
-  writeFile(repo, 'requirements/oldkey.md', reqFile(['| OLD-01 | backlog | Old row. | — | — |']));
-  writeFile(repo, 'requirements/open-questions.md', reqFile(['| OQ-01 | backlog | Question row. | — | — |']));
-  writeFile(repo, 'requirements/connections.d/README.md', reqFile(['| CRD-01 | backlog | Folder readme. | — | — |']));
+  requirementFiles().forEach((rel, content) => writeFile(repo, rel, content));
   return join(repo, 'requirements');
 }
 
@@ -90,7 +93,7 @@ class RecordingFileAccess implements FileAccess {
 /// A command runner that returns a fixed result and records every call.
 class FakeRunner implements CommandRunner {
   FakeRunner(this.result);
-  final CommandResult result;
+  CommandResult result;
   final calls = <List<String>>[];
 
   @override
@@ -135,3 +138,13 @@ String makePageRepo(Directory repo) {
   writeFile(repo, 'SCRUM.d/sprint.md', pageSprintFile);
   return makeRequirements(repo);
 }
+
+/// The page fixtures in memory, under the root `/r`: the sprint file and the requirement files, plus [extra].
+Map<String, String> pageFiles({Map<String, String> extra = const {}}) => {
+      memSprintPath: pageSprintFile,
+      for (final e in requirementFiles().entries) '/r/${e.key}': e.value,
+      ...extra,
+    };
+
+const memSprintPath = '/r/SCRUM.d/sprint.md';
+const memRequirementsDir = '/r/requirements';

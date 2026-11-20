@@ -1,17 +1,12 @@
 // Tests DSH-07 a-d on the page: drag from the backlog to a column, between columns, back to the backlog area,
 // onto its own column, and the saved sprint file. Uses an in-memory FileAccess. One run covers each ID named.
 import 'package:dashboard/features/dashboard/data/command_result.dart';
-import 'package:dashboard/features/dashboard/data/issue_service.dart';
-import 'package:dashboard/features/dashboard/data/requirement_repository.dart';
-import 'package:dashboard/features/dashboard/data/sprint_repository.dart';
-import 'package:dashboard/features/dashboard/ui/dashboard_page.dart';
-import 'package:dashboard/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/fixtures.dart';
 import '../support/memory_file_access.dart';
+import '../support/page_harness.dart';
 
 const sprintPath = '/r/SCRUM.d/sprint.md';
 
@@ -43,24 +38,7 @@ void main() {
       '/r/requirements/alpha.md': reqFile(['| AAA-01 | backlog | Alpha one. | — | — |']),
       '/r/requirements/beta.md': reqFile(['| BBB-01 | backlog | Beta one. | — | — |']),
     });
-    t.view.physicalSize = const Size(2400, 1800);
-    t.view.devicePixelRatio = 1;
-    addTearDown(t.view.reset);
-    await t.pumpWidget(MaterialApp(
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: DashboardPage(
-        sprints: SprintRepository(files: files, path: sprintPath),
-        requirements: RequirementRepository(files: files, directory: '/r/requirements'),
-        issues: IssueService(runner: FakeRunner(CommandResult(exitCode: 0, stdout: issuesJson([issueJson(12, 'Issue twelve')])))),
-      ),
-    ));
-    await t.pumpAndSettle();
+    await pumpPage(t, files: files, runner: FakeRunner(CommandResult(exitCode: 0, stdout: issuesJson([issueJson(12, 'Issue twelve')]))), sprintPath: sprintPath, requirementsDir: '/r/requirements');
   }
 
   Future<void> dragTo(WidgetTester t, Finder from, Finder to, {Offset shift = Offset.zero}) async {

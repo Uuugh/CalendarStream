@@ -18,18 +18,28 @@ class RequirementRepository {
   static const _skipped = {'README.md', 'oldkey.md', 'open-questions.md'};
   static final _idPattern = RegExp(r'^[A-Z][A-Z0-9]*-\d+(\.[a-z0-9]+)*$');
 
-  Future<List<Requirement>> load() async {
+  /// The text of every requirement file (feature files and `*.d/*.md`, not the skipped ones), by path relative to
+  /// [directory]; the server serves exactly this to the web app (DSH-10.b).
+  Future<Map<String, String>> readTexts() async {
     final paths = [...await files.listFiles(directory)];
     for (final dir in await files.listDirectories(directory)) {
       if (dir.endsWith('.d')) paths.addAll(await files.listFiles(dir));
     }
-    final result = <Requirement>[];
+    final result = <String, String>{};
     for (final path in paths) {
       final name = path.split('/').last;
       if (!name.endsWith('.md') || _skipped.contains(name)) continue;
       final text = await files.read(path);
-      if (text == null) continue;
-      result.addAll(parse(text, name.substring(0, name.length - 3)));
+      if (text != null) result[path.substring(directory.length + 1)] = text;
+    }
+    return result;
+  }
+
+  Future<List<Requirement>> load() async {
+    final result = <Requirement>[];
+    for (final entry in (await readTexts()).entries) {
+      final name = entry.key.split('/').last;
+      result.addAll(parse(entry.value, name.substring(0, name.length - 3)));
     }
     return result;
   }

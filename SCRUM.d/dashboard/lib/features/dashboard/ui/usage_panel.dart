@@ -30,7 +30,7 @@ class UsagePanel extends StatelessWidget {
           child: LinearProgressIndicator(
             key: barKey,
             value: UsageSummary.fraction(usage, estimate),
-            color: UsageColors.of(scheme, over: usage > estimate),
+            color: UsageColors.of(Theme.of(context), over: usage > estimate),
             backgroundColor: scheme.surfaceContainerHighest,
           ),
         ),

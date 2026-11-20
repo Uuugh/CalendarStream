@@ -6,6 +6,7 @@ import 'package:dashboard/features/dashboard/data/command_result.dart';
 import 'package:dashboard/features/dashboard/data/command_runner.dart';
 import 'package:dashboard/features/dashboard/data/issue_service.dart';
 import 'package:dashboard/features/dashboard/data/issue_tracker_exception.dart';
+import 'package:dashboard/features/dashboard/domain/dashboard_limits.dart';
 import 'package:dashboard/features/dashboard/domain/issue.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -35,12 +36,12 @@ void main() {
     expect(i.feature, 'alpha');
   });
 
-  test('DSH-05.b: requirement is the ID on the line starting Requirement:', () {
+  test('DSH-05.d: requirement is the ID on the line starting Requirement:', () {
     final i = IssueService.parse(issuesJson([issueJson(1, 'One', requirement: 'AAA-01')])).single;
     expect(i.requirement, 'AAA-01');
   });
 
-  test('DSH-05.b: an issue without feature label or Requirement line has none (shown as a dash)', () {
+  test('DSH-05.e: an issue without feature label or Requirement line has none (shown as a dash)', () {
     final i = IssueService.parse(issuesJson([issueJson(1, 'One')])).single;
     expect(i.feature, isNull);
     expect(i.requirement, isNull);
@@ -70,5 +71,20 @@ void main() {
   test('DSH-01.b: output that is not a list becomes an IssueTrackerException', () async {
     final runner = FakeRunner(CommandResult(exitCode: 0, stdout: jsonEncode({'a': 1})));
     await expectLater(IssueService(runner: runner).load(), throwsA(isA<IssueTrackerException>()));
+  });
+
+  test('DSH-05.f: the list command asks for the number of issues in DashboardLimits.issues (newest first is the tracker order)', () async {
+    final runner = FakeRunner(CommandResult(exitCode: 0, stdout: issuesJson([])));
+    await IssueService(runner: runner).load();
+    final call = runner.calls.single;
+    final at = call.indexOf('--limit');
+    expect(at, greaterThan(-1));
+    expect(call[at + 1], '${DashboardLimits.issues}');
+    expect(DashboardLimits.issues, 200);
+  });
+
+  test('DSH-05.f: the issues come back in the order the tracker gave them', () {
+    final list = IssueService.parse(issuesJson([issueJson(30, 'c'), issueJson(20, 'b'), issueJson(10, 'a')]));
+    expect(list.map((i) => i.number), [30, 20, 10]);
   });
 }

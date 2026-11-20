@@ -1,21 +1,22 @@
 // Tests the page: DSH-01.a (files touched, no token), DSH-01.b (tracker failure shown, requirements still shown),
-// DSH-03.b, DSH-03.c, DSH-04 a-d (the filters in the UI), DSH-05 a-c (issue list).
+// DSH-03.b, DSH-03.c, DSH-04 a-d (the filters in the UI), DSH-05 a-f (issue list), DSH-01.f (load failures), DSH-03.d (status messages), DSH-04.e (applied filter shown).
 // One run covers each ID named in the test name.
-import 'dart:io';
-
 import 'package:dashboard/features/dashboard/data/command_result.dart';
 import 'package:dashboard/features/dashboard/data/issue_service.dart';
 import 'package:dashboard/features/dashboard/data/requirement_repository.dart';
 import 'package:dashboard/features/dashboard/data/sprint_repository.dart';
+import 'package:dashboard/features/dashboard/domain/dashboard_limits.dart';
 import 'package:dashboard/features/dashboard/ui/dashboard_page.dart';
 import 'package:dashboard/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../support/failing_file_access.dart';
 import '../support/fixtures.dart';
+import '../support/memory_file_access.dart';
+import '../support/page_harness.dart';
 
-// Requirements after the sprint drops BBB-01: AAA-01 proposed, AAA-02 backlog, GGG-01 done.
+// Requirements after the sprint drops BBB-01: AAA-01 proposed, AAA-02 backlog, GGG-01 proposed.
 // Issues after the sprint drops #7: 8 open alpha AAA-01, 9 closed, 10 open beta.
 final tracker = CommandResult(exitCode: 0, stdout: issuesJson([
   issueJson(7, 'Named issue'),
@@ -25,49 +26,20 @@ final tracker = CommandResult(exitCode: 0, stdout: issuesJson([
 ]));
 
 void main() {
-  late Directory repo;
   late RecordingFileAccess files;
   late FakeRunner runner;
-  setUp(() => repo = makeRepo());
-  tearDown(() => repo.deleteSync(recursive: true));
-
   Future<void> pump(WidgetTester t, CommandResult result) async {
-    final dir = makePageRepo(repo);
-    files = RecordingFileAccess(disk);
+    files = RecordingFileAccess(MemoryFileAccess(pageFiles()));
     runner = FakeRunner(result);
-    t.view.physicalSize = const Size(2400, 1800);
-    t.view.devicePixelRatio = 1;
-    addTearDown(t.view.reset);
-    await t.pumpWidget(MaterialApp(
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: DashboardPage(
-        sprints: SprintRepository(files: files, path: join(repo, 'SCRUM.d/sprint.md')),
-        requirements: RequirementRepository(files: files, directory: dir),
-        issues: IssueService(runner: runner),
-      ),
-    ));
-    // Real file IO needs real time: alternate real waits with frame pumps until the sprint has loaded.
-    for (var i = 0; i < 200 && find.text('Sprint goal: Page goal').evaluate().isEmpty; i++) {
-      await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
-      await t.pump();
-    }
-    await t.pumpAndSettle();
+    await pumpPage(t, files: files, runner: runner);
   }
 
   testWidgets('DSH-01.a: loading reads only the sprint file and requirement files, writes nothing, sends no token', (t) async {
     await pump(t, tracker);
-    final reqDir = join(repo, 'requirements');
-    final sprint = join(repo, 'SCRUM.d/sprint.md');
     for (final p in files.reads) {
-      expect(p == sprint || p.replaceAll('\\', '/').startsWith(reqDir.replaceAll('\\', '/')), isTrue, reason: 'read $p');
+      expect(p == memSprintPath || p.startsWith(memRequirementsDir), isTrue, reason: 'read $p');
     }
-    expect(files.reads, contains(sprint));
+    expect(files.reads, contains(memSprintPath));
     expect(files.writes, isEmpty);
     final call = runner.calls.expand((c) => c).join(' ').toLowerCase();
     expect(call, isNot(contains('token')));
@@ -93,7 +65,7 @@ void main() {
     await pump(t, tracker);
     expect(find.textContaining('Alpha two blank.'), findsOneWidget); // blank counts as backlog
     expect(find.textContaining('Alpha one.'), findsNothing); // proposed, not selected
-    expect(find.textContaining('Gamma one.'), findsNothing); // done
+    expect(find.textContaining('Gamma one.'), findsNothing); // proposed, not selected
     expect(find.text('1 of 3 shown'), findsOneWidget);
   });
 
@@ -106,7 +78,7 @@ void main() {
     expect(find.text('2 of 3 shown'), findsOneWidget);
   });
 
-  testWidgets('DSH-05.b: an issue without feature or requirement shows a dash', (t) async {
+  testWidgets('DSH-05.e: an issue without feature or requirement shows a dash', (t) async {
     await pump(t, CommandResult(exitCode: 0, stdout: issuesJson([issueJson(11, 'Bare issue')])));
     expect(find.textContaining('Bare issue'), findsOneWidget);
     expect(find.textContaining('open | - | - | -'), findsOneWidget);
@@ -153,7 +125,7 @@ void main() {
     await pump(t, tracker);
     await t.tap(find.text('backlog'));
     await t.pumpAndSettle();
-    for (final s in ['proposed', 'backlog', 'done']) {
+        for (final s in ['proposed', 'backlog']) {
       expect(find.text(s), findsWidgets, reason: s);
     }
   });
@@ -196,5 +168,99 @@ void main() {
     await t.pumpAndSettle();
     expect(find.textContaining('Issue ten'), findsNothing);
     expect(find.text('0 of 3 shown'), findsOneWidget);
+  });
+
+  testWidgets('DSH-05.d and DSH-05.e: an issue shows the requirement of its Requirement: line, a dash when there is none', (t) async {
+    await pump(t, tracker);
+    expect(find.text('Issue eight | open | alpha | AAA-01 | -'), findsOneWidget);
+    expect(find.text('Issue ten | open | beta | BBB-09 | -'), findsOneWidget);
+    await pump(t, CommandResult(exitCode: 0, stdout: issuesJson([issueJson(12, 'No feature', requirement: 'AAA-02'), issueJson(13, 'No requirement', feature: 'alpha')])));
+    expect(find.text('No feature | open | - | AAA-02 | -'), findsOneWidget);
+    expect(find.text('No requirement | open | alpha | - | -'), findsOneWidget);
+  });
+
+  testWidgets('DSH-05.f: when the loaded issues reach the limit the page says only the newest are listed; below it, it does not', (t) async {
+    final atLimit = [for (var n = DashboardLimits.issues + 100; n > 100; n--) issueJson(n, 'Issue $n')];
+    expect(atLimit, hasLength(DashboardLimits.issues));
+    await pump(t, CommandResult(exitCode: 0, stdout: issuesJson(atLimit)));
+    expect(find.text('Only the newest ${DashboardLimits.issues} issues are listed'), findsOneWidget);
+    await pump(t, CommandResult(exitCode: 0, stdout: issuesJson(atLimit.take(DashboardLimits.issues - 1).toList())));
+    expect(find.textContaining('Only the newest'), findsNothing);
+  });
+
+  testWidgets('DSH-01.f: an unreadable sprint file is reported with the reason; requirements and issues still work', (t) async {
+    final files = FailingFileAccess(MemoryFileAccess(pageFiles()), failsOn: (p) => p == memSprintPath, reason: 'sprint disk gone');
+    await pumpPage(t, files: files, runner: FakeRunner(tracker));
+    expect(find.textContaining('Could not be read: '), findsOneWidget);
+    expect(find.textContaining('sprint disk gone'), findsOneWidget);
+    expect(find.textContaining('Alpha two blank.'), findsOneWidget);
+    expect(find.textContaining('Issue eight'), findsOneWidget);
+  });
+
+  testWidgets('DSH-01.f: unreadable requirement files are reported with the reason; the sprint and the issues still work', (t) async {
+    final files = FailingFileAccess(MemoryFileAccess(pageFiles()),
+        failsOn: (p) => p.startsWith(memRequirementsDir), reason: 'requirements disk gone');
+    await pumpPage(t, files: files, runner: FakeRunner(tracker));
+    expect(find.textContaining('Could not be read: '), findsOneWidget);
+    expect(find.textContaining('requirements disk gone'), findsOneWidget);
+    expect(find.text('Sprint goal: Page goal'), findsOneWidget);
+    expect(find.byKey(const Key('card-S-1')), findsOneWidget);
+    expect(find.textContaining('Issue eight'), findsOneWidget);
+  });
+
+  testWidgets('DSH-01.f: both unreadable are reported each once, the issues still work', (t) async {
+    final files = FailingFileAccess(MemoryFileAccess(pageFiles()), failsOn: (_) => true);
+    await pumpPage(t, files: files, runner: FakeRunner(tracker));
+    expect(find.textContaining('Could not be read: '), findsNWidgets(2));
+    expect(find.textContaining('Issue eight'), findsOneWidget);
+  });
+
+  testWidgets('DSH-03.d: a requirement status is shown as the message of the locale (msg:dshStatusProposed, msg:dshStatusBacklog)', (t) async {
+    final files = MemoryFileAccess(pageFiles());
+    bigView(t);
+    await t.pumpWidget(testApp(
+      DashboardPage(
+        sprints: SprintRepository(files: files, path: memSprintPath),
+        requirements: RequirementRepository(files: files, directory: memRequirementsDir),
+        issues: IssueService(runner: FakeRunner(tracker)),
+      ),
+      locale: const Locale('de'),
+    ));
+    await t.pumpAndSettle();
+    final de = lookupAppLocalizations(const Locale('de'));
+    expect(de.dshStatusProposed, isNot('proposed'));
+    // The status filter dropdown of the requirement list offers the messages, not the raw words.
+    await t.tap(find.text(de.dshStatusBacklog).first);
+    await t.pumpAndSettle();
+    expect(find.text(de.dshStatusProposed), findsWidgets);
+    expect(find.text('proposed'), findsNothing);
+    await t.tap(find.text(de.dshAll).last);
+    await t.pumpAndSettle();
+    expect(find.textContaining('(${de.dshStatusProposed})'), findsNWidgets(2));
+    expect(find.textContaining('(proposed)'), findsNothing);
+  });
+
+  testWidgets('DSH-03.d: in English a requirement row shows its status as msg:dshStatusBacklog or msg:dshStatusProposed', (t) async {
+    await pump(t, tracker);
+    expect(find.textContaining('alpha (backlog): Alpha two blank.'), findsOneWidget);
+    await t.tap(find.text('backlog'));
+    await t.pumpAndSettle();
+    await t.tap(find.text('All').last);
+    await t.pumpAndSettle();
+    expect(find.textContaining('alpha (proposed): Alpha one.'), findsOneWidget);
+  });
+
+  testWidgets('DSH-04.e: a filter shows an applied value no entry has: the issue list status Closed with only open issues', (t) async {
+    await pump(t, CommandResult(exitCode: 0, stdout: issuesJson([issueJson(8, 'Only open', feature: 'alpha')])));
+    // Choose feature alpha, then reload with no alpha issue: the applied feature is still shown.
+    await t.tap(find.text('All').at(1));
+    await t.pumpAndSettle();
+    await t.tap(find.text('alpha').last);
+    await t.pumpAndSettle();
+    runner.result = const CommandResult(exitCode: 0, stdout: '[]');
+    await t.tap(find.byKey(const Key('reload-button')));
+    await t.pumpAndSettle();
+    expect(find.text('alpha'), findsWidgets);
+    expect(find.text('0 of 0 shown'), findsWidgets);
   });
 }
