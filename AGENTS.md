@@ -55,7 +55,7 @@ Read the README of an area before touching anything in it.
 |---|---|
 | `SCRUM.d/` | Roles, stories, sprints, definition of done, how the Orchestrator briefs and checks agents (`SCRUM.d/README.md`) |
 | `WORKING.d/` | The Orchestrator's memory: work in progress and awaiting action; temporary (`WORKING.d/README.md`) |
-| `requirements/` | The spec, one file per feature; `README.md` has the rules for writing it; `open-questions.md` (for now `build_rules/open-questions.md`) the questions for the Product Owner |
+| `requirements/` | The spec, one file per feature; `README.md` has the rules for writing it; `open-questions.md` the questions for the Product Owner |
 | `packages/`, `server/`, `client/` | The Dart port; `packages/README.md` holds its rules |
 | `app/`, `tests/` | The Python app and its suites: the running app and the reference until the port is complete |
 | `build_rules/` | Old working notes; `build_rules/README.md` says which files are live; do not follow the rest |

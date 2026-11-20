@@ -4,12 +4,12 @@
 # Uses only bash and awk. Run from the repository root: tests/tools/req_check.sh
 cd "$(dirname "$0")/../../requirements" || exit 2
 echo "Rules: requirements/README.md (rules 1 and 2 are the laws; each rule has its test)"
-files=$(ls *.md *.d/*.md | grep -v -e '^README.md$' -e '^oldkey.md$')
+files=$(ls *.md *.d/*.md | grep -v -e '^README.md$' -e '^oldkey.md$' -e '^open-questions.md$')
 err=0
 rows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{gsub(/ /,"",$2); print FILENAME" "$2}' $files)
 ids=$(echo "$rows" | awk '{print $2}' | sort)
 echo "== malformed rows (not five columns; common.md has its own layout)"
-cfiles=$(ls *.md *.d/*.md | grep -v -e '^README.md$' -e '^oldkey.md$' -e '^common.md$')
+cfiles=$(ls *.md *.d/*.md | grep -v -e '^README.md$' -e '^oldkey.md$' -e '^open-questions.md$' -e '^common.md$')
 bad=$(grep -HE '^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|' $cfiles | sed 's/\\|//g' | awk -F'|' 'NF!=7 {split($1,a,":"); print a[1]": "$2}')
 [ -n "$bad" ] && { echo "$bad"; err=1; } || echo none
 echo "== duplicate IDs"; dup=$(echo "$ids" | uniq -d); [ -n "$dup" ] && { echo "$dup"; err=1; } || echo none
@@ -55,7 +55,7 @@ lacking=$(for l in messages/app_*.arb; do case $l in messages/app_en.arb) contin
 [ -n "$missing_cited$lacking" ] && { echo "$missing_cited$lacking"; err=1; } || echo none
 echo "   message keys not yet cited by a requirement: $(comm -23 <(echo "$tkeys") <(echo "$cited") | grep -c .) of $(echo "$tkeys" | wc -l)"
 echo "== questions: every (?) row is in open-questions.md and every question there has a (?) row (rule 10)"
-q=../build_rules/open-questions.md
+q=open-questions.md
 qrows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/ && $3 ~ /\(\?\)/ {id=$2; gsub(/ /,"",id); print id}' $files | sort)
 qfile=$(grep -oE '^- \*\*[A-Z]+-[0-9]+(\.[a-z]+)?\*\*' $q | grep -oE '[A-Z]+-[0-9]+(\.[a-z]+)?' | sort)
 qbad=$( { comm -23 <(echo "$qrows") <(echo "$qfile") | sed 's/^/no question for row: /'; comm -13 <(echo "$qrows") <(echo "$qfile") | sed 's/^/question without a (?) row: /'; } )
