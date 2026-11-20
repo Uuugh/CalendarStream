@@ -10,6 +10,7 @@ In order; Product Owner items first, then what the Orchestrator can do now, then
 
 - [ ] The Product Owner reviews the `proposed` rows and answers `requirements/open-questions.md` (a blank status they leave means `backlog`); decides the three proposed rule changes (bucket B in `WORKING.d/CalendarStream.old/build_rules/coder-review-1.md`)
 - [ ] Add the checks to `tests/tools/req_check.sh`: status regression, every folder README lists its parts, links in `AGENTS.md`, `SCRUM.d/`, `packages/README.md` and this file resolve, this file under its size limit with no ticked item (the Orchestrator makes this change; see `WORKING.d/move-plan.md`)
+- [ ] Write the Test line for the 32 rules in `SCRUM.d`, `tests` and `packages` READMEs that `req_check.sh` lists as warnings (law 3), and trim the duplicates in `packages/README.md` Testing (its Location line also contradicts `tests/README.md`)
 - [ ] Restore or delete the placeholders left when the old app moved (list: `WORKING.d/placeholders.md`)
 - [ ] Open: still to fix from the first Coder review: about 30 undefined terms, statements pointing at the legacy theme file, README roles and the DEF prefix, `common.md` to the line format
 - [ ] Cold-agent acceptance test of `AGENTS.md`: who am I, where are the rules, the tests and the open questions, what do I read next
@@ -24,3 +25,4 @@ In order; Product Owner items first, then what the Orchestrator can do now, then
 - `placeholders.md`: plain-text stand-ins left when the old app moved, to restore or delete
 - `CalendarStream.old/`: the retired Python app, frozen, an oracle only; delete it when the port is complete
 - `scrum-gaps.md`: gaps found by comparing `SCRUM.d/` with the retired `build_rules/` (for decision; delete after)
+- `repo-review.md`: the Reviewer agent's findings on the process files against the laws (for decision; delete after)

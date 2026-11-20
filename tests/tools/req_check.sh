@@ -45,6 +45,14 @@ notest=$(awk '/^## Rules for writing and changing requirements/{inr=1; next} /^#
 [ -n "$notest" ] && { echo "rules without a test: $notest"; err=1; } || echo none
 notestA=$(awk '/^## (The laws|Standing rules)/{inr=1; next} /^## /{inr=0} inr && /^(- |[0-9]+[.] )[*][*]/ { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) print first; blk=$0; first=substr($0,1,50); next } inr { blk=blk $0 } END { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) print first }' ../AGENTS.md)
 [ -n "$notestA" ] && { echo "AGENTS.md rules without a test:"; echo "$notestA"; err=1; } || echo none
+echo "== warnings: rules in SCRUM.d, tests and packages READMEs without a Test line (law 3; fix by writing the Test line)"
+awk '/^(- |[0-9]+[.] |  - )[*][*]/ { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) n++; blk=$0; next } /^#/ { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) n++; blk=""; next } /^$/ { next } blk != "" { blk=blk $0 } ENDFILE { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) n++; blk="" } END { print n+0" rules" }' ../SCRUM.d/README.md ../tests/README.md ../packages/README.md
+echo "== errors: a requirement a story names (SCRUM.d/sprint.md) whose test cell is still — (rule 13)"
+if [ -f ../SCRUM.d/sprint.md ]; then
+  named=$(grep -o -E '[A-Z]+-[0-9]+([.][a-z]+)?' ../SCRUM.d/sprint.md | sort -u)
+  notestS=$(for id in $named; do grep -hE "^[|] ${id}([.][a-z]+)? [|]" $cfiles | sed 's/[\][|]//g' | awk -F'|' '{t=$5; gsub(/ /,"",t); if (t=="—") {i=$2; gsub(/ /,"",i); print i}}'; done | sort -u | tr '\n' ' ')
+  [ -n "$notestS" ] && { echo "named rows without a test: $notestS"; err=1; } || echo none
+else echo "none (no sprint file)"; fi
 echo "== requirement rows whose test cell is still — (rule 13; a count, not an error)"
 grep -hE '^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]' $cfiles | sed 's/[\][|]//g' | awk -F'|' '{t=$5; gsub(/ /,"",t); if (t=="—") n++} END {print n+0" rows"}'
 echo "== errors: a requirement row outside its table (a non-table line before it) or a README link to a missing file"
