@@ -13,7 +13,7 @@ Everything about how work is organized lives here, once. Rules of an area (requi
   story's requirements. **Coder (tests)** builds the mirrored requirement tests in `tests/`, working from the
   requirements only, never the implementation. **Tester** runs the tests and reports a result per requirement (`tests/README.md`). More than one team
   may work in a sprint only when the Product Owner directs it (one team by default), each on its own stories. A team
-  reads the requirements and never edits them; a defect in one goes to the Product Owner, who decides and changes it.
+  reads the requirements and never edits them; a defect in one goes to the Orchestrator, who changes it as `proposed`; the Product Owner approves requirements.
   Until the port starts, a Coder is a read-only agent reviewing the requirements for what cannot be implemented.
 - **Reviewer**: read-only; compares requirement files or code with the README rules of its area, row by row.
 
