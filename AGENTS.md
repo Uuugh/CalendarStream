@@ -41,6 +41,9 @@ what each does are in `SCRUM.d/README.md`.
 - **Push after each verified commit. Merge a branch when the Product Owner directs it. Another contributor's pull
   request is merged by the auto-merge workflow, never by hand.** **Test:** `git status` is clean and
   `git log origin/<branch>` matches before you stop.
+- **A commit message is one plain sentence saying what changed, ending in brackets with the requirement IDs, the issue
+  number or the folder it serves.** **Test:** review: the last bracket of every commit on a team branch holds an ID, an
+  issue number or an existing folder.
 
 ## Folders: `<topic>.md`, `<topic>.d/`, `<topic>.d/README.md`
 
