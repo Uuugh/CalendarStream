@@ -21,9 +21,12 @@ what each does are in `SCRUM.d/README.md`.
 
 ## Standing rules
 
-- **The Product Owner decides.** Questions for them go in `requirements/open-questions.md`, one at a time, never in a
-  handoff or a chat only; answers are read from its `Answer:` lines. **Test:** review: is every decision traceable to
-  an `Answer:` line or an edit by the Product Owner?
+- **The Product Owner decides; you act on everything else.** Do what these files assign to your role and what the
+  Product Owner has directed, without asking first: push, merge a branch they told you to merge, launch the agents the
+  process calls for. Ask about a decision that is theirs and that the files and sources do not settle. Ask in the
+  conversation, one decision at a time with your recommendation; record it in `requirements/open-questions.md` if it
+  must outlive the conversation, and read answers from the `Answer:` lines. **Test:** review: every question is a
+  decision of the Product Owner's, and no action waited for a permission it already had.
 - **Never revert or overwrite the Product Owner's edits.** They edit files directly; a status they leave blank means
   backlog. **Test:** before and after any change run `git status` and `git diff`; no status goes backwards
   (`backlog` or blank to `proposed`).
@@ -32,7 +35,8 @@ what each does are in `SCRUM.d/README.md`.
   Product Owner answer.
 - **Never put real data or secrets anywhere** (the real schedule, username, Google secret). **Test:** review the diff;
   tests use made-up data.
-- **Push after each verified commit; never merge a pull request by hand.** **Test:** `git status` is clean and
+- **Push after each verified commit. Merge a branch when the Product Owner directs it. Another contributor's pull
+  request is merged by the auto-merge workflow, never by hand.** **Test:** `git status` is clean and
   `git log origin/<branch>` matches before you stop.
 
 ## Folders: `<topic>.md`, `<topic>.d/`, `<topic>.d/README.md`
