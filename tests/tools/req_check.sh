@@ -31,8 +31,8 @@ awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (tolower($4) ~ /(^|[^a-z])(exce
 echo "== errors: an agent or tool is named (rule 11)"
 named=$(grep -nE 'Claude|ChatGPT|GPT|Codex|Copilot|Anthropic|OpenAI' $files README.md | cut -d: -f1,2 | tr '\n' ';')
 [ -n "$named" ] && { echo "$named"; err=1; } || echo none
-echo "== errors: a status other than proposed or backlog (README, Line format)"
-badstat=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ s=$3; gsub(/^ +| +$/,"",s); if (s != "proposed" && s != "backlog" && s != "proposed (?)" && s != "backlog (?)") { id=$2; gsub(/ /,"",id); print id" ("s")" } }' $files | tr '\n' ';')
+echo "== errors: a status that is not proposed, backlog, planned or done (README, Line format)"
+badstat=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ s=$3; gsub(/^ +| +$/,"",s); if (s !~ /^(proposed|backlog|planned|done)( [(][?][)])?$/) { id=$2; gsub(/ /,"",id); print id" ("s")" } }' $files | tr '\n' ';')
 [ -n "$badstat" ] && { echo "$badstat"; err=1; } || echo none
 echo "== errors: a connection file that does not state its role as a source, a feed or both (connections.md, CON-01.c)"
 norole=$(for f in connections.d/*.md; do case $f in connections.d/README.md) continue;; esac; grep -qE '\| [A-Z]+-[0-9]+(\.[a-z]+)? \|[^|]*\|[^|]*(is a source|is a feed|both a source and a feed)' $f || echo $f; done | tr '\n' ';')
@@ -84,9 +84,9 @@ badparts=$(for d in *.d ../SCRUM.d; do [ -f $d/README.md ] || echo "$d: no READM
 echo "== errors: a README or script named in a process file does not exist (links resolve)"
 badlinks=$(for f in ../AGENTS.md ../SCRUM.d/README.md ../tests/README.md ../packages/README.md README.md; do grep -o '[`][A-Za-z0-9_./-]*\(README[.]md\|[.]sh\)[`]' $f | tr -d '`' | sort -u | while read p; do [ -e "../$p" ] || [ -e "$p" ] || [ -e "$(dirname $f)/$p" ] || find .. -name "$(basename $p)" -not -path '../WORKING.d/*' -not -path '../.git/*' | grep -q . || echo "$f: $p"; done; done)
 [ -n "$badlinks" ] && { echo "$badlinks"; err=1; } || echo none
-echo "== errors: a status went backwards (backlog or blank to proposed) against ${REQ_BASE:-HEAD}"
+echo "== errors: a status moved down the order proposed, backlog, planned, done (only planned to backlog is allowed) against ${REQ_BASE:-HEAD}"
 base=${REQ_BASE:-HEAD}
-back=$(for f in $files; do git show "$base:requirements/$f" 2>/dev/null | awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' > /tmp/rc_old.txt; awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' $f > /tmp/rc_new.txt; awk 'NR==FNR {o[$1]=$2; seen[$1]=1; next} ($1 in seen) && $2=="proposed" && o[$1]!="proposed" {print $1}' /tmp/rc_old.txt /tmp/rc_new.txt; done | tr '\n' ' ')
+back=$(for f in $files; do git show "$base:requirements/$f" 2>/dev/null | awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' > /tmp/rc_old.txt; awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' $f > /tmp/rc_new.txt; awk 'NR==FNR {o[$1]=$2; seen[$1]=1; next} ($1 in seen) {r["proposed"]=1; r["backlog"]=2; r[""]=2; r["planned"]=3; r["done"]=4; if (r[$2] < r[o[$1]] && !(o[$1]=="planned" && $2=="backlog")) print $1}' /tmp/rc_old.txt /tmp/rc_new.txt; done | tr '\n' ' ')
 [ -n "$back" ] && { echo "status went backwards: $back"; err=1; } || echo none
 echo "== errors: a link or picture in the project README.md that does not resolve (Definition of done)"
 badreadme=$(grep -o ']([^)#]*)' ../README.md | sed 's/^](//; s/)$//' | grep -v -e '^http' -e '^mailto' -e '^$' | while read p; do [ -e "../$p" ] || echo "$p"; done | tr '\n' ' ')
