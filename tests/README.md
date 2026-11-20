@@ -11,6 +11,8 @@ costs no agent usage, so it is cheaper than the same test an agent must run: met
 methods 5 and 6 need an agent. **Test:** review: for each test, name a cheaper method and show it would not verify the
 row; for each test an agent runs, show that CI cannot run it.
 
+**CI** (continuous integration) is the GitHub workflow that runs our scripted checks on every push; it costs no agent usage.
+
 ## Methods, cheapest first (a guide, not a limit)
 
 1. A static check or script on files (`tests/tools/req_check.sh` is one).
