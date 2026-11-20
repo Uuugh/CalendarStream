@@ -19,8 +19,6 @@ You keep the requirements consistent, and you save your own context for every ta
 
 See the steps table in `build_rules/orchestration.md`. In short: the requirements are reorganized and checked; the first full Coder review (baseline about 390 of 900 rows cannot be implemented) is triaged; six blind agents reverse-engineered the Python app and were compared with ours (data in `build_rules/reverse-engineering/`). **All six slices of gaps are filled. Next (step 5): the Product Owner answers `open-questions.md`, agrees to rows and decides the three proposed rule changes; then (step 6) the six Coder slices are re-run.**
 
-The Product Owner confirms the differences from the old app in `open-questions.md`, section "Differences from the old app" (ours wins unless the answer says otherwise).
-
 ## Practical
 
 - `python` is not installed: use bash, sed, awk or the editor. A tool layer may halve backslashes in commands; test any sed that must match a literal one. `req_check.sh` takes about 30 seconds; do not run several in one command.
