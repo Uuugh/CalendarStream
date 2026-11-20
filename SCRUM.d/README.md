@@ -21,7 +21,7 @@ The Orchestrator launches a team per story: both Coders and a Tester.
   never refer to a story.
 - **Epic**: a group of stories (usually one feature).
 - **Sprint**: the stories chosen to be built next; the Dashboard (not yet built) will record the sprint and done.
-  A sprint ends when its stories are done or at their review; it has no calendar length.
+  Only the Product Owner launches a sprint. A sprint ends when its stories are done or at their review; it has no calendar length.
   Its **Sprint Goal** is one sentence, written by the Orchestrator and agreed by the Product Owner.
   The sprint's story list and the retrospective's output live in `SCRUM.d/sprint.md`, deleted when the sprint is done.
 - **Ready**: a story enters a sprint when its terms are defined, its tests are named and no open question blocks it;
