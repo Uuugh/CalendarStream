@@ -13,6 +13,7 @@ In order; Product Owner items first, then what the Orchestrator can do now, then
 - [ ] Restore or delete the placeholders left when the old app moved (list: `WORKING.d/placeholders.md`)
 - [ ] Open: still to fix from the first Coder review: about 30 undefined terms, statements pointing at the legacy theme file, README roles and the DEF prefix, `common.md` to the line format
 - [ ] Run the cold-agent test of the process files once before the first sprint (`SCRUM.d/README.md`, Retrospective)
+- [ ] At the first Retrospective compare agent usage per model and per role, then decide which model suits which role (gap 25)
 - [ ] Story: define how test runs are split and run in parallel and what a run reports; inputs: the parked branch `paused/test-parallel` (commit 85f404b) and requirement DIA-04.c (see `tests/README.md`); CI fills the Tester role for scripted tests only once this report exists
 - [ ] Decide Dart CI and release: what CI runs (analysis, tests, `req_check.sh`), whether a green run is part of done, a dependency check, and the release steps (gaps 2, 8, 12, 13, 33 in `WORKING.d/scrum-gaps.md`)
 - [ ] Re-run the six Coder slices and compare with the baseline (about 390 of 900 rows could not be implemented); repeat the fix, check and review cycle until the count is acceptable

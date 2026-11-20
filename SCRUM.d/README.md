@@ -86,8 +86,9 @@ criteria as requirement IDs, and names what is out of scope and which paths the 
 6. **Progress bars.** One simple bar per running agent, nothing else, in every message to the Product Owner until it
    finishes: label, 20-character bar, `done/total`, and `done` when finished. Each agent writes `done/total` to its own
    progress file (in the session's scratch folder) after each unit. Do not poll or sleep; draw the bars when a
-   notification arrives. Pause the agents (stop them) when the Product Owner's 5-hour usage (`/usage`) passes about 70%; relaunch later
-   with "keep the output file and continue with what is not yet written".
+   notification arrives. Stop every running agent when the Product Owner says stop or their 5-hour usage (`/usage`) passes
+   about 70%, and make no commit, push or launch until told; relaunch later with "keep the output file and continue with
+   what is not yet written". **Test:** review: after a stop message no agent is running and no commit follows.
 7. **Before a session ends**, update `WORKING.d/README.md` and push it: nothing else survives into the next conversation.
 8. **Stalled agent.** Stop an agent in a failure loop (several failed attempts or a growing diff) and keep its
    diagnostics. Relaunch it cold from the last verified commit with the objective, the checkpoint, the rules and the
