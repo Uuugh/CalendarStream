@@ -8,7 +8,3 @@ Rules for this folder (in addition to `../README.md` and `../connections.d/READM
 2. **`../plugins.md` is the template** for a new plugin: the file states what it requires of every plugin and links to the rest (rule 5 of `../README.md`).
 3. **A plugin knows nothing of its connections.** Behavior of a connection that uses the plugin is in `../connections.d/`, which links to the plugin; the plugin file never describes a connection.
 4. Follow `../README.md` for the line format, statuses, links, `oldkey.md` and the check.
-
-## Parts
-
-- `google_api.md`: the access to Google that every Google connection requires

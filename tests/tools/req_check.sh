@@ -72,12 +72,8 @@ qrows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/ && $3 ~ /\(\?\)/ {id=$2; gs
 qfile=$(grep -oE '^- \*\*[A-Z]+-[0-9]+(\.[a-z]+)?\*\*' $q | grep -oE '[A-Z]+-[0-9]+(\.[a-z]+)?' | sort)
 qbad=$( { comm -23 <(echo "$qrows") <(echo "$qfile") | sed 's/^/no question for row: /'; comm -13 <(echo "$qrows") <(echo "$qfile") | sed 's/^/question without a (?) row: /'; } )
 [ -n "$qbad" ] && { echo "$qbad"; err=1; } || echo none
-echo "== errors: a folder part not listed in its folder's README, or a listed part that does not exist (AGENTS.md, Folders)"
-badparts=$(for d in connections.d plugins.d ../SCRUM.d; do
-  [ -f $d/README.md ] || { echo "$d: no README.md"; continue; }
-  for f in $d/*.md; do b=$(basename $f); [ "$b" = README.md ] && continue; grep -q "$b" $d/README.md || echo "$d: $b not listed"; done
-  for l in $(grep -o '^[-|] *[`][A-Za-z0-9_-]*[.]md[`]' $d/README.md | sed 's/[`| -]//g'); do [ -f $d/$l ] || echo "$d: $l listed but missing"; done
-done)
+echo "== errors: a .d folder with no README.md, or a requirement file that requirements/README.md does not list (AGENTS.md, Folders)"
+badparts=$(for d in *.d ../SCRUM.d; do [ -f $d/README.md ] || echo "$d: no README.md"; done; for f in $files; do grep -q "$(basename $f)" README.md || echo "$f: not listed in requirements/README.md"; done)
 [ -n "$badparts" ] && { echo "$badparts"; err=1; } || echo none
 echo "== errors: a README or script named in a process file does not exist (links resolve)"
 badlinks=$(for f in ../AGENTS.md ../SCRUM.d/README.md ../tests/README.md ../packages/README.md README.md; do grep -o '[`][A-Za-z0-9_./-]*\(README[.]md\|[.]sh\)[`]' $f | tr -d '`' | sort -u | while read p; do [ -e "../$p" ] || [ -e "$p" ] || [ -e "$(dirname $f)/$p" ] || find .. -name "$(basename $p)" -not -path '../WORKING.d/*' -not -path '../.git/*' | grep -q . || echo "$f: $p"; done; done)
