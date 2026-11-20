@@ -260,7 +260,6 @@ CalendarStream), **rule** (made by a rule).
 | Hidden kinds in the calendar key | | at most 60 | default only |
 | Own-address lookup | at most every 10 minutes | | default only |
 | Google traffic entries kept (beta) | | 200, in memory | default only |
-| Sign-in failures from all addresses | 50 within 15 minutes | | default only |
 | Container health check | every 60 seconds, answer within 5 seconds | | default only |
 | Database health check | every 10 seconds, 5 seconds limit, 6 retries, 30 seconds start | | default only |
 | Database connection pool | 1 to 4 connections | | default only |
