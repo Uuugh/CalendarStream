@@ -4,18 +4,15 @@ Everything about how work is organized lives here, once. Rules of an area (requi
 
 ## Roles
 
-- **Product Owner**: the repository owner. Decides, answers `requirements/open-questions.md`, agrees to rows
-  (deletes `proposed`), launches work, decides which legacy files go.
-- **Orchestrator**: keeps the requirements consistent, briefs and checks the other agents, commits and pushes. Is also
-  the **Author** for short work: edits, fixes and discussion are done by the Orchestrator itself. Never builds the app
-  and never plays the Coder.
-- **Team**: the Orchestrator launches a team per story: two Coders and a Tester. **Coder (build)** implements the
-  story's requirements. **Coder (tests)** builds the mirrored requirement tests in `tests/`, working from the
-  requirements only, never the implementation. **Tester** runs the tests and reports a result per requirement; how to test is in `tests/README.md`. More than one team
-  may work in a sprint only when the Product Owner directs it (one team by default), each on its own stories. A team
-  reads the requirements and never edits them; a defect in one goes to the Orchestrator, who changes it as `proposed`; the Product Owner approves requirements.
-  Until the port starts, a Coder is a read-only agent reviewing the requirements for what cannot be implemented.
-- **Reviewer**: read-only; compares requirement files or code with the README rules of its area, row by row.
+- **Product Owner**: the repository owner; decides. Human
+- **Orchestrator**: keeps the requirements consistent, briefs and checks the other agents, commits and pushes; also the
+  **Author** of short work.
+- **Coder (build)**: implements a story's requirements.
+- **Coder (tests)**: builds the mirrored requirement tests from the requirements only.
+- **Tester**: runs the tests and reports a result per requirement.
+- **Reviewer**: read-only; checks work against the rules of its area.
+
+The Orchestrator launches a team per story: both Coders and a Tester.
 
 ## Work
 
@@ -24,10 +21,54 @@ Everything about how work is organized lives here, once. Rules of an area (requi
   never refer to a story.
 - **Epic**: a group of stories (usually one feature).
 - **Sprint**: the stories chosen to be built next; the Dashboard (not yet built) will record the sprint and done.
-- **Definition of done**: `flutter analyze` is clean, `flutter test` passes and `tests/tools/req_check.sh` passes. Until
-  Dart tests exist for a requirement, done means `req_check.sh` passes. At the end of a story, its items are gone from `WORKING.d/README.md` and no file in `WORKING.d/` is unlisted there.
+  A sprint ends when its stories are done or at their review; it has no calendar length.
+  Its **Sprint Goal** is one sentence, written by the Orchestrator and agreed by the Product Owner.
+  The sprint's story list and the retrospective's output live in `SCRUM.d/sprint.md`, deleted when the sprint is done.
+- **Ready**: a story enters a sprint when its terms are defined, its tests are named and no open question blocks it;
+  the Orchestrator checks this before planning.
+- **Definition of done**: `tests/tools/req_check.sh`
+  passes and the Tester reports `pass` for every requirement of the story. The Product Owner approves the Dart
+  commands (static analysis and tests) that are added to this list once Dart tests exist for the requirement.
+  A story that misses done is split, spilled over to the next sprint or stopped by the Orchestrator.
+  At the end of a story, its items are gone from `WORKING.d/README.md` and no file in `WORKING.d/` is unlisted there.
 
-## Orchestrator's responsibilities
+## Responsibilities
+
+### Product Owner
+Decides; answers `requirements/open-questions.md`; agrees to rows (deletes `proposed`); launches work; decides which
+legacy files go; approves requirements. More than one team works in a sprint only when the Product Owner directs it
+(one team by default), each on its own stories.
+
+### Team (both Coders and the Tester)
+Read the requirements and never edit them. A defect in one goes to the Orchestrator, who changes it as `proposed`.
+
+### Coder (build)
+Works in the smallest testable step, verifies, then commits; touches only the files the story needs; adds no dependency
+without the Product Owner's approval; does not weaken or delete a test to make it pass; reviews its own diff for
+redundancy and a simpler way before reporting. When a requirement is unclear it proposes alternatives with pros and
+cons and sends the defect to the Orchestrator. Until the port starts, a Coder is a read-only agent reviewing the
+requirements for what cannot be implemented.
+
+### Coder (tests)
+Works from the requirements only, never the implementation, in `tests/`. Names each test by the behavior and the
+requirement ID; keeps shared test data and helpers in one place; mocks external systems, not internal logic; writes
+from the requirement's observable success and failure. How to test: `tests/README.md`.
+
+### Tester
+Runs the checks in layers (analysis, tests, `req_check.sh`) after every meaningful change and reports per requirement
+the command run and its output; says what was not run and why. Before writing a test, looks for an existing one to
+share or modify (`tests/README.md`).
+
+### Reviewer
+Runs once per story, cold, after the Tester reports `pass`. Compares requirement files or code with the README rules of its area, row by row. Reviews the actual diff, not the
+agent's summary: looks for unrelated edits, duplicated code, dependency and configuration changes and secrets, and
+scales its depth to the risk of the change.
+
+### Orchestrator
+Never builds the app and never plays the Coder. Short work (edits, fixes, discussion) is done by the Orchestrator itself.
+Treats an agent's report as a claim and checks it against the diff and the test output. Writes each brief's acceptance
+criteria as requirement IDs, and names what is out of scope and which paths the agent may write. Checks the diff for
+unrelated edits, new dependencies and configuration changes.
 
 1. **Pre-flight.** Read `WORKING.d/README.md` (your memory); run `git status` and `git diff`; read the `Answer:` lines in `requirements/open-questions.md`; commit the
    Product Owner's uncommitted work first, in its own commit.
@@ -45,6 +86,12 @@ Everything about how work is organized lives here, once. Rules of an area (requi
    with "keep the output file and continue with what is not yet written".
 7. **How agents are run**: cold (no conversation context), read-only for reviews, one slice each.
 8. **Before a session ends**, update `WORKING.d/README.md` and push it: nothing else survives into the next conversation.
+9. **Stalled agent.** Stop an agent in a failure loop (several failed attempts or a growing diff) and keep its
+   diagnostics. Relaunch it cold from the last verified commit with the objective, the checkpoint, the rules and the
+   verified errors, checked against the repo; or split the story.
+10. **Review.** At the end of a sprint write a short Review in `SCRUM.d/sprint.md`: per story what passed, failed and
+    was not checked, and the usage it took.
+11. **Retrospective.** Write the findings in `SCRUM.d/sprint.md`; each ends as an issue, a fix or a stated reason.
 
 ## Checking incoming work (a pull request, a draft or an agent report)
 
