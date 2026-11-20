@@ -57,7 +57,6 @@ Read the README of an area before touching anything in it.
 | `WORKING.d/` | The Orchestrator's memory: work in progress and awaiting action; temporary (`WORKING.d/README.md`) |
 | `requirements/` | The spec, one file per feature; `README.md` has the rules for writing it; `open-questions.md` the questions for the Product Owner |
 | `packages/`, `server/`, `client/` | The Dart port; `packages/README.md` holds its rules |
-| `app/`, `tests/` | The Python app and its suites: the running app and the reference until the port is complete |
-| `build_rules/` | Old working notes; `build_rules/README.md` says which files are live; do not follow the rest |
+| `tests/` | New requirement tests mirroring `requirements/` (not yet defined) and `tests/tools/req_check.sh` |
 | `.claude/skills/dart-flutter/` | The Dart and Flutter skill (the only project skill) |
-| `docs/`, `tools/` | `docs/screenshots/` the README's pictures; `docs/development/` is the Product Owner's scratch work (never read it); `tools/` holds `vendor_icons.py`, a Python helper that goes with the app |
+| `docs/` | `docs/screenshots/` the README's pictures; `docs/development/` is the Product Owner's scratch work (never read it) |

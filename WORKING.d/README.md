@@ -22,3 +22,4 @@ Everything here is temporary and holds no rules. Delete an item when its work is
 
 - `move-plan.md`: how to move the live files into the new layout
 - `placeholders.md`: plain-text stand-ins left when the old app moved, to restore or delete
+- `CalendarStream.old/`: the retired Python app, frozen, an oracle only; delete it when the port is complete
