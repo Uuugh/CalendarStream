@@ -13,7 +13,8 @@ Everything here is temporary and holds no rules. Delete an item when its work is
 - [ ] Retire the legacy files listed in `WORKING.d/CalendarStream.old/build_rules/README.md` (the Product Owner decides)
 - [ ] Cold-agent acceptance test of `AGENTS.md`: who am I, where are the rules, the tests and the open questions, what do I read next
 - [ ] Story: define how test runs are split and run in parallel and what a run reports; inputs: the parked branch `paused/test-parallel` (commit 85f404b) and requirement DIA-04.c (see `tests/README.md`)
-- [ ] Port, story by story, with the `dart-flutter` skill
+- [ ] The Product Owner reads `WORKING.d/scrum-research.md` (Nov 20) and decides five points (sprint end rule, Sprint Goal, where the sprint list and retrospective live, a Ready check, how much Review is shown); then a subagent writes them into `SCRUM.d/`. Scrum is resolved before any coding.
+- [ ] Port, story by story, with the `dart-flutter` skill (after Scrum is resolved)
 - [ ] Later: the dashboard will probably be GitHub Projects
 - [ ] Restore or delete the placeholders left when the old app moved (list: `WORKING.d/placeholders.md`)
 - [ ] Open: still to fix from the first Coder review: about 30 undefined terms, statements pointing at the legacy theme file, README roles and the DEF prefix, `common.md` to the line format
