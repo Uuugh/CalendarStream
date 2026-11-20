@@ -20,6 +20,9 @@ the project's Scrum board (the Product Owner's decision). **Test:** review: no D
 - **Name a class for its role**: `GoogleSyncService`, `CalendarSourceRepository`.
 - **Every file starts with a header comment:** what it holds; depends on; used by; what it reads or writes (database, network, files, the clock).
 - **No hidden dependencies:** no reading another module's globals; what a file needs comes in through its constructor or arguments.
+- **Behavior that appears twice is one shared widget or function.** **Method:** the Coder (build) searches for an existing one
+  before writing a new one, and extracts a shared one when a second use appears (a filter, a list column, a row, a draggable
+  block). **Test:** review: the Reviewer names each pair of near-identical code and the shared one that replaces it.
 
 ## Dependencies
 
