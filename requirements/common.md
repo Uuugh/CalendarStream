@@ -61,6 +61,7 @@
 | UIC-37.e | backlog | An uploaded file larger than the input size in DEF-01 is not valid (UIC-19). | — |
 | UIC-38 | proposed | Every password box has a Show/Hide button (msg:showPassword, msg:hidePassword); the box is hidden again when its form is sent. | — | R1 gap |
 | UIC-39 | proposed | The time zone picker lists a Common group of the zones in DEF-01, in that order, then msg:allTimeZones (region and city names only), without names that start with Etc/, SystemV/, posix/ or right/; the default zone is marked ★; a value that is not UTC or in the list is not valid (msg:unknownTimeZone, UIC-19); choosing the default or nothing clears the stored choice. | — | R1 gap |
+| UIC-40 | proposed | A label in every supported language fits its control without cutting a word. | — | old rule: longest translated words checked against control widths |
 | UIC-23 | proposed | Wherever a range of dates is asked for (Print Preview, search, feeds, destinations, import) one shared control is used: From | To | All. Either end may be left empty; All means an empty range and clears both dates; the fields show hints in the date's format; an end before the start is not valid (UIC-19). | — | CFED-01 and CFED-14 (S evidence), SRH-01, theme.md section 14 |
 | UIC-16.a | proposed | The resize bar's handle is exposed to assistive tools as a vertical slider named msg:stretchCalendar; its collapse and expand arrows are named msg:collapseCalendar and msg:expandCalendar. | — | R2 gap |
 

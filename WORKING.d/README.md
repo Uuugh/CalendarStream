@@ -24,5 +24,5 @@ In order; Product Owner items first, then what the Orchestrator can do now, then
 - `move-plan.md`: how to move the live files into the new layout
 - `placeholders.md`: plain-text stand-ins left when the old app moved, to restore or delete
 - `CalendarStream.old/`: the retired Python app, frozen, an oracle only; delete it when the port is complete
-- `scrum-gaps.md`: gaps found by comparing `SCRUM.d/` with the retired `build_rules/` (for decision; delete after)
 - `repo-review.md`: the Reviewer agent's findings on the process files against the laws (for decision; delete after)
+- `dashboard-review.md`: the Reviewer agent's findings on the `dashboard` branch (for decision; delete after)
