@@ -9,8 +9,11 @@ Everything about how work is organized lives here, once. Rules of an area (requi
 - **Orchestrator**: keeps the requirements consistent, briefs and checks the other agents, commits and pushes. Is also
   the **Author** for short work: edits, fixes and discussion are done by the Orchestrator itself. Never builds the app
   and never plays the Coder.
-- **Coder**: builds one story (a read-only agent reviewing the requirements for what cannot be implemented, until the port starts).
-- **Tester**: writes and runs the tests of the story's requirements (`packages/README.md`, testing).
+- **Team**: the Orchestrator launches a team per story: two Coders and a Tester. **Coder (build)** implements the
+  story's requirements. **Coder (tests)** builds the mirrored requirement tests in `tests/`, working from the
+  requirements. **Tester** runs the tests and reports a result per requirement (`tests/README.md`). More than one team
+  may work in a sprint, each on its own stories.
+  Until the port starts, a Coder is a read-only agent reviewing the requirements for what cannot be implemented.
 - **Reviewer**: read-only; compares requirement files or code with the README rules of its area, row by row.
 
 ## Work
