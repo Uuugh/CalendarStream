@@ -3,6 +3,10 @@
 The port is built from `requirements/`; the laws are in `AGENTS.md`. Flutter's structure is the model: a file
 stands alone and says what it needs.
 
+
+The Scrum board is Dart code too and follows these rules. It lives in `SCRUM.d/dashboard/`, not in `packages/`, because it is
+the project's Scrum board (the Product Owner's decision). **Test:** review: no Dart code sits outside `packages/`, `server/`,
+`client/` and `SCRUM.d/dashboard/`.
 ## Structure (P18, P19, P26)
 
 - **A module per responsibility.** One responsibility per file, a small interface, dependencies passed in, and its own
