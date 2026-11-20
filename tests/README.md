@@ -31,7 +31,8 @@ test it could have extended and show that extending it would have cost more.
 
 ## Creating and merging tests
 
-The Coder (tests) creates a test from the requirement alone, and names it by the behavior and the requirement ID. Two tests
+The Coder (tests) creates a test from the requirement alone, from its observable success and failure, and names it by the
+behavior and the requirement ID. Shared helpers live in one place, and a test mocks external systems, not internal logic. Two tests
 that verify the same row are merged into one. A test whose requirement is deleted is deleted. **Test:** review: for each
 test, name the requirement it verifies, and for each pair, show they verify different rows.
 
@@ -40,7 +41,7 @@ its failing test.
 
 ## Results
 
-Each run reports one result per requirement ID: `pass`, `fail` (with the ID, what was expected and what was found) or
+Each run reports one result per requirement ID, with the command run: `pass`, `fail` (with the ID, what was expected and what was found) or
 `not run` (the test could not start or crashed before its checks). A row passes when every test it lists passes.
 
 ## Layout

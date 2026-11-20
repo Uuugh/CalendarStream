@@ -17,6 +17,11 @@ stands alone and says what it needs.
 - **Every file starts with a header comment:** what it holds; depends on; used by; what it reads or writes (database, network, files, the clock).
 - **No hidden dependencies:** no reading another module's globals; what a file needs comes in through its constructor or arguments.
 
+## Dependencies
+
+Add no dependency without the Product Owner's approval. **Test:** review: the diff adds no entry to a `pubspec.yaml` that the
+Product Owner has not approved.
+
 ## Testing
 
 - **Location:** tests sit beside the code, in each package's `test/` folder, mirroring `lib/`: `packages/domain/test/<feature>/`,

@@ -48,6 +48,11 @@ what each does are in `SCRUM.d/README.md`.
 each. `<topic>.d/README.md` holds the rules of that folder and indexes its parts; read it before touching the folder.
 **Test:** `tests/tools/req_check.sh` reports a part not listed in its folder's README and a listed part that does not exist.
 
+A rule goes in the README of the area it governs: how requirements are written in `requirements/README.md`, how they are
+tested in `tests/README.md`, how Dart is built in `packages/README.md`, who does what and when in `SCRUM.d/README.md`, and a
+rule for every agent in this file. **Test:** review: for each new rule, name the area it governs and show it sits in that
+area's README.
+
 ## Environment
 
 No Python is installed: use bash, sed and awk. A tool layer may halve backslashes in commands; test any sed that must

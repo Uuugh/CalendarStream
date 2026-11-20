@@ -25,8 +25,9 @@ The Orchestrator launches a team per story: both Coders and a Tester.
   Only the Product Owner launches a sprint. A sprint ends when its stories are done or at their review; it has no calendar length.
   Its **Sprint Goal** is one sentence, written by the Orchestrator and agreed by the Product Owner.
   The sprint's story list and the retrospective's output live in `SCRUM.d/sprint.md`, deleted when the sprint is done. **Test:** review: the sprint was launched by a Product Owner message, and `sprint.md` names a goal.
-- **Ready**: a story enters a sprint when its terms are defined, its tests are named and no open question blocks it;
-  the Orchestrator checks this before planning. **Test:** review: every term is defined, no test cell of the story is `—`, no `(?)` row blocks it.
+- **Ready**: a story enters a sprint when its requirements pass the review in `requirements/README.md` ("Simulate three
+  jobs") and no open question blocks it; the Orchestrator checks this before planning. **Test:** review: the check names the
+  review it ran, no test cell of the story is `—`, no `(?)` row blocks it.
 - **Definition of done**: `tests/tools/req_check.sh`
   passes and the Tester reports `pass` for every requirement of the story, and the Reviewer reports no finding against a rule or a requirement, and the Product Owner accepts it at the Review. The Product Owner approves the Dart
   commands (static analysis and tests) that are added to this list once Dart tests exist for the requirement.
@@ -49,21 +50,19 @@ branch. **Test:** a team diff touches no requirement or rule file, and `git log 
 the Product Owner did not direct to merge.
 
 ### Coder (build)
-Works in the smallest testable step, verifies, then commits; touches only the files the story needs; adds no dependency
-without the Product Owner's approval; does not weaken or delete a test to make it pass; reviews its own diff for
+Works in the smallest testable step, verifies, then commits; touches only the files the story needs; does not weaken or
+delete a test to make it pass; reviews its own diff for
 redundancy and a simpler way before reporting. When a requirement is unclear it proposes alternatives with pros and
 cons and sends the defect to the Orchestrator. Until the port starts, a Coder is a read-only agent reviewing the
-requirements for what cannot be implemented.
+requirements for what cannot be implemented. Builds as `packages/README.md` says.
 
 ### Coder (tests)
-Works from the requirements only, never the implementation, in `tests/`. Names each test by the behavior and the
-requirement ID; keeps shared test data and helpers in one place; mocks external systems, not internal logic; writes
-from the requirement's observable success and failure. How to test: `tests/README.md`.
+Works from the requirements only, never the implementation, in `tests/`. Creates the tests as `tests/README.md` says.
 
 ### Tester
-Produces one result per requirement. CI produces it for scripted tests; a Tester agent produces it for tests that need an
-agent and adds the CI run for the commit to its report, so the Orchestrator reads one combined result. A report gives the
-command run and its output, and says what was not run and why. How to test: `tests/README.md`.
+Produces one result per requirement, in the format of `tests/README.md` (Results). CI produces it for scripted tests; a
+Tester agent produces it for tests that need an agent and adds the CI run for the commit to its report, so the
+Orchestrator reads one combined result.
 
 ### Reviewer
 Runs once per story, cold, after the Tester reports `pass`. Checks the diff, not the agent's summary, against the list
@@ -104,9 +103,6 @@ criteria as requirement IDs, and names what is out of scope and which paths the 
 ## Checking work (a story, a pull request, a draft or an agent report)
 
 1. `tests/tools/req_check.sh` reports no errors.
-2. It follows the rules in `requirements/README.md` (and the laws in `AGENTS.md`).
-3. No history or Python-app wording, no agent or tool named, no Scrum terms inside requirements.
-4. New or changed IDs have a row in `requirements/oldkey.md`; no reference to an ID that does not exist; user-visible wording is a cited message key.
-5. A rule found in more than one place is merged, not copied. A question goes in `open-questions.md` only after
-   looking in the other requirements, the Python app and https://docs.flutter.dev/ and https://dart.dev/.
-6. Say clearly what was not checked.
+2. The work follows the rules in the README of each area it touches (`requirements/README.md`, `tests/README.md`,
+   `packages/README.md`) and the laws in `AGENTS.md`.
+3. Say clearly what was not checked.
