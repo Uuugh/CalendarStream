@@ -12,7 +12,7 @@ Everything here is temporary and holds no rules. Delete an item when its work is
 - [ ] Add the checks to `tests/tools/req_check.sh`: status regression, every folder README lists its parts, links in `AGENTS.md`, `SCRUM.d/`, `packages/README.md` and this file resolve, this file under its size limit with no ticked item (the Orchestrator makes this change; see `WORKING.d/move-plan.md`)
 - [ ] Retire the legacy files listed in `WORKING.d/CalendarStream.old/build_rules/README.md` (the Product Owner decides)
 - [ ] Cold-agent acceptance test of `AGENTS.md`: who am I, where are the rules, the tests and the open questions, what do I read next
-- [ ] Story: define how Dart tests run in parallel and what a run reports (see `packages/README.md`)
+- [ ] Story: define how test runs are split and run in parallel and what a run reports; inputs: the parked branch `paused/test-parallel` (commit 85f404b) and requirement DIA-04.c (see `tests/README.md`)
 - [ ] Port, story by story, with the `dart-flutter` skill
 - [ ] Later: the dashboard will probably be GitHub Projects
 - [ ] Restore or delete the placeholders left when the old app moved (list: `WORKING.d/placeholders.md`)

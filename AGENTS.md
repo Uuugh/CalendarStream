@@ -61,6 +61,6 @@ Read the README of an area before touching anything in it.
 | `WORKING.d/` | The Orchestrator's memory: work in progress and awaiting action; temporary (`WORKING.d/README.md`) |
 | `requirements/` | The spec, one file per feature; `README.md` has the rules for writing it; `open-questions.md` the questions for the Product Owner |
 | `packages/`, `server/`, `client/` | The Dart port; `packages/README.md` holds its rules |
-| `tests/` | New requirement tests mirroring `requirements/` (not yet defined) and `tests/tools/req_check.sh` |
+| `tests/` | Requirement tests mirroring `requirements/`, and `tests/tools/req_check.sh` (`tests/README.md`) |
 | `.claude/skills/dart-flutter/` | The Dart and Flutter skill (the only project skill) |
 | `docs/` | `docs/screenshots/` the README's pictures; `docs/development/` is the Product Owner's scratch work (never read it) |
