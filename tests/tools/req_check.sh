@@ -40,6 +40,12 @@ norole=$(for f in connections.d/*.md; do case $f in connections.d/README.md) con
 echo "== prefixes: a feature has three letters; a module adds its folder's letter (C connections.d, P plugins.d); see README, Prefixes"
 badpre=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ id=$2; gsub(/ /,"",id); split(id,a,"-"); p=a[1]; if (FILENAME ~ /^connections\.d\//) ok=(p ~ /^C[A-Z][A-Z][A-Z]$/); else if (FILENAME ~ /^plugins\.d\//) ok=(p ~ /^P[A-Z][A-Z][A-Z]$/); else ok=(p ~ /^[A-Z][A-Z][A-Z]$/); if (!ok) { k=FILENAME" "p; if (!(k in seen)) { seen[k]=1; print FILENAME": "p } } }' $files | tr '\n' ';')
 [ -n "$badpre" ] && { echo "$badpre"; err=1; } || echo none
+echo "== warnings: number words (two or more) outside DEF-01 (rule 3; rows not in common.md)"
+grep -HnE '^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]' $cfiles | sed 's/[\][|]//g' | awk -F'|' '{print $1"|"$4}' | grep -i -E '[^a-z-](two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand)[^a-z-]' | grep -v -i 'two-way' | cut -d'|' -f1 | tr '\n' ' ' | cut -c1-400
+echo
+echo "== warnings: an agreed parent (backlog or blank) with a proposed sub-requirement: the Product Owner reviews the new children (rule 15)"
+awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); split(i,a,"."); if (index(i,".")==0) {ps[FILENAME" "i]=s} else if (s=="proposed") {bad[FILENAME" "a[1]]=1}} END {for (p in bad) if ((p in ps) && ps[p]!="proposed") {split(p,b," "); print b[2]}}' $files | sort -u | tr '\n' ' '
+echo
 echo "== errors: a numbered rule in requirements/README.md or a rule in AGENTS.md without a Test line (law 3)"
 notest=$(awk '/^## Rules for writing and changing requirements/{inr=1; next} /^## /{inr=0} inr && /^[0-9]+\. \*\*/ { if ($0 !~ /\*\*Test:\*\*/) { split($0,a,"."); print a[1] } }' README.md | tr '\n' ' ')
 [ -n "$notest" ] && { echo "rules without a test: $notest"; err=1; } || echo none
