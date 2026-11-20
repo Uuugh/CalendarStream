@@ -16,7 +16,7 @@ The spec of the app: one file per feature, each holding the checkable rules of b
   test.
 - **Test cell**: the tests that verify a row (path and name), `see <ID>` to use the tests of another requirement or
   sub-requirement, or `—` while there is none. Any test may serve any row. A requirement with sub-requirements passes when
-  all its sub-requirements pass.
+  all its sub-requirements pass, and its own test cell may be `—` or name a test of the whole.
 - **Question (?)**: a request for a suggestion; the Product Owner decides.
 - **`oldkey.md`**: the record of old IDs to new IDs.
 
