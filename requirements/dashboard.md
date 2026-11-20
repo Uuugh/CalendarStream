@@ -26,9 +26,9 @@ Terms. A **backlog item** is a requirement whose status is `backlog` (a blank st
 | DSH-04.c | proposed | The status filter is a dropdown of the statuses of what is listed, with All as its start (msg:dshFilterStatus, msg:dshAll). | — | — |
 | DSH-04.d | proposed | The filters combine (an entry must meet all three) and a list shows how many of its entries are shown out of all (msg:dshShownOf, {shown} the entries shown, {total} all entries). | — | — |
 | DSH-05 | proposed | The backlog lists issues (heading msg:dshIssues) read from the issue tracker, each with its number, title, status, feature, requirement and assignee. | — | — |
-| DSH-05.a | proposed | An issue's status is open or closed (msg:dshStatusOpen, msg:dshStatusClosed); a closed issue is not a backlog item. | — | — |
+| DSH-05.a | proposed | An issue's status is open or closed (msg:dshStatusOpen, msg:dshStatusClosed), and its status filter starts as open. | — | — |
 | DSH-05.b | proposed | An issue's feature is the name after `feature:` in its labels, and its requirement is the ID on the line starting `Requirement:` in its description; an issue without either shows a dash. | — | — |
-| DSH-05.c | proposed | An issue named by a story of the sprint is not in the backlog. | — | — |
+| DSH-05.c | proposed | An issue named by a story of the sprint (its number written #N in the story's items) is not in the backlog. | — | — |
 | DSH-06 | proposed | The sprint board shows the sprint's goal (msg:dshSprintGoal) and one column for each stage, in order, holding the sprint's stories as cards. | — | — |
 | DSH-06.a | proposed | A column header shows the stage name and `n / total` (msg:dshColumnCount; the stage names are msg:dshBacklog, msg:dshReady, msg:dshBuild, msg:dshTest, msg:dshReview and msg:dshDone): n is the number of cards in the column and total is the number of cards in the sprint. | — | — |
 | DSH-06.b | proposed | A card shows the story ID, its estimate, its title and the assignee's dot. | — | — |

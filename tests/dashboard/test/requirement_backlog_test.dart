@@ -1,6 +1,6 @@
 // Tests DSH-03.a (read every requirement row, with ID, status, statement, feature) and
 // the DSH-03 base fields. One run covers each ID named in the test name.
-// DSH-03.b and DSH-03.c are not built yet and are not tested here.
+// DSH-03.b and DSH-03.c are tested in backlog_filter_test.dart and dashboard_page_test.dart.
 import 'dart:io';
 
 import 'package:dashboard/features/dashboard/data/requirement_repository.dart';

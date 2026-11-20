@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'features/dashboard/data/disk_file_access.dart';
+import 'features/dashboard/data/issue_service.dart';
+import 'features/dashboard/data/process_command_runner.dart';
 import 'features/dashboard/data/requirement_repository.dart';
 import 'features/dashboard/data/sprint_repository.dart';
 import 'features/dashboard/ui/dashboard_page.dart';
@@ -26,6 +28,7 @@ void main() {
     home: DashboardPage(
       sprints: SprintRepository(files: files, path: '$_repoRoot/SCRUM.d/sprint.md'),
       requirements: RequirementRepository(files: files, directory: '$_repoRoot/requirements'),
+      issues: const IssueService(runner: ProcessCommandRunner()),
     ),
   ));
 }
