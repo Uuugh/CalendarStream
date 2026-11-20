@@ -1,4 +1,4 @@
-<h1>CalendarStream</h1>
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="client/assets/images/logo/source/CalendarStream_Mark_Dark.png"><img src="client/assets/images/logo/source/CalendarStream_Mark_Light.png" alt="" width="41" height="38" align="absmiddle"></picture> CalendarStream</h1>
 
 **Self-hosted calendar aggregation, synchronization, automation, and publishing.**
 
@@ -236,7 +236,7 @@ logins or setup codes lock an address out for 15 minutes.
   on controls, 12 px on sections and modules); nothing is pill-shaped. The fonts and icons come with
   CalendarStream, so the page never loads anything from elsewhere. The **CalendarStream Theme
   Rules** picture names the page's parts and gives every rule, measured from the page itself:
-  light and dark (pictures moved with the old app)
+  [light](docs/screenshots/CalendarStream_Theme_Rules_Light.png) · [dark](docs/screenshots/CalendarStream_Theme_Rules_Dark.png)
   (redrawn whenever the theme changes).
 - A small **(?)**, raised right after the word it explains like a superscript, is help (how to): point at it, or
   click (tap) it to keep it open. A module's **(i)**, after its label, is info: what it is, then its note.

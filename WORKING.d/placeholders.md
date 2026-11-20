@@ -3,8 +3,7 @@
 Plain-text stand-ins ("moved with the old app") replace links that pointed into `WORKING.d/CalendarStream.old/`. Restore each to a real link or delete the sentence, then delete this file. Lines are as of the move.
 
 ## Replaced with plain text
-- `README.md` line 1 and `README2.md` line 1: the logo picture (`app/static/logo/source/`) was removed from the title.
-- `README.md` / `README2.md`: the installer (103 / 83), the Theme Rules pictures (239 / 201), the test runner and test notes and the working notes (484-486 / 437-439), the changelog (513 / 466), the three license files and folders (551-553 / 504-506).
+- `README.md` / `README2.md`: the installer (103 / 83), the test runner and test notes and the working notes (484-486 / 437-439), the changelog (513 / 466), the three license files and folders (551-553 / 504-506).
 - `requirements/README.md` lines 4, 31, 35, 56: pointers to the old process notes and layer map.
 - `requirements/theme.md` line 3: the legacy theme notes.
 - `SCRUM.d/README.md` line 14: the old test notes.
