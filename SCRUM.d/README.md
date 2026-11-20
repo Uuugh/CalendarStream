@@ -126,7 +126,3 @@ criteria as requirement IDs, and names what is out of scope and which paths the 
 2. The work follows the rules in the README of each area it touches (`requirements/README.md`, `tests/README.md`,
    `packages/README.md`) and the laws in `AGENTS.md`.
 3. Say clearly what was not checked.
-
-## Parts
-
-- `dashboard/`: the Scrum dashboard, a Flutter/Dart app (web or desktop); its requirements are `requirements/dashboard.md` and its tests `tests/dashboard/`. Start the web version: `cd SCRUM.d/dashboard && flutter build web && dart run bin/dashboard_server.dart`, then open http://127.0.0.1:8765/.
