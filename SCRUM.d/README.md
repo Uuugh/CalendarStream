@@ -117,4 +117,4 @@ criteria as requirement IDs, and names what is out of scope and which paths the 
 
 ## Parts
 
-- `dashboard/`: the Scrum dashboard, a Flutter/Dart app (web or desktop); its requirements are `requirements/dashboard.md` and its tests `tests/dashboard/`.
+- `dashboard/`: the Scrum dashboard, a Flutter/Dart app (web or desktop); its requirements are `requirements/dashboard.md` and its tests `tests/dashboard/`. Start the web version: `cd SCRUM.d/dashboard && flutter build web && dart run bin/dashboard_server.dart`, then open http://127.0.0.1:8765/.
