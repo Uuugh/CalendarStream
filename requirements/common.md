@@ -147,6 +147,9 @@ CalendarStream), **rule** (made by a rule).
 | Good status word shown before it shrinks | 2.4 seconds | | default only |
 | Working status shown at least | 0.7 seconds (Check now), 0.5 seconds per Connect step | | default only |
 | Typing delay before a search or a regex test | 300 milliseconds | | default only |
+| Dashboard issues listed | 200 issues | | default only |
+| Usage point (dashboard) | one percent of the 5-hour allowance | | default only |
+| Dashboard server address | 127.0.0.1, port 8765 | | default only |
 | Google retry: first wait | 5 seconds, doubled each attempt | longest wait 15 minutes | default only |
 | Google retry: attempts | 5 | 5 | default only |
 | Google retry: jitter | up to 25 % added | | default only |

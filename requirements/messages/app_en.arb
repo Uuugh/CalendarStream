@@ -1132,5 +1132,15 @@
   "dshEstimate": "Estimate",
   "dshUsage": "Usage",
   "dshUsagePanel": "Usage and estimate",
-  "dshSprintTotal": "Sprint total"
+  "dshSprintTotal": "Sprint total",
+  "dshStatusBacklog": "backlog",
+  "dshStatusProposed": "proposed",
+  "dshLoadFailed": "Could not be read: {reason}",
+  "@dshLoadFailed": {"placeholders": {"reason": {"type": "String"}}},
+  "dshIssuesTruncated": "Only the newest {limit} issues are listed",
+  "@dshIssuesTruncated": {"placeholders": {"limit": {"type": "String"}}},
+  "dshIssuePartial": "Issue #{number} was created, but a later step failed: {reason}",
+  "@dshIssuePartial": {"placeholders": {"number": {"type": "String"}, "reason": {"type": "String"}}},
+  "dshServerUnreachable": "The dashboard server could not be reached: {reason}",
+  "@dshServerUnreachable": {"placeholders": {"reason": {"type": "String"}}}
 }

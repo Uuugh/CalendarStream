@@ -912,5 +912,11 @@
   "dshEstimate": "Schatting",
   "dshUsage": "Verbruik",
   "dshUsagePanel": "Verbruik en schatting",
-  "dshSprintTotal": "Sprint totaal"
+  "dshSprintTotal": "Sprint totaal",
+  "dshStatusBacklog": "backlog",
+  "dshStatusProposed": "voorgesteld",
+  "dshLoadFailed": "Kon niet worden gelezen: {reason}",
+  "dshIssuesTruncated": "Alleen de nieuwste {limit} issues worden getoond",
+  "dshIssuePartial": "Issue #{number} is gemaakt, maar een latere stap mislukte: {reason}",
+  "dshServerUnreachable": "De dashboardserver was niet bereikbaar: {reason}"
 }

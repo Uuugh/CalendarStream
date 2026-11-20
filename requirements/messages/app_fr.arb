@@ -912,5 +912,11 @@
   "dshEstimate": "Estimation",
   "dshUsage": "Utilisation",
   "dshUsagePanel": "Utilisation et estimation",
-  "dshSprintTotal": "Total du sprint"
+  "dshSprintTotal": "Total du sprint",
+  "dshStatusBacklog": "backlog",
+  "dshStatusProposed": "proposé",
+  "dshLoadFailed": "Lecture impossible : {reason}",
+  "dshIssuesTruncated": "Seuls les {limit} tickets les plus récents sont listés",
+  "dshIssuePartial": "Le ticket n°{number} a été créé, mais une étape suivante a échoué : {reason}",
+  "dshServerUnreachable": "Le serveur du tableau de bord est inaccessible : {reason}"
 }

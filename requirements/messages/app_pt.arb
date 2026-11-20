@@ -912,5 +912,11 @@
   "dshEstimate": "Estimativa",
   "dshUsage": "Uso",
   "dshUsagePanel": "Uso e estimativa",
-  "dshSprintTotal": "Total do sprint"
+  "dshSprintTotal": "Total do sprint",
+  "dshStatusBacklog": "backlog",
+  "dshStatusProposed": "proposto",
+  "dshLoadFailed": "Não foi possível ler: {reason}",
+  "dshIssuesTruncated": "Somente as {limit} issues mais recentes são listadas",
+  "dshIssuePartial": "A issue #{number} foi criada, mas uma etapa posterior falhou: {reason}",
+  "dshServerUnreachable": "Não foi possível acessar o servidor do painel: {reason}"
 }

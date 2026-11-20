@@ -912,5 +912,11 @@
   "dshEstimate": "Schätzung",
   "dshUsage": "Verbrauch",
   "dshUsagePanel": "Verbrauch und Schätzung",
-  "dshSprintTotal": "Sprint gesamt"
+  "dshSprintTotal": "Sprint gesamt",
+  "dshStatusBacklog": "Backlog",
+  "dshStatusProposed": "vorgeschlagen",
+  "dshLoadFailed": "Konnte nicht gelesen werden: {reason}",
+  "dshIssuesTruncated": "Nur die neuesten {limit} Issues werden aufgelistet",
+  "dshIssuePartial": "Issue #{number} wurde erstellt, aber ein späterer Schritt schlug fehl: {reason}",
+  "dshServerUnreachable": "Der Dashboard-Server war nicht erreichbar: {reason}"
 }
