@@ -40,9 +40,27 @@ norole=$(for f in connections.d/*.md; do case $f in connections.d/README.md) con
 echo "== prefixes: a feature has three letters; a module adds its folder's letter (C connections.d, P plugins.d); see README, Prefixes"
 badpre=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ id=$2; gsub(/ /,"",id); split(id,a,"-"); p=a[1]; if (FILENAME ~ /^connections\.d\//) ok=(p ~ /^C[A-Z][A-Z][A-Z]$/); else if (FILENAME ~ /^plugins\.d\//) ok=(p ~ /^P[A-Z][A-Z][A-Z]$/); else ok=(p ~ /^[A-Z][A-Z][A-Z]$/); if (!ok) { k=FILENAME" "p; if (!(k in seen)) { seen[k]=1; print FILENAME": "p } } }' $files | tr '\n' ';')
 [ -n "$badpre" ] && { echo "$badpre"; err=1; } || echo none
-echo "== errors: a numbered rule in README without a Test line (rule 13)"
+echo "== warnings: number words (two or more) outside DEF-01 (rule 3; rows not in common.md)"
+grep -HnE '^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]' $cfiles | sed 's/[\][|]//g' | awk -F'|' '{print $1"|"$4}' | grep -i -E '[^a-z-](two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand)[^a-z-]' | grep -v -i 'two-way' | cut -d'|' -f1 | tr '\n' ' ' | cut -c1-400
+echo
+echo "== warnings: an agreed parent (backlog or blank) with a proposed sub-requirement: the Product Owner reviews the new children (rule 15)"
+awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); split(i,a,"."); if (index(i,".")==0) {ps[FILENAME" "i]=s} else if (s=="proposed") {bad[FILENAME" "a[1]]=1}} END {for (p in bad) if ((p in ps) && ps[p]!="proposed") {split(p,b," "); print b[2]}}' $files | sort -u | tr '\n' ' '
+echo
+echo "== errors: a numbered rule in requirements/README.md or a rule in AGENTS.md without a Test line (law 3)"
 notest=$(awk '/^## Rules for writing and changing requirements/{inr=1; next} /^## /{inr=0} inr && /^[0-9]+\. \*\*/ { if ($0 !~ /\*\*Test:\*\*/) { split($0,a,"."); print a[1] } }' README.md | tr '\n' ' ')
 [ -n "$notest" ] && { echo "rules without a test: $notest"; err=1; } || echo none
+notestA=$(awk '/^## (The laws|Standing rules)/{inr=1; next} /^## /{inr=0} inr && /^(- |[0-9]+[.] )[*][*]/ { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) print first; blk=$0; first=substr($0,1,50); next } inr { blk=blk $0 } END { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) print first }' ../AGENTS.md)
+[ -n "$notestA" ] && { echo "AGENTS.md rules without a test:"; echo "$notestA"; err=1; } || echo none
+echo "== warnings: rules in SCRUM.d, tests and packages READMEs without a Test line (law 3; fix by writing the Test line)"
+awk '/^(- |[0-9]+[.] |  - )[*][*]/ { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) n++; blk=$0; next } /^#/ { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) n++; blk=""; next } /^$/ { next } blk != "" { blk=blk $0 } ENDFILE { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) n++; blk="" } END { print n+0" rules" }' ../SCRUM.d/README.md ../tests/README.md ../packages/README.md
+echo "== errors: a requirement a story names (SCRUM.d/sprint.md) whose test cell is still — (rule 13)"
+if [ -f ../SCRUM.d/sprint.md ]; then
+  named=$(grep -o -E '[A-Z]+-[0-9]+([.][a-z]+)?' ../SCRUM.d/sprint.md | sort -u)
+  notestS=$(for id in $named; do grep -hE "^[|] ${id}([.][a-z]+)? [|]" $cfiles | sed 's/[\][|]//g' | awk -F'|' '{t=$5; gsub(/ /,"",t); if (t=="—") {i=$2; gsub(/ /,"",i); print i}}'; done | sort -u | tr '\n' ' ')
+  [ -n "$notestS" ] && { echo "named rows without a test: $notestS"; err=1; } || echo none
+else echo "none (no sprint file)"; fi
+echo "== requirement rows whose test cell is still — (rule 13; a count, not an error)"
+grep -hE '^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]' $cfiles | sed 's/[\][|]//g' | awk -F'|' '{t=$5; gsub(/ /,"",t); if (t=="—") n++} END {print n+0" rows"}'
 echo "== errors: a requirement row outside its table (a non-table line before it) or a README link to a missing file"
 outside=$(awk '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (prev !~ /^\|/) print FILENAME": line "FNR } { prev=$0 }' $files | tr '\n' ';')
 badlink=$(grep -o '](\([^)#]*\))' README.md | sed 's/^](//; s/)$//' | grep -v '^http' | while read p; do [ -f "$p" ] || echo "$p"; done | tr '\n' ';')
@@ -60,4 +78,17 @@ qrows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/ && $3 ~ /\(\?\)/ {id=$2; gs
 qfile=$(grep -oE '^- \*\*[A-Z]+-[0-9]+(\.[a-z]+)?\*\*' $q | grep -oE '[A-Z]+-[0-9]+(\.[a-z]+)?' | sort)
 qbad=$( { comm -23 <(echo "$qrows") <(echo "$qfile") | sed 's/^/no question for row: /'; comm -13 <(echo "$qrows") <(echo "$qfile") | sed 's/^/question without a (?) row: /'; } )
 [ -n "$qbad" ] && { echo "$qbad"; err=1; } || echo none
+echo "== errors: a .d folder with no README.md, or a requirement file that requirements/README.md does not list (AGENTS.md, Folders)"
+badparts=$(for d in *.d ../SCRUM.d; do [ -f $d/README.md ] || echo "$d: no README.md"; done; for f in $files; do grep -q "$(basename $f)" README.md || echo "$f: not listed in requirements/README.md"; done)
+[ -n "$badparts" ] && { echo "$badparts"; err=1; } || echo none
+echo "== errors: a README or script named in a process file does not exist (links resolve)"
+badlinks=$(for f in ../AGENTS.md ../SCRUM.d/README.md ../tests/README.md ../packages/README.md README.md; do grep -o '[`][A-Za-z0-9_./-]*\(README[.]md\|[.]sh\)[`]' $f | tr -d '`' | sort -u | while read p; do [ -e "../$p" ] || [ -e "$p" ] || [ -e "$(dirname $f)/$p" ] || find .. -name "$(basename $p)" -not -path '../WORKING.d/*' -not -path '../.git/*' | grep -q . || echo "$f: $p"; done; done)
+[ -n "$badlinks" ] && { echo "$badlinks"; err=1; } || echo none
+echo "== errors: a status went backwards (backlog or blank to proposed) against ${REQ_BASE:-HEAD}"
+base=${REQ_BASE:-HEAD}
+back=$(for f in $files; do git show "$base:requirements/$f" 2>/dev/null | awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' > /tmp/rc_old.txt; awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' $f > /tmp/rc_new.txt; awk 'NR==FNR {o[$1]=$2; seen[$1]=1; next} ($1 in seen) && $2=="proposed" && o[$1]!="proposed" {print $1}' /tmp/rc_old.txt /tmp/rc_new.txt; done | tr '\n' ' ')
+[ -n "$back" ] && { echo "status went backwards: $back"; err=1; } || echo none
+echo "== errors: a link or picture in the project README.md that does not resolve (Definition of done)"
+badreadme=$(grep -o ']([^)#]*)' ../README.md | sed 's/^](//; s/)$//' | grep -v -e '^http' -e '^mailto' -e '^$' | while read p; do [ -e "../$p" ] || echo "$p"; done | tr '\n' ' ')
+[ -n "$badreadme" ] && { echo "$badreadme"; err=1; } || echo none
 [ $err -ne 0 ] && echo "RESULT: errors" || echo "RESULT: no errors"; exit $err

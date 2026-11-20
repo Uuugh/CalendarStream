@@ -11,6 +11,7 @@ The CCS+ connection: the user's own United Airlines schedule, downloaded with th
 | CCCS-01.d | proposed | The CCS+ source has the fixed identifier ccs, which no other source can have. | — | R4 gap |
 | CCCS-01.e | proposed | Adding CCS+ lets the user choose which of the predefined rules (RUL-06.c) come with it; the chosen rules apply to CCS+. | — | R4 gap |
 | CCCS-01.f | proposed | The CCS+ source is named by default as the installation's calendar name setting says (United CCS Schedule when it is not set); a blank name returns to that default and a name equal to it is not stored. | — | R4 gap |
+| CCCS-01.g | proposed | CalendarStream only reads from CCS+: it sends no request that changes anything in CCS+. | — | old rule: never modify CCS+ |
 | CCCS-02 | proposed | The user signs in to CCS+ with their own credentials, which the app keeps safe, so it can read their schedule. | — | — |
 | CCCS-02.a | proposed | CCS+ guidance distinguishes Calendar Sync credentials from CCS login credentials and explains enabling CCS+. | — | S18-05, S33-03 |
 | CCCS-02.b | proposed | CCS+ setup is available directly with the source when it needs configuration, rather than only in Settings. Successful credential saving returns to that source. | — | S16-20, S18-03, S18-04, S18-07, S27-01 |

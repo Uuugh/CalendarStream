@@ -1,6 +1,6 @@
 # Dart packages: rules for all Dart code (packages/, server/, client/)
 
-The port is built from `requirements/`; the two laws are in `AGENTS.md`. Flutter's structure is the model: a file
+The port is built from `requirements/`; the laws are in `AGENTS.md`. Flutter's structure is the model: a file
 stands alone and says what it needs.
 
 ## Structure (P18, P19, P26)
@@ -16,6 +16,11 @@ stands alone and says what it needs.
 - **Name a class for its role**: `GoogleSyncService`, `CalendarSourceRepository`.
 - **Every file starts with a header comment:** what it holds; depends on; used by; what it reads or writes (database, network, files, the clock).
 - **No hidden dependencies:** no reading another module's globals; what a file needs comes in through its constructor or arguments.
+
+## Dependencies
+
+Add no dependency without the Product Owner's approval. **Test:** review: the diff adds no entry to a `pubspec.yaml` that the
+Product Owner has not approved.
 
 ## Testing
 

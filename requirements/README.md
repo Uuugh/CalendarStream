@@ -9,7 +9,7 @@ These apply to every row in `requirements/`.
 
 1. **Law: no duplication. Say it once.** A rule is written in one place and referenced everywhere else. Before adding a row, search the folder for the same rule in other words. **Test:** `req_check.sh` lists identical statements; review: name the one row that owns the rule, and every other row only links to it.
 2. **Law: no exceptions.** If a rule has an exception, the requirement is wrong: change it so it holds for every case, or give the different case its own requirement. A row never says "except", "never for" or "only when X is not". A new kind of thing (a connection, a component) follows the existing rules and does not get a special case. **Test:** `req_check.sh` lists exception wording (a condition that says when something happens is fine; an exception to another rule is not); review: would the rule hold unchanged for the next new connection or component?
-3. **Numbers live in DEF-01.** A limit, a default, a duration or a count appears only in the table in `common.md`; a row says "the time in DEF-01". A default that is not a number (a view, a theme) is stated in the row of the control it belongs to. **Test:** `req_check.sh` lists numbers with units outside DEF-01.
+3. **Numbers live in DEF-01.** A limit, a default, a duration or a count appears only in the table in `common.md`, and a number written as a word counts as a number; a row says "the time in DEF-01". A default that is not a number (a view, a theme) is stated in the row of the control it belongs to. **Test:** `req_check.sh` lists numbers with units, and number words of two or more, outside DEF-01.
 4. **Three homes for shared things.** An actionable component several features use (picker, filter, button, dropdown, strength bar, date range) is a UI row in `common.md`. A look (color, font, padding, margin, corner, size, duration) is a theme row (`theme.md`) and is used by default. A capability several features use (Print) is its own feature. **Test:** review: the row does not restate how a shared component works; it links to the UI row, the theme row or the feature that owns it.
 5. **Features add only their specifics.** A feature row never restates how a shared component works. **Test:** review: follow the row's links and nothing is said twice.
 6. **Links point at the requirement,** not a sub-requirement, unless exactly one detail is meant. A link names an ID that exists today; when an ID changes, every reference is changed and `oldkey.md` gets a row. **Test:** `req_check.sh` reports a link to an ID that does not exist; review: `oldkey.md` has a row for every ID change.
@@ -17,10 +17,11 @@ These apply to every row in `requirements/`.
 8. **Define every term** the first time a file uses it, or point to where it is defined. **Test:** review: a reader who knows only this folder can follow every term.
 9. **State limits.** Anything that grows with use (a log, a list, a table of records) has a limit in DEF-01 (DEF-02). **Test:** review: for each list that grows, find its limit in DEF-01.
 10. **Questions** are rows marked `(?)` and appear in `requirements/open-questions.md`. Look for the answer first in the other requirements, the decisions, the code of the running app, and the Flutter and Dart documentation (https://docs.flutter.dev/ and https://dart.dev/), and only then ask the Product Owner. **Test:** `req_check.sh` reports a `(?)` row with no question, and a question with no `(?)` row.
-11. **Nothing you write names an agent or a tool.** Roles are the Product Owner, the developer and the tester. **Test:** `req_check.sh` lists any agent or tool name.
+11. **Nothing you write names an agent or a tool.** Name a person by role, as `SCRUM.d/README.md` defines the roles. **Test:** `req_check.sh` lists any agent or tool name.
 12. **Prefixes.** A feature's prefix is three letters. A module in a subfolder adds that folder's letter before its three letters: C for `connections.d` (CGOW is Google one-way) and P for `plugins.d` (PGAP is the Google API plugin); a folder inside a folder adds its letter in turn. **Test:** `req_check.sh` reports a row whose prefix does not match its folder.
-13. **Every rule has a test.** A new rule is added to this list with a `**Test:**` line: a check in `tests/tools/req_check.sh` where a script can decide, otherwise a review question. **Test:** `req_check.sh` reports a rule in this list that has no `**Test:**` line.
+13. **Every requirement has a test.** A row's test cell names the test or says `see <ID>`; `—` stays only until a test exists. **Test:** `req_check.sh` counts rows whose test cell is `—`.
 14. **Messages are keys.** A requirement never contains the wording of a message the user sees; it cites the message as `msg:key` and says when it is shown and what its placeholders hold. The wording and its translations live only in `messages/` (`app_en.arb` is the template). **Test:** `req_check.sh` reports a cited key missing from the template, a locale file that lacks a key the template has, and counts the keys no requirement cites yet.
+15. **An agreed row has agreed sub-requirements.** A row the Product Owner agreed (status `backlog` or blank) can gain a `proposed` sub-requirement; the Product Owner reviews each such sub-requirement before it counts as agreed. **Test:** `req_check.sh` lists every agreed row that has a `proposed` sub-requirement.
 
 ## Definitions
 
@@ -101,7 +102,7 @@ The scans of the README and CHANGELOG and the gap triage were folded into these 
 
 A feature file is not done when its rows are written. After organizing a feature into requirements and sub-requirements, go back over it:
 
-1. **The laws and rules**: every row obeys rules 1 to 5 (the two laws, numbers, shared homes, specifics only). Search the other files for the same rule in other words before accepting a row as new.
+1. **The laws and rules**: every row obeys rules 1 to 5 (the laws, numbers, shared homes, specifics only). Search the other files for the same rule in other words before accepting a row as new.
 2. **Simulate three jobs**, and fix what stops you:
    - **Coder**: every term is defined; every behavior and boundary is stated; time and size limits are stated; nothing has to be guessed.
    - **Tester**: every row has a visible pass or fail; one rule per row, so a failure says which; time can be controlled in a test.
