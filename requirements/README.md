@@ -51,7 +51,7 @@ These apply to every row in `requirements/`.
 ## Prefixes
 
 CAL calendar · SRC sources section · FDS feeds section · CLCL local calendar · CFED generic feed · CCCS ccs+ · CLNK calendar link · RUL rules · TPL event_templates · EVT events · HIS history · CON connections (common) · CGOW google one-way · CGTW google two-way · PLG plugins (common) · PGAP google plugin ·
-SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UIC shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
+DSH dashboard · SET settings · ACC account · DIA diagnostics · DOC documentation · SHL shell · DEP deployment · SRH search · FLT calendar_filter · TIM time, UIC shared interface, CAP capabilities (all three in common.md) · PRT print · THM theme
 
 Nothing new is added while the transition freeze lasts (the old process overview, moved with the old app); these files hold what was already
 asked for.
@@ -94,6 +94,7 @@ The scans of the README and CHANGELOG and the gap triage were folded into these 
 | Diagnostics | [requirements/diagnostics.md](diagnostics.md) |
 | Deployment | [requirements/deployment.md](deployment.md) |
 | Documentation | [requirements/documentation.md](documentation.md) |
+| Dashboard | [requirements/dashboard.md](dashboard.md) |
 | Common (time, shared UI, capabilities) | [requirements/common.md](common.md) |
 
 ## Checking a feature file

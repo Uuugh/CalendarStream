@@ -28,3 +28,10 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **One-way and two-way Google rows:** CGOW-04.k says one-way sync publishes and does not read back, yet CGOW-04.b, CGOW-04.c, CGOW-04.g and the instant updates (CGOW-05) describe reading Google's changes, which are two-way behaviors. Code check: the old app agrees (one-way only writes and puts back what changed in Google; two-way reads Google first during a full check: reverse-engineering R5-28). Recommended: move those rows to `google_two_way.md`. Is that right?
   Answer:
 
+
+## Dashboard
+
+- **DSH-01.d** The dashboard's labels are English text in one Dart file, not message keys with translations. Right for a team tool? Recommended: yes.
+  Answer:
+- **DSH-09.b** What is one usage point: a share of the 5-hour allowance, thousands of tokens, or something else? Recommended: one percent of the 5-hour allowance, because that is what `/usage` shows.
+  Answer:

@@ -20,7 +20,7 @@ The Orchestrator launches a team per story: both Coders and a Tester.
 - **Story**: names the requirement and sub-requirement IDs it will meet; done when their tests pass. Requirements
   never refer to a story.
 - **Epic**: a group of stories (usually one feature).
-- **Sprint**: the stories chosen to be built next; the Dashboard (not yet built) will record the sprint and done.
+- **Sprint**: the stories chosen to be built next; the Dashboard (`SCRUM.d/dashboard/`, requirements `requirements/dashboard.md`) records the sprint and done.
   Only the Product Owner launches a sprint. A sprint ends when its stories are done or at their review; it has no calendar length.
   Its **Sprint Goal** is one sentence, written by the Orchestrator and agreed by the Product Owner.
   The sprint's story list and the retrospective's output live in `SCRUM.d/sprint.md`, deleted when the sprint is done.
@@ -102,3 +102,7 @@ unrelated edits, new dependencies and configuration changes.
 5. A rule found in more than one place is merged, not copied. A question goes in `open-questions.md` only after
    looking in the other requirements, the Python app and https://docs.flutter.dev/ and https://dart.dev/.
 6. Say clearly what was not checked.
+
+## Parts
+
+- `dashboard/`: the Scrum dashboard, a Flutter/Dart app (web or desktop); its requirements are `requirements/dashboard.md` and its tests `tests/dashboard/`.
