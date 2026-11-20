@@ -103,3 +103,6 @@ the progress file name (`<role>-<story>.progress`, e.g. `coder-build-story-2.pro
 the role's display name from message keys in six languages. Write it as a requirement with sub-requirements (one rule per row),
 a Method and a Test each. The Product Owner also expects to see the DSH requirements in the Requirements column; they are in
 `requirements/dashboard.md`, so check on a fresh server that the column lists them (the first look used an older server).
+
+L. Design samples (read for ideas, copy nothing): bolt.new, zeda.io, the monday.com agile dashboards article, and the pictures
+`Desktop/kanban-board-example.jpg` and `Desktop/Scrum-Master-Dashboard-for-Project-Management.png`.
