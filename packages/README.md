@@ -22,6 +22,8 @@ stands alone and says what it needs.
 Add no dependency without the Product Owner's approval. **Test:** review: the diff adds no entry to a `pubspec.yaml` that the
 Product Owner has not approved.
 
+Approved by the Product Owner: `intl`, `flutter_localizations` and `flutter_lints`, plus the Flutter SDK's own `flutter_test`.
+
 ## Testing
 
 - **Location:** tests sit beside the code, in each package's `test/` folder, mirroring `lib/`: `packages/domain/test/<feature>/`,
