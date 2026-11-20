@@ -88,4 +88,7 @@ echo "== errors: a status went backwards (backlog or blank to proposed) against 
 base=${REQ_BASE:-HEAD}
 back=$(for f in $files; do git show "$base:requirements/$f" 2>/dev/null | awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' > /tmp/rc_old.txt; awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' $f > /tmp/rc_new.txt; awk 'NR==FNR {o[$1]=$2; seen[$1]=1; next} ($1 in seen) && $2=="proposed" && o[$1]!="proposed" {print $1}' /tmp/rc_old.txt /tmp/rc_new.txt; done | tr '\n' ' ')
 [ -n "$back" ] && { echo "status went backwards: $back"; err=1; } || echo none
+echo "== errors: a link or picture in the project README.md that does not resolve (Definition of done)"
+badreadme=$(grep -o ']([^)#]*)' ../README.md | sed 's/^](//; s/)$//' | grep -v -e '^http' -e '^mailto' -e '^$' | while read p; do [ -e "../$p" ] || echo "$p"; done | tr '\n' ' ')
+[ -n "$badreadme" ] && { echo "$badreadme"; err=1; } || echo none
 [ $err -ne 0 ] && echo "RESULT: errors" || echo "RESULT: no errors"; exit $err

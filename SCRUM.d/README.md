@@ -29,10 +29,14 @@ The Orchestrator launches a team per story: both Coders and a Tester.
   jobs") and no open question blocks it; the Orchestrator checks this before planning. **Test:** review: the check names the
   review it ran, no test cell of the story is `—`, no `(?)` row blocks it.
 - **Definition of done**: `tests/tools/req_check.sh`
-  passes and the Tester reports `pass` for every requirement of the story, and the Reviewer reports no finding against a rule or a requirement, and the Product Owner accepts it at the Review. The Product Owner approves the Dart
+  passes and the Tester reports `pass` for every requirement of the story, the Reviewer reports no finding against a rule
+  or a requirement, the README and docs the story affects are updated, and the Product Owner accepts it at the Review.
+  **Method:** the Coder (build) updates the affected docs in the same step as the code, searching them for the behaviors
+  of the story's requirement IDs. The Product Owner approves the Dart
   commands (static analysis and tests) that are added to this list once Dart tests exist for the requirement.
   A story that misses done is split, spilled over to the next sprint or stopped by the Orchestrator.
-  **Test:** the Tester's report per requirement and the Reviewer's report are recorded in `sprint.md`.
+  **Test:** the Tester's report per requirement and the Reviewer's report, which names any doc the diff makes out of
+  date, are recorded in `sprint.md`; `req_check.sh` reports a dead link or missing picture in the project `README.md`.
 
 ## Responsibilities
 

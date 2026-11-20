@@ -35,7 +35,7 @@ Sources: [OneCal](https://onecal.io/pricing/) · CalendarBridge [pricing](https:
 
 **Where CalendarStream goes further:** rules that transform events instead of only filtering them, event templates and linked events (a drive to the airport that moves with its trip), a full calendar to edit, hide, restore and print from, a History with undo and redo, and feeds you publish for other people, all running on a host you control with no per-user fee.
 
-**Where others are ahead today:** native Outlook, Microsoft 365 and iCloud connections, busy-only copies, and a hosted service with no server to run. Direct Microsoft 365, Apple and CalDAV connections and busy-only privacy rules are on the [roadmap](build_rules/roadmap.md).
+**Where others are ahead today:** native Outlook, Microsoft 365 and iCloud connections, busy-only copies, and a hosted service with no server to run. Direct Microsoft 365, Apple and CalDAV connections and busy-only privacy rules are on the [roadmap](WORKING.d/CalendarStream.old/build_rules/roadmap.md).
 
 ## Future integrations
 
@@ -141,7 +141,7 @@ Then open the address it printed:
 ## Settings
 
 Everything is optional. Most settings are made on the status page; `.env` holds the rest, each
-explained in [`.env.default`](.env.default):
+explained in [`.env.default`](WORKING.d/CalendarStream.old/.env.default):
 
 | Setting | Default | Notes |
 |---|---|---|
