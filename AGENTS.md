@@ -51,7 +51,8 @@ what each does are in `SCRUM.d/README.md`.
 
 `<topic>.md` holds what is common to the topic, written once. `<topic>.d/` holds the parts of the topic, one file
 each. `<topic>.d/README.md` holds the rules of that folder; read it before touching the folder. The table of contents
-below lists the areas. **Test:** `tests/tools/req_check.sh` reports a `.d` folder with no README.md.
+below lists the areas. **Test:** `tests/tools/req_check.sh` reports a `.d` folder with no README.md and a requirement file
+that `requirements/README.md` does not list.
 
 A rule goes in the README of the area it governs: how requirements are written in `requirements/README.md`, how they are
 tested in `tests/README.md`, how Dart is built in `packages/README.md`, who does what and when in `SCRUM.d/README.md`, and a

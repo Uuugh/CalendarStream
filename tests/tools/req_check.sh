@@ -37,13 +37,13 @@ badstat=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ s=$3; gsub(/^ +| +$/,"",
 echo "== errors: a connection file that does not state its role as a source, a feed or both (connections.md, CON-01.c)"
 norole=$(for f in connections.d/*.md; do case $f in connections.d/README.md) continue;; esac; grep -qE '\| [A-Z]+-[0-9]+(\.[a-z]+)? \|[^|]*\|[^|]*(is a source|is a feed|both a source and a feed)' $f || echo $f; done | tr '\n' ';')
 [ -n "$norole" ] && { echo "$norole"; err=1; } || echo none
-echo "== prefixes: a feature has three letters; a module adds its folder's letter (C connections.d, P plugins.d); see README, Line format"
+echo "== prefixes: a feature has three letters; a module adds its folder's letter (C connections.d, P plugins.d); see README, Prefixes"
 badpre=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ id=$2; gsub(/ /,"",id); split(id,a,"-"); p=a[1]; if (FILENAME ~ /^connections\.d\//) ok=(p ~ /^C[A-Z][A-Z][A-Z]$/); else if (FILENAME ~ /^plugins\.d\//) ok=(p ~ /^P[A-Z][A-Z][A-Z]$/); else ok=(p ~ /^[A-Z][A-Z][A-Z]$/); if (!ok) { k=FILENAME" "p; if (!(k in seen)) { seen[k]=1; print FILENAME": "p } } }' $files | tr '\n' ';')
 [ -n "$badpre" ] && { echo "$badpre"; err=1; } || echo none
 echo "== warnings: number words (two or more) outside DEF-01 (rule 3; rows not in common.md)"
 grep -HnE '^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]' $cfiles | sed 's/[\][|]//g' | awk -F'|' '{print $1"|"$4}' | grep -i -E '[^a-z-](two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand)[^a-z-]' | grep -v -i 'two-way' | cut -d'|' -f1 | tr '\n' ' ' | cut -c1-400
 echo
-echo "== warnings: a backlog or blank parent with a proposed sub-requirement: the Product Owner reviews the new children (rule 15)"
+echo "== warnings: an agreed parent (backlog or blank) with a proposed sub-requirement: the Product Owner reviews the new children (rule 15)"
 awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); split(i,a,"."); if (index(i,".")==0) {ps[FILENAME" "i]=s} else if (s=="proposed") {bad[FILENAME" "a[1]]=1}} END {for (p in bad) if ((p in ps) && ps[p]!="proposed") {split(p,b," "); print b[2]}}' $files | sort -u | tr '\n' ' '
 echo
 echo "== errors: a numbered rule in requirements/README.md or a rule in AGENTS.md without a Test line (law 3)"
@@ -75,8 +75,8 @@ qrows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/ && $3 ~ /\(\?\)/ {id=$2; gs
 qfile=$(grep -oE '^- \*\*[A-Z]+-[0-9]+(\.[a-z]+)?\*\*' $q | grep -oE '[A-Z]+-[0-9]+(\.[a-z]+)?' | sort)
 qbad=$( { comm -23 <(echo "$qrows") <(echo "$qfile") | sed 's/^/no question for row: /'; comm -13 <(echo "$qrows") <(echo "$qfile") | sed 's/^/question without a (?) row: /'; } )
 [ -n "$qbad" ] && { echo "$qbad"; err=1; } || echo none
-echo "== errors: a .d folder with no README.md (AGENTS.md, Folders)"
-badparts=$(for d in *.d ../SCRUM.d; do [ -f $d/README.md ] || echo "$d: no README.md"; done)
+echo "== errors: a .d folder with no README.md, or a requirement file that requirements/README.md does not list (AGENTS.md, Folders)"
+badparts=$(for d in *.d ../SCRUM.d; do [ -f $d/README.md ] || echo "$d: no README.md"; done; for f in $files; do grep -q "$(basename $f)" README.md || echo "$f: not listed in requirements/README.md"; done)
 [ -n "$badparts" ] && { echo "$badparts"; err=1; } || echo none
 echo "== errors: a README or script named in a process file does not exist (links resolve)"
 badlinks=$(for f in ../AGENTS.md ../SCRUM.d/README.md ../tests/README.md ../packages/README.md README.md; do grep -o '[`][A-Za-z0-9_./-]*\(README[.]md\|[.]sh\)[`]' $f | tr -d '`' | sort -u | while read p; do [ -e "../$p" ] || [ -e "$p" ] || [ -e "$(dirname $f)/$p" ] || find .. -name "$(basename $p)" -not -path '../WORKING.d/*' -not -path '../.git/*' | grep -q . || echo "$f: $p"; done; done)
