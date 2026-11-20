@@ -44,3 +44,15 @@ start it, screenshots looked at, what was not checked, what is the Product Owner
 
 State when stopped: round 3 stopped at 94% usage; the worktree holds uncommitted `requirements/dashboard.md` and six `.arb`
 edits; resume with "keep the output file and continue with what is not yet written".
+
+H. Outline of requirements in the requirement column (added by the Product Owner after round 3 started). The Product Owner
+left it to the Orchestrator to sort into a requirement and sub-requirements; write these as `proposed` rows in
+`requirements/dashboard.md` with a Method and a Test each, one rule per row:
+- DSH-11: the requirement column lists each requirement with its sub-requirements beneath it as an outline.
+- DSH-11.a: a sub-requirement is indented from its requirement by the sub-requirement indent in DEF-01 (3 characters; add the
+  DEF-01 row).
+- DSH-11.b: a requirement that has sub-requirements shows a triangle; clicking it collapses or expands that requirement's
+  sub-requirements; the triangle points right when collapsed and down when expanded; a requirement without sub-requirements
+  shows no triangle.
+- DSH-11.c: a switch above the column collapses every requirement or expands every requirement at once.
+- DSH-11.d: when the page opens every requirement is collapsed (the Orchestrator's recommendation; the Product Owner can change it).
