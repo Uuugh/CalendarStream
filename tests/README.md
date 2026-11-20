@@ -21,6 +21,12 @@ for each test, name a cheaper method and show it would not verify the row.
 Expected outputs of the old app are captured once as made-up fixtures and compared by script (method 4), not by
 running the old app each time.
 
+## Share before you write
+
+Before writing a new test, look for an existing test to share or modify, and do so when that is the cheaper way to
+verify the requirement; one test may verify several requirements. **Test:** review: for each new test, name the existing
+test it could have extended and show that extending it would have cost more.
+
 ## Results
 
 Each run reports one result per requirement ID: `pass`, `fail` (with the ID, what was expected and what was found) or

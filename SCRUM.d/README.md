@@ -11,7 +11,7 @@ Everything about how work is organized lives here, once. Rules of an area (requi
   and never plays the Coder.
 - **Team**: the Orchestrator launches a team per story: two Coders and a Tester. **Coder (build)** implements the
   story's requirements. **Coder (tests)** builds the mirrored requirement tests in `tests/`, working from the
-  requirements only, never the implementation. **Tester** runs the tests and reports a result per requirement (`tests/README.md`). Before a new test is written, the Tester and the Coder (tests) look for an existing test to share or modify, and do so when it is the more efficient way to verify the requirement; one test may verify several requirements. More than one team
+  requirements only, never the implementation. **Tester** runs the tests and reports a result per requirement; how to test is in `tests/README.md`. More than one team
   may work in a sprint only when the Product Owner directs it (one team by default), each on its own stories. A team
   reads the requirements and never edits them; a defect in one goes to the Orchestrator, who changes it as `proposed`; the Product Owner approves requirements.
   Until the port starts, a Coder is a read-only agent reviewing the requirements for what cannot be implemented.

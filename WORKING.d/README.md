@@ -10,6 +10,7 @@ In order; Product Owner items first, then what the Orchestrator can do now, then
 
 - [ ] The Product Owner reviews the `proposed` rows and answers `requirements/open-questions.md` (a blank status they leave means `backlog`); decides the three proposed rule changes (bucket B in `WORKING.d/CalendarStream.old/build_rules/coder-review-1.md`)
 - [ ] The Product Owner reads `WORKING.d/scrum-research.md` and decides five points (sprint end rule, Sprint Goal, where the sprint list and retrospective live, a Ready check, how much Review is shown); then a subagent writes them into `SCRUM.d/`. Scrum is resolved before any coding.
+- [ ] Read `WORKING.d/role-research.md` (two vibe-coding rule pages mined for agent role responsibilities, written by the scrum agent), then put what fits into the role entries of `SCRUM.d/README.md`; delete the file
 - [ ] Add the checks to `tests/tools/req_check.sh`: status regression, every folder README lists its parts, links in `AGENTS.md`, `SCRUM.d/`, `packages/README.md` and this file resolve, this file under its size limit with no ticked item (the Orchestrator makes this change; see `WORKING.d/move-plan.md`)
 - [ ] Restore or delete the placeholders left when the old app moved (list: `WORKING.d/placeholders.md`)
 - [ ] Open: still to fix from the first Coder review: about 30 undefined terms, statements pointing at the legacy theme file, README roles and the DEF prefix, `common.md` to the line format
@@ -24,4 +25,5 @@ In order; Product Owner items first, then what the Orchestrator can do now, then
 - `move-plan.md`: how to move the live files into the new layout
 - `placeholders.md`: plain-text stand-ins left when the old app moved, to restore or delete
 - `CalendarStream.old/`: the retired Python app, frozen, an oracle only; delete it when the port is complete
+- `role-research.md`: (being written) rules from two vibe-coding pages that could define agent role responsibilities (for discussion; delete after)
 - `scrum-research.md`: online sources on Scrum for agent teams, options per Scrum part and gaps in `SCRUM.d/` (for discussion; delete after)
