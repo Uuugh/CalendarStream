@@ -13,8 +13,14 @@ import '../domain/issue.dart';
 import '../domain/list_filter.dart';
 import '../domain/requirement.dart';
 import '../domain/sprint.dart';
+import '../domain/sprint_edit.dart';
+import 'backlog_drop_area.dart';
+import 'backlog_item_tile.dart';
 import 'dashboard_layout.dart';
 import 'list_filter_bar.dart';
+import 'new_issue_dialog.dart';
+import 'sprint_board.dart';
+import 'usage_panel.dart';
 
 /// Minimal page: sprint goal, its stories, the backlog requirements and the backlog issues, with a Reload control.
 class DashboardPage extends StatefulWidget {
@@ -72,6 +78,22 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  /// Opens the New issue form (DSH-08); reloads the lists when an issue was created.
+  Future<void> _newIssue() async {
+    final created = await showDialog<bool>(
+      context: context,
+      builder: (_) => NewIssueDialog(issues: widget.issues, requirements: _requirements),
+    );
+    if (created == true) await _reload();
+  }
+
+  /// Shows [next] and writes it to the sprint file at once (DSH-02.c); nothing happens when it is the same sprint.
+  Future<void> _apply(Sprint next) async {
+    if (identical(next, _sprint)) return;
+    setState(() => _sprint = next);
+    await widget.sprints.save(next);
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
@@ -82,51 +104,64 @@ class _DashboardPageState extends State<DashboardPage> {
     final shownIssues = _issueFilter.apply(issues,
         feature: (i) => i.feature, requirementId: (i) => i.requirement, status: (i) => i.status.name);
     String issueStatus(String s) => s == IssueStatus.closed.name ? t.dshStatusClosed : t.dshStatusOpen;
+    final backlog = BacklogDropArea(
+      onRemove: (id) => _apply(SprintEdit.removeStory(_sprint, id)),
+      child: ListView(padding: const EdgeInsets.all(DashboardLayout.gap), children: [
+        ListTile(title: Text(t.dshRequirements, style: Theme.of(context).textTheme.titleMedium)),
+        ListFilterBar(
+          filter: _requirementFilter,
+          onChanged: (f) => setState(() => _requirementFilter = f),
+          features: ListFilter.choices(requirements.map((r) => r.feature)),
+          statuses: ListFilter.choices(requirements.map((r) => r.status)),
+          statusLabel: (s) => s,
+          shown: shownRequirements.length,
+          total: requirements.length,
+        ),
+        for (final r in shownRequirements)
+          BacklogItemTile(id: r.id, title: r.statement, subtitle: '${r.feature} (${r.status}): ${r.statement}'),
+        ListTile(title: Text(t.dshIssues, style: Theme.of(context).textTheme.titleMedium)),
+        if (_issueError != null)
+          ListTile(
+            title: Text(t.dshTrackerUnreachable(_issueError!),
+                style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          )
+        else ...[
+          ListFilterBar(
+            filter: _issueFilter,
+            onChanged: (f) => setState(() => _issueFilter = f),
+            features: ListFilter.choices(issues.map((i) => i.feature)),
+            statuses: ListFilter.choices(issues.map((i) => i.status.name)),
+            statusLabel: issueStatus,
+            shown: shownIssues.length,
+            total: issues.length,
+          ),
+          for (final i in shownIssues)
+            BacklogItemTile(
+              id: '#${i.number}',
+              title: i.title,
+              subtitle: '${i.title} | ${issueStatus(i.status.name)} | ${i.feature ?? DashboardLayout.dash} | '
+                  '${i.requirement ?? DashboardLayout.dash} | ${i.assignee.isEmpty ? DashboardLayout.dash : i.assignee}',
+            ),
+        ],
+      ]),
+    );
     return Scaffold(
-      appBar: AppBar(
-        title: Text('${t.dshSprintGoal}: ${_sprint.goal}'),
-        actions: [TextButton(onPressed: _reload, child: Text(t.dshReload))],
-      ),
+      appBar: AppBar(actions: [
+        TextButton(key: const Key('new-issue-button'), onPressed: _newIssue, child: Text(t.dshNewIssue)),
+        TextButton(key: const Key('reload-button'), onPressed: _reload, child: Text(t.dshReload)),
+      ]),
       body: _error != null
           ? Center(child: Text('$_error'))
-          : ListView(padding: const EdgeInsets.all(DashboardLayout.gap), children: [
-              for (final s in _sprint.stories)
-                ListTile(title: Text('${s.id} ${s.title}'), subtitle: Text(s.stage.name), trailing: Text(s.assignee)),
-              ListTile(title: Text(t.dshRequirements, style: Theme.of(context).textTheme.titleMedium)),
-              ListFilterBar(
-                filter: _requirementFilter,
-                onChanged: (f) => setState(() => _requirementFilter = f),
-                features: ListFilter.choices(requirements.map((r) => r.feature)),
-                statuses: ListFilter.choices(requirements.map((r) => r.status)),
-                statusLabel: (s) => s,
-                shown: shownRequirements.length,
-                total: requirements.length,
-              ),
-              for (final r in shownRequirements)
-                ListTile(title: Text(r.id), subtitle: Text('${r.feature} (${r.status}): ${r.statement}')),
-              ListTile(title: Text(t.dshIssues, style: Theme.of(context).textTheme.titleMedium)),
-              if (_issueError != null)
-                ListTile(
-                  title: Text(t.dshTrackerUnreachable(_issueError!),
-                      style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                )
-              else ...[
-                ListFilterBar(
-                  filter: _issueFilter,
-                  onChanged: (f) => setState(() => _issueFilter = f),
-                  features: ListFilter.choices(issues.map((i) => i.feature)),
-                  statuses: ListFilter.choices(issues.map((i) => i.status.name)),
-                  statusLabel: issueStatus,
-                  shown: shownIssues.length,
-                  total: issues.length,
+          : Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              SizedBox(width: DashboardLayout.backlogWidth, child: backlog),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    SprintBoard(sprint: _sprint, onChanged: _apply),
+                    UsagePanel(sprint: _sprint),
+                  ]),
                 ),
-                for (final i in shownIssues)
-                  ListTile(
-                    title: Text('#${i.number} ${i.title}'),
-                    subtitle: Text('${issueStatus(i.status.name)} | ${i.feature ?? DashboardLayout.dash} | '
-                        '${i.requirement ?? DashboardLayout.dash} | ${i.assignee.isEmpty ? DashboardLayout.dash : i.assignee}'),
-                  ),
-              ],
+              ),
             ]),
     );
   }

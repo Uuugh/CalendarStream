@@ -7,5 +7,9 @@ class DashboardLayout {
 
   static const double gap = 8;
   static const double filterWidth = 180;
+  static const double columnWidth = 220;
+  static const double columnMinHeight = 240;
+  static const double backlogWidth = 520;
+  static const double usageLabelWidth = 160;
   static const String dash = '-';
 }

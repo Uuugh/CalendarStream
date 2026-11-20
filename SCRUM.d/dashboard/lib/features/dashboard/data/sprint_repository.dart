@@ -1,6 +1,7 @@
 // Holds: reading and writing SCRUM.d/sprint.md (DSH-02). Depends on: FileAccess, MarkdownTable, the sprint domain.
 // Used by: the dashboard page. Reads or writes: the sprint file at the path given.
 
+import '../domain/points_format.dart';
 import '../domain/sprint.dart';
 import '../domain/stage.dart';
 import '../domain/story.dart';
@@ -81,7 +82,7 @@ class SprintRepository {
     for (final s in sprint.stories) {
       b.writeln('| ${MarkdownTable.escape(s.id)} | ${MarkdownTable.escape(s.title)} | '
           '${MarkdownTable.escape(s.items.join(', '))} | ${_stageName(s.stage)} | '
-          '${MarkdownTable.escape(s.assignee)} | ${_number(s.estimate)} | ${_number(s.usage)} |');
+          '${MarkdownTable.escape(s.assignee)} | ${PointsFormat.format(s.estimate)} | ${PointsFormat.format(s.usage)} |');
     }
     b
       ..writeln()
@@ -97,8 +98,6 @@ class SprintRepository {
   }
 
   static String _stageName(Stage s) => s.name[0].toUpperCase() + s.name.substring(1);
-
-  static String _number(double n) => n == n.roundToDouble() ? n.toInt().toString() : n.toString();
 
   /// Section lines without the blank lines around them.
   static String _body(List<String>? lines) {

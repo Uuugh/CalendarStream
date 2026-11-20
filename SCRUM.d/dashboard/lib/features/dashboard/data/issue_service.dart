@@ -1,10 +1,12 @@
-// Holds: reading issues from the issue tracker (DSH-01.a, DSH-01.b, DSH-05, DSH-05.b) through the user's own signed-in
-// `gh`; no token is handled here. Depends on: CommandRunner, Issue. Used by: the dashboard page.
+// Holds: reading and creating issues in the issue tracker (DSH-01.a, DSH-01.b, DSH-05, DSH-05.b, DSH-08.c) through the
+// user's own signed-in `gh`; no token is handled here. Depends on: CommandRunner, Issue, NewIssue.
+// Used by: the dashboard page, the New issue dialog.
 // Reads or writes: the issue tracker, through the runner.
 
 import 'dart:convert';
 
 import '../domain/issue.dart';
+import '../domain/new_issue.dart';
 import 'command_runner.dart';
 import 'issue_tracker_exception.dart';
 
@@ -24,23 +26,43 @@ class IssueService {
 
   /// All issues, open and closed. Throws [IssueTrackerException] with the reason when the tracker cannot be reached.
   Future<List<Issue>> load() async {
-    final String out;
-    try {
-      final r = await runner.run(executable, listArguments);
-      if (r.exitCode != 0) {
-        final reason = r.stderr.trim();
-        throw IssueTrackerException(reason.isEmpty ? 'exit code ${r.exitCode}' : reason);
-      }
-      out = r.stdout;
-    } on IssueTrackerException {
-      rethrow;
-    } catch (e) {
-      throw IssueTrackerException('$e');
-    }
+    final out = await _run(listArguments);
     try {
       return parse(out);
     } on FormatException catch (e) {
       throw IssueTrackerException(e.message);
+    }
+  }
+
+  static final _issueNumber = RegExp(r'/issues/(\d+)');
+
+  /// Creates [issue] (DSH-08.c) with labels `issue` and `feature:<feature>` and the body of [NewIssue.body]; closes it
+  /// afterwards when [NewIssue.closed]. Returns the new issue's number. Throws [IssueTrackerException] with the reason.
+  Future<int> create(NewIssue issue) async {
+    final created = await _run([
+      'issue', 'create', '--title', issue.title, '--body', issue.body,
+      '--label', 'issue',
+      if (issue.feature != null) ...['--label', '$_featurePrefix${issue.feature}'],
+    ]);
+    final number = int.tryParse(_issueNumber.firstMatch(created)?.group(1) ?? '');
+    if (number == null) throw IssueTrackerException(created.trim().isEmpty ? 'no issue number' : created.trim());
+    if (issue.closed) await _run(['issue', 'close', '$number']);
+    return number;
+  }
+
+  /// Runs `gh` with [arguments]; returns its output or throws [IssueTrackerException] with the reason.
+  Future<String> _run(List<String> arguments) async {
+    try {
+      final r = await runner.run(executable, arguments);
+      if (r.exitCode != 0) {
+        final reason = r.stderr.trim();
+        throw IssueTrackerException(reason.isEmpty ? 'exit code ${r.exitCode}' : reason);
+      }
+      return r.stdout;
+    } on IssueTrackerException {
+      rethrow;
+    } catch (e) {
+      throw IssueTrackerException('$e');
     }
   }
 
