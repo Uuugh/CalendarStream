@@ -35,3 +35,11 @@ Read `requirements/README.md` first: its rules, and above all its two laws (no d
 - Follow the old process files in `build_rules/` (see `build_rules/README.md`; only the files it lists as live apply).
 - Add a requirement during the freeze, or change a requirement to match the old Python app (the requirement wins).
 - Name an agent or a tool in a requirement.
+
+## Tests: where they live
+
+- **Dart tests sit beside the code they test**, in each package's `test/` folder, which mirrors `lib/`: `packages/domain/test/<feature>/`, `server/test/`, `client/test/`, and `client/integration_test/` for the thin end-to-end set. Fakes and made-up data (Demo.ics; never real data) are in `packages/testing`. The layout is the plan in `build_rules/layer-map.md`; only `packages/domain` exists so far.
+- **Never in `requirements/`**, and never in the Python `tests/` folder: that is the frozen old reference and is deleted when the port is done.
+- **Every test names the requirement IDs it verifies** (in its name or a tag) and declares whether one run covers them all or it runs once per ID.
+- **The requirement's `test` cell** lists the tests (path and name), or `see <ID>`, or `—` while there is none. A row passes only when all its tests pass; a test that cannot run marks its rows "not run", not "failed". A requirement that depends on time uses a clock the test controls.
+- `req_check.sh` does not yet check the test cells against real tests; it will when Dart tests exist.

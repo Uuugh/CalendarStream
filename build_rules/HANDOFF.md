@@ -54,3 +54,7 @@ names=("Slice one" "Slice two"); for i in 1 2; do v=$(tr -d '\n' < $SP/progress-
 - Do not edit the repository while agents are reading it (an agent reading files you change gives inconsistent reports), unless the agents are blind to those files.
 - To pause, stop the agents with the TaskStop tool (their partial output stays in the scratch folder), and tell the Product Owner what was saved. To resume, relaunch with a prompt that says to keep the existing output file and continue with the topics not yet written.
 - Tell the Product Owner the token use each finished agent reports; they read their own usage meter with `/usage`.
+
+## Testing
+
+Where tests are stored and how they name requirements: `.claude/skills/dart-flutter/SKILL.md`, section "Tests: where they live". The requirements folder checks itself with `tests/tools/req_check.sh`; Dart tests do not exist yet except in `packages/domain`.
