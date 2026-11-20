@@ -73,12 +73,12 @@ unrelated edits, new dependencies and configuration changes.
 1. **Pre-flight.** Read `WORKING.d/README.md` (your memory); run `git status` and `git diff`; read the `Answer:` lines in `requirements/open-questions.md`; commit the
    Product Owner's uncommitted work first, in its own commit.
 2. **Brief.** One line each: role, slice, output file, what the agent may write, its progress file, and "read
-   AGENTS.md and follow it". For a slice of requirements the limit is "add rows and extend your own; never change the
+   AGENTS.md and follow it", and the skills it must load and use (`dart-flutter` for Dart, `scrum` for Scrum files). For a slice of requirements the limit is "add rows and extend your own; never change the
    status of an existing row". Blind agents (reverse-engineering) must not read the requirements: give them the minimal
    row format inline.
 3. **Subagents only for long tasks**: filling a slice, a full review, the port. Short work is done by the Orchestrator.
 4. **Mid-flight.** Do not edit files agents are reading. One agent at a time on files they share (`common.md`, `messages/`).
-5. **Post-flight.** `git diff` against the commit before; revert any status that went backwards; run `req_check.sh`; in `WORKING.d/README.md` delete the item the work finished (in the same commit as the work; git history is the trash) and add anything newly awaiting action; push.
+5. **Post-flight.** `git diff` against the commit before; check the agent loaded the skills its brief named; revert any status that went backwards; run `req_check.sh`; in `WORKING.d/README.md` delete the item the work finished (in the same commit as the work; git history is the trash) and add anything newly awaiting action; push.
 6. **Progress bars.** One simple bar per running agent, nothing else, in every message to the Product Owner until it
    finishes: label, 20-character bar, `done/total`, and `done` when finished. Each agent writes `done/total` to its own
    progress file (in the session's scratch folder) after each unit. Do not poll or sleep; draw the bars when a
