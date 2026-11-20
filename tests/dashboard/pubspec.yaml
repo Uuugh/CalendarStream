@@ -1,0 +1,10 @@
+name: dashboard_tests
+description: Requirement tests for the Scrum dashboard (requirements/dashboard.md).
+publish_to: 'none'
+environment:
+  sdk: ^3.12.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  dashboard:
+    path: ../../SCRUM.d/dashboard
