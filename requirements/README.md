@@ -44,7 +44,7 @@ These apply to every row in `requirements/`.
 `| ID | status | statement | test | evidence (temporary) |`
 
 - **ID**: a feature prefix and a number (CAL-03). A requirement may have sub-requirements (ACC-06, ACC-06.a, ACC-06.b); a link points at the requirement unless it means exactly one sub-requirement. When IDs change, `oldkey.md` records old to new.
-- **status**: `proposed` (drafted, not yet agreed) or `backlog` (the Product Owner agreed: it is a Requirement, waiting for a sprint). The Product Owner agrees to a row by deleting `proposed`; a blank status is read as `backlog` and the Author writes the word. With Scrum the Dashboard records what follows: the sprint a requirement is built in, and done when its test passes.
+- **status**: `proposed` (drafted, not yet agreed), `backlog` (the Product Owner agreed: it is a Requirement, waiting for a story), `planned` (it is in a story) or `done` (its story was accepted at the Review). The Product Owner agrees to a row by deleting `proposed`; a blank status is read as `backlog` and the Author writes the word. `SCRUM.d/sprint.md` records which story holds a planned requirement. A status moves up this order; the one move down is `planned` to `backlog`, when a requirement leaves its story.
 - **test**: the test that verifies it (path and name), once one exists. `—` until the inventory of the Python suites
   (`requirements/inventory/`) has been matched to requirements.
 - **evidence (temporary)**: the Python-suite keys (and old Dashboard items) a row came from; deleted when the conversion ends.

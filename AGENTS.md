@@ -34,7 +34,7 @@ what each does are in `SCRUM.d/README.md`.
   waited for a permission it already had, and no action follows a Product Owner message that asks and does not direct.
 - **Never revert or overwrite the Product Owner's edits.** They edit files directly; a status they leave blank means
   backlog. **Test:** before and after any change run `git status` and `git diff`; no status goes backwards
-  (`backlog` or blank to `proposed`).
+  (a move down the order `proposed`, `backlog`, `planned`, `done` is only `planned` to `backlog`).
 - **Requirements win over the Python app** where they differ. **Test:** review: no requirement is changed to match the old app.
 - **The freeze:** no new features until the port is complete. **Test:** review: every new row traces to the old app or a
   Product Owner answer.

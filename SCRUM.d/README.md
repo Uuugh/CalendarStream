@@ -16,15 +16,17 @@ The Orchestrator launches a team per story: both Coders and a Tester.
 
 ## Work
 
-- **Backlog**: requirements agreed by the Product Owner (status `backlog` or blank) waiting for a sprint.
+- **Backlog**: requirements with status `backlog` (or blank) and open issues, waiting for a story. A requirement in a story has
+  status `planned`, and `done` once its story is accepted at the Review.
 - **Story**: names the requirement and sub-requirement IDs it will meet; done when their tests pass. Requirements
   never refer to a story. Small enough for one Reviewer run (about 1,000 changed lines); a larger story is split before it starts. **Test:** `git diff --stat` at post-flight; a story over that size was not split.
 - **Epic**: a group of stories (usually one feature). A story that is split becomes an epic of the stories it was split into.
 - **Defect**: a GitHub issue that names the requirement it breaks; a story fixes it by naming the issue as `#N`. **Test:** review: every defect issue names a requirement ID.
-- **Sprint**: the stories chosen to be built next; the Dashboard (`SCRUM.d/dashboard/`, requirements `requirements/dashboard.md`) records the sprint and done.
+- **Sprint**: the stories chosen to be built next; the Dashboard (`SCRUM.d/dashboard/`, requirements `requirements/dashboard.md`) records the sprint in `SCRUM.d/sprint.md` and each requirement's
+  status.
   Only the Product Owner launches a sprint. A sprint ends when its stories are done or at their review; it has no calendar length.
-  Its **Sprint Goal** is one sentence, written by the Orchestrator and agreed by the Product Owner.
-  The sprint's story list and the retrospective's output live in `SCRUM.d/sprint.md`, deleted when the sprint is done. **Test:** review: the sprint was launched by a Product Owner message, and `sprint.md` names a goal.
+  The sprint's story list and the retrospective's output live in `SCRUM.d/sprint.md`, deleted when the sprint is done. **Test:** review: the
+  sprint was launched by a Product Owner message.
 - **Ready**: a story enters a sprint when its requirements pass the review in `requirements/README.md` ("Simulate three
   jobs") and no open question blocks it; the Orchestrator checks this before planning. **Test:** review: the check names the
   review it ran, no test cell of the story is `—`, no `(?)` row blocks it.
@@ -78,7 +80,9 @@ Treats an agent's report as a claim and checks it against the diff and the test 
 criteria as requirement IDs, and names what is out of scope and which paths the agent may write.
 
 1. **Pre-flight.** Read `WORKING.d/README.md` (your memory); run `git status` and `git diff`; read the `Answer:` lines in `requirements/open-questions.md`; commit the
-   Product Owner's uncommitted work first, in its own commit.
+   Product Owner's uncommitted work first, in its own commit; start the dashboard if it is not running (the start command is in
+   the dashboard's README) and give the Product Owner its address. **Test:** review: the first message of the session
+   names the address of a running dashboard.
 2. **Brief.** One line each: role, slice, output file, what the agent may write, its progress file, the skills it must
    load and use (`dart-flutter` for Dart, `scrum` for Scrum files), and "read AGENTS.md and follow it". For a slice of
    requirements the limit is "add rows and extend your own; never change the
