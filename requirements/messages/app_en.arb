@@ -1146,5 +1146,8 @@
   "dshUsageChart": "Usage",
   "dshMeterSession": "5-hour session",
   "dshMeterWeek": "7-day week",
-  "dshNoUsage": "No usage readings"
+  "dshNoUsage": "No usage readings",
+  "dshExpandAll": "Expand all",
+  "dshExpandRow": "Expand",
+  "dshCollapseRow": "Collapse"
 }

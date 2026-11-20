@@ -150,6 +150,7 @@ CalendarStream), **rule** (made by a rule).
 | Dashboard issues listed | 200 issues | | default only |
 | Usage point (dashboard) | one percent of the 5-hour allowance | | default only |
 | Dashboard server address | 127.0.0.1, port 8765 | | default only |
+| Sub-requirement indent (dashboard) | 3 characters | | default only |
 | Dashboard board share of the window height | 2 of 5 parts; the columns below take 3 | | default only |
 | Dashboard window sizes checked for clipping | 1920 x 1080 px and 1280 x 720 px | | default only |
 | Agent progress refresh | every 5 seconds | | default only |

@@ -923,5 +923,8 @@
   "dshUsageChart": "Utilisation",
   "dshMeterSession": "Session de 5 heures",
   "dshMeterWeek": "Semaine de 7 jours",
-  "dshNoUsage": "Aucun relevé d’utilisation"
+  "dshNoUsage": "Aucun relevé d’utilisation",
+  "dshExpandAll": "Tout déplier",
+  "dshExpandRow": "Déplier",
+  "dshCollapseRow": "Replier"
 }

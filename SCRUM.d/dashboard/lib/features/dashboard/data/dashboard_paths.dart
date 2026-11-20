@@ -11,4 +11,7 @@ class DashboardPaths {
 
   /// The requirements folder (DSH-03).
   static const requirements = 'requirements';
+
+  /// The usage readings (DSH-14.a).
+  static const usage = 'SCRUM.d/usage.md';
 }

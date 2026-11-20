@@ -1,149 +1,50 @@
-// Tests DSH-02 (a-d): the sprint file. One run covers each ID named in the test name.
+// Tests DSH-02 (a-f): the sprint file, read and written by SprintRepository and through LocalBackend; and DSH-01.f for
+// the sprint file (an unreadable file gives a reason and the other loads keep working).
+// One run covers each ID named in the test name.
 import 'dart:io';
 
+import 'package:dashboard/features/dashboard/data/local_backend.dart';
 import 'package:dashboard/features/dashboard/data/sprint_repository.dart';
+import 'package:dashboard/features/dashboard/domain/block.dart';
+import 'package:dashboard/features/dashboard/domain/block_kind.dart';
+import 'package:dashboard/features/dashboard/domain/member.dart';
 import 'package:dashboard/features/dashboard/domain/sprint.dart';
 import 'package:dashboard/features/dashboard/domain/sprint_edit.dart';
-import 'package:dashboard/features/dashboard/domain/stage.dart';
-import 'package:dashboard/features/dashboard/domain/story.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../support/failing_file_access.dart';
 import '../support/fixtures.dart';
 import '../support/memory_file_access.dart';
 
-void main() {
-  late Directory repo;
-  late String path;
-  SprintRepository repoFor() => SprintRepository(files: disk, path: path);
-
-  setUp(() {
-    repo = makeRepo();
-    path = join(repo, 'SCRUM.d/sprint.md');
-  });
-  tearDown(() => repo.deleteSync(recursive: true));
-
-  test('DSH-02.a: file with Goal line, Stories table, Review and Retrospective is read', () async {
-    writeFile(repo, 'SCRUM.d/sprint.md', sampleSprintFile);
-    final s = await repoFor().load();
-    expect(s.goal, 'Ship the demo board');
-    expect(s.stories, hasLength(2));
-    expect(s.review.trim(), 'Looked fine.');
-    expect(s.retrospective.trim(), 'Do more of X.');
-  });
-
-  test('DSH-02.a: saved file has the four parts', () async {
-    await repoFor().save(const Sprint(goal: 'G', review: 'R', retrospective: 'T'));
-    final text = File(path).readAsStringSync();
-    expect(text, contains('Goal: G'));
-    expect(text, contains('## Stories'));
-    expect(text, contains('## Review'));
-    expect(text, contains('## Retrospective'));
-  });
-
-  test('DSH-02.b: a Stories row yields id, title, items, stage, assignee, estimate, usage', () async {
-    writeFile(repo, 'SCRUM.d/sprint.md', sampleSprintFile);
-    final s = (await repoFor().load()).stories.first;
-    expect(s.id, 'S-1');
-    expect(s.title, 'First story');
-    expect(s.items, ['AAA-01', 'AAA-02']);
-    expect(s.stage, Stage.build);
-    expect(s.assignee, 'Ann');
-    expect(s.estimate, 3.0);
-    expect(s.usage, 1.5);
-  });
-
-  test('DSH-02.b: a row with blank assignee reads as empty assignee', () async {
-    writeFile(repo, 'SCRUM.d/sprint.md', sampleSprintFile);
-    final s = (await repoFor().load()).stories[1];
-    expect(s.assignee, '');
-    expect(s.stage, Stage.backlog);
-    expect(s.items, ['#7']);
-  });
-
-  test('DSH-02.b: story round-trips through save and load', () async {
-    const story = Story(
-        id: 'X-9', title: 'Round trip', items: ['AAA-01', '#3'], stage: Stage.review, assignee: 'Bo', estimate: 4, usage: 2.5);
-    await repoFor().save(const Sprint(goal: 'G', stories: [story]));
-    final back = (await repoFor().load()).stories.single;
-    expect(back.id, 'X-9');
-    expect(back.title, 'Round trip');
-    expect(back.items, ['AAA-01', '#3']);
-    expect(back.stage, Stage.review);
-    expect(back.assignee, 'Bo');
-    expect(back.estimate, 4.0);
-    expect(back.usage, 2.5);
-  });
-
-  test('DSH-02.c: a change is written to the file and goal, review and retrospective are kept', () async {
-    writeFile(repo, 'SCRUM.d/sprint.md', sampleSprintFile);
-    final r = repoFor();
-    final loaded = await r.load();
-    final first = loaded.stories.first;
-    final changed = Sprint(
-      goal: loaded.goal,
-      review: loaded.review,
-      retrospective: loaded.retrospective,
-      stories: [
-        Story(id: first.id, title: first.title, items: first.items, stage: Stage.done, assignee: first.assignee, estimate: first.estimate, usage: 3),
-        ...loaded.stories.skip(1),
-      ],
-    );
-    await r.save(changed);
-    final again = await repoFor().load();
-    expect(again.stories.first.stage, Stage.done);
-    expect(again.stories.first.usage, 3.0);
-    expect(again.goal, 'Ship the demo board');
-    expect(again.review.trim(), 'Looked fine.');
-    expect(again.retrospective.trim(), 'Do more of X.');
-  });
-
-  test('DSH-02.c: multi-line review and retrospective text is kept as it was', () async {
-    const review = 'Line one.\n\nLine two with | a pipe.';
-    const retro = '- keep\n- change';
-    await repoFor().save(const Sprint(goal: 'G', review: review, retrospective: retro));
-    final back = await repoFor().load();
-    expect(back.review.trim(), review);
-    expect(back.retrospective.trim(), retro);
-  });
-
-  test('DSH-02.d: missing file loads as an empty sprint', () async {
-    final s = await repoFor().load();
-    expect(s.stories, isEmpty);
-    expect(s.goal, '');
-    expect(s.review, '');
-    expect(s.retrospective, '');
-    expect(File(path).existsSync(), isFalse);
-  });
-
-  test('DSH-02.d: the first change creates the file', () async {
-    expect(File(path).existsSync(), isFalse);
-    await repoFor().save(const Sprint(stories: [Story(id: 'N-1', title: 'New')]));
-    expect(File(path).existsSync(), isTrue);
-    expect((await repoFor().load()).stories.single.id, 'N-1');
-  });
-
-  group('what the dashboard does not edit (DSH-02.e) and round trips (DSH-02.c)', () {
-    const rich = '''Preamble above the title.
+const rich = '''Preamble above the title.
 
 # Sprint
 
 Intro note.
 
-Goal: Keep goals
+## Blocks
 
-Note after the goal.
+A note above the Blocks table.
 
-## Stories
-
-A note above the table.
-
-| story | title | items | stage | assignee | estimate | usage |
+| id | kind | name | parent | assignee | estimate | usage |
 |---|---|---|---|---|---|---|
-| S-1 | First | AAA-01 | Build | Ann | 3 | 1.5 |
+| sprint-1 | sprint | Spr |  |  | 0 | 0 |
+| story-1 | story | First | sprint-1 | Ann | 3 | 1.5 |
 | a row that cannot be read |
-| S-2 | Second | #7 | Ready |  | 2 | 0 |
+| x-9 | feature | Unknown kind | | | | |
+| story-2 | story | Second | sprint-1 |  | 2 | 0 |
 
-Trailing note of the stories.
+Trailing note of the Blocks.
+
+## Members
+
+A note above the Members table.
+
+| story | item |
+|---|---|
+| story-1 | AAA-01 |
+| not a member row |
+| story-2 | #7 |
 
 ## Review
 
@@ -153,7 +54,7 @@ Review text.
 
 A heading that is not a section.
 
-## Stories
+## Members
 
 Not the table: an earlier section's heading, inside the review.
 
@@ -170,89 +71,224 @@ An earlier section's heading, inside the retrospective.
 ## Another heading
 ''';
 
-    String again(String text) => SprintRepository.format(SprintRepository.parse(text));
+String again(String text) => SprintRepository.format(SprintRepository.parse(text));
 
-    void sameSprint(Sprint a, Sprint b) {
-      expect(a.goal, b.goal);
-      expect(a.review, b.review);
-      expect(a.retrospective, b.retrospective);
-      expect(a.stories.map((s) => [s.id, s.title, s.items, s.stage, s.assignee, s.estimate, s.usage]),
-          b.stories.map((s) => [s.id, s.title, s.items, s.stage, s.assignee, s.estimate, s.usage]));
-    }
+String summary(Sprint s) =>
+    '${s.blocks.map((b) => [b.id, b.kind.name, b.name, b.parent, b.assignee, b.estimate, b.usage])}|'
+    '${s.members.map((m) => '${m.blockId}:${m.item}')}|${s.review}|${s.retrospective}';
 
-    test('DSH-02.e: text before the Goal line, between it and Stories, other lines and headings are written back as they were', () {
+void main() {
+  const path = '/r/SCRUM.d/sprint.md';
+
+  group('the file layout (DSH-02.a, DSH-02.b, DSH-02.c)', () {
+    test('DSH-02.a: the Blocks table, the Members table, the Review and the Retrospective are read', () {
+      final s = SprintRepository.parse(sampleSprintFile);
+      expect(s.blocks, hasLength(4));
+      expect(s.members, hasLength(3));
+      expect(s.review, 'Looked fine.');
+      expect(s.retrospective, 'Do more of X.');
+    });
+
+    test('DSH-02.a: a written file has the four parts in order', () {
+      final text = SprintRepository.format(const Sprint(review: 'R', retrospective: 'T'));
+      final at = ['## Blocks', '## Members', '## Review', '## Retrospective'].map(text.indexOf).toList();
+      expect(at, everyElement(greaterThanOrEqualTo(0)));
+      expect([...at]..sort(), at);
+    });
+
+    test('DSH-02.b: a Blocks row gives block ID, kind, name, parent, assignee, estimate and usage', () {
+      final s = SprintRepository.parse(sampleSprintFile);
+      final b = s.block('story-1')!;
+      expect([b.id, b.kind, b.name, b.parent, b.assignee, b.estimate, b.usage],
+          ['story-1', BlockKind.story, 'First story', 'epic-1', 'Ann', 3.0, 1.5]);
+      final top = s.block('sprint-1')!;
+      expect(top.parent, isNull, reason: 'a blank parent is the top of the board');
+      expect(top.kind, BlockKind.sprint);
+      expect(s.block('epic-1')!.kind, BlockKind.epic);
+    });
+
+    test('DSH-02.b: a blank assignee reads as empty; missing or bad points read as 0', () {
+      final s = SprintRepository.parse('## Blocks\n\n| id | kind | name | parent | assignee | estimate | usage |\n|---|---|---|---|---|---|---|\n| story-1 | story | A |  |  | x |  |\n| story-2 | Story | B |\n');
+      expect(s.block('story-1')!.assignee, '');
+      expect([s.block('story-1')!.estimate, s.block('story-1')!.usage], [0, 0]);
+      expect(s.block('story-2')!.kind, BlockKind.story);
+      expect(s.block('story-2')!.parent, isNull);
+    });
+
+    test('DSH-02.c: a Members row gives a story block ID and one item, a requirement ID or #N', () {
+      final s = SprintRepository.parse(sampleSprintFile);
+      expect(s.members.map((m) => [m.blockId, m.item]), [['story-1', 'AAA-01'], ['story-1', 'AAA-03'], ['story-2', '#7']]);
+    });
+
+    test('DSH-02.b and DSH-02.c: blocks and members round trip through format and parse, including a pipe in a name', () {
+      const sprint = Sprint(
+        blocks: [
+          Block(id: 'sprint-1', kind: BlockKind.sprint, name: 'S'),
+          Block(id: 'story-9', kind: BlockKind.story, name: 'A | B', parent: 'sprint-1', assignee: 'Bo', estimate: 4, usage: 2.5),
+        ],
+        members: [Member('story-9', 'AAA-01'), Member('story-9', '#3')],
+        review: 'R',
+        retrospective: 'T',
+      );
+      final back = SprintRepository.parse(SprintRepository.format(sprint));
+      expect(summary(back), summary(sprint));
+    });
+
+    test('DSH-02.a: a block whose ID repeats is kept as a line and not as a second block', () {
+      final s = SprintRepository.parse('## Blocks\n\n| id | kind | name | parent | assignee | estimate | usage |\n|---|---|---|---|---|---|---|\n| story-1 | story | A |  |  | 1 | 0 |\n| story-1 | story | B |  |  | 2 | 0 |\n');
+      expect(s.blocks, hasLength(1));
+      expect(s.blocks.single.name, 'A');
+    });
+
+    test('DSH-02.a: a file with CRLF line endings is read the same', () {
+      expect(summary(SprintRepository.parse(sampleSprintFile.replaceAll('\n', '\r\n'))), summary(SprintRepository.parse(sampleSprintFile)));
+    });
+  });
+
+  group('every change is written at once (DSH-02.d)', () {
+    test('DSH-02.d: a change saved through LocalBackend is in the file and the review and retrospective are kept', () async {
+      final files = MemoryFileAccess(memoryFiles());
+      final backend = LocalBackend(files: files, runner: FakeRunner(createdIssue12), repoRoot: memRoot);
+      final loaded = await backend.loadSprint();
+      await backend.saveSprint(SprintEdit.setUsage(SprintEdit.moveBlock(loaded, 'story-2', 'epic-1'), 'story-2', 3));
+      expect(files.writes, [memSprintPath]);
+      final again = SprintRepository.parse(files.files[memSprintPath]!);
+      expect(again.block('story-2')!.parent, 'epic-1');
+      expect(again.block('story-2')!.usage, 3);
+      expect(again.review, 'Looked fine.');
+      expect(again.retrospective, 'Do more of X.');
+      expect((await backend.loadSprint()).members.map((m) => m.item), ['AAA-01', 'AAA-03', '#7']);
+    });
+
+    test('DSH-02.d: multi-line review and retrospective text, with a pipe and a list, is kept as it was', () {
+      const review = 'Line one.\n\nLine two with | a pipe.';
+      const retro = '- keep\n- change';
+      final back = SprintRepository.parse(SprintRepository.format(const Sprint(review: review, retrospective: retro)));
+      expect(back.review, review);
+      expect(back.retrospective, retro);
+    });
+
+    test('DSH-02.d: every successive change reaches the file, one write each', () async {
+      final files = MemoryFileAccess(memoryFiles(sprint: null));
+      final backend = LocalBackend(files: files, runner: FakeRunner(createdIssue12), repoRoot: memRoot);
+      var s = await backend.loadSprint();
+      for (final step in [
+        (Sprint x) => SprintEdit.addBlock(x, BlockKind.sprint, 'S'),
+        (Sprint x) => SprintEdit.addBlock(x, BlockKind.story, 'T'),
+        (Sprint x) => SprintEdit.moveBlock(x, 'story-1', 'sprint-1'),
+        (Sprint x) => SprintEdit.addMember(x, 'story-1', 'AAA-01'),
+      ]) {
+        s = step(s);
+        await backend.saveSprint(s);
+        expect(summary(SprintRepository.parse(files.files[memSprintPath]!)), summary(s));
+      }
+      expect(files.writes, hasLength(4));
+    });
+  });
+
+  group('no file (DSH-02.e)', () {
+    test('DSH-02.e: when the file does not exist the sprint is empty', () async {
+      final files = MemoryFileAccess(memoryFiles(sprint: null));
+      final s = await SprintRepository(files: files, path: memSprintPath).load();
+      expect([s.blocks, s.members, s.review, s.retrospective], [isEmpty, isEmpty, '', '']);
+      expect(files.files.containsKey(memSprintPath), isFalse, reason: 'reading does not create the file');
+    });
+
+    test('DSH-02.e: the first change creates the file, on disk, with its folder', () async {
+      final repo = makeRepo();
+      addTearDown(() => repo.deleteSync(recursive: true));
+      final p = join(repo, 'SCRUM.d/sprint.md');
+      final r = SprintRepository(files: disk, path: p);
+      expect(File(p).existsSync(), isFalse);
+      await r.save(SprintEdit.addBlock(await r.load(), BlockKind.sprint, 'New'));
+      expect(File(p).existsSync(), isTrue);
+      expect((await r.load()).blocks.single.id, 'sprint-1');
+    });
+  });
+
+  group('what the dashboard does not edit (DSH-02.f)', () {
+    test('DSH-02.f: text before the first table, other sections, headings inside the Review or Retrospective and unreadable rows come back in their places', () {
       final out = again(rich);
       var from = 0;
       for (final line in [
-        'Preamble above the title.', '# Sprint', 'Intro note.', 'Goal: Keep goals', 'Note after the goal.', '## Stories',
-        'A note above the table.', '| S-1 | First |', '| a row that cannot be read |', '| S-2 | Second |',
-        'Trailing note of the stories.', '## Review', 'Review text.', '## Lessons', 'A heading that is not a section.',
-        'Not the table: an earlier section\'s heading, inside the review.', '## Retrospective', 'Retro text.',
-        'An earlier section\'s heading, inside the retrospective.', '### Sub heading', '## Another heading',
+        'Preamble above the title.', '# Sprint', 'Intro note.', '## Blocks', 'A note above the Blocks table.',
+        '| sprint-1 |', '| story-1 |', '| a row that cannot be read |', '| x-9 | feature | Unknown kind |', '| story-2 |',
+        'Trailing note of the Blocks.', '## Members', 'A note above the Members table.', '| story-1 | AAA-01 |',
+        '| not a member row |', '| story-2 | #7 |', '## Review', 'Review text.', '## Lessons', 'A heading that is not a section.',
+        "Not the table: an earlier section's heading, inside the review.", '## Retrospective', 'Retro text.',
+        "An earlier section's heading, inside the retrospective.", '### Sub heading', '## Another heading',
       ]) {
         final at = out.indexOf(line, from);
         expect(at, greaterThanOrEqualTo(from), reason: 'missing or out of order: $line\n$out');
         from = at;
       }
-      expect(out, contains('## Stories\n\nNot the table'));
+      expect(out, contains('## Members\n\nNot the table'));
       expect(out, contains('## Review\n\nAn earlier section'));
     });
 
-    test('DSH-02.e: only an exact heading that comes later in the order ends a section', () {
+    test('DSH-02.f: only an exact heading that comes later in the order ends a section', () {
       final s = SprintRepository.parse(rich);
       expect(s.review, contains('## Lessons'));
-      expect(s.review, contains('## Stories'));
+      expect(s.review, contains('## Members'));
       expect(s.review, isNot(contains('Retro text.')));
       expect(s.retrospective, contains('## Review'));
       expect(s.retrospective, contains('## Another heading'));
-      expect(s.stories.map((x) => x.id), ['S-1', 'S-2']);
+      expect(s.blocks.map((b) => b.id), ['sprint-1', 'story-1', 'story-2']);
+      expect(s.members.map((m) => m.item), ['AAA-01', '#7']);
     });
 
-    test('DSH-02.e: a story row it cannot read is kept where it stood', () {
-      final s = SprintRepository.parse(rich);
-      expect(s.keptLines.map((k) => k.text), contains('| a row that cannot be read |'));
+    test('DSH-02.f: a row that cannot be read stays where it stood, between its neighbours', () {
       final out = again(rich);
       final bad = out.indexOf('| a row that cannot be read |');
-      expect(bad, greaterThan(out.indexOf('| S-1 |')));
-      expect(bad, lessThan(out.indexOf('| S-2 |')));
+      expect(bad, greaterThan(out.indexOf('| story-1 | story |')));
+      expect(bad, lessThan(out.indexOf('| story-2 | story |')));
+      final member = out.indexOf('| not a member row |');
+      expect(member, greaterThan(out.indexOf('| story-1 | AAA-01 |')));
+      expect(member, lessThan(out.indexOf('| story-2 | #7 |')));
     });
 
-    test('DSH-02.e and DSH-02.c: formatting twice changes nothing more (a round trip is stable) and keeps every field', () {
+    test('DSH-02.f: formatting twice changes nothing more, and every field survives', () {
       final once = again(rich);
       expect(again(once), once);
-      sameSprint(SprintRepository.parse(once), SprintRepository.parse(rich));
+      expect(summary(SprintRepository.parse(once)), summary(SprintRepository.parse(rich)));
     });
 
-    test('DSH-02.c: a change to one story keeps the goal, the review, the retrospective and everything it does not edit', () {
-      final changed = SprintEdit.moveStory(SprintRepository.parse(rich), 'S-2', Stage.done);
-      final out = SprintRepository.format(changed);
-      expect(SprintRepository.parse(out).stories.last.stage, Stage.done);
-      for (final line in ['Preamble above the title.', 'Intro note.', 'Note after the goal.', 'A note above the table.', '| a row that cannot be read |', 'Trailing note of the stories.', 'A heading that is not a section.', '### Sub heading']) {
-        expect(out, contains(line));
+    test('DSH-02.f and DSH-02.d: a change keeps everything it does not edit', () async {
+      final files = MemoryFileAccess({memSprintPath: rich});
+      final backend = LocalBackend(files: files, runner: FakeRunner(createdIssue12), repoRoot: memRoot);
+      await backend.saveSprint(SprintEdit.setUsage(await backend.loadSprint(), 'story-1', 2));
+      final text = files.files[memSprintPath]!;
+      for (final line in [
+        'Preamble above the title.', 'Intro note.', 'A note above the Blocks table.', '| a row that cannot be read |',
+        'Trailing note of the Blocks.', '| not a member row |', '## Lessons', '### Sub heading',
+      ]) {
+        expect(text, contains(line));
       }
-      final back = SprintRepository.parse(out);
-      expect(back.goal, 'Keep goals');
-      expect(back.review, SprintRepository.parse(rich).review);
-      expect(back.retrospective, SprintRepository.parse(rich).retrospective);
+      expect(SprintRepository.parse(text).block('story-1')!.usage, 2);
     });
 
-    test('DSH-02.c: saving and loading through the file keeps what is not edited (in memory)', () async {
-      final files = MemoryFileAccess({'/r/sprint.md': rich});
-      final repo = SprintRepository(files: files, path: '/r/sprint.md');
-      final loaded = await repo.load();
-      await repo.save(SprintEdit.setUsage(loaded, 'S-1', 2));
-      final text = files.files['/r/sprint.md']!;
-      expect(text, contains('Preamble above the title.'));
-      expect(text, contains('| a row that cannot be read |'));
-      expect(text, contains('## Lessons'));
-      sameSprint(await repo.load(), SprintEdit.setUsage(loaded, 'S-1', 2));
+    test('DSH-02.f: a sprint that was never loaded is written in the default layout and read back', () {
+      final out = SprintRepository.format(SprintEdit.addBlock(const Sprint(), BlockKind.story, 'New'));
+      expect(out, contains('## Blocks'));
+      expect(SprintRepository.parse(out).blocks.single.id, 'story-1');
+    });
+  });
+
+  group('an unreadable file (DSH-01.f)', () {
+    test('DSH-01.f: an unreadable sprint file fails with its reason and the requirements still load', () async {
+      final inner = MemoryFileAccess(memoryFiles());
+      final files = FailingFileAccess(inner, failsOn: (p) => p == path || p == memSprintPath, reason: 'disk gone');
+      final backend = LocalBackend(files: files, runner: FakeRunner(createdIssue12), repoRoot: memRoot);
+      await expectLater(backend.loadSprint(), throwsA(predicate((e) => '$e'.contains('disk gone'))));
+      expect(await backend.loadRequirements(), isNotEmpty);
     });
 
-    test('DSH-02.d: a sprint that was never loaded (no text before, no kept lines) is written in the default layout and read back', () {
-      final out = SprintRepository.format(const Sprint(goal: 'G', stories: [Story(id: 'N-1', title: 'New')]));
-      expect(out, contains('Goal: G'));
-      expect(out, contains('## Stories'));
-      expect(SprintRepository.parse(out).stories.single.id, 'N-1');
+    test('DSH-01.f: an unreadable requirements folder fails with its reason and the sprint still loads', () async {
+      final inner = MemoryFileAccess(memoryFiles());
+      final files = FailingFileAccess(inner, failsOn: (p) => p.startsWith(memRequirementsDir), reason: 'no access');
+      final backend = LocalBackend(files: files, runner: FakeRunner(createdIssue12), repoRoot: memRoot);
+      await expectLater(backend.loadRequirements(), throwsA(predicate((e) => '$e'.contains('no access'))));
+      expect((await backend.loadSprint()).blocks, hasLength(4));
     });
   });
 }

@@ -36,11 +36,12 @@ Terms. A **status** is one of `proposed`, `backlog`, `planned` or `done` (`requi
 | DSH-05.c | proposed | An issue's requirement is the ID on the line starting `Requirement:` in its description. | — | — |
 | DSH-05.d | proposed | An issue without a feature or a requirement shows a dash in its place. | — | — |
 | DSH-05.e | proposed | The issue list holds at most the number of issues in DEF-01, newest first, and says when more exist (msg:dshIssuesTruncated, with the number as {limit}). | — | — |
-| DSH-06 | proposed | The board along the top shows the Backlog block, then the blocks of the sprint, then an add control. | — | — |
+| DSH-06 | proposed | The board along the top shows the Backlog block, then the add control, then the blocks of the sprint. | — | — |
 | DSH-06.a | proposed | The Backlog block (heading msg:dshBacklog) holds the requirements and the issues whose status is `backlog`. | — | — |
-| DSH-06.b | proposed | The add control (msg:dshAddBlock) asks which kind of block (msg:dshBlockKind, msg:dshKindStory, msg:dshKindEpic, msg:dshKindSprint) and its name (msg:dshBlockName), and adds the block at the top of the board; its Cancel is msg:cancel and its Save is msg:dshSave. | — | — |
+| DSH-06.b | proposed | The add control (msg:dshAddBlock) asks which kind of block (msg:dshBlockKind, msg:dshKindStory, msg:dshKindEpic, msg:dshKindSprint) and its name (msg:dshBlockName), and adds the block at the end of the board; its Cancel is msg:cancel and its Save is msg:dshSave. | — | — |
 | DSH-06.c | proposed | A story can sit in an epic or in a sprint, an epic can sit in a sprint, and a sprint sits at the top of the board; a block is drawn inside the block it sits in. | — | — |
 | DSH-06.d | proposed | A story holds the requirements and the issues that were dropped on it and shows each with its ID or number and title. | — | — |
+| DSH-06.e | proposed | The board's blocks start at the left edge of the board area, in one row, and the row scrolls sideways inside the board area when the blocks do not fit; the board is never centered. | — | — |
 | DSH-07 | proposed | The Product Owner and the team build the sprint by dragging and dropping. | — | — |
 | DSH-07.a | proposed | A block can be dragged onto a block it may sit in (DSH-06.c) and then sits there, written to the sprint file (DSH-02.d). | — | — |
 | DSH-07.b | proposed | A block can be dragged to the top of the board and then sits there if it may (DSH-06.c). | — | — |
@@ -65,10 +66,16 @@ Terms. A **status** is one of `proposed`, `backlog`, `planned` or `done` (`requi
 | DSH-10.a | proposed | A story's estimate and usage can be changed on its block and are written to the sprint file (DSH-02.d); labels msg:dshEstimate and msg:dshUsage. | — | — |
 | DSH-10.b | proposed | A sprint or an epic shows the sum of the estimates and the sum of the usage of the stories it holds. | — | — |
 | DSH-10.c | proposed | Each of these blocks shows its usage and estimate as a bar, in the warn color (THM-02.j) when usage is above the estimate. | — | — |
-| DSH-11 | proposed | The page fits the window and every part of it scrolls on its own. | — | — |
-| DSH-11.a | proposed | The page itself does not scroll: the board takes the share of the window's height in DEF-01 and the columns below it take the rest. | — | — |
-| DSH-11.b | proposed | Each column, and each block's contents, has its own vertical scrollbar when its content is longer than its area. | — | — |
-| DSH-11.c | proposed | Nothing is clipped or overflows at the window sizes in DEF-01. | — | — |
+| DSH-11 | proposed | The Requirements column lists each requirement with its sub-requirements beneath it as an outline. | — | — |
+| DSH-11.a | proposed | A sub-requirement is indented from its requirement by the sub-requirement indent in DEF-01. | — | — |
+| DSH-11.b | proposed | A requirement that has sub-requirements shows a triangle that collapses or expands them, pointing right when they are collapsed and down when they are expanded; a requirement without sub-requirements shows no triangle (msg:dshExpandRow, msg:dshCollapseRow name it). | — | — |
+| DSH-11.c | proposed | A switch above the list (msg:dshExpandAll) collapses every requirement or expands every requirement at once. | — | — |
+| DSH-11.d | proposed | When the page opens every requirement is collapsed. | — | — |
+| DSH-11.e | proposed | The outline is built from the listed entries: a sub-requirement whose requirement is not listed is listed on its own, without an indent. | — | — |
+| DSH-15 | proposed | The page fits the window and every part of it scrolls on its own. | — | — |
+| DSH-15.a | proposed | The page itself does not scroll: the board takes the share of the window's height in DEF-01 and the columns below it take the rest. | — | — |
+| DSH-15.b | proposed | Each column, and each block's contents, has its own vertical scrollbar when its content is longer than its area. | — | — |
+| DSH-15.c | proposed | Nothing is clipped or overflows at the window sizes in DEF-01. | — | — |
 | DSH-12 | proposed | The Agent progress column (heading msg:dshAgentProgress) shows the usage chart (DSH-14) and then one bar for each progress file the server reads. | — | — |
 | DSH-12.a | proposed | A bar shows the file's name as the label, the fraction `done/total` as the bar and the text `done/total`. | — | — |
 | DSH-12.b | proposed | With no progress folder, or none with a progress file, the column is empty and says so (msg:dshNoProgress). | — | — |
@@ -91,3 +98,4 @@ Terms. A **status** is one of `proposed`, `backlog`, `planned` or `done` (`requi
 | DSH-14.e | proposed | For the next planned sprint the meter draws the projected after reading, the before reading plus the estimate, as a band that ends in a mark; a projection is never drawn as a dot. | — | — |
 | DSH-14.f | proposed | A value above 100 is drawn as a triangle on the 100 line with the real number in its tooltip. | — | — |
 | DSH-14.g | proposed | When the usage file is missing or has no Usage table the chart is empty and says so (msg:dshNoUsage). | — | — |
+| DSH-13.i | proposed | Text from the issue tracker's commands is read as Unicode (the UTF 8 form) and the server's answers declare that character set, so characters such as ’, — and › show as written (a defect found in use: they showed as â€™, â€” and â€º). | — | — |

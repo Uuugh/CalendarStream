@@ -1,23 +1,21 @@
-// Holds: what a drag carries (DSH-07): a backlog item or a board card.
-// Depends on: nothing. Used by: BacklogItemTile, StoryCard, SprintBoard, BacklogDropArea.
-// Reads or writes: nothing.
+// Holds: what is dragged on the board (DSH-07): a block or a requirement or an issue. Depends on: nothing.
+// Used by: BlockCard, BacklogBlock, BoardView, the rows, DashboardController. Reads or writes: nothing.
 
-/// The data of a drag: a closed family, so it shares this file.
+/// The data of a drag. A closed family, so both kinds share this file.
 sealed class DragPayload {
   const DragPayload();
 }
 
-/// A backlog row: [id] is the requirement ID or `#N` for an issue; [title] its statement or title.
-class BacklogDrag extends DragPayload {
-  const BacklogDrag({required this.id, required this.title});
+/// A block, by its block ID.
+final class BlockDrag extends DragPayload {
+  const BlockDrag(this.id);
 
   final String id;
-  final String title;
 }
 
-/// A board card: the ID of its story.
-class CardDrag extends DragPayload {
-  const CardDrag(this.storyId);
+/// A requirement (its ID) or an issue (its number written `#N`, see Member.issue).
+final class ItemDrag extends DragPayload {
+  const ItemDrag(this.item);
 
-  final String storyId;
+  final String item;
 }

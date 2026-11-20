@@ -1,15 +1,18 @@
-// Holds: reading and writing SCRUM.d/sprint.md (DSH-02). Depends on: FileAccess, MarkdownTable, the sprint domain (Sprint, Story, KeptLine, Stage).
-// Used by: the dashboard page. Reads or writes: the sprint file at the path given.
+// Holds: reading and writing SCRUM.d/sprint.md (DSH-02). Depends on: FileAccess, MarkdownTable, the sprint domain
+// (Sprint, Block, Member, KeptLine, BlockKind, PointsFormat). Used by: LocalBackend, HttpBackend.
+// Reads or writes: the sprint file at the path given.
 
+import '../domain/block.dart';
+import '../domain/block_kind.dart';
 import '../domain/kept_line.dart';
+import '../domain/member.dart';
 import '../domain/points_format.dart';
 import '../domain/sprint.dart';
-import '../domain/stage.dart';
-import '../domain/story.dart';
 import 'file_access.dart';
 import 'markdown_table.dart';
 
-/// Source of truth for the sprint file. A missing file is an empty sprint; the first [save] creates it (DSH-02.d).
+/// Source of truth for the sprint file. A missing file is an empty sprint; the first [save] creates it (DSH-02.e).
+/// [parse] and [format] are static so the web backend, which has no file, uses the same file format.
 class SprintRepository {
   SprintRepository({required this.files, required this.path});
 
@@ -23,28 +26,30 @@ class SprintRepository {
     return text == null ? const Sprint() : parse(text);
   }
 
-  /// Writes [sprint] to the file at once (DSH-02.c).
+  /// Writes [sprint] to the file at once (DSH-02.d).
   Future<void> save(Sprint sprint) => files.write(path, format(sprint));
 
-  /// The known top-level headings in file order; a heading ends the section being read only when it comes later
-  /// in this order, so the same text inside a Review or Retrospective body stays in the body (DSH-02.e).
-  static const _headings = ['## Stories', '## Review', '## Retrospective'];
-  static final _goalLine = RegExp(r'^Goal:\s*(.*?)\s*$');
+  /// The headings in file order; a heading ends the section being read only when it comes later in this order, so
+  /// the same text inside a Review or Retrospective body stays in the body (DSH-02.f).
+  static const _headings = ['## Blocks', '## Members', '## Review', '## Retrospective'];
   static final _separatorCell = RegExp(r'^:?-+:?$');
 
-  /// Parses sprint file text (DSH-02.a, DSH-02.b). What it does not edit is kept: the lines above the Goal line and
-  /// between it and the Stories heading, unknown headings and notes, and story rows it cannot read (DSH-02.e).
+  /// Parses sprint file text (DSH-02.a to DSH-02.c). What it does not edit is kept: the lines above the Blocks
+  /// heading, other text and unreadable rows of the two tables (DSH-02.f).
   static Sprint parse(String text) {
-    String? goal;
     final before = <String>[];
-    final afterGoal = <String>[];
-    final stories = <Story>[];
-    final kept = <KeptLine>[];
+    final blocks = <Block>[];
+    final members = <Member>[];
+    final blockLines = <KeptLine>[];
+    final memberLines = <KeptLine>[];
     final review = <String>[];
     final retrospective = <String>[];
-    var state = -1; // -1 above the Stories heading, then the index in _headings
-    var headerSeen = false;
-    String? lastStory;
+    var state = -1; // -1 above the Blocks heading, then the index in _headings
+    var blockHead = false;
+    var memberHead = false;
+    String? lastBlock;
+    String? lastMember;
+    final ids = <String>{};
     for (final line in text.split(RegExp(r'\r?\n'))) {
       final next = _headings.indexOf(line.trimRight());
       if (next > state) {
@@ -53,113 +58,157 @@ class SprintRepository {
       }
       switch (state) {
         case -1:
-          final g = goal == null ? _goalLine.firstMatch(line) : null;
-          if (g != null) {
-            goal = g.group(1)!;
-          } else {
-            (goal == null ? before : afterGoal).add(line);
-          }
+          before.add(line);
         case 0:
           if (line.trim().isEmpty) break;
           final cells = MarkdownTable.cells(line);
-          final story = cells == null ? null : _story(cells);
-          if (story != null) {
-            stories.add(story);
-            lastStory = story.id;
-          } else if (cells != null && _isTableHead(cells)) {
-            headerSeen = true;
+          final block = cells == null ? null : _block(cells);
+          if (block != null && ids.add(block.id)) {
+            blocks.add(block);
+            lastBlock = block.id;
+          } else if (cells != null && _isHead(cells, 'id')) {
+            blockHead = true;
           } else {
-            kept.add(KeptLine(text: line, afterStory: lastStory, beforeTable: !headerSeen));
+            blockLines.add(KeptLine(text: line, afterRow: lastBlock, beforeTable: !blockHead));
           }
         case 1:
+          if (line.trim().isEmpty) break;
+          final cells = MarkdownTable.cells(line);
+          final member = cells == null ? null : _member(cells);
+          if (member != null) {
+            members.add(member);
+            lastMember = _memberKey(member);
+          } else if (cells != null && _isHead(cells, 'story')) {
+            memberHead = true;
+          } else {
+            memberLines.add(KeptLine(text: line, afterRow: lastMember, beforeTable: !memberHead));
+          }
+        case 2:
           review.add(line);
         default:
           retrospective.add(line);
       }
     }
     return Sprint(
-      goal: goal ?? '',
-      stories: stories,
+      blocks: blocks,
+      members: members,
       review: _body(review),
       retrospective: _body(retrospective),
       before: before,
-      afterGoal: afterGoal,
-      keptLines: kept,
+      blockLines: blockLines,
+      memberLines: memberLines,
     );
   }
 
-  /// The story of a table row, or null when it is not a readable story row.
-  static Story? _story(List<String> cells) {
-    if (cells.length < 4 || cells[0].isEmpty) return null;
-    final stage = Stage.parse(cells[3]);
-    if (stage == null) return null;
-    return Story(
+  /// The block of a table row, or null when it is not a readable Blocks row.
+  static Block? _block(List<String> cells) {
+    if (cells.length < 3 || cells[0].isEmpty) return null;
+    final kind = BlockKind.parse(cells[1]);
+    if (kind == null) return null;
+    String cell(int i) => i < cells.length ? cells[i] : '';
+    return Block(
       id: cells[0],
-      title: cells[1],
-      items: cells[2].split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
-      stage: stage,
-      assignee: cells.length > 4 ? cells[4] : '',
-      estimate: cells.length > 5 ? (double.tryParse(cells[5]) ?? 0) : 0,
-      usage: cells.length > 6 ? (double.tryParse(cells[6]) ?? 0) : 0,
+      kind: kind,
+      name: cells[2],
+      parent: cell(3).isEmpty ? null : cell(3),
+      assignee: cell(4),
+      estimate: PointsFormat.parse(cell(5)) ?? 0,
+      usage: PointsFormat.parse(cell(6)) ?? 0,
     );
   }
 
-  /// True for the table's header row and its separator row, which [format] writes again.
-  static bool _isTableHead(List<String> cells) =>
-      cells.isNotEmpty && (cells[0].toLowerCase() == 'story' || cells.every(_separatorCell.hasMatch));
+  static Member? _member(List<String> cells) =>
+      cells.length < 2 || cells[0].isEmpty || cells[1].isEmpty || _isHead(cells, 'story') ? null : Member(cells[0], cells[1]);
 
-  /// The file text for [sprint]; everything [parse] kept is written back in place (DSH-02.c, DSH-02.e).
+  static String _memberKey(Member m) => '${m.blockId}|${m.item}';
+
+  /// True for a table's header row and its separator row, which [format] writes again.
+  static bool _isHead(List<String> cells, String firstHeading) =>
+      cells.isNotEmpty && (cells[0].toLowerCase() == firstHeading || cells.every(_separatorCell.hasMatch));
+
+  /// The file text for [sprint]; everything [parse] kept is written back in place (DSH-02.f).
   static String format(Sprint sprint) {
     final b = StringBuffer();
     for (final line in sprint.before ?? const ['# Sprint', '']) {
       b.writeln(line);
     }
-    b.writeln('Goal: ${sprint.goal}');
-    for (final line in sprint.afterGoal ?? const ['']) {
-      b.writeln(line);
-    }
     b
-      ..writeln('## Stories')
+      ..writeln(_headings[0])
       ..writeln();
-    final kept = sprint.keptLines;
-    for (final k in kept.where((k) => k.beforeTable)) {
-      b.writeln(k.text);
-    }
-    b
-      ..writeln('| story | title | items | stage | assignee | estimate | usage |')
-      ..writeln('|---|---|---|---|---|---|---|');
-    final written = <String>{};
-    final ids = {for (final s in sprint.stories) s.id};
-    for (final k in kept.where((k) => !k.beforeTable && k.afterStory == null)) {
-      b.writeln(k.text);
-    }
-    for (final s in sprint.stories) {
-      b.writeln('| ${MarkdownTable.escape(s.id)} | ${MarkdownTable.escape(s.title)} | '
-          '${MarkdownTable.escape(s.items.join(', '))} | ${_stageName(s.stage)} | '
-          '${MarkdownTable.escape(s.assignee)} | ${PointsFormat.format(s.estimate)} | ${PointsFormat.format(s.usage)} |');
-      if (written.add(s.id)) {
-        for (final k in kept.where((k) => k.afterStory == s.id)) {
-          b.writeln(k.text);
-        }
-      }
-    }
-    for (final k in kept.where((k) => k.afterStory != null && !ids.contains(k.afterStory))) {
-      b.writeln(k.text);
-    }
+    _table(
+      b,
+      header: '| id | kind | name | parent | assignee | estimate | usage |',
+      separator: '|---|---|---|---|---|---|---|',
+      kept: sprint.blockLines,
+      rows: [
+        for (final x in sprint.blocks)
+          (
+            x.id,
+            '| ${MarkdownTable.escape(x.id)} | ${x.kind.name} | ${MarkdownTable.escape(x.name)} | '
+                '${MarkdownTable.escape(x.parent ?? '')} | ${MarkdownTable.escape(x.assignee)} | '
+                '${PointsFormat.format(x.estimate)} | ${PointsFormat.format(x.usage)} |'
+          ),
+      ],
+    );
     b
       ..writeln()
-      ..writeln('## Review')
+      ..writeln(_headings[1])
+      ..writeln();
+    _table(
+      b,
+      header: '| story | item |',
+      separator: '|---|---|',
+      kept: sprint.memberLines,
+      rows: [
+        for (final m in sprint.members)
+          (_memberKey(m), '| ${MarkdownTable.escape(m.blockId)} | ${MarkdownTable.escape(m.item)} |'),
+      ],
+    );
+    b
+      ..writeln()
+      ..writeln(_headings[2])
       ..writeln();
     if (sprint.review.isNotEmpty) b.writeln(sprint.review);
     b
       ..writeln()
-      ..writeln('## Retrospective')
+      ..writeln(_headings[3])
       ..writeln();
     if (sprint.retrospective.isNotEmpty) b.writeln(sprint.retrospective);
     return b.toString();
   }
 
-  static String _stageName(Stage s) => s.name[0].toUpperCase() + s.name.substring(1);
+  /// One table: kept lines above the header, the header, kept lines before the first row, each row followed by the
+  /// kept lines that stood after it, then kept lines whose row is gone.
+  static void _table(
+    StringBuffer b, {
+    required String header,
+    required String separator,
+    required List<KeptLine> kept,
+    required List<(String, String)> rows,
+  }) {
+    for (final k in kept.where((k) => k.beforeTable)) {
+      b.writeln(k.text);
+    }
+    b
+      ..writeln(header)
+      ..writeln(separator);
+    for (final k in kept.where((k) => !k.beforeTable && k.afterRow == null)) {
+      b.writeln(k.text);
+    }
+    final keys = {for (final r in rows) r.$1};
+    final written = <String>{};
+    for (final (key, line) in rows) {
+      b.writeln(line);
+      if (written.add(key)) {
+        for (final k in kept.where((k) => !k.beforeTable && k.afterRow == key)) {
+          b.writeln(k.text);
+        }
+      }
+    }
+    for (final k in kept.where((k) => !k.beforeTable && k.afterRow != null && !keys.contains(k.afterRow))) {
+      b.writeln(k.text);
+    }
+  }
 
   /// Section lines without the blank lines around them.
   static String _body(List<String> lines) {

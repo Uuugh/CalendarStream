@@ -1,5 +1,5 @@
 // Holds: FileAccess on the local disk. Depends on: dart:io, FileAccess.
-// Used by: main.dart. Reads or writes: files on disk (the web build cannot use it).
+// Used by: LocalBackend, DashboardServer. Reads or writes: files on disk (the web build cannot use it).
 
 import 'dart:io';
 
@@ -21,6 +21,20 @@ class DiskFileAccess implements FileAccess {
     final file = File(path);
     await file.parent.create(recursive: true);
     await file.writeAsString(content);
+  }
+
+  @override
+  Future<void> writeAtomic(String path, String content) async {
+    final file = File(path);
+    await file.parent.create(recursive: true);
+    final temp = File('$path.$pid.tmp');
+    try {
+      await temp.writeAsString(content);
+      await temp.rename(path);
+    } catch (_) {
+      if (await temp.exists()) await temp.delete();
+      rethrow;
+    }
   }
 
   @override

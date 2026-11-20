@@ -923,5 +923,8 @@
   "dshUsageChart": "Verbrauch",
   "dshMeterSession": "5-Stunden-Sitzung",
   "dshMeterWeek": "7-Tage-Woche",
-  "dshNoUsage": "Keine Verbrauchswerte"
+  "dshNoUsage": "Keine Verbrauchswerte",
+  "dshExpandAll": "Alle ausklappen",
+  "dshExpandRow": "Ausklappen",
+  "dshCollapseRow": "Einklappen"
 }

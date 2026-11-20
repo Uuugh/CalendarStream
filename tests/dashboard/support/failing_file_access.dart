@@ -1,5 +1,5 @@
 // A FileAccess that fails for the paths a test names and passes everything else on.
-// Depends on the dashboard package; used by the page tests for unreadable files; touches nothing outside its inner access.
+// Depends on the dashboard package; used by tests for unreadable and unwritable files; touches nothing outside its inner access.
 import 'package:dashboard/features/dashboard/data/file_access.dart';
 
 class FailingFileAccess implements FileAccess {
@@ -22,6 +22,12 @@ class FailingFileAccess implements FileAccess {
   Future<void> write(String path, String content) async {
     _check(path);
     return inner.write(path, content);
+  }
+
+  @override
+  Future<void> writeAtomic(String path, String content) async {
+    _check(path);
+    return inner.writeAtomic(path, content);
   }
 
   @override

@@ -1,5 +1,5 @@
 // Holds: the file access the repositories use, so tests can pass a fake or a temp dir.
-// Depends on: nothing. Used by: SprintRepository, RequirementRepository.
+// Depends on: nothing. Used by: SprintRepository, RequirementRepository, LocalBackend.
 // Reads or writes: nothing itself; implementations read and write files.
 
 /// Text-file access. Paths use forward slashes.
@@ -9,6 +9,10 @@ abstract class FileAccess {
 
   /// Writes the file, creating it and its folders when missing.
   Future<void> write(String path, String content);
+
+  /// Writes the file as a whole or not at all: a reader sees the old text or the new text, never part of it
+  /// (DSH-13.d). Creates the file and its folders when missing.
+  Future<void> writeAtomic(String path, String content);
 
   /// Paths of the files directly in [dir]; empty when the folder does not exist.
   Future<List<String>> listFiles(String dir);

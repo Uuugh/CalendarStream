@@ -10,7 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../support/theme_colors.dart';
 
-final libDir = Directory('../../SCRUM.d/dashboard/lib');
+const libDirPath = '../../SCRUM.d/dashboard/lib';
+final libDir = Directory(libDirPath);
 const messagesDir = '../../requirements/messages';
 const locales = ['en', 'de', 'es', 'fr', 'nl', 'pt'];
 
@@ -96,15 +97,27 @@ void main() {
     }
   });
 
-  test('DSH-01.d: every message key the new rows cite exists in English', () {
-    final en = arb('en');
-    for (final k in [
-      'dshStatusBacklog', 'dshStatusProposed', 'dshLoadFailed', 'dshIssuesTruncated', 'dshIssuePartial',
-      'dshServerUnreachable', 'dshTrackerUnreachable', 'dshReload', 'dshShownOf', 'dshColumnCount', 'dshIssueFailed', 'cancel',
-    ]) {
-      expect(en[k], isA<String>(), reason: k);
+  test('DSH-01.d: every msg:key cited in requirements/dashboard.md, and selectAll and selectNone, exists in app_en.arb and in the other five locale files', () {
+    final text = File('../../requirements/dashboard.md').readAsStringSync();
+    final cited = RegExp(r'msg:([A-Za-z]+)').allMatches(text).map((m) => m.group(1)!).toSet();
+    expect(cited.length, greaterThan(30), reason: 'the scan found the cited keys');
+    for (final l in locales) {
+      final messages = arb(l);
+      for (final k in {...cited, 'selectAll', 'selectNone'}) {
+        expect(messages[k], isA<String>(), reason: '$l lacks $k');
+        expect((messages[k] as String).trim(), isNotEmpty, reason: '$l has an empty $k');
+      }
     }
   });
+
+  test('DSH-01.d: the generated message getters exist for every cited key (the l10n files are current)', () {
+    final generated = File('$libDirPath/l10n/app_localizations.dart').readAsStringSync();
+    final text = File('../../requirements/dashboard.md').readAsStringSync();
+    for (final k in RegExp(r'msg:([A-Za-z]+)').allMatches(text).map((m) => m.group(1)!).toSet()) {
+      expect(generated.contains('String get $k;') || generated.contains('String $k('), isTrue, reason: 'run flutter gen-l10n: $k');
+    }
+  });
+
 
   test('DSH-01.g: no source file outside lib/theme/app_theme.dart names a color', () {
     final named = RegExp(r'\bColors\.|\bColor\(\s*0x|\bColor\.from|\bCupertinoColors\.');
@@ -157,5 +170,33 @@ void main() {
     ]);
     expect(StatusColors.of(AppTheme.light).warn, AppTheme.lightStatus.warn);
     expect(StatusColors.of(AppTheme.dark).warn, AppTheme.darkStatus.warn);
+  });
+
+  test('DSH-01.a: no source in lib or bin names a token, a secret, GH_TOKEN, GITHUB_TOKEN or an Authorization header in code', () {
+    final files = [...sources(), ...Directory('../../SCRUM.d/dashboard/bin').listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart'))];
+    expect(files.length, greaterThan(10));
+    for (final f in files) {
+      final code = withoutComments(f.readAsStringSync()).toLowerCase();
+      for (final w in ['token', 'secret', 'authorization', 'gh_token', 'github_token']) {
+        expect(code, isNot(contains(w)), reason: '${f.path} names $w');
+      }
+    }
+  });
+
+  test('DSH-13.f: the command runner never starts a shell', () {
+    final code = withoutComments(File('$libDirPath/features/dashboard/data/process_command_runner.dart').readAsStringSync());
+    expect(code, contains('Process.run('));
+    expect(code, isNot(contains('runInShell')));
+    for (final f in sources().where((f) => f.path.contains('features'))) {
+      final src = withoutComments(f.readAsStringSync());
+      expect(src, isNot(contains('runInShell: true')), reason: f.path);
+      expect(src, isNot(matches(RegExp(r"'(sh|bash|cmd|cmd\.exe|powershell)'"))), reason: f.path);
+    }
+  });
+
+  test('DSH-01.e: the web app and the desktop app share the DashboardBackend interface: both implementations implement it', () {
+    final dir = '$libDirPath/features/dashboard/data';
+    expect(File('$dir/http_backend.dart').readAsStringSync(), contains('implements DashboardBackend'));
+    expect(File('$dir/local_backend.dart').readAsStringSync(), contains('implements DashboardBackend'));
   });
 }

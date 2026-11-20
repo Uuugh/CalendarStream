@@ -1,235 +1,153 @@
-// Tests DSH-09.a (edit on the card, written to the sprint file, via the page), DSH-09.c (bar per story, warning color
-// above the estimate), DSH-09.d (sprint line adds up), and DSH-01.c (Reload reads everything again).
-// One run covers each ID named in the test name. Logic rows use the domain classes alone; UI rows use the widgets.
-import 'package:dashboard/features/dashboard/data/command_result.dart';
-import 'package:dashboard/features/dashboard/domain/points_format.dart';
+// Tests the usage chart model: DSH-14.a (the Usage table of usage.md), DSH-14.c (bars), DSH-14.d (estimate bands),
+// DSH-14.e (projection), DSH-14.f (over 100), DSH-14.g (no table), DSH-14.b (two meters on a 0 to 100 scale).
+// Drawing (colors, marks, tooltips, labels) is a page test and is not here. One run covers each ID named in the test name.
+import 'package:dashboard/features/dashboard/data/local_backend.dart';
+import 'package:dashboard/features/dashboard/domain/block.dart';
+import 'package:dashboard/features/dashboard/domain/block_kind.dart';
 import 'package:dashboard/features/dashboard/domain/sprint.dart';
-import 'package:dashboard/features/dashboard/domain/sprint_edit.dart';
-import 'package:dashboard/features/dashboard/domain/stage.dart';
-import 'package:dashboard/features/dashboard/domain/story.dart';
-import 'package:dashboard/features/dashboard/domain/usage_summary.dart';
-import 'package:dashboard/features/dashboard/ui/sprint_board.dart';
-import 'package:dashboard/features/dashboard/ui/usage_colors.dart';
-import 'package:dashboard/features/dashboard/ui/usage_panel.dart';
-import 'package:dashboard/theme/app_theme.dart';
-import 'package:flutter/material.dart';
+import 'package:dashboard/features/dashboard/domain/usage_chart.dart';
+import 'package:dashboard/features/dashboard/domain/usage_meter.dart';
+import 'package:dashboard/features/dashboard/domain/usage_row.dart';
+import 'package:dashboard/features/dashboard/domain/usage_table.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/fixtures.dart';
 import '../support/memory_file_access.dart';
-import '../support/mutable_runner.dart';
-import '../support/page_harness.dart';
-import '../support/theme_colors.dart';
 
-const sprint = Sprint(goal: 'G', review: 'R', retrospective: 'T', stories: [
-  Story(id: 'S-1', title: 'First story', stage: Stage.build, estimate: 3, usage: 1.5),
-  Story(id: 'S-2', title: 'Second story', stage: Stage.build, estimate: 2, usage: 4),
-  Story(id: 'S-3', title: 'Third story', stage: Stage.done),
-]);
+const header = '| block | estimate session % | estimate weekly % | before session % | before weekly % | after session % | after weekly % |\n|---|---|---|---|---|---|---|\n';
 
-LinearProgressIndicator bar(WidgetTester t, String key) => t.widget<LinearProgressIndicator>(find.byKey(Key(key)));
+const usageFile = '''# Usage
 
-Color? barColor(WidgetTester t, String key) {
-  final b = bar(t, key);
-  return b.valueColor?.value ?? b.color;
-}
+Readings of the 5-hour session and the 7-day week.
 
-void main() {
-  group('logic', () {
-    test('DSH-09.a: setEstimate and setUsage change that story only, keep goal, review, retrospective', () {
-      final e = SprintEdit.setEstimate(sprint, 'S-1', 5);
-      expect(e.stories.first.estimate, 5);
-      expect(e.stories.first.usage, 1.5);
-      expect([e.goal, e.review, e.retrospective], ['G', 'R', 'T']);
-      expect(e.stories[1], same(sprint.stories[1]));
-      final u = SprintEdit.setUsage(sprint, 'S-3', 2.5);
-      expect(u.stories.last.usage, 2.5);
-      expect([u.goal, u.review, u.retrospective], ['G', 'R', 'T']);
-    });
+## Usage
 
-    test('DSH-09.a: a missing story, a negative or NaN value, or an unchanged value returns the same sprint', () {
-      expect(SprintEdit.setEstimate(sprint, 'NOPE', 1), same(sprint));
-      expect(SprintEdit.setUsage(sprint, 'NOPE', 1), same(sprint));
-      expect(SprintEdit.setEstimate(sprint, 'S-1', -1), same(sprint));
-      expect(SprintEdit.setUsage(sprint, 'S-1', double.nan), same(sprint));
-      expect(SprintEdit.setEstimate(sprint, 'S-1', 3), same(sprint));
-      expect(SprintEdit.setUsage(sprint, 'S-1', 1.5), same(sprint));
-    });
-
-    test('DSH-09.a: points are formatted without a trailing zero and parsed with a comma or spaces', () {
-      expect(PointsFormat.format(3.0), '3');
-      expect(PointsFormat.format(2.5), '2.5');
-      expect(PointsFormat.parse(' 2,5 '), 2.5);
-      expect(PointsFormat.parse('4'), 4);
-      expect(PointsFormat.parse('-1'), isNull);
-      expect(PointsFormat.parse('abc'), isNull);
-      expect(PointsFormat.parse('NaN'), isNull);
-    });
-
-    test('DSH-09.c: isOver is true only when usage is above the estimate; fraction is clamped', () {
-      expect(UsageSummary.isOver(sprint.stories[0]), isFalse);
-      expect(UsageSummary.isOver(sprint.stories[1]), isTrue);
-      expect(UsageSummary.isOver(sprint.stories[2]), isFalse);
-      expect(UsageSummary.fraction(1.5, 3), 0.5);
-      expect(UsageSummary.fraction(4, 2), 1);
-      expect(UsageSummary.fraction(0, 2), 0);
-      expect(UsageSummary.fraction(1, 0), 1);
-    });
-
-    test('DSH-09.d: the summary adds up estimates and usage of all stories', () {
-      final s = UsageSummary(sprint);
-      expect(s.totalEstimate, 5);
-      expect(s.totalUsage, 5.5);
-      expect(s.over, isTrue);
-      expect(UsageSummary(const Sprint(goal: 'x')).totalEstimate, 0);
-    });
-
-    test('DSH-09.c and DSH-01.g: above the estimate the bar color is the warn token (THM-02.j) in light and dark; otherwise it is another theme color', () {
-      expect(UsageColors.of(AppTheme.light, over: true), const Color(0xFF946A24));
-      expect(UsageColors.of(AppTheme.dark, over: true), const Color(0xFFFBBF24));
-      for (final theme in [AppTheme.light, AppTheme.dark]) {
-        expect(UsageColors.of(theme, over: true), StatusColors.of(theme).warn);
-        expect(UsageColors.of(theme, over: false), isNot(StatusColors.of(theme).warn));
-        expect(themeColors(theme), contains(UsageColors.of(theme, over: false).toARGB32()));
-      }
-    });
-  });
-
-  group('panel', () {
-    testWidgets('DSH-09.c and DSH-09.d and DSH-01.g: one row and bar per story, warn token only when over, sprint line adds up, in light and dark', (t) async {
-      bigView(t);
-      for (final theme in [AppTheme.light, AppTheme.dark]) {
-      await t.pumpWidget(testApp(const Scaffold(body: UsagePanel(sprint: sprint)), theme: theme));
-      await t.pumpAndSettle();
-      final warn = theme == AppTheme.light ? const Color(0xFF946A24) : const Color(0xFFFBBF24);
-      final under = UsageColors.of(theme, over: false);
-      for (final id in ['S-1', 'S-2', 'S-3']) {
-        expect(find.byKey(Key('usage-row-$id')), findsOneWidget, reason: id);
-        expect(find.byKey(Key('usage-bar-$id')), findsOneWidget, reason: id);
-      }
-      expect(find.text('Usage: 1.5 / Estimate: 3'), findsOneWidget);
-      expect(find.text('Usage: 4 / Estimate: 2'), findsOneWidget);
-      expect(bar(t, 'usage-bar-S-1').value, 0.5);
-      expect(bar(t, 'usage-bar-S-2').value, 1);
-      expect(bar(t, 'usage-bar-S-3').value, 0);
-      expect(barColor(t, 'usage-bar-S-1'), under);
-      expect(barColor(t, 'usage-bar-S-2'), warn);
-      expect(barColor(t, 'usage-bar-S-3'), under);
-      // Sprint line: 5 estimate, 5.5 usage, over, so the total bar is in the warning color.
-      expect(find.byKey(const Key('usage-total')), findsOneWidget);
-      final total = [
-        for (final w in t.widgetList<Text>(find.descendant(of: find.byKey(const Key('usage-total')), matching: find.byType(Text)))) w.data ?? ''
-      ].join(' ');
-      final own = t.widgetList(find.byKey(const Key('usage-total'))).whereType<Text>().map((w) => w.data ?? '').join(' ');
-      expect('$total $own', allOf(contains('5.5'), contains('5')));
-      expect(bar(t, 'usage-bar-total').value, 1);
-      expect(barColor(t, 'usage-bar-total'), warn);
-      }
-    });
-  });
-
-  group('board', () {
-    testWidgets('DSH-09.a: editing the estimate and the usage on a card fires onChanged with the edited sprint', (t) async {
-      bigView(t);
-      final changes = <Sprint>[];
-      await t.pumpWidget(testApp(Scaffold(body: SprintBoard(sprint: sprint, onChanged: changes.add))));
-      await t.pumpAndSettle();
-      await t.tap(find.byKey(const Key('estimate-S-1')));
-      await t.pumpAndSettle();
-      await t.enterText(find.byKey(const Key('estimate-field-S-1')), '5');
-      await t.tap(find.byKey(const Key('points-save')));
-      await t.pumpAndSettle();
-      expect(changes, hasLength(1));
-      expect(changes.last.stories.first.estimate, 5);
-      expect(changes.last.review, 'R');
-      await t.tap(find.byKey(const Key('usage-S-3')));
-      await t.pumpAndSettle();
-      await t.enterText(find.byKey(const Key('usage-field-S-3')), '2,5');
-      await t.tap(find.byKey(const Key('points-save')));
-      await t.pumpAndSettle();
-      expect(changes, hasLength(2));
-      expect(changes.last.stories.last.usage, 2.5);
-    });
-  });
-
-  group('page', () {
-    const sprintPath = 'repo/SCRUM.d/sprint.md';
-    const reqDir = 'repo/requirements';
-    late MemoryFileAccess files;
-    late MutableRunner runner;
-
-    String sprintFile(String goal, String story) => '''# Sprint
-
-Goal: $goal
-
-## Stories
-
-| story | title | items | stage | assignee | estimate | usage |
-|---|---|---|---|---|---|---|
-| S-1 | $story | AAA-01 | Build | Ann | 3 | 1.5 |
-
-## Review
-
-Looked fine.
-
-## Retrospective
-
-Do more of X.
+$header| sprint-1 | 10 | 5 | 20 | 10 | 32 | 16 |
+| sprint-2 | 12 | - | 40 | 30 | - | — |
+| sprint-3 |  |  |  |  |  |  |
 ''';
 
-    Future<void> pump(WidgetTester t, String goal, String tracker) async {
-      files = MemoryFileAccess({
-        sprintPath: sprintFile(goal, 'First story'),
-        '$reqDir/alpha.md': reqFile(['| AAA-01 | backlog | Alpha one. | — | — |', '| AAA-02 | backlog | Alpha two. | — | — |']),
-      });
-      runner = MutableRunner(CommandResult(exitCode: 0, stdout: tracker));
-      await pumpPage(t, files: files, runner: runner, sprintPath: sprintPath, requirementsDir: reqDir);
-    }
+const sprints = Sprint(blocks: [
+  Block(id: 'story-1', kind: BlockKind.story, name: 'S'),
+  Block(id: 'sprint-1', kind: BlockKind.sprint, name: 'One'),
+  Block(id: 'sprint-2', kind: BlockKind.sprint, name: 'Two'),
+  Block(id: 'sprint-3', kind: BlockKind.sprint, name: 'Three'),
+]);
 
-    testWidgets('DSH-09.a: editing on a card through the page writes the sprint file and keeps review and retrospective', (t) async {
-      await pump(t, 'Page goal', issuesJson([]));
-      expect(find.textContaining('Page goal'), findsOneWidget);
-      await t.tap(find.byKey(const Key('estimate-S-1')));
-      await t.pumpAndSettle();
-      await t.enterText(find.byKey(const Key('estimate-field-S-1')), '6');
-      await t.tap(find.byKey(const Key('points-save')));
-      await t.pumpAndSettle();
-      final saved = files.files[sprintPath]!;
-      final row = saved.split('\n').firstWhere((l) => l.contains('S-1'));
-      expect(row.split('|').map((c) => c.trim()), containsAllInOrder(['S-1', 'First story', 'AAA-01', 'Build', 'Ann', '6', '1.5']));
-      expect(saved, contains('Looked fine.'));
-      expect(saved, contains('Do more of X.'));
-      expect(saved, contains('Goal: Page goal'));
-      await t.tap(find.byKey(const Key('usage-S-1')));
-      await t.pumpAndSettle();
-      await t.enterText(find.byKey(const Key('usage-field-S-1')), '7');
-      await t.tap(find.byKey(const Key('points-save')));
-      await t.pumpAndSettle();
-      final row2 = files.files[sprintPath]!.split('\n').firstWhere((l) => l.contains('S-1'));
-      expect(row2.split('|').map((c) => c.trim()), containsAllInOrder(['Ann', '6', '7']));
-      // The page's panel shows the new values and the over state (7 > 6).
-      expect(find.text('Usage: 7 / Estimate: 6'), findsWidgets);
+void main() {
+  group('the Usage table (DSH-14.a, DSH-14.g)', () {
+    test('DSH-14.a: a row is block ID, estimate session, estimate weekly, before session, before weekly, after session, after weekly', () {
+      final rows = UsageTable.parse(usageFile)!;
+      final r = rows.first;
+      expect([r.block, r.estimateSession, r.estimateWeek, r.beforeSession, r.beforeWeek, r.afterSession, r.afterWeek],
+          ['sprint-1', 10, 5, 20, 10, 32, 16]);
+      expect(rows.map((x) => x.block), ['sprint-1', 'sprint-2', 'sprint-3']);
     });
 
-    testWidgets('DSH-01.c: Reload reads the sprint file, the requirement files and the issues again', (t) async {
-      await pump(t, 'Old goal', issuesJson([issueJson(8, 'Old issue')]));
-      expect(find.textContaining('Old goal'), findsOneWidget);
-      expect(find.textContaining('Alpha two.'), findsOneWidget);
-      expect(find.textContaining('Old issue'), findsWidgets);
-      final calls = runner.calls.length;
-      files.files[sprintPath] = sprintFile('New goal', 'Renamed story');
-      files.files['$reqDir/alpha.md'] = reqFile(['| AAA-01 | backlog | Alpha one. | — | — |', '| AAA-02 | backlog | Alpha changed. | — | — |']);
-      runner.result = CommandResult(exitCode: 0, stdout: issuesJson([issueJson(9, 'New issue')]));
-      await t.tap(find.byKey(const Key('reload-button')));
-      await t.pumpAndSettle();
-      expect(runner.calls.length, greaterThan(calls));
-      expect(find.textContaining('New goal'), findsOneWidget);
-      expect(find.textContaining('Old goal'), findsNothing);
-      expect(find.textContaining('Renamed story'), findsWidgets);
-      expect(find.textContaining('Alpha changed.'), findsOneWidget);
-      expect(find.textContaining('Alpha two.'), findsNothing);
-      expect(find.textContaining('New issue'), findsWidgets);
-      expect(find.textContaining('Old issue'), findsNothing);
+    test('DSH-14.a: a cell that is a dash, blank or not a number is not known', () {
+      final rows = UsageTable.parse(usageFile)!;
+      expect([rows[1].estimateWeek, rows[1].afterSession, rows[1].afterWeek], [null, null, null]);
+      expect([rows[1].estimateSession, rows[1].beforeSession, rows[1].beforeWeek], [12, 40, 30]);
+      expect([rows[2].estimateSession, rows[2].beforeWeek, rows[2].afterWeek], [null, null, null]);
+    });
+
+    test('DSH-14.a: a row with fewer cells leaves the rest unknown; a percent sign and a decimal comma are read', () {
+      final rows = UsageTable.parse('## Usage\n\n$header| s-1 | 5 | 6 |\n| s-2 | 7,5% | 1.5 | 2 | 3 | 4 | 5 |\n')!;
+      expect([rows[0].beforeSession, rows[0].afterWeek], [null, null]);
+      expect([rows[1].estimateSession, rows[1].estimateWeek], [7.5, 1.5]);
+    });
+
+    test('DSH-14.a: a CRLF file is read the same', () {
+      expect(UsageTable.parse(usageFile.replaceAll('\n', '\r\n'))!.map((r) => r.block), ['sprint-1', 'sprint-2', 'sprint-3']);
+    });
+
+    test('DSH-14.g: no table, no usage heading or an empty text gives no rows at all', () {
+      expect(UsageTable.parse(''), isNull);
+      expect(UsageTable.parse('# Notes\n\nnothing here\n'), isNull);
+      expect(UsageTable.parse('# Other\n\n$header| s-1 | 1 | 1 | 1 | 1 | 1 | 1 |\n'), isNull);
+    });
+
+    test('DSH-14.g: a missing usage file is no text, so the chart is empty', () async {
+      final b = LocalBackend(files: MemoryFileAccess(memoryFiles()), runner: FakeRunner(createdIssue12), repoRoot: memRoot);
+      expect(await b.loadUsage(), isNull);
+    });
+
+    test('DSH-14.a: the file is read from SCRUM.d/usage.md and parsed', () async {
+      final b = LocalBackend(files: MemoryFileAccess(memoryFiles(extra: {memUsagePath: usageFile})), runner: FakeRunner(createdIssue12), repoRoot: memRoot);
+      expect(UsageTable.parse((await b.loadUsage())!)!, hasLength(3));
+    });
+  });
+
+  group('the meters (DSH-14.b, DSH-14.c)', () {
+    final rows = UsageTable.parse(usageFile)!;
+
+    test('DSH-14.b: there are two meters, the session and the week, on a scale from 0 to 100', () {
+      expect(UsageMeter.values, [UsageMeter.session, UsageMeter.week]);
+      expect(UsageChart.scaleMax, 100);
+      expect(UsageChart.position(-5), 0);
+      expect(UsageChart.position(42), 42);
+      expect(UsageChart.position(130), 100);
+    });
+
+    test('DSH-14.c: a row with a before and an after reading gives a bar from before to after, naming its block', () {
+      final bars = UsageChart.bars(rows, UsageMeter.session);
+      expect(bars.map((b) => [b.block, b.from, b.to]), [['sprint-1', 20, 32]]);
+      expect(UsageChart.bars(rows, UsageMeter.week).map((b) => [b.block, b.from, b.to]), [['sprint-1', 10, 16]]);
+    });
+
+    test('DSH-14.c: a row that lacks one of the two readings draws no bar', () {
+      const only = [UsageRow(block: 'a', beforeSession: 1), UsageRow(block: 'b', afterSession: 2)];
+      expect(UsageChart.bars(only, UsageMeter.session), isEmpty);
+    });
+  });
+
+  group('the estimate band (DSH-14.d)', () {
+    test('DSH-14.d: a row with an estimate gives a band from the before reading, as wide as the estimate plus and minus 20 percent', () {
+      final bands = UsageChart.bands(UsageTable.parse(usageFile)!, UsageMeter.session);
+      expect(bands.map((b) => b.block), ['sprint-1', 'sprint-2']);
+      expect(bands[0].from, 20);
+      expect(bands[0].low, closeTo(28, 1e-9));
+      expect(bands[0].to, closeTo(32, 1e-9));
+      expect(bands[1].low, closeTo(40 + 12 * 0.8, 1e-9));
+      expect(bands[1].to, closeTo(40 + 12 * 1.2, 1e-9));
+    });
+
+    test('DSH-14.d: a row with no estimate or no before reading draws no band; the week uses the weekly cells', () {
+      final rows = UsageTable.parse(usageFile)!;
+      expect(UsageChart.bands(rows, UsageMeter.week).map((b) => b.block), ['sprint-1']);
+      expect(UsageChart.bands(const [UsageRow(block: 'x', estimateSession: 5)], UsageMeter.session), isEmpty);
+      expect(UsageChart.bands(const [UsageRow(block: 'x', beforeSession: 5)], UsageMeter.session), isEmpty);
+    });
+  });
+
+  group('the projection (DSH-14.e)', () {
+    final rows = UsageTable.parse(usageFile)!;
+
+    test('DSH-14.e: the first sprint block with no after reading is projected: before plus estimate', () {
+      final p = UsageChart.projection(rows, sprints, UsageMeter.session)!;
+      expect([p.block, p.from, p.to], ['sprint-2', 40, 52]);
+    });
+
+    test('DSH-14.e: a sprint with an after reading is not projected; stories are never projected', () {
+      expect(UsageChart.projection(rows, const Sprint(blocks: [Block(id: 'sprint-1', kind: BlockKind.sprint, name: 'One')]), UsageMeter.session), isNull);
+      expect(UsageChart.projection(rows, const Sprint(blocks: [Block(id: 'story-1', kind: BlockKind.story, name: 'S')]), UsageMeter.session), isNull);
+    });
+
+    test('DSH-14.e: with no before reading or no estimate there is no projection', () {
+      expect(UsageChart.projection(rows, sprints, UsageMeter.week), isNull, reason: 'sprint-2 has no estimate on the week');
+      expect(UsageChart.projection(const [], sprints, UsageMeter.session), isNull);
+    });
+  });
+
+  group('over 100 (DSH-14.f)', () {
+    test('DSH-14.f: a value above 100 is over and keeps its real number; 100 and below are not', () {
+      expect(UsageChart.overHundred(100.5), isTrue);
+      expect(UsageChart.overHundred(130), isTrue);
+      expect(UsageChart.overHundred(100), isFalse);
+      expect(UsageChart.overHundred(0), isFalse);
+      final bar = UsageChart.bars(const [UsageRow(block: 'x', beforeSession: 90, afterSession: 130)], UsageMeter.session).single;
+      expect(bar.to, 130, reason: 'the real number stays in the data for the tooltip');
+      expect(UsageChart.position(bar.to), 100);
     });
   });
 }

@@ -1,25 +1,27 @@
-// Holds: the New issue form dialog (DSH-08, DSH-08.a-d, DSH-08.g, DSH-08.h): title, description, feature, requirement and status; Save
-// creates the issue and closes the dialog with true. Depends on: IssueTracker, NewIssue, RequirementChoices,
-// Requirement, AppLocalizations. Used by: the dashboard page. Reads or writes: the issue tracker, through the service.
+// Holds: the New issue form (DSH-09): title, description, feature, requirement and status, Cancel and Save, and the
+// reason when saving fails. Depends on: DashboardController, RequirementChoices, NewIssue, StatusText.
+// Used by: IssuesColumn. Reads or writes: creates an issue through the controller on Save.
 
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../data/issue_partial_failure.dart';
-import '../data/issue_tracker.dart';
-import '../data/issue_tracker_exception.dart';
 import '../domain/new_issue.dart';
-import '../domain/requirement.dart';
 import '../domain/requirement_choices.dart';
+import '../domain/status.dart';
+import 'dashboard_controller.dart';
 import 'dashboard_layout.dart';
+import 'status_text.dart';
 
-/// The form; pops with true once the issue is created (or exists after a failed later step and the form is cancelled),
-/// and stays filled and shows the reason when it cannot be created. Keys: `issue-save`, `issue-cancel`.
+/// The form dialog. Keys: `issue-title`, `issue-description`, `issue-feature`, `issue-requirement`, `issue-status`,
+/// `issue-cancel`, `issue-save`.
 class NewIssueDialog extends StatefulWidget {
-  const NewIssueDialog({super.key, required this.issues, required this.requirements});
+  const NewIssueDialog({super.key, required this.controller});
 
-  final IssueTracker issues;
-  final List<Requirement> requirements;
+  final DashboardController controller;
+
+  /// Opens the form; completes when it is closed.
+  static Future<void> show(BuildContext context, DashboardController controller) =>
+      showDialog<void>(context: context, builder: (_) => NewIssueDialog(controller: controller));
 
   @override
   State<NewIssueDialog> createState() => _NewIssueDialogState();
@@ -30,17 +32,9 @@ class _NewIssueDialogState extends State<NewIssueDialog> {
   final _description = TextEditingController();
   String? _feature;
   String? _requirement;
-  bool _closed = false; // DSH-08.b: starts open
-  bool _saving = false;
+  Status _status = Status.backlog;
   String? _failure;
-  int? _created; // the number of the issue once it exists, so saving again never creates another (DSH-08.g)
-  String? _partialReason;
-
-  @override
-  void initState() {
-    super.initState();
-    _title.addListener(() => setState(() {}));
-  }
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -49,121 +43,116 @@ class _NewIssueDialogState extends State<NewIssueDialog> {
     super.dispose();
   }
 
-  /// Creates the issue, or, when it already exists, only does the step that failed (DSH-08.g).
   Future<void> _save() async {
     setState(() {
       _saving = true;
       _failure = null;
-      _partialReason = null;
     });
     try {
-      final existing = _created;
-      if (existing == null) {
-        _created = await widget.issues.create(NewIssue(
-          title: _title.text.trim(),
-          description: _description.text,
-          feature: _feature,
-          requirement: _requirement,
-          closed: _closed,
-        ));
-      } else {
-        await widget.issues.close(existing);
-      }
-      if (mounted) Navigator.of(context).pop(true);
-    } on IssuePartialFailure catch (e) {
+      await widget.controller.createIssue(NewIssue(
+        title: _title.text.trim(),
+        description: _description.text,
+        feature: _feature,
+        requirement: _requirement,
+        status: _status,
+      ));
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
       if (mounted) {
         setState(() {
           _saving = false;
-          _created = e.number;
-          _partialReason = e.reason;
-        });
-      }
-    } on IssueTrackerException catch (e) {
-      if (mounted) {
-        setState(() {
-          _saving = false;
-          if (_created == null) {
-            _failure = e.reason;
-          } else {
-            _partialReason = e.reason;
-          }
+          _failure = '$e';
         });
       }
     }
   }
 
-
-  Widget _dropdown(Key key, String label, String? value, List<String> values, String Function(String) text,
-      ValueChanged<String?> onSelected, {bool blank = true}) {
+  Widget _dropdown<T>({
+    required Key key,
+    required String label,
+    required T? value,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?> onChanged,
+  }) {
     return InputDecorator(
-      decoration: InputDecoration(labelText: label),
+      decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      isEmpty: value == null,
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<String?>(
-          key: key,
-          isDense: true,
-          isExpanded: true,
-          value: values.contains(value) ? value : null,
-          items: [
-            if (blank) const DropdownMenuItem<String?>(value: null, child: SizedBox.shrink()),
-            for (final v in values) DropdownMenuItem<String?>(value: v, child: Text(text(v))),
-          ],
-          onChanged: onSelected,
-        ),
+        child: DropdownButton<T>(key: key, isExpanded: true, isDense: true, value: value, items: items, onChanged: onChanged),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context);
-    final requirementIds = RequirementChoices.requirementsOf(widget.requirements, _feature);
+    final l = AppLocalizations.of(context);
+    final requirements = widget.controller.requirements ?? const [];
+    final features = RequirementChoices.features(requirements);
+    final ids = RequirementChoices.requirementsOf(requirements, _feature);
     return AlertDialog(
-      title: Text(t.dshNewIssue),
+      title: Text(l.dshNewIssue),
       content: SizedBox(
-        width: DashboardLayout.backlogWidth,
+        width: DashboardLayout.blockWidth * 1.5,
         child: SingleChildScrollView(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(
-              key: const Key('issue-title'),
-              controller: _title,
-              decoration: InputDecoration(labelText: t.dshIssueTitle),
-            ),
-            TextField(
-              key: const Key('issue-description'),
-              controller: _description,
-              minLines: 3,
-              maxLines: 6,
-              decoration: InputDecoration(labelText: t.dshIssueDescription),
-            ),
-            _dropdown(const Key('issue-feature'), t.dshFilterFeature, _feature,
-                RequirementChoices.features(widget.requirements), (v) => v, (v) {
-              setState(() {
-                _feature = v;
-                _requirement = RequirementChoices.keepRequirement(widget.requirements, v, _requirement);
-              });
-            }),
-            _dropdown(const Key('issue-requirement'), t.dshFilterRequirement, _requirement, requirementIds,
-                (v) => v, (v) => setState(() => _requirement = v)),
-            _dropdown(const Key('issue-status'), t.dshFilterStatus, _closed ? 'closed' : 'open',
-                const ['open', 'closed'], (v) => v == 'closed' ? t.dshStatusClosed : t.dshStatusOpen,
-                (v) => setState(() => _closed = v == 'closed'), blank: false),
-            if (_partialReason != null)
-              Text(t.dshIssuePartial('$_created', _partialReason!), style: TextStyle(color: Theme.of(context).colorScheme.error)),
-            if (_failure != null)
-              Text(t.dshIssueFailed(_failure!), style: TextStyle(color: Theme.of(context).colorScheme.error)),
-          ]),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                key: const Key('issue-title'),
+                controller: _title,
+                decoration: InputDecoration(labelText: l.dshIssueTitle),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: DashboardLayout.gap),
+              TextField(
+                key: const Key('issue-description'),
+                controller: _description,
+                minLines: 2,
+                maxLines: 5,
+                decoration: InputDecoration(labelText: l.dshIssueDescription),
+              ),
+              const SizedBox(height: DashboardLayout.gap),
+              _dropdown<String>(
+                key: const Key('issue-feature'),
+                label: l.dshFilterFeature,
+                value: _feature,
+                items: [for (final f in features) DropdownMenuItem(value: f, child: Text(f, overflow: TextOverflow.ellipsis))],
+                onChanged: (f) => setState(() {
+                  _feature = f;
+                  _requirement = RequirementChoices.keepRequirement(requirements, f, _requirement);
+                }),
+              ),
+              const SizedBox(height: DashboardLayout.gap),
+              _dropdown<String>(
+                key: const Key('issue-requirement'),
+                label: l.dshFilterRequirement,
+                value: _requirement,
+                items: [for (final r in ids) DropdownMenuItem(value: r, child: Text(r, overflow: TextOverflow.ellipsis))],
+                onChanged: (r) => setState(() => _requirement = r),
+              ),
+              const SizedBox(height: DashboardLayout.gap),
+              _dropdown<Status>(
+                key: const Key('issue-status'),
+                label: l.dshFilterStatus,
+                value: _status,
+                items: [for (final s in Status.values) DropdownMenuItem(value: s, child: Text(StatusText.of(l, s)))],
+                onChanged: (s) => setState(() => _status = s ?? _status),
+              ),
+              if (_failure != null) ...[
+                const SizedBox(height: DashboardLayout.gap),
+                Text(l.dshIssueFailed(_failure!), style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              ],
+            ],
+          ),
         ),
       ),
       actions: [
-        TextButton(
-          key: const Key('issue-cancel'),
-          onPressed: () => Navigator.of(context).pop(_created != null),
-          child: Text(t.cancel),
-        ),
+        TextButton(key: const Key('issue-cancel'), onPressed: () => Navigator.of(context).pop(), child: Text(l.cancel)),
         FilledButton(
           key: const Key('issue-save'),
           onPressed: _title.text.trim().isEmpty || _saving ? null : _save,
-          child: Text(t.dshSave),
+          child: Text(l.dshSave),
         ),
       ],
     );

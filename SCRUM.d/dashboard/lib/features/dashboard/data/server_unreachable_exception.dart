@@ -1,5 +1,5 @@
-// Holds: the error raised when the web app cannot reach the server (DSH-10.e). Depends on: IssueTrackerException.
-// Used by: HttpFileAccess, HttpIssueTracker, the dashboard page. Reads or writes: nothing.
+// Holds: the error raised when the web app cannot reach the server (DSH-13.h). Depends on: IssueTrackerException.
+// Used by: JsHttpTransport, the page. Reads or writes: nothing.
 
 import 'issue_tracker_exception.dart';
 

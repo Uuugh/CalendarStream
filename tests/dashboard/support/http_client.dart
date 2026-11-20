@@ -62,3 +62,16 @@ Future<Answer> raw(int port, String method, String target, List<String> headerLi
   final at = text.indexOf('\r\n\r\n');
   return Answer(status, at < 0 ? '' : text.substring(at + 4));
 }
+
+/// An HttpTransport that really sends each request to the server on 127.0.0.1:[port] (so HttpBackend can be run
+/// against a real DashboardServer).
+class ServerTransport implements HttpTransport {
+  ServerTransport(this.port);
+  final int port;
+
+  @override
+  Future<HttpReply> send(String method, String path, {String? body}) async {
+    final a = await ask(port, method, path, body: body);
+    return HttpReply(a.status, a.body);
+  }
+}

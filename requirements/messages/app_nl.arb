@@ -923,5 +923,8 @@
   "dshUsageChart": "Verbruik",
   "dshMeterSession": "Sessie van 5 uur",
   "dshMeterWeek": "Week van 7 dagen",
-  "dshNoUsage": "Geen verbruikswaarden"
+  "dshNoUsage": "Geen verbruikswaarden",
+  "dshExpandAll": "Alles uitklappen",
+  "dshExpandRow": "Uitklappen",
+  "dshCollapseRow": "Inklappen"
 }

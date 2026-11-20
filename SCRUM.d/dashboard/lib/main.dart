@@ -5,14 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'features/dashboard/data/dashboard_backend.dart';
-import 'features/dashboard/data/requirement_repository.dart';
-import 'features/dashboard/data/sprint_repository.dart';
 import 'features/dashboard/ui/dashboard_page.dart';
 import 'l10n/app_localizations.dart';
 import 'theme/app_theme.dart';
 
 void main() {
-  final backend = DashboardBackend.create();
   runApp(MaterialApp(
     localizationsDelegates: const [
       AppLocalizations.delegate,
@@ -23,10 +20,6 @@ void main() {
     supportedLocales: AppLocalizations.supportedLocales,
     theme: AppTheme.light,
     darkTheme: AppTheme.dark,
-    home: DashboardPage(
-      sprints: SprintRepository(files: backend.files, path: backend.sprintPath),
-      requirements: RequirementRepository(files: backend.files, directory: backend.requirementsDirectory),
-      issues: backend.issues,
-    ),
+    home: DashboardPage(backend: DashboardBackend.create()),
   ));
 }

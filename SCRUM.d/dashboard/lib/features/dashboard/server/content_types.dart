@@ -15,7 +15,7 @@ class ContentTypes {
     'wasm': 'application/wasm',
     'png': 'image/png',
     'ico': 'image/x-icon',
-    'svg': 'image/svg+xml',
+    'svg': 'image/svg+xml; charset=utf-8',
     'otf': 'font/otf',
     'ttf': 'font/ttf',
     'woff2': 'font/woff2',

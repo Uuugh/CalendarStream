@@ -1,5 +1,5 @@
 // Holds: the one request function the web implementations use, so tests can pass a fake.
-// Depends on: HttpReply. Used by: HttpFileAccess, HttpIssueTracker. Reads or writes: nothing itself.
+// Depends on: HttpReply. Used by: HttpBackend. Reads or writes: nothing itself.
 
 import 'http_reply.dart';
 
