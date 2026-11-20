@@ -19,7 +19,7 @@ These apply to every row in `requirements/`.
 10. **Questions** are rows marked `(?)` and appear in `requirements/open-questions.md`. Look for the answer first in the other requirements, the decisions, the code of the running app, and the Flutter and Dart documentation (https://docs.flutter.dev/ and https://dart.dev/), and only then ask the Product Owner. **Test:** `req_check.sh` reports a `(?)` row with no question, and a question with no `(?)` row.
 11. **Nothing you write names an agent or a tool.** Roles are the Product Owner, the developer and the tester. **Test:** `req_check.sh` lists any agent or tool name.
 12. **Prefixes.** A feature's prefix is three letters. A module in a subfolder adds that folder's letter before its three letters: C for `connections.d` (CGOW is Google one-way) and P for `plugins.d` (PGAP is the Google API plugin); a folder inside a folder adds its letter in turn. **Test:** `req_check.sh` reports a row whose prefix does not match its folder.
-13. **Every rule has a test.** A new rule is added to this list with a `**Test:**` line: a check in `tests/tools/req_check.sh` where a script can decide, otherwise a review question. **Test:** `req_check.sh` reports a rule in this list that has no `**Test:**` line.
+13. **Every requirement has a test.** A row's test cell names the test or says `see <ID>`; `—` stays only until a test exists. **Test:** `req_check.sh` counts rows whose test cell is `—`.
 14. **Messages are keys.** A requirement never contains the wording of a message the user sees; it cites the message as `msg:key` and says when it is shown and what its placeholders hold. The wording and its translations live only in `messages/` (`app_en.arb` is the template). **Test:** `req_check.sh` reports a cited key missing from the template, a locale file that lacks a key the template has, and counts the keys no requirement cites yet.
 
 ## Definitions
@@ -100,7 +100,7 @@ The scans of the README and CHANGELOG and the gap triage were folded into these 
 
 A feature file is not done when its rows are written. After organizing a feature into requirements and sub-requirements, go back over it:
 
-1. **The laws and rules**: every row obeys rules 1 to 5 (the two laws, numbers, shared homes, specifics only). Search the other files for the same rule in other words before accepting a row as new.
+1. **The laws and rules**: every row obeys rules 1 to 5 (the laws, numbers, shared homes, specifics only). Search the other files for the same rule in other words before accepting a row as new.
 2. **Simulate three jobs**, and fix what stops you:
    - **Coder**: every term is defined; every behavior and boundary is stated; time and size limits are stated; nothing has to be guessed.
    - **Tester**: every row has a visible pass or fail; one rule per row, so a failure says which; time can be controlled in a test.

@@ -1,6 +1,6 @@
 # Dart packages: rules for all Dart code (packages/, server/, client/)
 
-The port is built from `requirements/`; the two laws are in `AGENTS.md`. Flutter's structure is the model: a file
+The port is built from `requirements/`; the laws are in `AGENTS.md`. Flutter's structure is the model: a file
 stands alone and says what it needs.
 
 ## Structure (P18, P19, P26)

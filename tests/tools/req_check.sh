@@ -40,9 +40,13 @@ norole=$(for f in connections.d/*.md; do case $f in connections.d/README.md) con
 echo "== prefixes: a feature has three letters; a module adds its folder's letter (C connections.d, P plugins.d); see README, Prefixes"
 badpre=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ id=$2; gsub(/ /,"",id); split(id,a,"-"); p=a[1]; if (FILENAME ~ /^connections\.d\//) ok=(p ~ /^C[A-Z][A-Z][A-Z]$/); else if (FILENAME ~ /^plugins\.d\//) ok=(p ~ /^P[A-Z][A-Z][A-Z]$/); else ok=(p ~ /^[A-Z][A-Z][A-Z]$/); if (!ok) { k=FILENAME" "p; if (!(k in seen)) { seen[k]=1; print FILENAME": "p } } }' $files | tr '\n' ';')
 [ -n "$badpre" ] && { echo "$badpre"; err=1; } || echo none
-echo "== errors: a numbered rule in README without a Test line (rule 13)"
+echo "== errors: a numbered rule in requirements/README.md or a rule in AGENTS.md without a Test line (law 3)"
 notest=$(awk '/^## Rules for writing and changing requirements/{inr=1; next} /^## /{inr=0} inr && /^[0-9]+\. \*\*/ { if ($0 !~ /\*\*Test:\*\*/) { split($0,a,"."); print a[1] } }' README.md | tr '\n' ' ')
 [ -n "$notest" ] && { echo "rules without a test: $notest"; err=1; } || echo none
+notestA=$(awk '/^## (The laws|Standing rules)/{inr=1; next} /^## /{inr=0} inr && /^(- |[0-9]+[.] )[*][*]/ { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) print first; blk=$0; first=substr($0,1,50); next } inr { blk=blk $0 } END { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) print first }' ../AGENTS.md)
+[ -n "$notestA" ] && { echo "AGENTS.md rules without a test:"; echo "$notestA"; err=1; } || echo none
+echo "== requirement rows whose test cell is still — (rule 13; a count, not an error)"
+grep -hE '^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]' $cfiles | sed 's/[\][|]//g' | awk -F'|' '{t=$5; gsub(/ /,"",t); if (t=="—") n++} END {print n+0" rows"}'
 echo "== errors: a requirement row outside its table (a non-table line before it) or a README link to a missing file"
 outside=$(awk '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (prev !~ /^\|/) print FILENAME": line "FNR } { prev=$0 }' $files | tr '\n' ';')
 badlink=$(grep -o '](\([^)#]*\))' README.md | sed 's/^](//; s/)$//' | grep -v '^http' | while read p; do [ -f "$p" ] || echo "$p"; done | tr '\n' ';')
