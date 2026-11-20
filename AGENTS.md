@@ -28,8 +28,9 @@ what each does are in `SCRUM.d/README.md`.
   Product Owner has directed, without asking first: push, merge a branch they told you to merge, launch the agents the
   process calls for. Ask about a decision that is theirs and that the files and sources do not settle. Ask in the
   conversation, one decision at a time with your recommendation; record it in `requirements/open-questions.md` if it
-  must outlive the conversation, and read answers from the `Answer:` lines. **Test:** review: every question is a
-  decision of the Product Owner's, and no action waited for a permission it already had.
+  must outlive the conversation, and read answers from the `Answer:` lines. A question from the Product Owner gets an
+  answer; it is not an instruction. **Test:** review: every question is a decision of the Product Owner's, no action
+  waited for a permission it already had, and no action follows a Product Owner message that asks and does not direct.
 - **Never revert or overwrite the Product Owner's edits.** They edit files directly; a status they leave blank means
   backlog. **Test:** before and after any change run `git status` and `git diff`; no status goes backwards
   (`backlog` or blank to `proposed`).

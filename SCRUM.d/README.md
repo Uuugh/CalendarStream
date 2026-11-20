@@ -98,7 +98,10 @@ criteria as requirement IDs, and names what is out of scope and which paths the 
    failure becomes a defect issue. Write the Review in `SCRUM.d/sprint.md`: per story what passed, failed and was not
    checked, the smoke result, the Product Owner's accept or reject, and the usage it took. **Test:** the Review in `sprint.md`
    holds an accept or reject for every story.
-10. **Retrospective.** Write the findings in `SCRUM.d/sprint.md`; each ends as an issue, a fix or a stated reason.
+10. **Retrospective.** Write the findings in `SCRUM.d/sprint.md`; each ends as an issue, a fix or a stated reason. If a process
+    file (`AGENTS.md`, a README, `SCRUM.d/`) changed during the sprint, a cold agent given only "read AGENTS.md and follow it"
+    says who it is, where the rules, the tests and the open questions are, and what it reads next; each wrong answer is a
+    finding. **Test:** the Retrospective in `sprint.md` records that run for every sprint in which a process file changed.
 
 ## Checking work (a story, a pull request, a draft or an agent report)
 
