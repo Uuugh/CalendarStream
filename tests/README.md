@@ -41,7 +41,7 @@ test, name the requirement it verifies, and for each pair, show they verify diff
 An issue gets a failing test first; the fix follows. **Test:** review: the commit that fixes an issue follows the commit of
 its failing test.
 
-🟡 The tests a row with no sub-requirements lists together check every condition of its statement; a condition is one thing the statement says must hold. **Test:** review: for each such row, name a condition that none of its tests checks.
+🟡 A clause is one thing a row's statement says must hold, and it is uncovered when no listed test checks it. The tests a row with no sub-requirements lists together check every clause of its statement; a row with sub-requirements is checked through them (Parent tests, `requirements/README.md`). **Test:** the Tester's result for the row names each uncovered clause (Te-02).
 
 A test declares whether one run covers all its requirement IDs or runs once per ID. A requirement that depends on time is
 tested with a clock the test controls; no test waits real time. **Test:** review: for each test, name its declaration; for
@@ -49,7 +49,7 @@ each time-dependent requirement, show the controlled clock.
 
 ## Results
 
-🟡 Each run reports one result per requirement ID, with the command run, by this precedence: `fail` (with the ID, what was expected and what was found) if any listed test fails; else `not run` (the test could not start or crashed before its checks); else `uncovered` (a condition of the row's statement that no listed test checks, named in the result); else `pass`. A row with sub-requirements takes the first of these results found among its sub-requirements, in that order. **Test:** review: each result in a report is one of those four words, names the command, and names each uncovered condition.
+🟡 Each run reports one result per requirement ID, with the command run, by this precedence: `fail` (with the ID, what was expected and what was found) if any listed test fails; else `not run` (the test could not start or crashed before its checks); else `uncovered` if a clause is uncovered; else `pass`. Any result names each uncovered clause. A row with sub-requirements takes the first of these four words, in the order given, that its own tests or its sub-requirements have, and names the sub-requirement that has it. **Test:** review: each result in a report is one of those four words, names the command, and names each uncovered clause.
 
 ## Layout
 
