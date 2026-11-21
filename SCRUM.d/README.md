@@ -18,7 +18,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 - **Orchestrator (Or)**: *ROLE* keeps the requirements consistent, briefs and checks the other agents, commits and pushes.
 - **Coder (build) (Cb)**: *ROLE* implements a story's requirements.
 - **Coder (tests) (Ct)**: *ROLE* builds the mirrored requirement tests from the requirements only.
-- **Tester (Ts)**: *ROLE* produces a result per requirement (CI for scripted tests, an agent for the rest).
+- **Tester (Te)**: *ROLE* runs the tests Ct wrote and produces a result per requirement.
 - **Reviewer (Rv)**: *ROLE* read-only; checks work against the rules of its area. The Orchestrator's subagent that tests the process and the rules (`AGENTS.md`, every README, `SCRUM.d/`) by following them cold; outside code development.
 - **Team**: both Coders and the Tester.
 
@@ -131,17 +131,16 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | ID | What | When acted | How tested |
 |---|---|---|---|
 | Ct-01 | Works from the requirements only, never the implementation, in `test/` (the Dart package layout) | ^ | review: the test diff touches no implementation file and cites only requirements |
-| Ct-02 | Creates the tests as `tests/README.md` says | ^ | review: each test follows `tests/README.md` |
+| Ct-02 | Writes, for each requirement, the test that matches it, by the cheapest method in usage cost that can still fail (the rule in `tests/README.md`; CI and scripts are among the methods) | ^ | review: for each test, name a cheaper method and show it would not verify the row (`tests/README.md`) |
+| Ct-02.a | Uses an existing test when that is the cheaper way (`tests/README.md`, "Share before you write") | ^ | review: for each new test, name the existing test it could have extended and show that extending it would have cost more |
 | Ct-03 | Writes the test that the test cell of each requirement of the story names | Sprint | review: every test cell of the story names a test file that exists |
 
 ### Tester
 
 | ID | What | When acted | How tested |
 |---|---|---|---|
-| Ts-01 | Produces one result per requirement, in the format of `tests/README.md` (Results) | ^ | review: the report has one result per requirement ID |
-| Ts-02 | CI produces the result for scripted tests | ^ | the CI run reports the scripted tests per requirement |
-| Ts-03 | A Tester agent produces the result for tests that need an agent and adds the CI run for the commit to its report, so the Orchestrator reads one combined result | ^ | review: the combined report holds the agent's results and the CI run for the commit |
-| Ts-04 | `flutter analyze` is clean and `flutter test` passes, run by CI once it exists | ^ | CI reports `flutter analyze` and `flutter test` once CI exists |
+| Te-01 | Runs the tests Ct wrote and produces one result per requirement, in the format of `tests/README.md` (Results) | ^ | review: the report has one result per requirement ID |
+| Te-02 | Runs each test the way its test cell says it runs (a script, CI, or a written procedure); the method was chosen by the Coder (tests) (Ct-02), not by the Tester | ^ | review: each result names the test and how it was run |
 
 ### Reviewer
 
@@ -169,6 +168,9 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 - Conflict for the Product Owner: Or-07.d runs `req_check.sh` at every Post-flight, but you told me to run it only when you ask.
 - Or-09.b: "small enough for one Reviewer run" became "small enough for one Post-flight check" after the Reviewer was moved outside code development.
 - "The Dashboard records the sprint in `SCRUM.d/sprint.md` and each requirement's status." (The Dashboard is not a role.)
+- Removed from the Tester definition: "(CI for scripted tests, an agent for the rest)"; CI is a tool, and Ct chooses the method.
+- Removed Te-04: "`flutter analyze` is clean and `flutter test` passes, run by CI once it exists". CI is a method defined in `tests/README.md`; what it runs is the open item "Decide Dart CI and release" in `WORKING.d/README.md`.
+- Removed Te-03: "A Tester agent produces the result for tests that need an agent and adds the CI run for the commit to its report, so the Orchestrator reads one combined result" (Te-01 and Te-02 already give one result per requirement however a test ran).
 - Old wording of the Reviewer, removed because the Product Owner corrected that the Reviewer is outside code development: "Runs once per story, cold, after the Tester reports `pass`" (Rv-01), "the Reviewer after the Tester reports `pass` (Rv-01)" (Or-08.a), and "the Reviewer reports no finding against a rule or a requirement" (Definition of done).
 - Retrospective timing ("after the Review") is not stated in the original file; to confirm.
 - Removed from definitions because rules and the status list in `requirements/README.md` already say them: "A requirement in a story has status `planned`, and `done` once its story is accepted at the Review" (Or-24.b, Or-13.e) and "done when their tests pass" (Definition of done).
