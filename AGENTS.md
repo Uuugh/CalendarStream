@@ -63,7 +63,7 @@ area's README.
 ## Environment
 
 No Python is installed: use bash, sed and awk. A tool layer may halve backslashes in commands; test any sed that must
-match one. Line-ending warnings are harmless. `tests/tools/req_check.sh` takes about 2 minutes, writes two scratch files in `/tmp`, and
+match one. In the UTF-8 locale, grep and sed do not match characters outside the Basic Multilingual Plane (the marks 🟡 🟠 🔴); match them with `LC_ALL=C` or awk. **Test:** review: any command that searches for a mark uses `LC_ALL=C` or awk. Line-ending warnings are harmless. `tests/tools/req_check.sh` takes about 2 minutes, writes two scratch files in `/tmp`, and
 is run once at a time.
 
 ## Table of contents
