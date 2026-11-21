@@ -57,5 +57,7 @@ Tests sit in `test/<feature>/`, mirroring `requirements/<feature>.md`, in the Da
 (https://dart.dev/tools/pub/package-layout); thin end-to-end tests sit in `integration_test/`. Fakes and made-up data are never real data
 (`AGENTS.md`). How runs are split and what a run reports to the dashboard is the first open story in `WORKING.d/README.md`.
 
+🟡 `test/smoke.md` is the smoke procedure: a written procedure an agent follows at each Review (method 6), derived from the requirements; each step names the requirement IDs it exercises. **Test:** review: each step names requirement IDs, and the Tester's smoke report follows the file.
+
 Made-up data lives in `tests/data/`, one dataset per kind, shared by all tests (`Demo.ics` is a made-up schedule, `work.ics` a
 second made-up calendar). **Test:** review: a test that carries its own copy of data names the shared dataset it could have used.

@@ -101,7 +101,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-12 | Stalled agent: stops an agent in a failure loop (several failed attempts or a growing diff) and keeps its diagnostics. Relaunches it cold from the last verified commit with the objective, the checkpoint, the rules and the verified errors, checked against the repo; or splits the story | An agent in a failure loop | review: a stalled agent's diagnostics are kept and its relaunch brief holds the objective, the checkpoint, the rules and the verified errors |
 | Or-13 | Runs the Review: the sub-rules in order | Review | review: the Review holds Or-13.a to Or-13.e |
 | Or-13.a | Runs the sprint's last commit as a user runs it, with the made-up data in `tests/data/` | Review | review: the Review names the commit it ran and the data folder |
-| Or-13.b | Has a Tester agent follow the written smoke procedure (`tests/smoke.md`, created at the first sprint that needs it) and report pass, fail or not run per step | Review | review: the smoke report has pass, fail or not run per step |
+| 🟡 Or-13.b | Has a Tester agent follow the smoke procedure (`test/smoke.md`) and report pass, fail or not run per step; when the file does not exist, has the Coder (tests) write it first (Ct-04) | Review | review: at the Review the file exists and the smoke report has pass, fail or not run per step |
 | Or-13.c | Each failure becomes an issue that names the requirement it breaks | Review | review: every issue names a requirement ID |
 | Or-13.d | Writes the Review in `SCRUM.d/sprint.md`: per story what passed, failed and was not checked, the smoke result, the Product Owner's accept or reject, and the usage it took | Review | the Review in `sprint.md` holds an accept or reject for every story |
 | Or-13.e | Runs `req_check.sh` and sets each requirement of a story the Product Owner accepted to `done` only when it reports no errors (Definition of done) | Review | review: each accepted story's rows are `done` and no other story's rows are, and the record holds the output of `req_check.sh` |
@@ -147,9 +147,10 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | ID | What | When acted | How tested |
 |---|---|---|---|
 | Ct-01 | Works from the requirements only, never the implementation, in `test/` (the Dart package layout) | ^ | review: the test diff touches no implementation file and cites only requirements |
-| Ct-02 | Writes, for each requirement, the test that matches it, by the cheapest method in usage cost that can still fail (the rule in `tests/README.md`; CI and scripts are among the methods) | ^ | review: for each test, name a cheaper method and show it would not verify the row (`tests/README.md`) |
+| 🟡 Ct-02 | Writes, for each requirement, the test that matches it, by the cheapest method in usage cost that can still fail (the rule in `tests/README.md`; a script is run by the Tester, or by CI when a workflow in `.github/workflows/` runs it) | ^ | review: for each test, name a cheaper method and show it would not verify the row (`tests/README.md`) |
 | Ct-02.a | Uses an existing test when that is the cheaper way (`tests/README.md`, "Share before you write") | ^ | review: for each new test, name the existing test it could have extended and show that extending it would have cost more |
 | Ct-03 | Writes the test that the test cell of each requirement of the story names, and the test for any clause reported uncovered (Or-03.a) | Sprint | review: every test cell of the story names a test file that exists |
+| 🟡 Ct-04 | Writes `test/smoke.md` as `tests/README.md` (Layout) defines it | The file is missing at the Review (Or-13.b) | the file exists and each step names requirement IDs (`tests/README.md`, Layout) |
 
 ### Tester
 
@@ -177,6 +178,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Team-01 | Read the requirements and the rule files (`AGENTS.md`, every README, `SCRUM.d/`) | ^ | review: each team member's report names the files it read |
 | Team-02 | Never edit the requirements or the rule files | ^ | a team diff touches no requirement or rule file |
 | Team-03 | A defect in a requirement (or a flaw in a rule file) goes to the Orchestrator (Or-02.e.b) | ^ | review: each reported defect reached the Orchestrator and Or-02.e.b ran |
+| 🟡 Team-03.a | The reporting agent reports each name or value it needed and the row does not give, skips the part that needs it, and continues with the rest of its slice | A defect is reported | review: the report lists each such name or value, and none appears in the agent's diff |
 | Team-04 | Work on the sprint's branch in the team's one worktree and push only that branch | ^ | `git log main` holds no commit by a team member that the Product Owner did not direct to merge |
 | Team-05 | Commit your own work to the sprint's branch, with the requirement IDs in the commit message (`AGENTS.md`) | ^ | review: the sprint branch has a commit by each team member that names requirement IDs |
 | Team-06 | Report to the Orchestrator: what you did, the files you read (Team-01), any defect (Team-03), any doc that needs a change (Cb-07), and the skills you loaded (Or-05) | ^ | review: each report holds those five |
