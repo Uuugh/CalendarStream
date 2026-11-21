@@ -1,6 +1,6 @@
 # Task for ChatGPT (self-contained: nothing outside this message is needed)
 
-Rewrite the file under "FILE TO REWRITE" below as three sections: Intro, Definitions, Rules, plus a final section "Not yet placed". Reply with only the rewritten file as markdown, then, under the heading "Choices", a list of at most 150 words naming every choice you had to make that these instructions did not settle. Do not add commentary.
+Rewrite the file under "FILE TO REWRITE" below as three sections: Intro, Definitions, Rules, plus a final section "Not yet placed". Write your answer to the file `WORKING.d/tests-readme.gpt.md` in the connected workspace (repository Uuugh/CalendarStream): the rewritten file as markdown, then, under the heading "Choices", a list of at most 150 words naming every choice you had to make that these instructions did not settle. Write only that one file, and do not edit any other file or open a pull request. Do not add commentary.
 
 ## The three Laws every rule must obey
 1. No duplication: say it once; a rule is written in one place and referenced everywhere else.
