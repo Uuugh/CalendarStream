@@ -17,12 +17,14 @@ The port is built from `requirements/`; the laws are in `AGENTS.md`. How to read
 | Cb-11 | A package follows the layout at https://dart.dev/tools/pub/package-layout (public code in `lib/`, implementation in `lib/src/`, tests in `test/`) | Writing Dart | review: each file in the diff sits in the folder the page names |
 | Cb-12 | Never imports from another package's `lib/src` | Writing Dart | a script lists an import of another package's `lib/src` (to be written) |
 | Cb-13 | Domain never imports storage, network or the page | Writing Dart | a script lists a `domain` file that imports them (to be written) |
-| Cb-14 | One public class per file, named for it in `snake_case.dart`; a closed family a `sealed class` or an enum holds (an exception hierarchy, a set of states) shares one file; small private helpers stay in the file that uses them | Writing Dart | ^ |
+| Cb-14 | One public class per file, named for it in `snake_case.dart` | Writing Dart | review: each `.dart` file holds one public class, named for its file |
+| Cb-14.a | A closed family a `sealed class` or an enum holds (an exception hierarchy, a set of states) is one file | Writing Dart | review: each such family is in one file |
+| Cb-14.b | Small private helpers stay in the file that uses them | Writing Dart | review: no private helper sits in a file that does not use it |
 | Cb-15 | Every file starts with a header comment: what it holds; depends on; used by; what it reads or writes (database, network, files, the clock) | Writing Dart | a script lists a `.dart` file with no header (to be written) |
-| Cb-16 | What a file needs comes in through its constructor or arguments; no reading another module's globals | Writing Dart | ^ |
-| Cb-17 | A Repository never reaches into another repository; combine data one layer up. A Service holds no state | Writing Dart | ^ |
+| Cb-16 | What a file needs comes in through its constructor or arguments; no reading another module's globals | Writing Dart | review: no file reads another module's global, and each dependency arrives by constructor or argument |
+| Cb-17 | A Repository never reaches into another repository; combine data one layer up. A Service holds no state | Writing Dart | review: no repository imports another repository, and no service holds mutable state |
 | Cb-18 | Behavior that appears twice is one shared widget or function: search for an existing one before writing a new one, and extract a shared one when a second use appears (a filter, a list column, a row, a draggable block) | Writing Dart | review: the Reviewer names each pair of near-identical code and the shared one that replaces it |
-| Cb-19 | Dart code sits in the folder its brief names (Or-05.d); the Scrum board follows these rules | Writing Dart | review: each Dart file sits in a folder its brief named |
+| Cb-19 | Dart code sits in the folder its brief names (Or-05.d) | Writing Dart | review: each Dart file sits in a folder its brief named |
 
 ## Not yet placed
 
