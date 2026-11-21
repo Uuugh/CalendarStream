@@ -34,7 +34,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 - **Size** of a story: its changed files (the rate is in `SCRUM.d/usage.md`).
 - **Scratch folder**: the session's scratchpad directory, named in the session's environment.
 - **Sprint**: the stories chosen to be built next. A sprint ends when its stories are done or at their review; it has no calendar length.
-- **Ready**: a story is Ready when its requirements pass the review in `requirements/README.md` ("Simulate three jobs") and no open question blocks it.
+- **Ready**: a story is Ready when its requirements pass the review in `requirements/README.md` ("Simulate three jobs"), no open question blocks it, every row of it has status `backlog`, and no test cell of it is `—`.
 - **Definition of done**: `tests/tools/req_check.sh` passes and the Tester reports `pass` for every requirement of the story, the README and docs the story affects are updated, and the Product Owner accepts it at the Review.
 
 ### Events
@@ -74,11 +74,11 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-07.f | Pushes | Post-flight | `git log origin/<branch>` matches the local branch |
 | Or-08 | Launches a team per story: both Coders and a Tester | Sprint | review: each story has a Coder (build), a Coder (tests) and a Tester in the record |
 | Or-08.a | Launches Coder (build) and Coder (tests) together, and the Tester after both report | Sprint | review: the launch times in the record follow the order of the row |
-| Or-09 | A story enters a sprint when it is Ready: its requirements pass the review in `requirements/README.md` ("Simulate three jobs"), no open question blocks it, and every row of it has status `backlog`. The Orchestrator checks this before planning | Before planning | review: the check names the review it ran, no test cell of the story is `—`, no `(?)` row blocks it |
-| Or-09.b | A story is small enough for one Reviewer run (about 1,000 changed lines); a larger story is split before it starts | Before planning | `git diff --stat` at post-flight; a story over that size was not split |
+| Or-09 | A story enters a sprint when it is Ready. The Orchestrator checks this before planning | Before planning | review: the check names the review it ran, no test cell of the story is `—`, no `(?)` row blocks it |
+| Or-09.b | A story is small enough for one Post-flight check (about 1,000 changed lines); a larger story is split before it starts | Before planning | `git diff --stat` at post-flight; a story over that size was not split |
 | Or-09.a | A story that is not Ready is not planned; reports to the Product Owner why (an open question, a `—` test cell, a `defect` row) | Before planning | review: a story with a `—` cell, an open question or a `defect` row has a message to the Product Owner and no launch |
 | Or-10 | Progress bars: one simple bar per running agent, nothing else, in every message to the Product Owner until it finishes: label (the agent's role and the story it works on), 20-character bar, `done/total`, and `done` when finished. Do not poll or sleep; draw the bars when a notification arrives; Each agent writes `done/total` to its own progress file (in the session's scratch folder) after each unit | Until the agent finishes | review: every message to the Product Owner while an agent runs holds one bar per agent |
-| Or-10.a | Stops every running agent when the Product Owner says stop or their 5-hour usage (`/usage`) passes about 70%, and makes no commit, push or launch until told | A stop message, or usage about 70% | review: after a stop message no agent is running and no commit follows |
+| Or-10.a | Stops every running agent when the Product Owner says stop or their 5-hour usage (`/usage`) passes about 70%, and makes no commit, push or launch until told. The 7-day reading has no stop line: the Product Owner decides from it | A stop message, or usage about 70% | review: after a stop message no agent is running and no commit follows |
 | Or-10.b | Sets an alarm for the window's reset time (the status line shows it) that tells the Product Owner and asks for a usage reading | After a stop for usage | review: after a stop for usage an alarm exists for the reset time |
 | Or-10.c | Relaunches when the Product Owner says so, with "keep the output file and continue with what is not yet written" | The Product Owner says so | review: a relaunch brief holds the quoted sentence |
 | Or-11 | Before a session ends, updates `WORKING.d/README.md` and pushes it: nothing else survives into the next conversation | Before a session ends | `git status` is clean and `WORKING.d/README.md` is pushed at the end of the session |
@@ -101,7 +101,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-17 | Sets a requirement's status to `defect` when an agent reports it cannot act on it; changes the requirement and sets it to `proposed` for the Product Owner's review | An agent (the Orchestrator included) finds a requirement it cannot act on | review: no row an agent reported is left without `defect` or `proposed` |
 | Or-18 | Changes a blank status to `backlog` | A blank status is found | `git diff` shows no blank status after the Orchestrator's pass |
 | Or-19 | Flags a rule that breaks a Law and proposes its removal and waits for the Product Owner's decision; never removes it alone | A rule is found that breaks a Law | `req_check.sh` lists identical statements (Law 1), exception wording (Law 2) and a rule with no test (Law 3); the review for what a script cannot find is run on request of the Product Owner |
-| Or-20 | Never launches a sprint; waits for the Product Owner's message | ^ | review: the sprint was launched by a Product Owner message |
+| Or-20 | Never calls for or launches a sprint; waits for the Product Owner's message, which is the only start of a sprint | ^ | review: the sprint was launched by a Product Owner message |
 | Or-21 | Never deletes `proposed`; the Product Owner agrees to a row by deleting it | ^ | `git diff` shows no `proposed` removed by the Orchestrator |
 | Or-22 | Never accepts a story; the Product Owner accepts or rejects each story at the Review | Review | review: no story is `done` without a Product Owner accept in `sprint.md` |
 | Or-23 | Launches more than one team in a sprint only when the Product Owner directs it (one team by default), each on its own stories | Sprint | review: one team per story unless a Product Owner message directs more |
@@ -167,10 +167,9 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 
 - "Requirements never refer to a story." Also in `requirements/README.md`.
 - Conflict for the Product Owner: Or-07.d runs `req_check.sh` at every Post-flight, but you told me to run it only when you ask.
-- Or-09.b keeps the original words "small enough for one Reviewer run", but the Reviewer no longer reviews stories; what the 1,000 lines should be sized against is not stated.
+- Or-09.b: "small enough for one Reviewer run" became "small enough for one Post-flight check" after the Reviewer was moved outside code development.
 - "The Dashboard records the sprint in `SCRUM.d/sprint.md` and each requirement's status." (The Dashboard is not a role.)
-- Replaced by the Product Owner's correction that the Reviewer is outside code development: "Runs once per story, cold, after the Tester reports `pass`" (Rv-01), "the Reviewer after the Tester reports `pass` (Rv-01)" (Or-08.a), and "the Reviewer reports no finding against a rule or a requirement" (Definition of done).
-- No threshold for the 7-day usage reading (Or-10.a covers the 5-hour window only).
+- Old wording of the Reviewer, removed because the Product Owner corrected that the Reviewer is outside code development: "Runs once per story, cold, after the Tester reports `pass`" (Rv-01), "the Reviewer after the Tester reports `pass` (Rv-01)" (Or-08.a), and "the Reviewer reports no finding against a rule or a requirement" (Definition of done).
 - Retrospective timing ("after the Review") is not stated in the original file; to confirm.
 - Removed from definitions because rules and the status list in `requirements/README.md` already say them: "A requirement in a story has status `planned`, and `done` once its story is accepted at the Review" (Or-24.b, Or-13.e) and "done when their tests pass" (Definition of done).
 - "A story that misses done is split, spilled over to the next sprint or stopped by the Orchestrator" is Or-16; its **Test** line is below.
