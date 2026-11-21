@@ -3,7 +3,7 @@
 # ID that does not exist. Warnings (listed, exit 0): a number or duration outside DEF-01, history or script wording.
 # Uses only bash and awk. Run from the repository root: tests/tools/req_check.sh
 cd "$(dirname "$0")/../../requirements" || exit 2
-echo "Rules: requirements/README.md (rules 1 and 2 are the laws; each rule has its test)"
+echo "Rules: requirements/README.md (the laws are in AGENTS.md; each rule has its test)"
 files=$(ls *.md *.d/*.md | grep -v -e '^README.md$' -e '^oldkey.md$' -e '^open-questions.md$')
 err=0
 rows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{gsub(/ /,"",$2); print FILENAME" "$2}' $files)
@@ -23,31 +23,31 @@ echo "== warnings: numbers with units outside DEF-01 (rows not in common.md)"
 awk -F"|" 'FILENAME!="common.md" && FILENAME!="theme.md" && /^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if ($4 ~ /[0-9]+ ?(minutes?|seconds?|milliseconds?|ms|hours?|days?|characters|px|mm|KB|MB|%)/ && $4 !~ /DEF-01/) print FILENAME": "$2}' $files | sed 's/ $//' | sort | uniq -c | awk '{print $2" "$3" "$4}' | tr '\n' ';'; echo
 echo "== warnings: history or script wording"
 awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (tolower($4) ~ /python app|old app|legacy|rather than uid|\(developer, nov|the checked|oracle|sampled|fixture|\(400\)/) print FILENAME": "$2}' $files | tr '\n' ';'; echo
-echo "== errors: the same statement in two rows (rule 1, say it once)"
+echo "== errors: the same statement in two rows (law 1, say it once)"
 same=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ s=tolower($4); gsub(/^ +| +$/,"",s); if (length(s)>40) { id=$2; gsub(/ /,"",id); if (s in seen) print seen[s]" = "id; else seen[s]=id } }' $files | tr '\n' ';')
 [ -n "$same" ] && { echo "$same"; err=1; } || echo none
-echo "== warnings: exception wording (rule 2, no exceptions; a judgment call, read the row)"
+echo "== warnings: exception wording (law 2, no exceptions; a judgment call, read the row)"
 awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (tolower($4) ~ /(^|[^a-z])(except|unless)([^a-z]|$)|never for|only when/) { id=$2; gsub(/ /,"",id); print id } }' $files | tr '\n' ' '; echo
-echo "== errors: an agent or tool is named (rule 11)"
+echo "== errors: an agent or tool is named (rule 2)"
 named=$(grep -nE 'Claude|ChatGPT|GPT|Codex|Copilot|Anthropic|OpenAI' $files README.md | cut -d: -f1,2 | tr '\n' ';')
 [ -n "$named" ] && { echo "$named"; err=1; } || echo none
-echo "== errors: a status that is not proposed, backlog, planned or done (README, Line format)"
+echo "== errors: a status that is not proposed, backlog, planned or done (README, Definitions, Row)"
 badstat=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ s=$3; gsub(/^ +| +$/,"",s); if (s !~ /^(proposed|backlog|planned|done)( [(][?][)])?$/) { id=$2; gsub(/ /,"",id); print id" ("s")" } }' $files | tr '\n' ';')
 [ -n "$badstat" ] && { echo "$badstat"; err=1; } || echo none
 echo "== errors: a connection file that does not state its role as a source, a feed or both (connections.md, CON-01.c)"
 norole=$(for f in connections.d/*.md; do case $f in connections.d/README.md) continue;; esac; grep -qE '\| [A-Z]+-[0-9]+(\.[a-z]+)? \|[^|]*\|[^|]*(is a source|is a feed|both a source and a feed)' $f || echo $f; done | tr '\n' ';')
 [ -n "$norole" ] && { echo "$norole"; err=1; } || echo none
-echo "== prefixes: a feature has three letters; a module adds its folder's letter (C connections.d, P plugins.d); see README, Prefixes"
+echo "== prefixes: a feature has three letters; a module adds its folder's letter (C connections.d, P plugins.d); see README, Definitions, ID"
 badpre=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ id=$2; gsub(/ /,"",id); split(id,a,"-"); p=a[1]; if (FILENAME ~ /^connections\.d\//) ok=(p ~ /^C[A-Z][A-Z][A-Z]$/); else if (FILENAME ~ /^plugins\.d\//) ok=(p ~ /^P[A-Z][A-Z][A-Z]$/); else ok=(p ~ /^[A-Z][A-Z][A-Z]$/); if (!ok) { k=FILENAME" "p; if (!(k in seen)) { seen[k]=1; print FILENAME": "p } } }' $files | tr '\n' ';')
 [ -n "$badpre" ] && { echo "$badpre"; err=1; } || echo none
-echo "== warnings: number words (two or more) outside DEF-01 (rule 3; rows not in common.md)"
+echo "== warnings: number words (two or more) outside DEF-01 (rule 9; rows not in common.md)"
 grep -HnE '^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]' $cfiles | sed 's/[\][|]//g' | awk -F'|' '{print $1"|"$4}' | grep -i -E '[^a-z-](two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|hundred|thousand)[^a-z-]' | grep -v -i 'two-way' | cut -d'|' -f1 | tr '\n' ' ' | cut -c1-400
 echo
-echo "== warnings: an agreed parent (backlog or blank) with a proposed sub-requirement: the Product Owner reviews the new children (rule 15)"
+echo "== warnings: an agreed parent (backlog or blank) with a proposed sub-requirement: the Product Owner reviews the new children (rule 6)"
 awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); split(i,a,"."); if (index(i,".")==0) {ps[FILENAME" "i]=s} else if (s=="proposed") {bad[FILENAME" "a[1]]=1}} END {for (p in bad) if ((p in ps) && ps[p]!="proposed") {split(p,b," "); print b[2]}}' $files | sort -u | tr '\n' ' '
 echo
 echo "== errors: a numbered rule in requirements/README.md or a rule in AGENTS.md without a Test line (law 3)"
-notest=$(awk '/^## Rules for writing and changing requirements/{inr=1; next} /^## /{inr=0} inr && /^[0-9]+\. \*\*/ { if ($0 !~ /\*\*Test:\*\*/) { split($0,a,"."); print a[1] } }' README.md | tr '\n' ' ')
+notest=$(awk '/^## Rules for writing and changing requirements/{inr=1; next} /^## /{inr=0} inr && /^[0-9]+\. \*\*/ { if (blk != "" && blk !~ /\*\*Test:\*\*/) print first; split($0,a,"."); first=a[1]; blk=$0; next } inr && first != "" { blk=blk $0 } END { if (blk != "" && blk !~ /\*\*Test:\*\*/) print first }' README.md | tr '\n' ' ')
 [ -n "$notest" ] && { echo "rules without a test: $notest"; err=1; } || echo none
 notestA=$(awk '/^## (The laws|Standing rules)/{inr=1; next} /^## /{inr=0} inr && /^(- |[0-9]+[.] )[*][*]/ { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) print first; blk=$0; first=substr($0,1,50); next } inr { blk=blk $0 } END { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) print first }' ../AGENTS.md)
 [ -n "$notestA" ] && { echo "AGENTS.md rules without a test:"; echo "$notestA"; err=1; } || echo none
@@ -62,14 +62,14 @@ echo "== errors: a requirement row outside its table (a non-table line before it
 outside=$(awk '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (prev !~ /^\|/) print FILENAME": line "FNR } { prev=$0 }' $files | tr '\n' ';')
 badlink=$(grep -o '](\([^)#]*\))' README.md | sed 's/^](//; s/)$//' | grep -v '^http' | while read p; do [ -f "$p" ] || echo "$p"; done | tr '\n' ';')
 [ -n "$outside$badlink" ] && { echo "$outside$badlink"; err=1; } || echo none
-echo "== errors: a cited message key (msg:key) missing from messages/app_en.arb, or a locale file lacking a key the template has (rule 14)"
+echo "== errors: a cited message key (msg:key) missing from messages/app_en.arb, or a locale file lacking a key the template has (rule 3)"
 tkeys=$(grep -o '^  "[A-Za-z0-9]*":' messages/app_en.arb | tr -d ' ":' | sort)
 cited=$(grep -ho 'msg:[A-Za-z0-9]*' $files | sed 's/^msg://' | sort -u)
 missing_cited=$(comm -13 <(echo "$tkeys") <(echo "$cited") | grep . | tr '\n' ' ')
 lacking=$(for l in messages/app_*.arb; do case $l in messages/app_en.arb) continue;; esac; k=$(grep -o '^  "[A-Za-z0-9]*":' $l | tr -d ' ":' | sort); n=$(comm -23 <(echo "$tkeys") <(echo "$k") | wc -l); [ "$n" -gt 0 ] && echo "$l lacks $n keys"; done | tr '\n' ';')
 [ -n "$missing_cited$lacking" ] && { echo "$missing_cited$lacking"; err=1; } || echo none
 echo "   message keys not yet cited by a requirement: $(comm -23 <(echo "$tkeys") <(echo "$cited") | grep -c .) of $(echo "$tkeys" | wc -l)"
-echo "== questions: every (?) row is in open-questions.md and every question there has a (?) row (rule 10)"
+echo "== questions: every (?) row is in open-questions.md and every question there has a (?) row (rule 8)"
 q=open-questions.md
 qrows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/ && $3 ~ /\(\?\)/ {id=$2; gsub(/ /,"",id); print id}' $files | sort)
 qfile=$(grep -oE '^- \*\*[A-Z]+-[0-9]+(\.[a-z]+)?\*\*' $q | grep -oE '[A-Z]+-[0-9]+(\.[a-z]+)?' | sort)

@@ -22,6 +22,7 @@ Delete an item when done (git history keeps it). Keep under 4,000 characters, on
 ## Files
 
 - `readme-links.md`: files that cite README rule numbers, to update after the rewrite
+- `lessons.md`, `rule-key.md`: README-rewrite lessons; old to new rule numbers
 - `move-plan.md`: plan for moving files into the new layout
 - `placeholders.md`: plain-text stand-ins left when the old app moved
 - `repo-review.md`: Reviewer findings on the process files (decide, then delete)
