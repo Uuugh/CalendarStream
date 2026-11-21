@@ -10,7 +10,7 @@ after minus before; a window reset in between makes the session actual unknown (
 |---|---|---|---|---|---|---|---|---|
 | dashboard | rounds 1 and 2, with the process-rule work of the same conversation | Nov 20 | Sonnet 5.5 | – | 11 / 43 | 94 / 54 | 83 | No reading was taken at the sprint start, only when the Product Owner sent one mid-conversation (11 / 43); the 94 / 54 reading came at the stop of round 3; the conversation also covered the gap walk and the rule changes, so this is not the dashboard's cost alone |
 | dashboard | round 3 (redesign, outline, plus buttons, collapse fix), stopped unfinished | Nov 20 | Sonnet 5.5 | – | 25 / 58 | 83 / 66 | 58 | Before-reading at 13:22; after-reading at 14:25 when the Product Owner reported 83 / 66 and the Orchestrator stopped the agents (the 70% line had been passed without a reading); 58 points of the 5-hour window and 8 of the week for an unfinished round, including the Orchestrator's own work in the conversation |
-| dashboard | round 3 remainder, Review and your acceptance (planned) | Nov 20 | Sonnet 5.5 | 60 (45–80) | 8 / 69 | – | – | Before-reading taken at the session start (window resets 23:20, week Wed 17:00); sprint not yet launched. Estimate made at 14:50 from the old baseline rate (about 35 changed files at 1.3 session % per file, plus the Reviewer run and the Orchestrator's own work); weekly about 8 |
+| dashboard | round 3 remainder, Review and your acceptance (planned) | Nov 20 | Sonnet 5.5 | 60 (45–80) | – | – | – | Estimate made at 14:50 from the old baseline rate (about 35 changed files at 1.3 session % per file, plus the Reviewer run and the Orchestrator's own work); weekly about 8 |
 
 ## Baseline from the old dashboard (low confidence)
 
