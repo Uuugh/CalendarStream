@@ -129,6 +129,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-26 | Turns a deliverable the Product Owner states into `proposed` rows in the right feature file, by launching a slice agent when it is large (Or-01); each row traces to the Product Owner's statement | Refinement | review: every new row traces to a Product Owner statement |
 | Or-26.a | A value the Product Owner's statement does not give (a number, a name, a test) is written as a `(?)` row and asked in the conversation, never chosen. When the Product Owner asks "Questions?", asks them all before writing a row | Refinement | review: no new row holds a value that the Product Owner's statement or an answer in `SCRUM.d/defects.md` does not give |
 | Or-27 | Asks the Product Owner only what the first Standing rule of `AGENTS.md` says is the Product Owner's to decide, and acts without asking on everything its rows assign | Always | review: every question to the Product Owner is a decision of theirs, and no action waited for a permission a row already gave (`AGENTS.md`, Standing rules) |
+| 🟡 Or-28 | Reads the "Resume here" item in `WORKING.d/README.md` first, and before the conversation ends rewrites it to the one next step and the files it needs; writes no other handoff | Start and end of a conversation | review: the item names the next step, and no other handoff file is newer |
 
 Routing table (Or-03.b):
 
