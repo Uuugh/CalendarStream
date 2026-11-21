@@ -8,12 +8,12 @@ after minus before; a window reset in between makes the session actual unknown (
 
 ## Levels
 
-The levels of the 5-hour reading and what the Orchestrator does at each (the 7-day reading has no level; the Product Owner decides from it).
+The levels of the 5-hour and the 7-day readings, the same for both, and what the Orchestrator does at each. A job is a sprint or any other task; its projected after-reading is estimated by Or-15.b.
 
-| Level | 5-hour reading | Action |
+| Level | Reading | Action |
 |---|---|---|
-| Warning | 🟡 the Product Owner gives the number | Warn the Product Owner before launching any agent (Or-10.d) |
-| Stop | about 70% | Stop every running agent and make no commit, push or launch until told (Or-10.a) |
+| Warning | 70% | Warn the Product Owner before starting a job projected to end at or above it, and continue (Or-10.d) |
+| Permission | 85% | Warn, and wait for the Product Owner's permission before starting a job projected to end at or above it (Or-10.e); stop a running agent when a reading reaches it without permission (Or-10.a) |
 
 | Sprint | Story or round | Date | Model | Estimate session % | Before s / w | After s / w | Actual session % | Notes |
 |---|---|---|---|---|---|---|---|---|
