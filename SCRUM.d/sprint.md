@@ -28,7 +28,7 @@ Launched by the Product Owner's message "start", after the deliverable "using da
 ## Retrospective findings (Or-14.b), each ending as a fix, a Product Owner proposal, or a stated reason
 Reviewer (cold, Or-14.a), 21 findings:
 1. Issue defined twice: fixed (SCRUM.d points at `requirements/README.md`).
-2. Laws 1 and 2 restated as `requirements/README.md` rules 1 and 2: proposal to the Product Owner (Or-19); `req_check.sh` counts the numbered rule, so it needs the check changed with it.
+2. Laws 1 and 2 restated as `requirements/README.md` rules 1 and 2: fixed, removed at the Product Owner's earlier decision; the rules moved up by two (key in `WORKING.d/rules-key.md`) and the labels in `req_check.sh` were updated.
 3. Status vocabulary repeated: stated reason; the definition is in `requirements/README.md`, the rows only use a status as a trigger.
 4. Or-27, Or-07.c, Or-07.f restate `AGENTS.md`: stated reason; each cites the rule so a cold Orchestrator finds its limit in `SCRUM.d`; Or-07.c reworded to cite it.
 5. Rv-01 and Or-14.a, Or-24 and Or-24.c, Or-05 and Or-05.d overlap: Or-24 fixed (points at Or-24.c); the others stated reason (two roles for one event; a list of fields and the values for them).

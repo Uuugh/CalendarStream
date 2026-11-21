@@ -21,6 +21,8 @@ Delete an item when done (git history keeps it). Keep under 4,000 characters, on
 
 ## Files
 
+- `rules-method.md`: how definitions and rules are built (draft; the Product Owner places it)
+- `rules-key.md`: old to new numbers of the requirements rules; fix the links, then delete
 - `move-plan.md`: plan for moving files into the new layout
 - `placeholders.md`: plain-text stand-ins left when the old app moved
 - `repo-review.md`: Reviewer findings on the process files (decide, then delete)
