@@ -101,10 +101,6 @@ The scans of the README and CHANGELOG and the gap triage were folded into these 
 A feature file is not done when its rows are written. After organizing a feature into requirements and sub-requirements, go back over it:
 
 1. **The laws and rules**: every row obeys rules 1 to 3 (numbers, shared homes, specifics only) and the laws in `AGENTS.md`. Search the other files for the same rule in other words before accepting a row as new.
-2. **Simulate three jobs**, and fix what stops you:
-   - **Coder**: every term is defined; every behavior and boundary is stated; time and size limits are stated; nothing has to be guessed.
-   - **Tester**: every row has a visible pass or fail; one rule per row, so a failure says which; time can be controlled in a test.
-   - **Reviewer**: the statement says what to build, with no history or Python-app notes; the code can be compared with it row by row.
 
 The aim is that the requirement files speak for themselves, so the build rules can stay short.
 
