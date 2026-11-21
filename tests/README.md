@@ -49,7 +49,7 @@ each time-dependent requirement, show the controlled clock.
 
 ## Results
 
-🟡 Each run reports one result per requirement ID, with the command run, by this precedence: `fail` (with the ID, what was expected and what was found) if any listed test fails; else `not run` (the test could not start or crashed before its checks); else `uncovered` if a clause is uncovered; else `pass`. Any result names each uncovered clause. A row with sub-requirements takes the first of these four words, in the order given, that its own tests or its sub-requirements have, and names the sub-requirement that has it. **Test:** review: each result in a report is one of those four words, names the command, and names each uncovered clause.
+🟡 Each run reports one result per requirement ID, with the command run, by this precedence: `fail` (with the ID, what was expected and what was found) if any listed test fails; else `not run` (the test could not start or crashed before its checks, or the row has status `defect`); else `uncovered` if a clause is uncovered; else `pass`. Any result names each uncovered clause. A row with sub-requirements takes the first of these four words, in the order given, that its own tests or its sub-requirements have, and names the sub-requirement that has it. **Test:** review: each result in a report is one of those four words, names the command, and names each uncovered clause.
 
 ## Layout
 
@@ -57,7 +57,7 @@ Tests sit in `test/<feature>/`, mirroring `requirements/<feature>.md`, in the Da
 (https://dart.dev/tools/pub/package-layout); thin end-to-end tests sit in `integration_test/`. Fakes and made-up data are never real data
 (`AGENTS.md`). How runs are split and what a run reports to the dashboard is the first open story in `WORKING.d/README.md`.
 
-🟡 `test/smoke.md` is the smoke procedure: a written procedure an agent follows at each Review (method 6), derived from the requirements; each step names the requirement IDs it exercises. **Test:** review: each step names requirement IDs, and the Tester's smoke report follows the file.
+🟡 `test/smoke.md`, in the project's `test/` folder, is the smoke procedure: a written procedure an agent follows at each Review, derived from the requirements; each step names the requirement IDs it exercises and is reported `pass`, `fail` or `not run`. **Test:** review: each step names requirement IDs, and the Tester's smoke report follows the file.
 
 Made-up data lives in `tests/data/`, one dataset per kind, shared by all tests (`Demo.ics` is a made-up schedule, `work.ics` a
 second made-up calendar). **Test:** review: a test that carries its own copy of data names the shared dataset it could have used.
