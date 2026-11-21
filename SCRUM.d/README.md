@@ -137,6 +137,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-29.d | Continues the role's IDs of this file and does not reuse an ID this file records as removed | ^ | review: no new ID equals a removed ID or an existing ID |
 | Or-29.e | For each source rule whose result is a chosen value (a method, a word, a name), asks what happens with an empty set, a tie and mixed results, and writes the unanswered cases in "Not yet placed" as one 🟡 question per rule, never as a new rule, and a yes/no check gets none | ^ | review: each rule whose result is a chosen value has its three cases answered by the source or listed in one question |
 | Or-29.f | Before showing the rewrite, scans it for exception words (Law 2) and compares it with the rows of this file (Law 1), and marks only what the rewrite added or could not place | ^ | review: no exception word is left, and no mark sits on a line copied unchanged from the source |
+| 🟡 Or-30 | Before executing a job, writes in one line the Product Owner's words that call for it and the job, and checks that every file, place, name, count and step of the job is in those words; a job adds no process, file or step the words do not name | Before each job | the Reviewer, on the Product Owner's request, given the instruction and the diff: each file, place, name, count and step of the job is in the instruction, and the one line was written before the job |
 
 Routing table (Or-03.b):
 
