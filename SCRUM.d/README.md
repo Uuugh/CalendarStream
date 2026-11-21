@@ -65,10 +65,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-02.f | Changes a blank status to `backlog` | A blank status is found | `git diff` shows no blank status after the Orchestrator's pass |
 | Or-03 | Treats an agent's report as a claim, checks it, then routes every result that is not `pass` (Or-03.a, Or-03.b) | An agent reports | ^ |
 | Or-03.a | Checks the report against the diff and, for a Tester's report, against its named command and one result per requirement ID; reruns a test only when the report lacks either | An agent reports | review: the post-flight record cites the diff and, for a Tester, the command and the results |
-| 🟡 Or-03.b | Routes each result that is not `pass`, a `fail` first (Or-03.b.a to Or-03.b.c) | A Tester's report has a result that is not `pass` | review: each such result has a later `pass`, a `defect` or a split row |
-| Or-03.b.a | `fail`: to the Coder (build), or to the Coder (tests) (Ct-02) when the Tester says the test is wrong | A result `fail` | review: each `fail` has a fix commit after it |
-| Or-03.b.b | `not run`: to the Coder (tests) (Ct-02) when the test could not start, or to the Coder (build) when the code crashed it | A result `not run` | review: each `not run` has a later result that is not `not run` |
-| Or-03.b.c | `uncovered`: a behavior that can fail on its own, with the rest of the row passing, could be a requirement of its own, so the requirement is a defect (Or-02.e.b) naming it; any other behavior goes to the Coder (tests) (Ct-03) | A result `uncovered` | review: each uncovered behavior has a test added, or its requirement is `defect` or `proposed` and names it |
+| 🟡 Or-03.b | Routes each result that is not `pass` by the routing table below, a `fail` first | A Tester's report has a result that is not `pass` | review: each such result went to the role the routing table gives, and has a later `pass`, a `defect` or a split row |
 | Or-04 | Runs Pre-flight: the sub-rules in order, before launching any agent | Pre-flight | review: the first messages of the session show Or-04.a to Or-04.e done in order |
 | Or-04.a | Reads `WORKING.d/README.md` (your memory) | Pre-flight | review: the first message states what `WORKING.d/README.md` held |
 | Or-04.b | Runs `git status` and `git diff` | Pre-flight | review: the first message quotes `git status` before any edit |
@@ -132,6 +129,17 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-26 | Turns a deliverable the Product Owner states into `proposed` rows in the right feature file, by launching a slice agent when it is large (Or-01); each row traces to the Product Owner's statement | Refinement | review: every new row traces to a Product Owner statement |
 | Or-26.a | A value the Product Owner's statement does not give (a number, a name, a test) is written as a `(?)` row and asked in the conversation, never chosen. When the Product Owner asks "Questions?", asks them all before writing a row | Refinement | review: no new row holds a value that the Product Owner's statement or an answer in `SCRUM.d/defects.md` does not give |
 | Or-27 | Asks the Product Owner only what the first Standing rule of `AGENTS.md` says is the Product Owner's to decide, and acts without asking on everything its rows assign | Always | review: every question to the Product Owner is a decision of theirs, and no action waited for a permission a row already gave (`AGENTS.md`, Standing rules) |
+
+Routing table (Or-03.b):
+
+| Result | Condition | Goes to |
+|---|---|---|
+| `fail` | the test is right | Coder (build) |
+| `fail` | the Tester says the test is wrong | Coder (tests) (Ct-02) |
+| `not run` | the test could not start | Coder (tests) (Ct-02) |
+| `not run` | the code crashed it | Coder (build) |
+| `uncovered` | the behavior can fail on its own, with the rest of the row passing, so it could be a requirement of its own | a defect (Or-02.e.b) naming it |
+| `uncovered` | any other behavior | Coder (tests) (Ct-03) |
 
 ### Coder (build)
 
