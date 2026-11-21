@@ -38,8 +38,12 @@ behavior and the requirement ID. Shared helpers live in one place, and a test mo
 that verify the same row are merged into one. A test whose requirement is deleted is deleted. **Test:** review: for each
 test, name the requirement it verifies, and for each pair, show they verify different rows.
 
-A defect gets a failing test first; the fix follows. **Test:** review: the commit that fixes a defect follows the commit of
+An issue gets a failing test first; the fix follows. **Test:** review: the commit that fixes an issue follows the commit of
 its failing test.
+
+A test declares whether one run covers all its requirement IDs or runs once per ID. A requirement that depends on time is
+tested with a clock the test controls; no test waits real time. **Test:** review: for each test, name its declaration; for
+each time-dependent requirement, show the controlled clock.
 
 ## Results
 
@@ -48,7 +52,8 @@ Each run reports one result per requirement ID, with the command run: `pass`, `f
 
 ## Layout
 
-Tests sit in `tests/<feature>/`, mirroring `requirements/<feature>.md`. Fakes and made-up data are never real data
+Tests sit in `test/<feature>/`, mirroring `requirements/<feature>.md`, in the Dart package layout
+(https://dart.dev/tools/pub/package-layout); thin end-to-end tests sit in `integration_test/`. Fakes and made-up data are never real data
 (`AGENTS.md`). How runs are split and what a run reports to the dashboard is the first open story in `WORKING.d/README.md`.
 
 Made-up data lives in `tests/data/`, one dataset per kind, shared by all tests (`Demo.ics` is a made-up schedule, `work.ics` a

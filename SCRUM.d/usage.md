@@ -1,7 +1,7 @@
 # Usage
 
 The Product Owner's readings of the 5-hour session % and the 7-day weekly % (`/usage` or the status line), taken by the
-Orchestrator at the start and end of each sprint (`SCRUM.d/README.md`, Orchestrator step 11). The dashboard reads this file.
+Orchestrator at the start and end of each sprint (`SCRUM.d/README.md`, Or-15). The dashboard reads this file.
 
 Estimate = what the Orchestrator said before the work. Before and after = the readings (session % / weekly %). Actual =
 after minus before; a window reset in between makes the session actual unknown (`?`). A dash = never recorded.
@@ -15,7 +15,7 @@ after minus before; a window reset in between makes the session actual unknown (
 ## Baseline from the old dashboard (low confidence)
 
 Imported from the retired Python app's `build-costs.md`: builds with a measured session actual. It is a different task type and
-different models (Sonnet 5 and 5.5), so use it only until this project has three finished pairs of its own (step 11). Estimate and
+different models (Sonnet 5 and 5.5), so use it only until this project has three finished pairs of its own (Or-15). Estimate and
 actual are the session % of the 5-hour window.
 
 | Build | Files, lines (+/−) | Items | Estimate session % | Actual session % | Notes |
@@ -27,4 +27,4 @@ actual are the session % of the 5-hour window.
 
 Rate seen: about 1 to 1.6 session % per changed file in a code build (beta.31 1.0; beta.32 1.6). Round 3 of the new dashboard
 cost 58 session % for at least 43 changed files, about 1.3 per file, which agrees. Rule of thumb until more data exists: a code
-story costs about 1.3 session % per changed file, within plus or minus 30%.
+story costs about 1.3 session % per changed file, within plus or minus 30%; the estimate range is Or-15.b.

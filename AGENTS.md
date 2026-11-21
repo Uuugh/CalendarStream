@@ -34,7 +34,7 @@ what each does are in `SCRUM.d/README.md`.
   waited for a permission it already had, and no action follows a Product Owner message that asks and does not direct.
 - **Never revert or overwrite the Product Owner's edits.** They edit files directly; a status they leave blank means
   backlog. **Test:** before and after any change run `git status` and `git diff`; no status goes backwards
-  (a move down the order `proposed`, `backlog`, `planned`, `done` is only `planned` to `backlog`).
+  (a move down the order `proposed`, `backlog`, `planned`, `done` is only `planned` to `backlog` or `planned` to `defect`; a `defect` row returns to `proposed`).
 - **Requirements win over the Python app** where they differ. **Test:** review: no requirement is changed to match the old app.
 - **The freeze:** no new features of the CalendarStream app until the port is complete; the Scrum board and the process are not
   the app. **Test:** review: every new row in a requirement file of the app traces to the old app or a Product Owner answer.
