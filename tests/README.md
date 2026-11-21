@@ -41,14 +41,15 @@ test, name the requirement it verifies, and for each pair, show they verify diff
 An issue gets a failing test first; the fix follows. **Test:** review: the commit that fixes an issue follows the commit of
 its failing test.
 
+🟡 The tests a row with no sub-requirements lists together check every condition of its statement; a condition is one thing the statement says must hold. **Test:** review: for each such row, name a condition that none of its tests checks.
+
 A test declares whether one run covers all its requirement IDs or runs once per ID. A requirement that depends on time is
 tested with a clock the test controls; no test waits real time. **Test:** review: for each test, name its declaration; for
 each time-dependent requirement, show the controlled clock.
 
 ## Results
 
-Each run reports one result per requirement ID, with the command run: `pass`, `fail` (with the ID, what was expected and what was found) or
-`not run` (the test could not start or crashed before its checks). A row passes when every test it lists passes.
+🟡 Each run reports one result per requirement ID, with the command run, by this precedence: `fail` (with the ID, what was expected and what was found) if any listed test fails; else `not run` (the test could not start or crashed before its checks); else `uncovered` (a condition of the row's statement that no listed test checks, named in the result); else `pass`. A row with sub-requirements takes the first of these results found among its sub-requirements, in that order. **Test:** review: each result in a report is one of those four words, names the command, and names each uncovered condition.
 
 ## Layout
 

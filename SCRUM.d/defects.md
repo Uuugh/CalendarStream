@@ -1,6 +1,6 @@
 # Defects and questions waiting for the Product Owner
 
-Only unanswered entries are listed (🟡 a question, 🟠 a rewrite whose meaning changes, 🔴 a line proposed for removal). Answer on the `Answer:` line under a question (or tell the orchestrator); the orchestrator applies the answer to the requirement rows and removes the question. Before asking, the orchestrator looks in the other requirements, the retired Python app and its reverse-engineering notes (`WORKING.d/CalendarStream.old/build_rules/reverse-engineering/`) and https://docs.flutter.dev/ and https://dart.dev/.
+Only unanswered entries are listed (the marks are Or-02.e in `SCRUM.d/README.md`). Answer on the `Answer:` line under a question (or tell the orchestrator); the orchestrator applies the answer to the requirement rows and removes the question. Before asking, the orchestrator looks in the other requirements, the retired Python app and its reverse-engineering notes (`WORKING.d/CalendarStream.old/build_rules/reverse-engineering/`) and https://docs.flutter.dev/ and https://dart.dev/.
 
 ## 🟡 Q-X: questions from the drafts (rows marked (?))
 
