@@ -1,6 +1,6 @@
 # Task for ChatGPT (self-contained: nothing outside this message is needed)
 
-Rewrite the file under "FILE TO REWRITE" below as three sections: Intro, Definitions, Rules, plus a final section "Not yet placed". Write your answer to the file `WORKING.d/tests-readme.gpt.md` in the connected workspace (repository Uuugh/CalendarStream): the rewritten file as markdown, then, under the heading "Choices", a list of at most 150 words naming every choice you had to make that these instructions did not settle. Write only that one file, and do not edit any other file or open a pull request. Do not add commentary.
+Rewrite the file under "FILE TO REWRITE" below as three sections: Intro, Definitions, Rules, plus a final section "Not yet placed". Write your answer to the file `WORKING.d/tests-readme.gpt2.md` in the connected workspace (repository Uuugh/CalendarStream): the rewritten file as markdown, then, under the heading "Choices", a list of at most 150 words naming every choice you had to make that these instructions did not settle. Write only that one file, and do not edit any other file or open a pull request. Do not add commentary.
 
 ## The three Laws every rule must obey
 1. No duplication: say it once; a rule is written in one place and referenced everywhere else.
@@ -13,15 +13,14 @@ Rewrite the file under "FILE TO REWRITE" below as three sections: Intro, Definit
 - "When acted" names an event or an observable condition.
 - Role codes: Or = Orchestrator, Cb = Coder (build), Ct = Coder (tests), Te = Tester, Rv = Reviewer (outside code development; tests the process files). Use only these codes.
 
-## Method (the steps to follow)
-1. Keep every word of the original. Move, split and fill columns; never cut or compress. A statement you cannot place goes to "Not yet placed" with the reason.
-2. Sort each sentence: a definition says what a thing is or is for; a rule says what an agent must do or never do, with a trigger. A sentence that is both is split into a definition and a rule. Definitions are never written inside a rule.
-3. Define a term once, in Definitions; rules only use it. Use only terms and codes given here; flag any other you must choose.
-4. A rule binds the agent that acts; the ID prefix is that agent.
-5. A flow (a series of steps) is one parent rule whose sub-rules are the steps in order.
-6. Each rule is actionable by an agent that has never seen the project: it can decide yes or no without judgment. Replace a judgment with a closed list or an observable condition.
-7. A sentence with a "Test:" tail: the tail goes to "How tested", the rest to "What".
-8. A sentence with no actor that cannot be a definition goes to "Not yet placed" and is flagged; do not guess the actor.
+## Method (the steps to follow, in order)
+1. Before writing, read the whole file below, the existing rows in "Existing rows that overlap" below, and the "Citations" below. A cited heading is kept or its citation is noted.
+2. Put every sentence of the original in Definitions, in a row or in "Not yet placed" with the reason; cut nothing. A word you add to What comes from the original; a word you add to When acted or How tested is marked 🟡 and "(proposed)". Define a term once, in Definitions; rules only use it; flag any term or code you must choose.
+3. Sort each sentence: a definition goes to Definitions (a sentence that is both a definition and a rule is split); a rule whose paragraph names an actor is a row for that actor, and the ID prefix is that actor; a rule with no actor in its paragraph goes to "Not yet placed" 🟠 and you never guess the actor; a rule that repeats an existing row goes to "Not yet placed" 🔴; a "Test:" tail goes to How tested, the rest to What. A flow is one parent rule whose sub-rules are the steps in order.
+4. Continue the existing IDs of the role; do not use an ID listed as removed (below).
+5. For each rule ask what happens with an empty set, a tie and mixed results; write each case the original does not answer in "Not yet placed" as a 🟡 question, never as a new rule.
+6. Before answering, scan for exception words (Law 2), compare with the existing rows (Law 1), and mark only what you added or could not place. Each rule must let an agent that has never seen the project decide yes or no without judgment.
+
 
 ## Marks (put them in the first cell of a row, or at the start of a list item)
 - 🟡 a question or a choice you had to make.
@@ -30,7 +29,21 @@ Rewrite the file under "FILE TO REWRITE" below as three sections: Intro, Definit
 
 ## Context you may use
 - The file below belongs to a project where requirements are rows with an ID, a status (proposed, backlog, planned, done, defect), a statement and a test cell. A requirement's test cell names its tests. The roles are: the Coder (tests) writes tests from the requirements only; the Tester runs them and reports one result per requirement ID; the Orchestrator coordinates and routes results.
-- The IDs for the rules you write continue the existing Ct (Coder (tests)) and Te (Tester) numbering at Ct-05 and Te-04; mark that choice 🟡.
+- The IDs for the rules you write continue the existing Ct (Coder (tests)) and Te (Tester) numbering at Ct-05 and Te-05 (Te-04 is a removed ID); mark that choice 🟡.
+
+## Existing rows that overlap (Or = Orchestrator; these exist in another file and are not yours to rewrite)
+- Ct-01: Works from the requirements only, never the implementation, in `test/` (the Dart package layout).
+- Ct-02: Writes, for each requirement, the test that matches it, by the cheapest method, in agent usage and in time, that can still fail (the rule in `tests/README.md`).
+- Ct-02.a: Uses an existing test when that is the cheaper way (`tests/README.md`, "Share before you write").
+- Ct-03: Writes the test that the test cell of each requirement of the story names, and the test for any behavior reported uncovered.
+- Ct-04: Writes `test/smoke.md` as `tests/README.md` (Layout) defines it; acted when the file is missing at the Review.
+- Te-01: Runs the tests Ct wrote and produces one result per requirement, in the format of `tests/README.md` (Results).
+- Te-02: Runs each test the way its test cell says it runs; the method was chosen by the Coder (tests), not by the Tester.
+- Te-03: Writes only its results to its output file; does not change code or tests.
+- `AGENTS.md`, Standing rules: "Never put real data or secrets anywhere (the real schedule, username, Google secret)."
+
+## Citations
+Other files cite these headings of the file below: "Share before you write", "Results", "Layout". Removed ID: Te-04.
 
 ## FILE TO REWRITE
 # tests: how requirements are tested

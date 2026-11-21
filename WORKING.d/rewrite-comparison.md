@@ -3,7 +3,7 @@
 ## Files
 - `requirements-readme.or.md` (Orchestrator) and `requirements-readme.sub.md` (cold sub-Claude): two rewrites of `requirements/README.md`.
 - `tests-readme.or.md`, `tests-readme.sub.md`, `tests-readme.gpt.md`: three rewrites of `tests/README.md` (GPT's was pasted by the Product Owner; the brief is `gpt-brief.md`).
-- The real READMEs are untouched. `lessons.md` holds the lessons; `rules-method.md` the method (draft); `rules-key.md` the old-to-new rule numbers.
+- The real READMEs are untouched. `lessons.md` holds the lessons; `rules-key.md` the old-to-new rule numbers.
 
 ## Result 1: requirements README (mine vs sub-Claude)
 - Both near-lossless, same shape (Intro, Definitions, Rules, Not yet placed), same duplicates flagged (the freeze, the old-app pointers).
