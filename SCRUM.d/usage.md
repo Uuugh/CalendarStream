@@ -12,8 +12,8 @@ The levels of the 5-hour and the 7-day readings, the same for both, and what the
 
 | Level | Reading | Action |
 |---|---|---|
-| Warning | 70% | Warn the Product Owner before starting a job projected to end at or above it, and continue (Or-10.d) |
-| Permission | 85% | Warn, and wait for the Product Owner's permission before starting a job projected to end at or above it (Or-10.e); stop a running agent when a reading reaches it without permission (Or-10.a) |
+| Caution | 70% | Notify the Product Owner before starting a job projected to end at or above it, and continue (Or-10.d); tell running agents to commit (Or-10.f) |
+| Warning | 85% | Ask the Product Owner's permission, and wait, before starting a job projected to end at or above it (Or-10.e); stop a running agent when a reading reaches it without permission (Or-10.a) |
 
 | Sprint | Story or round | Date | Model | Estimate session % | Before s / w | After s / w | Actual session % | Notes |
 |---|---|---|---|---|---|---|---|---|
