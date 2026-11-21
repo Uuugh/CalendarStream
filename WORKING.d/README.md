@@ -7,6 +7,7 @@ Delete an item when done (git history keeps it). Keep under 4,000 characters, on
 ## To do (order: PO, Orchestrator now, waiting)
 
 - [ ] Next test sprint (the PO launches it): verify the Team-05 commit rule survives several interruptions of each agent (Coder (build), Coder (tests), Tester) and a broken requirement (Team-03.a, Or-02.e.b); record the result in the Review.
+- [ ] Resume here: read `WORKING.d/rewrite-comparison.md` (three-way README rewrites, method additions, five Product Owner decisions, state).
 - [ ] PO: review `proposed` rows; answer `SCRUM.d/defects.md` (blank status = `backlog`).
 - [ ] Dashboard epic of 7 stories (`dashboard-brief.md` J, K): Orchestrator launches each story's Coder (build) and Coder (tests) itself, no sub-orchestrator; first the Reviewer on the whole repo (~25 session %); ask the PO for 5h and 7d readings first and after each story; stop agents at 70%; first window = the Reviewer plus the stories that fit the usage left, chosen by the Orchestrator from the estimates (smallest and most independent first); the PO only launches the sprint.
 - [ ] Worktree `CalendarStream-dashboard` (branch `dashboard`): 43 uncommitted files; `flutter build web` fails ("Too few positional arguments: 2 required, 1 given"), fix first; port 8765 serves a stale build. Queued, unbuilt: collapse keeps top-level rows, `+` buttons, add popup (optional number, suggestions), missing sprint file shows an empty board.
