@@ -10,6 +10,8 @@ after minus before; a window reset in between makes the session actual unknown (
 
 The levels of the 5-hour and the 7-day readings, the same for both, and what the Orchestrator does at each. A job is a sprint or any other task; its projected after-reading is estimated by Or-15.b.
 
+The readings file is `C:\Users\rfrie\.claude\usage-now.json`, written by the Product Owner's status line (fields `five_hour_used`, `seven_day_used`, `context_used`, `written_at`). It is stale after 🟡 10 minutes (the Product Owner confirms the number).
+
 | Level | Reading | Action |
 |---|---|---|
 | Caution | 70% | Notify the Product Owner before starting a job projected to end at or above it, and continue (Or-10.d); tell running agents to commit (Or-10.f) |
