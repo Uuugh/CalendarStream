@@ -6,7 +6,7 @@ Everything about how work is organized lives here, once. Rules of an area (requi
 
 A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the role that acts. A sub-rule is ID.a, ID.b and inherits from its parent.
 
-- A blank cell is missing and fails the check. `—` means none, stated. `^` means the parent's value; on a top-level row it means the default, stated once here: the agent does What as written (**how**), the Reviewer tests (**who tests**), per story after the Tester reports `pass` (**when tested**), by the Reviewer's checks Rv-02.a to Rv-02.c (**how tested**). A cell that differs states its own value.
+- A blank cell is missing and fails the check. `—` means none, stated. `^` means the parent's value; on a top-level row it means the default, stated once here: the agent does What as written (**how**), the Orchestrator tests a team's row at Post-flight (Or-07) and the Reviewer tests a process file when it changes (Rv-01) (**who tests**, **when tested**), by the row's own cell, or by Rv-02.a to Rv-02.c when it says `^` (**how tested**). A cell that differs states its own value.
 - **When acted** names an event (defined below) or a condition; `^` on a top-level row means always.
 - A parent rule is a flow ("runs the Review"); its sub-rules are its steps, in order.
 
@@ -58,11 +58,11 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-04.c | Reads the `Answer:` lines in `requirements/open-questions.md` | Pre-flight | review: the first message names every non-blank `Answer:` line or says there is none |
 | Or-04.d | Commits the Product Owner's uncommitted work first, in its own commit (any uncommitted change found at Pre-flight is the Product Owner's) | Pre-flight | `git log` shows the uncommitted change as its own commit before any other commit of the session |
 | Or-04.e | Starts the dashboard if `SCRUM.d/dashboard/` exists and it is not running (the start command is in its README) and gives the Product Owner its address | Pre-flight | review: the first message of the session names the address of a running dashboard |
-| Or-05 | Brief: one line each: role, slice, output file, what the agent may write, its progress file, the skills it must load and use (`dart-flutter` for Dart, `scrum` for Scrum files), and "read AGENTS.md and follow it" | Brief | review: each brief holds every field the row lists |
+| Or-05 | Brief: one line each: role, slice, output file, what the agent may write, its progress file, the skills it must load and use (`dart-flutter` for Dart, `scrum` for Scrum files), and "read AGENTS.md and follow it"; Or-05.a to Or-05.d add to the brief | Brief | review: each brief holds every field the row lists |
 | Or-05.a | For a slice of requirements the limit is "add rows and extend your own; never change the status of an existing row" | Brief | review: a slice agent's diff adds rows and changes no status |
 | Or-05.b | Blind agents (reverse-engineering) must not read the requirements: give them the minimal row format inline | Brief | review: a blind agent's brief holds the row format and no path into `requirements/` |
 | Or-05.c | Writes each brief's acceptance criteria as requirement IDs, and names what is out of scope and which paths the agent may write | Brief | review: each brief lists requirement IDs, what is out of scope and the paths the agent may write |
-| Or-05.d | The brief names the agent's own branch and worktree (Team-04) and its output file (in the scratch folder or a path the brief names) | Brief | review: each brief names a branch, a worktree and an output file |
+| Or-05.d | The brief names the sprint's branch and the team's worktree (Team-04) and its output file (in the scratch folder or a path the brief names) | Brief | review: each brief names a branch, a worktree and an output file |
 | Or-06 | Does not edit files agents are reading | Mid-flight | review: no file an agent was reading changed between its launch and its report |
 | Or-06.a | One agent at a time on files they share (`common.md`, `messages/`) | Mid-flight | review: no two agents ran at once on `common.md` or `messages/` |
 | Or-07 | Runs Post-flight: the sub-rules in order, after each agent finishes | Post-flight | review: the post-flight record holds Or-07.a to Or-07.f |
@@ -72,8 +72,9 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-07.d | Runs `req_check.sh` | Post-flight | review: the record holds the output of `req_check.sh` |
 | Or-07.e | In `WORKING.d/README.md` deletes the item the work finished (in the same commit as the work; git history is the trash) and adds anything newly awaiting action | Post-flight | review: the commit of the work also changes `WORKING.d/README.md` |
 | Or-07.f | Pushes | Post-flight | `git log origin/<branch>` matches the local branch |
+| Or-07.g | Edits the docs the Coder (build) reported as needing a change (Cb-07), in the same commit as the work | Post-flight | review: no doc named in a Coder report is left unchanged |
 | Or-08 | Launches a team per story: both Coders and a Tester | Sprint | review: each story has a Coder (build), a Coder (tests) and a Tester in the record |
-| Or-08.a | Launches Coder (build) and Coder (tests) together, and the Tester after both report | Sprint | review: the launch times in the record follow the order of the row |
+| Or-08.a | Launches Coder (build) and Coder (tests) together, and the Tester after both report; each writes only the paths its brief names (Or-05.c), so they do not collide | Sprint | review: the launch times in the record follow the order of the row |
 | Or-09 | A story enters a sprint when it is Ready. The Orchestrator checks this before planning | Before planning | review: the check names the review it ran, no test cell of the story is `—`, no `(?)` row blocks it |
 | Or-09.b | A story is small enough for one Post-flight check (about 1,000 changed lines); a larger story is split before it starts | Before planning | `git diff --stat` at post-flight; a story over that size was not split |
 | Or-09.a | A story that is not Ready is not planned; reports to the Product Owner why (an open question, a `—` test cell, a `defect` row) | Before planning | review: a story with a `—` cell, an open question or a `defect` row has a message to the Product Owner and no launch |
@@ -98,7 +99,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-15.b | Estimates the next sprint from the nearest finished stories by size, multiplied by the ratio of actual to estimate seen so far, as a range of plus or minus 20% with the projected after-reading (before plus estimate) | The start of a sprint | each planned sprint shows its estimate range |
 | Or-15.c | Splits stories until each fits the usage left in the window | The start of a sprint | review: each story's estimate fits the usage left in the window |
 | Or-16 | Splits, spills over to the next sprint, or stops a story that misses done | ^ | review: each story that missed done is recorded in `sprint.md` as split, spilled over or stopped |
-| Or-17 | Sets a requirement's status to `defect` when an agent reports it cannot act on it; changes the requirement and sets it to `proposed` for the Product Owner's review | An agent (the Orchestrator included) finds a requirement it cannot act on | review: no row an agent reported is left without `defect` or `proposed` |
+| Or-17 | Sets a requirement's status to `defect` when an agent reports it cannot act on it; changes the requirement and sets it to `proposed` for the Product Owner's review, using the alternatives the agent proposed (Cb-05) when it gave them | An agent (the Orchestrator included) finds a requirement it cannot act on | review: no row an agent reported is left without `defect` or `proposed` |
 | Or-18 | Changes a blank status to `backlog` | A blank status is found | `git diff` shows no blank status after the Orchestrator's pass |
 | Or-19 | Flags a rule that breaks a Law and proposes its removal and waits for the Product Owner's decision; never removes it alone | A rule is found that breaks a Law | `req_check.sh` lists identical statements (Law 1), exception wording (Law 2) and a rule with no test (Law 3); the review for what a script cannot find is run on request of the Product Owner |
 | Or-20 | Never calls for or launches a sprint; waits for the Product Owner's message, which is the only start of a sprint | ^ | review: the sprint was launched by a Product Owner message |
@@ -109,9 +110,11 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-24.a | Writes `SCRUM.d/sprint.md`: the story IDs (a story that fixes an issue names it as `#N`) and the usage estimate | When the sprint is launched | review: `sprint.md` holds the story IDs and the estimate at the launch |
 | Or-24.b | Sets the status of each requirement of a story to `planned` | When the sprint is launched | review: every requirement of a launched story is `planned` |
 | Or-24.c | The gate: a launch message from the Product Owner does not agree to rows. No agent is launched until every story's Ready check (Or-09) is written in `SCRUM.d/sprint.md` as passed, naming each requirement and its status | Before the first launch of the sprint | review: `sprint.md` holds the passed Ready check, and it is dated before the first agent launch |
+| Or-24.d | Creates one branch for the sprint from `main` when the sprint is launched; the sprint's work is pushed only to it and it merges to `main` after the Retrospective, when the Product Owner directs it | When the sprint is launched | review: `git log main` holds no commit from the sprint branch before the Retrospective is done and the Product Owner has directed the merge |
 | Or-25 | Never sets or changes the priority of the backlog; plans a sprint from the Product Owner's priority | Planning a sprint | review: the stories of a sprint follow the Product Owner's priority |
 | Or-26 | Turns a deliverable the Product Owner states into `proposed` rows in the right feature file, by launching a slice agent when it is large (Or-01); runs "Simulate three jobs" (`requirements/README.md`) before showing the rows; each row traces to the Product Owner's statement | Refinement | review: every new row traces to a Product Owner statement |
 | Or-26.a | A value the Product Owner's statement does not give (a number, a name, a test) is written as a `(?)` row and asked in the conversation, never chosen. When the Product Owner asks "Questions?", asks them all before writing a row | Refinement | review: no new row holds a value that the Product Owner's statement or an answer in `open-questions.md` does not give |
+| Or-27 | Asks the Product Owner only what the first Standing rule of `AGENTS.md` says is the Product Owner's to decide, and acts without asking on everything its rows assign | Always | review: every question to the Product Owner is a decision of theirs, and no action waited for a permission a row already gave (`AGENTS.md`, Standing rules) |
 
 ### Coder (build)
 
@@ -123,7 +126,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Cb-04 | Reviews its own diff for redundancy and a simpler way before reporting | Before reporting | review: the report names what the self-review found |
 | Cb-05 | When a requirement is unclear it proposes alternatives with pros and cons and sends the defect to the Orchestrator | A requirement is unclear | review: each unclear requirement has a report with alternatives and their pros and cons |
 | Cb-06 | Builds as `packages/README.md` says | ^ | review: the diff follows Cb-11 to Cb-19 of `packages/README.md` |
-| Cb-07 | Updates the affected docs in the same step as the code, searching them for the behaviors of the story's requirement IDs | With the code | review: the diff changes the docs that name the story's behaviors |
+| Cb-07 | Searches the docs for the behaviors of the story's requirement IDs and reports each doc that needs a change, in the same step as the code; the Orchestrator edits them (Or-07.g), since the rule files are not the team's to edit (Team-02) | With the code | review: the report names every doc that mentions the story's behaviors |
 | Cb-08 | Adds no dependency without the Product Owner's approval (the approved list is in `packages/README.md`) | Adding a dependency | review: the diff adds no entry to a `pubspec.yaml` that the Product Owner has not approved |
 
 ### Coder (tests)
@@ -141,6 +144,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 |---|---|---|---|
 | Te-01 | Runs the tests Ct wrote and produces one result per requirement, in the format of `tests/README.md` (Results) | ^ | review: the report has one result per requirement ID |
 | Te-02 | Runs each test the way its test cell says it runs (a script, CI, or a written procedure); the method was chosen by the Coder (tests) (Ct-02), not by the Tester | ^ | review: each result names the test and how it was run |
+| Te-03 | Writes only its results to its output file; does not change code or tests | ^ | `git diff` of the sprint branch shows no change by the Tester to code or tests |
 
 ### Reviewer
 
@@ -160,7 +164,9 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Team-01 | Read the requirements and the rule files (`AGENTS.md`, every README, `SCRUM.d/`) | ^ | review: each team member's report names the files it read |
 | Team-02 | Never edit the requirements or the rule files | ^ | a team diff touches no requirement or rule file |
 | Team-03 | A defect in a requirement (or a flaw in a rule file) goes to the Orchestrator (Or-17) | ^ | review: each reported defect reached the Orchestrator and Or-17 ran |
-| Team-04 | Work on your own branch in your own worktree and push only that branch | ^ | `git log main` holds no commit by a team member that the Product Owner did not direct to merge |
+| Team-04 | Work on the sprint's branch in the team's one worktree and push only that branch | ^ | `git log main` holds no commit by a team member that the Product Owner did not direct to merge |
+| Team-05 | Commit your own work to the sprint's branch, with the requirement IDs in the commit message (`AGENTS.md`) | ^ | review: the sprint branch has a commit by each team member that names requirement IDs |
+| Team-06 | Report to the Orchestrator: what you did, the files you read (Team-01), any defect (Team-03), and any doc that needs a change (Cb-07) | ^ | review: each report holds those four |
 
 ### Not yet placed (existing statements I could not give a row)
 
@@ -168,6 +174,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 - Conflict for the Product Owner: Or-07.d runs `req_check.sh` at every Post-flight, but you told me to run it only when you ask.
 - Or-09.b: "small enough for one Reviewer run" became "small enough for one Post-flight check" after the Reviewer was moved outside code development.
 - "The Dashboard records the sprint in `SCRUM.d/sprint.md` and each requirement's status." (The Dashboard is not a role.)
+- Old Team-04 wording, replaced by one sprint branch (the article "Branching Strategy on Scrum Software Development" uses a branch per sprint): "Work on your own branch in your own worktree and push only that branch".
 - Removed from the Tester definition: "(CI for scripted tests, an agent for the rest)"; CI is a tool, and Ct chooses the method.
 - Removed Te-04: "`flutter analyze` is clean and `flutter test` passes, run by CI once it exists". CI is a method defined in `tests/README.md`; what it runs is the open item "Decide Dart CI and release" in `WORKING.d/README.md`.
 - Removed Te-03: "A Tester agent produces the result for tests that need an agent and adds the CI run for the commit to its report, so the Orchestrator reads one combined result" (Te-01 and Te-02 already give one result per requirement however a test ran).

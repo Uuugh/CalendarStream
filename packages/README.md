@@ -22,10 +22,11 @@ The port is built from `requirements/`; the laws are in `AGENTS.md`. How to read
 | Cb-16 | What a file needs comes in through its constructor or arguments; no reading another module's globals | Writing Dart | ^ |
 | Cb-17 | A Repository never reaches into another repository; combine data one layer up. A Service holds no state | Writing Dart | ^ |
 | Cb-18 | Behavior that appears twice is one shared widget or function: search for an existing one before writing a new one, and extract a shared one when a second use appears (a filter, a list column, a row, a draggable block) | Writing Dart | review: the Reviewer names each pair of near-identical code and the shared one that replaces it |
-| Cb-19 | No Dart code sits outside `packages/`, `server/`, `client/` and `SCRUM.d/dashboard/`; the Scrum board follows these rules | Writing Dart | review: no Dart code sits outside those folders |
+| Cb-19 | Dart code sits in the folder its brief names (Or-05.d); the Scrum board follows these rules | Writing Dart | review: each Dart file sits in a folder its brief named |
 
 ## Not yet placed
 
+- Old Cb-19: "No Dart code sits outside `packages/`, `server/`, `client/` and `SCRUM.d/dashboard/`" (replaced by the brief naming the folder, since the project is moving to the Dart package layout).
 - Intro: "Flutter's structure is the model: a file stands alone and says what it needs."
 - "A module per responsibility. One responsibility per file, a small interface, dependencies passed in, and its own fast test that needs no app, database or browser unless that is what it tests." ("small" and "fast" are not checkable; one responsibility per file is Cb-14.)
 - "Name a class for its role: `GoogleSyncService`, `CalendarSourceRepository`."

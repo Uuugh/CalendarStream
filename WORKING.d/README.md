@@ -17,7 +17,7 @@ Delete an item when done (git history keeps it). Keep under 4,000 characters, on
 - [ ] Define test-run split, parallel runs and run report (inputs: branch `paused/test-parallel` commit 85f404b, DIA-04.c); CI fills the Tester role only after it exists.
 - [ ] Decide Dart CI and release: what CI runs (analysis, tests, `req_check.sh`), green run in done, dependency check, release steps.
 - [ ] Re-run the six Coder slices (baseline ~390 of 900 rows unimplementable); repeat fix, check, review until acceptable.
-- [ ] Retrospective after sprint 2 decides: `sprint.md` lifecycle vs blocks that outlive a sprint; smoke wording in step 9; branch and worktree in the brief; Test lines for roles and Orchestrator steps; step 11 position; stalled-agent overlap with Definition of done; usage per model and role (gap 25).; cold test 2 findings: say that the Files below are in WORKING.d; order of pre-flight vs usage reading in step 1 and 11; the first Reviewer run needs a scope in SCRUM.d; the harness gives a subagent the session-start copy of AGENTS.md, so a cold test needs a fresh conversation to see current text
+- [ ] Retrospective after sprint 2 decides: `sprint.md` lifecycle vs blocks that outlive a sprint; smoke wording in step 9; Test lines for roles and Orchestrator steps; step 11 position; stalled-agent overlap with Definition of done; usage per model and role (gap 25).; cold test 2 findings: say that the Files below are in WORKING.d; order of pre-flight vs usage reading in step 1 and 11; the first Reviewer run needs a scope in SCRUM.d; the harness gives a subagent the session-start copy of AGENTS.md, so a cold test needs a fresh conversation to see current text
 
 ## Files
 
