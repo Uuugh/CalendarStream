@@ -14,3 +14,4 @@ Keyed by rule ID, one or two sentences each. Read the entry before changing or r
 - **Sprint end**: a sprint ends with its Retrospective (Scrum Guide 2020: "The Sprint Retrospective concludes the Sprint").
 - **Terms**: "sub" applies to anything (a sub-rule, a subagent); never define a "sub-orchestrator".
 - **Defect and issue**: a defect is a requirement an agent cannot act on (status `defect`); an issue is code that does not meet a requirement.
+- **README rewrites (method step 1)**: compare the distinct words of a rewrite with the original (the missing words must each be accounted for) and scan for exception words ("unless", "except", "only when") before showing it. The requirements README comparison found the Orchestrator's rewrite dropped retired-app fragments and missed the "unless" in the link rule, which the independent rewrite caught.
