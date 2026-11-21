@@ -6,6 +6,15 @@ Orchestrator at the start and end of each sprint (`SCRUM.d/README.md`, Or-15). T
 Estimate = what the Orchestrator said before the work. Before and after = the readings (session % / weekly %). Actual =
 after minus before; a window reset in between makes the session actual unknown (`?`). A dash = never recorded.
 
+## Levels
+
+The levels of the 5-hour reading and what the Orchestrator does at each (the 7-day reading has no level; the Product Owner decides from it).
+
+| Level | 5-hour reading | Action |
+|---|---|---|
+| Warning | 🟡 the Product Owner gives the number | Warn the Product Owner before launching any agent (Or-10.d) |
+| Stop | about 70% | Stop every running agent and make no commit, push or launch until told (Or-10.a) |
+
 | Sprint | Story or round | Date | Model | Estimate session % | Before s / w | After s / w | Actual session % | Notes |
 |---|---|---|---|---|---|---|---|---|
 | dashboard | rounds 1 and 2, with the process-rule work of the same conversation | Nov 20 | Sonnet 5.5 | – | 11 / 43 | 94 / 54 | 83 | No reading was taken at the sprint start, only when the Product Owner sent one mid-conversation (11 / 43); the 94 / 54 reading came at the stop of round 3; the conversation also covered the gap walk and the rule changes, so this is not the dashboard's cost alone |
