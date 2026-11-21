@@ -69,8 +69,8 @@ missing_cited=$(comm -13 <(echo "$tkeys") <(echo "$cited") | grep . | tr '\n' ' 
 lacking=$(for l in messages/app_*.arb; do case $l in messages/app_en.arb) continue;; esac; k=$(grep -o '^  "[A-Za-z0-9]*":' $l | tr -d ' ":' | sort); n=$(comm -23 <(echo "$tkeys") <(echo "$k") | wc -l); [ "$n" -gt 0 ] && echo "$l lacks $n keys"; done | tr '\n' ';')
 [ -n "$missing_cited$lacking" ] && { echo "$missing_cited$lacking"; err=1; } || echo none
 echo "   message keys not yet cited by a requirement: $(comm -23 <(echo "$tkeys") <(echo "$cited") | grep -c .) of $(echo "$tkeys" | wc -l)"
-echo "== questions: every (?) row is in open-questions.md and every question there has a (?) row (rule 10)"
-q=open-questions.md
+echo "== questions: every (?) row is in SCRUM.d/defects.md and every question there has a (?) row (rule 8)"
+q=../SCRUM.d/defects.md
 qrows=$(awk -F'|' '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/ && $3 ~ /\(\?\)/ {id=$2; gsub(/ /,"",id); print id}' $files | sort)
 qfile=$(grep -oE '^- \*\*[A-Z]+-[0-9]+(\.[a-z]+)?\*\*' $q | grep -oE '[A-Z]+-[0-9]+(\.[a-z]+)?' | sort)
 qbad=$( { comm -23 <(echo "$qrows") <(echo "$qfile") | sed 's/^/no question for row: /'; comm -13 <(echo "$qrows") <(echo "$qfile") | sed 's/^/question without a (?) row: /'; } )

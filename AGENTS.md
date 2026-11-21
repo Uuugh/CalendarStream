@@ -28,7 +28,7 @@ what each does are in `SCRUM.d/README.md`.
 - **The Product Owner decides; you act on everything else.** Do what these files assign to your role and what the
   Product Owner has directed, without asking first: push, merge a branch they told you to merge, launch the agents the
   process calls for. Ask about a decision that is theirs and that the files and sources do not settle. Ask in the
-  conversation, one decision at a time with your recommendation; record it in `requirements/open-questions.md` if it
+  conversation, one decision at a time with your recommendation; record it in `SCRUM.d/defects.md` if it
   must outlive the conversation, and read answers from the `Answer:` lines. A question from the Product Owner gets an
   answer; it is not an instruction. **Test:** review: every question is a decision of the Product Owner's, no action
   waited for a permission it already had, and no action follows a Product Owner message that asks and does not direct.
@@ -46,6 +46,7 @@ what each does are in `SCRUM.d/README.md`.
 - **A commit message is one plain sentence saying what changed, ending in brackets with the requirement IDs, the issue
   number or the folder it serves.** **Test:** review: the last bracket of every commit on a team branch holds an ID, an
   issue number or an existing folder.
+- **Keep every reply to the Product Owner short: their chat messages are lost between sessions and cost context.** **Method:** answer in the fewest words that settle it, use fewer and larger edits, silence harmless tool warnings, report a commit in one line, and draw progress bars only while an agent runs. **Test:** review: no reply repeats an earlier one, and each commit is reported in one line.
 
 ## Folders: `<topic>.md`, `<topic>.d/`, `<topic>.d/README.md`
 
@@ -71,9 +72,9 @@ Read the README of an area before touching anything in it.
 
 | Path | What it holds |
 |---|---|
-| `SCRUM.d/` | Roles, stories, sprints, definition of done, how the Orchestrator briefs and checks agents (`SCRUM.d/README.md`) |
+| `SCRUM.d/` | Roles, stories, sprints, definition of done, how the Orchestrator briefs and checks agents (`SCRUM.d/README.md`); `defects.md` the questions and defects waiting for the Product Owner |
 | `WORKING.d/` | The Orchestrator's memory: work in progress and awaiting action; temporary (`WORKING.d/README.md`) |
-| `requirements/` | The spec, one file per feature; `README.md` has the rules for writing it; `open-questions.md` the questions for the Product Owner |
+| `requirements/` | The spec, one file per feature; `README.md` has the rules for writing it |
 | `packages/`, `server/`, `client/` | The Dart port; `packages/README.md` holds its rules |
 | `tests/` | Requirement tests mirroring `requirements/`, and `tests/tools/req_check.sh` (`tests/README.md`) |
 | `.claude/skills/` | The project skills: `dart-flutter` (Dart and Flutter) and `scrum` (general Scrum knowledge, for building `SCRUM.d/`) |

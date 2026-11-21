@@ -14,7 +14,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 
 ### Roles
 
-- **Product Owner (PO)**: *ROLE* the repository owner; decides. Human. Answers `requirements/open-questions.md`; agrees to rows (deletes `proposed`); launches work; decides which legacy files go; approves requirements; accepts or rejects each story at the Review. Owns the backlog and sets its priority: only the Product Owner sets the priority.
+- **Product Owner (PO)**: *ROLE* the repository owner; decides. Human. Answers `SCRUM.d/defects.md`; agrees to rows (deletes `proposed`); launches work; decides which legacy files go; approves requirements; accepts or rejects each story at the Review. Owns the backlog and sets its priority: only the Product Owner sets the priority.
 - **Orchestrator (Or)**: *ROLE* keeps the requirements consistent, briefs and checks the other agents, commits and pushes.
 - **Coder (build) (Cb)**: *ROLE* implements a story's requirements.
 - **Coder (tests) (Ct)**: *ROLE* builds the mirrored requirement tests from the requirements only.
@@ -27,7 +27,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 - **Backlog**: requirements with status `backlog` (or blank) and open issues, waiting for a story.
 - **Story**: names the requirement and sub-requirement IDs it will meet.
 - **Epic**: a group of stories (usually one feature). A story that is split becomes an epic of the stories it was split into.
-- **Defect**: a requirement an agent cannot act on (unclear, wrong, contradicting another, or missing table information). Its status is `defect`.
+- **Defect**: a line an agent cannot act on (unclear, wrong, contradicting another, or missing information: a table cell, a name or a value). A requirement shows it as the status `defect`; a rule or a definition as 🟠.
 - **Issue**: defined in `requirements/README.md`; it names the requirement it breaks.
 - **Sprint Backlog**: the story list in `SCRUM.d/sprint.md`.
 - **Increment**: the sprint's last commit.
@@ -68,7 +68,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-04 | Runs Pre-flight: the sub-rules in order, before launching any agent | Pre-flight | review: the first messages of the session show Or-04.a to Or-04.e done in order |
 | Or-04.a | Reads `WORKING.d/README.md` (your memory) | Pre-flight | review: the first message states what `WORKING.d/README.md` held |
 | Or-04.b | Runs `git status` and `git diff` | Pre-flight | review: the first message quotes `git status` before any edit |
-| Or-04.c | Reads the `Answer:` lines in `requirements/open-questions.md` | Pre-flight | review: the first message names every non-blank `Answer:` line or says there is none |
+| Or-04.c | Reads the `Answer:` lines in `SCRUM.d/defects.md` | Pre-flight | review: the first message names every non-blank `Answer:` line or says there is none |
 | Or-04.d | Commits the Product Owner's uncommitted work first, in its own commit (any uncommitted change found at Pre-flight is the Product Owner's) | Pre-flight | `git log` shows the uncommitted change as its own commit before any other commit of the session |
 | Or-04.e | Starts the Scrum board if `SCRUM.d/dashboard/` exists and it is not running (the start command is in its README) and gives the Product Owner its address | Pre-flight | review: the first message of the session names the address of a running Scrum board |
 | Or-05 | Brief: one line each: role, slice, output file, what the agent may write, its progress file, the skills it must load and use (`dart-flutter` for Dart, `scrum` for Scrum files), and "read AGENTS.md and follow it"; Or-05.a to Or-05.d add to the brief | Brief | review: each brief holds every field the row lists |
@@ -122,7 +122,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-24.d | Creates one branch for the sprint from `main` when the sprint is launched; the sprint's work is pushed only to it and it merges to `main` after the Retrospective, when the Product Owner directs it | When the sprint is launched | review: `git log main` holds no commit from the sprint branch before the Retrospective is done and the Product Owner has directed the merge |
 | Or-25 | Never sets or changes the priority of the backlog; plans a sprint from the Product Owner's priority | Planning a sprint | review: the stories of a sprint follow the Product Owner's priority |
 | Or-26 | Turns a deliverable the Product Owner states into `proposed` rows in the right feature file, by launching a slice agent when it is large (Or-01); runs "Simulate three jobs" (`requirements/README.md`) before showing the rows; each row traces to the Product Owner's statement | Refinement | review: every new row traces to a Product Owner statement |
-| Or-26.a | A value the Product Owner's statement does not give (a number, a name, a test) is written as a `(?)` row and asked in the conversation, never chosen. When the Product Owner asks "Questions?", asks them all before writing a row | Refinement | review: no new row holds a value that the Product Owner's statement or an answer in `open-questions.md` does not give |
+| Or-26.a | A value the Product Owner's statement does not give (a number, a name, a test) is written as a `(?)` row and asked in the conversation, never chosen. When the Product Owner asks "Questions?", asks them all before writing a row | Refinement | review: no new row holds a value that the Product Owner's statement or an answer in `SCRUM.d/defects.md` does not give |
 | Or-27 | Asks the Product Owner only what the first Standing rule of `AGENTS.md` says is the Product Owner's to decide, and acts without asking on everything its rows assign | Always | review: every question to the Product Owner is a decision of theirs, and no action waited for a permission a row already gave (`AGENTS.md`, Standing rules) |
 
 ### Coder (build)

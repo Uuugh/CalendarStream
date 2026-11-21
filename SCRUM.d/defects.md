@@ -1,8 +1,8 @@
-# Open questions for the Product Owner
+# Defects and questions waiting for the Product Owner
 
-Only unanswered questions are listed. Answer on the `Answer:` line under a question (or tell the orchestrator); the orchestrator applies the answer to the requirement rows and removes the question. Before asking, the orchestrator looks in the other requirements, the retired Python app and its reverse-engineering notes (`WORKING.d/CalendarStream.old/build_rules/reverse-engineering/`) and https://docs.flutter.dev/ and https://dart.dev/.
+Only unanswered entries are listed (🟡 a question, 🟠 a rewrite whose meaning changes, 🔴 a line proposed for removal). Answer on the `Answer:` line under a question (or tell the orchestrator); the orchestrator applies the answer to the requirement rows and removes the question. Before asking, the orchestrator looks in the other requirements, the retired Python app and its reverse-engineering notes (`WORKING.d/CalendarStream.old/build_rules/reverse-engineering/`) and https://docs.flutter.dev/ and https://dart.dev/.
 
-## Q-X: questions from the drafts (rows marked (?))
+## 🟡 Q-X: questions from the drafts (rows marked (?))
 
 Each question is the (?) text of a proposed requirement. Answer on the Answer line; Claude updates the row and removes the question.
 
@@ -29,7 +29,7 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
   Answer:
 
 
-## Q-P: questions about the process files (from the Retrospective of the ocean sprint)
+## 🔴 Q-P: lines of the process files that may break a Law (from the Retrospective of the ocean sprint)
 
 Each is a line that may break a Law. Answer on the Answer line; the orchestrator applies the answer and removes the question.
 

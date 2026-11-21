@@ -7,7 +7,7 @@ Delete an item when done (git history keeps it). Keep under 4,000 characters, on
 ## To do (order: PO, Orchestrator now, waiting)
 
 - [ ] Ocean sprint: the PO accepts or rejects it (`SCRUM.d/sprint.md` holds the Review, the findings and the open 🟡 lines); then Or-14.c and the merge of `sprint/ocean` when the PO directs.
-- [ ] PO: review `proposed` rows; answer `requirements/open-questions.md` (blank status = `backlog`).
+- [ ] PO: review `proposed` rows; answer `SCRUM.d/defects.md` (blank status = `backlog`).
 - [ ] Dashboard epic of 7 stories (`dashboard-brief.md` J, K): Orchestrator launches each story's Coder (build) and Coder (tests) itself, no sub-orchestrator; first the Reviewer on the whole repo (~25 session %); ask the PO for 5h and 7d readings first and after each story; stop agents at 70%; first window = the Reviewer plus the stories that fit the usage left, chosen by the Orchestrator from the estimates (smallest and most independent first); the PO only launches the sprint.
 - [ ] Worktree `CalendarStream-dashboard` (branch `dashboard`): 43 uncommitted files; `flutter build web` fails ("Too few positional arguments: 2 required, 1 given"), fix first; port 8765 serves a stale build. Queued, unbuilt: collapse keeps top-level rows, `+` buttons, add popup (optional number, suggestions), missing sprint file shows an empty board.
 - [ ] On dashboard merge (after PO acceptance): stays in `SCRUM.d/dashboard`; remove the Parts list the agent added to `SCRUM.d/README.md`; list `SCRUM.d/dashboard` in the `AGENTS.md` table of contents; start command runs `flutter gen-l10n`; delete `dashboard-brief.md` and `dashboard-review.md`; renames `default`, `{new}` accepted. Next sprint: new Scrum board features (PO picks), new Orchestrator conversation per sprint.
