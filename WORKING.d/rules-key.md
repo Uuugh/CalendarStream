@@ -25,3 +25,15 @@ The removed words, kept here:
 2. **Law: no exceptions.** If a rule has an exception, the requirement is wrong: change it so it holds for every case, or give the different case its own requirement. A row never says "except", "never for" or "only when X is not". A new kind of thing (a connection, a component) follows the existing rules and does not get a special case. **Test:** `req_check.sh` lists exception wording (a condition that says when something happens is fine; an exception to another rule is not); review: would the rule hold unchanged for the next new connection or component?
 
 `tests/tools/req_check.sh` printed these numbers in its messages; they are updated with the move.
+
+## Key: Orchestrator rules, old to new (fix links, then delete)
+
+| Old | New |
+|---|---|
+| Or-01 | Or-01, Or-01.a, Or-01.b, Or-01.c |
+| Or-02 | Or-03 |
+| Or-17 | Or-02.e |
+| Or-18 | Or-02.g |
+| Or-19 | Or-02.f.c |
+| Or-21 | Or-02.c |
+| Or-27 (marks, breaking requests) | Or-02.d, Or-02.f, Or-02.f.a, Or-02.f.b, Or-02.f.c; Or-27 keeps only the question rule |

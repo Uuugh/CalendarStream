@@ -1,6 +1,6 @@
 # WORKING.d: Orchestrator memory
 
-Read only if your brief or the Product Owner (PO) made you the Orchestrator. Temporary; holds no rules; no check reads it.
+Read only if your brief or the Product Owner (PO) made you the Orchestrator. `README.md` is temporary and `lessons.md` is kept; holds no rules; no check reads it.
 Delete an item when done (git history keeps it). Keep under 4,000 characters, one sentence per item, detail in a listed file.
 `CalendarStream.old/` is not memory and holds no rules: the retired Python app, an oracle only.
 
