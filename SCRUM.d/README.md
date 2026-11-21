@@ -69,7 +69,6 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-07.a | Runs `git diff` against the commit before | Post-flight | the post-flight `git diff` |
 | Or-07.b | Checks the agent loaded the skills its brief named | Post-flight | review: the record names the skills each agent loaded |
 | Or-07.c | Reverts any status move that the status rule in `AGENTS.md` (Standing rules) does not allow | Post-flight | `git diff` shows no status move that rule does not allow |
-| 🟡 Or-07.d | Runs `req_check.sh` | Post-flight | review: the record holds the output of `req_check.sh` |
 | Or-07.e | In `WORKING.d/README.md` deletes the item the work finished (in the same commit as the work; git history is the trash) and adds anything newly awaiting action | Post-flight | review: the commit of the work also changes `WORKING.d/README.md` |
 | Or-07.f | Pushes | Post-flight | `git log origin/<branch>` matches the local branch |
 | Or-07.g | Edits the docs the Coder (build) reported as needing a change (Cb-07), in the same commit as the work | Post-flight | review: no doc named in a Coder report is left unchanged |
@@ -88,7 +87,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Or-13.b | Has a Tester agent follow the written smoke procedure (`tests/smoke.md`, created at the first sprint that needs it) and report pass, fail or not run per step | Review | review: the smoke report has pass, fail or not run per step |
 | Or-13.c | Each failure becomes an issue that names the requirement it breaks | Review | review: every issue names a requirement ID |
 | Or-13.d | Writes the Review in `SCRUM.d/sprint.md`: per story what passed, failed and was not checked, the smoke result, the Product Owner's accept or reject, and the usage it took | Review | the Review in `sprint.md` holds an accept or reject for every story |
-| Or-13.e | Sets each requirement of a story the Product Owner accepted to `done` | Review | review: each accepted story's rows are `done` and no other story's rows are |
+| Or-13.e | Runs `req_check.sh` and sets each requirement of a story the Product Owner accepted to `done` only when it reports no errors (Definition of done) | Review | review: each accepted story's rows are `done` and no other story's rows are, and the record holds the output of `req_check.sh` |
 | Or-14 | Runs the Retrospective: the sub-rules in order | Retrospective | review: the Retrospective holds Or-14.a to Or-14.c |
 | Or-14.a | If a process file (`AGENTS.md`, a README, `SCRUM.d/`) changed during the sprint, the Reviewer (a cold agent) given only "read AGENTS.md and follow it" says who it is, where the rules, the tests and the open questions are, and what it reads next; each wrong answer is a finding | Retrospective | the Retrospective in `sprint.md` records that run for every sprint in which a process file changed |
 | Or-14.b | Writes the findings in `SCRUM.d/sprint.md`; each ends as an issue, a fix or a stated reason | Retrospective | review: each finding in `sprint.md` ends as an issue, a fix or a stated reason |
@@ -170,7 +169,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 
 ### Not yet placed (existing statements I could not give a row)
 
-- Conflict for the Product Owner: Or-07.d runs `req_check.sh` at every Post-flight; the Product Owner's instruction in one session was to run it only on request.
+- Old Or-07.d "Runs `req_check.sh`" (a Post-flight step): moved into Or-13.e, so it runs once per story at the Definition of done and not after every agent.
 - Removed Or-09.b at the Product Owner's decision (Or-15.c's usage fit is the single size limit): "Small enough for one Reviewer run (about 1,000 changed lines); a larger story is split before it starts." **Test:** `git diff --stat` at post-flight; a story over that size was not split.
 - "The Dashboard records the sprint in `SCRUM.d/sprint.md` and each requirement's status." (The Dashboard is not a role.)
 - Old Team-04 wording, replaced by one sprint branch (the article "Branching Strategy on Scrum Software Development" uses a branch per sprint): "Work on your own branch in your own worktree and push only that branch".

@@ -22,7 +22,7 @@ Launched by the Product Owner's message "start", after the deliverable "using da
 ## Review (Or-13.d)
 - Story 1 (OCN-01, OCN-05, OCN-06, OCN-07): Tester ran `flutter test test/ocean_test.dart`, 5 tests, all passed (the same run also covers OCN-02 to OCN-04). The Orchestrator reran it once and got the same result. Not checked: the server on port 8080 and a real browser (the Tester did not run it; the Orchestrator served it once, got a 200 and the Product Owner viewed it; the server was later stopped for memory); `flutter analyze` (the Coder (build) says clean for its files, 7 info items in the test file); `req_check.sh` (not run on the Product Owner's instruction).
 - Smoke result: not run; `tests/smoke.md` does not exist (Or-13.b).
-- Product Owner: accept or reject pending.
+- Product Owner: accepted ("the project is done"), 2026-11-21. The project and its files were then deleted at the Product Owner's direction; the requirement rows were not set to `done` for that reason.
 - Usage: 6 session % actual (5h 27% to 33%; 7d 77% to 78%) against an estimate of 9; `SCRUM.d/usage.md`.
 
 ## Retrospective findings (Or-14.b), each ending as a fix, a Product Owner proposal, or a stated reason
