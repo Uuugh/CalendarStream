@@ -15,3 +15,6 @@ Launched by the Product Owner's message "start", after the deliverable "using da
 ## Split (Or-16), 2026-11-21 01:49, at the Product Owner's direction
 - Story 1 is now OCN-01, OCN-05, OCN-06, OCN-07 (the page served at localhost:8080 with the sky and the sea). OCN-02 (sun), OCN-03 and OCN-04 (waves) spill to the next sprint; their rows are back to `backlog`.
 - New estimate: about 9 session % (7 to 11), projected after-reading 5h 36% (34 to 38). The Coder (tests) had finished all seven rows; the Tester runs only the four.
+
+## Usage after (Or-15.a)
+- After (the Product Owner's reading): 5h 33%, 7d 78%. Actual 6 session % against the estimate of 9 (first estimate 22). Recorded in `SCRUM.d/usage.md`.
