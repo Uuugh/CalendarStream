@@ -53,10 +53,10 @@ notestA=$(awk '/^## (The laws|Standing rules)/{inr=1; next} /^## /{inr=0} inr &&
 [ -n "$notestA" ] && { echo "AGENTS.md rules without a test:"; echo "$notestA"; err=1; } || echo none
 echo "== warnings: rules in SCRUM.d, tests and packages READMEs without a Test line (law 3; fix by writing the Test line)"
 awk '/^(- |[0-9]+[.] |  - )[*][*]/ { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) n++; blk=$0; next } /^#/ { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) n++; blk=""; next } /^$/ { next } blk != "" { blk=blk $0 } ENDFILE { if (blk != "" && blk !~ /[*][*]Test:[*][*]/) n++; blk="" } END { print n+0" rules" }' ../SCRUM.d/README.md ../tests/README.md ../packages/README.md
-echo "== errors: a requirement row with status planned or done whose test cell is still — (rule 13)"
-notestS=$(grep -hE '^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]' $files | sed 's/[\][|]//g' | awk -F'|' '{s=$3; t=$5; i=$2; gsub(/ /,"",s); gsub(/ /,"",t); gsub(/ /,"",i); if ((s=="planned" || s=="done") && t=="—") print i}' | tr '\n' ' ')
+echo "== errors: a requirement row with no sub-requirements, status planned or done, whose test cell is still — (rule 11)"
+notestS=$(grep -hE '^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]' $files | sed 's/[\][|]//g' | awk -F'|' '{i=$2; s=$3; t=$5; gsub(/ /,"",i); gsub(/ /,"",s); gsub(/ /,"",t); id[NR]=i; st[NR]=s; ts[NR]=t; n=split(i,a,"."); if (n>1) par[a[1]]=1} END {for (k=1;k<=NR;k++) if ((st[k]=="planned" || st[k]=="done") && ts[k]=="—" && !(id[k] in par)) print id[k]}' | tr '\n' ' ')
 [ -n "$notestS" ] && { echo "planned or done rows without a test: $notestS"; err=1; } || echo none
-echo "== requirement rows whose test cell is still — (rule 13; a count, not an error)"
+echo "== requirement rows whose test cell is still — (rule 11; a count, not an error)"
 grep -hE '^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]' $cfiles | sed 's/[\][|]//g' | awk -F'|' '{t=$5; gsub(/ /,"",t); if (t=="—") n++} END {print n+0" rows"}'
 echo "== errors: a requirement row outside its table (a non-table line before it) or a README link to a missing file"
 outside=$(awk '/^\| [A-Z]+-[0-9]+(\.[a-z]+)? \|/{ if (prev !~ /^\|/) print FILENAME": line "FNR } { prev=$0 }' $files | tr '\n' ';')
@@ -81,9 +81,9 @@ badparts=$(for d in *.d ../SCRUM.d; do [ -f $d/README.md ] || echo "$d: no READM
 echo "== errors: a README or script named in a process file does not exist (links resolve)"
 badlinks=$(for f in ../AGENTS.md ../SCRUM.d/README.md ../tests/README.md ../packages/README.md README.md; do grep -o '[`][A-Za-z0-9_./-]*\(README[.]md\|[.]sh\)[`]' $f | tr -d '`' | sort -u | while read p; do [ -e "../$p" ] || [ -e "$p" ] || [ -e "$(dirname $f)/$p" ] || find .. -name "$(basename $p)" -not -path '../WORKING.d/*' -not -path '../.git/*' | grep -q . || echo "$f: $p"; done; done)
 [ -n "$badlinks" ] && { echo "$badlinks"; err=1; } || echo none
-echo "== errors: a status moved down the order proposed, backlog, planned, done (only planned to backlog is allowed) against ${REQ_BASE:-HEAD}"
+echo "== errors: a status moved down the order proposed, backlog, planned, done (only planned to backlog or defect is allowed) against ${REQ_BASE:-HEAD}"
 base=${REQ_BASE:-HEAD}
-back=$(for f in $files; do git show "$base:requirements/$f" 2>/dev/null | awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' > /tmp/rc_old.txt; awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' $f > /tmp/rc_new.txt; awk 'NR==FNR {o[$1]=$2; seen[$1]=1; next} ($1 in seen) {r["proposed"]=1; r["backlog"]=2; r[""]=2; r["planned"]=3; r["done"]=4; if (r[$2] < r[o[$1]] && !(o[$1]=="planned" && $2=="backlog")) print $1}' /tmp/rc_old.txt /tmp/rc_new.txt; done | tr '\n' ' ')
+back=$(for f in $files; do git show "$base:requirements/$f" 2>/dev/null | awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' > /tmp/rc_old.txt; awk -F'|' '/^[|] [A-Z]+-[0-9]+([.][a-z]+)? [|]/ {i=$2; s=$3; gsub(/ /,"",i); gsub(/ /,"",s); print i" "s}' $f > /tmp/rc_new.txt; awk 'NR==FNR {o[$1]=$2; seen[$1]=1; next} ($1 in seen) {r["proposed"]=1; r["backlog"]=2; r[""]=2; r["planned"]=3; r["done"]=4; if (r[$2] < r[o[$1]] && !(o[$1]=="planned" && ($2=="backlog" || $2=="defect"))) print $1}' /tmp/rc_old.txt /tmp/rc_new.txt; done | tr '\n' ' ')
 [ -n "$back" ] && { echo "status went backwards: $back"; err=1; } || echo none
 echo "== errors: a link or picture in the project README.md that does not resolve (Definition of done)"
 badreadme=$(grep -o ']([^)#]*)' ../README.md | sed 's/^](//; s/)$//' | grep -v -e '^http' -e '^mailto' -e '^$' | while read p; do [ -e "../$p" ] || echo "$p"; done | tr '\n' ' ')

@@ -36,7 +36,7 @@ Reviewer (cold, Or-14.a), 21 findings:
 7. "Also in" notes: one removed; the rest stated reason (the holding list is emptied by Product Owner decisions); the freeze line in `requirements/README.md`: proposal to the Product Owner.
 8. Or-07.c "except": fixed. The claim that `AGENTS.md` allows fewer moves came from the session-start copy of `AGENTS.md` that a subagent receives (known); stated reason.
 9. Cb-14 exception: fixed (split into Cb-14, Cb-14.a, Cb-14.b).
-10. Parent test cell `—` against rule 13: proposal to the Product Owner (rule 13 should say a row with no sub-requirements).
+10. Parent test cell `—` against the test rule: fixed at the Product Owner's choice (option A): rule 11 covers a row with no sub-requirements, rule 11.a a row with sub-requirements; `req_check.sh` skips parents.
 11. No `**Method:**` in `AGENTS.md`: proposal to the Product Owner; `SCRUM.d` rows state How by default.
 12. `tests/README.md` rules without Test lines: proposal to the Product Owner.
 13. Cb-14, 16, 17 tested by the wrong script: fixed (own review tests); Cb-12, 13, 15 scripts: issue, to be written.
