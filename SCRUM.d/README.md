@@ -33,7 +33,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 - **Increment**: the sprint's last commit.
 - **Size** of a story: its changed files (the rate is in `SCRUM.d/usage.md`).
 - **Scratch folder**: the session's scratchpad directory, named in the session's environment.
-- **Sprint**: the stories chosen to be built next. A sprint ends when its stories are done or at their review; it has no calendar length.
+- **Sprint**: the stories chosen to be built next. A sprint ends with its Retrospective, after its stories are done or at their review; it has no calendar length.
 - **Ready**: a story is Ready when its requirements pass the review in `requirements/README.md` ("Simulate three jobs"), no open question blocks it, every row of it has status `backlog`, and no test cell of it is `—`.
 - **Definition of done**: `tests/tools/req_check.sh` passes and the Tester reports `pass` for every requirement of the story, the README and docs the story affects are updated, and the Product Owner accepts it at the Review.
 
@@ -41,7 +41,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 
 - **Pre-flight**, **Brief**, **Mid-flight**, **Post-flight**: the Orchestrator's named steps (Or-04, Or-05, Or-06, Or-07), in that order, around each agent it launches.
 - **Refinement**: ongoing; breaking a deliverable the Product Owner states into requirements.
-- **Review**: the end of a sprint.
+- **Review**: the last step of a sprint's work, before the Retrospective.
 - **Retrospective**: after the Review.
 
 ## Rules
