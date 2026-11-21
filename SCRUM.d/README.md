@@ -180,7 +180,7 @@ A rule is one row: `ID | What | When acted | How tested`. The ID prefix is the r
 | Team-03 | A defect in a requirement (or a flaw in a rule file) goes to the Orchestrator (Or-02.e.b) | ^ | review: each reported defect reached the Orchestrator and Or-02.e.b ran |
 | 🟡 Team-03.a | The reporting agent reports each name or value it needed and the row does not give, skips the part of its work that needs it, and continues with the rest | An agent needs a name or value the row does not give | review: the report lists each such name or value, and none appears in the agent's diff |
 | Team-04 | Work on the sprint's branch in the team's one worktree and push only that branch | ^ | `git log main` holds no commit by a team member that the Product Owner did not direct to merge |
-| 🟡 Team-05 | Commit your own work to the sprint's branch after each unit of work and before reporting, with the requirement IDs in the commit message (`AGENTS.md`) | ^ | review: the sprint branch has a commit by each team member that names requirement IDs |
+| Team-05 | Commit your own work to the sprint's branch after each unit of work and before reporting, with the requirement IDs in the commit message (`AGENTS.md`) | ^ | review: the sprint branch has a commit by each team member that names requirement IDs |
 | Team-06 | Report to the Orchestrator: what you did, the files you read (Team-01), any defect (Team-03), any doc that needs a change (Cb-07), and the skills you loaded (Or-05) | ^ | review: each report holds those five |
 
 ### Not yet placed (existing statements I could not give a row)
