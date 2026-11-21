@@ -138,6 +138,8 @@ Routing table (Or-03.b):
 | `fail` | the Tester says the test is wrong | Coder (tests) (Ct-02) |
 | `not run` | the test could not start | Coder (tests) (Ct-02) |
 | `not run` | the code crashed it | Coder (build) |
+| `not run` | the row has status `defect` | no action (Or-02.e.b owns it) |
+| `not run` | any other cause | Coder (tests) (Ct-02) |
 | `uncovered` | the behavior can fail on its own, with the rest of the row passing, so it could be a requirement of its own | a defect (Or-02.e.b) naming it |
 | `uncovered` | any other behavior | Coder (tests) (Ct-03) |
 
