@@ -32,8 +32,8 @@ The removed words, kept here:
 |---|---|
 | Or-01 | Or-01, Or-01.a, Or-01.b, Or-01.c |
 | Or-02 | Or-03 |
-| Or-17 | Or-02.e |
-| Or-18 | Or-02.g |
-| Or-19 | Or-02.f.c |
+| Or-17 | Or-02.e.b |
+| Or-18 | Or-02.f |
+| Or-19 | Or-02.e.c |
 | Or-21 | Or-02.c |
-| Or-27 (marks, breaking requests) | Or-02.d, Or-02.f, Or-02.f.a, Or-02.f.b, Or-02.f.c; Or-27 keeps only the question rule |
+| Or-27 (marks, breaking requests) | Or-02.d, Or-02.e, Or-02.e.a, Or-02.e.b, Or-02.e.c; Or-27 keeps only the question rule |
