@@ -28,3 +28,18 @@ Each question is the (?) text of a proposed requirement. Answer on the Answer li
 - **One-way and two-way Google rows:** CGOW-04.k says one-way sync publishes and does not read back, yet CGOW-04.b, CGOW-04.c, CGOW-04.g and the instant updates (CGOW-05) describe reading Google's changes, which are two-way behaviors. Code check: the old app agrees (one-way only writes and puts back what changed in Google; two-way reads Google first during a full check: reverse-engineering R5-28). Recommended: move those rows to `google_two_way.md`. Is that right?
   Answer:
 
+
+## Q-P: questions about the process files (from the Retrospective of the ocean sprint)
+
+Each is a line that may break a Law. Answer on the Answer line; the orchestrator applies the answer and removes the question.
+
+- **`AGENTS.md` has no `**Method:**` on its rules** (Law 3), and its Environment and "Your role" have no `**Test:**`. Should each standing rule state a Method, and which tests should the other two get?
+  Answer:
+- **`tests/README.md` rules without a Test line:** the old-app fixtures rule, Results and Layout. Should each get a Test line, or be removed as old-app wording?
+  Answer:
+- **Prefix list in `requirements/README.md`:** it shows `UIC` while the text says `UI`, and `DEF` is missing. Which is right?
+  Answer:
+- **"moved with the old app" references** in `requirements/README.md` point at files that no longer exist. Delete the references, or give a path?
+  Answer:
+- **The freeze statement in `requirements/README.md`** repeats the one in `AGENTS.md`. Remove it from the requirements README?
+  Answer:

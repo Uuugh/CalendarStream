@@ -59,3 +59,9 @@ Orchestrator, this sprint:
 28. The split mid-flight saved little because the Coder (build) had finished: stated reason; an estimate of 22 was four times too high.
 29. `tests/smoke.md` missing: issue, to be written at the first sprint that needs it.
 30. The server was stopped for memory (system low on memory, cause not measured): stated reason; start it again only when asked.
+
+## Added after the cold Orchestrator experiment (Or-14.b)
+31. The Coder (tests) wrote no output-file report (Team-06); it reported in its reply only: Or-05.d names the output file, so the Tester and the Orchestrator found no file. Stated reason: the gap is in how Ct was briefed; next sprint the brief names the report file as an output and Or-07 checks it exists.
+32. The Coder (tests) file has 7 analyze info items: issue, to be opened against OCN-01 to OCN-07.
+33. The Product Owner's pending process questions (findings 7, 11, 12, 15, 16) moved to `requirements/open-questions.md`, section Q-P, so deleting `sprint.md` (Or-14.c) does not lose them.
+34. The cold Orchestrator, given the files without the marks, found both open questions (OCN-06 height, the Or-07.d conflict) and five more; both were already written as a finding and a note in the files, so it shows the files carry the causes but not that it would have found them with no note.
